@@ -401,3 +401,6 @@ FodyWeavers.xsd
 local-temp/
 # Claude
 .claude/
+
+# LINQPad scratch scripts (personal tooling, often with machine-absolute paths)
+*.linq
