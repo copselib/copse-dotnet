@@ -5,8 +5,10 @@
 #   - A Trusted Publishing policy on nuget.org, owned by the copselib organization, matching:
 #       Repository Owner = copselib, Repository = copse-dotnet, Workflow File = publish-nuget.yml,
 #       Environment = (leave blank — this workflow does not use a GitHub environment).
-#   - A NUGET_USER secret = the policy's "Package Owner". For these org-owned packages that is the
-#     nuget.org organization name -> `copselib` (NOT a personal username or email).
+#   - A NUGET_USER secret = the personal nuget.org username of the user who CREATED the Trusted
+#     Publishing policy (the "policy creator"), NOT the org / "Package Owner" (copselib) and NOT an
+#     email. The org still owns the packages via the policy's Package Owner; NuGet/login only uses
+#     this to find the creator's policy during the OIDC token exchange.
 #   - The NuGet IDs (Copse, Copse.Core, Copse.Linq, Copse.SimpleSerializer) must be free / owned by
 #     the org, or the push fails with HTTP 409 (id/version conflict).
 #
