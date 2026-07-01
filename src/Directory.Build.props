@@ -20,7 +20,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>tree traversal linq treenumerable depth-first breadth-first monad tree-data-structure</PackageTags>
 
-    <!-- TODO: add PackageReadmeFile once README.md has meaningful content (currently empty). -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- TODO: add PackageIcon once an icon asset is committed (intentionally uncommitted for now). -->
 
     <!-- MinVer: git tag is the single source of truth for the version. -->
@@ -38,6 +38,12 @@
   <ItemGroup>
     <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Pack the repo-root README into every package (shown on the nuget.org package page).
+       Inert for non-packable projects, which are never packed. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
   <!-- Allow net48 to build on any platform (Linux/macOS CI included). -->
