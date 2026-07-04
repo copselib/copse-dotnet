@@ -273,11 +273,15 @@ subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeBreadthFirst
   `Copse.Linq` reference, vs. a new package). Currently SimpleSerializer references only
   `Copse.Core` + `Copse`.
 
-## Proposed serializer surface (2026-07-04, second session — PROPOSAL, awaiting sign-off)
+## Serializer surface (2026-07-04, second session — IMPLEMENTED)
 
-The flat-family machinery the serializer rides is now in place (four store treenumerators +
-`PreorderTreenumerable`/`LevelOrderTreenumerable`). What remains is format + API taste, deliberately
-NOT implemented ahead of review:
+Signed off and landed (`TreeSerializer.Envelope.cs`, `PreorderTextStream`,
+`LevelOrderTextStream`; round-trips conformance-tested via the shared battery). The bft payload
+grammar is Jason's `BreadthFirstTreeEnumerable` tokenization rendered to text — independently
+equivalent to LOUDS-with-inlined-values (`a;b,c;d,e` for `a(b(d,e),c)`: ',' in-family, '|'
+family terminator, ';' generation mark, trailing empties elided) — the dft payload is the paren
+grammar (BP-with-inlined-values). As-built details below (items 1–6 all hold as written, with
+the two-separator grammar chosen in item 2):
 
 1. **Header** (per the agreed one-layout-per-file envelope): first line `copse/1;layout=dft` or
    `copse/1;layout=bft`, then the payload. **Shape stats deferred** — nothing consumes them yet
