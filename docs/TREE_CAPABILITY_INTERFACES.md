@@ -4,6 +4,13 @@
 > This is a large undertaking to do correctly; it is deferred until the current
 > tree-snapshot / serialization work (`PreorderTree`, `Materialize`, flat `Deserialize`)
 > is shored up. Nothing here is committed to in code yet.
+>
+> **See also:** [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) (2026-07-04)
+> — a new, orthogonal axis discovered during the serialization redesign: splitting
+> `ITreenumerable` into `IDepthFirstTreenumerable` / `IBreadthFirstTreenumerable`
+> (compile-time traversal-dimension affordances, sitting *underneath* this doc's
+> node-navigation lattice). Division of labor: **types for "impossible without
+> escalation"; this doc's runtime probing for "cheaper when rich."**
 
 ## Motivation
 
