@@ -273,6 +273,64 @@ subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeBreadthFirst
   `Copse.Linq` reference, vs. a new package). Currently SimpleSerializer references only
   `Copse.Core` + `Copse`.
 
+## Proposed serializer surface (2026-07-04, second session — PROPOSAL, awaiting sign-off)
+
+The flat-family machinery the serializer rides is now in place (four store treenumerators +
+`PreorderTreenumerable`/`LevelOrderTreenumerable`). What remains is format + API taste, deliberately
+NOT implemented ahead of review:
+
+1. **Header** (per the agreed one-layout-per-file envelope): first line `copse/1;layout=dft` or
+   `copse/1;layout=bft`, then the payload. **Shape stats deferred** — nothing consumes them yet
+   (the `AsBreadthFirst()` re-scan gate and WhatIf are both future), and a forward-only writer
+   can't backpatch them; add them (as header-on-seekable/trailer-otherwise) when the re-scan
+   opt-in lands. **Bare payloads stay valid for the string overloads** — the terse `a(b,c)`
+   grammar is load-bearing for tests and stays exactly as-is.
+2. **BFT payload grammar** (new; the dft payload keeps the paren grammar): level-order child
+   groups, LOUDS-style — the roots group first, then one group per node in level order (its
+   children), `|` between groups, `,` within, trailing empty groups elided, EOF = all remaining
+   groups empty. `a(b(d,e),c)` ⇒ `a|b,c|d,e`. Writes with O(1) memory (each front node's group
+   emits as it's visited); reads with O(width).
+3. **API shape**: C# cannot give `Deserialize(factory)` a return type that depends on the stored
+   layout, so the stream entry points are layout-specific —
+   `DeserializeDepthFirst(Func<TextReader>) : IDepthFirstTreenumerable<T>` and
+   `DeserializeBreadthFirst(Func<TextReader>) : IBreadthFirstTreenumerable<T>` — each validating
+   the header's layout axis at treenumerator acquisition (plus a cheap `ReadHeader(...)` for
+   callers who need to dispatch). File-path conveniences wrap `File.OpenText`; the
+   single-`TextReader` overload is single-shot (second acquisition throws); every treenumerator
+   owns and disposes its reader.
+4. **Forward-only treenumerators live in Copse.SimpleSerializer** (they are grammar-bound
+   decoders, not store riders): DFT-over-paren-tokens at O(depth) memory with `SkipDescendants`
+   as a discard-scan (O(subtree bytes) I/O, O(1) memory, value map never invoked); BFT-over-group
+   -tokens at O(width) with its own eviction window (values before the visit front are dead).
+   The random-access string case instead parses lazily into a growing `IPreorderStore` and rides
+   the existing flat treenumerables.
+5. **Escaping is out of scope for v1**: the value alphabet excludes the structure characters
+   (`(`, `)`, `,`, `|`, `;`, newline), as today. Real escaping (or length-prefixed values) is a
+   format rev when demand arrives.
+6. **Oracle guard**: `Deserialize(string)` keeps returning the engine-backed `PreorderTree` until
+   the retirement wave — switching it to flat playback now would silently flip the comparison
+   oracle under most of Copse.Linq.Tests (ContractTree conformance explicitly diffs against "the
+   engine's streams"). When PreorderTree dissolves, those tests need an explicitly-constructed
+   engine side first.
+
+## Layout-typed buffers (2026-07-04 exchange — direction, not yet code)
+
+Jason floated splitting `ITreenumerableBuffer` into `IPreorderTreenumerableBuffer` /
+`ILevelOrderTreenumerableBuffer`. Refined outcome:
+
+- **`ITreenumerableBuffer` stays layout-NEUTRAL**: a memo's layout is a runtime fact (it grows
+  whichever dimension is requested first and drops the loser), and a type's interface list can't
+  change mid-life — so `Memoize()` cannot honestly return a layout-typed buffer. This is also
+  what makes Memoize/Materialize the de facto `IDepthFirst`/`IBreadthFirst` → `ITreenumerable`
+  upgrade (Jason's observation): the promise is the composite, regardless of internal layout.
+- **Layout-typed interfaces arrive as capability advertisements on top** — e.g.
+  `IPreorderTreenumerableBuffer : ITreenumerableBuffer` exposing its `IPreorderStore` — for
+  sources whose layout IS statically known: `Materialize(strategy)` results, deserialized
+  sources, PreorderTree's successor. Their consumer is composition-time sniffing (the
+  Invert-as-view fast path), so they ship with the Invert rework, not before. Layering: neutral
+  contract → Core (with the namespace wave); layout-typed subtypes → Copse, beside the store
+  SPIs they expose.
+
 ## The Invert rethink (condition attached to the split)
 
 Jason: *if* we go down this route, operators with hidden escalations get rethought rather
