@@ -139,10 +139,13 @@ before or with step 1 below.
    - Staging: native DFT first (hottest path), benchmark A/B, then native BFT, then the
      cross pair. The dependency breaks only when all four land; the engine serves
      un-rewritten combos in the interim.
-     **Status 2026-07-04: native DFT LANDED** (`IPreorderStore` + `PreorderStoreDepthFirstTreenumerator`
-     in Copse, memo DFT replays rewired, full suite green). A/B (ShortRun, TriangleTree@1448):
-     replay-over-capture 53.8→38.6 ms (−28%), allocs 81.8→56.8 KB (−30%); first-pass-through-replay
-     123→97.5 ms (−21%). The "likely FASTER" prediction confirmed.
+     **Status 2026-07-04: BOTH NATIVES LANDED** (`IPreorderStore`/`ILevelOrderStore` +
+     `PreorderStoreDepthFirstTreenumerator`/`LevelOrderStoreBreadthFirstTreenumerator` in Copse,
+     memo native-dimension replays rewired, full suite green; the engine now serves only the two
+     cross-order combinations). A/B (ShortRun, TriangleTree@1448): DFT replay-over-capture
+     53.8→38.6 ms (−28%), allocs −30%; DFT first-pass 123→97.5 ms (−21%); BFT replay-over-capture
+     54.8→37.5 ms (−32%), allocs −40%; BFT first-pass 144→115 ms (−20%); lazy 10K partial
+     440→329 µs (−25%). The "likely FASTER" prediction confirmed in both dimensions.
    - `ITreenumerableBuffer` promotion to Core: still desirable, now decoupled — do it
      with the namespace wave.
 2. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the
