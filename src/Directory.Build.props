@@ -44,6 +44,8 @@
        Inert for non-packable projects, which are never packed. -->
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <!-- Third-party attributions (lifted System.Reactive disposables) ship in every package. -->
+    <None Include="$(MSBuildThisFileDirectory)..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
   <!-- Allow net48 to build on any platform (Linux/macOS CI included). -->

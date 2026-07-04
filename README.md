@@ -123,3 +123,8 @@ Performance results are published at
 ## License
 
 MIT — see [LICENSE](LICENSE). © 2023–2026 Jason Boyd.
+
+The disposable utilities in `Copse.Disposables` (`CompositeDisposable`, `RefCountDisposable`,
+`Disposable.Create`, …) are adapted from [System.Reactive](https://github.com/dotnet/reactive)
+(MIT, © .NET Foundation and Contributors) — same names, same semantics, no new concepts.
+See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

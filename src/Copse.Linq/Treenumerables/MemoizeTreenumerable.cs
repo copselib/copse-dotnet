@@ -1,4 +1,5 @@
 using Copse.Core;
+using Copse.Disposables;
 using Copse.Linq.Treenumerators;
 using Copse.Treenumerators;
 using System;
@@ -41,8 +42,15 @@ namespace Copse.Linq.Treenumerables
 
     private readonly ITreenumerable<TValue> _Source;
 
+    // Each dimension buffer is paired with a RefCountDisposable whose underlying disposable
+    // releases the buffer. Replays over an incomplete buffer hold a handle (GetDisposable);
+    // dropping a buffer that lost the completion race is a primary Dispose -- the release
+    // fires immediately if no straggler replays remain, otherwise the moment the last
+    // straggler's handle is disposed.
     private MemoizeDepthFirstBuffer<TValue> _DepthFirst;
+    private RefCountDisposable _DepthFirstRefCount;
     private MemoizeBreadthFirstBuffer<TValue> _BreadthFirst;
+    private RefCountDisposable _BreadthFirstRefCount;
 
     private bool _Disposed;
 
@@ -81,8 +89,7 @@ namespace Copse.Linq.Treenumerables
 
       // Cases 3-4: ride (creating if absent) the native buffer, extending its feed lazily.
       var buffer = EnsureDepthFirstBuffer();
-      buffer.RegisterReplay();
-      return new ReplayTreenumerator(DepthFirstEngineOverDepthFirstBuffer(buffer), this, buffer.UnregisterReplay);
+      return new ReplayTreenumerator(DepthFirstEngineOverDepthFirstBuffer(buffer), this, _DepthFirstRefCount.GetDisposable());
     }
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
@@ -94,15 +101,30 @@ namespace Copse.Linq.Treenumerables
         return BreadthFirstEngineOverDepthFirstBuffer(_DepthFirst);
 
       var buffer = EnsureBreadthFirstBuffer();
-      buffer.RegisterReplay();
-      return new ReplayTreenumerator(BreadthFirstEngineOverBreadthFirstBuffer(buffer), this, buffer.UnregisterReplay);
+      return new ReplayTreenumerator(BreadthFirstEngineOverBreadthFirstBuffer(buffer), this, _BreadthFirstRefCount.GetDisposable());
     }
 
     private MemoizeDepthFirstBuffer<TValue> EnsureDepthFirstBuffer()
-      => _DepthFirst ?? (_DepthFirst = new MemoizeDepthFirstBuffer<TValue>(_Source.GetDepthFirstTreenumerator));
+    {
+      if (_DepthFirst == null)
+      {
+        _DepthFirst = new MemoizeDepthFirstBuffer<TValue>(_Source.GetDepthFirstTreenumerator);
+        _DepthFirstRefCount = new RefCountDisposable(Disposable.Create(_DepthFirst.Dispose));
+      }
+
+      return _DepthFirst;
+    }
 
     private MemoizeBreadthFirstBuffer<TValue> EnsureBreadthFirstBuffer()
-      => _BreadthFirst ?? (_BreadthFirst = new MemoizeBreadthFirstBuffer<TValue>(_Source.GetBreadthFirstTreenumerator));
+    {
+      if (_BreadthFirst == null)
+      {
+        _BreadthFirst = new MemoizeBreadthFirstBuffer<TValue>(_Source.GetBreadthFirstTreenumerator);
+        _BreadthFirstRefCount = new RefCountDisposable(Disposable.Create(_BreadthFirst.Dispose));
+      }
+
+      return _BreadthFirst;
+    }
 
     // The four engine-over-buffer combinations. Each dimension buffer serves EITHER engine
     // through the same child enumerator -- cross-order riding is how a completed capture answers
@@ -131,23 +153,28 @@ namespace Copse.Linq.Treenumerables
         nodeContext => new MemoizeBreadthFirstChildEnumerator<TValue>(buffer, nodeContext.Node),
         buffer.GetValue);
 
-    // Release a dropped dimension buffer -- one that lost the completion race -- once no replay
-    // still needs it. Called whenever the state can have changed (a dimension completing, a
-    // straggler disposing). A COMPLETE buffer is never released: it IS the capture.
+    // Drop a dimension buffer that lost the completion race. Called whenever the state can
+    // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never
+    // dropped: it IS the capture. Dropping is a primary Dispose on the loser's ref count: the
+    // buffer is released now if no straggler replays remain, otherwise the moment the last
+    // straggler's handle is disposed -- stragglers hold the buffer directly, so nulling the
+    // memo's fields immediately is safe (and no new replay can route here; cases 1-2 win first).
     private void ReleaseDroppedBuffers()
     {
       if (_DepthFirst?.Complete == true
-        && _BreadthFirst != null && !_BreadthFirst.Complete && _BreadthFirst.OutstandingReplays == 0)
+        && _BreadthFirst != null && !_BreadthFirst.Complete)
       {
-        _BreadthFirst.Dispose();
+        _BreadthFirstRefCount.Dispose();
         _BreadthFirst = null;
+        _BreadthFirstRefCount = null;
       }
 
       if (_BreadthFirst?.Complete == true
-        && _DepthFirst != null && !_DepthFirst.Complete && _DepthFirst.OutstandingReplays == 0)
+        && _DepthFirst != null && !_DepthFirst.Complete)
       {
-        _DepthFirst.Dispose();
+        _DepthFirstRefCount.Dispose();
         _DepthFirst = null;
+        _DepthFirstRefCount = null;
       }
     }
 
@@ -165,21 +192,21 @@ namespace Copse.Linq.Treenumerables
       _BreadthFirst?.Dispose();
     }
 
-    // Forwards a replay engine while making its disposal observable: unregisters from the
-    // owning dimension buffer and lets the memo release a dropped buffer whose stragglers have
-    // all finished.
+    // Forwards a replay engine while making its disposal observable: releases its handle on
+    // the owning dimension buffer's ref count and pokes the memo, so a dropped buffer whose
+    // stragglers have all finished is released.
     private sealed class ReplayTreenumerator : ITreenumerator<TValue>
     {
-      public ReplayTreenumerator(ITreenumerator<TValue> inner, MemoizeTreenumerable<TValue> owner, Action unregister)
+      public ReplayTreenumerator(ITreenumerator<TValue> inner, MemoizeTreenumerable<TValue> owner, IDisposable bufferHandle)
       {
         _Inner = inner;
         _Owner = owner;
-        _Unregister = unregister;
+        _BufferHandle = bufferHandle;
       }
 
       private readonly ITreenumerator<TValue> _Inner;
       private readonly MemoizeTreenumerable<TValue> _Owner;
-      private readonly Action _Unregister;
+      private readonly IDisposable _BufferHandle;
       private bool _Disposed;
 
       public TValue Node => _Inner.Node;
@@ -198,7 +225,7 @@ namespace Copse.Linq.Treenumerables
         _Disposed = true;
 
         _Inner.Dispose();
-        _Unregister();
+        _BufferHandle.Dispose();
         _Owner.ReleaseDroppedBuffers();
       }
     }

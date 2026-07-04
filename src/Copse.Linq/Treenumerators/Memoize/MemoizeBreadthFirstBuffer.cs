@@ -60,14 +60,6 @@ namespace Copse.Linq.Treenumerators
     // True once the feed has exhausted: the buffer is the whole tree and every span is closed.
     public bool Complete { get; private set; }
 
-    // Live replay enumerators born from this dimension buffer. Maintained by the replays'
-    // ctor/Dispose; the memo uses it to release a dropped dimension buffer once its stragglers
-    // finish (see MEMOIZE_DESIGN.md).
-    public int OutstandingReplays { get; private set; }
-
-    public void RegisterReplay() => OutstandingReplays++;
-    public void UnregisterReplay() => OutstandingReplays--;
-
     public TValue GetValue(int index) => _Values[index];
 
     public int GetFirstChildIndex(int index) => _FirstChildIndices[index];
