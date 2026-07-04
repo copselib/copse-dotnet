@@ -10,42 +10,12 @@ namespace Copse.Linq.Tests
 {
   // Conformance for the flat family's STREAMING tier (PreorderStreamTreenumerable /
   // LevelOrderStreamTreenumerable) over forward-only fake sources: each type's single native
-  // dimension must produce visit streams identical to the engine's, every strategy on every
-  // node. Also proves the ownership contract (disposing the treenumerator disposes its stream;
-  // each acquisition pulls a fresh stream from the factory).
+  // dimension must produce visit streams identical to the engine's. Thin adapter over
+  // VisitStreamConformance, plus the ownership contracts (disposing the treenumerator disposes
+  // its stream; each acquisition pulls a fresh stream from the factory).
   [TestClass]
   public class FlatFamilyStreamConformanceTests
   {
-    private static readonly string[] Trees =
-    {
-      "",
-      "a",
-      "a(b(c))",
-      "a(b,c)",
-      "a,b,c",
-      "a,b(c)",
-      "a(b,c,d)",
-      "a(b(d(e)),c)",
-      "a(b(d,e,f),c(g,h,i))",
-      "a(d(g)),b(e(h)),c(f(i))",
-      "a,b(d),c(e(f))",
-    };
-
-    private static readonly NodeTraversalStrategies[] SchedulingStrategies =
-    {
-      NodeTraversalStrategies.SkipNode,
-      NodeTraversalStrategies.SkipDescendants,
-      NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipNodeAndDescendants,
-      NodeTraversalStrategies.SkipNodeAndSiblings,
-      NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipAll,
-    };
-
-    private delegate NodeTraversalStrategies StrategyScript(TreenumeratorMode mode, string node, int visitCount);
-
-    private static readonly StrategyScript TraverseAll = (mode, node, visitCount) => NodeTraversalStrategies.TraverseAll;
-
     // ---------------------------------------------------------------------------------------
     // Forward-only fake sources over in-memory arrays.
     // ---------------------------------------------------------------------------------------
@@ -192,7 +162,7 @@ namespace Copse.Linq.Tests
 
       for (int i = 0; i < values.Count; i++)
         groups.Add(childCounts[i] == 0
-          ? System.Array.Empty<string>()
+          ? Array.Empty<string>()
           : values.Skip(firstChildIndices[i]).Take(childCounts[i]).ToArray());
 
       while (groups.Count > 0 && groups[groups.Count - 1].Length == 0)
@@ -215,68 +185,19 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     public void PreorderStream_TraverseAll_MatchesEngine()
-    {
-      foreach (var tree in Trees)
-        AssertSameStream(
-          TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator(),
-          PreorderStream(tree).GetDepthFirstTreenumerator(),
-          TraverseAll,
-          $"preorder-stream {tree}");
-    }
+      => VisitStreamConformance.AssertTraverseAllConforms(tree => PreorderStream(tree).GetDepthFirstTreenumerator(), depthFirst: true, "preorder-stream");
 
     [TestMethod]
     public void LevelOrderStream_TraverseAll_MatchesEngine()
-    {
-      foreach (var tree in Trees)
-        AssertSameStream(
-          TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator(),
-          LevelOrderStream(tree).GetBreadthFirstTreenumerator(),
-          TraverseAll,
-          $"levelorder-stream {tree}");
-    }
+      => VisitStreamConformance.AssertTraverseAllConforms(tree => LevelOrderStream(tree).GetBreadthFirstTreenumerator(), depthFirst: false, "levelorder-stream");
 
     [TestMethod]
     public void PreorderStream_EveryNodeEveryStrategy_MatchesEngine()
-    {
-      ForEachStrategyCase((tree, script, context) =>
-        AssertSameStream(
-          TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator(),
-          PreorderStream(tree).GetDepthFirstTreenumerator(),
-          script,
-          $"preorder-stream {context}"));
-    }
+      => VisitStreamConformance.AssertStrategyMatrixConforms(tree => PreorderStream(tree).GetDepthFirstTreenumerator(), depthFirst: true, "preorder-stream");
 
     [TestMethod]
     public void LevelOrderStream_EveryNodeEveryStrategy_MatchesEngine()
-    {
-      ForEachStrategyCase((tree, script, context) =>
-        AssertSameStream(
-          TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator(),
-          LevelOrderStream(tree).GetBreadthFirstTreenumerator(),
-          script,
-          $"levelorder-stream {context}"));
-    }
-
-    private static void ForEachStrategyCase(Action<string, StrategyScript, string> assert)
-    {
-      foreach (var tree in Trees)
-      {
-        var targets = tree.Where(char.IsLetter).Select(c => c.ToString()).Distinct().ToArray();
-
-        foreach (var target in targets)
-        {
-          foreach (var strategy in SchedulingStrategies)
-          {
-            NodeTraversalStrategies Script(TreenumeratorMode mode, string node, int visitCount)
-              => mode == TreenumeratorMode.SchedulingNode && node == target
-                ? strategy
-                : NodeTraversalStrategies.TraverseAll;
-
-            assert(tree, Script, $"{tree} [{strategy} on '{target}']");
-          }
-        }
-      }
-    }
+      => VisitStreamConformance.AssertStrategyMatrixConforms(tree => LevelOrderStream(tree).GetBreadthFirstTreenumerator(), depthFirst: false, "levelorder-stream");
 
     // ---------------------------------------------------------------------------------------
     // Ownership and acquisition contracts.
@@ -311,56 +232,10 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void PreEnumerationStateIsTheForestRoot()
     {
-      foreach (var tree in Trees)
+      foreach (var tree in VisitStreamConformance.TreeCorpus)
       {
-        using (var depthFirst = PreorderStream(tree).GetDepthFirstTreenumerator())
-        {
-          Assert.AreEqual(NodePosition.ForestRoot, depthFirst.Position, $"['{tree}'] preorder-stream pre-enumeration Position");
-          Assert.AreEqual(0, depthFirst.VisitCount, $"['{tree}'] preorder-stream pre-enumeration VisitCount");
-          Assert.AreEqual(TreenumeratorMode.SchedulingNode, depthFirst.Mode, $"['{tree}'] preorder-stream pre-enumeration Mode");
-        }
-
-        using (var breadthFirst = LevelOrderStream(tree).GetBreadthFirstTreenumerator())
-        {
-          Assert.AreEqual(NodePosition.ForestRoot, breadthFirst.Position, $"['{tree}'] levelorder-stream pre-enumeration Position");
-          Assert.AreEqual(0, breadthFirst.VisitCount, $"['{tree}'] levelorder-stream pre-enumeration VisitCount");
-          Assert.AreEqual(TreenumeratorMode.SchedulingNode, breadthFirst.Mode, $"['{tree}'] levelorder-stream pre-enumeration Mode");
-        }
-      }
-    }
-
-    // Lockstep stream comparison; the strategy for each MoveNext is computed from the visit just
-    // emitted (asserted equal for both sides first, so both receive the same strategy).
-    private static void AssertSameStream(
-      ITreenumerator<string> expected,
-      ITreenumerator<string> actual,
-      StrategyScript script,
-      string context)
-    {
-      using (expected)
-      using (actual)
-      {
-        var strategies = NodeTraversalStrategies.TraverseAll;
-        var step = 0;
-
-        while (true)
-        {
-          var expectedMoved = expected.MoveNext(strategies);
-          var actualMoved = actual.MoveNext(strategies);
-
-          Assert.AreEqual(expectedMoved, actualMoved, $"[{context}] step {step}: MoveNext disagreed");
-
-          if (!expectedMoved)
-            return;
-
-          Assert.AreEqual(expected.Mode, actual.Mode, $"[{context}] step {step}: Mode");
-          Assert.AreEqual(expected.Node, actual.Node, $"[{context}] step {step}: Node");
-          Assert.AreEqual(expected.VisitCount, actual.VisitCount, $"[{context}] step {step}: VisitCount");
-          Assert.AreEqual(expected.Position, actual.Position, $"[{context}] step {step}: Position");
-
-          strategies = script(expected.Mode, expected.Node, expected.VisitCount);
-          step++;
-        }
+        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(PreorderStream(tree).GetDepthFirstTreenumerator(), $"preorder-stream '{tree}'");
+        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(LevelOrderStream(tree).GetBreadthFirstTreenumerator(), $"levelorder-stream '{tree}'");
       }
     }
   }
