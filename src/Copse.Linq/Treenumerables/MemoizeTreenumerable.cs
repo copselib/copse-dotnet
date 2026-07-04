@@ -12,10 +12,12 @@ namespace Copse.Linq.Treenumerables
   // dimension -- because a linear buffer is only as lazy as the order of the stream that fills it
   // (see MEMOIZE_DESIGN.md, "the governing principle").
   //
-  // A replay is the STANDARD engine (DepthFirstTreenumerator / BreadthFirstTreenumerator) riding
-  // a lazy child enumerator over a dimension buffer, so every NodeTraversalStrategies flag and
-  // all position bookkeeping come from machinery that already exists; the only memoize-specific
-  // moving part is which buffer serves the request:
+  // A replay over the DFT buffer's native dimension is the flat family's PLAYBACK treenumerator
+  // (PreorderStoreDepthFirstTreenumerator) decoding the capture directly; the other combinations
+  // are (for now -- see the ledger's staging) the STANDARD engine riding a lazy child enumerator
+  // over a dimension buffer. Either way every NodeTraversalStrategies flag and all position
+  // bookkeeping come from shared machinery; the only memoize-specific moving part is which
+  // buffer serves the request:
   //
   //   1. the native dimension's buffer is complete  -> ride it natively;
   //   2. the OTHER dimension's buffer is complete   -> ride it cross-order (correct, O(N); the
@@ -82,14 +84,14 @@ namespace Copse.Linq.Treenumerables
       // Cases 1-2: a completed capture serves without touching the source, so no feed exists to
       // guard and the replay needs no ref-count.
       if (_DepthFirst?.Complete == true)
-        return DepthFirstEngineOverDepthFirstBuffer(_DepthFirst);
+        return DepthFirstPlaybackOverDepthFirstBuffer(_DepthFirst);
 
       if (_BreadthFirst?.Complete == true)
         return DepthFirstEngineOverBreadthFirstBuffer(_BreadthFirst);
 
       // Cases 3-4: ride (creating if absent) the native buffer, extending its feed lazily.
       var buffer = EnsureDepthFirstBuffer();
-      return new ReplayTreenumerator(DepthFirstEngineOverDepthFirstBuffer(buffer), this, _DepthFirstRefCount.GetDisposable());
+      return new ReplayTreenumerator(DepthFirstPlaybackOverDepthFirstBuffer(buffer), this, _DepthFirstRefCount.GetDisposable());
     }
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
@@ -126,14 +128,14 @@ namespace Copse.Linq.Treenumerables
       return _BreadthFirst;
     }
 
-    // The four engine-over-buffer combinations. Each dimension buffer serves EITHER engine
-    // through the same child enumerator -- cross-order riding is how a completed capture answers
-    // the other dimension (case 2).
-    private static ITreenumerator<TValue> DepthFirstEngineOverDepthFirstBuffer(MemoizeDepthFirstBuffer<TValue> buffer)
-      => new DepthFirstTreenumerator<TValue, int, MemoizeDepthFirstChildEnumerator<TValue>>(
-        buffer.EnumerateRootIndices(),
-        nodeContext => new MemoizeDepthFirstChildEnumerator<TValue>(buffer, nodeContext.Node),
-        buffer.GetValue);
+    // The four traversal-over-buffer combinations. The native combination rides the flat
+    // family's playback treenumerator directly over the dimension buffer (the buffer IS a
+    // preorder store -- no engine, no child enumerators); the remaining three still ride the
+    // engine over a lazy child enumerator, pending their own playback/cross-order treenumerators
+    // (see PACKAGE_ARCHITECTURE.md, ledger item 1's staging).
+    private static ITreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(MemoizeDepthFirstBuffer<TValue> buffer)
+      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizeDepthFirstStore<TValue>>(
+        new MemoizeDepthFirstStore<TValue>(buffer));
 
     private static ITreenumerator<TValue> BreadthFirstEngineOverDepthFirstBuffer(MemoizeDepthFirstBuffer<TValue> buffer)
       => new BreadthFirstTreenumerator<TValue, int, MemoizeDepthFirstChildEnumerator<TValue>>(
