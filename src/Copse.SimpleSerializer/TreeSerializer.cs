@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Copse.SimpleSerializer
 {
-  public static class TreeSerializer
+  public static partial class TreeSerializer
   {
     public static ITreenumerable<string> Deserialize(string tree)
       => Deserialize(tree, value => value);
