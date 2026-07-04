@@ -25,5 +25,35 @@ namespace Copse.Linq
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
+
+    public static IDepthFirstTreenumerable<TNode> Where<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateDepthFirst(
+          () => new WhereDepthFirstTreenumerator<TNode>(
+            source.GetDepthFirstTreenumerator,
+            predicate,
+            NodeTraversalStrategies.SkipNode));
+    }
+
+    public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateBreadthFirst(
+          () => new WhereBreadthFirstTreenumerator<TNode>(
+            source.GetBreadthFirstTreenumerator,
+            nodeContext => !predicate(nodeContext),
+            NodeTraversalStrategies.SkipNode));
+    }
   }
 }

@@ -16,5 +16,24 @@ namespace Copse.Linq
     // (hence its disposal) is therefore shared with the original holder, as any memo is.
     public static ITreenumerableBuffer<TValue> Memoize<TValue>(this ITreenumerable<TValue> source)
       => source as ITreenumerableBuffer<TValue> ?? new MemoizeTreenumerable<TValue>(source);
+
+    // The typed upgrade op on a depth-first-only source: the returned buffer is a full
+    // ITreenumerable again -- the memo's single preorder capture serves depth-first replays
+    // natively and breadth-first replays cross-order, so O(n) space is what buys back the
+    // missing dimension (see TRAVERSAL_DIMENSION_SPLIT.md). A source that is secretly a full
+    // citizen routes to the richer two-buffer memo (cheaper when rich), which also preserves
+    // buffer idempotency.
+    public static ITreenumerableBuffer<TValue> Memoize<TValue>(this IDepthFirstTreenumerable<TValue> source)
+      => source is ITreenumerable<TValue> fullCitizen
+        ? fullCitizen.Memoize()
+        : new MemoizeDepthFirstSourceTreenumerable<TValue>(source);
+
+    // The dual upgrade on a breadth-first-only source. Notably the ONLY road to such a
+    // source's depth-first dimension (no bounded streaming strategy exists for that
+    // direction) -- the escalation the split makes explicit.
+    public static ITreenumerableBuffer<TValue> Memoize<TValue>(this IBreadthFirstTreenumerable<TValue> source)
+      => source is ITreenumerable<TValue> fullCitizen
+        ? fullCitizen.Memoize()
+        : new MemoizeBreadthFirstSourceTreenumerable<TValue>(source);
   }
 }

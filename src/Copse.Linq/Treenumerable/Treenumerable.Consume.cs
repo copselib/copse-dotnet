@@ -26,5 +26,17 @@ namespace Copse.Linq
         buffer.GetBufferedCount(TreeTraversalStrategy.DepthFirst) >= buffer.GetBufferedCount(TreeTraversalStrategy.BreadthFirst)
           ? TreeTraversalStrategy.DepthFirst
           : TreeTraversalStrategy.BreadthFirst);
+
+    public static void Consume<TNode>(this IDepthFirstTreenumerable<TNode> source)
+    {
+      using (var treenumerator = source.GetDepthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+    }
+
+    public static void Consume<TNode>(this IBreadthFirstTreenumerable<TNode> source)
+    {
+      using (var treenumerator = source.GetBreadthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+    }
   }
 }

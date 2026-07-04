@@ -24,5 +24,29 @@ namespace Copse.Linq
 
       return false;
     }
+
+    public static bool AnyNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      using (var treenumerator = source.GetDepthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+            return true;
+
+      return false;
+    }
+
+    public static bool AnyNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      using (var treenumerator = source.GetBreadthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+            return true;
+
+      return false;
+    }
   }
 }

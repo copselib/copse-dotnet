@@ -15,5 +15,17 @@ namespace Copse.Linq
       else
         return new SelectTreenumerable<TSource, TResult>(source, selector);
     }
+
+    public static IDepthFirstTreenumerable<TResult> Select<TSource, TResult>(
+      this IDepthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TResult> selector)
+      => TreenumerableFactory.CreateDepthFirst(
+        () => new Treenumerators.SelectTreenumerator<TSource, TResult>(source.GetDepthFirstTreenumerator, selector));
+
+    public static IBreadthFirstTreenumerable<TResult> Select<TSource, TResult>(
+      this IBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TResult> selector)
+      => TreenumerableFactory.CreateBreadthFirst(
+        () => new Treenumerators.SelectTreenumerator<TSource, TResult>(source.GetBreadthFirstTreenumerator, selector));
   }
 }

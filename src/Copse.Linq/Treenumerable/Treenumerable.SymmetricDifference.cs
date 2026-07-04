@@ -14,5 +14,19 @@ namespace Copse.Linq
         .Union(rightTreenumerable)
         .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
     }
+
+    public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
+      this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
+      IDepthFirstTreenumerable<TRight> rightTreenumerable)
+      => leftTreenumerable
+        .Union(rightTreenumerable)
+        .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
+
+    public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
+      this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,
+      IBreadthFirstTreenumerable<TRight> rightTreenumerable)
+      => leftTreenumerable
+        .Union(rightTreenumerable)
+        .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
   }
 }

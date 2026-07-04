@@ -56,9 +56,35 @@ namespace Copse.SimpleSerializer
     public static string Serialize(this ITreenumerable<string> treenumerable, TreeTraversalStrategy layout)
       => Serialize(treenumerable, layout, node => node);
 
+    // Narrow overloads: the layout is the source's native dimension, so a single-dimension
+    // source serializes without any cross-order cost (and without naming a layout).
+    public static void Serialize<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
+    {
+      writer.Write(HeaderPrefix);
+      writer.Write(DepthFirstLayoutToken);
+      writer.Write('\n');
+
+      WriteDepthFirstPayload(treenumerable, writer, map);
+    }
+
+    public static void Serialize(this IDepthFirstTreenumerable<string> treenumerable, TextWriter writer)
+      => Serialize(treenumerable, writer, node => node);
+
+    public static void Serialize<TNode>(this IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
+    {
+      writer.Write(HeaderPrefix);
+      writer.Write(BreadthFirstLayoutToken);
+      writer.Write('\n');
+
+      WriteBreadthFirstPayload(treenumerable, writer, map);
+    }
+
+    public static void Serialize(this IBreadthFirstTreenumerable<string> treenumerable, TextWriter writer)
+      => Serialize(treenumerable, writer, node => node);
+
     // The existing bare dft grammar, retargeted from StringBuilder to TextWriter: emit each
     // node on its first visit, with paren/comma structure derived from depth deltas.
-    private static void WriteDepthFirstPayload<TNode>(ITreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
+    private static void WriteDepthFirstPayload<TNode>(IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
     {
       using (var treenumerator = treenumerable.GetDepthFirstTreenumerator())
       {
@@ -102,7 +128,7 @@ namespace Copse.SimpleSerializer
     // serialized (Jason's BreadthFirstTreeEnumerable tokenization rendered to text).
     // Separators buffer until the next value; at end of stream they drop, eliding all
     // trailing empty families.
-    private static void WriteBreadthFirstPayload<TNode>(ITreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
+    private static void WriteBreadthFirstPayload<TNode>(IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
     {
       using (var treenumerator = treenumerable.GetBreadthFirstTreenumerator())
       {

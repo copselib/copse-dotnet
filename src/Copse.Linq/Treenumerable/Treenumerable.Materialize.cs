@@ -28,5 +28,21 @@ namespace Copse.Linq
       buffer.Consume(strategy);
       return buffer;
     }
+
+    // Eager upgrades for single-dimension sources: capture the whole tree now, hand back the
+    // full citizen.
+    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IDepthFirstTreenumerable<TValue> source)
+    {
+      var buffer = source.Memoize();
+      buffer.Consume();
+      return buffer;
+    }
+
+    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IBreadthFirstTreenumerable<TValue> source)
+    {
+      var buffer = source.Memoize();
+      buffer.Consume();
+      return buffer;
+    }
   }
 }
