@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783202102457,
+  "lastUpdate": 1783202102697,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -21675,6 +21675,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
             "value": 275,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "5e05034f0bcd17e8215ac1be3efdb7f017d4facb",
+          "message": "Name the pre-enumeration convention: NodePosition.ForestRoot\n\nThe (0, -1) convention -- a treenumerator's position before its first\nMoveNext, and the \"no parent yet\" seed operators use for sentinels and\naccumulator roots -- gets its official name and contract documentation.\nStructuralMerge had already discovered the right name as a private\nconstant; this promotes its vocabulary to Copse.Core.\n\n- NodePosition.ForestRoot, with docs explaining both roles and the\n  default(NodePosition) trap (reads as an already-scheduled root).\n- ITreenumerator.Position now documents the pre-enumeration clause.\n- Ten consumers re-pointed from the magic literal to the name.\n- WhereDepthFirstTreenumerator hardened: its sentinel is the virtual\n  forest root BY DEFINITION, so it is now seeded with the constant\n  instead of reading the inner's pre-enumeration state -- the fragility\n  the conformance suite exposed is structurally gone, and its\n  not-started test uses the named constant.\n\nAlso removes an unused using from RootfixScanBreadthFirstTreenumerator.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-04T14:25:15-07:00",
+          "tree_id": "ba466878b7eb636f913d8dacf8e66d0e5456d07c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/5e05034f0bcd17e8215ac1be3efdb7f017d4facb"
+        },
+        "date": 1783202102660,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 278,
             "unit": "bytes"
           }
         ]
