@@ -11,7 +11,12 @@
 
 1. **`Copse.Core` is the root of the dependency tree.** Everything references it; it
    references nothing. Core holds the contracts, the vocabulary they speak
-   (`NodePosition`, `NodeVisit`, the enums).
+   (`NodePosition`, `NodeVisit`, the enums). Admission criterion (Jason, 2026-07-04):
+   **strict contract closure** — everything in Core references everything else in Core,
+   all of it strictly necessary; it is the contract everything must honor. This is why
+   `TreenumeratorBase`/`TreenumeratorWrapper` are excluded by rule, not taste: nothing
+   in Core needs them and no implementer must use them. They stay in `Copse` (a
+   Primitives argument exists but it's six-of-one; question CLOSED).
 2. **`Copse.Primitives` holds building blocks with no traversal semantics**: the chunked
    ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted
    `Copse.Disposables` algebra, and the node-context value types (`NodeContext`,
@@ -34,6 +39,14 @@
 4. **The engine is a legitimate dependency for engine-things, under an honest name.**
    Breaking Linq→engine is achieved by relocating engine-things out of Linq, not by
    reimplementing traversal.
+5. **Concrete treenumerators come in two families, classified by the data's shape**
+   (Jason, 2026-07-04 — the organizing insight): treenumerators **over hierarchical
+   structure** (the engine: child-shaped data adapted via the child-enumerator
+   protocol) and treenumerators **over streaming structure** (the layout streamers:
+   linear encodings of hierarchy — preorder arrays, level-order arrays, serialized
+   text — decoded back into visit streams). A memo buffer is an in-memory
+   serialization; a serialized file is a persisted memo capture; the streamers are the
+   decoders both share.
 
 ## Target graph
 
