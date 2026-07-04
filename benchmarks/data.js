@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783148913395,
+  "lastUpdate": 1783148913622,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -22390,6 +22390,66 @@ window.BENCHMARK_DATA = {
             "value": 23904104.854910713,
             "unit": "ns",
             "range": "± 304509.7269581046"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "fbb483ea2d9399e53f93048f756024fa8040d924",
+          "message": "Add design note: traversal dimension split & serialization redesign\n\nRecords the 2026-07-04 design discussion, tabled for later pickup:\nsplitting ITreenumerable into IDepthFirstTreenumerable /\nIBreadthFirstTreenumerable (compile-time traversal affordances), the\nstreaming serialization redesign it resolves (lazy deserialize, reader\nfactories, dft/bft layout axis, envelope shape stats), the Invert\nrethink (windowed BFT mirror, zero-copy views over memo captures), and\nthe pick-up plan starting with the operator audit. Cross-linked from\nTREE_CAPABILITY_INTERFACES.md as an orthogonal axis: types for\n\"impossible without escalation,\" runtime probing for \"cheaper when\nrich.\"\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-04T06:28:21Z",
+          "tree_id": "f759acc0aedea7350f372a63da75cf2a8cd7937f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fbb483ea2d9399e53f93048f756024fa8040d924"
+        },
+        "date": 1783148913586,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 58554390.31623931,
+            "unit": "ns",
+            "range": "± 163108.32054029295"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 7517303.804166666,
+            "unit": "ns",
+            "range": "± 121302.0761955564"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 88077748.20238094,
+            "unit": "ns",
+            "range": "± 421779.50631144486"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 10329380.33984375,
+            "unit": "ns",
+            "range": "± 194808.63052108395"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 42668603.743589744,
+            "unit": "ns",
+            "range": "± 347270.48500009923"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 23772809.935416665,
+            "unit": "ns",
+            "range": "± 259276.1133590175"
           }
         ]
       }
