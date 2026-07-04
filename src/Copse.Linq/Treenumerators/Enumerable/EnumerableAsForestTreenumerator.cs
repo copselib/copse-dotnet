@@ -16,12 +16,12 @@ namespace Copse.Linq.Treenumerators.Enumerator
 
     public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
-    public NodePosition Position { get; private set; } = new NodePosition(0, -1);
+    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
     public TreenumeratorMode Mode { get; private set; } = default;
 
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (Mode == TreenumeratorMode.VisitingNode || Position == new NodePosition(0, -1))
+      if (Mode == TreenumeratorMode.VisitingNode || Position == NodePosition.ForestRoot)
         return TryMoveNext();
 
       return OnScheduling(nodeTraversalStrategies);

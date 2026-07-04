@@ -14,6 +14,15 @@ namespace Copse.Core
     public int SiblingIndex { get; }
     public int Depth { get; }
 
+    /// <summary>
+    /// The position of the virtual forest root: depth -1, above every real node. This is the
+    /// contractual pre-enumeration position -- a treenumerator's <c>Position</c> before its first
+    /// <c>MoveNext</c> -- and the "no parent yet" seed position operators use for sentinels and
+    /// accumulator roots. Implementations must initialize to this, not <c>default</c> (which reads
+    /// as an already-scheduled root and desyncs wrappers that snapshot pre-enumeration state).
+    /// </summary>
+    public static readonly NodePosition ForestRoot = new NodePosition(0, -1);
+
     public override string ToString()
       => $"({SiblingIndex}, {Depth})";
 

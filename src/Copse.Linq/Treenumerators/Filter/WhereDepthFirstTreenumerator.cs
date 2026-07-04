@@ -28,7 +28,9 @@ namespace Copse.Linq.Treenumerators
       _NodeTraversalStrategy = nodeTraversalStrategy;
 
       // Seed the path with a sentinel root taken from the inner treenumerator's initial position.
-      _Path = new WhereDepthFirstPath<TNode>(InnerTreenumerator.Node, InnerTreenumerator.Position);
+      // The sentinel is the virtual forest root BY DEFINITION; do not derive its position from the
+      // inner's pre-enumeration state (that state is contractual, but a definition beats a reading).
+      _Path = new WhereDepthFirstPath<TNode>(InnerTreenumerator.Node, NodePosition.ForestRoot);
     }
 
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
@@ -65,7 +67,7 @@ namespace Copse.Linq.Treenumerators
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Do not apply any traversal strategies to the sentinel node.
-      if (InnerTreenumerator.Position.Depth == -1)
+      if (InnerTreenumerator.Position == NodePosition.ForestRoot)
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Enumerate until we yield something or exhaust the inner enumerator.

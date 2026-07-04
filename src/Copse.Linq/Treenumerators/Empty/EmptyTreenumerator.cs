@@ -12,7 +12,7 @@ namespace Copse.Linq
 
     public TNode Node { get; } = default;
     public int VisitCount => default;
-    public NodePosition Position => new NodePosition(0, -1);
+    public NodePosition Position => NodePosition.ForestRoot;
     public TreenumeratorMode Mode => default;
 
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies) => false;

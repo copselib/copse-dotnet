@@ -346,7 +346,7 @@ namespace Copse.Linq.Treenumerators
     }
 
     // Sentinel position for "above all roots" -- the effective parent of an effective-root node.
-    private static readonly NodePosition ForestRoot = new NodePosition(0, -1);
+    private static readonly NodePosition ForestRoot = NodePosition.ForestRoot; // canonical name now lives in Core
 
     // Whether an operand parked at <paramref name="operandPosition"/> holds, or is about to yield, an
     // effective sibling of the just-scheduled node whose effective parent is <paramref name="parent"/>.

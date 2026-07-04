@@ -9,7 +9,7 @@ namespace Copse
 
     public int VisitCount { get; protected set; } = 0;
 
-    public NodePosition Position { get; protected set; } = new NodePosition(0, -1);
+    public NodePosition Position { get; protected set; } = NodePosition.ForestRoot;
 
     public TreenumeratorMode Mode { get; protected set; } = default;
 
