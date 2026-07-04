@@ -8,9 +8,10 @@ licenses are reproduced below.
 The disposable types under `src/Copse/Disposables/` (`Disposable`, `AnonymousDisposable`,
 `RefCountDisposable`, `CompositeDisposable`, `ICancelable`) are lifted from
 [System.Reactive](https://github.com/dotnet/reactive) (namespace
-`System.Reactive.Disposables`), with syntax adapted for this repository's language level
-and Rx resource strings inlined. Semantics are unchanged. Each lifted file carries an
-attribution header.
+`System.Reactive.Disposables`) at commit
+[`94b5d5ab912789f5abe9a72138a25bbd716fe59c`](https://github.com/dotnet/reactive/tree/94b5d5ab912789f5abe9a72138a25bbd716fe59c),
+with syntax adapted for this repository's language level and Rx resource strings inlined.
+Semantics are unchanged. Each lifted file carries an attribution header.
 
 ```
 MIT License
