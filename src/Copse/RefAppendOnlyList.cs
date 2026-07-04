@@ -39,6 +39,9 @@ namespace Copse
       _Partitions = new T[MaxPartitionCount][];
       _Partitions[0] = new T[1 << bitness];
       _PartitionCount = 1;
+      _WritePartition = _Partitions[0];
+      _ReadPartition = _Partitions[0];
+      _ReadStart = 0;
     }
 
     // Worst case is bitness 1: partition sizes 2, 2, 4, 8, ... reach a combined capacity of 2^31
@@ -51,11 +54,21 @@ namespace Copse
     private int _PartitionCount;
     private int _WriteOffset;
 
+    // The tail partition, cached so AddLast doesn't re-index _Partitions per append.
+    private T[] _WritePartition;
+
+    // Last partition the indexer resolved, plus the index its slot 0 corresponds to. Partitions
+    // never move or resize, so a cached pair is never invalidated -- only superseded. Hot access
+    // patterns are localized (sequential replays, LIFO backfills, a monotone BFT front), so most
+    // reads are one subtract-and-compare instead of a log2 and a double dereference.
+    private T[] _ReadPartition;
+    private int _ReadStart;
+
     public int Count { get; private set; }
 
     public void AddLast(T item)
     {
-      var current = _Partitions[_PartitionCount - 1];
+      var current = _WritePartition;
 
       if (_WriteOffset == current.Length)
         current = AddPartition();
@@ -69,18 +82,47 @@ namespace Copse
     {
       get
       {
-        if (index < 0 || index >= Count)
-          throw new IndexOutOfRangeException();
+        // Fast path: the cached partition. The unsigned compares fold the negative-index check
+        // into the range checks, and comparing offset against partition.Length lets the JIT
+        // elide the array bounds check. Count guards slots past the append frontier (the cached
+        // partition can be the partially-filled tail).
+        var partition = _ReadPartition;
+        var offset = index - _ReadStart;
 
-        if (index < _Partitions[0].Length)
-          return ref _Partitions[0][index];
+        if ((uint)index < (uint)Count && (uint)offset < (uint)partition.Length)
+          return ref partition[offset];
 
+        return ref ResolvePartition(index);
+      }
+    }
+
+    private ref T ResolvePartition(int index)
+    {
+      if (index < 0 || index >= Count)
+        throw new IndexOutOfRangeException();
+
+      T[] partition;
+      int start;
+
+      if (index < _Partitions[0].Length)
+      {
+        partition = _Partitions[0];
+        start = 0;
+      }
+      else
+      {
         // Cumulative partition capacities are exact powers of two, so the most significant bit
         // of the index names its partition and the remainder below it is the offset.
         var mostSignificantBitIndex = Log2(index);
 
-        return ref _Partitions[mostSignificantBitIndex - (_Bitness - 1)][index - (1 << mostSignificantBitIndex)];
+        partition = _Partitions[mostSignificantBitIndex - (_Bitness - 1)];
+        start = 1 << mostSignificantBitIndex;
       }
+
+      _ReadPartition = partition;
+      _ReadStart = start;
+
+      return ref partition[index - start];
     }
 
     private T[] AddPartition()
@@ -90,6 +132,7 @@ namespace Copse
       _PartitionCount++;
       _NextPartitionBitness++;
       _WriteOffset = 0;
+      _WritePartition = partition;
       return partition;
     }
 

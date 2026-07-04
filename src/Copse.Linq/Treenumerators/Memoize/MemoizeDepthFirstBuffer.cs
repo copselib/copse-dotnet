@@ -80,11 +80,44 @@ namespace Copse.Linq.Treenumerators
     }
 
     // Drive the feed to exhaustion: the buffer becomes the whole tree, every span closes, and
-    // the source is retired.
+    // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
+    // the method call are hoisted out of the per-node loop -- this is Materialize's hot path,
+    // where per-node overhead is the whole cost.
     public void Consume()
     {
-      while (!Complete)
-        PullOne();
+      if (Complete)
+        return;
+
+      if (_Disposed)
+        throw new ObjectDisposedException(GetType().Name);
+
+      if (_Feed == null)
+        _Feed = _FeedFactory();
+
+      var feed = _Feed;
+
+      while (feed.MoveNext(NodeTraversalStrategies.TraverseAll))
+      {
+        if (feed.VisitCount != 1)
+          continue;
+
+        var depth = feed.Position.Depth;
+
+        while (_OpenParents.Count > depth)
+          CloseOne();
+
+        _OpenParents.AddLast(_Values.Count);
+        _Values.AddLast(feed.Node);
+        _SubtreeSizes.AddLast(0);
+      }
+
+      while (_OpenParents.Count > 0)
+        CloseOne();
+
+      Complete = true;
+
+      feed.Dispose();
+      _Feed = null;
     }
 
     // Lazily enumerates the buffer indices of the roots -- the top-level spans, each hop filling

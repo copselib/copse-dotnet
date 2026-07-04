@@ -96,11 +96,56 @@ namespace Copse.Linq.Treenumerators
     }
 
     // Drive the feed to exhaustion: the buffer becomes the whole tree, every span closes, and
-    // the source is retired.
+    // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
+    // the method call are hoisted out of the per-visit loop -- this is Materialize's hot path,
+    // where per-visit overhead is the whole cost.
     public void Consume()
     {
-      while (!Complete)
-        PullOne();
+      if (Complete)
+        return;
+
+      if (_Disposed)
+        throw new ObjectDisposedException(GetType().Name);
+
+      if (_Feed == null)
+        _Feed = _FeedFactory();
+
+      var feed = _Feed;
+
+      while (feed.MoveNext(NodeTraversalStrategies.TraverseAll))
+      {
+        if (feed.Mode == TreenumeratorMode.SchedulingNode)
+        {
+          var index = _Values.Count;
+
+          _Values.AddLast(feed.Node);
+          _FirstChildIndices.AddLast(-1); // set when this node's first child arrives
+          _ChildCounts.AddLast(0);
+
+          if (feed.Position.Depth == 0)
+          {
+            _RootCount++;
+          }
+          else
+          {
+            ref var frontChildCount = ref _ChildCounts[_FrontIndex];
+
+            if (frontChildCount == 0)
+              _FirstChildIndices[_FrontIndex] = index;
+
+            frontChildCount++;
+          }
+        }
+        else if (feed.VisitCount == 1)
+        {
+          _FrontIndex++;
+        }
+      }
+
+      Complete = true;
+
+      feed.Dispose();
+      _Feed = null;
     }
 
     // Lazily enumerates the buffer indices of the roots -- the depth-0 prefix, so indices and
@@ -152,10 +197,12 @@ namespace Copse.Linq.Treenumerators
         }
         else
         {
-          if (_ChildCounts[_FrontIndex] == 0)
+          ref var frontChildCount = ref _ChildCounts[_FrontIndex];
+
+          if (frontChildCount == 0)
             _FirstChildIndices[_FrontIndex] = index;
 
-          _ChildCounts[_FrontIndex]++;
+          frontChildCount++;
         }
       }
       else if (_Feed.VisitCount == 1)
