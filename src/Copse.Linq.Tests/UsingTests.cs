@@ -129,6 +129,31 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
+    public void DisposingTheMemoMidCapture_ReleasesTheResource()
+    {
+      var resources = new List<TestResource>();
+
+      var memo = UsingTree("a(b(d,e,f),c(g,h,i))", resources).Memoize();
+
+      using (var treenumerator = memo.GetDepthFirstTreenumerator())
+      {
+        // Pull a couple of visits: enough to open the memo's feed (acquiring the resource),
+        // nowhere near enough to complete the capture.
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+
+        Assert.AreEqual(1, resources.Count);
+        Assert.IsFalse(resources[0].Disposed);
+
+        // Disposing the memo mid-capture kills the paused feed; the feed is the treenumerator
+        // holding the resource, so the resource releases now -- not at capture completion.
+        memo.Dispose();
+
+        Assert.AreEqual(1, resources[0].DisposeCount);
+      }
+    }
+
+    [TestMethod]
     public void TraversalsMatchTheInnerTree()
     {
       var trees = new[] { "a", "a(b(c))", "a(b,c)", "a,b,c", "a(b(d,e,f),c(g,h,i))" };
