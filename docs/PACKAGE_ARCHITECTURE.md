@@ -17,12 +17,20 @@
    `Copse.Disposables` algebra, and the node-context value types (`NodeContext`,
    `NodeAndSiblingIndex`). References Core (for `NodePosition`); nothing tree-semantic
    is admitted.
-3. **`Copse.Linq` must depend only on Core + Primitives.** The load-bearing principle
-   (Jason, 2026-07-04): *there is no guarantee other concrete `ITreenumerable`
-   implementations even have child enumerators.* `IChildEnumerator` is the ENGINE's SPI,
-   not the tree model's — operators must be compilable against the abstract contract, so
-   Linq works over any implementation (database cursor, REST adapter, ...) with the
-   compiler enforcing it.
+3. **Linq's independence from the engine is SEMANTIC, not a package mandate.** The
+   load-bearing principle (Jason, 2026-07-04): *there is no guarantee other concrete
+   `ITreenumerable` implementations even have child enumerators.* `IChildEnumerator` is
+   the ENGINE's SPI, not the tree model's — operators must work over any implementation
+   (database cursor, REST adapter, ...). That principle is satisfied at runtime TODAY
+   (operators consume only `ITreenumerator`) and should be enforced by a test: an
+   engine-free `ITreenumerator` test tree run through the operator suite.
+   **Revised same day**: fully breaking the Linq→Copse package edge was judged too
+   dogmatic as a goal in itself. The rule is pay-for-itself — each migration step
+   proceeds on its own merits (perf, serializer reuse, retirement of dead weight), and
+   the edge breaks only if those steps happen to complete. In particular: the
+   wrapper-base home question is DISSOLVED (they stay in Copse until something real
+   forces it), and the cross-order layout streamers are built WITH the serializer,
+   never before it.
 4. **The engine is a legitimate dependency for engine-things, under an honest name.**
    Breaking Linq→engine is achieved by relocating engine-things out of Linq, not by
    reimplementing traversal.
