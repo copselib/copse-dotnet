@@ -402,5 +402,8 @@ local-temp/
 # Claude
 .claude/
 
-# LINQPad scratch scripts (personal tooling, often with machine-absolute paths)
+# LINQPad scratch scripts (personal tooling, often with machine-absolute paths).
+# On case-insensitive checkouts (core.ignorecase=true) the bare pattern also matches
+# the src/Copse.Linq DIRECTORY, silently ignoring any new file under it -- re-include it.
 *.linq
+!src/Copse.Linq/
