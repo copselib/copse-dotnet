@@ -1,153 +1,224 @@
-# Memoize — design spec (preorder, incremental, eager-skip)
+# Memoize — design spec (two-dimensional, incremental, eager-skip)
 
-> **Status: DECIDED, not yet implemented.** Decision recorded 2026-06-27. This supersedes the
-> dead experimental `MemoizeTreenumerator` stub (`Copse.Linq.Experimental`), which is
-> abandoned — do **not** resurrect it. The broad capability-interface lattice
-> ([TREE_CAPABILITY_INTERFACES.md](TREE_CAPABILITY_INTERFACES.md)) is *out of scope* here:
-> this design deliberately needs **no** child-realization capability.
+> **Status: DECIDED 2026-07-03, not yet implemented.** Supersedes the 2026-06-27 preorder-only
+> spec. Of that spec's four locked decisions, two carry forward unchanged (eager-skip/no-holes,
+> no child-realization), one is softened (the finite-tree precondition), and one is overturned
+> (preorder as the single representation). The dead experimental `MemoizeTreenumerator` stub
+> remains abandoned — do **not** resurrect it. The capability-interface lattice
+> ([TREE_CAPABILITY_INTERFACES.md](TREE_CAPABILITY_INTERFACES.md)) remains out of scope.
 
 ## What `Memoize` is
 
 `Memoize()` turns a tree into a **re-traversable, shared snapshot of its current shape**. The
-caller is declaring "I will enumerate this tree more than once; capture it now." Subsequent
-enumerations replay from the cache instead of re-running the (possibly expensive) source, and
-each enumeration may prune differently (follow one branch, then another).
+caller is declaring "I will enumerate this tree more than once; capture it as I go." Subsequent
+enumerations replay from the captured buffers instead of re-running the (possibly expensive)
+source, and each enumeration may prune differently.
 
 ```csharp
-var memo = expensiveTree.Memoize();   // shape captured = whatever expensiveTree is right now
-foreach over memo (DFS, follow branch A)   // pays to build only the preorder prefix it reaches
+var memo = expensiveTree.Memoize();
+foreach over memo (DFS, follow branch A)   // builds only the preorder prefix it reaches
 foreach over memo (DFS, follow branch B)   // reuses the shared buffer, extends it as needed
-foreach over memo (BFS)                    // forces full build, then rides BFS over PreorderTree
+foreach over memo (BFS)                    // lazily builds ITS OWN dimension — no full-build wall
 ```
 
-## The four locked decisions
+## The governing principle: a memo is only as lazy as the dimension of its feed
 
-1. **No holes / eager-skip.** The cache is filled by driving the inner traversal with
-   `NodeTraversalStrategies.TraverseAll`. A consumer's pruning is applied only at *replay*, as a
-   view — it changes what a given enumeration *yields*, never what is *cached*. The buffer is
-   therefore always a complete, contiguous prefix of the full pre-order stream.
+A linear buffer filled from a traversal stream can be served incrementally only in that
+stream's order. A preorder buffer fed by DFT serves DFS replay lazily, but BFS replay hits a
+wall: reaching the *last child of the root* requires hopping completed subtree sizes, i.e.
+buffering essentially the whole tree first. The dual holds: a level-order buffer fed by BFT
+serves BFS lazily, but DFS descent to depth *d* must buffer every level above it. **No single
+layout is lazy in both dimensions.**
 
-2. **No child-realization.** Because there are never holes, we never need to realize a node's
-   children out of order to fill one. `IChildVisitableTree` is not required. This is the whole
-   reason the design is simple: the "hole problem" that motivated child-realization is
-   *dissolved*, not solved.
+The DFT/BFT duality is this library's core promise — traverse in the optimal dimension. The
+old spec's "preorder is enough" quietly forfeited that promise for BFS consumers. This design
+does not: **each dimension gets its own feed and its own native-order buffer, created lazily on
+first use.** The locality question ("BFS over a preorder array is cache-hostile") turned out to
+be the small half of the problem; the *laziness* asymmetry was the real one.
 
-3. **Finite-tree precondition.** Driving the inner `TraverseAll` means an unbounded tree never
-   surfaces (DFT in particular dives down branch 0 forever and never buffers node 2). So
-   **Memoize requires a finite source.** The caller bounds it first
-   (`tree.PruneAfter(d).Memoize()`). Infinite-tree memoization is explicitly traded away — that
-   was child-realization's domain, and we have dropped it on purpose. *(Optional later nicety: a
-   node-count guard that throws instead of hanging on an unbounded source.)*
+## Locked decisions
 
-4. **Representation = preorder, one structure.** The memo is a `PreorderTree<TValue>`
-   (`values[]` + `subtreeSizes[]`, `src/Copse/Treenumerables/PreorderTree.cs`), built
-   incrementally. Both DFS and BFS replay ride the existing engine over it. BFS over a preorder
-   layout is correct and O(N) but not cache-sequential — that locality tax is **accepted**;
-   a level-order/LOUDS variant is deferred to the *serialization* track, where sequential disk
-   locality actually is non-negotiable. (See "Why preorder is enough" below.)
+1. **No holes / eager-skip (kept, now per dimension).** Each dimension's feed drives the source
+   with `NodeTraversalStrategies.TraverseAll`. Consumer pruning is applied only at *replay*, as
+   a view — it changes what an enumeration *yields*, never what is *cached*. Each buffer is
+   always a contiguous prefix of its own full traversal stream.
 
-## Why it's distinct from `Materialize`
+2. **No child-realization (kept).** No holes means no out-of-order realization. No
+   `IChildVisitableTree`, no capability lattice.
 
-| | `Materialize()` | `Memoize()` |
-|---|---|---|
-| Build timing | eager, all at once | lazy, on first use |
-| Build extent | always the whole tree | only the pre-order prefix some enumeration reaches |
-| Sharing | n/a (one snapshot) | one growing buffer shared across all enumerations |
-| End content (finite, fully traversed) | full `PreorderTree` | identical full `PreorderTree` |
+3. **Two dimensions, no strategy parameter (new).** `Memoize()` takes no arguments. Each
+   dimension's buffer — (source feed, native-layout buffer, complete flag, replay ref-count) —
+   is created lazily on the first replay request in that dimension. A consumer who only ever
+   does DFS never pays a cent for BFT. "Which dimensions to memoize" answers itself by usage;
+   an explicit `MemoizeStrategy` enum was considered and dropped because the lazy-buffer model
+   makes every point of that enum the automatic behavior.
 
-The genuine win over "just `Materialize` lazily" is **partial + shared**: a consumer that
-memoizes and then does a DFS that stops early (a `Take`, or a prune that terminates) pays only
-for the prefix it touches; later enumerations reuse and extend that buffer. For a
-fully-traversed finite tree the two converge on the same content.
+4. **Native layout per dimension (overturns preorder-only).**
+   - DFT buffer: **preorder** — `values`, `subtreeSizes` (node *i*'s subtree spans
+     `[i, i + subtreeSizes[i])`), built with the open-parent-stack construction `Materialize`
+     and `TreeSerializer.Parse` already use; `subtreeSizes[i]` is backfilled when the subtree
+     closes (next scheduling visit at depth ≤ node *i*'s, or stream end).
+   - BFT buffer: **level-order** (LOUDS-adjacent) — `values` in arrival order (BFT scheduling
+     order *is* level order), plus child-span bookkeeping (`firstChildIndex`, `childCount`),
+     backfilled as children arrive. The parent of each scheduled node is identified by the
+     interleaved visiting node in the BFT stream (BFT visits a parent between scheduling each
+     of its children — see CLAUDE.md's DFT/BFT cadence section). A node's children occupy a
+     contiguous level-order span, closed when the parent's scheduling completes.
+   - The two builders are deliberate structural duals, in the same spirit as
+     `DepthFirstPath`/`BreadthFirstPath`.
 
-## Why preorder is enough for both modes
+5. **Once either dimension completes, the source is never touched for new work again.** The
+   four-case serving rule below. On completion, the *other* (incomplete) dimension buffer is **dropped, not
+   completed**: it takes no new customers, and is released when its ref-count of outstanding
+   replay enumerators drains to zero. In-flight replays in the dropped dimension keep their own
+   buffer — its indices are stable (append-only) and the dimension's own feed remains available to
+   them, so no mid-enumeration cut-over is ever attempted (that remapping would be genuinely
+   hard; we don't do it). Worst case they finish at source cost, which is what they'd have paid
+   anyway.
 
-`PreorderTree` already rides the generic DFS **and** BFS engine via `PreorderChildEnumerator`
-(`src/Copse/PreorderChildEnumerator.cs`): given any node it locates that node's children by
-subtree-size hops, and `Dispose()` on the enumerator is how the engine signals
-`SkipDescendants`/`SkipSiblings`. So:
+6. **Backing store: an internal chunked append-only ref store (new; lives in `Copse`).**
+   Neither existing structure fits:
+   - `RefSemiDeque` has the right ref discipline but O(#partitions) indexed reads
+     (`GetFromBack` walks a linked list of non-uniform partitions) — wrong for replay's
+     index-hammering — and its LOH-capped partitions serve *churning* Path buffers, the
+     opposite lifecycle of a monotonic memo buffer.
+   - Aocl (`github.com/jasonmcboyd/Aocl`) has the right layout — doubling power-of-two
+     partitions, preallocated 31-slot outer array, O(1) index→(partition, offset) via integer
+     log2 — but its get-only, by-value indexer is the load-bearing wall of its lock-free
+     concurrency contract ("a published element never changes"), and the memo *must* mutate
+     published slots (the size/span backfill). Its per-append `lock`/`Volatile`/doorbell is
+     pure tax for a single-threaded builder. And Copse stays dependency-free.
 
-- **DFS replay** = linear scan; `SkipDescendants` is an O(1) span hop (`i += subtreeSizes[i]`).
-- **BFS replay** = the standard BFS engine driving the same child enumerator. Correct, O(N),
-  but visits the array out of order (locality tax only).
+   So: crib Aocl's layout math into an internal Copse type with a **ref-returning indexer** and
+   **zero synchronization**. It is append-only *structurally* (slots never move — no
+   `List<T>`-style relocation copies) while permitting in-place content mutation — exactly the
+   distinction that separates it from Aocl. Uncapped doubling partitions are correct here (a
+   handful of large long-lived blocks; LOH is the cheap outcome), mirror-commented against
+   `RefSemiDeque`'s cap rationale. `BitOperations.Log2` on net8.0; Aocl's De Bruijn table on
+   net48.
 
-Crucially, **consumer pruning comes for free**: replay is just the normal DFT/BFT engine
-traversing a `PreorderTree`, and that engine already honors every `NodeTraversalStrategies`
-flag. We do **not** hand-write replay-pruning. The only memoize-specific machinery is the
-*incremental builder* (so a DFS early-stop consumer needn't build the whole tree first).
+## The four-case serving rule
 
-## Mechanism
+A replay request in dimension **D** (with **O** the other dimension) resolves:
 
-A `MemoizedTree<TValue>` (final name TBD) holds:
+| # | State | Serve by | Source touched? |
+|---|-------|----------|-----------------|
+| 1 | D's buffer complete | D's engine over D's buffer, natively | no |
+| 2 | O's buffer complete | D's engine over O's buffer, **cross-order** | no |
+| 3 | D's buffer exists, partial | D's engine over D's buffer, extending D's feed lazily | only past the frontier |
+| 4 | D has no buffer; O absent or partial | create D's buffer, as (3) | yes — D's own feed |
 
-- the source `ITreenumerable<TValue>`;
-- a lazily-created **shared inner DFT treenumerator**, driven `TraverseAll`;
-- the **growing pre-order builder**: `List<TValue> _values`, `List<int> _subtreeSizes`, plus
-  parse state — a `Stack<int>` of open-parent indices and the previous scheduling depth. This is
-  exactly the construction `TreeSerializer.Parse` uses (`src/Copse.SimpleSerializer/
-  TreeSerializer.cs`), but fed from the **live DFT scheduling stream** instead of a char span;
-- an `_exhausted` flag.
+Case 2 is the payoff of "be smart": a consumer who fully DFS-enumerates once and then asks for
+BFS pays zero further source cost — the engine rides the completed preorder buffer in BFS
+order (correct today: `PreorderTree` already rides both engines). The cross-order **locality
+tax is accepted**; completing D's native buffer from O's completed one is strictly-in-memory,
+purely additive, and **deferred until benchmarks demand it**.
 
-**The feed.** A DFT driven `TraverseAll` emits each node's `SchedulingNode` visit exactly once,
-in pre-order, with `Position.Depth` available. That scheduling stream *is* the pre-order value
-sequence. Subtree *close* is detected from depth deltas (the array analogue of `)`): when the
-next scheduling visit arrives at depth `d`, every open parent at depth `>= d` has closed, so pop
-each and backfill `subtreeSizes[openIndex] = _values.Count - openIndex` (subtrees are contiguous
-in pre-order). At stream exhaustion, pop and backfill all remaining open parents. Visiting visits
-are ignored for structure. *(This is `Parse`'s open-stack logic, paren-deltas → depth-deltas.)*
+Case 4 is the only path to enumerating the source twice, and it requires genuinely partial
+work in *both* dimensions. Each dimension's feed still runs at most once, only to its own
+frontier. Corollary: an impure source could be captured differently by the two feeds — the
+same stability-across-the-lazy-build assumption the single-feed design already made, just
+wider. Documented precondition, not machinery.
 
-**Fill primitive.** `EnsureBufferedThrough(...)` pulls inner `MoveNext(TraverseAll)` results,
-appending values on scheduling visits and backfilling sizes on close, until the requested
-boundary is buffered:
-- to serve DFS value at index `k`: pull until `_values.Count > k` (or exhausted);
-- to serve `SkipDescendants` at `k`: pull until node `k`'s subtree closes (next scheduling visit
-  at depth `<= depth[k]`, or exhausted) so `subtreeSizes[k]` is known.
+## Replay mechanism
 
-**DFS replay** — `GetDepthFirstTreenumerator()` returns a treenumerator walking the pre-order
-arrays by index, calling the fill primitive when it needs an index/size beyond the buffer.
-Genuinely incremental; an early-stop consumer never drives past its own frontier.
+Replay treenumerators are **the standard DFT/BFT engines** over a lazy child enumerator — we
+do not hand-write replay traversal or replay pruning; every `NodeTraversalStrategies` flag
+comes free, positions come from the engine, and the buffers store only values + structure.
 
-**BFS replay** — `GetBreadthFirstTreenumerator()` ensures the buffer is fully built (drive inner
-to exhaustion), then rides the BFS engine over the completed `PreorderTree`. BFS over a *partial*
-pre-order layout is unsafe (root/level navigation needs completed subtree sizes — `RootIndices`
-hops by `subtreeSizes[0]` to find root 1, etc.), so BFS forces full build. Acceptable: the tree
-is finite, and the source still runs only once.
+The lazy child enumerator is the *open-span dual* of `PreorderChildEnumerator`: that type
+precomputes `_End = parentIndex + subtreeSizes[parentIndex]` in its constructor, which does not
+exist while the parent's subtree is still open. Instead, the memo's child enumerators consult
+the dimension buffer's **fill primitive** on each advance:
 
-Once fully built, the buffer **is** a `PreorderTree<TValue>` — the incremental machinery is just
-an on-demand `PreorderTree` builder.
+- **Fill primitive** (per dimension buffer): pull the feed's `MoveNext(TraverseAll)`, appending on
+  scheduling visits and backfilling closes, until a requested boundary is buffered — "value at
+  index *k* exists" or "node *k*'s span is closed."
+- **Preorder child advance**: next sibling = `cursor + subtreeSizes[cursor]`. In natural DFS
+  replay the engine only asks after the child's subtree was just traversed, so the size is
+  already backfilled and the fill is a no-op. A consumer `SkipDescendants`/`SkipSiblings` hop
+  over an *untraversed* subtree fills until that subtree closes — the eager-skip cost, paid
+  lazily and only on the skipped span.
+- **Level-order child advance**: children are the contiguous span under the parent's
+  (`firstChildIndex`, `childCount`); fill until the span closes if the parent is still
+  scheduling.
+
+Multiple live replay enumerators per dimension buffer are safe (single-threaded): the buffer is append-only
+and monotonic, each replay reads by index, fills cannot re-enter fills, and nobody rewinds
+anybody.
+
+## Infinite trees (precondition softened)
+
+The old spec required a finite source outright. Lazy per-dimension fill dissolves most of that:
+each dimension fills only to its consumer's frontier, so **a memoized traversal terminates
+whenever the same un-memoized traversal terminates**, with two honest exceptions, both
+consequences of eager-skip (decision 1):
+
+- `SkipDescendants`/`SkipSiblings` on the **DFT dimension** over an unbounded subtree hangs:
+  the hop needs the skipped subtree's size, which never closes. (Un-memoized DFS would just
+  pop.) Bound first — `tree.PruneAfter(d).Memoize()` — if you need skip-hops over unbounded
+  regions.
+- **Cross-order serving never activates** on an unbounded source (nothing ever completes), so
+  both dimensions run their own feeds. Correct, just no case-2 reuse.
+
+The optional node-count guard (throw instead of hang) remains a deferred nicety.
+
+## Surface and semantics
+
+- **Operator**: `Memoize<TValue>()` extension in `Copse.Linq`
+  (`Treenumerable/Treenumerable.Memoize.cs`). No parameters.
+- **Return type**: `ITreenumerableBuffer<TValue> : ITreenumerable<TValue>, IDisposable` —
+  promoted out of `Copse.Linq.Experimental` into `Copse.Linq`. The concrete memo type is
+  `internal`. No `ToPreorderTree()` for now (deferred; additive).
+- **Why `IDisposable`**: the memo holds up to two live inner treenumerators (the feeds) paused
+  mid-source-traversal; the buffers themselves are just managed memory.
+- **Dispose semantics**: disposing the memo disposes both feeds immediately. Outstanding replay
+  enumerators keep working over already-buffered regions (they never touch the feeds there); a
+  replay that hits its buffer frontier after dispose gets `ObjectDisposedException`. Replay
+  enumerators' own `Dispose` decrements their dimension buffer's ref-count — this is what releases a
+  dropped dimension buffer (decision 5), so replay disposal is semantically load-bearing, consistent with
+  how child-enumerator `Dispose` already signals skips to the engine.
+- **Thread-safety**: none; single-threaded by contract, documented. The buffers could be made
+  read-concurrent, but the shared feeds cannot be cheaply, and per-node synchronization on the
+  replay path is exactly the tax we declined to import from Aocl.
+- **Experimental stub retirement**: delete `MemoizeTreenumerable`,
+  `Treenumerators/Memoize/*`, the Experimental `Treenumerable.Memoize.cs`, and the
+  Experimental `ITreenumerableBuffer` (superseded by the `Copse.Linq` one).
 
 ## Edge cases the implementation must cover
 
-- **Empty tree** (`_values.Count == 0`) — replay yields nothing; build exhausts immediately.
-- **Single node** — `subtreeSizes = [1]`.
-- **Multi-root forest** — the builder must close top-level subtrees back to depth 0; `Parse`'s
-  open-stack already does this and `PreorderTree.RootIndices` already walks top-level spans.
-- **Consumer `SkipNode` vs `SkipDescendants` vs `SkipSiblings`** on replay — all inherited from
-  the engine over `PreorderTree`; verify each against a known fixture, since `SkipNode` (drop
-  node, keep/promote children) is structurally different from `SkipDescendants`.
-- **Partial first enumeration then a second, deeper one** — buffer extends; shared inner resumes
-  from where it paused (single shared instance, append-only buffer).
+- **Empty tree** — replay yields nothing; either feed exhausts immediately; both "complete."
+- **Single node**; **multi-root forest** (preorder builder closes to depth 0; level-order
+  builder's roots are the depth-0 prefix).
+- **Every consumer strategy on replay, in both dimensions** — inherited from the engines, but
+  verify each against fixtures; `SkipNode` (promote children) is structurally different from
+  `SkipDescendants`.
+- **Partial-then-deeper enumeration** — buffer extends; shared feed resumes.
+- **DFS-then-BFS and BFS-then-DFS after full enumeration** — case 2; assert the source is not
+  re-enumerated (counting source).
+- **Both-partial** — case 4; both feeds live; both extend correctly.
+- **Completion with an outstanding straggler replay in the dropped dimension** — straggler
+  finishes on its own feed; its dimension buffer releases when it disposes.
+- **Post-dispose replay** — buffered region works; frontier throws.
+- **Unbounded source (Collatz)** — terminating consumers terminate in both dimensions.
 
-## Deferred (implementation-level, not blocking the decision)
+## Deferred (recorded, not blocking)
 
-- **Naming** — `Memoize` operator; returned type; reuse the existing
-  `ITreenumerableBuffer<TNode> : ITreenumerable, IDisposable` marker (the memo owns a disposable
-  inner, so `IDisposable` fits).
-- **Thread-safety** — start single-threaded and document it (the shared inner + growing buffer is
-  not thread-safe). The old stub sketched per-strategy locks for concurrent replay; add only if a
-  real need appears.
-- **Disposal** — disposing the memo disposes the inner; define behavior for outstanding replay
-  enumerators.
-- **Surface** — possibly expose `ToPreorderTree()` once fully built.
-- **Home** — `Memoize` extension in `Copse.Linq`; backing type backed by `PreorderTree` (in
-  `Copse`). This is *not* the broad project-boundary question — just this operator's placement.
+- Cross-order **locality tax**: revisit only if benchmarked demand appears; the remedy (finish
+  the native buffer from the completed other buffer, in memory) is purely additive.
+- **In-memory feed adapter** (BFS/DFS over a completed buffer *impersonating* a source feed to
+  a straggler dimension buffer) — same machinery as the locality remedy; if either is ever built, the
+  other is nearly free.
+- `ToPreorderTree()` / exposing the completed snapshot.
+- Node-count guard for unbounded sources.
+- Thread-safe replay.
 
-## Connection to serialization (recorded, not actioned here)
+## Connection to serialization (recorded, not actioned)
 
-The same "which traversal order does the linear store favor" question underlies both Memoize and
-ser/deser. The pre-order/DFS form is a balanced-parentheses encoding (schedule = enter,
-final-visit = leave; `subtreeSizes` is that bracketing in array form); the BFS-favorable dual is
-level-order/LOUDS. For **in-memory** memo, one structure suffices (BFS only loses locality). For
-**disk streaming**, sequential locality is single-order by nature, so a *layout knob*
-(pre-order vs level-order) genuinely earns its keep — that belongs to the serialization track,
-and Memoize can borrow it later if a BFS-heavy memo workload is ever benchmarked to need it.
+The two buffer layouts are the two linear tree encodings: preorder + `subtreeSizes` is
+balanced-parentheses in array form; level-order + child spans is LOUDS-adjacent. A linear
+*store* (disk) is lazy in exactly one dimension for the same reason a linear *buffer* is — so
+serialization wants the same layout knob, and **streaming deserialization is memoization whose
+feed is a disk stream**: the file's layout order determines which dimension replays lazily.
+The two incremental builders written for Memoize are, respectively, the cores of a preorder
+and a level-order serializer. Getting them right here funds that track.
