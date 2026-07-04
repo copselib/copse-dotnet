@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783141819760,
+  "lastUpdate": 1783141820010,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -19565,6 +19565,40 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/41e9ec865d562dce6aad765b48557971139ca356"
         },
         "date": 1782945767916,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 275,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "9ade0f5677a7b60446efb6fc8febc5d6e9e6405a",
+          "message": "Add Memoize benchmarks: replay-over-capture, cross-order, laziness\n\nCovers what the Materialize benchmarks (now the capture-path measurement)\ndo not: second-pass replays over completed captures in the full 2x2\nengine-by-layout matrix -- the native/cross pairs put a number on the\ncross-order locality tax -- plus first-pass-through-replay for both\ndimension builders and a bounded prefix over an unbounded tree for the\npay-only-for-what-you-touch claim.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-04T04:37:35Z",
+          "tree_id": "486e7ba70718231c9df823207c6974d498174e50",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9ade0f5677a7b60446efb6fc8febc5d6e9e6405a"
+        },
+        "date": 1783141819969,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
