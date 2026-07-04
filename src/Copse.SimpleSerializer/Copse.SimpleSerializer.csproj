@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Description>Text-based tree serialization for Copse.</Description>
   </PropertyGroup>
 
-  <!-- net8.0 has Span/ReadOnlySpan built in; net48 needs the System.Memory polyfill. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+  <!-- net8.0 has Span/ReadOnlySpan built in; net48 and netstandard2.0 need the System.Memory polyfill. -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
     <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 

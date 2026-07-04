@@ -402,4 +402,4 @@ When implementing a new filtering operation similar to Where, consider:
 
 ## Target Frameworks
 
-Multi-targets .NET Framework 4.8 and .NET 8.0.
+Multi-targets .NET Framework 4.8, .NET 8.0, and .NET Standard 2.0.

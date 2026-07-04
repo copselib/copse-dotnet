@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Description>LINQ-style query, transformation, and set operations over trees for Copse (Where, Select, SelectMany, Union, aggregation, and more).</Description>
   </PropertyGroup>

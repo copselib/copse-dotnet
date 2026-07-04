@@ -15,7 +15,7 @@ No equality contract required: node types need not implement `IEquatable<T>` or 
 dotnet add package Copse.Linq --prerelease
 ```
 
-`Copse.Linq` transitively brings in `Copse` and `Copse.Core`. Targets **net48** and **net8.0**.
+`Copse.Linq` transitively brings in `Copse` and `Copse.Core`. Targets **net48**, **net8.0**, and **netstandard2.0**.
 
 ## Examples
 
