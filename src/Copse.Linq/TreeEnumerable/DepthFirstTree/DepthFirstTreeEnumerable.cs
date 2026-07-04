@@ -6,7 +6,7 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
 {
   public sealed class DepthFirstTreeEnumerable<TNode> : IDepthFirstTreeEnumerable<TNode>
   {
-    public DepthFirstTreeEnumerable(ITreenumerable<TNode> treenumerable)
+    public DepthFirstTreeEnumerable(IDepthFirstTreenumerable<TNode> treenumerable)
     {
       _Treenumerable = treenumerable;
     }
@@ -16,7 +16,7 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
       _Enumerable = enumerable;
     }
 
-    private readonly ITreenumerable<TNode> _Treenumerable;
+    private readonly IDepthFirstTreenumerable<TNode> _Treenumerable;
     private readonly IEnumerable<DepthFirstTreeEnumerableToken<TNode>> _Enumerable;
 
     public IEnumerator<DepthFirstTreeEnumerableToken<TNode>> GetEnumerator()

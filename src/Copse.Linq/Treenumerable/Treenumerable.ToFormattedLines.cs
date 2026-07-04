@@ -10,20 +10,20 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<string> ToFormattedLines<TNode>(this ITreenumerable<TNode> source)
+    public static IEnumerable<string> ToFormattedLines<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       return source.ToFormattedLines(node => node.ToString(), 0);
     }
 
     public static IEnumerable<string> ToFormattedLines<TNode>(
-      this ITreenumerable<TNode> source,
+      this IDepthFirstTreenumerable<TNode> source,
       int paddingSize)
     {
       return source.ToFormattedLines(node => node.ToString(), paddingSize);
     }
 
     public static IEnumerable<string> ToFormattedLines<TNode>(
-      this ITreenumerable<TNode> source,
+      this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, string> stringFormatter,
       int paddingSize)
     {

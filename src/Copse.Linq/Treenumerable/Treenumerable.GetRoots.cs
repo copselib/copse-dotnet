@@ -5,7 +5,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<TNode> GetRoots<TNode>(this ITreenumerable<TNode> source)
+    public static IEnumerable<TNode> GetRoots<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       using (var treenumerator = source.GetDepthFirstTreenumerator())
       {

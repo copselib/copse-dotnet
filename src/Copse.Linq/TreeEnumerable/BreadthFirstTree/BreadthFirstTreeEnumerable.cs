@@ -6,7 +6,7 @@ namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
 {
   public sealed class BreadthFirstTreeEnumerable<TNode> : IBreadthFirstTreeEnumerable<TNode>
   {
-    public BreadthFirstTreeEnumerable(ITreenumerable<TNode> treenumerable)
+    public BreadthFirstTreeEnumerable(IBreadthFirstTreenumerable<TNode> treenumerable)
     {
       _Treenumerable = treenumerable;
     }
@@ -16,7 +16,7 @@ namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
       _Enumerable = enumerable;
     }
 
-    private readonly ITreenumerable<TNode> _Treenumerable;
+    private readonly IBreadthFirstTreenumerable<TNode> _Treenumerable;
     private readonly IEnumerable<BreadthFirstTreeEnumerableToken<TNode>> _Enumerable;
 
     public IEnumerator<BreadthFirstTreeEnumerableToken<TNode>> GetEnumerator()

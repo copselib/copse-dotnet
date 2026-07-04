@@ -82,11 +82,11 @@ namespace Copse.SimpleSerializer
       return new PreorderTree<TValue>(values.ToArray(), subtreeSizes.ToArray());
     }
 
-    public static string Serialize(this ITreenumerable<string> treenumerable)
+    public static string Serialize(this IDepthFirstTreenumerable<string> treenumerable)
       => Serialize(treenumerable, node => node);
 
     public static string Serialize<TNode>(
-      this ITreenumerable<TNode> treenumerable,
+      this IDepthFirstTreenumerable<TNode> treenumerable,
       Func<TNode, string> map)
     {
       var builder = new StringBuilder();

@@ -5,7 +5,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<TNode[]> GetLevels<TNode>(this ITreenumerable<TNode> source)
+    public static IEnumerable<TNode[]> GetLevels<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       var depth = 0;
       var deque = new RefSemiDeque<TNode>();
