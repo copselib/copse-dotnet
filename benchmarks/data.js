@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783141819047,
+  "lastUpdate": 1783141819281,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -21236,6 +21236,66 @@ window.BENCHMARK_DATA = {
             "value": 23604982.902083334,
             "unit": "ns",
             "range": "± 251470.28251125175"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "9ade0f5677a7b60446efb6fc8febc5d6e9e6405a",
+          "message": "Add Memoize benchmarks: replay-over-capture, cross-order, laziness\n\nCovers what the Materialize benchmarks (now the capture-path measurement)\ndo not: second-pass replays over completed captures in the full 2x2\nengine-by-layout matrix -- the native/cross pairs put a number on the\ncross-order locality tax -- plus first-pass-through-replay for both\ndimension builders and a bounded prefix over an unbounded tree for the\npay-only-for-what-you-touch claim.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-04T04:37:35Z",
+          "tree_id": "486e7ba70718231c9df823207c6974d498174e50",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9ade0f5677a7b60446efb6fc8febc5d6e9e6405a"
+        },
+        "date": 1783141819247,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 56560355.492063485,
+            "unit": "ns",
+            "range": "± 193812.3091806378"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 7594478.1953125,
+            "unit": "ns",
+            "range": "± 51459.94124302437"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 103349847.59166671,
+            "unit": "ns",
+            "range": "± 10823139.03574116"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 10276943.828125,
+            "unit": "ns",
+            "range": "± 138493.4927612337"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 41349541.67999999,
+            "unit": "ns",
+            "range": "± 510273.99879442377"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 23904104.854910713,
+            "unit": "ns",
+            "range": "± 304509.7269581046"
           }
         ]
       }
