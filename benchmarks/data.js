@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783148913156,
+  "lastUpdate": 1783148913395,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -11550,6 +11550,54 @@ window.BENCHMARK_DATA = {
             "value": 16203317.674841773,
             "unit": "ns",
             "range": "± 839829.4128042711"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "fbb483ea2d9399e53f93048f756024fa8040d924",
+          "message": "Add design note: traversal dimension split & serialization redesign\n\nRecords the 2026-07-04 design discussion, tabled for later pickup:\nsplitting ITreenumerable into IDepthFirstTreenumerable /\nIBreadthFirstTreenumerable (compile-time traversal affordances), the\nstreaming serialization redesign it resolves (lazy deserialize, reader\nfactories, dft/bft layout axis, envelope shape stats), the Invert\nrethink (windowed BFT mirror, zero-copy views over memo captures), and\nthe pick-up plan starting with the operator audit. Cross-linked from\nTREE_CAPABILITY_INTERFACES.md as an orthogonal axis: types for\n\"impossible without escalation,\" runtime probing for \"cheaper when\nrich.\"\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-04T06:28:21Z",
+          "tree_id": "f759acc0aedea7350f372a63da75cf2a8cd7937f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fbb483ea2d9399e53f93048f756024fa8040d924"
+        },
+        "date": 1783148913359,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 16326557.50625,
+            "unit": "ns",
+            "range": "± 186894.8123200379"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 28806724.466666665,
+            "unit": "ns",
+            "range": "± 133911.12607212638"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 26881731.92857143,
+            "unit": "ns",
+            "range": "± 78853.10061141457"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15717979.898295455,
+            "unit": "ns",
+            "range": "± 663896.4213243101"
           }
         ]
       }
