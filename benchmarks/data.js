@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783202101743,
+  "lastUpdate": 1783202101984,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -23544,6 +23544,66 @@ window.BENCHMARK_DATA = {
             "value": 23772809.935416665,
             "unit": "ns",
             "range": "± 259276.1133590175"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "5e05034f0bcd17e8215ac1be3efdb7f017d4facb",
+          "message": "Name the pre-enumeration convention: NodePosition.ForestRoot\n\nThe (0, -1) convention -- a treenumerator's position before its first\nMoveNext, and the \"no parent yet\" seed operators use for sentinels and\naccumulator roots -- gets its official name and contract documentation.\nStructuralMerge had already discovered the right name as a private\nconstant; this promotes its vocabulary to Copse.Core.\n\n- NodePosition.ForestRoot, with docs explaining both roles and the\n  default(NodePosition) trap (reads as an already-scheduled root).\n- ITreenumerator.Position now documents the pre-enumeration clause.\n- Ten consumers re-pointed from the magic literal to the name.\n- WhereDepthFirstTreenumerator hardened: its sentinel is the virtual\n  forest root BY DEFINITION, so it is now seeded with the constant\n  instead of reading the inner's pre-enumeration state -- the fragility\n  the conformance suite exposed is structurally gone, and its\n  not-started test uses the named constant.\n\nAlso removes an unused using from RootfixScanBreadthFirstTreenumerator.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-04T14:25:15-07:00",
+          "tree_id": "ba466878b7eb636f913d8dacf8e66d0e5456d07c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/5e05034f0bcd17e8215ac1be3efdb7f017d4facb"
+        },
+        "date": 1783202101948,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 56525420.3931624,
+            "unit": "ns",
+            "range": "± 104524.3981380163"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 7669582.001201923,
+            "unit": "ns",
+            "range": "± 52067.00226998592"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 86693661.67777778,
+            "unit": "ns",
+            "range": "± 987519.3575200014"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 10458121.133854168,
+            "unit": "ns",
+            "range": "± 182003.41386223608"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 41181452.05641026,
+            "unit": "ns",
+            "range": "± 404100.2673239309"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 23868175,
+            "unit": "ns",
+            "range": "± 299834.08674372855"
           }
         ]
       }
