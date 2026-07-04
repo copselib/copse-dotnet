@@ -66,32 +66,33 @@ before or with step 1 below.
   types). Copse and Copse.Linq reference it explicitly.
 - All moves kept namespaces intact (namespace ≠ assembly): zero churn in consuming code.
 
+**Done (2026-07-04, discovered rather than built):**
+
+- The enumerable adapters (`ToDegenerateTree`, `ToTrivialForest`) were **already
+  engine-free** — `EnumerableAsTree*`/`EnumerableAsForest*` are hand-rolled
+  `ITreenumerator` implementations over `RefSemiDeque` (Core + Primitives only). The
+  engine-riding `EnumerableTreenumerable` + `SharedEnumerableChildEnumerator` was dead
+  code (zero references) and has been deleted. Linq's entire remaining engine +
+  `IChildEnumerator` surface is now exactly the memoize machinery (3 files).
+
 **Remaining, in rough order:**
 
-1. **De-engine the enumerable adapters** (`ToDegenerateTree`, `ToTrivialForest`):
-   rewrite as small `TreenumeratorBase` subclasses with Primitives state, staying in
-   Linq. State analysis: trivial forest ≈ stateless (enumerator + sibling index);
-   degenerate chain BFT needs O(1) (previous node); degenerate chain DFT needs the full
-   root-to-current path for backtracking visits — a `RefSemiDeque`. Discipline: visit
-   streams must match the engine's exactly (visit counts, parent revisits, BFT
-   root-frontier ordering) — keep existing fixtures as oracle, add stream-diff tests
-   against the current implementations before deleting them.
-2. **Relocate memoize machinery to the engine package**; promote `ITreenumerableBuffer`
+1. **Relocate memoize machinery to the engine package**; promote `ITreenumerableBuffer`
    to Core (contract-shaped). The `Memoize()`/`Materialize()` extensions follow the
    machinery (they construct the concrete memo): Memoize becomes an engine service
    rather than a Linq operator — a deliberate deviation from Ix parity, the price of
    actually breaking the edge. `Consume()`'s policy extension binds only the Core
    interface and stays in Linq.
-3. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the
+2. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the
    dimension split; `Invert` resolves with the mirror-view rework. ⚠ The Invert-as-view
    design must target whatever abstraction the (engine-side) memoize machinery exposes.
    Afterward `PreorderTree` can leave the engine for `Copse.Trees`, making the engine
    package pure machinery.
-4. **Rename the engine package and settle the `Copse` id.** OPEN: `Copse.Engine` vs
+3. **Rename the engine package and settle the `Copse` id.** OPEN: `Copse.Engine` vs
    `Copse.Traversal`; and metapackage (a codeless `Copse` package referencing
    Core + Primitives + Engine + Linq, preserving the flagship install name) vs retiring
    the id. Recommendation on record: rename + metapackage.
-5. **Namespace alignment wave** (deferred, batched with the dimension split's breaking
+4. **Namespace alignment wave** (deferred, batched with the dimension split's breaking
    era): align `namespace Copse` types to their owning assemblies; revisit
    `IChildEnumerator`(+`NodeAndSiblingIndex`) promotion to Core if the capability
    lattice wants it; possible `NodeVisit`-composes-`NodeContext` cleanup (impossible
