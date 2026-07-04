@@ -1,6 +1,6 @@
-﻿using Copse.Core;
+﻿using Copse;
+using Copse.Core;
 using Copse.Linq.Extensions;
-using Nito.Collections;
 using System;
 using System.Collections.Generic;
 
@@ -23,13 +23,13 @@ namespace Copse.Linq.Treenumerators
           1,
           new NodePosition(0, -1));
 
-      _CurrentLevel.AddToBack(seedVisit);
+      _CurrentLevel.AddLast(seedVisit);
     }
 
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
 
-    private Deque<NodeVisit<TAccumulate>> _CurrentLevel = new Deque<NodeVisit<TAccumulate>>();
-    private Deque<NodeVisit<TAccumulate>> _NextLevel = new Deque<NodeVisit<TAccumulate>>();
+    private RefSemiDeque<NodeVisit<TAccumulate>> _CurrentLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
+    private RefSemiDeque<NodeVisit<TAccumulate>> _NextLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
 
     private Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
 
@@ -42,10 +42,10 @@ namespace Copse.Linq.Treenumerators
       if (Mode == TreenumeratorMode.SchedulingNode)
       {
         if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
-          _NextLevel.RemoveFromBack();
+          _NextLevel.RemoveLast();
         else if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
         {
-          _SkippedStack.Push(_NextLevel.RemoveFromBack());
+          _SkippedStack.Push(_NextLevel.RemoveLast());
           _ScheduledChildrenSinceSkip = false;
         }
       }
@@ -89,20 +89,20 @@ namespace Copse.Linq.Treenumerators
       //    (this happens when grandparent was skipped but parent wasn't yet visited)
       // 4. Else use _CurrentLevel[0] (for root nodes, parent is seed at depth -1)
       NodeVisit<TAccumulate> accumulateNodeVisit;
-      if (_CurrentLevel[0].Position.Depth == parentDepth)
-        accumulateNodeVisit = _CurrentLevel[0];
+      if (_CurrentLevel.GetFirst().Position.Depth == parentDepth)
+        accumulateNodeVisit = _CurrentLevel.GetFirst();
       else if (_SkippedStack.Count > 0)
         accumulateNodeVisit = _SkippedStack.Peek();
-      else if (_NextLevel.Count > 0 && _NextLevel[0].Position.Depth == parentDepth)
-        accumulateNodeVisit = _NextLevel[0];
+      else if (_NextLevel.Count > 0 && _NextLevel.GetFirst().Position.Depth == parentDepth)
+        accumulateNodeVisit = _NextLevel.GetFirst();
       else
-        accumulateNodeVisit = _CurrentLevel[0];
+        accumulateNodeVisit = _CurrentLevel.GetFirst();
 
       var node = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
 
       var visit = InnerTreenumerator.ToNodeVisit().WithNode(node);
 
-      _NextLevel.AddToBack(visit);
+      _NextLevel.AddLast(visit);
 
       UpdateStateFromNodeVisit(visit);
 
@@ -114,7 +114,7 @@ namespace Copse.Linq.Treenumerators
       if (InnerTreenumerator.VisitCount == 1)
       {
         _SkippedStack.Clear();
-        _CurrentLevel.RemoveFromFront();
+        _CurrentLevel.RemoveFirst();
 
         if (_CurrentLevel.Count == 0)
           (_CurrentLevel, _NextLevel) = (_NextLevel, _CurrentLevel);
@@ -122,13 +122,13 @@ namespace Copse.Linq.Treenumerators
         // Remove items that were skipped by the inner treenumerator
         // (e.g., due to SkipSiblings affecting earlier siblings)
         while (_CurrentLevel.Count > 0
-          && _CurrentLevel[0].Position != InnerTreenumerator.Position)
+          && _CurrentLevel.GetFirst().Position != InnerTreenumerator.Position)
         {
-          _CurrentLevel.RemoveFromFront();
+          _CurrentLevel.RemoveFirst();
         }
       }
 
-      var visit = _CurrentLevel[0];
+      ref var visit = ref _CurrentLevel.GetFirst();
 
       var newVisit =
         new NodeVisit<TAccumulate>(
@@ -137,7 +137,7 @@ namespace Copse.Linq.Treenumerators
           InnerTreenumerator.VisitCount,
           InnerTreenumerator.Position);
 
-      _CurrentLevel[0] = newVisit;
+      visit = newVisit;
 
       UpdateStateFromNodeVisit(newVisit);
     }

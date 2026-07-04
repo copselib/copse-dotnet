@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nito.Collections.Deque" Version="1.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
   </ItemGroup>

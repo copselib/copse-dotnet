@@ -1,5 +1,5 @@
+using Copse;
 using Copse.Core;
-using Nito.Collections;
 using System;
 
 namespace Copse.Linq.Treenumerators
@@ -57,7 +57,7 @@ namespace Copse.Linq.Treenumerators
 
     // The merged visit queue. The front is the active merged parent (the node currently being revisited
     // between its child slots). Newly scheduled merged children are appended to the back.
-    private readonly Deque<MergedFrame> _Queue = new Deque<MergedFrame>();
+    private readonly RefSemiDeque<MergedFrame> _Queue = new RefSemiDeque<MergedFrame>();
 
     // The side(s) of the most recently emitted merged scheduling visit, whose inner(s) still sit at the
     // just-scheduled node and must be advanced (with the consumer's strategy) at the start of the next
@@ -136,7 +136,7 @@ namespace Copse.Linq.Treenumerators
       if (Mode == TreenumeratorMode.SchedulingNode
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
-        _Queue.RemoveFromBack();
+        _Queue.RemoveLast();
       }
 
       // A consumer SkipSiblings on the just-scheduled node caps its EFFECTIVE PARENT: every later merged
@@ -155,10 +155,9 @@ namespace Copse.Linq.Treenumerators
         }
         else if (_Queue.Count > 0)
         {
-          var front = _Queue[0];
+          ref var front = ref _Queue.GetFirst();
           front.SiblingsCapped = true;
           front.CapNodeRawDepth = _LastScheduledRawDepth;
-          _Queue[0] = front;
         }
       }
 
@@ -186,7 +185,7 @@ namespace Copse.Linq.Treenumerators
         //    Deferred until the whole root frontier is scheduled (root-level nodes have no parent batch).
         if (_RootsScheduled)
           while (_Queue.Count > 0 && FrontIsFullyVisited())
-            _Queue.RemoveFromFront();
+            _Queue.RemoveFirst();
 
         if (_BothTreenumeratorsFinished && _Queue.Count == 0)
           return false;
@@ -243,8 +242,8 @@ namespace Copse.Linq.Treenumerators
       bool capped;
       if (!_RootsScheduled && _RootSiblingsCapped && depth >= 0 && depth <= _RootCapNodeRawDepth)
         capped = true;
-      else if (_Queue.Count > 0 && _Queue[0].SiblingsCapped
-        && depth > _Queue[0].Position.Depth && depth <= _Queue[0].CapNodeRawDepth)
+      else if (_Queue.Count > 0 && _Queue.GetFirst().SiblingsCapped
+        && depth > _Queue.GetFirst().Position.Depth && depth <= _Queue.GetFirst().CapNodeRawDepth)
         capped = true;
       else
         capped = false;
@@ -308,7 +307,7 @@ namespace Copse.Linq.Treenumerators
         // next owed visit -- pushing it toward the next revisit / its retirement signal. Never advance a
         // side that has already moved off the front (a deeper descendant or a sibling): that belongs to a
         // LATER frame and must not be consumed now.
-        var front = _Queue[0];
+        ref var front = ref _Queue.GetFirst();
         if (front.HasLeft && SideHasNextFrontVisit(_LeftTreenumerator, _LeftTreenumeratorFinished, front.Position.Depth, front.LeftConsumedVC))
           advanceLeft = true;
         if (front.HasRight && SideHasNextFrontVisit(_RightTreenumerator, _RightTreenumeratorFinished, front.Position.Depth, front.RightConsumedVC))
@@ -350,7 +349,10 @@ namespace Copse.Linq.Treenumerators
     // to scheduling the node's children / its next revisit / its retirement.
     private bool TryEmitOwedRevisit()
     {
-      var front = _Queue[0];
+      // Ref into the queue front: mutations (ConsumedVC, VisitCount, RevisitedSlot) land in place,
+      // with no fat-frame copy-out/copy-back. Nothing below adds to or removes from _Queue, so the
+      // ref stays the front throughout.
+      ref var front = ref _Queue.GetFirst();
       var frontDepth = front.Position.Depth;
 
       if (front.VisitCount == 0)
@@ -366,7 +368,6 @@ namespace Copse.Linq.Treenumerators
         if (front.HasLeft) { front.LeftConsumedVC++; AdvanceLeftPastConsumed(); }
         if (front.HasRight) { front.RightConsumedVC++; AdvanceRightPastConsumed(); }
         front.VisitCount = 1;
-        _Queue[0] = front;
         PublishFromFrame(front, TreenumeratorMode.VisitingNode);
         return true;
       }
@@ -408,7 +409,6 @@ namespace Copse.Linq.Treenumerators
 
       front.RevisitedSlot = candidate;
       front.VisitCount++;
-      _Queue[0] = front;
       PublishFromFrame(front, TreenumeratorMode.VisitingNode);
       return true;
     }
@@ -477,14 +477,13 @@ namespace Copse.Linq.Treenumerators
       // If this is a direct child of the current front, update the front's per-side slot index.
       if (_Queue.Count > 0)
       {
-        var front = _Queue[0];
+        ref var front = ref _Queue.GetFirst();
         if (position.Depth == front.Position.Depth + 1)
         {
           if (includeLeft)
             front.LeftLastDirectChildSibling = position.SiblingIndex;
           if (includeRight)
             front.RightLastDirectChildSibling = position.SiblingIndex;
-          _Queue[0] = front;
         }
       }
 
@@ -492,7 +491,7 @@ namespace Copse.Linq.Treenumerators
       _LastScheduledWasRoot = !_RootsScheduled;
       _LastScheduledRawDepth = position.Depth;
 
-      _Queue.AddToBack(frame);
+      _Queue.AddLast(frame);
       PublishFromFrame(frame, TreenumeratorMode.SchedulingNode);
 
       _PendingAdvanceLeft = includeLeft;
@@ -505,7 +504,7 @@ namespace Copse.Linq.Treenumerators
     // front's depth / VC), or moved to a sibling -- and none is still scheduling a descendant.
     private bool FrontIsFullyVisited()
     {
-      var front = _Queue[0];
+      ref var front = ref _Queue.GetFirst();
 
       if (front.VisitCount == 0)
         return false;
