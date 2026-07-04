@@ -74,11 +74,21 @@ dotnet run -c Release -- --filter '*' --category LINQ
 
 # Run depth-first related benchmarks (traversal + LINQ where)
 dotnet run -c Release -- --filter '*' --category DepthFirst
+
+# Combine categories
+dotnet run -c Release -- --filter '*' --category Traversal --category LINQ
 ```
+
+Categories are declared by each benchmark class's `[BenchmarkCategory]` attribute — that's the
+source of truth. The vocabulary currently in use: feature areas (`Traversal`, `LINQ`,
+`Conversion`, `DataStructures`, `Serialization`), operations (`Query`, `Filter`, `Projection`,
+`Pruning`, `Skip`, `Merge`, `Invert`, `Leaffix`, `Materialize`, `Memoize`), and traversal
+dimensions (`DepthFirst`, `BreadthFirst`, `PreOrder`, `PostOrder`, `LevelOrder`).
 
 ### List Available Benchmarks
 ```bash
 dotnet run -c Release -- --list flat
+dotnet run -c Release -- --list tree
 ```
 
 ### Interactive Mode
@@ -98,8 +108,6 @@ dotnet run -c Release -- --filter '*'
 cd src/Copse.Benchmarks
 dotnet run -c Release -- --filter '*DepthFirst*' --exporters json html
 ```
-
-See [BENCHMARK_CATEGORIES.md](../src/Copse.Benchmarks/BENCHMARK_CATEGORIES.md) for the full list of categories and usage examples.
 
 ## Adding New Benchmarks
 
