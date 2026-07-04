@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
   </ItemGroup>
 

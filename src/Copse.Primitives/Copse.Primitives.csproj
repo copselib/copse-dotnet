@@ -1,17 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>Depth-first and breadth-first tree traversal engine for Copse.</Description>
+    <Description>High-performance building blocks for Copse: chunked ref-access collections, disposable lifecycle utilities, and node context primitives.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
-    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Copse.Tests" />
   </ItemGroup>
+
 </Project>

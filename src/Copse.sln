@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Copse.Tests", "Copse.Tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Copse.Benchmarks", "Copse.Benchmarks\Copse.Benchmarks.csproj", "{47224640-FAE5-4CC2-AFD3-571CACE8F75F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Primitives", "Copse.Primitives\Copse.Primitives.csproj", "{44B10CD3-BDED-4F5B-AB1F-5CEAC70DA173}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{47224640-FAE5-4CC2-AFD3-571CACE8F75F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47224640-FAE5-4CC2-AFD3-571CACE8F75F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47224640-FAE5-4CC2-AFD3-571CACE8F75F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44B10CD3-BDED-4F5B-AB1F-5CEAC70DA173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44B10CD3-BDED-4F5B-AB1F-5CEAC70DA173}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44B10CD3-BDED-4F5B-AB1F-5CEAC70DA173}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44B10CD3-BDED-4F5B-AB1F-5CEAC70DA173}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
