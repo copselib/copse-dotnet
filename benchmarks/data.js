@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783141820487,
+  "lastUpdate": 1783148912668,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -3168,6 +3168,150 @@ window.BENCHMARK_DATA = {
             "value": 39785977.07100591,
             "unit": "ns",
             "range": "± 108374.17657834852"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "fbb483ea2d9399e53f93048f756024fa8040d924",
+          "message": "Add design note: traversal dimension split & serialization redesign\n\nRecords the 2026-07-04 design discussion, tabled for later pickup:\nsplitting ITreenumerable into IDepthFirstTreenumerable /\nIBreadthFirstTreenumerable (compile-time traversal affordances), the\nstreaming serialization redesign it resolves (lazy deserialize, reader\nfactories, dft/bft layout axis, envelope shape stats), the Invert\nrethink (windowed BFT mirror, zero-copy views over memo captures), and\nthe pick-up plan starting with the operator audit. Cross-linked from\nTREE_CAPABILITY_INTERFACES.md as an orthogonal axis: types for\n\"impossible without escalation,\" runtime probing for \"cheaper when\nrich.\"\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-04T06:28:21Z",
+          "tree_id": "f759acc0aedea7350f372a63da75cf2a8cd7937f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fbb483ea2d9399e53f93048f756024fa8040d924"
+        },
+        "date": 1783148911971,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TriangleTree_2896",
+            "value": 239177891.02380952,
+            "unit": "ns",
+            "range": "± 539256.9906672288"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 279184543.8,
+            "unit": "ns",
+            "range": "± 821905.163437816"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TrivialForest_4M",
+            "value": 14966627.454326924,
+            "unit": "ns",
+            "range": "± 11083.134692491856"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.DegenerateTree_4M",
+            "value": 100262526.98571429,
+            "unit": "ns",
+            "range": "± 375333.96492705145"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TriangleTree_2896",
+            "value": 222402453.4,
+            "unit": "ns",
+            "range": "± 3594070.304347022"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 247704272.92857143,
+            "unit": "ns",
+            "range": "± 359235.46686886926"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TrivialForest_4M",
+            "value": 14969653.9375,
+            "unit": "ns",
+            "range": "± 15352.175752876383"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.DegenerateTree_4M",
+            "value": 68729921.53333333,
+            "unit": "ns",
+            "range": "± 287317.56561491126"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.DeepTree",
+            "value": 45991441.82500001,
+            "unit": "ns",
+            "range": "± 76424.10472481431"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 68998769.225,
+            "unit": "ns",
+            "range": "± 474819.2086660863"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 161197405.10714287,
+            "unit": "ns",
+            "range": "± 859815.6864271713"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 80640735.0989011,
+            "unit": "ns",
+            "range": "± 501432.2162001431"
+          },
+          {
+            "name": "Copse.Benchmarks.PostOrderTraversal.DeepTree",
+            "value": 35416125.4047619,
+            "unit": "ns",
+            "range": "± 194602.9319316317"
+          },
+          {
+            "name": "Copse.Benchmarks.PostOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 41480395.384615384,
+            "unit": "ns",
+            "range": "± 113120.07640589857"
+          },
+          {
+            "name": "Copse.Benchmarks.PostOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 119913999.73333335,
+            "unit": "ns",
+            "range": "± 258706.7799050493"
+          },
+          {
+            "name": "Copse.Benchmarks.PostOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 47434159.46153845,
+            "unit": "ns",
+            "range": "± 141351.04334965738"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.DeepTree",
+            "value": 25594155.192307692,
+            "unit": "ns",
+            "range": "± 59728.7532259389"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 35094110.43589744,
+            "unit": "ns",
+            "range": "± 160509.90970473248"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 110219732.76923077,
+            "unit": "ns",
+            "range": "± 289000.1479822546"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneAfterDepth_19",
+            "value": 39700467.15384615,
+            "unit": "ns",
+            "range": "± 118248.85715246976"
           }
         ]
       }
