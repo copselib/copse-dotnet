@@ -1,13 +1,72 @@
 # Traversal Dimension Split & Serialization Redesign (design note)
 
-> **Status: DESIGN ONLY — not implemented.** Captures a direction discussed 2026-07-04.
-> Jason is **leaning toward making the split** but the work is tabled until he's ready to
-> pick it up. Nothing here is committed to in code yet.
+> **Status: IN PROGRESS — picked up 2026-07-04 (second session), work on
+> `feature/traversal-dimension-split`.** The split is a GO. See "Pick-up decisions
+> (2026-07-04, second session)" below for the deltas against the original design; the
+> operator audit (pick-up step 1) is done — see
+> [OPERATOR_DIMENSION_AUDIT.md](OPERATOR_DIMENSION_AUDIT.md).
 >
 > Motivating context: the post-Memoize serialization cleanup. The serializer discussion
 > kept colliding with one structural question — what should happen when a consumer asks a
 > source for a traversal order it cannot affordably provide — and the split is the answer
 > that fell out.
+
+## Pick-up decisions (2026-07-04, second session)
+
+1. **The "layout streamers" are reframed as concrete treenumerables for flat-stored
+   trees, and they live in `Copse`.** Stop thinking of them as stream adapters: the
+   existing `Treenumerable<,,>` enumerates trees stored *hierarchically* (via the
+   child-enumerator protocol); these enumerate trees stored in *flat* preorder or
+   level-order form. Same citizenship, same package. Names by **layout vocabulary, not
+   traversal vocabulary** (a layout can serve both dimensions when the store allows):
+   `PreorderTreenumerable`, `LevelOrderTreenumerable`. Consequences:
+   - The serializer-placement question dissolves (`Copse.SimpleSerializer` already
+     references `Copse`).
+   - The Linq→Copse edge *persists* (memoize replays instantiate `Copse` flat-family
+     types) — a deliberate reversal of the ledger's "edge breaks anyway" payoff, sanctioned
+     by the pay-for-itself rule; the edge is now honest ("Linq uses concrete
+     treenumerables"), not incidental.
+   - `PreorderTree` retires by **dissolving** into `PreorderTreenumerable` over a
+     completed store (not by moving to `Copse.Trees`).
+2. **Layout fixes the native dimension; store capability decides full vs narrow
+   citizenship.** Each flat treenumerable always implements its native narrow interface
+   (preorder → `IDepthFirstTreenumerable`, level-order → `IBreadthFirstTreenumerable`).
+   Over a **random-access** store (arrays, memo capture, string) it implements full
+   `ITreenumerable` (cross-order rides subtree-size hops / child spans — what the memo
+   buffers already do). Over a **forward-only** store (reader over a file) it implements
+   the narrow interface only. Since C# fixes interface lists at compile time, that means
+   two concrete types per layout (one per capability tier). The store SPI mirrors
+   `IChildEnumerator`'s role (the flat family's adapter protocol, defined in `Copse`) and
+   splits along the same line — forward-only vs random-access — with the random-access
+   shape carrying an "ensure index available" hook because the memo's store is
+   random-access but *growing* during capture.
+3. **Envelope: one layout per file.** Reconfirmed with a second argument: even with both
+   layouts in one file, streaming the second section requires reading (not just parsing)
+   past the entire first — the 10 GB case again. Tiny dependency-free header per file
+   (layout axis + shape stats), no JSON dependency; JSON interop only ever as a separate
+   package on real demand.
+4. **One static axis, ever.** The dimension split spends the library's entire budget for
+   axes expressed in operator signatures (~2× overloads on the narrow set, once). The
+   capability lattice (TREE_CAPABILITY_INTERFACES.md) must stay **runtime-probed** —
+   if capabilities became overloads too, the surface goes to 2 × 2^k. The split doesn't
+   just tolerate that division of labor; it depends on it. (Capability-based
+   optimizations like stackless DFS via parent navigation live *inside* concrete
+   `Get*Treenumerator` implementations — invisible to the type system. Synergy note: the
+   level-order store is LOUDS-adjacent → O(1) parent → the DFT-over-level-order
+   treenumerator is a candidate first stackless DFS.)
+5. **Audit outcome (supersedes the containment guess).** The narrow-overloadable set is
+   defined by the factory shape, not streaming-ness: 25 operators are cleanly
+   both-dimension, 7 are dimension-fixed *by semantics*, and only `Invert` +
+   `LeaffixScan` are RETHINK. `GetLeaves`/`GetRoots`/`CountTrees`/`RootfixAggregate`
+   were dimension-fixed **by implementation accident only** (leaf detection is O(1) in
+   either dimension) and join the both-dimension set. See OPERATOR_DIMENSION_AUDIT.md.
+6. **Wave scope.** This wave: split + flat-family treenumerables + serializer. Next
+   wave: `Invert`/`LeaffixScan` rework and PreorderTree's dissolution. Deletion
+   candidates identified during review (no current value, zero internal references):
+   `WithContext`, `WithLevelIndex`, `WithParent` — the real requirement behind them is a
+   general context-attachment mechanism (path-threaded = `RootfixScan` already;
+   traversal-order-threaded = a possible future per-enumeration-state Select/Do
+   primitive, admitted only on real demand).
 
 ## The organizing principle
 

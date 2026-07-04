@@ -47,6 +47,20 @@
    text — decoded back into visit streams). A memo buffer is an in-memory
    serialization; a serialized file is a persisted memo capture; the streamers are the
    decoders both share.
+   **Refined 2026-07-04 (second session): the second family are not "streamers" but
+   concrete treenumerables for flat-stored trees** (`PreorderTreenumerable`,
+   `LevelOrderTreenumerable`), and **they live in `Copse`** alongside the hierarchical
+   `Treenumerable<,,>` — the package's identity becomes "concrete treenumerables: trees,
+   however they're stored," not "the engine." Their store SPI (forward-only and
+   random-access shapes) is defined beside them, mirroring `IChildEnumerator`'s role for
+   the hierarchical family. Consequences recorded in
+   [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) "Pick-up decisions":
+   the **Linq→Copse edge persists deliberately** (memoize replays instantiate the flat
+   family — amends ledger item 1's "the Linq→engine edge breaks anyway" payoff under the
+   pay-for-itself rule), the step-3 rename-and-metapackage question **likely dissolves**
+   (`Copse` keeps a coherent meaning), and PreorderTree retires by **dissolving into
+   `PreorderTreenumerable` over a completed store** rather than moving to `Copse.Trees`
+   (amends item 2).
 
 ## Target graph
 
