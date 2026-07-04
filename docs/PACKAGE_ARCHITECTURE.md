@@ -77,12 +77,35 @@ before or with step 1 below.
 
 **Remaining, in rough order:**
 
-1. **Relocate memoize machinery to the engine package**; promote `ITreenumerableBuffer`
-   to Core (contract-shaped). The `Memoize()`/`Materialize()` extensions follow the
-   machinery (they construct the concrete memo): Memoize becomes an engine service
-   rather than a Linq operator — a deliberate deviation from Ix parity, the price of
-   actually breaking the edge. `Consume()`'s policy extension binds only the Core
-   interface and stays in Linq.
+1. **De-engine the memoize replays via LAYOUT STREAMERS** (supersedes the earlier
+   relocation plan — decided 2026-07-04 late). Replays stop riding the generic engine;
+   instead, four storage-specialized treenumerators synthesize visit streams directly
+   from the capture layouts:
+   - *Native* DFT-over-preorder-store and BFT-over-level-order-store: pure playback
+     (linear scan + `RefSemiDeque` path / front cursor), recreate nothing, likely
+     FASTER than engine-over-child-enumerator (the replay-side twin of the bulk-Consume
+     win); laziness preserved via the existing `Ensure*` pulls.
+   - *Cross-order* DFT-over-level-order and BFT-over-preorder: honest caveat (Jason) —
+     these re-implement DFS/BFS over index accessors, so framed as memoize internals
+     they'd be a private engine fork. The reframe that legitimizes them: they are
+     **layout streamers over stores**, exactly the traversal layer the streaming
+     serializer needs (see TRAVERSAL_DIMENSION_SPLIT.md — same four combinations over
+     text). Memo buffers, PreorderTree, and lazily-parsed serialized text are all
+     stores with the same two access shapes; write the streamers once, parameterized
+     over store access.
+   - Payoffs: memoize machinery AND operators stay in Linq (no Ix-parity deviation, no
+     public API relocation); the Linq→engine edge breaks anyway; PreorderTree
+     eventually collapses into "completed store + streamers"; the engine's remaining
+     jurisdiction is crisp — arbitrary live trees via the child-enumerator protocol
+     (sources, not stores).
+   - Guards: MemoizeTests' strategy matrix + replay-vs-source oracle diff each streamer
+     against engine behavior before the engine path dies; the Memoize benchmarks
+     (replay-over-capture, cross-order, laziness) referee perf.
+   - Staging: native DFT first (hottest path), benchmark A/B, then native BFT, then the
+     cross pair. The dependency breaks only when all four land; the engine serves
+     un-rewritten combos in the interim.
+   - `ITreenumerableBuffer` promotion to Core: still desirable, now decoupled — do it
+     with the namespace wave.
 2. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the
    dimension split; `Invert` resolves with the mirror-view rework. ⚠ The Invert-as-view
    design must target whatever abstraction the (engine-side) memoize machinery exposes.

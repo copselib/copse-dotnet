@@ -131,6 +131,13 @@ subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeBreadthFirst
 
 ### Deserialize
 
+> **2026-07-04 addendum:** the traversal layer for deserialization is expected to come
+> for free from the **layout streamers** planned in
+> [PACKAGE_ARCHITECTURE.md](PACKAGE_ARCHITECTURE.md) (memoize-replay de-engining): four
+> storage-specialized treenumerators (DFT/BFT × preorder-store/level-order-store),
+> parameterized over store access. A lazily-parsed serialized source is just another
+> store; memo buffers and PreorderTree are the in-memory ones. Build once, reuse here.
+
 - Returns a **streaming lazy view** — never a buffer. (A buffer-returning
   `Deserialize(TextReader)` was considered and rejected: a memo's capture grows
   monotonically, so it's just deferred materialization — fatal for the motivating case,
