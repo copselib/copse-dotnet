@@ -139,13 +139,14 @@ before or with step 1 below.
    - Staging: native DFT first (hottest path), benchmark A/B, then native BFT, then the
      cross pair. The dependency breaks only when all four land; the engine serves
      un-rewritten combos in the interim.
-     **Status 2026-07-04: BOTH NATIVES LANDED** (`IPreorderStore`/`ILevelOrderStore` +
-     `PreorderStoreDepthFirstTreenumerator`/`LevelOrderStoreBreadthFirstTreenumerator` in Copse,
-     memo native-dimension replays rewired, full suite green; the engine now serves only the two
-     cross-order combinations). A/B (ShortRun, TriangleTree@1448): DFT replay-over-capture
-     53.8→38.6 ms (−28%), allocs −30%; DFT first-pass 123→97.5 ms (−21%); BFT replay-over-capture
-     54.8→37.5 ms (−32%), allocs −40%; BFT first-pass 144→115 ms (−20%); lazy 10K partial
-     440→329 µs (−25%). The "likely FASTER" prediction confirmed in both dimensions.
+     **Status 2026-07-04: ALL FOUR LANDED — item COMPLETE.** `IPreorderStore`/`ILevelOrderStore`
+     + the four store treenumerators (DFT/BFT × preorder/level-order) live in Copse; all memoize
+     replays (native and cross-order) ride them; the memoize child enumerators and
+     `EnumerateRootIndices` are deleted. Copse.Linq no longer references the engine or
+     `IChildEnumerator` anywhere — the memoize machinery de-engined in place, exactly as this
+     item intended. A/B (ShortRun, TriangleTree@1448), engine→playback: DFT native replay −28%
+     time/−30% alloc; BFT native replay −32%/−40%; BFT-over-preorder cross −24%/−30%;
+     DFT-over-level-order cross −30%/−40%; first-passes −20%; lazy 10K partial −25%.
    - `ITreenumerableBuffer` promotion to Core: still desirable, now decoupled — do it
      with the namespace wave.
 2. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the

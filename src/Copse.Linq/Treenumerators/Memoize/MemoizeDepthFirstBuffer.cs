@@ -113,20 +113,6 @@ namespace Copse.Linq.Treenumerators
       _Feed = null;
     }
 
-    // Lazily enumerates the buffer indices of the roots -- the top-level spans, each hop filling
-    // only far enough to close the previous root's subtree. The open-span dual of
-    // PreorderTree.RootIndices.
-    public System.Collections.Generic.IEnumerable<int> EnumerateRootIndices()
-    {
-      var index = 0;
-
-      while (EnsureBuffered(index))
-      {
-        yield return index;
-        index += EnsureSubtreeClosed(index);
-      }
-    }
-
     // Advance the feed to the next appended node, closing subtrees the depth deltas prove
     // finished; on exhaustion close everything, latch Complete, and drop the feed.
     private void PullOne()
