@@ -16,10 +16,11 @@ operator; 5 in `Copse.Linq.Experimental`, two of which are stubs and one comment
 
 | Verdict | Count | Operators |
 |---------|-------|-----------|
-| **YES** — narrow overloads (single-dimension in, single-dimension out) | **25** | Select, Where, PruneBefore, PruneAfter, TakeNodesUntil, TakeNodesWhile, TakeTrees, SkipTrees, Do, Hide, WithContext, RootfixScan, Union, Intersection, Subtract, SymmetricDifference, CountNodes, AnyNodes, AllNodes, Consume, GetTraversal, GetLeaves, GetRoots, CountTrees, RootfixAggregate |
+| **YES** — narrow overloads (single-dimension in, single-dimension out) | **24** | Select, Where, PruneBefore, PruneAfter, TakeNodesUntil, TakeNodesWhile, TakeTrees, SkipTrees, Do, Hide, RootfixScan, Union, Intersection, Subtract, SymmetricDifference, CountNodes, AnyNodes, AllNodes, Consume, GetTraversal, GetLeaves, GetRoots, CountTrees, RootfixAggregate |
 | **YES (dimension-fixed consumer)** — one narrow overload only, on the dimension its *semantics* fix | **7** | GetLevels, LevelOrderTraversal (BFT); PreOrderTraversal, PostOrderTraversal, GetBranches, LeaffixAggregate, GetDepthFirstTraversal/GetBreadthFirstTraversal (DFT/BFT) |
 | **RETHINK** — redesign per-dimension rather than mechanically overload | **2** | Invert, LeaffixScan |
-| **NO** — stays `ITreenumerable`-only | **18** | Memoize, Materialize, Defer, Using, Empty, TakeLastTrees, SkipLastTrees, WithLevelIndex, WithParent, ToFormattedLines, ToFormattedString, ToDepthFirstTreeEnumerable, ToBreadthFirstTreeEnumerable, GetTreenumerator, ExpandNode*, Graft*, Collapse* (stub), InOrderTraversal* (stub) |
+| **NO** — stays `ITreenumerable`-only | **16** | Memoize, Materialize, Defer, Using, Empty, TakeLastTrees, SkipLastTrees, ToFormattedLines, ToFormattedString, ToDepthFirstTreeEnumerable, ToBreadthFirstTreeEnumerable, GetTreenumerator, ExpandNode*, Graft*, Collapse* (stub), InOrderTraversal* (stub) |
+| **DELETED** (2026-07-04 review) | **3** | WithContext, WithLevelIndex, WithParent — no current value, zero references; see surprise 3 |
 
 `*` = Experimental.
 
@@ -75,13 +76,13 @@ LevelOrderTraversal (BFT).
    traversals — or DFT then BFT off the same composed tree — corrupt each other. This violates the
    library's lazy-re-enumerable contract and should be fixed (per-treenumerator state) before
    either gets typed. Not a dimension issue per se, but the audit surfaced it.
-   **Review note (2026-07-04):** neither operator is load-bearing — deletion is on the table,
-   and `WithContext` (an identity `Select` promoting `NodeContext` into the value) joins them:
-   all three were experiments toward a general "attach computed context to each node" mechanism
-   that never found a satisfying shape, none has any current value, and none is referenced
-   anywhere else in the solution. The general mechanism is the real requirement, tracked in the
-   split design discussion (path-threaded context = `RootfixScan`; traversal-order-threaded
-   context = a missing per-enumeration-state Select/Do primitive).
+   **Review outcome (2026-07-04): all three DELETED** — `WithLevelIndex`, `WithParent`, and
+   `WithContext` (an identity `Select` promoting `NodeContext` into the value). All were
+   experiments toward a general "attach computed context to each node" mechanism that never
+   found a satisfying shape; none had current value or references. The general mechanism is the
+   real requirement, tracked in the split design discussion (path-threaded context =
+   `RootfixScan`; traversal-order-threaded context = a possible per-enumeration-state Select/Do
+   primitive, admitted only on real demand).
 4. **`LeaffixScan` and `Invert` are the only tree→tree operators that eagerly materialize the whole
    forest** (both end in `new PreorderTree<T>(…)` over `List.ToArray()`), and both consume the
    source **DFT regardless of how the *result* is later traversed** — the result's BFT dimension is
@@ -113,7 +114,7 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 | **SkipTrees** | tree→tree | same / same | both | O(d) | O(w) | none (→ PruneBefore) | YES |
 | **Do** | tree→tree | same / same | both | O(1) | O(1) | none | YES |
 | **Hide** | tree→tree | same / same | both | O(1) | O(1) | none | YES |
-| **WithContext** | tree→tree | same / same | both | O(1) | O(1) | none (→ Select) | YES (deletion candidate — see surprise 3) |
+| **WithContext** | tree→tree | same / same | — | O(1) | O(1) | none (→ Select) | **DELETED** (see surprise 3) |
 | **RootfixScan** | tree→tree | same / same | both | O(d) (path stack) | O(w) (cur+next level) | none | YES |
 | **Union** | tree→tree | same / same | both | O(d) (merge stack) | O(w) (merge queue) | none | YES |
 | **Intersection** | tree→tree | same / same | both | O(d) | O(w) | none (→ Union+PruneBefore) | YES |
@@ -145,8 +146,8 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 | **Empty** | factory | — / — | trivially both | O(1) | O(1) | none | NO (not worth surface) |
 | **TakeLastTrees** | tree→tree | DFT (count pre-pass + SkipTrees) | — | O(d) | O(w) | **extra full GetRoots() acquisition; must count all roots first (non-streaming)** | NO |
 | **SkipLastTrees** | tree→tree | DFT (count pre-pass + TakeTrees) | — | O(1) | O(1) | same as TakeLastTrees | NO |
-| **WithLevelIndex** | tree→tree | same / same | (fix first) | O(d) | O(d) | **shared mutable List across all treenumerators — not re-enumerable/thread-safe** | NO |
-| **WithParent** | tree→tree | same / same | (fix first) | O(d) | O(d) | **shared mutable List — same hazard** | NO |
+| **WithLevelIndex** | tree→tree | same / same | — | O(d) | O(d) | shared mutable List across all treenumerators — not re-enumerable | **DELETED** (see surprise 3) |
+| **WithParent** | tree→tree | same / same | — | O(d) | O(d) | shared mutable List — same hazard; BFT dimension semantically wrong | **DELETED** (see surprise 3) |
 | **ToFormattedLines** | tree→enum | DFT (token stream) + Reverse | — | O(n) | — | reverses whole token stream + Stack of all lines | NO |
 | **ToFormattedString** | tree→scalar | DFT (→ ToFormattedLines) | — | O(n) | — | joins all lines | NO |
 | **ToDepthFirstTreeEnumerable** | tree→tokens | DFT / — | DFT only (niche) | O(1) | — | none | NO |
