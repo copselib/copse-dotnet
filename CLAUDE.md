@@ -22,16 +22,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 #### LINQ-Style Operations (45+ methods):
 
-- Query: Where(), Select(), SelectMany(), CountNodes(), GetLeaves(), GetLevels()
-- Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans
-- Set operations: Union(), Intersection(), Subtract()
-- Transformation: InvertTree(), Materialize(), pretty printing
+- Query: Where(), Select(), CountNodes(), GetLeaves(), GetLevels()
+- Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan)
+- Set operations: Union(), Intersection(), Subtract(), SymmetricDifference()
+- Transformation: Invert() (mirror), Memoize()/Materialize(), pretty printing
+- (SelectMany is designed but not yet implemented — see docs/SELECTMANY_DESIGN.md.)
 
 #### Performance Optimizations:
 
-- Custom RefSemiDeque<T> data structure with ref semantics for zero-copy state management
+- Custom RefSemiDeque<T> / RefAppendOnlyList<T> with ref semantics for zero-copy state management
 - Lazy evaluation - operations compose without materializing intermediate trees
-- Struct-based nodes (SimpleNode<T>) to minimize allocations
+- Struct-based nodes to minimize allocations; the flat family decodes via span/index arithmetic
+  (no per-node child enumerators), which measured faster than the engine on replay/deserialize
 
 ## Build & Test Commands
 
@@ -60,29 +62,78 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 ### Project Structure
 
-- **Copse.Core** - Core interfaces (`ITreenumerable<T>`, `ITreenumerator<T>`) and enums
-- **Copse** - Base traversal implementations (DFS/BFS treenumerators)
-- **Copse.Linq** - LINQ-style tree operations and extensions
-- **Copse.Linq.Experimental** - Experimental features (in progress)
-- **Copse.Trees** - Sample tree implementations (Collatz, Triangle, etc.)
-- **Copse.SimpleSerializer** - Tree serialization for testing/debugging
-- **Copse.TestUtils** - Test utilities and helpers
+- **Copse.Core** - The dependency root. Contracts (`ITreenumerable<T>` and its two
+  single-dimension parents, `ITreenumerator<T>`), the enums, and the vocabulary they speak
+  (`NodePosition`, `NodeVisit`, `TreeTraversalStrategy`). References nothing.
+- **Copse.Primitives** - Building blocks with no traversal semantics: the chunked ref-access
+  collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted `Copse.Disposables` algebra, and
+  the node-context value types (`NodeContext`, `NodeAndSiblingIndex`). References Core.
+- **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
+  engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
+  the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
+  treenumerators, over flat preorder/level-order encodings). Also the tree-source factories
+  (`Tree.Defer`/`Using`/`Empty`) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
+- **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the
+  memoize machinery rides the flat family, not a private engine).
+- **Copse.Linq.Experimental** - In-progress operators (`ExpandNodes`, `Graft`).
+- **Copse.Trees** - Sample trees (Collatz, Triangle, etc.).
+- **Copse.SimpleSerializer** - Header-free text serialization: layout-named methods over the flat
+  family (lazy string deserialize → full tree; forward-only reader deserialize → narrow tree).
+- **Copse.TestUtils** - Test utilities, plus `EngineTree`/`PreorderTree` — the engine-backed
+  **conformance oracle** (deliberately out of the product so the suites can diff the flat family
+  against the real engine).
 
 ### Key Abstractions
 
-- **ITreenumerable<T>** - Factory interface for creating treenumerators (analogous to `IEnumerable<T>`)
-- **ITreenumerator<T>** - Stateful traversal engine (analogous to `IEnumerator<T>`)
+- **ITreenumerable<T>** - Factory interface for creating treenumerators (analogous to
+  `IEnumerable<T>`). It is a **pure composite** of the two single-dimension interfaces below.
+- **IDepthFirstTreenumerable<T> / IBreadthFirstTreenumerable<T>** - The traversal-dimension split
+  (see below). Each exposes just one `Get…Treenumerator()`; `ITreenumerable` derives from both.
+- **ITreenumerator<T>** - Stateful traversal engine (analogous to `IEnumerator<T>`), `IDisposable`.
 - **NodeTraversalStrategies** - Flags enum controlling traversal: `SkipNode`, `SkipDescendants`, `SkipSiblings`
 - **TreenumeratorMode** - `SchedulingNode` (pre-order) vs `VisitingNode` (post-order)
-- **NodePosition** - Tracks (sibling index, depth) in tree
+- **NodePosition** - Tracks (sibling index, depth) in tree. `NodePosition.ForestRoot` is the
+  pre-enumeration convention (position `(0, -1)`, VisitCount 0, mode SchedulingNode) that every
+  fresh treenumerator sits at before its first `MoveNext` — load-bearing; conformance-checked.
 - **NodeContext<T>** - Bundles node value with its position
 - **NodeVisit<T>** - Complete visit information including mode and visit count
+- **ITreenumerableBuffer<T>** - A re-traversable, lazily-growing capture of another tree (what
+  `Memoize`/`Materialize` return); the typed "upgrade" from a narrow source back to the composite.
 
-### Traversal Implementations
+### The traversal-dimension split
 
-- `DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>` - Stack-based DFS
-- `BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>` - Queue+stack-based BFS
-- `RefSemiDeque<T>` - Custom high-performance dual-ended queue for O(1) operations
+`ITreenumerable<T> : IDepthFirstTreenumerable<T>, IBreadthFirstTreenumerable<T>`. The split makes
+"which traversal orders can this source afford" a **compile-time fact**: a source that can only
+afford one dimension (a forward-only serialized stream) implements just the matching narrow
+interface, so asking it for the other dimension is a compile error rather than a hidden O(n)
+buffering. `Memoize`/`Materialize` are the explicit escalation back to the full composite. Most
+operators are `ITreenumerable`-only; the streaming spine (~Select, Where, prune/take, the
+aggregates, set ops) has narrow overloads that preserve the dimension. See
+docs/TRAVERSAL_DIMENSION_SPLIT.md and docs/OPERATOR_DIMENSION_AUDIT.md.
+
+### Two families of concrete treenumerables
+
+Classified by the data's shape:
+- **Hierarchical** (the engine): child-shaped data adapted via the `IChildEnumerator` protocol.
+  `DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>` (stack-based) and
+  `BreadthFirstTreenumerator<…>` (queue+stack). This is the family for arbitrary live trees.
+- **Flat** (linear encodings decoded back into visit streams): preorder arrays / level-order
+  arrays / serialized text, behind the store SPIs `IPreorderStore`/`ILevelOrderStore`
+  (random-access) and `IPreorderStream`/`ILevelOrderStream` (forward-only). Four store
+  treenumerators (DFT/BFT × preorder/level-order) plus the forward-only stream pair synthesize the
+  exact same visit-stream contract from span/index arithmetic — no child enumerators.
+  `PreorderTreenumerable`/`LevelOrderTreenumerable` (full, over random-access stores) and
+  `PreorderStreamTreenumerable`/`LevelOrderStreamTreenumerable` (narrow, forward-only) are the
+  wrappers. A memo buffer is an in-memory flat store; a serialized file is a persisted one; the
+  memo replays and the deserializer share this machinery.
+
+`RefSemiDeque<T>` / `RefAppendOnlyList<T>` (Copse.Primitives) are the high-performance chunked
+ref-access collections both families build their state on.
+
+**Conformance:** every `ITreenumerable` implementation must produce the engine's exact visit
+stream. `VisitStreamConformance` (Copse.Linq.Tests) is the shared battery — corpus × full
+strategy matrix, lockstepped against `EngineTree` (the engine oracle) — that `ContractTree`, the
+flat family, and the serializer round-trips all ride.
 
 ### DFT vs BFT Scheduling and Visiting Behavior
 
