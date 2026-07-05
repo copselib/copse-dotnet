@@ -1,7 +1,7 @@
 using Copse.Core;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Treenumerables
 {
   // DelegatingTreenumerable's single-dimension sibling: the wrapper the narrow operator
   // overloads return, so a chain over an IBreadthFirstTreenumerable source stays honestly

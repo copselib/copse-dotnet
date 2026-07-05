@@ -1,4 +1,5 @@
 using Copse.Core;
+using Copse.Treenumerables;
 using Copse.SimpleSerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -18,7 +19,7 @@ namespace Copse.Linq.Tests
     }
 
     private static ITreenumerable<string> UsingTree(string tree, List<TestResource> resources)
-      => Treenumerable.Using(
+      => Tree.Using(
         () =>
         {
           var resource = new TestResource();
@@ -94,7 +95,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      var tree = Treenumerable.Using<TestResource, string>(
+      var tree = Tree.Using<TestResource, string>(
         () =>
         {
           var resource = new TestResource();
@@ -161,7 +162,7 @@ namespace Copse.Linq.Tests
       foreach (var tree in trees)
       {
         var direct = TreeSerializer.Deserialize(tree);
-        var wrapped = Treenumerable.Using(
+        var wrapped = Tree.Using(
           () => new TestResource(),
           _ => TreeSerializer.Deserialize(tree));
 

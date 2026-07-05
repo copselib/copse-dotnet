@@ -1,4 +1,5 @@
 using Copse.SimpleSerializer;
+using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
@@ -12,7 +13,7 @@ namespace Copse.Linq.Tests
     {
       var invocations = 0;
 
-      var deferred = Treenumerable.Defer(() =>
+      var deferred = Tree.Defer(() =>
       {
         invocations++;
         return TreeSerializer.Deserialize("a(b,c)");
@@ -30,7 +31,7 @@ namespace Copse.Linq.Tests
     {
       var invocations = 0;
 
-      var deferred = Treenumerable.Defer(() =>
+      var deferred = Tree.Defer(() =>
       {
         invocations++;
         return TreeSerializer.Deserialize("a(b,c)");
@@ -50,7 +51,7 @@ namespace Copse.Linq.Tests
 
       foreach (var tree in trees)
       {
-        var deferred = Treenumerable.Defer(() => TreeSerializer.Deserialize(tree));
+        var deferred = Tree.Defer(() => TreeSerializer.Deserialize(tree));
         var direct = TreeSerializer.Deserialize(tree);
 
         CollectionAssert.AreEqual(

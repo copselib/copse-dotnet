@@ -1,6 +1,6 @@
 ﻿using Copse.Core;
 
-namespace Copse.Linq
+namespace Copse.Treenumerators
 {
   internal class EmptyTreenumerator<TNode> : ITreenumerator<TNode>
   {

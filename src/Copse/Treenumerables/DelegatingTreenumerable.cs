@@ -1,7 +1,7 @@
 ﻿using Copse.Core;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Treenumerables
 {
   public class DelegatingTreenumerable<TNode> : ITreenumerable<TNode>
   {

@@ -1,7 +1,7 @@
 using Copse.Core;
 using System;
 
-namespace Copse.Linq.Treenumerators
+namespace Copse.Treenumerators
 {
   // Forwards a treenumerator while running an extra action when it is disposed (once).
   // ITreenumerator.Dispose is a traversal's release point, so anything acquired at
