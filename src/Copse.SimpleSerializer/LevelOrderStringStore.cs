@@ -1,6 +1,5 @@
 using System;
 
-
 namespace Copse.SimpleSerializer
 {
   // PreorderStringStore's dual for bft-layout payloads ("a;b,c;d,e"): a lazily-parsed

@@ -1,6 +1,5 @@
 using System;
 
-
 namespace Copse.SimpleSerializer
 {
   // A depth-first-serialized tree ("a(b(d,e),c)") as a LAZILY-PARSED preorder store: the

@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Treenumerables;
 using System;
+using System.IO;
 using System.Text;
 
 namespace Copse.SimpleSerializer
@@ -61,7 +62,7 @@ namespace Copse.SimpleSerializer
     {
       var builder = new StringBuilder();
 
-      using (var writer = new System.IO.StringWriter(builder))
+      using (var writer = new StringWriter(builder))
         PreorderTextWriter.WritePayload(treenumerable, writer, map);
 
       return builder.ToString();
@@ -74,7 +75,7 @@ namespace Copse.SimpleSerializer
     {
       var builder = new StringBuilder();
 
-      using (var writer = new System.IO.StringWriter(builder))
+      using (var writer = new StringWriter(builder))
         LevelOrderTextWriter.WritePayload(treenumerable, writer, map);
 
       return builder.ToString();
