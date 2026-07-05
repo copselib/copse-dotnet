@@ -72,7 +72,7 @@ namespace Copse.Linq.Tests
       ("TakeNodesWhile(!= e)", t => t.TakeNodesWhile(nodeContext => nodeContext.Node != "e", false)),
       ("Union", t => t.Union(TreeSerializer.Deserialize("a(x,b(y))")).Select(nodeContext => nodeContext.Node.ToString())),
       ("RootfixScan(concat)", t => t.RootfixScan((accumulate, nodeContext) => accumulate.Node + nodeContext.Node, "*")),
-      ("Invert", t => t.Invert()),
+      ("Invert+Memoize", t => t.Invert().Memoize()),
       ("Memoize", t => t.Memoize()),
       ("Materialize", t => t.Materialize()),
       ("Where+Select+Memoize chain", t => t.Where(nodeContext => nodeContext.Node != "c").Select(nodeContext => nodeContext.Node + "!").Memoize()),

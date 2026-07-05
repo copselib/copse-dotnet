@@ -79,12 +79,14 @@ namespace Copse.Linq.Tests
       foreach (var value in expected)
         Debug.WriteLine(value);
 
-      // Act
+      // Act: each dimension exercises its own overload -- breadth-first is the streaming
+      // mirror; depth-first is only reachable through a buffer (.Memoize().Invert()), which is
+      // the point of the overload set.
       Debug.WriteLine($"{Environment.NewLine}-----Actual Values-----");
       var actual =
-        sut
-        .Invert()
-        .GetTraversal(treeTraversalStrategy)
+        (treeTraversalStrategy == TreeTraversalStrategy.BreadthFirst
+          ? sut.Invert().GetBreadthFirstTraversal()
+          : sut.Memoize().Invert().GetTraversal(TreeTraversalStrategy.DepthFirst))
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
 
@@ -95,6 +97,32 @@ namespace Copse.Linq.Tests
         Debug.WriteLine(diffResult);
 
       // Assert
+      CollectionAssert.AreEqual(expected, actual);
+    }
+
+    // The streaming payoff: mirror a forward-only breadth-first stream without ever holding
+    // more than a level.
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void StreamedSourceTest(
+      string treeString,
+      string expectedTreeString)
+    {
+      var envelope = TreeSerializer.Deserialize(treeString).Serialize(TreeTraversalStrategy.BreadthFirst);
+
+      var expected =
+        TreeSerializer
+        .Deserialize(expectedTreeString)
+        .GetTraversal(TreeTraversalStrategy.BreadthFirst)
+        .ToArray();
+
+      var actual =
+        TreeSerializer
+        .DeserializeBreadthFirst(() => new System.IO.StringReader(envelope))
+        .Invert()
+        .GetBreadthFirstTraversal()
+        .ToArray();
+
       CollectionAssert.AreEqual(expected, actual);
     }
   }

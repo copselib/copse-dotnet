@@ -335,7 +335,21 @@ Jason floated splitting `ITreenumerableBuffer` into `IPreorderTreenumerableBuffe
   contract → Core (with the namespace wave); layout-typed subtypes → Copse, beside the store
   SPIs they expose.
 
-## The Invert rethink (condition attached to the split)
+## The Invert rethink (condition attached to the split) — IMPLEMENTED 2026-07-05
+
+> **As built** (clarified with Jason 2026-07-05): `Invert(IBreadthFirstTreenumerable) :
+> IBreadthFirstTreenumerable` — a level-reversing `ILevelOrderStream` transform over the
+> existing breadth-first playback (no new treenumerator; O(width), one tier of families
+> buffered). Plus `Invert(ITreenumerableBuffer) : ITreenumerable` — the buffer is the
+> proof-of-purchase that random access is paid for, so the mirror is a full citizen again
+> (built once, lazily, from the capture's replay; the zero-copy view stays the planned
+> upgrade). **No overload accepts `IDepthFirstTreenumerable`** — a DFT-only source's only
+> spelling is `.Memoize().Invert()`. Invariant: every path to the mirror's depth-first
+> dimension passes through a visible `Memoize`; source fullness does not buy mirror fullness
+> (only random access moves the arrival-order cliff). `PreorderTree`'s remaining Linq
+> consumer is now `LeaffixScan` alone.
+
+## The original Invert design note (superseded by the above)
 
 Jason: *if* we go down this route, operators with hidden escalations get rethought rather
 than mechanically re-typed. `Invert` (mirror) is the poster child — today it does **two**

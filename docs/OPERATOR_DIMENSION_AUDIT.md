@@ -137,7 +137,7 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 | **CountTrees** | tree→scalar | DFT (→ GetRoots) — impl accident | both (either source) | O(1) | O(1) | none | YES |
 | **RootfixAggregate** | tree→enum | DFT (→ GetLeaves) — impl accident | both (either source; order differs) | O(d) | O(w) (rides RootfixScan) | none | YES |
 | **LeaffixAggregate** | tree→enum | DFT (hardcoded) / — | DFT only | O(subtree_max) (per-root buffers) | — | List reused per root; peak = largest root subtree | YES (fixed) |
-| **Invert** | tree→tree | DFT (materialize) / DFT (materialize) | see RETHINK | **O(n)** (reversal cliff) | O(w) *achievable, not current* | **materializes to pre-order List+arrays, then COPIES into mirrored arrays → PreorderTree; 2× O(n)** | **RETHINK** |
+| **Invert** | tree→tree | — / BFT (streaming) or buffer replay | BFT→BFT; buffer→full | — (untypeable; via buffer) | O(w) (level-reversing stream transform) | buffer overload builds mirrored arrays once, lazily (zero-copy view planned) | **REWORKED 2026-07-05** |
 | **LeaffixScan** | tree→tree | DFT (materialize) / DFT (materialize) | see RETHINK | **O(n)** (eager) | **O(n)** (eager) | **eager full-forest List → ToArray → PreorderTree** | **RETHINK** |
 | **Memoize** | tree→buffer | captures requested dim | captures requested dim | O(n) (capture) | O(n) (capture) | O(n) space is the point (idempotent on a buffer) | NO (upgrade op) |
 | **Materialize** | tree→buffer | Memoize + Consume | Memoize + Consume | O(n) | O(n) | O(n) space is the point | NO (upgrade op) |
