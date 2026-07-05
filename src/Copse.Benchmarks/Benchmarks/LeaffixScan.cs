@@ -21,14 +21,14 @@ namespace Copse.Benchmarks
     }
 
     [Benchmark]
-    public ITreenumerable<int> TriangleTree_1448()
+    public void TriangleTree_1448()
       => new TriangleTree()
         .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .LeaffixScan(_ => 1, SubtreeNodeCount);
+        .LeaffixScan(_ => 1, SubtreeNodeCount).Consume();
 
     [Benchmark]
-    public ITreenumerable<int> DegenerateTree_1M()
+    public void DegenerateTree_1M()
       => Enumerable.Range(0, 1_000_000).ToDegenerateTree()
-        .LeaffixScan(_ => 1, SubtreeNodeCount);
+        .LeaffixScan(_ => 1, SubtreeNodeCount).Consume();
   }
 }
