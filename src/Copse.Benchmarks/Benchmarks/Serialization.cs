@@ -27,32 +27,38 @@ namespace Copse.Benchmarks
     [GlobalSetup]
     public void Setup()
     {
-      _wideString = Enumerable.Range(0, Width).ToTrivialForest().Serialize(value => value.ToString());
-      _deepString = Enumerable.Range(0, Depth).ToDegenerateTree().Serialize(value => value.ToString());
-      _wideTree = TreeSerializer.Deserialize(_wideString);
-      _deepTree = TreeSerializer.Deserialize(_deepString);
+      _wideString = Enumerable.Range(0, Width).ToTrivialForest().SerializeDepthFirstTree(value => value.ToString());
+      _deepString = Enumerable.Range(0, Depth).ToDegenerateTree().SerializeDepthFirstTree(value => value.ToString());
+      _wideTree = TreeSerializer.DeserializeDepthFirstTree(_wideString);
+      _deepTree = TreeSerializer.DeserializeDepthFirstTree(_deepString);
+      // Deserialization is lazy; force the shared stores to parse fully so the Serialize rows
+      // measure pure serializer work.
+      _wideTree.Consume(TreeTraversalStrategy.DepthFirst);
+      _deepTree.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
-    public string Serialize_Wide_1M() => _wideTree.Serialize();
+    public string Serialize_Wide_1M() => _wideTree.SerializeDepthFirstTree();
 
     [Benchmark]
-    public string Serialize_Deep_100K() => _deepTree.Serialize();
+    public string Serialize_Deep_100K() => _deepTree.SerializeDepthFirstTree();
+
+    // Deserialization is lazy (composition parses nothing), so these drain: full parse + one
+    // depth-first pass over the result.
+    [Benchmark]
+    public void Deserialize_Wide_1M() => TreeSerializer.DeserializeDepthFirstTree(_wideString).Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public ITreenumerable<string> Deserialize_Wide_1M() => TreeSerializer.Deserialize(_wideString);
-
-    [Benchmark]
-    public ITreenumerable<string> Deserialize_Deep_100K() => TreeSerializer.Deserialize(_deepString);
+    public void Deserialize_Deep_100K() => TreeSerializer.DeserializeDepthFirstTree(_deepString).Consume(TreeTraversalStrategy.DepthFirst);
 
     // Span demonstration: parse the same source into ints. The string map materializes 1M throwaway
     // value strings; the span map parses straight off the source with int.Parse(ReadOnlySpan<char>).
     [Benchmark]
-    public ITreenumerable<int> Deserialize_Wide_ToInt_StringMap()
-      => TreeSerializer.Deserialize(_wideString, (string s) => int.Parse(s));
+    public void Deserialize_Wide_ToInt_StringMap()
+      => TreeSerializer.DeserializeDepthFirstTree(_wideString, (string s) => int.Parse(s)).Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public ITreenumerable<int> Deserialize_Wide_ToInt_SpanMap()
-      => TreeSerializer.Deserialize(_wideString, (ReadOnlySpan<char> s) => int.Parse(s));
+    public void Deserialize_Wide_ToInt_SpanMap()
+      => TreeSerializer.DeserializeDepthFirstTree(_wideString, (ReadOnlySpan<char> s) => int.Parse(s)).Consume(TreeTraversalStrategy.DepthFirst);
   }
 }

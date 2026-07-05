@@ -7,7 +7,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<TNode[]> GetBranches<TNode>(this ITreenumerable<TNode> source)
+    public static IEnumerable<TNode[]> GetBranches<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       var branch = new List<NodeContext<TNode>>();
 

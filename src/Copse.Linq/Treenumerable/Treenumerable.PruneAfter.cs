@@ -18,5 +18,29 @@ namespace Copse.Linq
           () => new PruneAfterTreenumerator<T>(source.GetBreadthFirstTreenumerator, predicate),
           () => new PruneAfterTreenumerator<T>(source.GetDepthFirstTreenumerator, predicate));
     }
+
+    public static IDepthFirstTreenumerable<T> PruneAfter<T>(
+      this IDepthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateDepthFirst(
+          () => new PruneAfterTreenumerator<T>(source.GetDepthFirstTreenumerator, predicate));
+    }
+
+    public static IBreadthFirstTreenumerable<T> PruneAfter<T>(
+      this IBreadthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateBreadthFirst(
+          () => new PruneAfterTreenumerator<T>(source.GetBreadthFirstTreenumerator, predicate));
+    }
   }
 }

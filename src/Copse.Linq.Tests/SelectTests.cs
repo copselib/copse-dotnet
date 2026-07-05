@@ -8,18 +8,18 @@ namespace Copse.Linq.Tests
   public class SelectTests
   {
     [TestMethod]
-    public void PreOrderTraversal_TwoLevels()
+    public void PreorderTraversal_TwoLevels()
     {
       // Arrange
       var treenumerable =
         TreeSerializer
-        .Deserialize("1,2,3", int.Parse);
+        .DeserializeDepthFirstTree("1,2,3", int.Parse);
 
       // Act
       var actual =
         treenumerable
         .Select(visit => (char)('a' + visit.Node))
-        .PreOrderTraversal()
+        .PreorderTraversal()
         .ToArray();
 
       // Assert
@@ -34,7 +34,7 @@ namespace Copse.Linq.Tests
       // Arrange
       var treenumerable =
         TreeSerializer
-        .Deserialize("1,2,3", int.Parse);
+        .DeserializeDepthFirstTree("1,2,3", int.Parse);
 
       // Act
       var actual =

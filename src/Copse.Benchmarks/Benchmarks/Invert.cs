@@ -10,14 +10,18 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("LINQ", "Invert")]
   public class Invert
   {
+    // The streaming mirror composes for free, so these drain it: a full breadth-first pass over
+    // the mirrored tree (the old rows measured compose-time materialization, which no longer
+    // exists).
     [Benchmark]
-    public ITreenumerable<int> TriangleTree_1448()
+    public void TriangleTree_1448()
       => new TriangleTree()
         .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .Invert();
+        .Invert()
+        .Consume();
 
     [Benchmark]
-    public ITreenumerable<int> DegenerateTree_1M()
-      => Enumerable.Range(0, 1_000_000).ToDegenerateTree().Invert();
+    public void DegenerateTree_1M()
+      => Enumerable.Range(0, 1_000_000).ToDegenerateTree().Invert().Consume();
   }
 }

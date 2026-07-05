@@ -19,5 +19,17 @@ namespace Copse.Linq
           source.GetDepthFirstTreenumerator,
           nodeVisit => !predicate(nodeVisit),
           keepFinalNode));
+
+    public static IDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => source.TakeNodesUntil(nodeVisit => !predicate(nodeVisit), keepFinalNode);
+
+    public static IBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => source.TakeNodesUntil(nodeVisit => !predicate(nodeVisit), keepFinalNode);
   }
 }

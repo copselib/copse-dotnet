@@ -140,19 +140,6 @@ namespace Copse.Linq.Treenumerators
       _Feed = null;
     }
 
-    // Lazily enumerates the buffer indices of the roots -- the depth-0 prefix, so indices and
-    // ordinals coincide.
-    public System.Collections.Generic.IEnumerable<int> EnumerateRootIndices()
-    {
-      var k = 0;
-
-      while (EnsureRootAvailable(k))
-      {
-        yield return k;
-        k++;
-      }
-    }
-
     // Process one feed visit. Scheduling visits append (wiring the child into _FrontIndex's
     // span); each node's first visiting visit advances the front; revisits are structural
     // no-ops. On exhaustion latch Complete and drop the feed. Per-visit granularity keeps the

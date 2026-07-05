@@ -47,6 +47,20 @@
    text — decoded back into visit streams). A memo buffer is an in-memory
    serialization; a serialized file is a persisted memo capture; the streamers are the
    decoders both share.
+   **Refined 2026-07-04 (second session): the second family are not "streamers" but
+   concrete treenumerables for flat-stored trees** (`PreorderTreenumerable`,
+   `LevelOrderTreenumerable`), and **they live in `Copse`** alongside the hierarchical
+   `Treenumerable<,,>` — the package's identity becomes "concrete treenumerables: trees,
+   however they're stored," not "the engine." Their store SPI (forward-only and
+   random-access shapes) is defined beside them, mirroring `IChildEnumerator`'s role for
+   the hierarchical family. Consequences recorded in
+   [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) "Pick-up decisions":
+   the **Linq→Copse edge persists deliberately** (memoize replays instantiate the flat
+   family — amends ledger item 1's "the Linq→engine edge breaks anyway" payoff under the
+   pay-for-itself rule), the step-3 rename-and-metapackage question **likely dissolves**
+   (`Copse` keeps a coherent meaning), and PreorderTree retires by **dissolving into
+   `PreorderTreenumerable` over a completed store** rather than moving to `Copse.Trees`
+   (amends item 2).
 
 ## Target graph
 
@@ -125,6 +139,14 @@ before or with step 1 below.
    - Staging: native DFT first (hottest path), benchmark A/B, then native BFT, then the
      cross pair. The dependency breaks only when all four land; the engine serves
      un-rewritten combos in the interim.
+     **Status 2026-07-04: ALL FOUR LANDED — item COMPLETE.** `IPreorderStore`/`ILevelOrderStore`
+     + the four store treenumerators (DFT/BFT × preorder/level-order) live in Copse; all memoize
+     replays (native and cross-order) ride them; the memoize child enumerators and
+     `EnumerateRootIndices` are deleted. Copse.Linq no longer references the engine or
+     `IChildEnumerator` anywhere — the memoize machinery de-engined in place, exactly as this
+     item intended. A/B (ShortRun, TriangleTree@1448), engine→playback: DFT native replay −28%
+     time/−30% alloc; BFT native replay −32%/−40%; BFT-over-preorder cross −24%/−30%;
+     DFT-over-level-order cross −30%/−40%; first-passes −20%; lazy 10K partial −25%.
    - `ITreenumerableBuffer` promotion to Core: still desirable, now decoupled — do it
      with the namespace wave.
 2. **PreorderTree exits Linq** via already-planned work: `LeaffixScan` resolves with the
@@ -132,6 +154,14 @@ before or with step 1 below.
    design must target whatever abstraction the (engine-side) memoize machinery exposes.
    Afterward `PreorderTree` can leave the engine for `Copse.Trees`, making the engine
    package pure machinery.
+   **Status 2026-07-05: COMPLETE, with a better destination than Copse.Trees.** Invert
+   (streaming BFT + buffer overload) and LeaffixScan (lazy-once build into
+   `PreorderArrayStore`) both reworked; `Deserialize(string)` returns
+   `PreorderTreenumerable` over `PreorderArrayStore`. PreorderTree +
+   PreorderChildEnumerator moved to **Copse.TestUtils** as the conformance ORACLE
+   (`EngineTree.Parse`, with its own parser): the suites must referee the flat family's
+   playback against the real engine, so the engine-backed reference tree lives with the
+   tests, out of the product. The product's flat-array shape is `PreorderArrayStore`.
 3. **Rename the engine package and settle the `Copse` id.** OPEN: `Copse.Engine` vs
    `Copse.Traversal`; and metapackage (a codeless `Copse` package referencing
    Core + Primitives + Engine + Linq, preserving the flagship install name) vs retiring
@@ -140,7 +170,10 @@ before or with step 1 below.
    era): align `namespace Copse` types to their owning assemblies; revisit
    `IChildEnumerator`(+`NodeAndSiblingIndex`) promotion to Core if the capability
    lattice wants it; possible `NodeVisit`-composes-`NodeContext` cleanup (impossible
-   under the old layering, trivial now).
+   under the old layering, trivial now); **casing unification (Jason, 2026-07-04):
+   standardize `Preorder`/`Postorder`/`InOrder` → `Preorder`/`Postorder`/`Inorder`
+   everywhere** (the traversal operators are the outliers; the type family already uses
+   the single-word form).
 
 ## Housekeeping
 

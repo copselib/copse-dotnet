@@ -76,7 +76,7 @@ namespace Copse.Linq.Tests
       {
         "a,b(c),d(e(f))",
         new[]
-        { 
+        {
           new[] { "a" },
           new[] { "b", "c" },
           new[] { "d", "e", "f" }
@@ -96,7 +96,7 @@ namespace Copse.Linq.Tests
       string[][] expected)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       // Act
       var actual =

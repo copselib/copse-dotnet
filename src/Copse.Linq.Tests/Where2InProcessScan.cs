@@ -36,7 +36,7 @@ namespace Copse.Linq.Tests
       {
         if (!deserializedByString.TryGetValue(treeString, out var treenumerable))
         {
-          treenumerable = TreeSerializer.Deserialize(treeString);
+          treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
           deserializedByString[treeString] = treenumerable;
         }
         return treenumerable;

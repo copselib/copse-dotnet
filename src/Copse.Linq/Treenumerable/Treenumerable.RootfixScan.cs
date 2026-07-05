@@ -19,5 +19,25 @@ namespace Copse.Linq
           source.GetDepthFirstTreenumerator,
           accumulator,
           seed));
+
+    public static IDepthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+      => TreenumerableFactory.CreateDepthFirst(
+        () => new RootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetDepthFirstTreenumerator,
+          accumulator,
+          seed));
+
+    public static IBreadthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+      => TreenumerableFactory.CreateBreadthFirst(
+        () => new RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetBreadthFirstTreenumerator,
+          accumulator,
+          seed));
   }
 }

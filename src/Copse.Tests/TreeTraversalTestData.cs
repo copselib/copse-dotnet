@@ -755,7 +755,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector = nc =>
                 nc.Position.Depth == 0
                 ? NodeTraversalStrategies.SkipNode
-                : nc.Position.Depth == 1  
+                : nc.Position.Depth == 1
                 ? NodeTraversalStrategies.SkipNodeAndDescendants
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 subtrees, skip level 0 nodes",
@@ -779,7 +779,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector = nc =>
                 nc.Position.Depth == 0
                 ? NodeTraversalStrategies.SkipNode
-                : nc.Position.Depth == 2  
+                : nc.Position.Depth == 2
                 ? NodeTraversalStrategies.SkipNodeAndDescendants
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 subtrees, skip level 0 nodes",
@@ -1699,7 +1699,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc =>
-                  nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1 
+                  nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1
                   ? NodeTraversalStrategies.SkipNodeAndDescendants
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 subtree",

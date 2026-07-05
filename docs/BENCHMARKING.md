@@ -83,7 +83,7 @@ Categories are declared by each benchmark class's `[BenchmarkCategory]` attribut
 source of truth. The vocabulary currently in use: feature areas (`Traversal`, `LINQ`,
 `Conversion`, `DataStructures`, `Serialization`), operations (`Query`, `Filter`, `Projection`,
 `Pruning`, `Skip`, `Merge`, `Invert`, `Leaffix`, `Materialize`, `Memoize`), and traversal
-dimensions (`DepthFirst`, `BreadthFirst`, `PreOrder`, `PostOrder`, `LevelOrder`).
+dimensions (`DepthFirst`, `BreadthFirst`, `Preorder`, `Postorder`, `LevelOrder`).
 
 ### List Available Benchmarks
 ```bash

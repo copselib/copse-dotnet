@@ -25,7 +25,7 @@ namespace Copse.Linq.Tests
 
       var actual =
         TreeSerializer
-        .Deserialize(treeString)
+        .DeserializeDepthFirstTree(treeString)
         .LeaffixAggregate(
           nodeContext => nodeContext.Node,
           (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}")

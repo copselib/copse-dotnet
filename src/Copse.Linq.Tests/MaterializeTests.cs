@@ -31,8 +31,8 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in Trees)
       {
-        var materialized = TreeSerializer.Deserialize(tree).Materialize();
-        Assert.AreEqual(tree, materialized.Serialize(), $"structure mismatch for {tree}");
+        var materialized = TreeSerializer.DeserializeDepthFirstTree(tree).Materialize();
+        Assert.AreEqual(tree, materialized.SerializeDepthFirstTree(), $"structure mismatch for {tree}");
       }
     }
 
@@ -48,8 +48,8 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in Trees)
       {
-        var source = TreeSerializer.Deserialize(tree);
-        var materialized = TreeSerializer.Deserialize(tree).Materialize();
+        var source = TreeSerializer.DeserializeDepthFirstTree(tree);
+        var materialized = TreeSerializer.DeserializeDepthFirstTree(tree).Materialize();
 
         CollectionAssert.AreEqual(
           Collect(source, strategy),
@@ -66,7 +66,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var tree = TreeSerializer.Deserialize("a(b,c)").Materialize();
+        var tree = TreeSerializer.DeserializeDepthFirstTree("a(b,c)").Materialize();
 
         var scheduled =
           tree
@@ -82,7 +82,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Materialize_captures_eagerly_at_the_call()
     {
-      var counting = new CountingSource(TreeSerializer.Deserialize("a(b(d,e,f),c(g,h,i))"));
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
 
       var materialized = counting.Materialize();
 
@@ -100,7 +100,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Materialize_finishes_the_most_buffered_dimension()
     {
-      var counting = new CountingSource(TreeSerializer.Deserialize("a(b(d,e,f),c(g,h,i))"));
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
 
       using (var bfs = memo.GetBreadthFirstTreenumerator())
@@ -121,7 +121,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Materialize_with_declared_strategy_outranks_sunk_cost()
     {
-      var counting = new CountingSource(TreeSerializer.Deserialize("a(b(d,e,f),c(g,h,i))"));
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
 
       using (var bfs = memo.GetBreadthFirstTreenumerator())

@@ -37,8 +37,8 @@
 
 The governing rule for whether something deserves a *tree* operator (Jason, 2026-07-04):
 
-> If the operation is achievable by projecting to a sequence (`PreOrderTraversal` /
-> `LevelOrderTraversal` / `To*TreeEnumerable`) and applying sequence LINQ, favor that —
+> If the operation is achievable by projecting to a sequence (`PreorderTraversal` /
+> `LevelOrderTraversal` / `To*TreeTokenizer`) and applying sequence LINQ, favor that —
 > with a handful of exceptions.
 
 A tree operator earns its place only when at least one of these holds:
@@ -72,12 +72,12 @@ this test.
 | Pairwise / Lag(1) | `WithParent` (the tree's natural "previous") |
 | TakeLast / SkipLast | `TakeLastTrees` / `SkipLastTrees` |
 | TakeUntil / SkipUntil | `TakeNodesUntil` / `TakeNodesWhile` (see gap: no `SkipNodes*`) |
-| TraverseDepthFirst / TraverseBreadthFirst / Expand-as-flatten | `ToDepthFirstTreeEnumerable` / `ToBreadthFirstTreeEnumerable` |
+| TraverseDepthFirst / TraverseBreadthFirst / Expand-as-flatten | `ToDepthFirstTreeTokenizer` / `ToBreadthFirstTreeTokenizer` |
 | ToDelimitedString | `ToFormattedString`, TreeSerializer |
 | IsEmpty / ForEach | `AnyNodes` / `Consume`+`Do` |
 | Repeat | `RepeatTrees` (Experimental) |
 | Insert / Backsert / Move | `Graft` (Experimental) |
-| MinBy/MaxBy/Maxima/Minima, ToDictionary/ToLookup/etc. | via `To*TreeEnumerable` + LINQ |
+| MinBy/MaxBy/Maxima/Minima, ToDictionary/ToLookup/etc. | via `To*TreeTokenizer` + LINQ |
 
 ## Excluded by principle (node equality)
 

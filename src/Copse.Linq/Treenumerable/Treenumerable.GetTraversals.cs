@@ -1,4 +1,4 @@
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
@@ -8,29 +8,29 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     public static IEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
-      this ITreenumerable<TNode> source,
+      this IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return GetTraversal(source, TreeTraversalStrategy.DepthFirst, nodeTraversalStrategiesSelector);
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeTraversalStrategiesSelector);
     }
 
     public static IEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
-      this ITreenumerable<TNode> source,
+      this IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return GetTraversal(source, TreeTraversalStrategy.BreadthFirst, nodeTraversalStrategiesSelector);
+      return EnumerateTraversal(source.GetBreadthFirstTreenumerator, nodeTraversalStrategiesSelector);
     }
 
     public static IEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
-      this ITreenumerable<TNode> source)
+      this IDepthFirstTreenumerable<TNode> source)
     {
-      return GetTraversal(source, TreeTraversalStrategy.DepthFirst);
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator);
     }
 
     public static IEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
-      this ITreenumerable<TNode> source)
+      this IBreadthFirstTreenumerable<TNode> source)
     {
-      return GetTraversal(source, TreeTraversalStrategy.BreadthFirst);
+      return EnumerateTraversal(source.GetBreadthFirstTreenumerator);
     }
 
     public static IEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
@@ -38,7 +38,21 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy,
       Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      using (var treenumerator = source.GetTreenumerator(treeTraversalStrategy))
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeTraversalStrategiesSelector);
+    }
+
+    public static IEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
+      this ITreenumerable<TNode> source,
+      TreeTraversalStrategy treeTraversalStrategy)
+    {
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy));
+    }
+
+    private static IEnumerable<NodeVisit<TNode>> EnumerateTraversal<TNode>(
+      Func<ITreenumerator<TNode>> treenumeratorFactory,
+      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+    {
+      using (var treenumerator = treenumeratorFactory())
       {
         if (!treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
           yield break;
@@ -59,11 +73,10 @@ namespace Copse.Linq
       }
     }
 
-    public static IEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
-      this ITreenumerable<TNode> source,
-      TreeTraversalStrategy treeTraversalStrategy)
+    private static IEnumerable<NodeVisit<TNode>> EnumerateTraversal<TNode>(
+      Func<ITreenumerator<TNode>> treenumeratorFactory)
     {
-      using (var treenumerator = source.GetTreenumerator(treeTraversalStrategy))
+      using (var treenumerator = treenumeratorFactory())
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
           yield return treenumerator.ToNodeVisit();

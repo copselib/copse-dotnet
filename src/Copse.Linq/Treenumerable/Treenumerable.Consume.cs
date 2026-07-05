@@ -10,7 +10,7 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy = default)
     {
       using (var treenumerator = source.GetTreenumerator(treeTraversalStrategy))
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll));
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
     }
 
     // Drive a buffer's capture to completion without naming a dimension: finish whichever
@@ -26,5 +26,17 @@ namespace Copse.Linq
         buffer.GetBufferedCount(TreeTraversalStrategy.DepthFirst) >= buffer.GetBufferedCount(TreeTraversalStrategy.BreadthFirst)
           ? TreeTraversalStrategy.DepthFirst
           : TreeTraversalStrategy.BreadthFirst);
+
+    public static void Consume<TNode>(this IDepthFirstTreenumerable<TNode> source)
+    {
+      using (var treenumerator = source.GetDepthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+    }
+
+    public static void Consume<TNode>(this IBreadthFirstTreenumerable<TNode> source)
+    {
+      using (var treenumerator = source.GetBreadthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+    }
   }
 }

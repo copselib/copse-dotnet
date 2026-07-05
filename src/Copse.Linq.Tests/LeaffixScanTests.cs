@@ -66,11 +66,11 @@ namespace Copse.Linq.Tests
       TreeTraversalStrategy treeTraversalStrategy)
     {
       // Arrange
-      var sut = TreeSerializer.Deserialize(treeString);
+      var sut = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var expected =
         TreeSerializer
-        .Deserialize(expectedTreeString)
+        .DeserializeDepthFirstTree(expectedTreeString)
         .GetTraversal(treeTraversalStrategy)
         .ToArray();
 

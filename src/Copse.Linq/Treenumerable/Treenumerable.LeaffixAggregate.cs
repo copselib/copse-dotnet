@@ -13,7 +13,7 @@ namespace Copse.Linq
     // the whole forest) and a consumer that stops early traverses fewer roots. Zero per-node alloc:
     // children are read via the no-copy ChildAccumulations view (see LeaffixScan).
     public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
-      this ITreenumerable<TSource> source,
+      this IDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafSelector,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
     {

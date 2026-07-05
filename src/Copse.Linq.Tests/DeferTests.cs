@@ -1,4 +1,5 @@
 using Copse.SimpleSerializer;
+using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
@@ -12,15 +13,15 @@ namespace Copse.Linq.Tests
     {
       var invocations = 0;
 
-      var deferred = Treenumerable.Defer(() =>
+      var deferred = Tree.Defer(() =>
       {
         invocations++;
-        return TreeSerializer.Deserialize("a(b,c)");
+        return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
       Assert.AreEqual(0, invocations);
 
-      deferred.PreOrderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
 
       Assert.AreEqual(1, invocations);
     }
@@ -30,14 +31,14 @@ namespace Copse.Linq.Tests
     {
       var invocations = 0;
 
-      var deferred = Treenumerable.Defer(() =>
+      var deferred = Tree.Defer(() =>
       {
         invocations++;
-        return TreeSerializer.Deserialize("a(b,c)");
+        return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
-      deferred.PreOrderTraversal().ToArray();
-      deferred.PreOrderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
       deferred.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(3, invocations);
@@ -50,13 +51,13 @@ namespace Copse.Linq.Tests
 
       foreach (var tree in trees)
       {
-        var deferred = Treenumerable.Defer(() => TreeSerializer.Deserialize(tree));
-        var direct = TreeSerializer.Deserialize(tree);
+        var deferred = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree));
+        var direct = TreeSerializer.DeserializeDepthFirstTree(tree);
 
         CollectionAssert.AreEqual(
-          direct.PreOrderTraversal().ToArray(),
-          deferred.PreOrderTraversal().ToArray(),
-          $"PreOrder mismatch for {tree}");
+          direct.PreorderTraversal().ToArray(),
+          deferred.PreorderTraversal().ToArray(),
+          $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
           direct.LevelOrderTraversal().ToArray(),

@@ -23,7 +23,7 @@ namespace Copse.TestUtils
 
       treenumerable =
         TreeSerializer
-        .Deserialize(serializedTree)
+        .DeserializeDepthFirstTree(serializedTree)
         .Select(visit => visit.Node);
 
       Debug.WriteLine("--------- Test Name ---------");

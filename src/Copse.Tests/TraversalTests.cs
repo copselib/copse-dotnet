@@ -16,7 +16,7 @@ namespace Copse.Tests
   {
     static TraversalTests()
     {
-      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TreeTraversalTestData.TestTrees); 
+      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TreeTraversalTestData.TestTrees);
     }
 
     private static TreenumerableTestDataFactory _TreenumerableTestDataFactory;
@@ -60,7 +60,7 @@ namespace Copse.Tests
       // Arrange
       var treenumerable =
         TreeSerializer
-        .Deserialize(treeString)
+        .DeserializeDepthFirstTree(treeString)
         .Select(visit => visit.Node);
 
       var testScenario = TreeTraversalTestData.TestTrees[testTreeIndex].TestScenarios[testScenarioIndex];
@@ -102,7 +102,7 @@ namespace Copse.Tests
 
       treenumerable =
         TreeSerializer
-        .Deserialize(treeString)
+        .DeserializeDepthFirstTree(treeString)
         .Select(visit => visit.Node);
 
       var expected =

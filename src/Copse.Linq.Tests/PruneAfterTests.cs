@@ -12,7 +12,7 @@ namespace Copse.Linq.Tests
   {
     static PruneAfterTests()
     {
-      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TestTrees); 
+      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TestTrees);
     }
 
     private static readonly TreenumerableTestDataFactory _TreenumerableTestDataFactory;

@@ -1,4 +1,5 @@
 using Copse.Core;
+using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Copse.Linq.Tests
     public void BreadthFirst_GetStateBeforeMoveNext()
     {
       // Arrange
-      var treenumerator = Treenumerable.Empty<int>().GetBreadthFirstTreenumerator();
+      var treenumerator = Tree.Empty<int>().GetBreadthFirstTreenumerator();
 
       // Act
 
@@ -28,7 +29,7 @@ namespace Copse.Linq.Tests
     public void BreadthFirst_Traverse()
     {
       // Arrange
-      var treenumerable = Treenumerable.Empty<int>();
+      var treenumerable = Tree.Empty<int>();
 
       var expected = Array.Empty<NodeVisit<int>>();
 
@@ -46,7 +47,7 @@ namespace Copse.Linq.Tests
     public void BreadthFirst_MoveNextReturnsFalse()
     {
       // Arrange
-      var treenumerator = Treenumerable.Empty<int>().GetBreadthFirstTreenumerator();
+      var treenumerator = Tree.Empty<int>().GetBreadthFirstTreenumerator();
 
       // Act
       var actual = treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
@@ -59,7 +60,7 @@ namespace Copse.Linq.Tests
     public void DepthFirst_GetStateBeforeMoveNext()
     {
       // Arrange
-      var treenumerator = Treenumerable.Empty<int>().GetDepthFirstTreenumerator();
+      var treenumerator = Tree.Empty<int>().GetDepthFirstTreenumerator();
 
       // Act
 
@@ -74,7 +75,7 @@ namespace Copse.Linq.Tests
     public void DepthFirst_Traverse()
     {
       // Arrange
-      var treenumerable = Treenumerable.Empty<int>();
+      var treenumerable = Tree.Empty<int>();
 
       var expected = Array.Empty<NodeVisit<int>>();
 
@@ -92,7 +93,7 @@ namespace Copse.Linq.Tests
     public void DepthFirst_MoveNextReturnsFalse()
     {
       // Arrange
-      var treenumerator = Treenumerable.Empty<int>().GetDepthFirstTreenumerator();
+      var treenumerator = Tree.Empty<int>().GetDepthFirstTreenumerator();
 
       // Act
       var actual = treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);

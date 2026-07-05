@@ -1,4 +1,5 @@
 using Copse.Core;
+using Copse.Treenumerables;
 using Copse.SimpleSerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -18,14 +19,14 @@ namespace Copse.Linq.Tests
     }
 
     private static ITreenumerable<string> UsingTree(string tree, List<TestResource> resources)
-      => Treenumerable.Using(
+      => Tree.Using(
         () =>
         {
           var resource = new TestResource();
           resources.Add(resource);
           return resource;
         },
-        _ => TreeSerializer.Deserialize(tree));
+        _ => TreeSerializer.DeserializeDepthFirstTree(tree));
 
     [TestMethod]
     public void ResourceNotAcquiredUntilEnumeration()
@@ -42,7 +43,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      UsingTree("a(b,c)", resources).PreOrderTraversal().ToArray();
+      UsingTree("a(b,c)", resources).PreorderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -82,7 +83,7 @@ namespace Copse.Linq.Tests
       var resources = new List<TestResource>();
       var tree = UsingTree("a(b,c)", resources);
 
-      tree.PreOrderTraversal().ToArray();
+      tree.PreorderTraversal().ToArray();
       tree.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(2, resources.Count);
@@ -94,7 +95,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      var tree = Treenumerable.Using<TestResource, string>(
+      var tree = Tree.Using<TestResource, string>(
         () =>
         {
           var resource = new TestResource();
@@ -121,7 +122,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, resources[0].DisposeCount);
 
       // Replays ride the capture; the source (and its resource) is never touched again.
-      materialized.PreOrderTraversal().ToArray();
+      materialized.PreorderTraversal().ToArray();
       materialized.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
@@ -160,21 +161,76 @@ namespace Copse.Linq.Tests
 
       foreach (var tree in trees)
       {
-        var direct = TreeSerializer.Deserialize(tree);
-        var wrapped = Treenumerable.Using(
+        var direct = TreeSerializer.DeserializeDepthFirstTree(tree);
+        var wrapped = Tree.Using(
           () => new TestResource(),
-          _ => TreeSerializer.Deserialize(tree));
+          _ => TreeSerializer.DeserializeDepthFirstTree(tree));
 
         CollectionAssert.AreEqual(
-          direct.PreOrderTraversal().ToArray(),
-          wrapped.PreOrderTraversal().ToArray(),
-          $"PreOrder mismatch for {tree}");
+          direct.PreorderTraversal().ToArray(),
+          wrapped.PreorderTraversal().ToArray(),
+          $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
           direct.LevelOrderTraversal().ToArray(),
           wrapped.LevelOrderTraversal().ToArray(),
           $"LevelOrder mismatch for {tree}");
       }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Narrow-dimension resource ownership: the result's dimension follows the tree handed in,
+    // and disposal is tied to that single dimension's treenumerator (a full Tree.Using would
+    // over-generalize a forward-only source -- the serializer's motivating case).
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void UsingDepthFirstReturnsDepthFirstAndOwnsTheResource()
+    {
+      var resources = new List<TestResource>();
+
+      IDepthFirstTreenumerable<string> tree = Tree.UsingDepthFirst<TestResource, string>(
+        () => { var r = new TestResource(); resources.Add(r); return r; },
+        _ => TreeSerializer.DeserializeDepthFirstTree("a(b,c)"));
+
+      Assert.AreEqual(0, resources.Count); // lazy: nothing acquired at composition
+
+      tree.PreorderTraversal().ToArray();
+
+      Assert.AreEqual(1, resources.Count);
+      Assert.AreEqual(1, resources[0].DisposeCount);
+    }
+
+    [TestMethod]
+    public void UsingBreadthFirstReturnsBreadthFirstAndOwnsTheResource()
+    {
+      var resources = new List<TestResource>();
+
+      IBreadthFirstTreenumerable<string> tree = Tree.UsingBreadthFirst<TestResource, string>(
+        () => { var r = new TestResource(); resources.Add(r); return r; },
+        _ => TreeSerializer.DeserializeBreadthFirstTree("a;b,c"));
+
+      tree.LevelOrderTraversal().ToArray();
+
+      Assert.AreEqual(1, resources.Count);
+      Assert.AreEqual(1, resources[0].DisposeCount);
+    }
+
+    [TestMethod]
+    public void DeferDepthFirstAndBreadthFirstRunTheFactoryPerAcquisition()
+    {
+      var depthFirstCalls = 0;
+      IDepthFirstTreenumerable<string> dft = Tree.DeferDepthFirst(() => { depthFirstCalls++; return TreeSerializer.DeserializeDepthFirstTree("a(b,c)"); });
+
+      dft.PreorderTraversal().ToArray();
+      dft.PreorderTraversal().ToArray();
+      Assert.AreEqual(2, depthFirstCalls);
+
+      var breadthFirstCalls = 0;
+      IBreadthFirstTreenumerable<string> bft = Tree.DeferBreadthFirst(() => { breadthFirstCalls++; return TreeSerializer.DeserializeBreadthFirstTree("a;b,c"); });
+
+      bft.LevelOrderTraversal().ToArray();
+      Assert.AreEqual(1, breadthFirstCalls);
     }
   }
 }

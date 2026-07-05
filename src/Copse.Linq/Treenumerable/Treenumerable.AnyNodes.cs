@@ -1,7 +1,6 @@
 ﻿using Copse.Core;
 using Copse.Linq.Extensions;
 using System;
-using System.Linq;
 
 namespace Copse.Linq
 {
@@ -19,6 +18,30 @@ namespace Copse.Linq
 
       using (var treenumerator = source.GetTreenumerator(treeTraversalStrategy))
         while (treenumerator.MoveNext(nodeTraversalStrategies))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+            return true;
+
+      return false;
+    }
+
+    public static bool AnyNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      using (var treenumerator = source.GetDepthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+            return true;
+
+      return false;
+    }
+
+    public static bool AnyNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+    {
+      using (var treenumerator = source.GetBreadthFirstTreenumerator())
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
 
