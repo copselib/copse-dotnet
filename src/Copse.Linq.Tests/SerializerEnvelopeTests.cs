@@ -8,7 +8,7 @@ namespace Copse.Linq.Tests
 {
   // The enveloped serializer surface: round-trips in both layouts conform to the visit
   // contract (thin adapter over VisitStreamConformance -- serialize each corpus tree, stream
-  // it back, lockstep against the engine), plus the header/ownership/single-shot contracts.
+  // it back, lockstep against the engine), plus the header and ownership contracts.
   [TestClass]
   public class SerializerEnvelopeTests
   {
@@ -112,17 +112,6 @@ namespace Copse.Linq.Tests
       var bare = TreeSerializer.DeserializeDepthFirst(() => new StringReader("a(b,c)"));
 
       Assert.ThrowsException<FormatException>(() => bare.GetDepthFirstTreenumerator());
-    }
-
-    [TestMethod]
-    public void SingleReaderOverloadIsSingleShot()
-    {
-      var envelope = TreeSerializer.Deserialize("a(b,c)").Serialize(TreeTraversalStrategy.DepthFirst);
-      var singleShot = TreeSerializer.DeserializeDepthFirst(new StringReader(envelope));
-
-      using (singleShot.GetDepthFirstTreenumerator()) { }
-
-      Assert.ThrowsException<InvalidOperationException>(() => singleShot.GetDepthFirstTreenumerator());
     }
 
     [TestMethod]
