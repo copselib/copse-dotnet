@@ -46,6 +46,34 @@ namespace Copse.SimpleSerializer
       }
     }
 
+    // Sniffs a STRING for the envelope header: true (with the layout axis and the payload's
+    // start index) when present; false for a bare payload, which by convention is the terse
+    // dft grammar.
+    public static bool TryRead(string tree, out TreeTraversalStrategy layout, out int payloadStart)
+    {
+      layout = default;
+      payloadStart = 0;
+
+      if (!tree.StartsWith(Prefix, StringComparison.Ordinal))
+        return false;
+
+      var tokenStart = Prefix.Length;
+      var lineEnd = tree.IndexOf('\n', tokenStart);
+      var tokenEnd = lineEnd < 0 ? tree.Length : lineEnd;
+
+      var token = tree.Substring(tokenStart, tokenEnd - tokenStart).TrimEnd('\r');
+
+      switch (token)
+      {
+        case DepthFirstToken: layout = TreeTraversalStrategy.DepthFirst; break;
+        case BreadthFirstToken: layout = TreeTraversalStrategy.BreadthFirst; break;
+        default: throw new FormatException($"Unknown layout \"{token}\" in Copse envelope header.");
+      }
+
+      payloadStart = lineEnd < 0 ? tree.Length : lineEnd + 1;
+      return true;
+    }
+
     // Opens a reader via the factory and validates that the stored layout matches the entry
     // point's expectation -- the fast-failing assertion behind DeserializeDepthFirst/
     // DeserializeBreadthFirst. The reader is disposed on any failure.

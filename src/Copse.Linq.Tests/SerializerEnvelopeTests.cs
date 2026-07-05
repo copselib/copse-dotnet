@@ -153,5 +153,76 @@ namespace Copse.Linq.Tests
         Assert.AreEqual(6, sum);
       }
     }
+
+    // ---------------------------------------------------------------------------------------
+    // The unified string entry point: Deserialize(string) accepts bare payloads AND enveloped
+    // strings of either layout, always returning a full ITreenumerable (a string is random
+    // access regardless of stored layout) -- and parses LAZILY.
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void DeserializeAcceptsEnvelopedStringsOfEitherLayoutAsFullCitizens()
+    {
+      foreach (var tree in VisitStreamConformance.TreeCorpus)
+      {
+        var dftEnvelope = TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.DepthFirst);
+        var bftEnvelope = TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.BreadthFirst);
+
+        foreach (var (label, envelope) in new[] { ("dft", dftEnvelope), ("bft", bftEnvelope) })
+        {
+          ITreenumerable<string> full = TreeSerializer.Deserialize(envelope);
+
+          VisitStreamConformance.AssertSameStream(
+            VisitStreamConformance.Engine(tree, depthFirst: true), full.GetDepthFirstTreenumerator(), VisitStreamConformance.TraverseAll, $"{label}-envelope string, DFT {tree}");
+          VisitStreamConformance.AssertSameStream(
+            VisitStreamConformance.Engine(tree, depthFirst: false), full.GetBreadthFirstTreenumerator(), VisitStreamConformance.TraverseAll, $"{label}-envelope string, BFT {tree}");
+        }
+      }
+    }
+
+    [TestMethod]
+    public void DeserializeStringEveryNodeEveryStrategy()
+    {
+      VisitStreamConformance.AssertStrategyMatrixConforms(
+        tree => TreeSerializer.Deserialize(TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.BreadthFirst)).GetBreadthFirstTreenumerator(),
+        depthFirst: false,
+        "bft-envelope string");
+      VisitStreamConformance.AssertStrategyMatrixConforms(
+        tree => TreeSerializer.Deserialize(TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.BreadthFirst)).GetDepthFirstTreenumerator(),
+        depthFirst: true,
+        "bft-envelope string cross");
+    }
+
+    [TestMethod]
+    public void DeserializeStringParsesLazily()
+    {
+      // A left-spine tree: depth-first traversal of a prefix must not parse (or map) the rest.
+      var payload = "a(b(c(d(e(f(g(h)))))))";
+      var mapCalls = 0;
+
+      var tree = TreeSerializer.Deserialize(payload, value => { mapCalls++; return value; });
+
+      Assert.AreEqual(0, mapCalls, "composition must parse nothing");
+
+      using (var treenumerator = tree.GetDepthFirstTreenumerator())
+      {
+        // S a, V a, S b: three moves touch at most the first couple of values.
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+      }
+
+      Assert.IsTrue(mapCalls <= 3, $"expected a small parsed prefix, but the map ran {mapCalls} times");
+
+      // The store is shared: a full traversal finishes the parse, and a second full traversal
+      // re-parses nothing.
+      tree.Consume(TreeTraversalStrategy.DepthFirst);
+      var afterFirstFullPass = mapCalls;
+
+      Assert.AreEqual(8, afterFirstFullPass);
+
+      tree.Consume(TreeTraversalStrategy.BreadthFirst);
+      Assert.AreEqual(afterFirstFullPass, mapCalls, "replays must not re-parse");
+    }
   }
 }

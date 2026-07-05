@@ -1,13 +1,20 @@
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Treenumerables;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Copse.SimpleSerializer
 {
   public static partial class TreeSerializer
   {
+    // The string surface: LAZY deserialization of any serialized string -- a bare terse payload
+    // ("a(b,c)", by convention the dft grammar) or an enveloped string in either layout. A
+    // string is its own random-access buffer, so the result is always a full ITreenumerable
+    // (both dimensions honest) regardless of stored layout; the layout only decides which
+    // dimension is the native sequential one. Nothing is parsed at compose time: each pull
+    // parses exactly as far as the traversal's frontier demands, the value map runs once per
+    // node ever reached, and one lazily-growing store is shared by every treenumerator of the
+    // same result (parse once, replay many).
     public static ITreenumerable<string> Deserialize(string tree)
       => Deserialize(tree, value => value);
 
@@ -17,7 +24,7 @@ namespace Copse.SimpleSerializer
     {
       // Adapt the string map to a span map: each value is materialized once (chars.ToString()).
       SpanMap<TValue> spanMap = chars => map(chars.ToString());
-      return Parse(tree, spanMap);
+      return Deserialize(tree, spanMap);
     }
 
     // Span overload: the map receives each value as a slice of the source text (no intermediate
@@ -26,113 +33,31 @@ namespace Copse.SimpleSerializer
     public static ITreenumerable<TValue> Deserialize<TValue>(
       string tree,
       SpanMap<TValue> map)
-      => Parse(tree, map);
-
-    // Single pass over the (pre-order) text, building the flat preorder arrays directly -- no
-    // StringBuilder, no token stream, no intermediate SimpleNode tree. A value followed by '(' is a
-    // parent (its subtree size is backfilled at its matching ')'); a value followed by ',', ')' or
-    // end-of-string is a leaf (size 1). Subtrees are contiguous, so a parent's size is simply
-    // (node count - its index) at the moment it closes. The arrays become a
-    // PreorderTreenumerable -- the flat family's playback, both dimensions affordable.
-    private static PreorderTreenumerable<TValue, PreorderArrayStore<TValue>> Parse<TValue>(string tree, SpanMap<TValue> map)
     {
-      var values = new List<TValue>();
-      var subtreeSizes = new List<int>();
-      var open = new Stack<int>();   // indices of parents whose ')' hasn't been seen yet
-      var valueStart = -1;           // start of the pending value run; -1 = none
+      if (EnvelopeHeader.TryRead(tree, out var layout, out var payloadStart)
+        && layout == TreeTraversalStrategy.BreadthFirst)
+        return new LevelOrderTreenumerable<TValue, LevelOrderStringStore<TValue>.Handle>(
+          new LevelOrderStringStore<TValue>.Handle(new LevelOrderStringStore<TValue>(tree, payloadStart, map)));
 
-      void Commit(int end, bool asParent)
-      {
-        if (valueStart < 0)
-          return;
-        var index = values.Count;
-        values.Add(map(tree.AsSpan(valueStart, end - valueStart)));
-        subtreeSizes.Add(asParent ? 0 : 1);   // a parent's size is backfilled when it closes
-        valueStart = -1;
-        if (asParent)
-          open.Push(index);
-      }
-
-      for (int i = 0; i < tree.Length; i++)
-      {
-        switch (tree[i])
-        {
-          case '(':
-            Commit(i, asParent: true);
-            break;
-
-          case ')':
-            Commit(i, asParent: false);
-            var closed = open.Pop();
-            subtreeSizes[closed] = values.Count - closed;
-            break;
-
-          case ',':
-            Commit(i, asParent: false);
-            break;
-
-          default:
-            if (valueStart < 0)
-              valueStart = i;
-            break;
-        }
-      }
-
-      Commit(tree.Length, asParent: false); // trailing top-level value, if any
-
-      return new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(
-        new PreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray()));
+      return new PreorderTreenumerable<TValue, PreorderStringStore<TValue>.Handle>(
+        new PreorderStringStore<TValue>.Handle(new PreorderStringStore<TValue>(tree, payloadStart, map)));
     }
 
     public static string Serialize(this IDepthFirstTreenumerable<string> treenumerable)
       => Serialize(treenumerable, node => node);
 
+    // The bare (headerless) dft payload as a string: the terse grammar, load-bearing for tests
+    // and fixtures. The enveloped forms live in TreeSerializer.Envelope.cs.
     public static string Serialize<TNode>(
       this IDepthFirstTreenumerable<TNode> treenumerable,
       Func<TNode, string> map)
     {
       var builder = new StringBuilder();
 
-      using (var treenumerator = treenumerable.GetDepthFirstTreenumerator())
-      {
-        int previousDepth = -1;
+      using (var writer = new System.IO.StringWriter(builder))
+        PreorderTextWriter.WritePayload(treenumerable, writer, map);
 
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
-        {
-          if (treenumerator.VisitCount != 1)
-            continue;
-
-          var depth = treenumerator.Position.Depth;
-
-          if (previousDepth != -1)
-          {
-            if (depth > previousDepth)
-            {
-              builder.Append('(');
-            }
-            else if (depth < previousDepth)
-            {
-              for (int i = 0; i < previousDepth - depth; i++)
-                builder.Append(')');
-
-              builder.Append(',');
-            }
-            else
-            {
-              builder.Append(',');
-            }
-          }
-
-          builder.Append(map(treenumerator.Node));
-
-          previousDepth = treenumerator.Position.Depth;
-        }
-
-        while (previousDepth-- > 0)
-          builder.Append(')');
-
-        return builder.ToString();
-      }
+      return builder.ToString();
     }
   }
 }
