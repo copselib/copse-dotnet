@@ -28,12 +28,13 @@ namespace Copse.SimpleSerializer
       SpanMap<TValue> map)
       => Parse(tree, map);
 
-    // Single pass over the (pre-order) text, building the flat PreorderTree arrays directly -- no
+    // Single pass over the (pre-order) text, building the flat preorder arrays directly -- no
     // StringBuilder, no token stream, no intermediate SimpleNode tree. A value followed by '(' is a
     // parent (its subtree size is backfilled at its matching ')'); a value followed by ',', ')' or
     // end-of-string is a leaf (size 1). Subtrees are contiguous, so a parent's size is simply
-    // (node count - its index) at the moment it closes.
-    private static PreorderTree<TValue> Parse<TValue>(string tree, SpanMap<TValue> map)
+    // (node count - its index) at the moment it closes. The arrays become a
+    // PreorderTreenumerable -- the flat family's playback, both dimensions affordable.
+    private static PreorderTreenumerable<TValue, PreorderArrayStore<TValue>> Parse<TValue>(string tree, SpanMap<TValue> map)
     {
       var values = new List<TValue>();
       var subtreeSizes = new List<int>();
@@ -79,7 +80,8 @@ namespace Copse.SimpleSerializer
 
       Commit(tree.Length, asParent: false); // trailing top-level value, if any
 
-      return new PreorderTree<TValue>(values.ToArray(), subtreeSizes.ToArray());
+      return new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(
+        new PreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray()));
     }
 
     public static string Serialize(this IDepthFirstTreenumerable<string> treenumerable)

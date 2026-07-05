@@ -154,6 +154,14 @@ before or with step 1 below.
    design must target whatever abstraction the (engine-side) memoize machinery exposes.
    Afterward `PreorderTree` can leave the engine for `Copse.Trees`, making the engine
    package pure machinery.
+   **Status 2026-07-05: COMPLETE, with a better destination than Copse.Trees.** Invert
+   (streaming BFT + buffer overload) and LeaffixScan (lazy-once build into
+   `PreorderArrayStore`) both reworked; `Deserialize(string)` returns
+   `PreorderTreenumerable` over `PreorderArrayStore`. PreorderTree +
+   PreorderChildEnumerator moved to **Copse.TestUtils** as the conformance ORACLE
+   (`EngineTree.Parse`, with its own parser): the suites must referee the flat family's
+   playback against the real engine, so the engine-backed reference tree lives with the
+   tests, out of the product. The product's flat-array shape is `PreorderArrayStore`.
 3. **Rename the engine package and settle the `Copse` id.** OPEN: `Copse.Engine` vs
    `Copse.Traversal`; and metapackage (a codeless `Copse` package referencing
    Core + Primitives + Engine + Linq, preserving the flagship install name) vs retiring

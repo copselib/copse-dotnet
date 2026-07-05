@@ -44,11 +44,13 @@ namespace Copse.Linq.Tests
 
     public static readonly StrategyScript TraverseAll = (mode, node, visitCount) => NodeTraversalStrategies.TraverseAll;
 
-    // The oracle: the engine over the deserialized shape.
+    // The oracle: the DFS/BFS ENGINE over the same shape, via EngineTree's own parser --
+    // independent of TreeSerializer, whose deserialization rides the flat family's playback
+    // (part of what these suites referee).
     public static ITreenumerator<string> Engine(string tree, bool depthFirst)
       => depthFirst
-        ? TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator()
-        : TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator();
+        ? Copse.TestUtils.EngineTree.Parse(tree).GetDepthFirstTreenumerator()
+        : Copse.TestUtils.EngineTree.Parse(tree).GetBreadthFirstTreenumerator();
 
     // TraverseAll over the whole corpus in one dimension.
     public static void AssertTraverseAllConforms(

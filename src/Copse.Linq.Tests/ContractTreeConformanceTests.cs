@@ -1,5 +1,6 @@
 using Copse.Core;
 using Copse.SimpleSerializer;
+using Copse.TestUtils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace Copse.Linq.Tests
       ("PruneBefore(== b)", t => t.PruneBefore(nodeContext => nodeContext.Node == "b")),
       ("PruneAfter(== b)", t => t.PruneAfter(nodeContext => nodeContext.Node == "b")),
       ("TakeNodesWhile(!= e)", t => t.TakeNodesWhile(nodeContext => nodeContext.Node != "e", false)),
-      ("Union", t => t.Union(TreeSerializer.Deserialize("a(x,b(y))")).Select(nodeContext => nodeContext.Node.ToString())),
+      ("Union", t => t.Union(EngineTree.Parse("a(x,b(y))")).Select(nodeContext => nodeContext.Node.ToString())),
       ("RootfixScan(concat)", t => t.RootfixScan((accumulate, nodeContext) => accumulate.Node + nodeContext.Node, "*")),
       ("Invert+Memoize", t => t.Invert().Memoize()),
       ("Memoize", t => t.Memoize()),
@@ -86,12 +87,12 @@ namespace Copse.Linq.Tests
         foreach (var (name, op) in TreeOperators)
         {
           VisitStreamConformance.AssertSameStream(
-            op(TreeSerializer.Deserialize(tree)).GetDepthFirstTreenumerator(),
+            op(EngineTree.Parse(tree)).GetDepthFirstTreenumerator(),
             op(ContractTree.Parse(tree)).GetDepthFirstTreenumerator(),
             VisitStreamConformance.TraverseAll,
             $"{name} over {tree} DFT");
           VisitStreamConformance.AssertSameStream(
-            op(TreeSerializer.Deserialize(tree)).GetBreadthFirstTreenumerator(),
+            op(EngineTree.Parse(tree)).GetBreadthFirstTreenumerator(),
             op(ContractTree.Parse(tree)).GetBreadthFirstTreenumerator(),
             VisitStreamConformance.TraverseAll,
             $"{name} over {tree} BFT");
@@ -104,7 +105,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in new[] { RichTree, RichForest })
       {
-        var engine = TreeSerializer.Deserialize(tree);
+        var engine = EngineTree.Parse(tree);
         var contract = ContractTree.Parse(tree);
 
         Assert.AreEqual(engine.CountNodes(), contract.CountNodes(), $"CountNodes over {tree}");
@@ -132,8 +133,8 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in VisitStreamConformance.TreeCorpus)
       {
-        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator(), $"engine '{tree}' DFT");
-        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator(), $"engine '{tree}' BFT");
+        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(EngineTree.Parse(tree).GetDepthFirstTreenumerator(), $"engine '{tree}' DFT");
+        VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(EngineTree.Parse(tree).GetBreadthFirstTreenumerator(), $"engine '{tree}' BFT");
         VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(ContractTree.Parse(tree).GetDepthFirstTreenumerator(), $"contract '{tree}' DFT");
         VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(ContractTree.Parse(tree).GetBreadthFirstTreenumerator(), $"contract '{tree}' BFT");
       }
@@ -142,8 +143,8 @@ namespace Copse.Linq.Tests
       {
         foreach (var (name, op) in TreeOperators)
         {
-          VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(TreeSerializer.Deserialize(tree)).GetDepthFirstTreenumerator(), $"{name} over engine '{tree}' DFT");
-          VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(TreeSerializer.Deserialize(tree)).GetBreadthFirstTreenumerator(), $"{name} over engine '{tree}' BFT");
+          VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(EngineTree.Parse(tree)).GetDepthFirstTreenumerator(), $"{name} over engine '{tree}' DFT");
+          VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(EngineTree.Parse(tree)).GetBreadthFirstTreenumerator(), $"{name} over engine '{tree}' BFT");
           VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(ContractTree.Parse(tree)).GetDepthFirstTreenumerator(), $"{name} over contract '{tree}' DFT");
           VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(op(ContractTree.Parse(tree)).GetBreadthFirstTreenumerator(), $"{name} over contract '{tree}' BFT");
         }
