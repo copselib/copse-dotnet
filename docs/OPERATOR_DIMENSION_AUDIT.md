@@ -1,11 +1,13 @@
 # Operator Dimension Audit
 
-> **Status: DRAFT — for review, not yet agreed.** First artifact of the
-> [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) pick-up plan (step 1). Classifies
-> every public operator by kind, dimension consumed, dimension preserved, emission-vs-arrival gap
-> per dimension, and hidden escalations, and serves as the first draft of the WhatIf cost model.
-> Read against CLAUDE.md's "DFT vs BFT Scheduling and Visiting Behavior" (the S/V visit-stream
-> model) and the `Where` write-up.
+> **Status: REVIEWED & ACTED ON (2026-07-05).** First artifact of the
+> [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) pick-up plan (step 1); reviewed
+> with corrections (the GetLeaves/RootfixAggregate reclassification, the deleted `With*`
+> operators) and its verdicts drove the narrow-overload set that shipped. Retained as the
+> as-built classification and the first draft of the WhatIf cost model. Classifies every public
+> operator by kind, dimension consumed, dimension preserved, emission-vs-arrival gap per
+> dimension, and hidden escalations. Read against CLAUDE.md's "DFT vs BFT Scheduling and Visiting
+> Behavior" (the S/V visit-stream model) and the `Where` write-up.
 
 ## Summary
 

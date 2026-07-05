@@ -1,5 +1,6 @@
-# Publishes the Copse NuGet package family (Copse.Core, Copse, Copse.Linq, Copse.SimpleSerializer)
-# to nuget.org using Trusted Publishing (OIDC) — no long-lived API key is stored.
+# Publishes the Copse NuGet package family (Copse.Core, Copse.Primitives, Copse, Copse.Linq,
+# Copse.SimpleSerializer) to nuget.org using Trusted Publishing (OIDC) — no long-lived API key
+# is stored. `dotnet pack src/Copse.sln` packs every IsPackable project in the solution.
 #
 # Prerequisites:
 #   - A Trusted Publishing policy on nuget.org, owned by the copselib organization, matching:

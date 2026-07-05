@@ -1,10 +1,13 @@
 # Traversal Dimension Split & Serialization Redesign (design note)
 
-> **Status: IN PROGRESS — picked up 2026-07-04 (second session), work on
-> `feature/traversal-dimension-split`.** The split is a GO. See "Pick-up decisions
-> (2026-07-04, second session)" below for the deltas against the original design; the
-> operator audit (pick-up step 1) is done — see
-> [OPERATOR_DIMENSION_AUDIT.md](OPERATOR_DIMENSION_AUDIT.md).
+> **Status: LARGELY LANDED (2026-07-05), on `feature/traversal-dimension-split`.** Shipped: the
+> interface split, the flat family (stores + streams + treenumerables), de-engined memoize, the
+> narrow operator spine, the `Invert`/`LeaffixScan` reworks, `PreorderTree`'s dissolution, and
+> the header-free layout-named serializer. Still open (future passes): the layout-typed buffer
+> interfaces + zero-copy mirror views, the `AsBreadthFirst()` re-scan opt-in, and the
+> namespace-alignment leftovers. NOTE: this document is a session-by-session palimpsest
+> ("discussed → decided → revised"); it is accurate but not yet rewritten into a clean as-built
+> spec — that consolidation is itself a pending cleanup item.
 >
 > Motivating context: the post-Memoize serialization cleanup. The serializer discussion
 > kept colliding with one structural question — what should happen when a consumer asks a
