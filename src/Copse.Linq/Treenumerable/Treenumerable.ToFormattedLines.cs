@@ -1,6 +1,6 @@
 ﻿using Copse.Core;
 using Copse.Linq.Extensions;
-using Copse.Linq.TreeEnumerable.DepthFirstTree;
+using Copse.Linq.TreeTokenizer.DepthFirstTree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace Copse.Linq
       Func<TNode, string> stringFormatter,
       int paddingSize)
     {
-      var reverseTreeEnumerable = source.ToDepthFirstTreeEnumerable().Reverse();
+      var reverseTreeTokenizer = source.ToDepthFirstTreeTokenizer().Reverse();
 
       const char BAR_NODE = '│';
       const char INTERIOR_BRANCH_NODE = '├';
@@ -46,11 +46,11 @@ namespace Copse.Linq
       var builder = new StringBuilder();
 
       // TODO: I think I can process one tree at a time, instead of all trees at once.
-      foreach (var token in reverseTreeEnumerable)
+      foreach (var token in reverseTreeTokenizer)
       {
         switch (token.Type)
         {
-          case DepthFirstTreeEnumerableTokenType.EndChildGroup:
+          case DepthFirstTreeTokenType.EndChildGroup:
             depth++;
 
             if (nodes.Count > 0 && (nodes.Last() == INTERIOR_BRANCH_NODE || nodes.Last() == EXTERIOR_BRANCH_NODE))
@@ -59,7 +59,7 @@ namespace Copse.Linq
             nodes.Add(WHITESPACE_NODE);
             break;
 
-          case DepthFirstTreeEnumerableTokenType.StartChildGroup:
+          case DepthFirstTreeTokenType.StartChildGroup:
             depth--;
 
             builder.Remove(builder.Length - (paddingSize + 1), paddingSize + 1);

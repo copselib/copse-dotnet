@@ -42,7 +42,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      UsingTree("a(b,c)", resources).PreOrderTraversal().ToArray();
+      UsingTree("a(b,c)", resources).PreorderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -82,7 +82,7 @@ namespace Copse.Linq.Tests
       var resources = new List<TestResource>();
       var tree = UsingTree("a(b,c)", resources);
 
-      tree.PreOrderTraversal().ToArray();
+      tree.PreorderTraversal().ToArray();
       tree.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(2, resources.Count);
@@ -121,7 +121,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, resources[0].DisposeCount);
 
       // Replays ride the capture; the source (and its resource) is never touched again.
-      materialized.PreOrderTraversal().ToArray();
+      materialized.PreorderTraversal().ToArray();
       materialized.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
@@ -166,9 +166,9 @@ namespace Copse.Linq.Tests
           _ => TreeSerializer.Deserialize(tree));
 
         CollectionAssert.AreEqual(
-          direct.PreOrderTraversal().ToArray(),
-          wrapped.PreOrderTraversal().ToArray(),
-          $"PreOrder mismatch for {tree}");
+          direct.PreorderTraversal().ToArray(),
+          wrapped.PreorderTraversal().ToArray(),
+          $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
           direct.LevelOrderTraversal().ToArray(),

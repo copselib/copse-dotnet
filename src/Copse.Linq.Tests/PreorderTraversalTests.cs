@@ -10,7 +10,7 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   [TestClass]
-  public class PreOrderTraversalTests
+  public class PreorderTraversalTests
   {
     public static IEnumerable<object[]> GetTestData()
     {
@@ -58,7 +58,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void PreOrderTraversal(
+    public void PreorderTraversal(
       string treeString,
       string[] expected)
     {
@@ -68,7 +68,7 @@ namespace Copse.Linq.Tests
       // Act
       var actual =
         treenumerable
-        .PreOrderTraversal()
+        .PreorderTraversal()
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
 

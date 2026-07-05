@@ -5,7 +5,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<TNode> PostOrderTraversal<TNode>(this IDepthFirstTreenumerable<TNode> source)
+    public static IEnumerable<TNode> PostorderTraversal<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       if (source == null)
         yield break;

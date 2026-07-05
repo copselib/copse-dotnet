@@ -17,9 +17,9 @@ operator; 5 in `Copse.Linq.Experimental`, two of which are stubs and one comment
 | Verdict | Count | Operators |
 |---------|-------|-----------|
 | **YES** — narrow overloads (single-dimension in, single-dimension out) | **24** | Select, Where, PruneBefore, PruneAfter, TakeNodesUntil, TakeNodesWhile, TakeTrees, SkipTrees, Do, Hide, RootfixScan, Union, Intersection, Subtract, SymmetricDifference, CountNodes, AnyNodes, AllNodes, Consume, GetTraversal, GetLeaves, GetRoots, CountTrees, RootfixAggregate |
-| **YES (dimension-fixed consumer)** — one narrow overload only, on the dimension its *semantics* fix | **7** | GetLevels, LevelOrderTraversal (BFT); PreOrderTraversal, PostOrderTraversal, GetBranches, LeaffixAggregate, GetDepthFirstTraversal/GetBreadthFirstTraversal (DFT/BFT) |
+| **YES (dimension-fixed consumer)** — one narrow overload only, on the dimension its *semantics* fix | **7** | GetLevels, LevelOrderTraversal (BFT); PreorderTraversal, PostorderTraversal, GetBranches, LeaffixAggregate, GetDepthFirstTraversal/GetBreadthFirstTraversal (DFT/BFT) |
 | **RETHINK** — redesign per-dimension rather than mechanically overload | **2** | Invert, LeaffixScan |
-| **NO** — stays `ITreenumerable`-only | **16** | Memoize, Materialize, Defer, Using, Empty, TakeLastTrees, SkipLastTrees, ToFormattedLines, ToFormattedString, ToDepthFirstTreeEnumerable, ToBreadthFirstTreeEnumerable, GetTreenumerator, ExpandNode*, Graft*, Collapse* (stub), InOrderTraversal* (stub) |
+| **NO** — stays `ITreenumerable`-only | **16** | Memoize, Materialize, Defer, Using, Empty, TakeLastTrees, SkipLastTrees, ToFormattedLines, ToFormattedString, ToDepthFirstTreeTokenizer, ToBreadthFirstTreeTokenizer, GetTreenumerator, ExpandNode*, Graft*, Collapse* (stub), InorderTraversal* (stub) |
 | **DELETED** (2026-07-04 review) | **3** | WithContext, WithLevelIndex, WithParent — no current value, zero references; see surprise 3 |
 
 `*` = Experimental.
@@ -41,7 +41,7 @@ RootfixAggregate (currently hardcode DFT, but only by implementation accident �
 below).
 
 **Dimension-fixed consumers (one overload, on the dimension their *semantics* fix):**
-PreOrderTraversal, PostOrderTraversal, GetBranches, LeaffixAggregate (DFT); GetLevels,
+PreorderTraversal, PostorderTraversal, GetBranches, LeaffixAggregate (DFT); GetLevels,
 LevelOrderTraversal (BFT).
 
 > **Correction (review, 2026-07-04):** the draft originally classified `GetLeaves` — and with it
@@ -53,7 +53,7 @@ LevelOrderTraversal (BFT).
 > `SkipNodeAndDescendants`, which yields identical output under either dimension. Only emission
 > *order* differs for GetLeaves/RootfixAggregate (pre-order vs level-order of the leaves) — the
 > same way `GetTraversal` differs, which is fine for a consumer. The audit now distinguishes
-> **dimension-fixed by semantics** (PostOrderTraversal cannot be a BFT operation) from
+> **dimension-fixed by semantics** (PostorderTraversal cannot be a BFT operation) from
 > **dimension-fixed by current implementation** (redirectable when the narrow overloads land).
 
 ### Surprises vs the design doc's guess
@@ -127,8 +127,8 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 | **GetTraversal** | tree→enum | strategy param / strategy param | both | O(1) | O(1) | none | YES |
 | **GetDepthFirstTraversal** | tree→enum | DFT (hardcoded) / — | DFT only | O(1) | — | none | YES (fixed) |
 | **GetBreadthFirstTraversal** | tree→enum | — / BFT (hardcoded) | BFT only | — | O(1) | none | YES (fixed) |
-| **PreOrderTraversal** | tree→enum | DFT (hardcoded) / — | DFT only | O(1) | — | none | YES (fixed) |
-| **PostOrderTraversal** | tree→enum | DFT (hardcoded) / — | DFT only | O(d) (path deque; reorders) | — | none | YES (fixed) |
+| **PreorderTraversal** | tree→enum | DFT (hardcoded) / — | DFT only | O(1) | — | none | YES (fixed) |
+| **PostorderTraversal** | tree→enum | DFT (hardcoded) / — | DFT only | O(d) (path deque; reorders) | — | none | YES (fixed) |
 | **LevelOrderTraversal** | tree→enum | — / BFT (hardcoded) | BFT only | — | O(1) | none | YES (fixed) |
 | **GetLevels** | tree→enum | — / BFT (hardcoded) | BFT only | — | O(w) (one level buffered) | yields TNode[] per level (inherent) | YES (fixed) |
 | **GetRoots** | tree→enum | DFT (SkipNodeAndDescendants) — impl accident | both (either source; identical output) | O(1) | O(1) | none | YES |
@@ -150,13 +150,13 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 | **WithParent** | tree→tree | same / same | — | O(d) | O(d) | shared mutable List — same hazard; BFT dimension semantically wrong | **DELETED** (see surprise 3) |
 | **ToFormattedLines** | tree→enum | DFT (token stream) + Reverse | — | O(n) | — | reverses whole token stream + Stack of all lines | NO |
 | **ToFormattedString** | tree→scalar | DFT (→ ToFormattedLines) | — | O(n) | — | joins all lines | NO |
-| **ToDepthFirstTreeEnumerable** | tree→tokens | DFT / — | DFT only (niche) | O(1) | — | none | NO |
-| **ToBreadthFirstTreeEnumerable** | tree→tokens | — / BFT | BFT only (niche) | — | O(1) | none | NO |
+| **ToDepthFirstTreeTokenizer** | tree→tokens | DFT / — | DFT only (niche) | O(1) | — | none | NO |
+| **ToBreadthFirstTreeTokenizer** | tree→tokens | — / BFT | BFT only (niche) | — | O(1) | none | NO |
 | **GetTreenumerator** | accessor | strategy param | n/a | O(1) | O(1) | none (raw dispatch) | NO |
 | **ExpandNode** (exp) | tree→tree | DFT / **BFT throws NotImplemented** | DFT only (incomplete) | O(d)? | — | BFT unimplemented | NO |
 | **Graft** (exp) | tree→tree | DFT / **BFT throws NotImplemented** | DFT only (incomplete) | O(d)? | — | BFT unimplemented | NO |
 | **Collapse** (exp) | tree→enum | **NotImplemented** | — | — | — | stub | NO |
-| **InOrderTraversal** (exp) | tree→enum | **NotImplemented** | — | — | — | stub | NO |
+| **InorderTraversal** (exp) | tree→enum | **NotImplemented** | — | — | — | stub | NO |
 | **RepeatTrees** (exp) | — | commented out | — | — | — | not compiled | — |
 
 ---
@@ -235,10 +235,10 @@ passes for time).
 | RootfixScan | O(n) / O(n) | O(d) / O(w) | path stack vs two-level buffer |
 | Union, Intersection, Subtract, SymmetricDifference | O(n) / O(n) | O(d) / O(w) | merge stack vs merge queue; n = n_left+n_right |
 | CountNodes, AnyNodes, AllNodes, Consume | O(n) / O(n) | O(1) / O(1) | strategy-param; Any/All early-out |
-| GetTraversal, PreOrderTraversal, LevelOrderTraversal | O(n) | O(1) | dimension-native stream |
+| GetTraversal, PreorderTraversal, LevelOrderTraversal | O(n) | O(1) | dimension-native stream |
 | GetLeaves, GetRoots | O(n) / O(n) | O(1) / O(1) | dimension-agnostic (current impl hardcodes DFT) |
 | GetLevels | O(n) | O(w) | one level resident; BFT-fixed |
-| PostOrderTraversal, GetBranches | O(n) | O(d) | reorder-within-path; DFT-fixed by semantics |
+| PostorderTraversal, GetBranches | O(n) | O(d) | reorder-within-path; DFT-fixed by semantics |
 | RootfixAggregate | O(n) / O(n) | O(d) / O(w) | rides RootfixScan + GetLeaves; dimension-agnostic |
 | LeaffixAggregate | O(n) | O(subtree_max) ≤ O(n) | per-root buffer reuse; DFT-fixed |
 | **Invert (current)** | **O(n)** DFT-consume + O(n) copy | **O(n)** | materialize+copy; both result dims |

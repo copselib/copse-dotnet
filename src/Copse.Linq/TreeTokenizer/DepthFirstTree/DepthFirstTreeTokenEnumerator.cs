@@ -2,24 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Copse.Linq.TreeEnumerable.DepthFirstTree
+namespace Copse.Linq.TreeTokenizer.DepthFirstTree
 {
-  internal sealed class DepthFirstTreeEnumerator<TNode> : IEnumerator<DepthFirstTreeEnumerableToken<TNode>>
+  internal sealed class DepthFirstTreeTokenEnumerator<TNode> : IEnumerator<DepthFirstTreeToken<TNode>>
   {
-    public DepthFirstTreeEnumerator(ITreenumerator<TNode> breadthFirstTreenumerator)
+    public DepthFirstTreeTokenEnumerator(ITreenumerator<TNode> breadthFirstTreenumerator)
     {
       _Treenumerator = breadthFirstTreenumerator;
     }
 
     private readonly ITreenumerator<TNode> _Treenumerator;
 
-    public DepthFirstTreeEnumerableToken<TNode> Current { get; private set; }
+    public DepthFirstTreeToken<TNode> Current { get; private set; }
 
     object IEnumerator.Current => Current;
 
     private int _PreviousDepth = 0;
     private bool _HasCachedNode = false;
-    private DepthFirstTreeEnumerableToken<TNode> _CachedNode;
+    private DepthFirstTreeToken<TNode> _CachedNode;
     private int _CachedEndChildGroupTokenCount = 0;
 
     public bool MoveNext()
@@ -27,7 +27,7 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
       if (_CachedEndChildGroupTokenCount > 0)
       {
         _CachedEndChildGroupTokenCount--;
-        Current = new DepthFirstTreeEnumerableToken<TNode>(DepthFirstTreeEnumerableTokenType.EndChildGroup);
+        Current = new DepthFirstTreeToken<TNode>(DepthFirstTreeTokenType.EndChildGroup);
         return true;
       }
 
@@ -51,7 +51,7 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
           return true;
         }
 
-        Current = new DepthFirstTreeEnumerableToken<TNode>(_Treenumerator.Node);
+        Current = new DepthFirstTreeToken<TNode>(_Treenumerator.Node);
         return true;
       }
 
@@ -62,16 +62,16 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
     {
       if (newDepth > _PreviousDepth)
       {
-        Current = new DepthFirstTreeEnumerableToken<TNode>(DepthFirstTreeEnumerableTokenType.StartChildGroup);
+        Current = new DepthFirstTreeToken<TNode>(DepthFirstTreeTokenType.StartChildGroup);
       }
       else
       {
         _CachedEndChildGroupTokenCount = _PreviousDepth - _Treenumerator.Position.Depth - 1;
-        Current = new DepthFirstTreeEnumerableToken<TNode>(DepthFirstTreeEnumerableTokenType.EndChildGroup);
+        Current = new DepthFirstTreeToken<TNode>(DepthFirstTreeTokenType.EndChildGroup);
       }
 
       _HasCachedNode = true;
-      _CachedNode = new DepthFirstTreeEnumerableToken<TNode>(_Treenumerator.Node);
+      _CachedNode = new DepthFirstTreeToken<TNode>(_Treenumerator.Node);
       _PreviousDepth = newDepth;
     }
 
@@ -81,7 +81,7 @@ namespace Copse.Linq.TreeEnumerable.DepthFirstTree
         return false;
 
       _CachedEndChildGroupTokenCount = _PreviousDepth - 1;
-      Current = new DepthFirstTreeEnumerableToken<TNode>(DepthFirstTreeEnumerableTokenType.EndChildGroup);
+      Current = new DepthFirstTreeToken<TNode>(DepthFirstTreeTokenType.EndChildGroup);
       _PreviousDepth = 0;
       return true;
     }

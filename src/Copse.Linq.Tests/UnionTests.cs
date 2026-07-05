@@ -58,7 +58,7 @@ namespace Copse.Linq.Tests
         var expectedTreeNodes =
           TreeSerializer
           .Deserialize(joinedTreeData)
-          .PreOrderTraversal()
+          .PreorderTraversal()
           .ToArray();
 
         var cross =

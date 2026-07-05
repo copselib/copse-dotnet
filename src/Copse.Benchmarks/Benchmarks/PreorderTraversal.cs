@@ -1,39 +1,39 @@
-using Copse.Linq;
+﻿using Copse.Linq;
 using Copse.Trees;
 using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
   [MemoryDiagnoser]
-  [BenchmarkCategory("Traversal", "PostOrder")]
-  public class PostOrderTraversal
+  [BenchmarkCategory("Traversal", "Preorder")]
+  public class PreorderTraversal
   {
     [Benchmark]
     public void DeepTree() =>
       Treenumerables
       .GetDeepTree(20)
-      .PostOrderTraversal()
+      .PreorderTraversal()
       .Consume();
 
     [Benchmark]
     public void TriangleTree_PruneAfter_1447() =>
       new TriangleTree()
       .PruneAfter(nodeContext => nodeContext.Position.Depth == 1447)
-      .PostOrderTraversal()
+      .PreorderTraversal()
       .Consume();
 
     [Benchmark]
     public void CompleteBinaryTree_PruneBefore_20() =>
       new CompleteBinaryTree()
       .PruneBefore(nodeContext => nodeContext.Position.Depth == 20)
-      .PostOrderTraversal()
+      .PreorderTraversal()
       .Consume();
 
     [Benchmark]
-    public void CompleteBinaryTree_PruneAfter_19() =>
+    public void CompleteBinaryTree_PruneAfterDepth_19() =>
       new CompleteBinaryTree()
       .PruneAfter(nodeContext => nodeContext.Position.Depth == 19)
-      .PostOrderTraversal()
+      .PreorderTraversal()
       .Consume();
   }
 }

@@ -6,7 +6,7 @@ namespace Copse.Linq.Experimental
 {
   public static partial class Treenumerable
   {
-    public static IEnumerable<T> InOrderOrderTraversal<T>(this ITreenumerable<T> source)
+    public static IEnumerable<T> InorderOrderTraversal<T>(this ITreenumerable<T> source)
     {
       // TODO:
       // I have avoided this for a long time because of the ambiguity about when

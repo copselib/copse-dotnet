@@ -277,7 +277,7 @@ subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeBreadthFirst
 
 Signed off and landed (`TreeSerializer.Envelope.cs`, `PreorderTextStream`,
 `LevelOrderTextStream`; round-trips conformance-tested via the shared battery). The bft payload
-grammar is Jason's `BreadthFirstTreeEnumerable` tokenization rendered to text — independently
+grammar is Jason's `BreadthFirstTreeTokenizer` tokenization rendered to text — independently
 equivalent to LOUDS-with-inlined-values (`a;b,c;d,e` for `a(b(d,e),c)`: ',' in-family, '|'
 family terminator, ';' generation mark, trailing empties elided) — the dft payload is the paren
 grammar (BP-with-inlined-values). As-built details below (items 1–6 all hold as written, with

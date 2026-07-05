@@ -171,7 +171,7 @@ before or with step 1 below.
    `IChildEnumerator`(+`NodeAndSiblingIndex`) promotion to Core if the capability
    lattice wants it; possible `NodeVisit`-composes-`NodeContext` cleanup (impossible
    under the old layering, trivial now); **casing unification (Jason, 2026-07-04):
-   standardize `PreOrder`/`PostOrder`/`InOrder` → `Preorder`/`Postorder`/`Inorder`
+   standardize `Preorder`/`Postorder`/`InOrder` → `Preorder`/`Postorder`/`Inorder`
    everywhere** (the traversal operators are the outliers; the type family already uses
    the single-word form).
 

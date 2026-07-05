@@ -2,24 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
+namespace Copse.Linq.TreeTokenizer.BreadthFirstTree
 {
-  internal sealed class BreadthFirstTreeEnumerator<TNode> : IEnumerator<BreadthFirstTreeEnumerableToken<TNode>>
+  internal sealed class BreadthFirstTreeTokenEnumerator<TNode> : IEnumerator<BreadthFirstTreeToken<TNode>>
   {
-    public BreadthFirstTreeEnumerator(ITreenumerator<TNode> breadthFirstTreenumerator)
+    public BreadthFirstTreeTokenEnumerator(ITreenumerator<TNode> breadthFirstTreenumerator)
     {
       _Treenumerator = breadthFirstTreenumerator;
     }
 
     private readonly ITreenumerator<TNode> _Treenumerator;
-    private readonly Queue<BreadthFirstTreeEnumerableToken<TNode>> _CachedSeparators = new Queue<BreadthFirstTreeEnumerableToken<TNode>>();
+    private readonly Queue<BreadthFirstTreeToken<TNode>> _CachedSeparators = new Queue<BreadthFirstTreeToken<TNode>>();
     private bool _HasCachedNode = false;
-    private BreadthFirstTreeEnumerableToken<TNode> _CachedNode;
+    private BreadthFirstTreeToken<TNode> _CachedNode;
     private int _CurrentLevelDepth = -1;
     private bool _EnumerationStarted = false;
     private bool _TreenumeratorEnumerationFinished = false;
 
-    public BreadthFirstTreeEnumerableToken<TNode> Current { get; private set; }
+    public BreadthFirstTreeToken<TNode> Current { get; private set; }
 
     object IEnumerator.Current => Current;
 
@@ -65,13 +65,13 @@ namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
 
     private void OnEnumerationStarting()
     {
-      Current = new BreadthFirstTreeEnumerableToken<TNode>(_Treenumerator.Node);
+      Current = new BreadthFirstTreeToken<TNode>(_Treenumerator.Node);
       _EnumerationStarted = true;
     }
 
     private void OnSchedulingNode()
     {
-      var node = new BreadthFirstTreeEnumerableToken<TNode>(_Treenumerator.Node);
+      var node = new BreadthFirstTreeToken<TNode>(_Treenumerator.Node);
 
       if (_CachedSeparators.Count > 0)
       {
@@ -91,11 +91,11 @@ namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
 
       if (_Treenumerator.Position.Depth == _CurrentLevelDepth)
       {
-        _CachedSeparators.Enqueue(new BreadthFirstTreeEnumerableToken<TNode>(BreadthFirstTreeEnumerableTokenType.FamilySeparator));
+        _CachedSeparators.Enqueue(new BreadthFirstTreeToken<TNode>(BreadthFirstTreeTokenType.FamilySeparator));
       }
       else
       {
-        _CachedSeparators.Enqueue(new BreadthFirstTreeEnumerableToken<TNode>(BreadthFirstTreeEnumerableTokenType.GenerationSeparator));
+        _CachedSeparators.Enqueue(new BreadthFirstTreeToken<TNode>(BreadthFirstTreeTokenType.GenerationSeparator));
 
         _CurrentLevelDepth++;
       }
@@ -107,7 +107,7 @@ namespace Copse.Linq.TreeEnumerable.BreadthFirstTree
       {
         Current = _CachedSeparators.Dequeue();
 
-        if (Current.Type == BreadthFirstTreeEnumerableTokenType.GenerationSeparator)
+        if (Current.Type == BreadthFirstTreeTokenType.GenerationSeparator)
           _CachedSeparators.Clear();
 
         return true;

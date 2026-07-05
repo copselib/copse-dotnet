@@ -97,7 +97,7 @@ namespace Copse.Linq.Tests
         var allTreeNodes =
           TreeSerializer
           .Deserialize(treeString)
-          .PreOrderTraversal()
+          .PreorderTraversal()
           .ToArray();
 
         var allTreeNodeAndTraversalStrategyPairs =
@@ -146,7 +146,7 @@ namespace Copse.Linq.Tests
       var nodes =
         TreeSerializer
         .Deserialize(treeString)
-        .PreOrderTraversal()
+        .PreorderTraversal()
         .ToArray()
         .AsSpan();
 

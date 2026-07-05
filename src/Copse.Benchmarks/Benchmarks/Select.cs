@@ -17,7 +17,7 @@ namespace Copse.Benchmarks
       .Select(x => x.Node + 'a')
       .Select(x => x.Node + 1)
       .Select(x => (char)x.Node)
-      .PreOrderTraversal()
+      .PreorderTraversal()
       .Count();
   }
 }

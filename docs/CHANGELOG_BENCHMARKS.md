@@ -33,8 +33,8 @@ Refactored the benchmark project to follow BenchmarkDotNet best practices, makin
 | DepthFirstTreenumerator     | Traversal, DepthFirst                     |
 | BreadthFirstTreenumerator   | Traversal, BreadthFirst                   |
 | LevelOrderTraversal         | Traversal, LevelOrder                     |
-| PostOrderTraversal          | Traversal, PostOrder                      |
-| PreOrderTraversal           | Traversal, PreOrder                       |
+| PostorderTraversal          | Traversal, Postorder                      |
+| PreorderTraversal           | Traversal, Preorder                       |
 | AllNodes                    | LINQ, Query                               |
 | AnyNodes                    | LINQ, Query                               |
 | CountNodes                  | LINQ, Query                               |

@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   [TestClass]
-  public class TreeEnumerableTests
+  public class TreeTokenizerTests
   {
     public static IEnumerable<object[]> GetTestData()
     {
@@ -37,7 +37,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void BreadthFirstTreeEnumerable(
+    public void BreadthFirstTreeTokenizer(
       string treeString,
       string expectedBreadthFirst,
       string expectedDepthFirst)
@@ -47,7 +47,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void DepthFirstTreeEnumerable(
+    public void DepthFirstTreeTokenizer(
       string treeString,
       string expectedBreadthFirst,
       string expectedDepthFirst)
@@ -66,8 +66,8 @@ namespace Copse.Linq.Tests
       // Act
       var enumerable =
         treeTraversalStrategy == TreeTraversalStrategy.BreadthFirst
-        ? treenumerable.ToBreadthFirstTreeEnumerable().Select(token => token.ToString())
-        : treenumerable.ToDepthFirstTreeEnumerable().Select(token => token.ToString());
+        ? treenumerable.ToBreadthFirstTreeTokenizer().Select(token => token.ToString())
+        : treenumerable.ToDepthFirstTreeTokenizer().Select(token => token.ToString());
 
       var actual = string.Join("", enumerable);
 

@@ -54,7 +54,7 @@ namespace Copse.Linq.Tests
           var expectedTreeNodes =
             TreeSerializer
             .Deserialize(treeString)
-            .PreOrderTraversal()
+            .PreorderTraversal()
             .ToArray();
 
           var cross =
@@ -98,7 +98,7 @@ namespace Copse.Linq.Tests
 
     private static IEnumerable<string[]> GetTreeNodePairs(string treeString)
     {
-      var nodes = TreeSerializer.Deserialize(treeString).PreOrderTraversal().ToArray();
+      var nodes = TreeSerializer.Deserialize(treeString).PreorderTraversal().ToArray();
 
       for (int i = 0; i < nodes.Length - 1; i++)
         for (int j = i + 1; j < nodes.Length; j++)

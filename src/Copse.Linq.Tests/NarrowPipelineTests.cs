@@ -136,8 +136,8 @@ namespace Copse.Linq.Tests
         Assert.AreEqual(engine.CountNodes(), StreamBreadthFirst(tree).CountNodes(), $"BFT CountNodes {tree}");
         Assert.AreEqual(engine.CountTrees(), StreamDepthFirst(tree).CountTrees(), $"CountTrees {tree}");
         CollectionAssert.AreEqual(engine.GetLeaves().ToArray(), StreamDepthFirst(tree).GetLeaves().ToArray(), $"GetLeaves {tree}");
-        CollectionAssert.AreEqual(engine.PreOrderTraversal().ToArray(), StreamDepthFirst(tree).PreOrderTraversal().ToArray(), $"PreOrder {tree}");
-        CollectionAssert.AreEqual(engine.PostOrderTraversal().ToArray(), StreamDepthFirst(tree).PostOrderTraversal().ToArray(), $"PostOrder {tree}");
+        CollectionAssert.AreEqual(engine.PreorderTraversal().ToArray(), StreamDepthFirst(tree).PreorderTraversal().ToArray(), $"Preorder {tree}");
+        CollectionAssert.AreEqual(engine.PostorderTraversal().ToArray(), StreamDepthFirst(tree).PostorderTraversal().ToArray(), $"Postorder {tree}");
         CollectionAssert.AreEqual(engine.LevelOrderTraversal().ToArray(), StreamBreadthFirst(tree).LevelOrderTraversal().ToArray(), $"LevelOrder {tree}");
         CollectionAssert.AreEqual(
           engine.GetLevels().Select(level => string.Join("~", level)).ToArray(),

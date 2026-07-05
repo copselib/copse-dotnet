@@ -125,7 +125,7 @@ namespace Copse.SimpleSerializer
     // The bft grammar writer, O(1) state: a node's VALUE is emitted when it is scheduled
     // (inside its parent's family), and its family terminator when it is first visited --
     // '|' within a level, ';' at a level boundary -- exactly the schedule/visit split
-    // serialized (Jason's BreadthFirstTreeEnumerable tokenization rendered to text).
+    // serialized (Jason's BreadthFirstTreeTokenizer tokenization rendered to text).
     // Separators buffer until the next value; at end of stream they drop, eliding all
     // trailing empty families.
     private static void WriteBreadthFirstPayload<TNode>(IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)

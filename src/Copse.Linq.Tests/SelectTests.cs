@@ -8,7 +8,7 @@ namespace Copse.Linq.Tests
   public class SelectTests
   {
     [TestMethod]
-    public void PreOrderTraversal_TwoLevels()
+    public void PreorderTraversal_TwoLevels()
     {
       // Arrange
       var treenumerable =
@@ -19,7 +19,7 @@ namespace Copse.Linq.Tests
       var actual =
         treenumerable
         .Select(visit => (char)('a' + visit.Node))
-        .PreOrderTraversal()
+        .PreorderTraversal()
         .ToArray();
 
       // Assert

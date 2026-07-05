@@ -20,7 +20,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, invocations);
 
-      deferred.PreOrderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
 
       Assert.AreEqual(1, invocations);
     }
@@ -36,8 +36,8 @@ namespace Copse.Linq.Tests
         return TreeSerializer.Deserialize("a(b,c)");
       });
 
-      deferred.PreOrderTraversal().ToArray();
-      deferred.PreOrderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
+      deferred.PreorderTraversal().ToArray();
       deferred.LevelOrderTraversal().ToArray();
 
       Assert.AreEqual(3, invocations);
@@ -54,9 +54,9 @@ namespace Copse.Linq.Tests
         var direct = TreeSerializer.Deserialize(tree);
 
         CollectionAssert.AreEqual(
-          direct.PreOrderTraversal().ToArray(),
-          deferred.PreOrderTraversal().ToArray(),
-          $"PreOrder mismatch for {tree}");
+          direct.PreorderTraversal().ToArray(),
+          deferred.PreorderTraversal().ToArray(),
+          $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
           direct.LevelOrderTraversal().ToArray(),

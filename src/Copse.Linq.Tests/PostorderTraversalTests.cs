@@ -8,7 +8,7 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   [TestClass]
-  public class PostOrderTraversalTests
+  public class PostorderTraversalTests
   {
     public static IEnumerable<object[]> GetTestData()
     {
@@ -31,7 +31,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void PostOrderTraversal(
+    public void PostorderTraversal(
       string treeString,
       string[] expectedResults)
     {
@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
       // Act
       var actual =
         treenumerable
-        .PostOrderTraversal()
+        .PostorderTraversal()
         .ToArray();
 
       // Assert
