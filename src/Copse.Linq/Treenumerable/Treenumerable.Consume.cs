@@ -10,7 +10,7 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy = default)
     {
       using (var treenumerator = source.GetTreenumerator(treeTraversalStrategy))
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll));
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
     }
 
     // Drive a buffer's capture to completion without naming a dimension: finish whichever

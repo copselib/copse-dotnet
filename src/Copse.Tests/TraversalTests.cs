@@ -16,7 +16,7 @@ namespace Copse.Tests
   {
     static TraversalTests()
     {
-      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TreeTraversalTestData.TestTrees); 
+      _TreenumerableTestDataFactory = new TreenumerableTestDataFactory(TreeTraversalTestData.TestTrees);
     }
 
     private static TreenumerableTestDataFactory _TreenumerableTestDataFactory;

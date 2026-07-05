@@ -21,7 +21,7 @@ namespace Copse.Tests
       sut.AddLast(1);
 
       // Assert
-      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new [] { 1 }));
+      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new[] { 1 }));
     }
 
 
@@ -36,7 +36,7 @@ namespace Copse.Tests
       sut.AddLast(2);
 
       // Assert
-      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new [] { 1, 2 }));
+      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new[] { 1, 2 }));
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ namespace Copse.Tests
       sut.RemoveFirst();
 
       // Assert
-      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new [] { 2 }));
+      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new[] { 2 }));
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ namespace Copse.Tests
       sut.RemoveLast();
 
       // Assert
-      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new [] { 1 }));
+      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new[] { 1 }));
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ namespace Copse.Tests
       sut.RemoveFirst();
 
       // Assert
-      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new [] { 2 }));
+      Assert.IsTrue(Enumerable.SequenceEqual(sut.Snapshot(), new[] { 2 }));
     }
 
     // --- Regression coverage for partition-size capping (MaxPartitionSize = 4096) ---

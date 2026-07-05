@@ -196,29 +196,29 @@ namespace Copse.Linq.Tests
       var targets = new[] { "a", "b", "d" }; // root, internal, leaf
 
       foreach (var traversal in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
-      foreach (var strategy in strategies)
-      foreach (var target in targets)
-      {
-        var expected = CollectPruned(TreeSerializer.Deserialize(RichTree), traversal, target, strategy);
+        foreach (var strategy in strategies)
+          foreach (var target in targets)
+          {
+            var expected = CollectPruned(TreeSerializer.Deserialize(RichTree), traversal, target, strategy);
 
-        // Fresh memo: the replay's pruning drives lazy fills (cases 3-4).
-        var fresh = TreeSerializer.Deserialize(RichTree).Memoize();
-        CollectionAssert.AreEqual(
-          expected,
-          CollectPruned(fresh, traversal, target, strategy),
-          $"fresh memo: {traversal}, {strategy} at {target}");
+            // Fresh memo: the replay's pruning drives lazy fills (cases 3-4).
+            var fresh = TreeSerializer.Deserialize(RichTree).Memoize();
+            CollectionAssert.AreEqual(
+              expected,
+              CollectPruned(fresh, traversal, target, strategy),
+              $"fresh memo: {traversal}, {strategy} at {target}");
 
-        // Captures completed in each dimension: native (case 1) and cross-order (case 2) serving.
-        foreach (var captured in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
-        {
-          var consumed = TreeSerializer.Deserialize(RichTree).Memoize();
-          consumed.Consume(captured);
-          CollectionAssert.AreEqual(
-            expected,
-            CollectPruned(consumed, traversal, target, strategy),
-            $"capture {captured}: {traversal}, {strategy} at {target}");
-        }
-      }
+            // Captures completed in each dimension: native (case 1) and cross-order (case 2) serving.
+            foreach (var captured in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+            {
+              var consumed = TreeSerializer.Deserialize(RichTree).Memoize();
+              consumed.Consume(captured);
+              CollectionAssert.AreEqual(
+                expected,
+                CollectPruned(consumed, traversal, target, strategy),
+                $"capture {captured}: {traversal}, {strategy} at {target}");
+            }
+          }
     }
 
     // ---------------------------------------------------------------------------------------

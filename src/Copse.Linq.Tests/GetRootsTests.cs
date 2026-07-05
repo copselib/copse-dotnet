@@ -11,11 +11,11 @@ namespace Copse.Linq.Tests
   {
     public static IEnumerable<object[]> GetTestData()
     {
-      yield return new object[] { "a",              new[] { "a"           } };
-      yield return new object[] { "a,b,c",          new[] { "a", "b", "c" } };
-      yield return new object[] { "a(b,c)",         new[] { "a"           } };
-      yield return new object[] { "a(b(c))",        new[] { "a"           } };
-      yield return new object[] { "a(b,c),d(e,f)",  new[] { "a", "d"      } };
+      yield return new object[] { "a", new[] { "a" } };
+      yield return new object[] { "a,b,c", new[] { "a", "b", "c" } };
+      yield return new object[] { "a(b,c)", new[] { "a" } };
+      yield return new object[] { "a(b(c))", new[] { "a" } };
+      yield return new object[] { "a(b,c),d(e,f)", new[] { "a", "d" } };
       yield return new object[] { "a,b(c),d(e(f))", new[] { "a", "b", "d" } };
     }
 

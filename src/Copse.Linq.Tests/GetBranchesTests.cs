@@ -76,7 +76,7 @@ namespace Copse.Linq.Tests
       {
         "a,b(c),d(e(f))",
         new[]
-        { 
+        {
           new[] { "a" },
           new[] { "b", "c" },
           new[] { "d", "e", "f" }

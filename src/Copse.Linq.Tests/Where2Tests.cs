@@ -187,15 +187,15 @@ namespace Copse.Linq.Tests
       return result;
     }
 
-// The Where2Test_* methods below are [DynamicData] test methods. MSTest ENUMERATES [DynamicData] at
-// DISCOVERY time -- on every `dotnet test` of this assembly -- EVEN for [Ignore]d methods, and that
-// enumeration runs GetTestData()/GenerateCases() in full (deserialize + Where + Serialize per case).
-// That combinatorial discovery dominated test-run time. They are superseded by the fast in-process
-// Where2InProcessScan (identical coverage in seconds), so they are excluded from compilation entirely
-// via `#if false` and are therefore never discovered. The shared DATA/helpers ABOVE (AllTreeStrings,
-// GenerateCases, NodeAndTraversalStrategy, GetTestData, GetTestDisplayName) stay compiled because the
-// in-process scans and MergeInProcessScan depend on them. To run the slow exhaustive per-case variant,
-// flip `#if false` to `#if true`.
+    // The Where2Test_* methods below are [DynamicData] test methods. MSTest ENUMERATES [DynamicData] at
+    // DISCOVERY time -- on every `dotnet test` of this assembly -- EVEN for [Ignore]d methods, and that
+    // enumeration runs GetTestData()/GenerateCases() in full (deserialize + Where + Serialize per case).
+    // That combinatorial discovery dominated test-run time. They are superseded by the fast in-process
+    // Where2InProcessScan (identical coverage in seconds), so they are excluded from compilation entirely
+    // via `#if false` and are therefore never discovered. The shared DATA/helpers ABOVE (AllTreeStrings,
+    // GenerateCases, NodeAndTraversalStrategy, GetTestData, GetTestDisplayName) stay compiled because the
+    // in-process scans and MergeInProcessScan depend on them. To run the slow exhaustive per-case variant,
+    // flip `#if false` to `#if true`.
 #if false
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
