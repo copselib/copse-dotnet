@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783287475402,
+  "lastUpdate": 1783287475652,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -24698,6 +24698,66 @@ window.BENCHMARK_DATA = {
             "value": 23868175,
             "unit": "ns",
             "range": "± 299834.08674372855"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "611df11a91cb1cfc6b96286eac1f978bb21737d3",
+          "message": "Merge: traversal-dimension split, flat family, and the header-free serializer\n\nThe wave that put serialization on solid ground. Highlights:\n\n- Split ITreenumerable into IDepthFirstTreenumerable / IBreadthFirstTreenumerable\n  (composite), making affordable traversal orders a compile-time fact.\n- Flat family of concrete treenumerables (preorder/level-order stores and\n  forward-only streams) sharing one playback contract; memoize fully de-engined\n  onto it and measured faster.\n- Header-free, layout-named serializer: lazy string deserialize -> full tree;\n  forward-only reader deserialize -> narrow tree; parse-time wrong-layout\n  detection. The original eager-parse \"poor materialization\" is retired.\n- Invert and LeaffixScan reworked; PreorderTree dissolved to a test-only oracle.\n- One shared visit-contract conformance battery (VisitStreamConformance) refereeing\n  every implementation against the real engine.\n\nFull suite green: 19,696 passed, 0 failed.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-05T21:07:39Z",
+          "tree_id": "cd61b7d91f9b4de76c74b8321b4d58bf81c97d83",
+          "url": "https://github.com/copselib/copse-dotnet/commit/611df11a91cb1cfc6b96286eac1f978bb21737d3"
+        },
+        "date": 1783287475615,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 62990285.9,
+            "unit": "ns",
+            "range": "± 651276.0992161373"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 10890101.077604167,
+            "unit": "ns",
+            "range": "± 33877.88238635868"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 134628052.58333334,
+            "unit": "ns",
+            "range": "± 1018371.1297308168"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 17022908.93526786,
+            "unit": "ns",
+            "range": "± 42267.0941620395"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 71180402.21904762,
+            "unit": "ns",
+            "range": "± 316221.60634034587"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 55349941.74814816,
+            "unit": "ns",
+            "range": "± 230320.36919257187"
           }
         ]
       }
