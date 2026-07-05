@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace Copse.Linq.TreeTokenizer.BreadthFirstTree
 {
+  // Intentionally kept though nothing consumes it yet: the symmetric pair of
+  // DepthFirstTreeTokenizer (which backs ToFormattedLines / the pretty-printer). Not dead code
+  // to be swept -- the asymmetry of dropping only the breadth-first half isn't worth it, and
+  // this is the half a future level-order tokenizer-based serializer would want.
   public sealed class BreadthFirstTreeTokenizer<TNode> : IBreadthFirstTreeTokenizer<TNode>
   {
     public BreadthFirstTreeTokenizer(IBreadthFirstTreenumerable<TNode> treenumerable)
