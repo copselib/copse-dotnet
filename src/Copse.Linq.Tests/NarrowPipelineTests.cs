@@ -223,5 +223,57 @@ namespace Copse.Linq.Tests
         Assert.AreEqual("copse/1;layout=bft\na;b,c;e", writer.ToString());
       }
     }
+
+    // ---------------------------------------------------------------------------------------
+    // The breadth-first GetLeaves/RootfixAggregate duals (no parent bookkeeping needed: the
+    // visit contract already carries parenthood).
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void BreadthFirstGetLeavesYieldsTheLeavesInLevelOrder()
+    {
+      foreach (var tree in VisitStreamConformance.TreeCorpus)
+      {
+        var engine = TreeSerializer.Deserialize(tree);
+
+        // Oracle: the depth-first leaves re-sequenced into level order (corpus values are
+        // unique per tree).
+        var leafSet = new System.Collections.Generic.HashSet<string>(engine.GetLeaves());
+        var expected = engine.LevelOrderTraversal().Where(leafSet.Contains).ToArray();
+
+        CollectionAssert.AreEqual(expected, StreamBreadthFirst(tree).GetLeaves().ToArray(), $"BFT GetLeaves {tree}");
+        CollectionAssert.AreEqual(expected, ((IBreadthFirstTreenumerable<string>)engine).GetLeaves().ToArray(), $"BFT GetLeaves over full tree {tree}");
+      }
+    }
+
+    [TestMethod]
+    public void BreadthFirstRootfixAggregateMatchesTheDepthFirstAccumulationsInLevelOrder()
+    {
+      const string tree = "a(b(d,e,f),c(g,h,i))";
+
+      string Accumulate(NodeContext<string> accumulate, NodeContext<string> nodeContext)
+        => accumulate.Node + nodeContext.Node;
+
+      var engine = TreeSerializer.Deserialize(tree);
+
+      var depthFirst = engine.RootfixAggregate(Accumulate, "*").ToArray();
+      var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate(Accumulate, "*").ToArray();
+
+      // Same accumulations, per-dimension order (leaves: preorder vs level order). This tree's
+      // leaves all sit on one level, so here the two coincide.
+      CollectionAssert.AreEquivalent(depthFirst, breadthFirst);
+      CollectionAssert.AreEqual(new[] { "*abd", "*abe", "*abf", "*acg", "*ach", "*aci" }, breadthFirst);
+    }
+
+    [TestMethod]
+    public void FullTreesStillResolveGetLeavesUnambiguously()
+    {
+      // The ITreenumerable overload exists precisely so this compiles (neither narrow overload
+      // is better for a full tree); it keeps the historical depth-first order.
+      var engine = TreeSerializer.Deserialize("a(b(d),c)");
+
+      CollectionAssert.AreEqual(new[] { "d", "c" }, engine.GetLeaves().ToArray());
+      CollectionAssert.AreEqual(new[] { "c", "d" }, ((IBreadthFirstTreenumerable<string>)engine).GetLeaves().ToArray());
+    }
   }
 }
