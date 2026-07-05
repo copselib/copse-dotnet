@@ -177,5 +177,60 @@ namespace Copse.Linq.Tests
           $"LevelOrder mismatch for {tree}");
       }
     }
+
+    // ---------------------------------------------------------------------------------------
+    // Narrow-dimension resource ownership: the result's dimension follows the tree handed in,
+    // and disposal is tied to that single dimension's treenumerator (a full Tree.Using would
+    // over-generalize a forward-only source -- the serializer's motivating case).
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void UsingDepthFirstReturnsDepthFirstAndOwnsTheResource()
+    {
+      var resources = new List<TestResource>();
+
+      IDepthFirstTreenumerable<string> tree = Tree.UsingDepthFirst<TestResource, string>(
+        () => { var r = new TestResource(); resources.Add(r); return r; },
+        _ => TreeSerializer.DeserializeDepthFirstTree("a(b,c)"));
+
+      Assert.AreEqual(0, resources.Count); // lazy: nothing acquired at composition
+
+      tree.PreorderTraversal().ToArray();
+
+      Assert.AreEqual(1, resources.Count);
+      Assert.AreEqual(1, resources[0].DisposeCount);
+    }
+
+    [TestMethod]
+    public void UsingBreadthFirstReturnsBreadthFirstAndOwnsTheResource()
+    {
+      var resources = new List<TestResource>();
+
+      IBreadthFirstTreenumerable<string> tree = Tree.UsingBreadthFirst<TestResource, string>(
+        () => { var r = new TestResource(); resources.Add(r); return r; },
+        _ => TreeSerializer.DeserializeBreadthFirstTree("a;b,c"));
+
+      tree.LevelOrderTraversal().ToArray();
+
+      Assert.AreEqual(1, resources.Count);
+      Assert.AreEqual(1, resources[0].DisposeCount);
+    }
+
+    [TestMethod]
+    public void DeferDepthFirstAndBreadthFirstRunTheFactoryPerAcquisition()
+    {
+      var depthFirstCalls = 0;
+      IDepthFirstTreenumerable<string> dft = Tree.DeferDepthFirst(() => { depthFirstCalls++; return TreeSerializer.DeserializeDepthFirstTree("a(b,c)"); });
+
+      dft.PreorderTraversal().ToArray();
+      dft.PreorderTraversal().ToArray();
+      Assert.AreEqual(2, depthFirstCalls);
+
+      var breadthFirstCalls = 0;
+      IBreadthFirstTreenumerable<string> bft = Tree.DeferBreadthFirst(() => { breadthFirstCalls++; return TreeSerializer.DeserializeBreadthFirstTree("a;b,c"); });
+
+      bft.LevelOrderTraversal().ToArray();
+      Assert.AreEqual(1, breadthFirstCalls);
+    }
   }
 }
