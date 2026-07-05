@@ -9,11 +9,13 @@ namespace Copse.Linq.Treenumerators
   // every sibling group reverses each level end-to-end). The flat family's breadth-first
   // playback does all the visit-contract work; this class only reorders.
   //
-  // O(width): one level tier of families is buffered at a time (a tier must complete before
-  // its LAST family -- the mirror's first -- can be served). Families are cut from the inner
-  // breadth-first visit stream by the contract's parenthood encoding: a front's children are
-  // scheduled between its own visits, so each first visit closes the previous front's family
-  // and opens its own, and a first visit one level deeper seals the tier.
+  // O(width): one level tier is buffered at a time (a tier must complete before its LAST
+  // family -- the mirror's first -- can be served), in two REUSED flat buffers (values in
+  // forward order + each family's end offset), so steady-state traversal allocates nothing
+  // per node. Families are cut from the inner breadth-first visit stream by the contract's
+  // parenthood encoding: a front's children are scheduled between its own visits, so each
+  // first visit closes the previous front's family, and a first visit one level deeper seals
+  // the tier.
   //
   // Consumer skips on the mirror discard from this buffer, not from the source: the inner
   // treenumerator is driven TraverseAll a tier at a time (the eager-skip price memo replays
@@ -27,145 +29,134 @@ namespace Copse.Linq.Treenumerators
 
     private readonly ITreenumerator<TValue> _Inner;
 
-    // Serving state: the current tier, served family-reversed and item-reversed.
-    private List<List<TValue>> _Tier;
-    private int _Group; // ordinal within the tier, counted from the BACK (mirror order)
-    private int _Item;  // items served from the current group, counted from the back
+    // The reused tier buffers: values of the tier's families in forward order, plus each
+    // family's END offset into them (family f spans [ends[f-1], ends[f])).
+    private readonly List<TValue> _TierValues = new List<TValue>();
+    private readonly List<int> _TierFamilyEnds = new List<int>();
 
-    // Collector state (always one family ahead: a tier is sealed by the next tier's first
-    // front, whose family must carry over).
+    // Serving cursors: family ordinal counted from the BACK (mirror order), items served from
+    // the back of the family.
+    private bool _TierInstalled;
+    private int _Group;
+    private int _Item;
+
+    // Collector state.
     private bool _RootsCollected;
     private bool _InnerExhausted;
     private int _CollectorLevelDepth;
-    private List<List<TValue>> _PendingTier = new List<List<TValue>>();
-    private List<TValue> _OpenFamily = new List<TValue>();
-
-    private List<TValue> CurrentGroup()
-      => _Group < _Tier.Count ? _Tier[_Tier.Count - 1 - _Group] : null;
 
     public bool TryReadNextInGroup(out TValue value)
     {
-      if (_Tier == null && !TryCollectNextTier())
-      {
-        value = default;
+      value = default;
+
+      if (!_TierInstalled && !TryCollectNextTier())
         return false;
-      }
 
-      var group = CurrentGroup();
-
-      if (group == null || _Item >= group.Count)
-      {
-        value = default;
+      if (_Group >= _TierFamilyEnds.Count)
         return false;
-      }
 
-      value = group[group.Count - 1 - _Item];
+      var forwardIndex = _TierFamilyEnds.Count - 1 - _Group;
+      var end = _TierFamilyEnds[forwardIndex];
+      var start = forwardIndex == 0 ? 0 : _TierFamilyEnds[forwardIndex - 1];
+
+      if (_Item >= end - start)
+        return false;
+
+      value = _TierValues[end - 1 - _Item];
       _Item++;
       return true;
     }
 
     public int SkipGroupRemainder()
     {
-      if (_Tier == null && !TryCollectNextTier())
+      if (!_TierInstalled || _Group >= _TierFamilyEnds.Count)
         return 0;
 
-      var group = CurrentGroup();
+      var forwardIndex = _TierFamilyEnds.Count - 1 - _Group;
+      var end = _TierFamilyEnds[forwardIndex];
+      var start = forwardIndex == 0 ? 0 : _TierFamilyEnds[forwardIndex - 1];
 
-      if (group == null)
-        return 0;
-
-      var remaining = group.Count - _Item;
-      _Item = group.Count;
+      var remaining = end - start - _Item;
+      _Item = end - start;
       return remaining;
     }
 
     public bool TryMoveToNextGroup()
     {
-      if (_Tier == null && !TryCollectNextTier())
+      if (!_TierInstalled && !TryCollectNextTier())
         return false;
 
       _Item = 0;
       _Group++;
 
-      if (_Group < _Tier.Count)
+      if (_Group < _TierFamilyEnds.Count)
         return true;
 
       return TryCollectNextTier();
     }
 
-    // Pull the next tier of families from the inner stream (group 0's tier is the roots).
-    // False when no further tier will ever have a group.
+    // Pull the next tier of families from the inner stream into the reused buffers (group 0's
+    // tier is the roots). False when no further tier will ever have a group.
     private bool TryCollectNextTier()
     {
+      if (_RootsCollected && _InnerExhausted)
+        return false;
+
+      _TierValues.Clear();
+      _TierFamilyEnds.Clear();
+      _Group = 0;
+      _Item = 0;
+
       if (!_RootsCollected)
       {
         _RootsCollected = true;
-
-        var roots = new List<TValue>();
 
         while (_Inner.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
           if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
           {
-            roots.Add(_Inner.Node);
+            _TierValues.Add(_Inner.Node);
           }
           else if (_Inner.VisitCount == 1)
           {
-            // The first front: the roots tier is sealed and this front's family opens.
+            // The first front: the roots tier is sealed; that front's own family opens
+            // implicitly as the next tier's first.
             _CollectorLevelDepth = _Inner.Position.Depth;
-            InstallTier(new List<List<TValue>> { roots });
+            _TierFamilyEnds.Add(_TierValues.Count);
+            _TierInstalled = true;
             return true;
           }
         }
 
         _InnerExhausted = true;
-        InstallTier(new List<List<TValue>> { roots });
+        _TierFamilyEnds.Add(_TierValues.Count);
+        _TierInstalled = true;
         return true;
       }
-
-      if (_InnerExhausted)
-        return false;
 
       while (_Inner.MoveNext(NodeTraversalStrategies.TraverseAll))
       {
         if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
         {
-          _OpenFamily.Add(_Inner.Node);
+          _TierValues.Add(_Inner.Node);
         }
         else if (_Inner.VisitCount == 1)
         {
-          _PendingTier.Add(_OpenFamily);
-          _OpenFamily = new List<TValue>();
+          // Close the previous front's family; a deeper front additionally seals the tier
+          // (its own family carries into the next collection, implicitly).
+          _TierFamilyEnds.Add(_TierValues.Count);
 
           if (_Inner.Position.Depth != _CollectorLevelDepth)
           {
-            // A front one level deeper: the tier is sealed, and this front's family (the one
-            // just opened) carries into the next collection.
             _CollectorLevelDepth = _Inner.Position.Depth;
-            InstallCollectedTier();
             return true;
           }
         }
       }
 
       _InnerExhausted = true;
-      _PendingTier.Add(_OpenFamily);
-      _OpenFamily = new List<TValue>();
-      InstallCollectedTier();
+      _TierFamilyEnds.Add(_TierValues.Count); // the last front's family
       return true;
-    }
-
-    private void InstallCollectedTier()
-    {
-      InstallTier(_PendingTier);
-      _PendingTier = new List<List<TValue>>();
-    }
-
-    private void InstallTier(List<List<TValue>> tier)
-    {
-      _Tier = tier;
-      _Group = 0;
-      _Item = 0;
     }
 
     public void Dispose() => _Inner.Dispose();
