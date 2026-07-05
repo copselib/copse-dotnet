@@ -13,7 +13,7 @@ namespace Copse.Linq.Tests
       // Arrange
       var treenumerable =
         TreeSerializer
-        .Deserialize("1,2,3", int.Parse);
+        .DeserializeDepthFirstTree("1,2,3", int.Parse);
 
       // Act
       var actual =
@@ -34,7 +34,7 @@ namespace Copse.Linq.Tests
       // Arrange
       var treenumerable =
         TreeSerializer
-        .Deserialize("1,2,3", int.Parse);
+        .DeserializeDepthFirstTree("1,2,3", int.Parse);
 
       // Act
       var actual =

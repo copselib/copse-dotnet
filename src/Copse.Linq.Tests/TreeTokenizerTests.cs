@@ -61,7 +61,7 @@ namespace Copse.Linq.Tests
       TreeTraversalStrategy treeTraversalStrategy)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       // Act
       var enumerable =

@@ -36,7 +36,7 @@ namespace Copse.Linq.Tests
       string[] expectedResults)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       // Act
       var actual =

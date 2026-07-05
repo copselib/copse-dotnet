@@ -64,7 +64,7 @@ namespace Copse.Linq.Tests
       var subtreeSizes = new List<int>();
       var open = new Stack<int>();
 
-      using (var treenumerator = TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator())
+      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetDepthFirstTreenumerator())
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
@@ -104,7 +104,7 @@ namespace Copse.Linq.Tests
       var rootCount = 0;
       var front = -1;
 
-      using (var treenumerator = TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator())
+      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetBreadthFirstTreenumerator())
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {

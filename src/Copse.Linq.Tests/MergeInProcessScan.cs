@@ -167,8 +167,8 @@ namespace Copse.Linq.Tests
       foreach (var (leftString, rightString) in pairs)
       {
         // Materialize both operands using ONLY the trusted base engine.
-        var left = TreeSerializer.Deserialize(leftString).Materialize();
-        var right = TreeSerializer.Deserialize(rightString).Materialize();
+        var left = TreeSerializer.DeserializeDepthFirstTree(leftString).Materialize();
+        var right = TreeSerializer.DeserializeDepthFirstTree(rightString).Materialize();
 
         // Independently reconstruct each operand's forest and overlay them by sibling index.
         var leftForest = BuildForest(left);

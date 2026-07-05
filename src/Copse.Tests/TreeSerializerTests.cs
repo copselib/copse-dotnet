@@ -51,7 +51,7 @@ namespace Copse.Tests
       int testScenarioIndex)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
       var testScenario = TreeTraversalTestData.TestTrees[testTreeIndex].TestScenarios[testScenarioIndex];
 
       var expected = testScenario.ExpectedDepthFirstResults;
@@ -81,10 +81,10 @@ namespace Copse.Tests
       int testScenarioIndex)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       // Act
-      var serializedTreeString = treenumerable.Serialize();
+      var serializedTreeString = treenumerable.SerializeDepthFirstTree();
 
       // Assert
       Assert.AreEqual(treeString, serializedTreeString);

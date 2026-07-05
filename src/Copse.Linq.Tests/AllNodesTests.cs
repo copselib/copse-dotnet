@@ -12,7 +12,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AllNodesIsTrueWhenEveryNodeSatisfiesThePredicate()
     {
-      var tree = TreeSerializer.Deserialize("a(b(d,e),c)");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
       Assert.IsTrue(tree.AllNodes(nodeContext => nodeContext.Node.Length == 1));
       Assert.IsTrue(tree.AllNodes(nodeContext => nodeContext.Node.Length == 1, TreeTraversalStrategy.BreadthFirst));
@@ -21,7 +21,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AllNodesIsFalseWhenAnyNodeFailsThePredicate()
     {
-      var tree = TreeSerializer.Deserialize("a(b(d,e),c)");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
       Assert.IsFalse(tree.AllNodes(nodeContext => nodeContext.Node != "d"));
       Assert.IsFalse(tree.AllNodes(nodeContext => nodeContext.Node != "d", TreeTraversalStrategy.BreadthFirst));
@@ -30,13 +30,13 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AllNodesIsVacuouslyTrueOnTheEmptyForest()
     {
-      Assert.IsTrue(TreeSerializer.Deserialize("").AllNodes(_ => false));
+      Assert.IsTrue(TreeSerializer.DeserializeDepthFirstTree("").AllNodes(_ => false));
     }
 
     [TestMethod]
     public void NarrowOverloadsAgree()
     {
-      var tree = TreeSerializer.Deserialize("a(b(d,e),c)");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
       Assert.IsTrue(((IDepthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node.Length == 1));
       Assert.IsFalse(((IDepthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node != "d"));

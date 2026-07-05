@@ -16,7 +16,7 @@ namespace Copse.Linq.Tests
       var deferred = Tree.Defer(() =>
       {
         invocations++;
-        return TreeSerializer.Deserialize("a(b,c)");
+        return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
       Assert.AreEqual(0, invocations);
@@ -34,7 +34,7 @@ namespace Copse.Linq.Tests
       var deferred = Tree.Defer(() =>
       {
         invocations++;
-        return TreeSerializer.Deserialize("a(b,c)");
+        return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
       deferred.PreorderTraversal().ToArray();
@@ -51,8 +51,8 @@ namespace Copse.Linq.Tests
 
       foreach (var tree in trees)
       {
-        var deferred = Tree.Defer(() => TreeSerializer.Deserialize(tree));
-        var direct = TreeSerializer.Deserialize(tree);
+        var deferred = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree));
+        var direct = TreeSerializer.DeserializeDepthFirstTree(tree);
 
         CollectionAssert.AreEqual(
           direct.PreorderTraversal().ToArray(),

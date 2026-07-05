@@ -109,7 +109,7 @@ namespace Copse.Linq.Tests
     {
       var nodes = new List<(string, int)>();
 
-      using (var treenumerator = TreeSerializer.Deserialize(tree).GetDepthFirstTreenumerator())
+      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetDepthFirstTreenumerator())
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
           if (treenumerator.Mode == TreenumeratorMode.VisitingNode && treenumerator.VisitCount == 1)
             nodes.Add((treenumerator.Node, treenumerator.Position.Depth));
@@ -127,7 +127,7 @@ namespace Copse.Linq.Tests
       var rootCount = 0;
       var front = -1;
 
-      using (var treenumerator = TreeSerializer.Deserialize(tree).GetBreadthFirstTreenumerator())
+      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetBreadthFirstTreenumerator())
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {

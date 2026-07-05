@@ -118,7 +118,7 @@ namespace Copse.Linq.Tests
           contract.GetLevels().Select(level => string.Join("|", level)).ToArray(),
           $"GetLevels over {tree}");
         Assert.AreEqual(engine.ToFormattedString(), contract.ToFormattedString(), $"ToFormattedString over {tree}");
-        Assert.AreEqual(engine.Serialize(), contract.Serialize(), $"Serialize over {tree}");
+        Assert.AreEqual(engine.SerializeDepthFirstTree(), contract.SerializeDepthFirstTree(), $"Serialize over {tree}");
       }
     }
 

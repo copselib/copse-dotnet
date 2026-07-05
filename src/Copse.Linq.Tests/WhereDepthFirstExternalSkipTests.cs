@@ -20,7 +20,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void PruneBefore_AnyNodesFalse_DepthFirst_DoesNotThrow()
     {
-      var tree = TreeSerializer.Deserialize("a(b(c),d(e))");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
@@ -34,7 +34,7 @@ namespace Copse.Linq.Tests
     public void PruneBefore_AnyNodesFalse_DepthFirst_DeepTree_DoesNotThrow()
     {
       // Single deep chain; prune before depth 2 leaves only a(b).
-      var tree = TreeSerializer.Deserialize("a(b(c(d(e(f)))))");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c(d(e(f)))))");
 
       var result =
         tree
@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void PruneBefore_AnyNodesMatchesSurvivingNode_DepthFirst_ReturnsTrue()
     {
-      var tree = TreeSerializer.Deserialize("a(b(c),d(e))");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
@@ -63,7 +63,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void PruneBefore_AnyNodesMatchesPrunedNode_DepthFirst_ReturnsFalse()
     {
-      var tree = TreeSerializer.Deserialize("a(b(c),d(e))");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
@@ -79,7 +79,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Where_AnyNodes_DepthFirst_ExternalSkip_DoesNotThrow()
     {
-      var tree = TreeSerializer.Deserialize("a(b(c),d(e))");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var foundExisting =
         tree
@@ -100,7 +100,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Where_FilterInternalNode_AnyNodes_DepthFirst_FindsPromotedChild()
     {
-      var tree = TreeSerializer.Deserialize("a(b(c,d),e)");
+      var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c,d),e)");
 
       // Remove b; c and d are promoted under a.
       var pruned = tree.Where(ctx => ctx.Node != "b");

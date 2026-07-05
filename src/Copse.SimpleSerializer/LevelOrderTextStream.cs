@@ -86,6 +86,12 @@ namespace Copse.SimpleSerializer
           case '\r':
             break;
 
+          case '(':
+          case ')':
+            throw new FormatException(
+              $"Unexpected '{character}': this is a depth-first structural character, so the source " +
+              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
+
           default:
             _ValueBuilder.Append(character);
             hasChars = true;
@@ -141,6 +147,12 @@ namespace Copse.SimpleSerializer
           case '\n':
           case '\r':
             break;
+
+          case '(':
+          case ')':
+            throw new FormatException(
+              $"Unexpected '{character}': this is a depth-first structural character, so the source " +
+              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
 
           default:
             hasChars = true;

@@ -26,7 +26,7 @@ namespace Copse.Linq.Tests
           resources.Add(resource);
           return resource;
         },
-        _ => TreeSerializer.Deserialize(tree));
+        _ => TreeSerializer.DeserializeDepthFirstTree(tree));
 
     [TestMethod]
     public void ResourceNotAcquiredUntilEnumeration()
@@ -161,10 +161,10 @@ namespace Copse.Linq.Tests
 
       foreach (var tree in trees)
       {
-        var direct = TreeSerializer.Deserialize(tree);
+        var direct = TreeSerializer.DeserializeDepthFirstTree(tree);
         var wrapped = Tree.Using(
           () => new TestResource(),
-          _ => TreeSerializer.Deserialize(tree));
+          _ => TreeSerializer.DeserializeDepthFirstTree(tree));
 
         CollectionAssert.AreEqual(
           direct.PreorderTraversal().ToArray(),

@@ -45,8 +45,8 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in Trees)
       {
-        var source = TreeSerializer.Deserialize(tree);
-        var memoized = TreeSerializer.Deserialize(tree).Memoize();
+        var source = TreeSerializer.DeserializeDepthFirstTree(tree);
+        var memoized = TreeSerializer.DeserializeDepthFirstTree(tree).Memoize();
 
         CollectionAssert.AreEqual(
           Collect(source, strategy),
@@ -66,15 +66,15 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in Trees)
       {
-        var memoized = TreeSerializer.Deserialize(tree).Memoize();
-        Assert.AreEqual(tree, memoized.Serialize(), $"structure mismatch for {tree}");
+        var memoized = TreeSerializer.DeserializeDepthFirstTree(tree).Memoize();
+        Assert.AreEqual(tree, memoized.SerializeDepthFirstTree(), $"structure mismatch for {tree}");
       }
     }
 
     [TestMethod]
     public void Empty_tree_replays_empty_and_completes()
     {
-      var memo = TreeSerializer.Deserialize("").Memoize();
+      var memo = TreeSerializer.DeserializeDepthFirstTree("").Memoize();
 
       Assert.AreEqual(0, Collect(memo, TreeTraversalStrategy.DepthFirst).Count);
       Assert.IsTrue(memo.IsComplete);
@@ -88,11 +88,11 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void BFS_after_full_DFS_never_touches_the_source_again()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
 
-      var directDfs = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.DepthFirst);
-      var directBfs = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.BreadthFirst);
+      var directDfs = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst);
+      var directBfs = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.BreadthFirst);
 
       CollectionAssert.AreEqual(directDfs, Collect(memo, TreeTraversalStrategy.DepthFirst));
 
@@ -109,11 +109,11 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void DFS_after_full_BFS_never_touches_the_source_again()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
 
-      var directDfs = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.DepthFirst);
-      var directBfs = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.BreadthFirst);
+      var directDfs = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst);
+      var directBfs = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.BreadthFirst);
 
       CollectionAssert.AreEqual(directBfs, Collect(memo, TreeTraversalStrategy.BreadthFirst));
 
@@ -129,9 +129,9 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Partial_then_deeper_enumeration_extends_one_shared_feed()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
-      var total = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.DepthFirst);
+      var total = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst);
 
       // Stop early: only a prefix of the tree is captured (laziness), the feed suspends.
       using (var replay = memo.GetDepthFirstTreenumerator())
@@ -150,7 +150,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Both_dimensions_partial_run_independent_feeds_and_stay_correct()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
 
       using (var dfs = memo.GetDepthFirstTreenumerator())
@@ -166,10 +166,10 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
 
       CollectionAssert.AreEqual(
-        Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.DepthFirst),
+        Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst),
         Collect(memo, TreeTraversalStrategy.DepthFirst));
       CollectionAssert.AreEqual(
-        Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.BreadthFirst),
+        Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.BreadthFirst),
         Collect(memo, TreeTraversalStrategy.BreadthFirst));
 
       // Still one enumeration per dimension: the partial feeds were resumed, not restarted.
@@ -199,10 +199,10 @@ namespace Copse.Linq.Tests
         foreach (var strategy in strategies)
           foreach (var target in targets)
           {
-            var expected = CollectPruned(TreeSerializer.Deserialize(RichTree), traversal, target, strategy);
+            var expected = CollectPruned(TreeSerializer.DeserializeDepthFirstTree(RichTree), traversal, target, strategy);
 
             // Fresh memo: the replay's pruning drives lazy fills (cases 3-4).
-            var fresh = TreeSerializer.Deserialize(RichTree).Memoize();
+            var fresh = TreeSerializer.DeserializeDepthFirstTree(RichTree).Memoize();
             CollectionAssert.AreEqual(
               expected,
               CollectPruned(fresh, traversal, target, strategy),
@@ -211,7 +211,7 @@ namespace Copse.Linq.Tests
             // Captures completed in each dimension: native (case 1) and cross-order (case 2) serving.
             foreach (var captured in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
             {
-              var consumed = TreeSerializer.Deserialize(RichTree).Memoize();
+              var consumed = TreeSerializer.DeserializeDepthFirstTree(RichTree).Memoize();
               consumed.Consume(captured);
               CollectionAssert.AreEqual(
                 expected,
@@ -228,14 +228,14 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Memoize_on_a_buffer_is_identity()
     {
-      var memo = TreeSerializer.Deserialize(RichTree).Memoize();
+      var memo = TreeSerializer.DeserializeDepthFirstTree(RichTree).Memoize();
       Assert.AreSame(memo, memo.Memoize());
     }
 
     [TestMethod]
     public void Consume_is_a_noop_once_any_dimension_is_complete()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
 
       memo.Consume(TreeTraversalStrategy.DepthFirst);
@@ -274,7 +274,7 @@ namespace Copse.Linq.Tests
       int expectedDepthFirstEnumerations,
       int expectedBreadthFirstEnumerations)
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
 
       var collectedA = new List<(TreenumeratorMode, int, int, int, string)>();
@@ -297,11 +297,11 @@ namespace Copse.Linq.Tests
       }
 
       CollectionAssert.AreEqual(
-        Collect(TreeSerializer.Deserialize(RichTree), strategyA),
+        Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), strategyA),
         collectedA,
         $"replay A ({strategyA}) mismatch");
       CollectionAssert.AreEqual(
-        Collect(TreeSerializer.Deserialize(RichTree), strategyB),
+        Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), strategyB),
         collectedB,
         $"replay B ({strategyB}) mismatch");
 
@@ -328,9 +328,9 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Straggler_replay_finishes_on_its_own_feed_after_the_other_dimension_completes()
     {
-      var counting = new CountingTreenumerable<string>(TreeSerializer.Deserialize(RichTree));
+      var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
-      var expected = Collect(TreeSerializer.Deserialize(RichTree), TreeTraversalStrategy.DepthFirst);
+      var expected = Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst);
 
       var collected = new List<(TreenumeratorMode, int, int, int, string)>();
       using (var straggler = memo.GetDepthFirstTreenumerator())
@@ -362,7 +362,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Disposed_memo_serves_the_captured_region_then_throws_at_the_frontier()
     {
-      var memo = TreeSerializer.Deserialize(RichTree).Memoize();
+      var memo = TreeSerializer.DeserializeDepthFirstTree(RichTree).Memoize();
 
       using (var replay = memo.GetDepthFirstTreenumerator())
         for (var i = 0; i < 5; i++)

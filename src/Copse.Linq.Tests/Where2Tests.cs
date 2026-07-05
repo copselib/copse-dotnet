@@ -96,7 +96,7 @@ namespace Copse.Linq.Tests
       {
         var allTreeNodes =
           TreeSerializer
-          .Deserialize(treeString)
+          .DeserializeDepthFirstTree(treeString)
           .PreorderTraversal()
           .ToArray();
 
@@ -145,7 +145,7 @@ namespace Copse.Linq.Tests
     {
       var nodes =
         TreeSerializer
-        .Deserialize(treeString)
+        .DeserializeDepthFirstTree(treeString)
         .PreorderTraversal()
         .ToArray()
         .AsSpan();
@@ -158,14 +158,14 @@ namespace Copse.Linq.Tests
 
     private static string GetExpectedTreeString(string treeString, IEnumerable<string> whereNotNodes)
     {
-      var tree = TreeSerializer.Deserialize(treeString);
+      var tree = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var expectedTree = tree;
 
       foreach (var node in whereNotNodes)
         expectedTree = expectedTree.Where(nc => nc.Node != node).Hide();
 
-      return TreeSerializer.Serialize(expectedTree);
+      return TreeSerializer.SerializeDepthFirstTree(expectedTree);
     }
 
     public static string GetTestDisplayName(MethodInfo methodInfo, object[] data)
@@ -244,7 +244,7 @@ namespace Copse.Linq.Tests
       TreeTraversalStrategy treeTraversalStrategy)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       if (nodeAndTraversalStrategyPairs.Any(x => x.Node == null || x.NodeTraversalStrategy == NodeTraversalStrategies.TraverseAll))
         throw new InternalTestFailureException();
@@ -287,7 +287,7 @@ namespace Copse.Linq.Tests
 
       var expected =
         TreeSerializer
-        .Deserialize(expectedTreeString)
+        .DeserializeDepthFirstTree(expectedTreeString)
         .GetTraversal(treeTraversalStrategy, nodeTraversalStrategySelector)
         .ToArray();
 

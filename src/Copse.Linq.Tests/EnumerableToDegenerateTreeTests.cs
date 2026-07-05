@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
 
         var expectedTreeNodes =
           TreeSerializer
-          .Deserialize(data)
+          .DeserializeDepthFirstTree(data)
           .PreorderTraversal()
           .ToArray();
 
@@ -186,7 +186,7 @@ namespace Copse.Linq.Tests
 
       var expected =
         TreeSerializer
-        .Deserialize(treeString)
+        .DeserializeDepthFirstTree(treeString)
         .GetTraversal(
           treeTraversalStrategy,
           nodeTraversalStrategiesSelector)

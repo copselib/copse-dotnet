@@ -3,12 +3,12 @@ using System;
 
 namespace Copse.SimpleSerializer
 {
-  // The bare string form as a LAZILY-PARSED preorder store: the incremental version of the old
-  // eager parse (a value followed by '(' is a parent, backfilled at its matching ')'; ','
-  // separates siblings), pulled one committed value or one subtree close at a time, exactly as
-  // far as some traversal's frontier demands. Retiring the eager parse was the point of the
-  // whole serialization redesign: composing costs nothing, early-out never touches the rest of
-  // the string, and the value map runs once per node ever reached.
+  // A depth-first-serialized tree ("a(b(d,e),c)") as a LAZILY-PARSED preorder store: the
+  // incremental version of the old eager parse (a value followed by '(' is a parent, backfilled
+  // at its matching ')'; ',' separates siblings), pulled one committed value or one subtree
+  // close at a time, exactly as far as some traversal's frontier demands. Retiring the eager
+  // parse was the point of the whole serialization redesign: composing costs nothing, early-out
+  // never touches the rest of the string, and the value map runs once per node ever reached.
   //
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via PreorderTreenumerable); parsed values and spans are
@@ -16,12 +16,16 @@ namespace Copse.SimpleSerializer
   // with subtreeSizes[i] == 0 meaning node i's subtree is still OPEN. One store is shared by
   // every treenumerator of the same Deserialize result: parse once, replay many. Single-threaded
   // by contract, like every treenumerator in the library.
+  //
+  // Detection replaces the retired layout header (see TRAVERSAL_DIMENSION_SPLIT.md): the caller
+  // states the layout by choosing DeserializeDepthFirstTree, and a level-order structural
+  // character ('|' or ';') proves the string is the wrong layout (or corrupt) -- a FormatException
+  // rather than a silently mis-parsed tree.
   internal sealed class PreorderStringStore<TValue> : IPreorderStore<TValue>
   {
-    public PreorderStringStore(string tree, int startIndex, SpanMap<TValue> map)
+    public PreorderStringStore(string tree, SpanMap<TValue> map)
     {
       _Tree = tree;
-      _Cursor = startIndex;
       _Map = map;
     }
 
@@ -96,6 +100,12 @@ namespace Copse.SimpleSerializer
 
             return;
           }
+
+          case '|':
+          case ';':
+            throw new FormatException(
+              $"Unexpected '{_Tree[_Cursor]}' at index {_Cursor}: this is a level-order structural " +
+              "character, so the string is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
 
           default:
             if (_ValueStart < 0)

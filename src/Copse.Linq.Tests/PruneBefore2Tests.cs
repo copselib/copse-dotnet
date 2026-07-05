@@ -53,7 +53,7 @@ namespace Copse.Linq.Tests
 
           var expectedTreeNodes =
             TreeSerializer
-            .Deserialize(treeString)
+            .DeserializeDepthFirstTree(treeString)
             .PreorderTraversal()
             .ToArray();
 
@@ -98,7 +98,7 @@ namespace Copse.Linq.Tests
 
     private static IEnumerable<string[]> GetTreeNodePairs(string treeString)
     {
-      var nodes = TreeSerializer.Deserialize(treeString).PreorderTraversal().ToArray();
+      var nodes = TreeSerializer.DeserializeDepthFirstTree(treeString).PreorderTraversal().ToArray();
 
       for (int i = 0; i < nodes.Length - 1; i++)
         for (int j = i + 1; j < nodes.Length; j++)
@@ -107,7 +107,7 @@ namespace Copse.Linq.Tests
 
     private static string GetExpectedTreeString(string treeString, string node1, string node2)
     {
-      var tree = TreeSerializer.Deserialize(treeString);
+      var tree = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var expectedTree =
         tree
@@ -115,7 +115,7 @@ namespace Copse.Linq.Tests
         .Hide()
         .PruneBefore(nc => nc.Node == node2);
 
-      return TreeSerializer.Serialize(expectedTree);
+      return TreeSerializer.SerializeDepthFirstTree(expectedTree);
     }
 
     private static string SerializeNodeTraversalStrategies(params NodeTraversalStrategies[] nodeTraversalStrategies)
@@ -220,7 +220,7 @@ namespace Copse.Linq.Tests
       TreeTraversalStrategy treeTraversalStrategy)
     {
       // Arrange
-      var treenumerable = TreeSerializer.Deserialize(treeString);
+      var treenumerable = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var sut =
         treenumerable
@@ -240,7 +240,7 @@ namespace Copse.Linq.Tests
 
       var expected =
         TreeSerializer
-        .Deserialize(expectedTreeString)
+        .DeserializeDepthFirstTree(expectedTreeString)
         .GetTraversal(treeTraversalStrategy, nodeTraversalStrategySelector)
         .ToArray();
 

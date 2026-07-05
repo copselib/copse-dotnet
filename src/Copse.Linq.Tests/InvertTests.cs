@@ -67,11 +67,11 @@ namespace Copse.Linq.Tests
       TreeTraversalStrategy treeTraversalStrategy)
     {
       // Arrange
-      var sut = TreeSerializer.Deserialize(treeString);
+      var sut = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var expected =
         TreeSerializer
-        .Deserialize(expectedTreeString)
+        .DeserializeDepthFirstTree(expectedTreeString)
         .GetTraversal(treeTraversalStrategy)
         .ToArray();
 
@@ -108,17 +108,17 @@ namespace Copse.Linq.Tests
       string treeString,
       string expectedTreeString)
     {
-      var envelope = TreeSerializer.Deserialize(treeString).Serialize(TreeTraversalStrategy.BreadthFirst);
+      var envelope = TreeSerializer.DeserializeDepthFirstTree(treeString).SerializeBreadthFirstTree();
 
       var expected =
         TreeSerializer
-        .Deserialize(expectedTreeString)
+        .DeserializeDepthFirstTree(expectedTreeString)
         .GetTraversal(TreeTraversalStrategy.BreadthFirst)
         .ToArray();
 
       var actual =
         TreeSerializer
-        .DeserializeBreadthFirst(() => new System.IO.StringReader(envelope))
+        .DeserializeBreadthFirstTree(() => new System.IO.StringReader(envelope))
         .Invert()
         .GetBreadthFirstTraversal()
         .ToArray();

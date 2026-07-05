@@ -113,6 +113,12 @@ namespace Copse.SimpleSerializer
           case '\r':
             break;
 
+          case '|':
+          case ';':
+            throw new FormatException(
+              $"Unexpected '{character}': this is a level-order structural character, so the source " +
+              "is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
+
           default:
             if (_Depth <= maxDepth)
               _ValueBuilder.Append(character);

@@ -16,14 +16,14 @@ namespace Copse.Linq.Tests
   {
     private static IDepthFirstTreenumerable<string> StreamDepthFirst(string tree)
     {
-      var envelope = TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.DepthFirst);
-      return TreeSerializer.DeserializeDepthFirst(() => new StringReader(envelope));
+      var envelope = TreeSerializer.DeserializeDepthFirstTree(tree).SerializeDepthFirstTree();
+      return TreeSerializer.DeserializeDepthFirstTree(() => new StringReader(envelope));
     }
 
     private static IBreadthFirstTreenumerable<string> StreamBreadthFirst(string tree)
     {
-      var envelope = TreeSerializer.Deserialize(tree).Serialize(TreeTraversalStrategy.BreadthFirst);
-      return TreeSerializer.DeserializeBreadthFirst(() => new StringReader(envelope));
+      var envelope = TreeSerializer.DeserializeDepthFirstTree(tree).SerializeBreadthFirstTree();
+      return TreeSerializer.DeserializeBreadthFirstTree(() => new StringReader(envelope));
     }
 
     // ---------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ namespace Copse.Linq.Tests
           .Hide();
 
         ITreenumerable<string> engineChain =
-          TreeSerializer.Deserialize(tree)
+          TreeSerializer.DeserializeDepthFirstTree(tree)
           .Where(nodeContext => nodeContext.Node != "b")
           .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
           .PruneAfter(nodeContext => nodeContext.Node == "D")
@@ -75,7 +75,7 @@ namespace Copse.Linq.Tests
           .Hide();
 
         ITreenumerable<string> engineChain =
-          TreeSerializer.Deserialize(tree)
+          TreeSerializer.DeserializeDepthFirstTree(tree)
           .Where(nodeContext => nodeContext.Node != "b")
           .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
           .PruneAfter(nodeContext => nodeContext.Node == "D")
@@ -100,7 +100,7 @@ namespace Copse.Linq.Tests
         StreamDepthFirst(left).Union(StreamDepthFirst(right)).Select(nodeContext => nodeContext.Node.ToString());
 
       ITreenumerable<string> engineUnion =
-        TreeSerializer.Deserialize(left).Union(TreeSerializer.Deserialize(right)).Select(nodeContext => nodeContext.Node.ToString());
+        TreeSerializer.DeserializeDepthFirstTree(left).Union(TreeSerializer.DeserializeDepthFirstTree(right)).Select(nodeContext => nodeContext.Node.ToString());
 
       VisitStreamConformance.AssertSameStream(
         engineUnion.GetDepthFirstTreenumerator(),
@@ -112,7 +112,7 @@ namespace Copse.Linq.Tests
         StreamBreadthFirst(left).Subtract(StreamBreadthFirst(right));
 
       ITreenumerable<string> engineSubtract =
-        TreeSerializer.Deserialize(left).Subtract(TreeSerializer.Deserialize(right));
+        TreeSerializer.DeserializeDepthFirstTree(left).Subtract(TreeSerializer.DeserializeDepthFirstTree(right));
 
       VisitStreamConformance.AssertSameStream(
         engineSubtract.GetBreadthFirstTreenumerator(),
@@ -130,7 +130,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in VisitStreamConformance.TreeCorpus)
       {
-        var engine = TreeSerializer.Deserialize(tree);
+        var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 
         Assert.AreEqual(engine.CountNodes(), StreamDepthFirst(tree).CountNodes(), $"DFT CountNodes {tree}");
         Assert.AreEqual(engine.CountNodes(), StreamBreadthFirst(tree).CountNodes(), $"BFT CountNodes {tree}");
@@ -143,7 +143,7 @@ namespace Copse.Linq.Tests
           engine.GetLevels().Select(level => string.Join("~", level)).ToArray(),
           StreamBreadthFirst(tree).GetLevels().Select(level => string.Join("~", level)).ToArray(),
           $"GetLevels {tree}");
-        Assert.AreEqual(engine.Serialize(), StreamDepthFirst(tree).Serialize(), $"bare Serialize {tree}");
+        Assert.AreEqual(engine.SerializeDepthFirstTree(), StreamDepthFirst(tree).SerializeDepthFirstTree(), $"bare Serialize {tree}");
       }
     }
 
@@ -211,16 +211,16 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void NarrowSerializeRoundTrips()
     {
-      var envelope = TreeSerializer.Deserialize("a(b(d,e),c)").Serialize(TreeTraversalStrategy.BreadthFirst);
+      var envelope = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").SerializeBreadthFirstTree();
 
       IBreadthFirstTreenumerable<string> filtered =
-        TreeSerializer.DeserializeBreadthFirst(() => new StringReader(envelope))
+        TreeSerializer.DeserializeBreadthFirstTree(() => new StringReader(envelope))
         .Where(nodeContext => nodeContext.Node != "d");
 
       using (var writer = new StringWriter())
       {
-        filtered.Serialize(writer);
-        Assert.AreEqual("copse/1;layout=bft\na;b,c;e", writer.ToString());
+        filtered.SerializeBreadthFirstTree(writer);
+        Assert.AreEqual("a;b,c;e", writer.ToString());
       }
     }
 
@@ -234,7 +234,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in VisitStreamConformance.TreeCorpus)
       {
-        var engine = TreeSerializer.Deserialize(tree);
+        var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 
         // Oracle: the depth-first leaves re-sequenced into level order (corpus values are
         // unique per tree).
@@ -254,7 +254,7 @@ namespace Copse.Linq.Tests
       string Accumulate(NodeContext<string> accumulate, NodeContext<string> nodeContext)
         => accumulate.Node + nodeContext.Node;
 
-      var engine = TreeSerializer.Deserialize(tree);
+      var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 
       var depthFirst = engine.RootfixAggregate(Accumulate, "*").ToArray();
       var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate(Accumulate, "*").ToArray();
@@ -270,7 +270,7 @@ namespace Copse.Linq.Tests
     {
       // The ITreenumerable overload exists precisely so this compiles (neither narrow overload
       // is better for a full tree); it keeps the historical depth-first order.
-      var engine = TreeSerializer.Deserialize("a(b(d),c)");
+      var engine = TreeSerializer.DeserializeDepthFirstTree("a(b(d),c)");
 
       CollectionAssert.AreEqual(new[] { "d", "c" }, engine.GetLeaves().ToArray());
       CollectionAssert.AreEqual(new[] { "c", "d" }, ((IBreadthFirstTreenumerable<string>)engine).GetLeaves().ToArray());

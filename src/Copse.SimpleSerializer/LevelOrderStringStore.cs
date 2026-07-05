@@ -16,10 +16,9 @@ namespace Copse.SimpleSerializer
   // contract.
   internal sealed class LevelOrderStringStore<TValue> : ILevelOrderStore<TValue>
   {
-    public LevelOrderStringStore(string tree, int startIndex, SpanMap<TValue> map)
+    public LevelOrderStringStore(string tree, SpanMap<TValue> map)
     {
       _Tree = tree;
-      _Cursor = startIndex;
       _Map = map;
     }
 
@@ -89,6 +88,12 @@ namespace Copse.SimpleSerializer
           case '\r':
             _Cursor++;
             break;
+
+          case '(':
+          case ')':
+            throw new FormatException(
+              $"Unexpected '{_Tree[_Cursor]}' at index {_Cursor}: this is a depth-first structural " +
+              "character, so the string is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
 
           default:
             if (_ValueStart < 0)
