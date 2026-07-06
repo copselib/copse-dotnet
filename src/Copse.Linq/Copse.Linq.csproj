@@ -12,4 +12,9 @@
     <ProjectReference Include="..\Copse\Copse.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The async Where (Copse.Linq.Async) shares the internal WhereDepthFirstPath verbatim. -->
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
+  </ItemGroup>
+
 </Project>

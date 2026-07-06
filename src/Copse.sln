@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Async.Smoke", "Copse.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Traversal", "Copse.Traversal\Copse.Traversal.csproj", "{16D98532-C991-46AA-996B-AF86F8AAF9B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Linq.Async", "Copse.Linq.Async\Copse.Linq.Async.csproj", "{67F98623-33B8-4414-BFDB-F4829A6968CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -226,6 +228,18 @@ Global
 		{16D98532-C991-46AA-996B-AF86F8AAF9B8}.Release|x64.Build.0 = Release|Any CPU
 		{16D98532-C991-46AA-996B-AF86F8AAF9B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{16D98532-C991-46AA-996B-AF86F8AAF9B8}.Release|x86.Build.0 = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|x64.Build.0 = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Debug|x86.Build.0 = Debug|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|x64.ActiveCfg = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|x64.Build.0 = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|x86.ActiveCfg = Release|Any CPU
+		{67F98623-33B8-4414-BFDB-F4829A6968CC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

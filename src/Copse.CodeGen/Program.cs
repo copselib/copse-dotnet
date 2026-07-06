@@ -50,6 +50,7 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
   private static readonly Dictionary<string, string> Renames = new()
   {
     ["AsyncDepthFirstTreenumerator"] = "GeneratedDepthFirstTreenumerator",
+    ["AsyncWhereDepthFirstTreenumerator"] = "GeneratedWhereDepthFirstTreenumerator",
     ["IAsyncTreenumerator"] = "ITreenumerator",
     ["IAsyncChildEnumerator"] = "IForwardChildEnumerator",
     ["IAsyncEnumerable"] = "IEnumerable",
@@ -79,8 +80,14 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
   public override SyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
   {
     node = (NamespaceDeclarationSyntax)base.VisitNamespaceDeclaration(node);
-    if (node.Name.ToString() == "Copse.Async")
-      node = node.WithName(SyntaxFactory.ParseName("Copse.Generated").WithTriviaFrom(node.Name));
+    // Rehome the async namespace to a sibling ".Generated" (Copse.Async -> Copse.Generated,
+    // Copse.Linq.Async -> Copse.Linq.Generated).
+    var ns = node.Name.ToString();
+    if (ns.EndsWith(".Async"))
+    {
+      var generated = ns.Substring(0, ns.Length - ".Async".Length) + ".Generated";
+      node = node.WithName(SyntaxFactory.ParseName(generated).WithTriviaFrom(node.Name));
+    }
     return node;
   }
 
