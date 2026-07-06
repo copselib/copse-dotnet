@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783318023217,
+  "lastUpdate": 1783318023474,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -28160,6 +28160,66 @@ window.BENCHMARK_DATA = {
             "value": 143581404.1,
             "unit": "ns",
             "range": "± 1278993.0527397806"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "cf80ee4de17b4714673fe276dd68b55ccc1ee866",
+          "message": "Test suite cleanup: Where2/Merge scans become the Combinatorial* suites\n\nThe Where2Test_* [DynamicData] methods were already #if false'd out --\ndead code whose only legacy was the misleading name and the generator\nmachinery the in-process scans borrowed. Deleted, and the scans renamed\nto say what they are:\n\n- CombinatorialTestData: the shared corpus (groups c..i) and the\n  (node, strategy) assignment element, hosted OUTSIDE any [TestClass]\n  so MSTest discovery never touches it.\n- Where2InProcessScan -> CombinatorialWhereTests (absorbs the case\n  generator that lived in Where2Tests).\n- MergeInProcessScan -> CombinatorialMergeTests (also retires the\n  stale \"merge engine is known-buggy; failures EXPECTED\" header --\n  the suite has gated at zero divergences since the engine was fixed).\n\nComment references updated across the solution. Note: the 4,376\nperpetual skips are NOT from any of this -- they are the [Ignore]d\nUnionTest_BreadthFirst DynamicData rows, enumerated at discovery on\nevery run; possibly obsolete now that CombinatorialMergeTests passes\nBFT clean, but that is a Union-semantics call left open deliberately.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T05:32:52Z",
+          "tree_id": "52768a90c95f40809f6af46f5966538f141c866f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cf80ee4de17b4714673fe276dd68b55ccc1ee866"
+        },
+        "date": 1783318023434,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 76894023.71428572,
+            "unit": "ns",
+            "range": "± 687618.4322767768"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 10375615.18861607,
+            "unit": "ns",
+            "range": "± 104183.25135180788"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 126304841.48076923,
+            "unit": "ns",
+            "range": "± 660501.8098900454"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 16054808.220833333,
+            "unit": "ns",
+            "range": "± 152952.3883492927"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 174560112.78787878,
+            "unit": "ns",
+            "range": "± 4153335.179641124"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 157357536.39583334,
+            "unit": "ns",
+            "range": "± 858165.8522246634"
           }
         ]
       }
