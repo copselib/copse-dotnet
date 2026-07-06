@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783314718022,
+  "lastUpdate": 1783314718282,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -27006,6 +27006,66 @@ window.BENCHMARK_DATA = {
             "value": 143292087.3375,
             "unit": "ns",
             "range": "± 3054332.1018209825"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "0e6a53254db2daa2ac9376332f5c557be5500994",
+          "message": "Cover Intersection and SymmetricDifference\n\nThe only two public operators with zero test coverage. Both are thin\ncompositions over the tested Union, but the composition IS the\nsemantics: Intersection (Union + PruneBefore) drops the whole subtree\nat the first non-shared node, SymmetricDifference (Union + Where)\npromotes the removed shared nodes' non-shared descendants -- the new\nsuites pin that contrast directly on the same input pairs, in both\ndimensions, plus narrow-overload conformance against the full\noverload. BFT rows drive TraverseAll only, matching Union's own BFT\ncoverage boundary (UnionTest_BreadthFirst is ignored pending BFT\nstrategy-matrix work).\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T04:29:46Z",
+          "tree_id": "dbf2e87129b8e9786bd04a07badc4d875bc8a9ff",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e6a53254db2daa2ac9376332f5c557be5500994"
+        },
+        "date": 1783314718240,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 77454714.17006803,
+            "unit": "ns",
+            "range": "± 1808111.3853387507"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 10446689.733774038,
+            "unit": "ns",
+            "range": "± 56385.687322815145"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 127305873.15,
+            "unit": "ns",
+            "range": "± 2050420.7083570107"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 16093876.040625,
+            "unit": "ns",
+            "range": "± 109890.38633031708"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 175670939.172043,
+            "unit": "ns",
+            "range": "± 5342598.852777111"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 143581404.1,
+            "unit": "ns",
+            "range": "± 1278993.0527397806"
           }
         ]
       }
