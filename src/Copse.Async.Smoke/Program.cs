@@ -2,6 +2,8 @@ using Copse;
 using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async;
+using Copse.Linq.Generated;
 using Copse.Treenumerators;
 using System;
 using System.Collections.Generic;
@@ -70,7 +72,25 @@ internal static class Program
     Console.WriteLine($"\nasync Select(n*10) first-visit nodes: [{string.Join(", ", gotNodes)}]");
     Console.WriteLine($"async Select maps + preserves shape: {selectOk}");
 
-    bool pass = streamsMatch && selectOk;
+    // Async Where end-to-end: the async Where over a GENUINELY-SUSPENDING async inner must produce the
+    // same stream as the generated sync Where over the sync engine. Drop node 3 (promoting its child 5).
+    Func<NodeContext<int>, bool> keepNot3 = nc => nc.Node != 3;
+    var asyncWhere = await RunAsyncWhere(keepNot3);
+    var syncWhere = RunGeneratedSyncWhere(keepNot3);
+    bool whereOk = asyncWhere.SequenceEqual(syncWhere);
+    Console.WriteLine($"\nasync Where(drop 3): {asyncWhere.Count} visits; matches generated sync Where: {whereOk}");
+    if (!whereOk)
+    {
+      int m = Math.Max(asyncWhere.Count, syncWhere.Count);
+      for (int i = 0; i < m; i++)
+      {
+        var a = i < asyncWhere.Count ? asyncWhere[i].ToString() : "<none>";
+        var s = i < syncWhere.Count ? syncWhere[i].ToString() : "<none>";
+        if (a != s) { Console.WriteLine($"  [{i}] async={a}  sync={s}"); break; }
+      }
+    }
+
+    bool pass = streamsMatch && selectOk && whereOk;
     Console.WriteLine($"\n{(pass ? "PASS" : "FAIL")}");
     return pass ? 0 : 1;
   }
@@ -151,6 +171,38 @@ internal static class Program
     await using (t.ConfigureAwait(false))
       while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
         visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+    return visits;
+  }
+
+  // Async Where over a suspending async engine inner.
+  private static async Task<List<Visit>> RunAsyncWhere(Func<NodeContext<int>, bool> predicate)
+  {
+    var w = new AsyncWhereDepthFirstTreenumerator<int>(
+      () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+        AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+      predicate,
+      NodeTraversalStrategies.SkipNode);
+
+    var visits = new List<Visit>();
+    await using (w.ConfigureAwait(false))
+      while (await w.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+        visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    return visits;
+  }
+
+  // The codegen'd sync Where over the sync engine inner (the comparison oracle).
+  private static List<Visit> RunGeneratedSyncWhere(Func<NodeContext<int>, bool> predicate)
+  {
+    var w = new GeneratedWhereDepthFirstTreenumerator<int>(
+      () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+        Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+      predicate,
+      NodeTraversalStrategies.SkipNode);
+
+    var visits = new List<Visit>();
+    while (w.MoveNext(NodeTraversalStrategies.TraverseAll))
+      visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    w.Dispose();
     return visits;
   }
 

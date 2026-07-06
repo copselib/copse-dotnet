@@ -3,6 +3,7 @@ using Copse.Linq.Generated;
 using Copse.TestUtils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Copse.Linq.Tests
@@ -43,6 +44,40 @@ namespace Copse.Linq.Tests
             VisitStreamConformance.TraverseAll,
             $"generated-where {tree} [drop '{target}']");
         }
+    }
+
+    [TestMethod]
+    public void VariedPredicates_TraverseAll_MatchesTrustedWhere()
+    {
+      foreach (var tree in VisitStreamConformance.TreeCorpus)
+      {
+        var letters = DistinctLetters(tree);
+
+        var predicates = new List<(string desc, Func<NodeContext<string>, bool> predicate)>
+        {
+          ("keep-all", _ => true),
+          ("keep-none", _ => false),
+          // Keep odd inner depths: drops every root and creates stacked (consecutive-ancestor) promotion.
+          ("drop-even-depth", nc => nc.Position.Depth % 2 != 0),
+        };
+
+        // Drop every PAIR of distinct nodes -- when one is an ancestor of the other, this exercises
+        // promotion through multiple consecutive filtered ancestors (the case single-node drops miss).
+        for (int i = 0; i < letters.Length; i++)
+          for (int j = i + 1; j < letters.Length; j++)
+          {
+            var x = letters[i];
+            var y = letters[j];
+            predicates.Add(($"drop-'{x}'-'{y}'", nc => nc.Node != x && nc.Node != y));
+          }
+
+        foreach (var (desc, predicate) in predicates)
+          VisitStreamConformance.AssertSameStream(
+            TrustedWhere(tree, predicate),
+            GeneratedWhere(tree, predicate),
+            VisitStreamConformance.TraverseAll,
+            $"generated-where {tree} [{desc}]");
+      }
     }
 
     [TestMethod]
