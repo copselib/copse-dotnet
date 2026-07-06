@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783362382023,
+  "lastUpdate": 1783362382251,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -31334,6 +31334,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
             "value": 47591157,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 8391088,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "d55636ce1ac7ce69f885a392d525cb99699c3cae",
+          "message": "Dashboard: deploy a self-healing root redirect; align table columns\n\nTwo independent fixes to the benchmark dashboard:\n\n- Root redirect. gh-pages was missing the root index.html that redirects to\n  /benchmarks/, so the published root URL 404'd. It was a one-time hand commit\n  outside version control, so a gh-pages reset lost it. Add it as source\n  (benchmark-dashboard/root-redirect.html) and have deploy-dashboard.yml copy\n  it to the gh-pages root, so it regenerates on every deploy like the rest of\n  the dashboard. Update the README ownership table to match.\n\n- Column alignment. Each group rendered its own <table> with the default\n  table-layout:auto, so column widths were computed per-group from content and\n  the Latest/Delta/Trend columns drifted between groups. Switch to\n  table-layout:fixed with a shared <colgroup> so every group shares identical\n  column geometry.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-07-06T17:18:03Z",
+          "tree_id": "15c477b8a7512333dbd28c32b7d6cf7e4aee1c57",
+          "url": "https://github.com/copselib/copse-dotnet/commit/d55636ce1ac7ce69f885a392d525cb99699c3cae"
+        },
+        "date": 1783362382218,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 27634486,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 5647533,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 51785765,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 8056436,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 47591096,
             "unit": "bytes"
           },
           {
