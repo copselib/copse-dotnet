@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Copse
 {
@@ -15,14 +16,21 @@ namespace Copse
       Capacity = capacity;
       _Partitions = new LinkedList<T[]>();
       _Partitions.AddLast(new T[capacity]);
-      CurrentPartition = _Partitions.First;
+      _CurrentPartitionNode = _Partitions.First;
+      _CurrentPartition = _CurrentPartitionNode.Value;
     }
 
     public int Capacity { get; private set; }
     public int Count { get; private set; }
 
     private LinkedList<T[]> _Partitions;
-    private LinkedListNode<T[]> CurrentPartition { get; set; }
+    private LinkedListNode<T[]> _CurrentPartitionNode;
+
+    // The current (tail) partition's array, cached so the hot accessors pay a field read
+    // instead of a LinkedListNode dereference per touch -- the same pattern as
+    // RefAppendOnlyList's _WritePartition. Must be updated wherever _CurrentPartitionNode is.
+    private T[] _CurrentPartition;
+
     private int _TailPointerOffset = 0;
     private int _HeadPointerOffset = 0;
 
@@ -39,6 +47,7 @@ namespace Copse
     // types reach the LOH -- and then only as a bounded handful of blocks.
     private const int MaxPartitionSize = 4096;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFirst()
     {
       if (Count == 0)
@@ -47,6 +56,7 @@ namespace Copse
       return ref _Partitions.First.Value[_TailPointerOffset];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T RemoveFirst()
     {
       if (Count == 0)
@@ -73,16 +83,18 @@ namespace Copse
       return ref result;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddLast(T item)
     {
-      if (CurrentPartition.Value.Length == _HeadPointerOffset)
+      if (_CurrentPartition.Length == _HeadPointerOffset)
         AddPartitionOrMoveToNextPartition();
 
-      CurrentPartition.Value[_HeadPointerOffset] = item;
+      _CurrentPartition[_HeadPointerOffset] = item;
       _HeadPointerOffset++;
       Count++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T RemoveLast()
     {
       if (Count == 0)
@@ -91,31 +103,35 @@ namespace Copse
       Count--;
       _HeadPointerOffset--;
 
-      ref var item = ref CurrentPartition.Value[_HeadPointerOffset];
+      ref var item = ref _CurrentPartition[_HeadPointerOffset];
 
       if (Count == 0)
       {
-        CurrentPartition = _Partitions.First;
+        _CurrentPartitionNode = _Partitions.First;
+        _CurrentPartition = _CurrentPartitionNode.Value;
         _HeadPointerOffset = 0;
         _TailPointerOffset = 0;
       }
       else if (_HeadPointerOffset == 0)
       {
-        CurrentPartition = CurrentPartition.Previous;
-        _HeadPointerOffset = CurrentPartition.Value.Length;
+        _CurrentPartitionNode = _CurrentPartitionNode.Previous;
+        _CurrentPartition = _CurrentPartitionNode.Value;
+        _HeadPointerOffset = _CurrentPartition.Length;
       }
 
       return ref item;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetLast()
     {
       if (Count == 0)
         throw new InvalidOperationException("The stack is empty.");
 
-      return ref CurrentPartition.Value[_HeadPointerOffset - 1];
+      return ref _CurrentPartition[_HeadPointerOffset - 1];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFromBack(int index)
     {
       if (Count == 0)
@@ -133,14 +149,14 @@ namespace Copse
     {
       if (index < _HeadPointerOffset)
       {
-        partition = CurrentPartition.Value;
+        partition = _CurrentPartition;
         offset = _HeadPointerOffset - 1 - index;
         return;
       }
 
       index -= _HeadPointerOffset;
 
-      var node = CurrentPartition.Previous;
+      var node = _CurrentPartitionNode.Previous;
 
       while (node.Value.Length <= index)
       {
@@ -154,7 +170,7 @@ namespace Copse
 
     private void AddPartitionOrMoveToNextPartition()
     {
-      if (CurrentPartition == _Partitions.Last)
+      if (_CurrentPartitionNode == _Partitions.Last)
       {
         var newPartitionSize = Math.Min(Capacity, MaxPartitionSize);
         var newPartition = new T[newPartitionSize];
@@ -162,7 +178,8 @@ namespace Copse
         Capacity += newPartition.Length;
       }
 
-      CurrentPartition = CurrentPartition.Next;
+      _CurrentPartitionNode = _CurrentPartitionNode.Next;
+      _CurrentPartition = _CurrentPartitionNode.Value;
       _HeadPointerOffset = 0;
     }
 
@@ -180,10 +197,10 @@ namespace Copse
 
       var index = 0;
 
-      if (CurrentPartition == _Partitions.First)
+      if (_CurrentPartitionNode == _Partitions.First)
       {
         for (var offset = _TailPointerOffset; offset < _HeadPointerOffset; offset++)
-          result[index++] = CurrentPartition.Value[offset];
+          result[index++] = _CurrentPartition[offset];
 
         return result;
       }
@@ -193,7 +210,7 @@ namespace Copse
 
       var node = _Partitions.First.Next;
 
-      while (node != CurrentPartition)
+      while (node != _CurrentPartitionNode)
       {
         for (var offset = 0; offset < node.Value.Length; offset++)
           result[index++] = node.Value[offset];
@@ -202,7 +219,7 @@ namespace Copse
       }
 
       for (var offset = 0; offset < _HeadPointerOffset; offset++)
-        result[index++] = CurrentPartition.Value[offset];
+        result[index++] = _CurrentPartition[offset];
 
       return result;
     }

@@ -1,5 +1,6 @@
 using Copse.Core;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Treenumerators
 {
@@ -60,10 +61,13 @@ namespace Copse.Linq.Treenumerators
     // True once the feed has exhausted: the buffer is the whole tree and every span is closed.
     public bool Complete { get; private set; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int index) => _FirstChildIndices[index];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetChildCount(int index) => _ChildCounts[index];
 
     // Pull until root ordinal k exists (roots are buffer indices [0, rootCount)). False iff the

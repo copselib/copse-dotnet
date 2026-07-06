@@ -1,5 +1,6 @@
 using Copse.Core;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Treenumerators
 {
@@ -46,9 +47,11 @@ namespace Copse.Linq.Treenumerators
     // True once the feed has exhausted: the buffer is the whole tree and every subtree is closed.
     public bool Complete { get; private set; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
 
     // Callers must have closed the subtree first (EnsureSubtreeClosed); 0 means still open.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     // Pull until the value at index exists. False iff the stream exhausted first (no such node).

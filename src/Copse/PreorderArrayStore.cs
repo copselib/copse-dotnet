@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Copse
 {
   // A COMPLETED preorder store over plain arrays: values[i] in preorder, node i's subtree
@@ -16,12 +18,16 @@ namespace Copse
     private readonly TValue[] _Values;
     private readonly int[] _SubtreeSizes;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureBuffered(int index) => index < _Values.Length;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int EnsureSubtreeClosed(int index) => _SubtreeSizes[index];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
   }
 }

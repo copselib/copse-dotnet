@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Copse.Linq.Treenumerators
 {
   // Presents a memo's BFT dimension buffer as an ILevelOrderStore for the native playback
@@ -12,12 +14,16 @@ namespace Copse.Linq.Treenumerators
 
     private readonly MemoizeBreadthFirstBuffer<TValue> _Buffer;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureRootAvailable(int k) => _Buffer.EnsureRootAvailable(k);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureChildAvailable(int parentIndex, int k) => _Buffer.EnsureChildAvailable(parentIndex, k);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Buffer.GetValue(index);
   }
 }

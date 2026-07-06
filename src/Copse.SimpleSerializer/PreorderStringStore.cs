@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.SimpleSerializer
 {
@@ -58,8 +59,10 @@ namespace Copse.SimpleSerializer
       return _SubtreeSizes[index];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
@@ -146,9 +149,16 @@ namespace Copse.SimpleSerializer
 
       private readonly PreorderStringStore<TValue> _Store;
 
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureBuffered(int index) => _Store.EnsureBuffered(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public int EnsureSubtreeClosed(int index) => _Store.EnsureSubtreeClosed(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public TValue GetValue(int index) => _Store.GetValue(index);
     }
   }

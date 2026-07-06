@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.SimpleSerializer
 {
@@ -54,8 +55,10 @@ namespace Copse.SimpleSerializer
       return k < _ChildCounts[parentIndex];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
@@ -134,9 +137,16 @@ namespace Copse.SimpleSerializer
 
       private readonly LevelOrderStringStore<TValue> _Store;
 
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureRootAvailable(int k) => _Store.EnsureRootAvailable(k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureChildAvailable(int parentIndex, int k) => _Store.EnsureChildAvailable(parentIndex, k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public TValue GetValue(int index) => _Store.GetValue(index);
     }
   }

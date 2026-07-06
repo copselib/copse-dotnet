@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 #if NET8_0_OR_GREATER
 using System.Numerics;
 #endif
@@ -66,6 +67,7 @@ namespace Copse
 
     public int Count { get; private set; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddLast(T item)
     {
       var current = _WritePartition;
@@ -80,6 +82,7 @@ namespace Copse
 
     public ref T this[int index]
     {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       get
       {
         // Fast path: the cached partition. The unsigned compares fold the negative-index check
