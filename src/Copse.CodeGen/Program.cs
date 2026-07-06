@@ -45,11 +45,15 @@ return 0;
 // output stays readable and close to the source.
 internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
 {
-  // Identifier renames (declarations and uses alike). Ordered longest-first is unnecessary -- these are
-  // whole-token matches, not substrings.
+  // Explicit whole-token renames: the class names (Async prefix -> Generated prefix) and the type
+  // names that are NOT a simple "Async" suffix strip. Method names ending in "Async" (MoveNextAsync,
+  // DisposeAsync, and every treenumerator's seam methods) are stripped generically in VisitToken, so
+  // they never need listing here -- that is what lets the tool transcribe a new treenumerator without
+  // being taught its method names.
   private static readonly Dictionary<string, string> Renames = new()
   {
     ["AsyncDepthFirstTreenumerator"] = "GeneratedDepthFirstTreenumerator",
+    ["AsyncBreadthFirstTreenumerator"] = "GeneratedBreadthFirstTreenumerator",
     ["AsyncWhereDepthFirstTreenumerator"] = "GeneratedWhereDepthFirstTreenumerator",
     ["AsyncWhereBreadthFirstTreenumerator"] = "GeneratedWhereBreadthFirstTreenumerator",
     ["IAsyncTreenumerator"] = "ITreenumerator",
@@ -58,14 +62,6 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
     ["IAsyncEnumerator"] = "IEnumerator",
     ["TAsyncChildEnumerator"] = "TChildEnumerator",
     ["GetAsyncEnumerator"] = "GetEnumerator",
-    ["MoveNextAsync"] = "MoveNext",
-    ["OnMoveNextAsync"] = "OnMoveNext",
-    ["MoveToNextRootNodeAsync"] = "MoveToNextRootNode",
-    ["OnSchedulingAsync"] = "OnScheduling",
-    ["OnVisitingAsync"] = "OnVisiting",
-    ["BacktrackAsync"] = "Backtrack",
-    ["TryPushNextChildAsync"] = "TryPushNextChild",
-    ["DisposeAsync"] = "Dispose",
   };
 
   // Usings that only make sense in the async source.
@@ -80,13 +76,14 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
 
   public override SyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
   {
+    // Capture the name BEFORE visiting children (the generic suffix strip below leaves the bare "Async"
+    // segment alone, but reading the original name keeps this robust). Rehome the async namespace to a
+    // sibling ".Generated" (Copse.Async -> Copse.Generated, Copse.Linq.Async -> Copse.Linq.Generated).
+    var originalNs = node.Name.ToString();
     node = (NamespaceDeclarationSyntax)base.VisitNamespaceDeclaration(node);
-    // Rehome the async namespace to a sibling ".Generated" (Copse.Async -> Copse.Generated,
-    // Copse.Linq.Async -> Copse.Linq.Generated).
-    var ns = node.Name.ToString();
-    if (ns.EndsWith(".Async"))
+    if (originalNs.EndsWith(".Async"))
     {
-      var generated = ns.Substring(0, ns.Length - ".Async".Length) + ".Generated";
+      var generated = originalNs.Substring(0, originalNs.Length - ".Async".Length) + ".Generated";
       node = node.WithName(SyntaxFactory.ParseName(generated).WithTriviaFrom(node.Name));
     }
     return node;
@@ -122,8 +119,20 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
   public override SyntaxToken VisitToken(SyntaxToken token)
   {
     token = base.VisitToken(token);
-    if (token.IsKind(SyntaxKind.IdentifierToken) && Renames.TryGetValue(token.ValueText, out var renamed))
+    if (!token.IsKind(SyntaxKind.IdentifierToken))
+      return token;
+
+    // Explicit type/class renames win first (they don't end in "Async", so the strip below wouldn't
+    // catch them anyway).
+    if (Renames.TryGetValue(token.ValueText, out var renamed))
       return SyntaxFactory.Identifier(token.LeadingTrivia, renamed, token.TrailingTrivia);
+
+    // Generic: strip the "Async" suffix from method identifiers (MoveNextAsync -> MoveNext, and every
+    // seam method). Guarded to length > 5 so the bare "Async" namespace segment is left intact.
+    var text = token.ValueText;
+    if (text.Length > 5 && text.EndsWith("Async", StringComparison.Ordinal))
+      return SyntaxFactory.Identifier(token.LeadingTrivia, text.Substring(0, text.Length - 5), token.TrailingTrivia);
+
     return token;
   }
 }

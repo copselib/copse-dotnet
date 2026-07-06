@@ -65,33 +65,5 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Generated_EveryNodeEveryStrategy_MatchesEngine()
       => VisitStreamConformance.AssertStrategyMatrixConforms(GeneratedDft, depthFirst: true, "generated-dft");
-
-    // Current-style adapter over the out-style PreorderChildEnumerator, so the generated driver (which
-    // pulls via MoveNext()+Current) can run over the same flat source the oracle uses.
-    private struct ForwardPreorderChildEnumerator : IForwardChildEnumerator<int>
-    {
-      private PreorderChildEnumerator _inner;
-      private NodeAndSiblingIndex<int> _current;
-
-      public ForwardPreorderChildEnumerator(int[] subtreeSizes, int parentIndex)
-      {
-        _inner = new PreorderChildEnumerator(subtreeSizes, parentIndex);
-        _current = default;
-      }
-
-      public bool MoveNext()
-      {
-        if (_inner.MoveNext(out var child))
-        {
-          _current = child;
-          return true;
-        }
-        return false;
-      }
-
-      public NodeAndSiblingIndex<int> Current => _current;
-
-      public void Dispose() => _inner.Dispose();
-    }
   }
 }
