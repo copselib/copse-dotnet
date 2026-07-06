@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783314717230,
+  "lastUpdate": 1783314717501,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -11174,6 +11174,366 @@ window.BENCHMARK_DATA = {
             "value": 33886921.80444445,
             "unit": "ns",
             "range": "± 318804.2947130375"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "0e6a53254db2daa2ac9376332f5c557be5500994",
+          "message": "Cover Intersection and SymmetricDifference\n\nThe only two public operators with zero test coverage. Both are thin\ncompositions over the tested Union, but the composition IS the\nsemantics: Intersection (Union + PruneBefore) drops the whole subtree\nat the first non-shared node, SymmetricDifference (Union + Where)\npromotes the removed shared nodes' non-shared descendants -- the new\nsuites pin that contrast directly on the same input pairs, in both\ndimensions, plus narrow-overload conformance against the full\noverload. BFT rows drive TraverseAll only, matching Union's own BFT\ncoverage boundary (UnionTest_BreadthFirst is ignored pending BFT\nstrategy-matrix work).\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T04:29:46Z",
+          "tree_id": "dbf2e87129b8e9786bd04a07badc4d875bc8a9ff",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e6a53254db2daa2ac9376332f5c557be5500994"
+        },
+        "date": 1783314717459,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TriangleTree_1448",
+            "value": 69455016.33035715,
+            "unit": "ns",
+            "range": "± 139437.1098563363"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TrivialForest_WhereAll_1M",
+            "value": 42066659.449999996,
+            "unit": "ns",
+            "range": "± 97955.08357120739"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TrivialForest_WhereNone_1M",
+            "value": 9687443.8359375,
+            "unit": "ns",
+            "range": "± 68285.09685478515"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.DegenerateTree_WhereAll_1M",
+            "value": 83347578.76666665,
+            "unit": "ns",
+            "range": "± 960399.3928742128"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.DegenerateTree_WhereNone_1M",
+            "value": 23319878.288352273,
+            "unit": "ns",
+            "range": "± 556857.4932069373"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.TriangleTree_PruneAfter_1448",
+            "value": 69552555.0595238,
+            "unit": "ns",
+            "range": "± 115824.51729585731"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereAll_TrivialForest_1M",
+            "value": 44334269.28571428,
+            "unit": "ns",
+            "range": "± 89478.02198063827"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereNone_TrivialForest_1M",
+            "value": 8791361.671875,
+            "unit": "ns",
+            "range": "± 14431.281882930318"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereAll_DegenerateTree_1M",
+            "value": 69812082.71428572,
+            "unit": "ns",
+            "range": "± 351469.3071487329"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereNone_DegenerateTree_1M",
+            "value": 16231783.8125,
+            "unit": "ns",
+            "range": "± 27361.37940018637"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.TriangleTree_1448",
+            "value": 196496959.90740737,
+            "unit": "ns",
+            "range": "± 4085795.4912525383"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.DegenerateTree_1M",
+            "value": 142437390.21153846,
+            "unit": "ns",
+            "range": "± 461795.4243206374"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.TriangleTree_1448",
+            "value": 74896963.12244897,
+            "unit": "ns",
+            "range": "± 159796.5577484894"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.TriangleTree_1448",
+            "value": 123144805.96153846,
+            "unit": "ns",
+            "range": "± 382968.5884158213"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.DegenerateTree_1M",
+            "value": 42153469.61111112,
+            "unit": "ns",
+            "range": "± 650868.3328938361"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.DegenerateTree_1M",
+            "value": 79333473.34444444,
+            "unit": "ns",
+            "range": "± 844491.6263071081"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.TrivialForest_1M",
+            "value": 24724013.28125,
+            "unit": "ns",
+            "range": "± 27470.10112079723"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.TriangleTree_1448",
+            "value": 63682761.73469388,
+            "unit": "ns",
+            "range": "± 157094.53870600284"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DegenerateTree_1M",
+            "value": 27015690.17857143,
+            "unit": "ns",
+            "range": "± 378552.8591817819"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_DepthFirst_over_DepthFirstCapture",
+            "value": 49714319.17333333,
+            "unit": "ns",
+            "range": "± 183050.18457811925"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_BreadthFirst_over_DepthFirstCapture",
+            "value": 66454590.98214286,
+            "unit": "ns",
+            "range": "± 292027.99915505445"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_BreadthFirst_over_BreadthFirstCapture",
+            "value": 43296498.05555555,
+            "unit": "ns",
+            "range": "± 101326.11305971218"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_DepthFirst_over_BreadthFirstCapture",
+            "value": 32205802.242857147,
+            "unit": "ns",
+            "range": "± 47931.57699249098"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_DepthFirst_TriangleTree_1448",
+            "value": 128786548.73684211,
+            "unit": "ns",
+            "range": "± 4361616.938100815"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_BreadthFirst_TriangleTree_1448",
+            "value": 140886268.2,
+            "unit": "ns",
+            "range": "± 305716.53600737726"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_BreadthFirst_10K_of_unbounded_TriangleTree",
+            "value": 384278.5927734375,
+            "unit": "ns",
+            "range": "± 579.4398277212032"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_IdenticalTriangleTrees_1448",
+            "value": 275483399.5,
+            "unit": "ns",
+            "range": "± 893619.4651014771"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_TrivialForests_1M",
+            "value": 77252631.74489796,
+            "unit": "ns",
+            "range": "± 667415.3757727994"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_DegenerateTrees_1M",
+            "value": 179230267.20634922,
+            "unit": "ns",
+            "range": "± 4081907.616822113"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_WideVsDeep_1M",
+            "value": 445689392.71428573,
+            "unit": "ns",
+            "range": "± 1246990.5279168617"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_ForestVsHalfForest_1M",
+            "value": 71294915.76190476,
+            "unit": "ns",
+            "range": "± 589361.2762249869"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_IdenticalTriangleTrees_1448",
+            "value": 253740557,
+            "unit": "ns",
+            "range": "± 537518.8136021381"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_TrivialForests_1M",
+            "value": 101725837.55,
+            "unit": "ns",
+            "range": "± 109604.33949870201"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_DegenerateTrees_1M",
+            "value": 183234932.77777776,
+            "unit": "ns",
+            "range": "± 1438777.613230083"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_WideVsDeep_1M",
+            "value": 472948296.53846157,
+            "unit": "ns",
+            "range": "± 1659393.258529184"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_ForestVsHalfForest_1M",
+            "value": 95793179.58333333,
+            "unit": "ns",
+            "range": "± 92768.07242326955"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.SelectComposition",
+            "value": 16310561.566666666,
+            "unit": "ns",
+            "range": "± 53511.51316684601"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_TrivialForest_1M",
+            "value": 15594747.582589285,
+            "unit": "ns",
+            "range": "± 27277.109664427855"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_TrivialForest_1M",
+            "value": 9484532.341517856,
+            "unit": "ns",
+            "range": "± 33402.02395597853"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_TrivialForest_1M",
+            "value": 15433047.079326924,
+            "unit": "ns",
+            "range": "± 8778.694669567902"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_TrivialForest_1M",
+            "value": 9177719.86298077,
+            "unit": "ns",
+            "range": "± 25508.44155685787"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_CompleteBinaryTree_PruneBefore_19",
+            "value": 74631037.75238094,
+            "unit": "ns",
+            "range": "± 311767.9564230993"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Bft_CompleteBinaryTree_PruneBefore_19",
+            "value": 76866969.14285715,
+            "unit": "ns",
+            "range": "± 508303.7416534397"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.DeepTree",
+            "value": 18873778.28794643,
+            "unit": "ns",
+            "range": "± 52235.50032744695"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.DeepTree",
+            "value": 21624755.411057692,
+            "unit": "ns",
+            "range": "± 4258.186320628291"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_CompleteBinaryTree_PruneBefore_19",
+            "value": 52025388.625,
+            "unit": "ns",
+            "range": "± 222596.06464411638"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Dft_CompleteBinaryTree_PruneBefore_19",
+            "value": 51241296.07692308,
+            "unit": "ns",
+            "range": "± 147649.93935301257"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.TriangleTree_PruneAfter_2048",
+            "value": 43830539.64880953,
+            "unit": "ns",
+            "range": "± 105305.35279198585"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.CompleteBinaryTree_PruneBefore_20",
+            "value": 100172292.00000001,
+            "unit": "ns",
+            "range": "± 500208.98167554976"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_TriangleTree_PruneBefore_19",
+            "value": 106118586.15714286,
+            "unit": "ns",
+            "range": "± 493378.20741896494"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Bft_TriangleTree_PruneBefore_19",
+            "value": 101401694.03076924,
+            "unit": "ns",
+            "range": "± 100312.300919872"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.CompleteBinaryTree_PruneAfter_20",
+            "value": 61912650.23809523,
+            "unit": "ns",
+            "range": "± 270189.2486597974"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_TriangleTree_PruneBefore_19",
+            "value": 65686799.59166667,
+            "unit": "ns",
+            "range": "± 213516.39746073465"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Dft_TriangleTree_PruneBefore_19",
+            "value": 66724528.645833336,
+            "unit": "ns",
+            "range": "± 59340.966670614114"
+          },
+          {
+            "name": "Copse.Benchmarks.SkipAllNodes.Bft_TriangleTree_1448",
+            "value": 20858701.5125,
+            "unit": "ns",
+            "range": "± 48685.34010693668"
+          },
+          {
+            "name": "Copse.Benchmarks.SkipAllNodes.Dft_TriangleTree_1448",
+            "value": 33056434.375,
+            "unit": "ns",
+            "range": "± 146901.74451543458"
           }
         ]
       }
