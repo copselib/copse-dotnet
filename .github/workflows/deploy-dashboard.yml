@@ -45,8 +45,12 @@ jobs:
 
           mkdir -p "$WT/benchmarks"
           cp benchmark-dashboard/index.html "$WT/benchmarks/index.html"
+          # Root redirect (benchmarks live under /benchmarks/). Deployed here so it is
+          # version-controlled and self-heals if gh-pages is ever reset -- rather than a
+          # one-time hand commit that vanishes on the next orphan.
+          cp benchmark-dashboard/root-redirect.html "$WT/index.html"
 
-          git -C "$WT" add benchmarks/index.html
+          git -C "$WT" add benchmarks/index.html index.html
           if git -C "$WT" diff --cached --quiet; then
             echo "Dashboard already up to date on gh-pages; nothing to deploy."
           else

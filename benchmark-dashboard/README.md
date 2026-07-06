@@ -14,7 +14,7 @@ rendered one Chart.js `<canvas>` per benchmark — an unsearchable, uncategorize
 
 | File | Owned by | Contents |
 |------|----------|----------|
-| `index.html` (root) | committed once | redirect to `benchmarks/` |
+| `index.html` (root) | **`deploy-dashboard.yml`** | redirect to `benchmarks/` (source: `benchmark-dashboard/root-redirect.html`) |
 | `benchmarks/index.html` | **`deploy-dashboard.yml`** | this dashboard |
 | `benchmarks/data.js` | **`benchmarks.yml`** | benchmark history (`window.BENCHMARK_DATA`) |
 
