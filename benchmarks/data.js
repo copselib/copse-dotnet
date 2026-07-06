@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783314717767,
+  "lastUpdate": 1783314718022,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -13902,6 +13902,54 @@ window.BENCHMARK_DATA = {
             "value": 14439603.185019841,
             "unit": "ns",
             "range": "± 658714.0854890915"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "0e6a53254db2daa2ac9376332f5c557be5500994",
+          "message": "Cover Intersection and SymmetricDifference\n\nThe only two public operators with zero test coverage. Both are thin\ncompositions over the tested Union, but the composition IS the\nsemantics: Intersection (Union + PruneBefore) drops the whole subtree\nat the first non-shared node, SymmetricDifference (Union + Where)\npromotes the removed shared nodes' non-shared descendants -- the new\nsuites pin that contrast directly on the same input pairs, in both\ndimensions, plus narrow-overload conformance against the full\noverload. BFT rows drive TraverseAll only, matching Union's own BFT\ncoverage boundary (UnionTest_BreadthFirst is ignored pending BFT\nstrategy-matrix work).\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T04:29:46Z",
+          "tree_id": "dbf2e87129b8e9786bd04a07badc4d875bc8a9ff",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e6a53254db2daa2ac9376332f5c557be5500994"
+        },
+        "date": 1783314717978,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14133163.3203125,
+            "unit": "ns",
+            "range": "± 291074.76623666106"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26881279.978365384,
+            "unit": "ns",
+            "range": "± 246944.87485630397"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25851764.520833332,
+            "unit": "ns",
+            "range": "± 144930.8777285279"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 14238306.134022888,
+            "unit": "ns",
+            "range": "± 695536.1264072236"
           }
         ]
       }
