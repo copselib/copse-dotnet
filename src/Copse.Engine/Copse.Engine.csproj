@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Description>Shared sans-I/O traversal cadence for Copse, drivable by both a sync (MoveNext) and an async (MoveNextAsync) treenumerator. Prototype.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The cadence is engine-internal; the async driver in Copse.Async drives it. -->
+    <InternalsVisibleTo Include="Copse.Async" />
+    <InternalsVisibleTo Include="Copse.Async.Smoke" />
+  </ItemGroup>
+
+</Project>

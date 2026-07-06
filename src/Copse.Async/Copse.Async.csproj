@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Description>Async treenumerators and operators for Copse, driving the shared cadence with awaited pulls. Prototype.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+    <ProjectReference Include="..\Copse.Core.Async\Copse.Core.Async.csproj" />
+    <ProjectReference Include="..\Copse.Engine\Copse.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

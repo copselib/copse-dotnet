@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Description>Async contracts for Copse: IAsyncChildEnumerator / IAsyncTreenumerator / IAsyncTreenumerable. Prototype.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+  </ItemGroup>
+
+</Project>

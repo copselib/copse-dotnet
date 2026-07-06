@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <!-- Prototype smoke harness: cross-checks the async DFT visit stream against the sync engine. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse\Copse.csproj" />
+    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+    <ProjectReference Include="..\Copse.Core.Async\Copse.Core.Async.csproj" />
+    <ProjectReference Include="..\Copse.Engine\Copse.Engine.csproj" />
+    <ProjectReference Include="..\Copse.Async\Copse.Async.csproj" />
+  </ItemGroup>
+
+</Project>
