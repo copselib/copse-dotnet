@@ -1,4 +1,6 @@
 using Copse.Core;
+using Copse.Engine;
+using Copse.Generated;
 using Copse.TestUtils;
 using Copse.Treenumerators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -73,5 +75,53 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Direct_EveryNodeEveryStrategy_MatchesEngine()
       => VisitStreamConformance.AssertStrategyMatrixConforms(DirectDft, depthFirst: true, "direct-dft");
+
+    // --- The CODEGEN'D sync twin (Copse.CodeGen async->sync transcription of the async driver) must
+    //     also conform. This is the spike's payoff: generated code passes the same battery. ---
+
+    private static ITreenumerator<string> GeneratedDft(string tree)
+    {
+      var (values, sizes) = EngineTree.ParseArrays(tree);
+      return new GeneratedDepthFirstTreenumerator<string, int, ForwardPreorderChildEnumerator>(
+        RootIndices(sizes),
+        nc => new ForwardPreorderChildEnumerator(sizes, nc.Node),
+        i => values[i]);
+    }
+
+    [TestMethod]
+    public void Generated_TraverseAll_MatchesEngine()
+      => VisitStreamConformance.AssertTraverseAllConforms(GeneratedDft, depthFirst: true, "generated-dft");
+
+    [TestMethod]
+    public void Generated_EveryNodeEveryStrategy_MatchesEngine()
+      => VisitStreamConformance.AssertStrategyMatrixConforms(GeneratedDft, depthFirst: true, "generated-dft");
+
+    // Current-style adapter over the out-style PreorderChildEnumerator, so the generated driver (which
+    // pulls via MoveNext()+Current) can run over the same flat source the oracle uses.
+    private struct ForwardPreorderChildEnumerator : IForwardChildEnumerator<int>
+    {
+      private PreorderChildEnumerator _inner;
+      private NodeAndSiblingIndex<int> _current;
+
+      public ForwardPreorderChildEnumerator(int[] subtreeSizes, int parentIndex)
+      {
+        _inner = new PreorderChildEnumerator(subtreeSizes, parentIndex);
+        _current = default;
+      }
+
+      public bool MoveNext()
+      {
+        if (_inner.MoveNext(out var child))
+        {
+          _current = child;
+          return true;
+        }
+        return false;
+      }
+
+      public NodeAndSiblingIndex<int> Current => _current;
+
+      public void Dispose() => _inner.Dispose();
+    }
   }
 }
