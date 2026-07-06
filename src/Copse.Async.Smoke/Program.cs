@@ -104,7 +104,20 @@ internal static class Program
     Console.WriteLine($"\nasync Where(drop 3).Select(n*10) first-visit nodes: [{string.Join(", ", composedNodes)}]");
     Console.WriteLine($"async Where().Select() composes: {composeOk}");
 
-    bool pass = streamsMatch && selectOk && whereOk && composeOk;
+    // Async BFS engine vs the sync BFS engine (level-order visit multiset).
+    var asyncBfs = await RunAsyncBfs();
+    var syncBfs = RunSyncBfs();
+    bool bfsOk = asyncBfs.SequenceEqual(syncBfs);
+    Console.WriteLine($"\nasync BFS engine: {asyncBfs.Count} visits; matches sync BFS engine: {bfsOk}");
+
+    // Async BFT Where over the async BFS engine, end-to-end -- the gap this closes -- vs the generated
+    // sync BFT Where over the sync BFS engine.
+    var asyncWhereBft = await RunAsyncWhereBft(keepNot3);
+    var syncWhereBft = RunGeneratedSyncWhereBft(keepNot3);
+    bool whereBftOk = asyncWhereBft.SequenceEqual(syncWhereBft);
+    Console.WriteLine($"async BFT Where(drop 3) over async BFS: {asyncWhereBft.Count} visits; matches sync: {whereBftOk}");
+
+    bool pass = streamsMatch && selectOk && whereOk && composeOk && bfsOk && whereBftOk;
     Console.WriteLine($"\n{(pass ? "PASS" : "FAIL")}");
     return pass ? 0 : 1;
   }
@@ -201,6 +214,63 @@ internal static class Program
     await using (w.ConfigureAwait(false))
       while (await w.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
         visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    return visits;
+  }
+
+  // Async BFS engine over the suspending source.
+  private static async Task<List<Visit>> RunAsyncBfs()
+  {
+    var t = new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+      AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+    var visits = new List<Visit>();
+    await using (t.ConfigureAwait(false))
+      while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+        visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+    return visits;
+  }
+
+  private static List<Visit> RunSyncBfs()
+  {
+    var t = new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+      Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+    var visits = new List<Visit>();
+    while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+      visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+    t.Dispose();
+    return visits;
+  }
+
+  // Async BFT Where over a suspending async BFS engine inner.
+  private static async Task<List<Visit>> RunAsyncWhereBft(Func<NodeContext<int>, bool> predicate)
+  {
+    var w = new AsyncWhereBreadthFirstTreenumerator<int>(
+      () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+        AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+      predicate,
+      NodeTraversalStrategies.SkipNode);
+
+    var visits = new List<Visit>();
+    await using (w.ConfigureAwait(false))
+      while (await w.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+        visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    return visits;
+  }
+
+  // The codegen'd sync BFT Where over the sync BFS engine inner (the comparison oracle).
+  private static List<Visit> RunGeneratedSyncWhereBft(Func<NodeContext<int>, bool> predicate)
+  {
+    var w = new GeneratedWhereBreadthFirstTreenumerator<int>(
+      () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+        Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+      predicate,
+      NodeTraversalStrategies.SkipNode);
+
+    var visits = new List<Visit>();
+    while (w.MoveNext(NodeTraversalStrategies.TraverseAll))
+      visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    w.Dispose();
     return visits;
   }
 
