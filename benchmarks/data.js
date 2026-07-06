@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783362381599,
+  "lastUpdate": 1783362381814,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -26925,6 +26925,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
             "value": 276,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "d55636ce1ac7ce69f885a392d525cb99699c3cae",
+          "message": "Dashboard: deploy a self-healing root redirect; align table columns\n\nTwo independent fixes to the benchmark dashboard:\n\n- Root redirect. gh-pages was missing the root index.html that redirects to\n  /benchmarks/, so the published root URL 404'd. It was a one-time hand commit\n  outside version control, so a gh-pages reset lost it. Add it as source\n  (benchmark-dashboard/root-redirect.html) and have deploy-dashboard.yml copy\n  it to the gh-pages root, so it regenerates on every deploy like the rest of\n  the dashboard. Update the README ownership table to match.\n\n- Column alignment. Each group rendered its own <table> with the default\n  table-layout:auto, so column widths were computed per-group from content and\n  the Latest/Delta/Trend columns drifted between groups. Switch to\n  table-layout:fixed with a shared <colgroup> so every group shares identical\n  column geometry.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-07-06T17:18:03Z",
+          "tree_id": "15c477b8a7512333dbd28c32b7d6cf7e4aee1c57",
+          "url": "https://github.com/copselib/copse-dotnet/commit/d55636ce1ac7ce69f885a392d525cb99699c3cae"
+        },
+        "date": 1783362381781,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 275,
             "unit": "bytes"
           }
         ]
