@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783318023474,
+  "lastUpdate": 1783318023735,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -17882,6 +17882,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
             "value": 3283,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneAfterDepth_19",
+            "value": 1485,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "cf80ee4de17b4714673fe276dd68b55ccc1ee866",
+          "message": "Test suite cleanup: Where2/Merge scans become the Combinatorial* suites\n\nThe Where2Test_* [DynamicData] methods were already #if false'd out --\ndead code whose only legacy was the misleading name and the generator\nmachinery the in-process scans borrowed. Deleted, and the scans renamed\nto say what they are:\n\n- CombinatorialTestData: the shared corpus (groups c..i) and the\n  (node, strategy) assignment element, hosted OUTSIDE any [TestClass]\n  so MSTest discovery never touches it.\n- Where2InProcessScan -> CombinatorialWhereTests (absorbs the case\n  generator that lived in Where2Tests).\n- MergeInProcessScan -> CombinatorialMergeTests (also retires the\n  stale \"merge engine is known-buggy; failures EXPECTED\" header --\n  the suite has gated at zero divergences since the engine was fixed).\n\nComment references updated across the solution. Note: the 4,376\nperpetual skips are NOT from any of this -- they are the [Ignore]d\nUnionTest_BreadthFirst DynamicData rows, enumerated at discovery on\nevery run; possibly obsolete now that CombinatorialMergeTests passes\nBFT clean, but that is a Union-semantics call left open deliberately.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T05:32:52Z",
+          "tree_id": "52768a90c95f40809f6af46f5966538f141c866f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cf80ee4de17b4714673fe276dd68b55ccc1ee866"
+        },
+        "date": 1783318023690,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TriangleTree_2896",
+            "value": 346013,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 50478184,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TrivialForest_4M",
+            "value": 318,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.DegenerateTree_4M",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TriangleTree_2896",
+            "value": 116917,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 1989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TrivialForest_4M",
+            "value": 321,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.DegenerateTree_4M",
+            "value": 32090318,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.DeepTree",
+            "value": 2363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 231316,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 27502388,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 12699335,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.DeepTree",
+            "value": 4214885,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 35185,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 3739,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 1941,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.DeepTree",
+            "value": 2107773,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 26233,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 3291,
             "unit": "bytes"
           },
           {
