@@ -21,7 +21,7 @@ namespace Copse.Linq.Treenumerators.Enumerator
 
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (Mode == TreenumeratorMode.VisitingNode || Position == NodePosition.ForestRoot)
+      if (Mode == TreenumeratorMode.VisitingNode || Position.IsForestRoot)
         return TryMoveNext();
 
       return OnScheduling(nodeTraversalStrategies);

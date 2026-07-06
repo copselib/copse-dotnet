@@ -89,7 +89,7 @@ namespace Copse.Linq.Treenumerators
       }
 
       var previouslySeenNodeWasScheduledAndSkipped =
-        Position != NodePosition.ForestRoot
+        !Position.IsForestRoot
         && InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
 

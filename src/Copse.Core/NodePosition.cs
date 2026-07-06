@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Core
 {
@@ -22,6 +23,18 @@ namespace Copse.Core
     /// as an already-scheduled root and desyncs wrappers that snapshot pre-enumeration state).
     /// </summary>
     public static readonly NodePosition ForestRoot = new NodePosition(0, -1);
+
+    /// <summary>
+    /// True when this is the virtual forest root (the pre-enumeration position): its depth is
+    /// negative, above every real node. Prefer this over <c>== ForestRoot</c> on per-node hot
+    /// paths -- it is a single field compare the JIT folds inline, whereas reading the
+    /// <c>static readonly</c> <see cref="ForestRoot"/> is a non-foldable static-field load.
+    /// </summary>
+    public bool IsForestRoot
+    {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      get => Depth < 0;
+    }
 
     public override string ToString()
       => $"({SiblingIndex}, {Depth})";

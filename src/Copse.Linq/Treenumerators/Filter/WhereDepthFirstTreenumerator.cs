@@ -67,7 +67,7 @@ namespace Copse.Linq.Treenumerators
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Do not apply any traversal strategies to the sentinel node.
-      if (InnerTreenumerator.Position == NodePosition.ForestRoot)
+      if (InnerTreenumerator.Position.IsForestRoot)
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Enumerate until we yield something or exhaust the inner enumerator.
