@@ -10,10 +10,10 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Independent in-process oracle for the Union / StructuralMerge engine, mirroring the structure of
-  // Where2InProcessScan: loops a curated + cross-product case set in ONE test (no per-case MSTest
-  // discovery), compares a keyed visit-stream tuple sequence, and asserts 0 failures while collecting
-  // failure display names.
+  // Independent combinatorial oracle for the Union / StructuralMerge engine, mirroring the
+  // structure of CombinatorialWhereTests: loops a curated + cross-product case set in ONE
+  // in-process test per dimension (no per-case MSTest discovery), compares a keyed
+  // visit-stream tuple sequence, and gates on ZERO divergences.
   //
   // The whole value of this oracle is INDEPENDENCE from the merge engine. For each (left, right):
   //   1. Materialize both operands via the TRUSTED base engine only (never the merge engine).
@@ -23,9 +23,10 @@ namespace Copse.Linq.Tests
   //   4. Actual stream    = left.Union(right).GetTraversal(strategy, selector).
   //   5. Compare keyed tuple sequences with SequenceEqual (actual bounded by Take to catch hangs).
   //
-  // The merge engine is known-buggy; the SUT failing here is EXPECTED. This establishes a baseline.
+  // (Historical note: this suite was born as a baseline scan while the merge engine was
+  // known-buggy and failures were expected; the engine now passes clean, so it gates.)
   [TestClass]
-  public class MergeInProcessScan
+  public class CombinatorialMergeTests
   {
     public TestContext TestContext { get; set; }
 
@@ -99,12 +100,13 @@ namespace Copse.Linq.Tests
         foreach (var right in CrossRightShapes)
           pairs.Add((left, right));
 
-      // Full structural cross-product over the exhaustive Where tree set (groups c..i, up to 9 nodes):
-      // every left shape (letters) x every right shape (digit-mapped for a disjoint alphabet). This is
-      // the broad coverage that turns "no curated gap" into "no structural gap" -- a single SkipNode on
-      // any internal merged node, over every pair of mismatched shapes, is exercised here.
-      foreach (var left in Where2Tests.AllTreeStrings)
-        foreach (var right in Where2Tests.AllTreeStrings)
+      // Full structural cross-product over the exhaustive combinatorial corpus (groups c..i, up to
+      // 9 nodes): every left shape (letters) x every right shape (digit-mapped for a disjoint
+      // alphabet). This is the broad coverage that turns "no curated gap" into "no structural gap"
+      // -- a single SkipNode on any internal merged node, over every pair of mismatched shapes, is
+      // exercised here.
+      foreach (var left in CombinatorialTestData.AllTreeStrings)
+        foreach (var right in CombinatorialTestData.AllTreeStrings)
           pairs.Add((left, DigitMap(right)));
 
       return pairs;
@@ -184,11 +186,11 @@ namespace Copse.Linq.Tests
         // Strategy assignments = all 0-, 1-, and 2-combinations of (mergedNodeKey, strategy).
         var keyStrategyPairs =
           mergedKeys
-          .SelectMany(key => allStrategies.Select(strategy => new Where2Tests.NodeAndTraversalStrategy(key, strategy)))
+          .SelectMany(key => allStrategies.Select(strategy => new CombinatorialTestData.NodeAndTraversalStrategy(key, strategy)))
           .ToArray();
 
         var assignmentCombos =
-          Combinatorics.GetCombinationsUpToCount<Where2Tests.NodeAndTraversalStrategy>(keyStrategyPairs.AsSpan(), maxArity);
+          Combinatorics.GetCombinationsUpToCount<CombinatorialTestData.NodeAndTraversalStrategy>(keyStrategyPairs.AsSpan(), maxArity);
 
         foreach (var combo in assignmentCombos)
         {
@@ -236,7 +238,7 @@ namespace Copse.Linq.Tests
       }
 
       TestContext.WriteLine(
-        $"MergeInProcessScan ({treeTraversalStrategy}): {total} cases across {pairs.Count} (left,right) pairs.");
+        $"CombinatorialMergeTests ({treeTraversalStrategy}): {total} cases across {pairs.Count} (left,right) pairs.");
       TestContext.WriteLine(
         $"  Failed: {failed} of {total}.");
       TestContext.WriteLine(
@@ -274,7 +276,7 @@ namespace Copse.Linq.Tests
       (m.HasLeft ? m.Left : "") + (m.HasRight ? m.Right : "");
 
     // Map a letter-alphabet tree string (a..z) to digits (a->0, b->1, ...) so a right operand reuses the
-    // AllTreeStrings shapes while keeping the merge keys disjoint from the letter-valued left operand.
+    // corpus shapes while keeping the merge keys disjoint from the letter-valued left operand.
     private static string DigitMap(string treeString)
     {
       var chars = treeString.ToCharArray();
@@ -285,7 +287,7 @@ namespace Copse.Linq.Tests
     }
 
     // True if any two entries target the same merged node (an ambiguous assignment we skip).
-    private static bool HasDuplicateNode(Where2Tests.NodeAndTraversalStrategy[] assignment)
+    private static bool HasDuplicateNode(CombinatorialTestData.NodeAndTraversalStrategy[] assignment)
     {
       for (int i = 0; i < assignment.Length; i++)
         for (int j = i + 1; j < assignment.Length; j++)
@@ -294,7 +296,7 @@ namespace Copse.Linq.Tests
       return false;
     }
 
-    private static string DisplayName(string left, string right, Where2Tests.NodeAndTraversalStrategy[] assignment)
+    private static string DisplayName(string left, string right, CombinatorialTestData.NodeAndTraversalStrategy[] assignment)
     {
       var strat =
         assignment.Length == 0

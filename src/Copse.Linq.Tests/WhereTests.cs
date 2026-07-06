@@ -3278,7 +3278,7 @@ namespace Copse.Linq.Tests
             // Note: DFT also drops c due to a Select+Where interaction (the curated test
             // framework wraps with Select before Where). DFT expected values reflect
             // the actual DFT behavior through Select+Where; Where-only DFT is correct
-            // per Where2Tests.
+            // per CombinatorialWhereTests.
             new TestScenario
             {
               NodeTraversalStrategiesSelector =
@@ -3291,7 +3291,7 @@ namespace Copse.Linq.Tests
               Description = "Where not a, SkipNode: b, SkipNodeAndSiblings: e — e is an effective root, so SkipSiblings drops sibling c",
               // After b is SkipNode'd, e's only remaining ancestor is the skipped b, so e is an
               // effective root; SkipNodeAndSiblings on it ends the root stream and drops c.
-              // BFT and DFT agree (verified against the exhaustive core scan and Where2Tests);
+              // BFT and DFT agree (verified against the exhaustive core scan and CombinatorialWhereTests);
               // the prior "c survives" expectation was the SkipSiblings over-compensation bug.
               ExpectedBreadthFirstResults = new[]
               {

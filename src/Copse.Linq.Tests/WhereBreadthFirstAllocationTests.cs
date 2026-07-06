@@ -19,7 +19,7 @@ namespace Copse.Linq.Tests
   /// empty and the traversal allocates a small, depth-independent constant.
   ///
   /// The bug was purely an ALLOCATION regression -- it never affected the visit stream, whose
-  /// correctness is exhaustively covered by Where2InProcessScan. The gh-pages benchmark
+  /// correctness is exhaustively covered by CombinatorialWhereTests. The gh-pages benchmark
   /// (BreadthFirstWhere.DegenerateTree_WhereAll_1M) only *alerts* at 150% with
   /// fail-on-alert: false, so it is not a hard guard. This test is the hard guard.
   ///

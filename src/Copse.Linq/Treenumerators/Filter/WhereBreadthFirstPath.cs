@@ -179,7 +179,7 @@ namespace Copse.Linq.Treenumerators
     // skips (WhereAll) the stored region stays empty -- memory is O(stored skip depth), not
     // O(inner depth). This is the only thing that differs from a flat List<int> indexed by
     // absolute depth; the logical values are identical (verified value-by-value against the old
-    // flat-list logic across the full Where2InProcessScan via a temporary validate-alongside shadow).
+    // flat-list logic across the full CombinatorialWhereTests via a temporary validate-alongside shadow).
     private readonly List<int> _PrefixStored;
     private int _PrefixStoredCount;
     private int _PrefixTail;

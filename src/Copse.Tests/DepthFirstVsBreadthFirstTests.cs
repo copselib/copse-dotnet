@@ -20,7 +20,7 @@ namespace Copse.Tests
   // above the 4 concurrent skips the Where wrapper can feed (<=2 filter + <=2 consumer).
   //
   // Bugs A/B/C were within 2 concurrent skips; Bug D needed 3. Undiscovered core bugs make
-  // the Where2 oracle (and any hand-built wrapper test) untrustworthy, so the core is pinned
+  // the combinatorial Where oracle (and any hand-built wrapper test) untrustworthy, so the core is pinned
   // down exhaustively here first.
   [TestClass]
   public class DepthFirstVsBreadthFirstTests
@@ -31,7 +31,7 @@ namespace Copse.Tests
       "a,b,c", "a(b,c)", "a(b(c))", "a(b),c(d)", "a(b(c,d))",
       "a(b,c),d(e,f)", "a(b(c)),d(e(f))", "a,b(d),c(e(f))", "b(d),c(f)", "b(d),e(f)",
       "a,b(c)", "a(b,c,d)", "a,b(c,d)", "a,b(d),c",
-      // Where2 c..i shapes the Where wrapper exercises
+      // combinatorial-corpus c..i shapes the Where wrapper exercises
       "a(b(d(e)),c)", "a(b(c,d,e))", "a(d),b,c(e)",
       "a(c,d),b(e,f)", "a(d),b(e),c(f)", "a(b(d,e,f),c)",
       "a(b(e),c(f),d(g))", "a(b(d,e),c(f,g))", "a(b(d,e),c(f(g)))",
@@ -53,7 +53,7 @@ namespace Copse.Tests
     // covers the 4 concurrent skips the Where wrapper can feed.
     private const long PerTreeBudget = 35_000;
 
-    // Mirrors Where2Tests: at the default budget this is only a couple of seconds, so it stays
+    // Mirrors CombinatorialWhereTests: at the default budget this is only a couple of seconds, so it stays
     // on. Uncomment [Ignore] to skip it in routine runs; raise PerTreeBudget for a deep sweep.
     //[Ignore("Exhaustive core scan -- run occasionally / on core-engine changes.")]
     [TestMethod]
