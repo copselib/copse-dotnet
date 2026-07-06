@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783314718537,
+  "lastUpdate": 1783314718794,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -23475,6 +23475,310 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.SkipAllNodes.Dft_TriangleTree_1448",
             "value": 26161,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "0e6a53254db2daa2ac9376332f5c557be5500994",
+          "message": "Cover Intersection and SymmetricDifference\n\nThe only two public operators with zero test coverage. Both are thin\ncompositions over the tested Union, but the composition IS the\nsemantics: Intersection (Union + PruneBefore) drops the whole subtree\nat the first non-shared node, SymmetricDifference (Union + Where)\npromotes the removed shared nodes' non-shared descendants -- the new\nsuites pin that contrast directly on the same input pairs, in both\ndimensions, plus narrow-overload conformance against the full\noverload. BFT rows drive TraverseAll only, matching Union's own BFT\ncoverage boundary (UnionTest_BreadthFirst is ignored pending BFT\nstrategy-matrix work).\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T04:29:46Z",
+          "tree_id": "dbf2e87129b8e9786bd04a07badc4d875bc8a9ff",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e6a53254db2daa2ac9376332f5c557be5500994"
+        },
+        "date": 1783314718750,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TriangleTree_1448",
+            "value": 478644,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TrivialForest_WhereAll_1M",
+            "value": 1533,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.TrivialForest_WhereNone_1M",
+            "value": 1228,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.DegenerateTree_WhereAll_1M",
+            "value": 2043,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstWhere.DegenerateTree_WhereNone_1M",
+            "value": 8391827,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.TriangleTree_PruneAfter_1448",
+            "value": 73081,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereAll_TrivialForest_1M",
+            "value": 1475,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereNone_TrivialForest_1M",
+            "value": 1420,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereAll_DegenerateTree_1M",
+            "value": 36173559,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstWhere.WhereNone_DegenerateTree_1M",
+            "value": 1679,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.TriangleTree_1448",
+            "value": 448005,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.DegenerateTree_1M",
+            "value": 3112,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.TriangleTree_1448",
+            "value": 33681685,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.TriangleTree_1448",
+            "value": 42317872,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.DegenerateTree_1M",
+            "value": 58384352,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.DegenerateTree_1M",
+            "value": 66384533,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.TrivialForest_1M",
+            "value": 687,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.TriangleTree_1448",
+            "value": 16847919,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DegenerateTree_1M",
+            "value": 20470856,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_DepthFirst_over_DepthFirstCapture",
+            "value": 58234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_BreadthFirst_over_DepthFirstCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_BreadthFirst_over_BreadthFirstCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_DepthFirst_over_BreadthFirstCapture",
+            "value": 50017,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_DepthFirst_TriangleTree_1448",
+            "value": 16905760,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_BreadthFirst_TriangleTree_1448",
+            "value": 25597800,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_BreadthFirst_10K_of_unbounded_TriangleTree",
+            "value": 80048,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_IdenticalTriangleTrees_1448",
+            "value": 889984,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_TrivialForests_1M",
+            "value": 1641,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_DegenerateTrees_1M",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_WideVsDeep_1M",
+            "value": 54994800,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstUnion.Union_ForestVsHalfForest_1M",
+            "value": 1641,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_IdenticalTriangleTrees_1448",
+            "value": 234304,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_TrivialForests_1M",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_DegenerateTrees_1M",
+            "value": 74816709,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_WideVsDeep_1M",
+            "value": 66773616,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstUnion.Union_ForestVsHalfForest_1M",
+            "value": 1235,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.SelectComposition",
+            "value": 871,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_TrivialForest_1M",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_TrivialForest_1M",
+            "value": 1164,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_TrivialForest_1M",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_TrivialForest_1M",
+            "value": 1484,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_CompleteBinaryTree_PruneBefore_19",
+            "value": 13861006,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Bft_CompleteBinaryTree_PruneBefore_19",
+            "value": 13860939,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.DeepTree",
+            "value": 10496319,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.DeepTree",
+            "value": 1054551,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_CompleteBinaryTree_PruneBefore_19",
+            "value": 3242,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Dft_CompleteBinaryTree_PruneBefore_19",
+            "value": 3154,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.TriangleTree_PruneAfter_2048",
+            "value": 116469,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.CompleteBinaryTree_PruneBefore_20",
+            "value": 3283,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_TriangleTree_PruneBefore_19",
+            "value": 478411,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Bft_TriangleTree_PruneBefore_19",
+            "value": 478323,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.CompleteBinaryTree_PruneAfter_20",
+            "value": 2057,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_TriangleTree_PruneBefore_19",
+            "value": 84892,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AnyNodes.Dft_TriangleTree_PruneBefore_19",
+            "value": 84804,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SkipAllNodes.Bft_TriangleTree_1448",
+            "value": 59015,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SkipAllNodes.Dft_TriangleTree_1448",
+            "value": 26174,
             "unit": "bytes"
           }
         ]
