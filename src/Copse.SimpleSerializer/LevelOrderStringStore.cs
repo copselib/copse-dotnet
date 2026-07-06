@@ -8,6 +8,11 @@ namespace Copse.SimpleSerializer
   // empty), and each parse step commits one value or closes one group -- exactly as far as some
   // traversal's frontier demands.
   //
+  // Values ride the shared value-token layer (ValueTokenStringScanner): quoted values may
+  // contain ANY character, unquoted line endings are insignificant, and the zero-copy span
+  // mapping survives for every token that is a contiguous slice of the source. An UNQUOTED
+  // depth-first structural character ('(' or ')') proves the string is the wrong layout.
+  //
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via LevelOrderTreenumerable: breadth-first is native
   // playback, depth-first rides the child spans cross-order). One store is shared by every
@@ -17,11 +22,11 @@ namespace Copse.SimpleSerializer
   {
     public LevelOrderStringStore(string tree, SpanMap<TValue> map)
     {
-      _Tree = tree;
+      _Scanner = new ValueTokenStringScanner(tree);
       _Map = map;
     }
 
-    private readonly string _Tree;
+    private readonly ValueTokenStringScanner _Scanner;
     private readonly SpanMap<TValue> _Map;
 
     private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
@@ -30,8 +35,6 @@ namespace Copse.SimpleSerializer
 
     private int _RootCount;
     private int _CurrentGroupOwner = -1; // whose group the cursor is inside; -1 = the roots group
-    private int _Cursor;
-    private int _ValueStart = -1;
     private bool _Exhausted;
 
     public bool EnsureRootAvailable(int k)
@@ -58,66 +61,52 @@ namespace Copse.SimpleSerializer
     // a group closed, or the string exhausted (all remaining groups are empty).
     private void ParseStep()
     {
-      while (_Cursor < _Tree.Length)
+      while (_Scanner.TryScanEvent(out var hasValue, out var terminator))
       {
-        switch (_Tree[_Cursor])
+        switch (terminator)
         {
           case ',':
-          {
-            var committed = TryCommit();
-            _Cursor++;
-
-            if (committed)
+            if (hasValue)
+            {
+              Commit();
               return;
+            }
 
             break;
-          }
 
           case '|':
           case ';':
-          {
-            TryCommit();
-            _Cursor++;
+            if (hasValue)
+              Commit();
+
             _CurrentGroupOwner++;
-
             return;
-          }
-
-          case '\n':
-          case '\r':
-            _Cursor++;
-            break;
 
           case '(':
           case ')':
             throw new FormatException(
-              $"Unexpected '{_Tree[_Cursor]}' at index {_Cursor}: this is a depth-first structural " +
+              $"Unexpected '{terminator}' near index {_Scanner.Position}: this is a depth-first structural " +
               "character, so the string is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
 
-          default:
-            if (_ValueStart < 0)
-              _ValueStart = _Cursor;
+          default: // end of text: every remaining group is empty
+            if (hasValue)
+              Commit();
 
-            _Cursor++;
-            break;
+            _Exhausted = true;
+            return;
         }
       }
 
-      TryCommit();
       _Exhausted = true;
     }
 
-    private bool TryCommit()
+    private void Commit()
     {
-      if (_ValueStart < 0)
-        return false;
-
       var index = _Values.Count;
 
-      _Values.AddLast(_Map(_Tree.AsSpan(_ValueStart, _Cursor - _ValueStart)));
+      _Values.AddLast(_Map(_Scanner.ValueChars));
       _FirstChildIndices.AddLast(-1);
       _ChildCounts.AddLast(0);
-      _ValueStart = -1;
 
       if (_CurrentGroupOwner == -1)
       {
@@ -130,8 +119,6 @@ namespace Copse.SimpleSerializer
 
         _ChildCounts[_CurrentGroupOwner]++;
       }
-
-      return true;
     }
 
     // The unboxed handle the playback treenumerators are instantiated over: a struct type

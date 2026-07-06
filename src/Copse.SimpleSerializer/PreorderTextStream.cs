@@ -1,15 +1,16 @@
 using System;
 using System.IO;
-using System.Text;
 
 namespace Copse.SimpleSerializer
 {
   // Forward-only IPreorderStream over the terse dft payload grammar ("a(b(d,e),c)"): an
   // incremental version of TreeSerializer's eager parse. A value followed by '(' is a parent
   // (depth increases behind it); ',' separates siblings; ')' closes a subtree. Each committed
-  // value is delivered with the depth in effect while its characters were read.
+  // value is delivered with the depth in effect while its characters were read. Values ride the
+  // shared value-token layer (ValueTokenStreamScanner): quoted values may contain ANY character;
+  // unquoted line endings are insignificant.
   //
-  // TrySkipToDepth honors the skip contract: characters belonging to deeper values are consumed
+  // TrySkipToDepth honors the skip contract: tokens belonging to deeper values are consumed
   // WITHOUT being accumulated or mapped -- a skip costs I/O only.
   //
   // Owns its reader; disposing the stream disposes the reader.
@@ -18,12 +19,13 @@ namespace Copse.SimpleSerializer
     public PreorderTextStream(TextReader reader, Func<string, TValue> map)
     {
       _Reader = reader;
+      _Scanner = new ValueTokenStreamScanner(reader);
       _Map = map;
     }
 
     private readonly TextReader _Reader;
+    private readonly ValueTokenStreamScanner _Scanner;
     private readonly Func<string, TValue> _Map;
-    private readonly StringBuilder _ValueBuilder = new StringBuilder();
 
     private int _Depth;
     private bool _Exhausted;
@@ -44,87 +46,69 @@ namespace Copse.SimpleSerializer
       if (_Exhausted)
         return false;
 
-      _ValueBuilder.Clear();
-      var hasChars = false;
-
       while (true)
       {
-        var read = _Reader.Read();
+        var accumulate = _Depth <= maxDepth;
 
-        if (read < 0)
+        if (!_Scanner.TryScanEvent(accumulate, out var hasValue, out var terminator))
         {
           _Exhausted = true;
-
-          if (hasChars && _Depth <= maxDepth)
-          {
-            value = _Map(_ValueBuilder.ToString());
-            depth = _Depth;
-            return true;
-          }
-
           return false;
         }
 
-        var character = (char)read;
-
-        switch (character)
+        switch (terminator)
         {
           case '(':
-            if (hasChars && _Depth <= maxDepth)
+            if (hasValue && accumulate)
             {
-              value = _Map(_ValueBuilder.ToString());
+              value = _Map(_Scanner.GetValue());
               depth = _Depth;
               _Depth++;
               return true;
             }
 
             _Depth++;
-            hasChars = false;
-            _ValueBuilder.Clear();
             break;
 
           case ',':
-            if (hasChars && _Depth <= maxDepth)
+            if (hasValue && accumulate)
             {
-              value = _Map(_ValueBuilder.ToString());
+              value = _Map(_Scanner.GetValue());
               depth = _Depth;
               return true;
             }
 
-            hasChars = false;
-            _ValueBuilder.Clear();
             break;
 
           case ')':
-            if (hasChars && _Depth <= maxDepth)
+            if (hasValue && accumulate)
             {
-              value = _Map(_ValueBuilder.ToString());
+              value = _Map(_Scanner.GetValue());
               depth = _Depth;
               _Depth--;
               return true;
             }
 
             _Depth--;
-            hasChars = false;
-            _ValueBuilder.Clear();
-            break;
-
-          case '\n':
-          case '\r':
             break;
 
           case '|':
           case ';':
             throw new FormatException(
-              $"Unexpected '{character}': this is a level-order structural character, so the source " +
+              $"Unexpected '{terminator}': this is a level-order structural character, so the source " +
               "is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
 
-          default:
-            if (_Depth <= maxDepth)
-              _ValueBuilder.Append(character);
+          default: // end of text
+            _Exhausted = true;
 
-            hasChars = true;
-            break;
+            if (hasValue && accumulate)
+            {
+              value = _Map(_Scanner.GetValue());
+              depth = _Depth;
+              return true;
+            }
+
+            return false;
         }
       }
     }

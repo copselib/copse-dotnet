@@ -9,6 +9,10 @@ namespace Copse.SimpleSerializer
   // parse was the point of the whole serialization redesign: composing costs nothing, early-out
   // never touches the rest of the string, and the value map runs once per node ever reached.
   //
+  // Values ride the shared value-token layer (ValueTokenStringScanner): quoted values may
+  // contain ANY character, unquoted line endings are insignificant, and the zero-copy span
+  // mapping survives for every token that is a contiguous slice of the source.
+  //
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via PreorderTreenumerable); parsed values and spans are
   // retained as they materialize -- the same growing-capture shape as the memo's DFT buffer,
@@ -17,26 +21,24 @@ namespace Copse.SimpleSerializer
   // by contract, like every treenumerator in the library.
   //
   // Detection replaces the retired layout header (see TRAVERSAL_DIMENSION_SPLIT.md): the caller
-  // states the layout by choosing DeserializeDepthFirstTree, and a level-order structural
-  // character ('|' or ';') proves the string is the wrong layout (or corrupt) -- a FormatException
-  // rather than a silently mis-parsed tree.
+  // states the layout by choosing DeserializeDepthFirstTree, and an UNQUOTED level-order
+  // structural character ('|' or ';') proves the string is the wrong layout (or corrupt) -- a
+  // FormatException rather than a silently mis-parsed tree.
   internal sealed class PreorderStringStore<TValue> : IPreorderStore<TValue>
   {
     public PreorderStringStore(string tree, SpanMap<TValue> map)
     {
-      _Tree = tree;
+      _Scanner = new ValueTokenStringScanner(tree);
       _Map = map;
     }
 
-    private readonly string _Tree;
+    private readonly ValueTokenStringScanner _Scanner;
     private readonly SpanMap<TValue> _Map;
 
     private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
     private readonly RefAppendOnlyList<int> _SubtreeSizes = new RefAppendOnlyList<int>();
     private readonly RefSemiDeque<int> _Open = new RefSemiDeque<int>(); // indices of parents whose ')' hasn't been parsed yet
 
-    private int _Cursor;
-    private int _ValueStart = -1; // start of the pending value run; -1 = none
     private bool _Exhausted;
 
     public bool EnsureBuffered(int index)
@@ -63,36 +65,32 @@ namespace Copse.SimpleSerializer
     // a subtree closed, or the string exhausted (which closes everything still open).
     private void ParseStep()
     {
-      while (_Cursor < _Tree.Length)
+      while (_Scanner.TryScanEvent(out var hasValue, out var terminator))
       {
-        switch (_Tree[_Cursor])
+        switch (terminator)
         {
           case '(':
-          {
-            var committed = TryCommit(asParent: true);
-            _Cursor++;
-
-            if (committed)
+            if (hasValue)
+            {
+              Commit(asParent: true);
               return;
+            }
 
             break;
-          }
 
           case ',':
-          {
-            var committed = TryCommit(asParent: false);
-            _Cursor++;
-
-            if (committed)
+            if (hasValue)
+            {
+              Commit(asParent: false);
               return;
+            }
 
             break;
-          }
 
           case ')':
           {
-            TryCommit(asParent: false);
-            _Cursor++;
+            if (hasValue)
+              Commit(asParent: false);
 
             var closed = _Open.RemoveLast();
             _SubtreeSizes[closed] = _Values.Count - closed;
@@ -103,44 +101,36 @@ namespace Copse.SimpleSerializer
           case '|':
           case ';':
             throw new FormatException(
-              $"Unexpected '{_Tree[_Cursor]}' at index {_Cursor}: this is a level-order structural " +
+              $"Unexpected '{terminator}' near index {_Scanner.Position}: this is a level-order structural " +
               "character, so the string is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
 
-          default:
-            if (_ValueStart < 0)
-              _ValueStart = _Cursor;
+          default: // end of text
+            if (hasValue)
+              Commit(asParent: false);
 
-            _Cursor++;
-            break;
+            while (_Open.Count > 0)
+            {
+              var closed = _Open.RemoveLast();
+              _SubtreeSizes[closed] = _Values.Count - closed;
+            }
+
+            _Exhausted = true;
+            return;
         }
-      }
-
-      TryCommit(asParent: false); // trailing top-level value, if any
-
-      while (_Open.Count > 0)
-      {
-        var closed = _Open.RemoveLast();
-        _SubtreeSizes[closed] = _Values.Count - closed;
       }
 
       _Exhausted = true;
     }
 
-    private bool TryCommit(bool asParent)
+    private void Commit(bool asParent)
     {
-      if (_ValueStart < 0)
-        return false;
-
       var index = _Values.Count;
 
-      _Values.AddLast(_Map(_Tree.AsSpan(_ValueStart, _Cursor - _ValueStart)));
+      _Values.AddLast(_Map(_Scanner.ValueChars));
       _SubtreeSizes.AddLast(asParent ? 0 : 1); // a parent's size is backfilled when it closes
-      _ValueStart = -1;
 
       if (asParent)
         _Open.AddLast(index);
-
-      return true;
     }
 
     // The unboxed handle the playback treenumerators are instantiated over: a struct type

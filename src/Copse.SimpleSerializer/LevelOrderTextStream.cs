@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 
 namespace Copse.SimpleSerializer
 {
@@ -9,7 +8,8 @@ namespace Copse.SimpleSerializer
   // family within its level, ';' terminates the last family of a level (the generation mark;
   // structurally equivalent to '|' on read, kept for human readability and future validation).
   // Trailing empty families are elided by the writer: end of text means every remaining group
-  // is empty.
+  // is empty. Values ride the shared value-token layer (ValueTokenStreamScanner): quoted values
+  // may contain ANY character; unquoted line endings are insignificant.
   //
   // SkipGroupRemainder honors the skip contract: discarded values are counted (positions are
   // load-bearing) but never accumulated or mapped.
@@ -20,12 +20,13 @@ namespace Copse.SimpleSerializer
     public LevelOrderTextStream(TextReader reader, Func<string, TValue> map)
     {
       _Reader = reader;
+      _Scanner = new ValueTokenStreamScanner(reader);
       _Map = map;
     }
 
     private readonly TextReader _Reader;
+    private readonly ValueTokenStreamScanner _Scanner;
     private readonly Func<string, TValue> _Map;
-    private readonly StringBuilder _ValueBuilder = new StringBuilder();
 
     private bool _GroupEnded;
     private bool _Exhausted;
@@ -37,65 +38,55 @@ namespace Copse.SimpleSerializer
       if (_GroupEnded || _Exhausted)
         return false;
 
-      _ValueBuilder.Clear();
-      var hasChars = false;
-
       while (true)
       {
-        var read = _Reader.Read();
-
-        if (read < 0)
+        if (!_Scanner.TryScanEvent(accumulate: true, out var hasValue, out var terminator))
         {
           _Exhausted = true;
           _GroupEnded = true;
-
-          if (hasChars)
-          {
-            value = _Map(_ValueBuilder.ToString());
-            return true;
-          }
-
           return false;
         }
 
-        var character = (char)read;
-
-        switch (character)
+        switch (terminator)
         {
           case ',':
-            if (hasChars)
+            if (hasValue)
             {
-              value = _Map(_ValueBuilder.ToString());
+              value = _Map(_Scanner.GetValue());
               return true;
             }
+
             break;
 
           case '|':
           case ';':
             _GroupEnded = true;
 
-            if (hasChars)
+            if (hasValue)
             {
-              value = _Map(_ValueBuilder.ToString());
+              value = _Map(_Scanner.GetValue());
               return true;
             }
 
             return false;
 
-          case '\n':
-          case '\r':
-            break;
-
           case '(':
           case ')':
             throw new FormatException(
-              $"Unexpected '{character}': this is a depth-first structural character, so the source " +
+              $"Unexpected '{terminator}': this is a depth-first structural character, so the source " +
               "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
 
-          default:
-            _ValueBuilder.Append(character);
-            hasChars = true;
-            break;
+          default: // end of text
+            _Exhausted = true;
+            _GroupEnded = true;
+
+            if (hasValue)
+            {
+              value = _Map(_Scanner.GetValue());
+              return true;
+            }
+
+            return false;
         }
       }
     }
@@ -106,57 +97,47 @@ namespace Copse.SimpleSerializer
         return 0;
 
       var count = 0;
-      var hasChars = false;
 
       while (true)
       {
-        var read = _Reader.Read();
-
-        if (read < 0)
+        if (!_Scanner.TryScanEvent(accumulate: false, out var hasValue, out var terminator))
         {
           _Exhausted = true;
           _GroupEnded = true;
-
-          if (hasChars)
-            count++;
-
           return count;
         }
 
-        var character = (char)read;
-
-        switch (character)
+        switch (terminator)
         {
           case ',':
-            if (hasChars)
-            {
+            if (hasValue)
               count++;
-              hasChars = false;
-            }
+
             break;
 
           case '|':
           case ';':
             _GroupEnded = true;
 
-            if (hasChars)
+            if (hasValue)
               count++;
 
             return count;
 
-          case '\n':
-          case '\r':
-            break;
-
           case '(':
           case ')':
             throw new FormatException(
-              $"Unexpected '{character}': this is a depth-first structural character, so the source " +
+              $"Unexpected '{terminator}': this is a depth-first structural character, so the source " +
               "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
 
-          default:
-            hasChars = true;
-            break;
+          default: // end of text
+            _Exhausted = true;
+            _GroupEnded = true;
+
+            if (hasValue)
+              count++;
+
+            return count;
         }
       }
     }

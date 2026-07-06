@@ -10,8 +10,9 @@ namespace Copse.SimpleSerializer
   // terminator when it is first visited ('|' within a level, ';' at a level boundary): exactly
   // the schedule/visit split serialized (the BreadthFirstTreeTokenizer tokenization rendered to
   // text). Separators buffer until the next value; at end of stream they drop, eliding all
-  // trailing empty families. LevelOrderTextStream is this grammar's reader; change one, check
-  // the other.
+  // trailing empty families. Values ride ValueToken (CSV-style minimal quoting), so any string
+  // is a legal node value. LevelOrderTextStream is this grammar's reader; change one, check the
+  // other.
   internal static class LevelOrderTextWriter
   {
     public static void WritePayload<TNode>(
@@ -40,7 +41,7 @@ namespace Copse.SimpleSerializer
             if (valueOpenInFamily)
               writer.Write(',');
 
-            writer.Write(map(treenumerator.Node));
+            ValueToken.Write(writer, map(treenumerator.Node));
 
             valueOpenInFamily = true;
           }

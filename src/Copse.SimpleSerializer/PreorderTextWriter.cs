@@ -6,7 +6,8 @@ namespace Copse.SimpleSerializer
 {
   // The dft payload writer: the terse paren grammar ("a(b(d,e),c)"), emitted from a single
   // depth-first pass -- each node on its first visit, paren/comma structure derived from depth
-  // deltas. PreorderTextStream is this grammar's reader; change one, check the other.
+  // deltas. Values ride ValueToken (CSV-style minimal quoting), so any string is a legal node
+  // value. PreorderTextStream is this grammar's reader; change one, check the other.
   internal static class PreorderTextWriter
   {
     public static void WritePayload<TNode>(
@@ -40,7 +41,7 @@ namespace Copse.SimpleSerializer
             }
           }
 
-          writer.Write(map(treenumerator.Node));
+          ValueToken.Write(writer, map(treenumerator.Node));
 
           previousDepth = depth;
         }
