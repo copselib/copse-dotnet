@@ -9,9 +9,10 @@ namespace Copse.SimpleSerializer
   // traversal's frontier demands.
   //
   // Values ride the shared value-token layer (ValueTokenStringScanner): quoted values may
-  // contain ANY character, unquoted line endings are insignificant, and the zero-copy span
-  // mapping survives for every token that is a contiguous slice of the source. An UNQUOTED
-  // depth-first structural character ('(' or ')') proves the string is the wrong layout.
+  // contain ANY character, unquoted trailing line endings at end of input are ignored (files
+  // end in newlines), and the zero-copy span mapping survives for every token that is a
+  // contiguous slice of the source. An UNQUOTED depth-first structural character ('(' or ')')
+  // proves the string is the wrong layout.
   //
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via LevelOrderTreenumerable: breadth-first is native

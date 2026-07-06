@@ -6,16 +6,17 @@ namespace Copse.SimpleSerializer
   // TryScanEvent delivers the next token EVENT: an optional value followed by the structural
   // character that terminated it ('\0' for end of text, delivered exactly once; afterwards the
   // scanner reports exhaustion). The caller owns all grammar decisions -- which structural
-  // characters are legal where -- the scanner only knows tokens: bare (runs verbatim to the
-  // next structural character; unquoted '\r'/'\n' are insignificant and a quote after the
+  // characters are legal where -- the scanner only knows tokens: bare (everything verbatim to
+  // the next structural character, including whitespace and line endings; a quote after the
   // token has started is literal) and quoted (opened only by a '"' FIRST in the token; '""' is
-  // a literal quote; structural characters and line endings inside are value characters; after
-  // the close only line endings may precede the terminator).
+  // a literal quote; structural characters and line endings inside are value characters).
   //
-  // Values are exposed as spans to preserve the stores' zero-copy contract: a bare run and a
-  // quoted value without escapes are slices of the source; only escaped quotes ('""') and
-  // line-ending-interrupted bare runs pay a copy into the reusable scratch buffer. ValueChars
-  // is valid until the next scan.
+  // Line endings are ignored only where they cannot be data: an unquoted trailing run at end
+  // of input (files end in newlines) and between a closing quote and its terminator.
+  //
+  // Values are exposed as spans to preserve the stores' zero-copy contract: bare tokens and
+  // quoted values without escapes are slices of the source; only escaped quotes ('""') pay a
+  // copy into the reusable scratch buffer. ValueChars is valid until the next scan.
   internal sealed class ValueTokenStringScanner
   {
     public ValueTokenStringScanner(string source)
@@ -56,23 +57,17 @@ namespace Copse.SimpleSerializer
       _SpanLength = 0;
 
       var runStart = -1;
-      var runEnd = -1;
 
       while (_Cursor < _Source.Length)
       {
         var character = _Source[_Cursor];
 
-        if (character == '\r' || character == '\n')
-        {
-          _Cursor++;
-          continue;
-        }
-
         if (ValueToken.IsStructural(character))
         {
+          var runEnd = _Cursor;
           _Cursor++;
           terminator = character;
-          hasValue = FinishBare(runStart, runEnd);
+          hasValue = FinishBare(runStart, runEnd, trimTrailingLineEndings: false);
           return true;
         }
 
@@ -86,39 +81,26 @@ namespace Copse.SimpleSerializer
         }
 
         if (runStart < 0)
-        {
           runStart = _Cursor;
-          runEnd = _Cursor + 1;
-        }
-        else if (_UseScratch)
-        {
-          AppendScratch(character);
-        }
-        else if (runEnd == _Cursor)
-        {
-          runEnd = _Cursor + 1;
-        }
-        else
-        {
-          // A line ending interrupted the run: concatenate across it via the scratch buffer.
-          SwitchToScratch(runStart, runEnd - runStart);
-          AppendScratch(character);
-        }
 
         _Cursor++;
       }
 
       _EndDelivered = true;
-      hasValue = FinishBare(runStart, runEnd);
+      hasValue = FinishBare(runStart, _Source.Length, trimTrailingLineEndings: true);
       return true;
     }
 
-    private bool FinishBare(int runStart, int runEnd)
+    private bool FinishBare(int runStart, int runEnd, bool trimTrailingLineEndings)
     {
-      if (_UseScratch)
-        return true;
-
       if (runStart < 0)
+        return false;
+
+      if (trimTrailingLineEndings)
+        while (runEnd > runStart && (_Source[runEnd - 1] == '\r' || _Source[runEnd - 1] == '\n'))
+          runEnd--;
+
+      if (runEnd == runStart)
         return false;
 
       _SpanStart = runStart;

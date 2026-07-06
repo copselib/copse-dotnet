@@ -10,8 +10,9 @@ namespace Copse.SimpleSerializer
   // never touches the rest of the string, and the value map runs once per node ever reached.
   //
   // Values ride the shared value-token layer (ValueTokenStringScanner): quoted values may
-  // contain ANY character, unquoted line endings are insignificant, and the zero-copy span
-  // mapping survives for every token that is a contiguous slice of the source.
+  // contain ANY character, unquoted trailing line endings at end of input are ignored (files
+  // end in newlines), and the zero-copy span mapping survives for every token that is a
+  // contiguous slice of the source.
   //
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via PreorderTreenumerable); parsed values and spans are

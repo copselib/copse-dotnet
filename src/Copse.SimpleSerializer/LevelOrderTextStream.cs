@@ -9,7 +9,8 @@ namespace Copse.SimpleSerializer
   // structurally equivalent to '|' on read, kept for human readability and future validation).
   // Trailing empty families are elided by the writer: end of text means every remaining group
   // is empty. Values ride the shared value-token layer (ValueTokenStreamScanner): quoted values
-  // may contain ANY character; unquoted line endings are insignificant.
+  // may contain ANY character; unquoted trailing line endings at end of input are ignored
+  // (files end in newlines).
   //
   // SkipGroupRemainder honors the skip contract: discarded values are counted (positions are
   // load-bearing) but never accumulated or mapped.

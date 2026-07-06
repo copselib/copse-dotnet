@@ -8,7 +8,7 @@ namespace Copse.SimpleSerializer
   // (depth increases behind it); ',' separates siblings; ')' closes a subtree. Each committed
   // value is delivered with the depth in effect while its characters were read. Values ride the
   // shared value-token layer (ValueTokenStreamScanner): quoted values may contain ANY character;
-  // unquoted line endings are insignificant.
+  // unquoted trailing line endings at end of input are ignored (files end in newlines).
   //
   // TrySkipToDepth honors the skip contract: tokens belonging to deeper values are consumed
   // WITHOUT being accumulated or mapped -- a skip costs I/O only.

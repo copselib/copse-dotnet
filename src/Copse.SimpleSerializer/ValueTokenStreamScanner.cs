@@ -7,10 +7,12 @@ namespace Copse.SimpleSerializer
   // ValueToken's reader over a forward-only TextReader, shared by both text streams. The same
   // event contract as ValueTokenStringScanner -- an optional value, then the structural
   // character that terminated it ('\0' at end of text, delivered exactly once) -- pulled one
-  // character at a time. accumulate: false honors the skip contract: the token is consumed and
-  // reported but its characters are never buffered, so a skip costs I/O only. The one-character
-  // pushback (needed to tell '""' from a closing quote) replaces TextReader.Peek, which not
-  // every reader implements.
+  // character at a time. Line endings are ordinary value characters except an unquoted
+  // trailing run at end of input and between a closing quote and its terminator, where they
+  // cannot be data. accumulate: false honors the skip contract: the token is consumed and
+  // reported but its characters are never buffered, so a skip costs I/O only. The
+  // one-character pushback (needed to tell '""' from a closing quote) replaces
+  // TextReader.Peek, which not every reader implements.
   //
   // Does NOT own the reader; the enclosing stream does.
   internal sealed class ValueTokenStreamScanner
@@ -39,6 +41,7 @@ namespace Copse.SimpleSerializer
 
       _ValueBuilder.Clear();
       var started = false;
+      var survivesTrim = false; // a bare token of nothing but line endings vanishes at end of input
 
       while (true)
       {
@@ -47,14 +50,21 @@ namespace Copse.SimpleSerializer
         if (read < 0)
         {
           _EndDelivered = true;
-          hasValue = started;
+
+          if (started && survivesTrim)
+          {
+            if (accumulate)
+              while (_ValueBuilder.Length > 0
+                && (_ValueBuilder[_ValueBuilder.Length - 1] == '\r' || _ValueBuilder[_ValueBuilder.Length - 1] == '\n'))
+                _ValueBuilder.Length--;
+
+            hasValue = true;
+          }
+
           return true;
         }
 
         var character = (char)read;
-
-        if (character == '\r' || character == '\n')
-          continue;
 
         if (ValueToken.IsStructural(character))
         {
@@ -72,6 +82,9 @@ namespace Copse.SimpleSerializer
         }
 
         started = true;
+
+        if (character != '\r' && character != '\n')
+          survivesTrim = true;
 
         if (accumulate)
           _ValueBuilder.Append(character);

@@ -12,8 +12,9 @@ namespace Copse.Linq.Tests
   // literal quote, one escape set shared by both grammars) makes EVERY string a legal node
   // value in both layouts and both tiers. Values without special characters serialize
   // byte-identical to the unquoted format, wrong-layout detection fires only on UNQUOTED
-  // structure, and unquoted line endings are insignificant everywhere (they were already
-  // skipped by three of the four readers; now all four agree).
+  // structure, whitespace is never special (no trimming), and line endings are ordinary value
+  // characters except where they cannot be data: an unquoted trailing run at end of input
+  // (files end in newlines) and between a closing quote and its terminator.
   [TestClass]
   public class SerializerQuotingTests
   {
@@ -144,7 +145,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual("\"\"", Dft(""), "the empty value is representable");
       Assert.AreEqual("\"\"\"\"", Dft("\""), "a value that IS one quote: open, doubled literal, close");
       Assert.AreEqual("\"He said \"\"hi\"\"\"", Dft("He said \"hi\""));
-      Assert.AreEqual("\" x \"", Dft(" x "), "surrounding whitespace forces quotes");
+      Assert.AreEqual(" x ", Dft(" x "), "surrounding whitespace is not special -- no trimming exists");
       Assert.AreEqual("\"line1\nline2\"", Dft("line1\nline2"));
 
       Assert.AreEqual(
@@ -184,39 +185,71 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void UnquotedLineEndingsAreInsignificantInAllFourReaders()
+    public void TrailingLineEndingsAtEndOfInputAreIgnored()
     {
-      // Line-wrapped payloads parse as if unwrapped...
+      // Files end in newlines; a trailing unquoted run is one of the two places a line ending
+      // cannot be data. After a structural character...
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
-        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("a(\r\nb,\r\nc)").GetDepthFirstTreenumerator()));
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("a(b,c)\r\n").GetDepthFirstTreenumerator()));
 
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
-        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree(() => new StringReader("a(\r\nb,\r\nc)")).GetDepthFirstTreenumerator()));
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree(() => new StringReader("a(b,c)\r\n")).GetDepthFirstTreenumerator()));
+
+      // ...trimmed off a final bare token...
+      CollectionAssert.AreEqual(
+        new[] { "a", "b", "c" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("a,b,c\n\n").GetDepthFirstTreenumerator()));
 
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
-        ScheduledValues(TreeSerializer.DeserializeBreadthFirstTree("a;\r\nb,c").GetBreadthFirstTreenumerator()));
+        ScheduledValues(TreeSerializer.DeserializeBreadthFirstTree("a;b,c\n").GetBreadthFirstTreenumerator()));
 
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
-        ScheduledValues(TreeSerializer.DeserializeBreadthFirstTree(() => new StringReader("a;\r\nb,c")).GetBreadthFirstTreenumerator()));
+        ScheduledValues(TreeSerializer.DeserializeBreadthFirstTree(() => new StringReader("a;b,c\r\n")).GetBreadthFirstTreenumerator()));
 
-      // ...and a line ending interrupting a bare token contributes nothing (both string tiers
-      // historically disagreed here; the value-token layer unifies them).
+      // ...and after a final quoted token.
       CollectionAssert.AreEqual(
-        new[] { "a", "bc" },
+        new[] { "x" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("\"x\"\n").GetDepthFirstTreenumerator()));
+
+      CollectionAssert.AreEqual(
+        new[] { "x" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree(() => new StringReader("\"x\"\n")).GetDepthFirstTreenumerator()));
+    }
+
+    [TestMethod]
+    public void LineEndingsAnywhereElseAreData()
+    {
+      // A line ending inside a bare token is a value character, in both tiers...
+      CollectionAssert.AreEqual(
+        new[] { "a", "b\nc" },
         ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("a(b\nc)").GetDepthFirstTreenumerator()));
 
       CollectionAssert.AreEqual(
-        new[] { "a", "bc" },
+        new[] { "a", "b\nc" },
         ScheduledValues(TreeSerializer.DeserializeDepthFirstTree(() => new StringReader("a(b\nc)")).GetDepthFirstTreenumerator()));
 
-      // Quoted line endings are value characters.
+      // ...including at the START of a token...
+      CollectionAssert.AreEqual(
+        new[] { "a", "\nb" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("a(\nb)").GetDepthFirstTreenumerator()));
+
+      // ...and inside quotes, always.
       CollectionAssert.AreEqual(
         new[] { "b\nc" },
         ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("\"b\nc\"").GetDepthFirstTreenumerator()));
+
+      // Between a closing quote and its terminator they cannot be data, so they are ignored.
+      CollectionAssert.AreEqual(
+        new[] { "x", "y" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree("\"x\"\r\n(y)").GetDepthFirstTreenumerator()));
+
+      CollectionAssert.AreEqual(
+        new[] { "x", "y" },
+        ScheduledValues(TreeSerializer.DeserializeDepthFirstTree(() => new StringReader("\"x\"\r\n(y)")).GetDepthFirstTreenumerator()));
     }
 
     [TestMethod]
