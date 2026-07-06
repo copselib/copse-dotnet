@@ -39,7 +39,10 @@
   .collapsed .caret { transform:rotate(-90deg); }
   .collapsed table { display:none; }
 
-  table { width:100%; border-collapse:collapse; }
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  /* Fixed layout + shared colgroup widths so every group's table aligns column-for-column.
+     Only the Benchmark column is unsized, so it absorbs the slack; the rest are identical. */
+  col.c-caret { width:30px; } col.c-latest { width:104px; } col.c-delta { width:92px; } col.c-trend { width:140px; }
   th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
   th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; cursor:pointer; }
   tbody tr:nth-child(4n+1) { background:var(--row); }       /* zebra over (row + expand) pairs */
@@ -212,7 +215,8 @@ function render() {
     sec.className = "group"+(state.collapsed.has(key)?" collapsed":"");
     const rowsHtml = list.map(r => rowHtml(r)).join("");
     sec.innerHTML = `<h2 data-key="${esc(key)}"><span class="caret">▾</span>${esc(key)} <span class="n">(${list.length})</span></h2>`
-      + `<table><thead><tr><th></th><th data-s="name">Benchmark</th><th data-s="latest" style="text-align:right">Latest</th>`
+      + `<table><colgroup><col class="c-caret"><col class="c-name"><col class="c-latest"><col class="c-delta"><col class="c-trend"></colgroup>`
+      + `<thead><tr><th></th><th data-s="name">Benchmark</th><th data-s="latest" style="text-align:right">Latest</th>`
       + `<th data-s="delta" style="text-align:right">Δ prev</th><th>Trend</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
     main.appendChild(sec);
   }
