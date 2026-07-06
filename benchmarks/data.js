@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783312231706,
+  "lastUpdate": 1783312231966,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -23770,6 +23770,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
             "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 278,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "1f9ef3e9866c4d3dc0b77d890ac338bf16948524",
+          "message": "Line endings are data; ignored only where they cannot be\n\nJason's call: whitespace is not a special character, and unconditional\nCR/LF skipping bought line-wrapping (readability the format doesn't\nneed) at the price of magic -- the mid-token splice rule. Now nothing\nis special except the five structural characters and a token-opening\nquote, with exactly two concessions, both in positions where a line\nending cannot possibly be data: an unquoted trailing run at end of\ninput (every editor and POSIX tool ends files with a newline; without\nthis, \"a(b,c)\\n\" grows a phantom root and \"a;b,c\\n\" corrupts its last\nvalue -- silently, on virtually every hand-touched file) and between a\nclosing quote and its terminator.\n\nThe splice machinery dies with the skip: bare tokens are now always\ncontiguous slices of the source, so the string scanner's scratch\nbuffer serves only '\"\"' unescaping. Also dropped the writer's\nquote-on-surrounding-whitespace rule -- it existed solely to keep\nreader-side trimming open as a future option, and trimming is now\nruled out (\" x \" serializes bare and round-trips verbatim). The writer\nstill quotes any value containing CR/LF, so writer output never leans\non the end-of-input tolerance.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T03:49:27Z",
+          "tree_id": "84c18f7f008b984e245e1e7f9523bce44c8e1bd2",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1f9ef3e9866c4d3dc0b77d890ac338bf16948524"
+        },
+        "date": 1783312231925,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 567,
             "unit": "bytes"
           },
           {
