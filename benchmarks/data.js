@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783362382251,
+  "lastUpdate": 1783369075436,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -4176,6 +4176,150 @@ window.BENCHMARK_DATA = {
             "value": 29249336.153846152,
             "unit": "ns",
             "range": "± 22324.196003216253"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "52df4869e2e1db33b3ded6031faeb9a21ae95967",
+          "message": "Benchmarks: upload to Bencher side-by-side with the gh-pages dashboard\n\nAdd a token-gated Bencher (bencher.dev) upload to the continuous benchmark\nworkflow, running alongside the existing github-action-benchmark -> gh-pages\npipeline rather than replacing it. Motivation: on shared GitHub runners the\nabsolute BenchmarkDotNet numbers swing 20%+ run-to-run, and the dashboard's\nonly guard is a blunt alert-threshold of 150% (a benchmark must get 2.5x slower\nto fire) -- useless at the micro-optimization scale we're now working. Bencher\nadds per-benchmark statistical thresholds (t-test on latency here) that learn\neach benchmark's own historical spread on the testbed, so a naturally noisy\nbenchmark gets a wide tolerance and a steady one a tight bound.\n\nDesign:\n- Purely additive: reads the SAME *-report-full-compressed.json the existing\n  storage steps consume, so it never writes benchmarks/data.js or touches the\n  custom dashboard.\n- Token-gated via a job-level env var (secrets aren't available in step-level\n  `if:`, but env is): the whole block no-ops until BENCHER_API_TOKEN is set.\n- Placed AFTER the gh-pages storage steps so a Bencher failure (bad slug, API\n  hiccup) can't break the dashboard push.\n- Non-blocking during the trial: no --error-on-alert, so alerts are reported\n  but don't fail the build. Early runs won't alert until each benchmark has a\n  few samples of history to compare against.\n\nAll flags validated against bencher CLI 0.6.8 (--adapter c_sharp_dot_net,\nt_test threshold model, --file upload of existing results). Project slug\ncopse-dotnet matches the workflow default, so no BENCHER_PROJECT var is needed.\n\nCo-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-07-06T19:46:26Z",
+          "tree_id": "27d0483aa6d144d4ca08287a754bd989fe156772",
+          "url": "https://github.com/copselib/copse-dotnet/commit/52df4869e2e1db33b3ded6031faeb9a21ae95967"
+        },
+        "date": 1783369074504,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TriangleTree_2896",
+            "value": 228150987.38461536,
+            "unit": "ns",
+            "range": "± 2859291.2649684865"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 266541801.26923078,
+            "unit": "ns",
+            "range": "± 546508.98037527"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TrivialForest_4M",
+            "value": 13861460.395089285,
+            "unit": "ns",
+            "range": "± 23896.81305749323"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.DegenerateTree_4M",
+            "value": 84536661.97619049,
+            "unit": "ns",
+            "range": "± 161779.7236972526"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TriangleTree_2896",
+            "value": 197110262.4615385,
+            "unit": "ns",
+            "range": "± 1615044.038287336"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 225565993.57142863,
+            "unit": "ns",
+            "range": "± 359585.52799241146"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TrivialForest_4M",
+            "value": 13569643.185096154,
+            "unit": "ns",
+            "range": "± 208859.97300538182"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.DegenerateTree_4M",
+            "value": 59033691.40833333,
+            "unit": "ns",
+            "range": "± 241997.21625034953"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.DeepTree",
+            "value": 44933637.5,
+            "unit": "ns",
+            "range": "± 202429.40787437916"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 60598548.21296296,
+            "unit": "ns",
+            "range": "± 46252.449110426714"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 148599580.90384614,
+            "unit": "ns",
+            "range": "± 579834.118980831"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 74299945.98095237,
+            "unit": "ns",
+            "range": "± 905078.270257721"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.DeepTree",
+            "value": 49753184.74025973,
+            "unit": "ns",
+            "range": "± 320481.9114427064"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 34831840.59047619,
+            "unit": "ns",
+            "range": "± 161140.80868667696"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 111186259.77333333,
+            "unit": "ns",
+            "range": "± 399677.2213601717"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 42660072.25694445,
+            "unit": "ns",
+            "range": "± 117277.23050584318"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.DeepTree",
+            "value": 22183526.39955357,
+            "unit": "ns",
+            "range": "± 21704.70680541184"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 32195425.783653848,
+            "unit": "ns",
+            "range": "± 42788.973929969005"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 100328305.9142857,
+            "unit": "ns",
+            "range": "± 403292.877196004"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneAfterDepth_19",
+            "value": 37863507.385714285,
+            "unit": "ns",
+            "range": "± 82416.83482589638"
           }
         ]
       }
