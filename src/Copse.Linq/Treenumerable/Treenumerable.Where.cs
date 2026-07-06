@@ -13,12 +13,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // TODO: The predicates are inverted. One or the other should be changed for consistency.
       return
         TreenumerableFactory.Create(
           () => new WhereBreadthFirstTreenumerator<TNode>(
             source.GetBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
+            predicate,
             NodeTraversalStrategies.SkipNode),
           () => new WhereDepthFirstTreenumerator<TNode>(
             source.GetDepthFirstTreenumerator,
@@ -52,7 +51,7 @@ namespace Copse.Linq
         TreenumerableFactory.CreateBreadthFirst(
           () => new WhereBreadthFirstTreenumerator<TNode>(
             source.GetBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
+            predicate,
             NodeTraversalStrategies.SkipNode));
     }
   }

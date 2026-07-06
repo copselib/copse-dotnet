@@ -15,9 +15,11 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.Create(
+          // PruneBefore's predicate means "prune when true"; the Where machinery keeps when
+          // true (the LINQ convention), so removal semantics invert here, at the operator.
           () => new WhereBreadthFirstTreenumerator<T>(
             source.GetBreadthFirstTreenumerator,
-            predicate,
+            nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants),
           () => new WhereDepthFirstTreenumerator<T>(
             source.GetDepthFirstTreenumerator,
@@ -51,7 +53,7 @@ namespace Copse.Linq
         TreenumerableFactory.CreateBreadthFirst(
           () => new WhereBreadthFirstTreenumerator<T>(
             source.GetBreadthFirstTreenumerator,
-            predicate,
+            nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants));
     }
   }

@@ -368,19 +368,16 @@ private bool _ConsumerSkippedChildAfterLastAccepted;
 - child of a consumer-SkipNode'd parent (`_RemovedSkippedChildCounts[parentDepth] >= 0`) → that running count;
 - otherwise → the queue front's `AcceptedChildCount` (the front is the node's nearest accepted ancestor / effective parent).
 
-#### Predicate Inversion
+#### Predicate Polarity
 
-Note that BFT inverts the predicate in the extension method:
+Both Where treenumerators take the predicate with LINQ polarity — **true means keep**.
+Operators with removal semantics invert at their own call sites, where the inversion is
+self-documenting (PruneBefore's predicate means "prune when true", so it passes
+`nodeContext => !predicate(nodeContext)` to both treenumerators).
 
-```csharp
-// In Treenumerable.Where.cs:
-() => new WhereBreadthFirstTreenumerator<TNode>(
-    source.GetBreadthFirstTreenumerator,
-    nodeContext => !predicate(nodeContext),  // Inverted!
-    NodeTraversalStrategies.SkipNode)
-```
-
-This is an implementation detail—the BFT implementation treats "true" as "skip this node."
+(Historically the BFT treenumerator treated "true" as "skip", so `Where` inverted for BFT
+while `PruneBefore` inverted for DFT — every operator paid one inversion on opposite sides.
+Unified to LINQ polarity 2026-07-06.)
 
 ---
 
@@ -391,7 +388,7 @@ This is an implementation detail—the BFT implementation treats "true" as "skip
 | **Data structures** | Two stacks (accepted + skipped) | Queue (accepted) + incremental skipped-ancestor prefix |
 | **Sibling index source** | Parent's `CurrentChildIndex` counter | Queue front's `AcceptedChildCount` (or `_RemovedSkippedChildCounts`) |
 | **Parent visit handling** | Natural—visits interleave with scheduling | Complex—must manufacture/suppress parent visits |
-| **Predicate** | Used directly | Inverted |
+| **Predicate** | LINQ polarity (true = keep) | LINQ polarity (true = keep) |
 | **Depth calculation** | Sum of both stack counts - 1 | Inner depth − `_PredSkipPrefix[D-1]` |
 | **Time complexity** | O(N) | O(N) (was O(N²) before the prefix carry) |
 

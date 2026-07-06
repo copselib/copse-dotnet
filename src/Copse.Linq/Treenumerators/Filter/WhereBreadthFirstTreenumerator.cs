@@ -7,7 +7,9 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// Breadth-first <c>Where</c>: filters the inner stream, promoting a predicate-skipped node's
   /// children into its slot, and re-emits the SAME visit multiset the base engine would for the
-  /// filtered tree -- in level order.
+  /// filtered tree -- in level order. Predicate polarity is the LINQ convention (true = keep),
+  /// matching <see cref="WhereDepthFirstTreenumerator{TNode}"/>; operators with removal semantics
+  /// (PruneBefore) invert at their own call sites.
   ///
   /// <para>All structural state lives in <see cref="WhereBreadthFirstPath{TNode}"/>; this class is a
   /// thin driver over it. The only operations that touch the source are the two I/O seams pulling the
@@ -144,7 +146,7 @@ namespace Copse.Linq.Treenumerators
         {
           var innerDepth = InnerTreenumerator.Position.Depth;
 
-          var skipped = _Predicate(InnerTreenumerator.ToNodeContext());
+          var skipped = !_Predicate(InnerTreenumerator.ToNodeContext());
 
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
