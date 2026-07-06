@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783318024517,
+  "lastUpdate": 1783318024773,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -30101,6 +30101,60 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/0e6a53254db2daa2ac9376332f5c557be5500994"
         },
         "date": 1783314719537,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Wide_1M",
+            "value": 27633529,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Deep_100K",
+            "value": 5647533,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_1M",
+            "value": 51785736,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Deep_100K",
+            "value": 8056384,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_StringMap",
+            "value": 47591157,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
+            "value": 8391088,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "cf80ee4de17b4714673fe276dd68b55ccc1ee866",
+          "message": "Test suite cleanup: Where2/Merge scans become the Combinatorial* suites\n\nThe Where2Test_* [DynamicData] methods were already #if false'd out --\ndead code whose only legacy was the misleading name and the generator\nmachinery the in-process scans borrowed. Deleted, and the scans renamed\nto say what they are:\n\n- CombinatorialTestData: the shared corpus (groups c..i) and the\n  (node, strategy) assignment element, hosted OUTSIDE any [TestClass]\n  so MSTest discovery never touches it.\n- Where2InProcessScan -> CombinatorialWhereTests (absorbs the case\n  generator that lived in Where2Tests).\n- MergeInProcessScan -> CombinatorialMergeTests (also retires the\n  stale \"merge engine is known-buggy; failures EXPECTED\" header --\n  the suite has gated at zero divergences since the engine was fixed).\n\nComment references updated across the solution. Note: the 4,376\nperpetual skips are NOT from any of this -- they are the [Ignore]d\nUnionTest_BreadthFirst DynamicData rows, enumerated at discovery on\nevery run; possibly obsolete now that CombinatorialMergeTests passes\nBFT clean, but that is a Union-semantics call left open deliberately.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T05:32:52Z",
+          "tree_id": "52768a90c95f40809f6af46f5966538f141c866f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cf80ee4de17b4714673fe276dd68b55ccc1ee866"
+        },
+        "date": 1783318024729,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
