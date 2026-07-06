@@ -54,5 +54,24 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void PreEnumerationStateIsForestRoot()
       => VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(CadenceDft("a(b,c)"), "cadence-dft");
+
+    // --- The direct-style driver (codegen twin's shape) must also conform. ---
+
+    private static ITreenumerator<string> DirectDft(string tree)
+    {
+      var (values, sizes) = EngineTree.ParseArrays(tree);
+      return new DepthFirstDirectTreenumerator<string, int, PreorderChildEnumerator>(
+        RootIndices(sizes),
+        nc => new PreorderChildEnumerator(sizes, nc.Node),
+        i => values[i]);
+    }
+
+    [TestMethod]
+    public void Direct_TraverseAll_MatchesEngine()
+      => VisitStreamConformance.AssertTraverseAllConforms(DirectDft, depthFirst: true, "direct-dft");
+
+    [TestMethod]
+    public void Direct_EveryNodeEveryStrategy_MatchesEngine()
+      => VisitStreamConformance.AssertStrategyMatrixConforms(DirectDft, depthFirst: true, "direct-dft");
   }
 }

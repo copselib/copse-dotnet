@@ -65,6 +65,19 @@ namespace Copse.Benchmarks
       return sum;
     }
 
+    // Direct style (natural inlined control flow) over the shared cross-assembly path -- the codegen
+    // twin's shape. Same assembly split as Cadence, so Direct-vs-Cadence isolates the inversion cost.
+    [Benchmark]
+    public long Direct()
+    {
+      var t = new DepthFirstDirectTreenumerator<int, int, ArrayChildEnumerator>(_roots, Factory, i => i);
+      long sum = 0;
+      while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+        sum += t.VisitCount;
+      t.Dispose();
+      return sum;
+    }
+
     private struct ArrayChildEnumerator : IChildEnumerator<int>
     {
       private readonly int[] _children;
