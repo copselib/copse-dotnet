@@ -2,6 +2,7 @@ using Copse;
 using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq;
 using Copse.Linq.Async;
 using Copse.Linq.Generated;
 using Copse.Treenumerators;
@@ -90,7 +91,20 @@ internal static class Program
       }
     }
 
-    bool pass = streamsMatch && selectOk && whereOk;
+    // Fluent async composition: source.Where(...).Select(...) -- deferred operators, LINQ-named
+    // (no Async suffix), overload-resolved on IAsyncTreenumerable.
+    var composed = await RunAsyncWhereThenSelect(keepNot3, n => n * 10);
+    var composedExpected = syncWhere.Where(v => v.Mode == TreenumeratorMode.VisitingNode && v.VisitCount == 1)
+                                    .Select(v => v.Node * 10)
+                                    .ToList();
+    var composedNodes = composed.Where(v => v.Mode == TreenumeratorMode.VisitingNode && v.VisitCount == 1)
+                                .Select(v => v.Node)
+                                .ToList();
+    bool composeOk = composedExpected.SequenceEqual(composedNodes);
+    Console.WriteLine($"\nasync Where(drop 3).Select(n*10) first-visit nodes: [{string.Join(", ", composedNodes)}]");
+    Console.WriteLine($"async Where().Select() composes: {composeOk}");
+
+    bool pass = streamsMatch && selectOk && whereOk && composeOk;
     Console.WriteLine($"\n{(pass ? "PASS" : "FAIL")}");
     return pass ? 0 : 1;
   }
@@ -187,6 +201,24 @@ internal static class Program
     await using (w.ConfigureAwait(false))
       while (await w.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
         visits.Add(new Visit(w.Mode, w.Node, w.VisitCount, w.Position.Depth, w.Position.SiblingIndex));
+    return visits;
+  }
+
+  // Fluent async composition over a deferred async treenumerable: source.Where(...).Select(...).
+  private static async Task<List<Visit>> RunAsyncWhereThenSelect(
+    Func<NodeContext<int>, bool> predicate,
+    Func<int, int> selector)
+  {
+    IAsyncTreenumerable<int> source = new AsyncDepthFirstTreenumerable<int, int, AsyncChildEnumerator>(
+      AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+    var query = source.Where(predicate).Select(selector);
+    var t = query.GetAsyncDepthFirstTreenumerator();
+
+    var visits = new List<Visit>();
+    await using (t.ConfigureAwait(false))
+      while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+        visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
     return visits;
   }
 

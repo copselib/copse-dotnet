@@ -7,7 +7,7 @@ namespace Copse.Async
   /// <summary>
   /// A deferred async treenumerable over a hierarchical source: a fresh roots stream + child-enumerator
   /// factory per enumeration, mapped to values. The async analog of the engine-backed treenumerable, so
-  /// operators (e.g. <see cref="AsyncTreenumerableExtensions.Select"/>) have something to wrap.
+  /// operators (Copse.Linq.AsyncTreenumerable's Where / Select) have something to wrap.
   /// </summary>
   public sealed class AsyncDepthFirstTreenumerable<TValue, TNode, TAsyncChildEnumerator>
     : IAsyncTreenumerable<TValue>
