@@ -9,8 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
-    <!-- Shared sans-I/O cadence: the sync DepthFirstCadenceTreenumerator drives it (prototype A/B vs DepthFirstTreenumerator). -->
-    <ProjectReference Include="..\Copse.Engine\Copse.Engine.csproj" />
+    <!-- Shared sans-I/O DFT path state (DepthFirstPathState); the direct-style DepthFirstDirectTreenumerator drives it. -->
+    <ProjectReference Include="..\Copse.Traversal\Copse.Traversal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

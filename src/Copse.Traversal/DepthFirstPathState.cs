@@ -2,19 +2,17 @@ using Copse.Core;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Copse.Engine
+namespace Copse.Traversal
 {
   /// <summary>
-  /// The original <c>DepthFirstPath</c> ops as a color-agnostic, shared struct: same sans-I/O path
-  /// bookkeeping, but constrained only on <see cref="IDisposable"/> so a <b>direct-style</b> driver
-  /// (natural inlined control flow, awaited or synchronous pull at the seam) can share it -- the
-  /// codegen alternative to the inverted <see cref="DepthFirstCadence{TNode, TEnumerator}"/>.
+  /// The depth-first path bookkeeping as a color-agnostic, shared struct: sans-I/O path state
+  /// constrained only on <see cref="IDisposable"/>, so a <b>direct-style</b> driver (natural inlined
+  /// control flow, with a synchronous or awaited pull at the seam) can share it verbatim.
   ///
-  /// <para>Exists to price the direct style against the inverted cadence with the assembly split held
-  /// constant: a driver over THIS (in Copse.Engine) is cross-assembly exactly like the sync cadence
-  /// driver, so Engine-vs-Direct isolates cross-assembly cost and Direct-vs-Cadence isolates the
-  /// inversion cost. Reuses <see cref="DepthFirstNodeState{TNode}"/> / <see cref="DepthFirstBacktrackStep"/>
-  /// from the cadence.</para>
+  /// <para>This is the single shared piece of the codegen approach: the sync
+  /// <c>DepthFirstDirectTreenumerator</c>, the async <c>AsyncDepthFirstTreenumerator</c>, and the
+  /// generated sync twin all drive THIS. The push/pop/backtrack ops are ported from the original
+  /// <c>DepthFirstPath</c>. See <see cref="DepthFirstNodeState{TNode}"/> / <see cref="DepthFirstBacktrackStep"/>.</para>
   /// </summary>
   internal struct DepthFirstPathState<TNode, TEnumerator> : IDisposable
     where TEnumerator : IDisposable

@@ -1,26 +1,26 @@
 using BenchmarkDotNet.Attributes;
 using Copse;
 using Copse.Core;
-using Copse.Engine;
+using Copse.Traversal;
 using Copse.Generated;
 using Copse.Treenumerators;
 
 namespace Copse.Benchmarks
 {
   /// <summary>
-  /// Prototype A/B: the hand-tuned <see cref="DepthFirstTreenumerator{TValue, TNode, TChildEnumerator}"/>
-  /// (baseline) vs the Option-B <see cref="DepthFirstCadenceTreenumerator{TValue, TNode, TChildEnumerator}"/>
-  /// over the shared cadence, on identical work. Both drive the same struct child enumerator over the
-  /// same tree; the ONLY difference is whether the MoveNext cadence is inlined by hand or funnels
-  /// through the cadence's Advance()/Supply state machine. The in-process <c>Ratio</c> is the
-  /// hardware-noise-immune answer to "does inverting the seam cost the sync hot path?".
+  /// A/B of the DFT sync drivers, on identical work (same tree, same struct child enumerator):
+  /// the hand-tuned <see cref="DepthFirstTreenumerator{TValue, TNode, TChildEnumerator}"/> (baseline)
+  /// vs the direct-style <see cref="DepthFirstDirectTreenumerator{TValue, TNode, TChildEnumerator}"/>
+  /// over the shared cross-assembly <c>DepthFirstPathState</c>, vs the actual codegen'd
+  /// <see cref="GeneratedDepthFirstTreenumerator{TValue, TNode, TChildEnumerator}"/>. Confirms the
+  /// generated sync twin is at engine parity. The in-process <c>Ratio</c> is hardware-noise-immune.
   ///
-  /// Category "Cadence" is not one of the five the CI workflow runs, so this stays off the continuous
-  /// dashboard; run on demand: <c>dotnet run -c Release -- --anyCategories Cadence</c>.
+  /// Category "Drivers" is not one of the five the CI workflow runs, so this stays off the continuous
+  /// dashboard; run on demand: <c>dotnet run -c Release -- --anyCategories Drivers</c>.
   /// </summary>
   [MemoryDiagnoser]
-  [BenchmarkCategory("Cadence")]
-  public class CadenceVsEngineDepthFirst
+  [BenchmarkCategory("Drivers")]
+  public class DepthFirstDriverBenchmarks
   {
     [Params(1 << 20)]
     public int N;
@@ -56,19 +56,7 @@ namespace Copse.Benchmarks
       return sum;
     }
 
-    [Benchmark]
-    public long Cadence()
-    {
-      var t = new DepthFirstCadenceTreenumerator<int, int, ArrayChildEnumerator>(_roots, Factory, i => i);
-      long sum = 0;
-      while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
-        sum += t.VisitCount;
-      t.Dispose();
-      return sum;
-    }
-
-    // Direct style (natural inlined control flow) over the shared cross-assembly path -- the codegen
-    // twin's shape. Same assembly split as Cadence, so Direct-vs-Cadence isolates the inversion cost.
+    // Hand-written direct style over the shared cross-assembly path -- the codegen twin's shape.
     [Benchmark]
     public long Direct()
     {

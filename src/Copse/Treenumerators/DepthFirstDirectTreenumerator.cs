@@ -1,23 +1,23 @@
 using Copse.Core;
-using Copse.Engine;
+using Copse.Traversal;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 // Disambiguate from Copse.Treenumerators' own copy (in DepthFirstPath.cs) of this name.
-using EngineBacktrackStep = Copse.Engine.DepthFirstBacktrackStep;
+using TraversalBacktrackStep = Copse.Traversal.DepthFirstBacktrackStep;
 
 namespace Copse.Treenumerators
 {
   /// <summary>
   /// Depth-first sync driver in the <b>direct style</b>: the same natural, inlined control flow as
   /// <see cref="DepthFirstTreenumerator{TValue, TNode, TChildEnumerator}"/> (OnScheduling / OnVisiting /
-  /// Backtrack / TryPushNextChild), NOT the inverted cadence -- but over the shared cross-assembly
-  /// <see cref="DepthFirstPathState{TNode, TEnumerator}"/> in Copse.Engine.
+  /// Backtrack / TryPushNextChild), over the shared
+  /// <see cref="DepthFirstPathState{TNode, TEnumerator}"/> in Copse.Traversal.
   ///
-  /// <para>This is the shape a codegen'd sync twin would take (a direct-async driver with <c>await</c>
-  /// stripped). It exists to price the direct style against the inverted cadence with the assembly
-  /// split held constant: Engine-vs-Direct isolates cross-assembly cost; Direct-vs-Cadence isolates the
-  /// seam-inversion cost.</para>
+  /// <para>This is the shape a codegen'd sync twin takes -- the async
+  /// <c>AsyncDepthFirstTreenumerator</c> with <c>await</c> stripped. It benchmarks at parity with the
+  /// hand-tuned engine (see DepthFirstDriverBenchmarks), which is what makes the codegen approach
+  /// viable for the sync path.</para>
   /// </summary>
   public sealed class DepthFirstDirectTreenumerator<TValue, TNode, TChildEnumerator>
     : TreenumeratorBase<TValue>
@@ -99,10 +99,10 @@ namespace Copse.Treenumerators
       {
         switch (_Path.PopFinishedLevelAndClassify())
         {
-          case EngineBacktrackStep.GoToRoot:
+          case TraversalBacktrackStep.GoToRoot:
             return MoveToNextRootNode();
 
-          case EngineBacktrackStep.PromoteNextChild:
+          case TraversalBacktrackStep.PromoteNextChild:
             if (TryPushNextChild())
               return true;
             continue;
@@ -125,7 +125,7 @@ namespace Copse.Treenumerators
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Publish(ref Copse.Engine.DepthFirstNodeState<TNode> node)
+    private void Publish(ref Copse.Traversal.DepthFirstNodeState<TNode> node)
     {
       Mode = node.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
       Node = _Map(node.Node);

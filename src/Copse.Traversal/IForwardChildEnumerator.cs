@@ -1,6 +1,6 @@
 using System;
 
-namespace Copse.Engine
+namespace Copse.Traversal
 {
   /// <summary>
   /// A synchronous, forward-only child enumerator in the <b>Current-property</b> style (a successful
