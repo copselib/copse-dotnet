@@ -1,26 +1,33 @@
 # Ix.NET / MoreLINQ Operator Survey (tree-analog candidates)
 
 > Surveyed 2026-07-04 against `Copse.Linq` (45 operators) + `Copse.Linq.Experimental`
-> (Collapse, ExpandNode, Graft, InOrderTraversal, RepeatTrees). Sources: MoreLINQ README
-> operator list (~110 operators), System.Interactive operator sources (~40 operators).
-> The classification lens is the tree monad plus the traversal-dimension cost analysis
+> (then: Collapse, ExpandNodes, Graft, InOrderTraversal, RepeatTrees; the 2026-07-05
+> stub purge kept only ExpandNodes and Graft). Sources: MoreLINQ README operator list
+> (~110 operators), System.Interactive operator sources (~40 operators). The
+> classification lens is the tree monad plus the traversal-dimension cost analysis
 > from [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) — for each candidate,
 > what is the emission-vs-arrival gap per dimension?
+>
+> **Refreshed 2026-07-06**, after the traversal-dimension split / flat family /
+> header-free serializer merge (611df11): the split-dependent candidates below are now
+> typeable as designed, and the `With*` operators the coverage table leaned on have
+> been deleted — rows reconciled in place, each marked with its date.
 
 ## Headline findings
 
 1. **`SelectMany` — the monad's bind — is missing.** CLAUDE.md's overview advertises it,
    but no `Treenumerable.SelectMany` exists; only test code uses (IEnumerable) SelectMany.
    For a library whose design philosophy is "ITreenumerable is a tree monad," the bind
-   operator is the load-bearing absence. `ExpandNode` (Experimental) is the precursor:
-   `ExpandNode(source, predicate, nodeContext => tree)` is bind restricted to selected
+   operator is the load-bearing absence. `ExpandNodes` (Experimental) is the precursor:
+   `ExpandNodes(source, predicate, nodeContext => tree)` is bind restricted to selected
    nodes. Promoting a full-fidelity `SelectMany` out of Experimental is the single
    highest-leverage item in this survey — it is also the operator that would let the
    monad laws be property-tested.
 2. **Construction is the thin story; transformation is the rich one.** Both libraries'
    most tree-relevant operators are *factories* (Ix `Expand`/`Generate`/`Defer`/`Using`,
    MoreLINQ `Unfold`/`Generate`/`Sequence`/`Return`/`From`). Copse today requires
-   implementing child-enumerator machinery to create a new tree source; a first-class
+   implementing child-enumerator machinery to create a new tree source (or, since the
+   flat family landed, a preorder/level-order store — still machinery); a first-class
    **`Unfold(seeds, childSelector)`** (the tree anamorphism — exactly what Ix `Expand`
    does before flattening) would democratize that. Note `Copse.Trees`' generators
    (Collatz etc.) are hand-rolled unfolds already.
@@ -68,14 +75,12 @@ this test.
 | Do / Pipe / Trace | `Do` |
 | Hide | `Hide` |
 | Batch / Buffer | `GetLevels` |
-| Index | native `NodePosition`, `WithLevelIndex` |
-| Pairwise / Lag(1) | `WithParent` (the tree's natural "previous") |
+| Index | native `NodePosition` on every visit (`WithLevelIndex` deleted 2026-07-05; positions were always the real coverage) |
 | TakeLast / SkipLast | `TakeLastTrees` / `SkipLastTrees` |
 | TakeUntil / SkipUntil | `TakeNodesUntil` / `TakeNodesWhile` (see gap: no `SkipNodes*`) |
 | TraverseDepthFirst / TraverseBreadthFirst / Expand-as-flatten | `ToDepthFirstTreeTokenizer` / `ToBreadthFirstTreeTokenizer` |
 | ToDelimitedString | `ToFormattedString`, TreeSerializer |
 | IsEmpty / ForEach | `AnyNodes` / `Consume`+`Do` |
-| Repeat | `RepeatTrees` (Experimental) |
 | Insert / Backsert / Move | `Graft` (Experimental) |
 | MinBy/MaxBy/Maxima/Minima, ToDictionary/ToLookup/etc. | via `To*TreeTokenizer` + LINQ |
 
@@ -101,6 +106,11 @@ and low-value on trees; deferred indefinitely. Structural (shape-only) analogues
   (Ix's `Finally` in wrapper form) is the reusable lifecycle hook. Memoizing a Using
   tree releases the resource the moment the capture completes, with no special-casing.
 
+  *Both since promoted out of Copse.Linq onto the `Copse.Treenumerables.Tree` facade
+  (factories are sources, not operators; 2026-07-05), joined by `Tree.Empty` and the
+  per-dimension variants (`DeferDepthFirst`/`DeferBreadthFirst`,
+  `UsingDepthFirst`/`UsingBreadthFirst`) so narrow pipelines can start narrow.*
+
 ### Ready when wanted (small, self-contained)
 
 - **`Unfold(seeds, childSelector)`** (Ix `Expand`, MoreLINQ `Unfold`/`Generate`; the
@@ -123,7 +133,7 @@ and low-value on trees; deferred indefinitely. Structural (shape-only) analogues
   bind restricted to {Return, Empty} by definition). Where-class effort; the payoff is
   the monad story becoming true, law-tested.
 
-### Split-dependent (natural home is a single-dimension interface)
+### Unblocked by the split (2026-07-06: the single-dimension homes now exist; awaiting demand)
 
 - **`OrderSiblingsBy(key)`**: stable per-sibling-group sort, consumer key. Inherits
   mirror's cost analysis exactly (windowed per group under BFT, total under DFT) — a
@@ -141,14 +151,19 @@ and low-value on trees; deferred indefinitely. Structural (shape-only) analogues
 
 - **Feed combinators** (Ix `Catch`/`Retry`/`Finally`/`OnErrorResumeNext`): error
   handling around sources; `Retry` only makes sense over factories (re-acquire and
-  restart), so these build on `Defer`/`Using`. Revisit with the serializer's stream
-  feeds. `DisposeActionTreenumerator` already provides the Finally mechanism.
+  restart), so these build on `Defer`/`Using`. The serializer's stream feeds now exist
+  (the reader-factory tier, 2026-07-05), so these are concrete whenever demand appears —
+  still parked until it does. `DisposeActionTreenumerator` already provides the Finally
+  mechanism.
 
 ## Recipes, not operators
 
 `FillForward`-along-paths ≈ `RootfixScan` with carry; `CountDown` ≈ `LeaffixScan`
 subtree-size; `TakeEvery(k)`-by-depth ≈ `Where` on `Depth % k` (child promotion does the
-contraction); `Choose` ≈ `Select`+`Where`. Document as examples someday; do not add.
+contraction); `Choose` ≈ `Select`+`Where`; `Pairwise`/`Lag(1)`-along-paths ≈
+`RootfixScan` with a one-generation carry (`WithParent` was exactly this as an operator
+— deleted 2026-07-05 as not pulling its weight). Document as examples someday; do not
+add.
 
 Demoted from candidacy during the 2026-07-04 review:
 
@@ -161,6 +176,13 @@ Demoted from candidacy during the 2026-07-04 review:
   `Subtrees(predicate)` forest of matching subtrees (outermost-only) — after which Split
   ≈ `(t.PruneBefore(p), t.Subtrees(p))` with the caller deciding whether to memoize for
   the double pass.
+
+Demoted after the fact (2026-07-05 stub purge):
+
+- **`RepeatTrees`** (was Experimental, the `Repeat` coverage): deleted as purposeless.
+  Ix `Repeat` becomes a one-liner once `Concat` lands (n-fold forest concatenation);
+  no standalone operator wanted. Its treenumerator file survived the purge as an
+  orphan (zero references) — delete on sight.
 
 ## Not applicable
 
@@ -176,6 +198,9 @@ is a separate frontier, noted and not pursued).
 ---
 
 *Backlog item closed 2026-07-04 (tracked since the ITreenumerableBuffer/Consume work,
-which deliberately followed the Ix lineage). Next actions when desired: promote
-`SelectMany`, add `Unfold`; both are also the two operators that would most exercise
-the monad laws in tests.*
+which deliberately followed the Ix lineage). Refreshed 2026-07-06 against the merged
+split/flat-family/serializer work: coverage rows reconciled with the `With*` and
+`RepeatTrees` deletions, Defer/Using's promotion to the Tree facade recorded, the
+split-dependent section unblocked, feed combinators re-anchored to the now-real stream
+feeds. Next actions when desired: promote `SelectMany`, add `Unfold`; both are also the
+two operators that would most exercise the monad laws in tests.*
