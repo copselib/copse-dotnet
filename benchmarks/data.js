@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783287476882,
+  "lastUpdate": 1783312230181,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -3600,6 +3600,150 @@ window.BENCHMARK_DATA = {
             "value": 42640117.39102563,
             "unit": "ns",
             "range": "± 162671.43914483528"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "1f9ef3e9866c4d3dc0b77d890ac338bf16948524",
+          "message": "Line endings are data; ignored only where they cannot be\n\nJason's call: whitespace is not a special character, and unconditional\nCR/LF skipping bought line-wrapping (readability the format doesn't\nneed) at the price of magic -- the mid-token splice rule. Now nothing\nis special except the five structural characters and a token-opening\nquote, with exactly two concessions, both in positions where a line\nending cannot possibly be data: an unquoted trailing run at end of\ninput (every editor and POSIX tool ends files with a newline; without\nthis, \"a(b,c)\\n\" grows a phantom root and \"a;b,c\\n\" corrupts its last\nvalue -- silently, on virtually every hand-touched file) and between a\nclosing quote and its terminator.\n\nThe splice machinery dies with the skip: bare tokens are now always\ncontiguous slices of the source, so the string scanner's scratch\nbuffer serves only '\"\"' unescaping. Also dropped the writer's\nquote-on-surrounding-whitespace rule -- it existed solely to keep\nreader-side trimming open as a future option, and trimming is now\nruled out (\" x \" serializes bare and round-trips verbatim). The writer\nstill quotes any value containing CR/LF, so writer output never leans\non the end-of-input tolerance.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01KkGvDMM5KVw9MjzD6Bj118",
+          "timestamp": "2026-07-06T03:49:27Z",
+          "tree_id": "84c18f7f008b984e245e1e7f9523bce44c8e1bd2",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1f9ef3e9866c4d3dc0b77d890ac338bf16948524"
+        },
+        "date": 1783312229201,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TriangleTree_2896",
+            "value": 261701480.25,
+            "unit": "ns",
+            "range": "± 10284674.22071514"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 298831859.15384614,
+            "unit": "ns",
+            "range": "± 362029.5119883981"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TrivialForest_4M",
+            "value": 35532992.435555555,
+            "unit": "ns",
+            "range": "± 416421.91420309513"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.DegenerateTree_4M",
+            "value": 100889149.35000001,
+            "unit": "ns",
+            "range": "± 371396.7530719893"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TriangleTree_2896",
+            "value": 240101212.23076922,
+            "unit": "ns",
+            "range": "± 1471943.7434704397"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 259655766.8846154,
+            "unit": "ns",
+            "range": "± 935435.3163236612"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TrivialForest_4M",
+            "value": 33343312.297777776,
+            "unit": "ns",
+            "range": "± 362601.8416301889"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.DegenerateTree_4M",
+            "value": 65762093.038095236,
+            "unit": "ns",
+            "range": "± 295048.78425256524"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.DeepTree",
+            "value": 51227652.886666656,
+            "unit": "ns",
+            "range": "± 740836.9171953156"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 68527194.01785715,
+            "unit": "ns",
+            "range": "± 123519.88382793858"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 177405053.0888889,
+            "unit": "ns",
+            "range": "± 1878203.2180939727"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 81934654.5,
+            "unit": "ns",
+            "range": "± 466604.4712427016"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.DeepTree",
+            "value": 38833805.863905326,
+            "unit": "ns",
+            "range": "± 103537.44780813038"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 45501829.6969697,
+            "unit": "ns",
+            "range": "± 322355.4416595981"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 117901850.00000001,
+            "unit": "ns",
+            "range": "± 329568.7764347645"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 47496752.55944057,
+            "unit": "ns",
+            "range": "± 36823.60057056478"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.DeepTree",
+            "value": 46038500.103896104,
+            "unit": "ns",
+            "range": "± 298394.3762879635"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 37586474.6122449,
+            "unit": "ns",
+            "range": "± 80698.68894366134"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 110106512.85333332,
+            "unit": "ns",
+            "range": "± 704335.4772837283"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneAfterDepth_19",
+            "value": 40402454.414201185,
+            "unit": "ns",
+            "range": "± 58594.9185116438"
           }
         ]
       }
