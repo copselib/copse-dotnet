@@ -9,6 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+    <!-- Shared sans-I/O cadence: the sync DepthFirstCadenceTreenumerator drives it (prototype A/B vs DepthFirstTreenumerator). -->
+    <ProjectReference Include="..\Copse.Engine\Copse.Engine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

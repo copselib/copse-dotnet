@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- Multi-target to match Copse (the sync lib), which now references this for the sync cadence driver. -->
+    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Description>Shared sans-I/O traversal cadence for Copse, drivable by both a sync (MoveNext) and an async (MoveNextAsync) treenumerator. Prototype.</Description>
   </PropertyGroup>
@@ -12,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The cadence is engine-internal; the async driver in Copse.Async drives it. -->
+    <!-- The cadence is engine-internal; the sync driver (Copse) and async driver (Copse.Async) drive it. -->
+    <InternalsVisibleTo Include="Copse" />
     <InternalsVisibleTo Include="Copse.Async" />
     <InternalsVisibleTo Include="Copse.Async.Smoke" />
   </ItemGroup>
