@@ -1,19 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>disable</Nullable>
-    <!-- Prototype smoke harness: cross-checks the async DFT visit stream against the sync engine. -->
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Copse\Copse.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+    <PackageReference Include="coverlet.collector" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse.Core.Async\Copse.Core.Async.csproj" />
-    <ProjectReference Include="..\Copse.Traversal\Copse.Traversal.csproj" />
+    <ProjectReference Include="..\Copse\Copse.csproj" />
     <ProjectReference Include="..\Copse.Async\Copse.Async.csproj" />
     <ProjectReference Include="..\Copse.Linq\Copse.Linq.csproj" />
     <ProjectReference Include="..\Copse.Linq.Async\Copse.Linq.Async.csproj" />

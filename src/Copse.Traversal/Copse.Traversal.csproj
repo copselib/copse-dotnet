@@ -16,7 +16,6 @@
     <!-- The cadence is engine-internal; the sync driver (Copse) and async driver (Copse.Async) drive it. -->
     <InternalsVisibleTo Include="Copse" />
     <InternalsVisibleTo Include="Copse.Async" />
-    <InternalsVisibleTo Include="Copse.Async.Smoke" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,189 @@
+using Copse;
+using Copse.Async;
+using Copse.Core;
+using Copse.Core.Async;
+using Copse.Linq;
+using Copse.Linq.Async;
+using Copse.Linq.Generated;
+using Copse.Treenumerators;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Copse.Async.Tests
+{
+  // Validates the async EXECUTION MECHANICS -- suspend/resume, ValueTask, ref-not-across-await at
+  // runtime -- NOT the traversal logic (that is proven once, on the generated sync twins, by
+  // VisitStreamConformance). Each test drives an async treenumerator over a GENUINELY-SUSPENDING source
+  // (Task.Yield on every pull) and asserts its stream equals the sync/generated-sync equivalent.
+  [TestClass]
+  public class AsyncMechanicsTests
+  {
+    //        1              6
+    //      / | \            |
+    //     2  3  4           7
+    //        |
+    //        5
+    private static readonly Dictionary<int, int[]> Tree = new()
+    {
+      [1] = new[] { 2, 3, 4 },
+      [3] = new[] { 5 },
+      [6] = new[] { 7 },
+    };
+    private static readonly int[] Roots = { 1, 6 };
+
+    private static int[] ChildrenOf(int node) => Tree.TryGetValue(node, out var c) ? c : Array.Empty<int>();
+
+    private static readonly Func<NodeContext<int>, bool> KeepNot3 = nc => nc.Node != 3;
+
+    [TestMethod]
+    public async Task AsyncDepthFirstEngine_MatchesSyncEngine()
+    {
+      var sync = Collect(new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+        Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n));
+
+      var async = await CollectAsync(new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+        AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
+    [TestMethod]
+    public async Task AsyncBreadthFirstEngine_MatchesSyncEngine()
+    {
+      var sync = Collect(new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+        Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n));
+
+      var async = await CollectAsync(new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+        AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
+    [TestMethod]
+    public async Task AsyncWhereDepthFirst_OverSuspendingInner_MatchesGeneratedSyncWhere()
+    {
+      var sync = Collect(new GeneratedWhereDepthFirstTreenumerator<int>(
+        () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        KeepNot3, NodeTraversalStrategies.SkipNode));
+
+      var async = await CollectAsync(new AsyncWhereDepthFirstTreenumerator<int>(
+        () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        KeepNot3, NodeTraversalStrategies.SkipNode));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
+    [TestMethod]
+    public async Task AsyncWhereBreadthFirst_OverSuspendingBfsInner_MatchesGeneratedSyncWhere()
+    {
+      var sync = Collect(new GeneratedWhereBreadthFirstTreenumerator<int>(
+        () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        KeepNot3, NodeTraversalStrategies.SkipNode));
+
+      var async = await CollectAsync(new AsyncWhereBreadthFirstTreenumerator<int>(
+        () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        KeepNot3, NodeTraversalStrategies.SkipNode));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
+    [TestMethod]
+    public async Task FluentWhereSelect_Composes()
+    {
+      // The deferred fluent operators compose on the async side: source.Where(...).Select(...).
+      IAsyncTreenumerable<int> source = new AsyncDepthFirstTreenumerable<int, int, AsyncChildEnumerator>(
+        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+      var composed = await CollectAsync(source.Where(KeepNot3).Select(n => n * 10).GetAsyncDepthFirstTreenumerator());
+
+      // Expected: the generated sync Where's first-visit nodes, mapped.
+      var syncWhere = Collect(new GeneratedWhereDepthFirstTreenumerator<int>(
+        () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        KeepNot3, NodeTraversalStrategies.SkipNode));
+
+      var expected = FirstVisitNodes(syncWhere).Select(n => n * 10).ToList();
+      var actual = FirstVisitNodes(composed);
+
+      CollectionAssert.AreEqual(expected, actual);
+    }
+
+    // --- Collection helpers ---
+
+    private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);
+
+    private static List<Visit> Collect(ITreenumerator<int> t)
+    {
+      var visits = new List<Visit>();
+      using (t)
+        while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+          visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+      return visits;
+    }
+
+    private static async Task<List<Visit>> CollectAsync(IAsyncTreenumerator<int> t)
+    {
+      var visits = new List<Visit>();
+      await using (t.ConfigureAwait(false))
+        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+          visits.Add(new Visit(t.Mode, t.Node, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+      return visits;
+    }
+
+    private static List<int> FirstVisitNodes(List<Visit> visits)
+      => visits.Where(v => v.Mode == TreenumeratorMode.VisitingNode && v.VisitCount == 1).Select(v => v.Node).ToList();
+
+    private static async IAsyncEnumerable<int> AsyncRoots()
+    {
+      foreach (var r in Roots)
+      {
+        await Task.Yield(); // force real asynchrony on the root seam
+        yield return r;
+      }
+    }
+
+    // --- Child enumerators: sync (out-style), sync Current-style (for the generated drivers), and a
+    //     genuinely-suspending async one. ---
+
+    private struct SyncChildEnumerator : IChildEnumerator<int>
+    {
+      private readonly int[] _children;
+      private int _i;
+      public SyncChildEnumerator(int[] children) { _children = children; _i = 0; }
+
+      public bool MoveNext(out NodeAndSiblingIndex<int> child)
+      {
+        if (_i < _children.Length) { child = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return true; }
+        child = default; return false;
+      }
+
+      public void Dispose() { }
+    }
+
+    private sealed class AsyncChildEnumerator : IAsyncChildEnumerator<int>
+    {
+      private readonly int[] _children;
+      private int _i;
+      public AsyncChildEnumerator(int[] children) { _children = children; }
+
+      public NodeAndSiblingIndex<int> Current { get; private set; }
+
+      public async ValueTask<bool> MoveNextAsync()
+      {
+        await Task.Yield(); // force real asynchrony on the child seam
+        if (_i < _children.Length) { Current = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return true; }
+        return false;
+      }
+
+      public void Dispose() { }
+      public ValueTask DisposeAsync() => default;
+    }
+  }
+}
