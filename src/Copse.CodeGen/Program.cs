@@ -51,6 +51,7 @@ internal sealed class AsyncToSyncRewriter : CSharpSyntaxRewriter
   {
     ["AsyncDepthFirstTreenumerator"] = "GeneratedDepthFirstTreenumerator",
     ["AsyncWhereDepthFirstTreenumerator"] = "GeneratedWhereDepthFirstTreenumerator",
+    ["AsyncWhereBreadthFirstTreenumerator"] = "GeneratedWhereBreadthFirstTreenumerator",
     ["IAsyncTreenumerator"] = "ITreenumerator",
     ["IAsyncChildEnumerator"] = "IForwardChildEnumerator",
     ["IAsyncEnumerable"] = "IEnumerable",
