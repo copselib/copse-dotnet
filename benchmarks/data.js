@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783369076950,
+  "lastUpdate": 1783369077208,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -27965,6 +27965,40 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/d55636ce1ac7ce69f885a392d525cb99699c3cae"
         },
         "date": 1783362381781,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 275,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "52df4869e2e1db33b3ded6031faeb9a21ae95967",
+          "message": "Benchmarks: upload to Bencher side-by-side with the gh-pages dashboard\n\nAdd a token-gated Bencher (bencher.dev) upload to the continuous benchmark\nworkflow, running alongside the existing github-action-benchmark -> gh-pages\npipeline rather than replacing it. Motivation: on shared GitHub runners the\nabsolute BenchmarkDotNet numbers swing 20%+ run-to-run, and the dashboard's\nonly guard is a blunt alert-threshold of 150% (a benchmark must get 2.5x slower\nto fire) -- useless at the micro-optimization scale we're now working. Bencher\nadds per-benchmark statistical thresholds (t-test on latency here) that learn\neach benchmark's own historical spread on the testbed, so a naturally noisy\nbenchmark gets a wide tolerance and a steady one a tight bound.\n\nDesign:\n- Purely additive: reads the SAME *-report-full-compressed.json the existing\n  storage steps consume, so it never writes benchmarks/data.js or touches the\n  custom dashboard.\n- Token-gated via a job-level env var (secrets aren't available in step-level\n  `if:`, but env is): the whole block no-ops until BENCHER_API_TOKEN is set.\n- Placed AFTER the gh-pages storage steps so a Bencher failure (bad slug, API\n  hiccup) can't break the dashboard push.\n- Non-blocking during the trial: no --error-on-alert, so alerts are reported\n  but don't fail the build. Early runs won't alert until each benchmark has a\n  few samples of history to compare against.\n\nAll flags validated against bencher CLI 0.6.8 (--adapter c_sharp_dot_net,\nt_test threshold model, --file upload of existing results). Project slug\ncopse-dotnet matches the workflow default, so no BENCHER_PROJECT var is needed.\n\nCo-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-07-06T19:46:26Z",
+          "tree_id": "27d0483aa6d144d4ca08287a754bd989fe156772",
+          "url": "https://github.com/copselib/copse-dotnet/commit/52df4869e2e1db33b3ded6031faeb9a21ae95967"
+        },
+        "date": 1783369077164,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
