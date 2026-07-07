@@ -95,6 +95,17 @@ namespace Copse.Linq
       => source.TakeNodesUntil(nodeContext => !predicate(nodeContext), keepFinalNode);
 
     /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's value becomes the
+    /// accumulator applied to its parent's accumulated value and the node (a prefix-fold down each
+    /// root-to-node path). Transforms the <c>TNode</c> tree into a <c>TAccumulate</c> tree. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+      => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(source, accumulator, seed);
+
+    /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
@@ -338,6 +349,29 @@ namespace Copse.Linq
 
       public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
         => new AsyncTakeNodesUntilTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator, _Predicate, _KeepFinalNode);
+    }
+
+    private sealed class AsyncRootfixScanTreenumerable<TNode, TAccumulate> : IAsyncTreenumerable<TAccumulate>
+    {
+      public AsyncRootfixScanTreenumerable(
+        IAsyncTreenumerable<TNode> source,
+        Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+        TAccumulate seed)
+      {
+        _Source = source;
+        _Accumulator = accumulator;
+        _Seed = seed;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+      private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+      private readonly TAccumulate _Seed;
+
+      public IAsyncTreenumerator<TAccumulate> GetAsyncDepthFirstTreenumerator()
+        => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(_Source.GetAsyncDepthFirstTreenumerator, _Accumulator, _Seed);
+
+      public IAsyncTreenumerator<TAccumulate> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(_Source.GetAsyncBreadthFirstTreenumerator, _Accumulator, _Seed);
     }
   }
 }

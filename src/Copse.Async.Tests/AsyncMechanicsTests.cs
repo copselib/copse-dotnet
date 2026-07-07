@@ -135,6 +135,34 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task AsyncRootfixScan_OverSuspendingInner_MatchesGeneratedSyncTwins()
+    {
+      Func<NodeContext<int>, NodeContext<int>, int> sum = (acc, node) => acc.Node + node.Node;
+
+      // Depth-first
+      var syncDft = Collect(new GeneratedRootfixScanDepthFirstTreenumerator<int, int>(
+        () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        sum, 0));
+      var asyncDft = await CollectAsync(new AsyncRootfixScanDepthFirstTreenumerator<int, int>(
+        () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        sum, 0));
+      CollectionAssert.AreEqual(syncDft, asyncDft, "DFT");
+
+      // Breadth-first
+      var syncBft = Collect(new GeneratedRootfixScanBreadthFirstTreenumerator<int, int>(
+        () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        sum, 0));
+      var asyncBft = await CollectAsync(new AsyncRootfixScanBreadthFirstTreenumerator<int, int>(
+        () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        sum, 0));
+      CollectionAssert.AreEqual(syncBft, asyncBft, "BFT");
+    }
+
+    [TestMethod]
     public async Task FluentWhereSelect_Composes()
     {
       // The deferred fluent operators compose on the async side: source.Where(...).Select(...).

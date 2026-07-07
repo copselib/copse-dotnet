@@ -61,6 +61,14 @@ namespace Copse.CodeGen
         "Copse.Linq/Generated/GeneratedTakeNodesUntilTreenumerator.g.cs",
         "AsyncTakeNodesUntilTreenumerator", "GeneratedTakeNodesUntilTreenumerator", "Copse.Linq.Generated"),
 
+      new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanDepthFirstTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedRootfixScanDepthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanDepthFirstTreenumerator", "GeneratedRootfixScanDepthFirstTreenumerator", "Copse.Linq.Generated"),
+
+      new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanBreadthFirstTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedRootfixScanBreadthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanBreadthFirstTreenumerator", "GeneratedRootfixScanBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),
