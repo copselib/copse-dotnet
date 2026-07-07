@@ -81,6 +81,42 @@ namespace Copse.Benchmarks
       return sum;
     }
 
+    // The candidate: by-value struct-return pull (IChildCursor) over the SAME shared path as Direct.
+    // Direct-vs-Cursor isolates return-by-value vs out. Stores nothing -> no frame bloat (unlike
+    // Generated's Current-style), and it's the shape that would also work in async.
+    [Benchmark]
+    public long Cursor()
+    {
+      var t = new DepthFirstCursorTreenumerator<int, int, ArrayChildCursor>(_roots, CursorFactory, i => i);
+      long sum = 0;
+      while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+        sum += t.VisitCount;
+      t.Dispose();
+      return sum;
+    }
+
+    private ArrayChildCursor CursorFactory(NodeContext<int> nc) => new ArrayChildCursor(_children[nc.Node]);
+
+    private struct ArrayChildCursor : IChildCursor<int>
+    {
+      private readonly int[] _children;
+      private int _i;
+      public ArrayChildCursor(int[] children) { _children = children; _i = 0; }
+
+      public ChildResult<int> MoveNext()
+      {
+        if (_i < _children.Length)
+        {
+          var r = new ChildResult<int>(new NodeAndSiblingIndex<int>(_children[_i], _i));
+          _i++;
+          return r;
+        }
+        return default;
+      }
+
+      public void Dispose() { }
+    }
+
     private ArrayForwardChildEnumerator ForwardFactory(NodeContext<int> nc) => new ArrayForwardChildEnumerator(_children[nc.Node]);
 
     private struct ArrayForwardChildEnumerator : IForwardChildEnumerator<int>

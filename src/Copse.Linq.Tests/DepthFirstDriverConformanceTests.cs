@@ -42,6 +42,25 @@ namespace Copse.Linq.Tests
     public void Direct_EveryNodeEveryStrategy_MatchesEngine()
       => VisitStreamConformance.AssertStrategyMatrixConforms(DirectDft, depthFirst: true, "direct-dft");
 
+    // --- The struct-return cursor driver (candidate unified pull shape) must also conform. ---
+
+    private static ITreenumerator<string> CursorDft(string tree)
+    {
+      var (values, sizes) = EngineTree.ParseArrays(tree);
+      return new DepthFirstCursorTreenumerator<string, int, PreorderChildCursor>(
+        RootIndices(sizes),
+        nc => new PreorderChildCursor(sizes, nc.Node),
+        i => values[i]);
+    }
+
+    [TestMethod]
+    public void Cursor_TraverseAll_MatchesEngine()
+      => VisitStreamConformance.AssertTraverseAllConforms(CursorDft, depthFirst: true, "cursor-dft");
+
+    [TestMethod]
+    public void Cursor_EveryNodeEveryStrategy_MatchesEngine()
+      => VisitStreamConformance.AssertStrategyMatrixConforms(CursorDft, depthFirst: true, "cursor-dft");
+
     [TestMethod]
     public void Direct_PreEnumerationStateIsForestRoot()
       => VisitStreamConformance.AssertPreEnumerationStateIsTheForestRoot(DirectDft("a(b,c)"), "direct-dft");

@@ -31,4 +31,18 @@ namespace Copse.Linq.Tests
 
     public void Dispose() => _inner.Dispose();
   }
+
+  // Struct-return (by-value) adapter over the out-style PreorderChildEnumerator, for the cursor driver.
+  internal struct PreorderChildCursor : IChildCursor<int>
+  {
+    private PreorderChildEnumerator _inner;
+
+    public PreorderChildCursor(int[] subtreeSizes, int parentIndex)
+      => _inner = new PreorderChildEnumerator(subtreeSizes, parentIndex);
+
+    public ChildResult<int> MoveNext()
+      => _inner.MoveNext(out var child) ? new ChildResult<int>(child) : default;
+
+    public void Dispose() => _inner.Dispose();
+  }
 }
