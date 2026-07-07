@@ -1,11 +1,10 @@
-using Copse.Traversal;
 
 namespace Copse
 {
   // Enumerates the children of a node in a flat pre-order tree (see PreorderTree). A node's
   // children occupy the contiguous span (i, i + subtreeSizes[i]); we hop over each child's
   // whole subtree to land on the next child. A struct so the engine holds it unboxed, in place.
-  public struct PreorderChildEnumerator : IChildCursor<int>
+  public struct PreorderChildEnumerator : IChildEnumerator<int>
   {
     public PreorderChildEnumerator(int[] subtreeSizes, int parentIndex)
     {

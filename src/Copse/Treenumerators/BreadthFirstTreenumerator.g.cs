@@ -24,7 +24,7 @@ namespace Copse.Treenumerators
   /// </summary>
   public sealed class BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
-    where TChildEnumerator : IChildCursor<TNode>
+    where TChildEnumerator : IChildEnumerator<TNode>
   {
     public BreadthFirstTreenumerator(
       IEnumerable<TNode> rootNodes,

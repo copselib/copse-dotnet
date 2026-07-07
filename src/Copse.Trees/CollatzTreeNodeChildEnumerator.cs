@@ -1,9 +1,8 @@
-using Copse.Traversal;
 
 namespace Copse.Trees
 {
   public struct CollatzTreeNodeChildEnumerator
-    : IChildCursor<ulong>
+    : IChildEnumerator<ulong>
   {
     public CollatzTreeNodeChildEnumerator(ulong value)
     {

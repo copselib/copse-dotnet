@@ -1,9 +1,8 @@
-using Copse.Traversal;
 
 namespace Copse.Benchmarks.Trees
 {
   public struct DeepTreeNodeChildEnumerator
-    : IChildCursor<int>
+    : IChildEnumerator<int>
   {
     public DeepTreeNodeChildEnumerator(int ancestorCount)
     {

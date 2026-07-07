@@ -50,7 +50,7 @@ namespace Copse.CodeGen
       private static readonly Dictionary<string, string> Renames = new()
       {
         ["IAsyncTreenumerator"] = "ITreenumerator",
-        ["IAsyncChildEnumerator"] = "IChildCursor",
+        ["IAsyncChildEnumerator"] = "IChildEnumerator",
         ["IAsyncPreorderStream"] = "IPreorderStream",
         ["IAsyncLevelOrderStream"] = "ILevelOrderStream",
         ["AsyncValueTokenStreamScanner"] = "ValueTokenStreamScanner",

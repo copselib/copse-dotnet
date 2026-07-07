@@ -1,9 +1,8 @@
-using Copse.Traversal;
 
 namespace Copse.Trees
 {
   public struct CompleteBinaryTreeNodeChildEnumerator
-    : IChildCursor<int>
+    : IChildEnumerator<int>
   {
     public CompleteBinaryTreeNodeChildEnumerator(int parentValue)
     {

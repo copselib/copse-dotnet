@@ -1,4 +1,3 @@
-using Copse.Traversal;
 using Copse;
 using Copse.Async;
 using Copse.Core;
@@ -374,7 +373,7 @@ namespace Copse.Async.Tests
     // --- Child enumerators: sync (out-style), sync Current-style (for the generated drivers), and a
     //     genuinely-suspending async one. ---
 
-    private struct SyncChildEnumerator : IChildCursor<int>
+    private struct SyncChildEnumerator : IChildEnumerator<int>
     {
       private readonly int[] _children;
       private int _i;

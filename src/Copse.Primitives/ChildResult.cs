@@ -6,7 +6,7 @@ namespace Copse
   /// <see cref="Child"/> is <c>default</c> and must not be read.
   ///
   /// <para>Returned BY VALUE from a child pull -- the shape that unifies the sync
-  /// (<c>IChildCursor.MoveNext()</c>) and async (<c>IAsyncChildEnumerator.MoveNextAsync()</c>) pulls:
+  /// (<c>IChildEnumerator.MoveNext()</c>) and async (<c>IAsyncChildEnumerator.MoveNextAsync()</c>) pulls:
   /// it stores nothing between pulls (so the enumerator struct stays small -- no frame bloat, unlike a
   /// stored <c>Current</c>) AND it is legal in an async method (unlike an <c>out</c> param).</para>
   /// </summary>

@@ -1,9 +1,8 @@
-using Copse.Traversal;
 
 namespace Copse.Trees
 {
   public struct NDecrementTreeNodeChildEnumerator
-    : IChildCursor<int>
+    : IChildEnumerator<int>
   {
     public NDecrementTreeNodeChildEnumerator(int depth)
     {

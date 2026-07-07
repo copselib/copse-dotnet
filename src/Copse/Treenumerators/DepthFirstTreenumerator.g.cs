@@ -23,7 +23,7 @@ namespace Copse.Treenumerators
   /// </summary>
   public sealed class DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
-    where TChildEnumerator : IChildCursor<TNode>
+    where TChildEnumerator : IChildEnumerator<TNode>
   {
     public DepthFirstTreenumerator(
       IEnumerable<TNode> rootNodes,

@@ -2,7 +2,6 @@ using BenchmarkDotNet.Attributes;
 using Copse.Core;
 using Copse.Linq.Generated;  // Where twins
 using Copse.Linq.Treenumerators; // WhereDepthFirstTreenumerator / WhereBreadthFirstTreenumerator (internal, via IVT)
-using Copse.Traversal;
 using Copse.Treenumerators;
 using System;
 
@@ -44,7 +43,7 @@ namespace Copse.Benchmarks
     public static readonly Func<NodeContext<int>, bool> Keep = nc => nc.Node % 3 != 0;
   }
 
-  internal struct ParityChildCursor : IChildCursor<int>
+  internal struct ParityChildCursor : IChildEnumerator<int>
   {
     private readonly int[] _children;
     private int _i;

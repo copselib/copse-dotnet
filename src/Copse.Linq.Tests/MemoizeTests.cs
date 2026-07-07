@@ -1,4 +1,3 @@
-using Copse.Traversal;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 using Copse.SimpleSerializer;
@@ -458,7 +457,7 @@ namespace Copse.Linq.Tests
         nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
         0);
 
-    private struct InfiniteBinaryChildEnumerator : IChildCursor<int>
+    private struct InfiniteBinaryChildEnumerator : IChildEnumerator<int>
     {
       public InfiniteBinaryChildEnumerator(int parent)
       {
