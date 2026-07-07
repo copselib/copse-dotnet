@@ -115,6 +115,21 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(expected, actual);
     }
 
+    [TestMethod]
+    public async Task Terminals_CountAndToList_OverAsyncPipeline()
+    {
+      IAsyncTreenumerable<int> source = new AsyncDepthFirstTreenumerable<int, int, AsyncChildEnumerator>(
+        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+      // 7 nodes in the forest; DFT schedule order.
+      Assert.AreEqual(7, await source.CountNodesAsync());
+      CollectionAssert.AreEqual(new[] { 1, 2, 3, 5, 4, 6, 7 }, await source.ToListAsync());
+
+      // Where(drop 3) promotes child 5, leaving 6 nodes.
+      Assert.AreEqual(6, await source.Where(KeepNot3).CountNodesAsync());
+      CollectionAssert.AreEqual(new[] { 1, 2, 5, 4, 6, 7 }, await source.Where(KeepNot3).ToListAsync());
+    }
+
     // --- Collection helpers ---
 
     private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);

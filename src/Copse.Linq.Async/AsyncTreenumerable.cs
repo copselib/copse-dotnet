@@ -2,6 +2,7 @@ using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async; // AsyncWhereDepthFirstTreenumerator
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -10,10 +11,11 @@ namespace Copse.Linq
   /// Async LINQ-style tree operators over <see cref="IAsyncTreenumerable{TNode}"/>. Sits in the
   /// <c>Copse.Linq</c> namespace alongside the synchronous <see cref="Treenumerable"/>, exactly as
   /// <c>System.Linq.AsyncEnumerable</c> sits alongside <c>Enumerable</c>: deferred operators keep their
-  /// sync names (no <c>Async</c> suffix) and are overload-resolved by the async receiver type. Terminal
-  /// operators (materialize/count/aggregate) would carry the <c>Async</c> suffix; none exist yet.
+  /// sync names (no <c>Async</c> suffix) and are overload-resolved by the async receiver type; terminal
+  /// operators carry the <c>Async</c> suffix (they return an awaitable).
   ///
-  /// <para>Prototype: <c>Where</c> and <c>Select</c>, depth-first dimension only.</para>
+  /// <para>Prototype: deferred <c>Where</c> / <c>Select</c> and terminal <c>CountNodesAsync</c> /
+  /// <c>ToListAsync</c>, depth-first dimension only.</para>
   /// </summary>
   public static class AsyncTreenumerable
   {
@@ -33,6 +35,36 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
       => new AsyncSelectTreenumerable<TSource, TResult>(source, selector);
+
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
+    public static async ValueTask<int> CountNodesAsync<TNode>(this IAsyncTreenumerable<TNode> source)
+    {
+      var count = 0;
+      var t = source.GetAsyncDepthFirstTreenumerator();
+      await using (t.ConfigureAwait(false))
+        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+          if (t.Mode == TreenumeratorMode.SchedulingNode)
+            count++;
+      return count;
+    }
+
+    /// <summary>
+    /// Terminal: the node values of the (filtered) tree, in depth-first schedule order (each node
+    /// once). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
+    public static async ValueTask<List<TNode>> ToListAsync<TNode>(this IAsyncTreenumerable<TNode> source)
+    {
+      var list = new List<TNode>();
+      var t = source.GetAsyncDepthFirstTreenumerator();
+      await using (t.ConfigureAwait(false))
+        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+          if (t.Mode == TreenumeratorMode.SchedulingNode)
+            list.Add(t.Node);
+      return list;
+    }
 
     private sealed class AsyncWhereTreenumerable<TNode> : IAsyncTreenumerable<TNode>
     {
