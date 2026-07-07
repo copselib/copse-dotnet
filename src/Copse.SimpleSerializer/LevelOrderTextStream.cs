@@ -12,8 +12,9 @@ namespace Copse.SimpleSerializer
   // may contain ANY character; unquoted trailing line endings at end of input are ignored
   // (files end in newlines).
   //
-  // SkipGroupRemainder honors the skip contract: discarded values are counted (positions are
-  // load-bearing) but never accumulated or mapped.
+  // Struct-return read seam (TryReadNextInGroup -> LevelOrderRead): the shape shared with the async
+  // twin (AsyncLevelOrderTextStream). SkipGroupRemainder honors the skip contract: discarded values
+  // are counted (positions are load-bearing) but never accumulated or mapped.
   //
   // Owns its reader; disposing the stream disposes the reader.
   internal sealed class LevelOrderTextStream<TValue> : ILevelOrderStream<TValue>
@@ -32,12 +33,10 @@ namespace Copse.SimpleSerializer
     private bool _GroupEnded;
     private bool _Exhausted;
 
-    public bool TryReadNextInGroup(out TValue value)
+    public LevelOrderRead<TValue> TryReadNextInGroup()
     {
-      value = default;
-
       if (_GroupEnded || _Exhausted)
-        return false;
+        return default;
 
       while (true)
       {
@@ -45,17 +44,14 @@ namespace Copse.SimpleSerializer
         {
           _Exhausted = true;
           _GroupEnded = true;
-          return false;
+          return default;
         }
 
         switch (terminator)
         {
           case ',':
             if (hasValue)
-            {
-              value = _Map(_Scanner.GetValue());
-              return true;
-            }
+              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
 
             break;
 
@@ -64,12 +60,9 @@ namespace Copse.SimpleSerializer
             _GroupEnded = true;
 
             if (hasValue)
-            {
-              value = _Map(_Scanner.GetValue());
-              return true;
-            }
+              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
 
-            return false;
+            return default;
 
           case '(':
           case ')':
@@ -82,12 +75,9 @@ namespace Copse.SimpleSerializer
             _GroupEnded = true;
 
             if (hasValue)
-            {
-              value = _Map(_Scanner.GetValue());
-              return true;
-            }
+              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
 
-            return false;
+            return default;
         }
       }
     }

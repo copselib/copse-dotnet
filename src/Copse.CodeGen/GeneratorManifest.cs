@@ -35,6 +35,10 @@ namespace Copse.CodeGen
         "Copse/Treenumerators/PreorderStreamDepthFirstTreenumerator.g.cs",
         "AsyncPreorderStreamDepthFirstTreenumerator", "PreorderStreamDepthFirstTreenumerator", "Copse.Treenumerators"),
 
+      new("Copse.Async/Treenumerators/AsyncLevelOrderStreamBreadthFirstTreenumerator.cs",
+        "Copse/Treenumerators/LevelOrderStreamBreadthFirstTreenumerator.g.cs",
+        "AsyncLevelOrderStreamBreadthFirstTreenumerator", "LevelOrderStreamBreadthFirstTreenumerator", "Copse.Treenumerators"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),

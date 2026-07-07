@@ -9,16 +9,18 @@ namespace Copse
   // delivered owns exactly one later group, so a consumer that discards a node must still
   // consume (and count) that node's group when its turn comes.
   //
-  // The stream starts positioned inside group 0. SkipGroupRemainder is the skip seam:
-  // implementations MUST NOT materialize (map) the values of discarded entries, but MUST
-  // report how many there were (the count keeps the group/owner alignment intact downstream).
+  // The stream starts positioned inside group 0. TryReadNextInGroup is struct-return
+  // (-> LevelOrderRead) rather than (out value): the only shape legal in the async twin
+  // (IAsyncLevelOrderStream), so sync and async share one codegen source. SkipGroupRemainder is
+  // the skip seam: implementations MUST NOT materialize (map) the values of discarded entries,
+  // but MUST report how many there were (the count keeps the group/owner alignment intact).
   //
   // Implementations own their underlying reader; the treenumerator riding the stream owns the
   // stream and disposes it.
   public interface ILevelOrderStream<TValue> : IDisposable
   {
-    // Read the next value in the current group. False at the end of the group.
-    bool TryReadNextInGroup(out TValue value);
+    // Read the next value in the current group. HasValue == false at the end of the group.
+    LevelOrderRead<TValue> TryReadNextInGroup();
 
     // Discard the remainder of the current group -- WITHOUT materializing values -- and return
     // how many entries were discarded.

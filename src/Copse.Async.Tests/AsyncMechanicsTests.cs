@@ -196,6 +196,22 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(sync, async);
     }
 
+    [TestMethod]
+    public async Task AsyncLevelOrderStream_OverSuspendingSource_MatchesGeneratedSyncStreamTwin()
+    {
+      // Level-order groups for 1(2(4,5),3(6)): group 0 is the roots, group k+1 is the children of
+      // the k-th level-order node; trailing empty groups (the leaves' groups) are elided.
+      var groups = new[] { new[] { 1 }, new[] { 2, 3 }, new[] { 4, 5 }, new[] { 6 } };
+
+      var sync = Collect(new LevelOrderStreamBreadthFirstTreenumerator<int, SyncLevelOrderStream>(
+        new SyncLevelOrderStream(groups)));
+
+      var async = await CollectAsync(new AsyncLevelOrderStreamBreadthFirstTreenumerator<int, SuspendingLevelOrderStream>(
+        new SuspendingLevelOrderStream(groups)));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
     // --- Collection helpers ---
 
     private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);
@@ -310,6 +326,69 @@ namespace Copse.Async.Tests
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
         return new PreorderRead<int>(v, d);
+      }
+
+      public ValueTask DisposeAsync() => default;
+    }
+
+    // Level-order-stream doubles: replay int[][] groups (group 0 roots, group k+1 = children of
+    // node k). Sync for the generated twin, genuinely-suspending async for the driver.
+    private struct SyncLevelOrderStream : ILevelOrderStream<int>
+    {
+      private readonly int[][] _groups;
+      private int _g, _i;
+      public SyncLevelOrderStream(int[][] groups) { _groups = groups; _g = 0; _i = 0; }
+
+      public LevelOrderRead<int> TryReadNextInGroup()
+      {
+        if (_g >= _groups.Length || _i >= _groups[_g].Length) return default;
+        return new LevelOrderRead<int>(_groups[_g][_i++]);
+      }
+
+      public int SkipGroupRemainder()
+      {
+        if (_g >= _groups.Length) return 0;
+        var rem = _groups[_g].Length - _i;
+        _i = _groups[_g].Length;
+        return rem;
+      }
+
+      public bool TryMoveToNextGroup()
+      {
+        if (_g + 1 >= _groups.Length) return false;
+        _g++; _i = 0; return true;
+      }
+
+      public void Dispose() { }
+    }
+
+    private sealed class SuspendingLevelOrderStream : IAsyncLevelOrderStream<int>
+    {
+      private readonly int[][] _groups;
+      private int _g, _i;
+      public SuspendingLevelOrderStream(int[][] groups) { _groups = groups; }
+
+      public async ValueTask<LevelOrderRead<int>> TryReadNextInGroupAsync()
+      {
+        await Task.Yield();
+        if (_g >= _groups.Length || _i >= _groups[_g].Length) return default;
+        return new LevelOrderRead<int>(_groups[_g][_i++]);
+      }
+
+      public async ValueTask<int> SkipGroupRemainderAsync()
+      {
+        await Task.Yield();
+        if (_g >= _groups.Length) return 0;
+        var rem = _groups[_g].Length - _i;
+        _i = _groups[_g].Length;
+        return rem;
+      }
+
+      public async ValueTask<bool> TryMoveToNextGroupAsync()
+      {
+        await Task.Yield();
+        if (_g + 1 >= _groups.Length) return false;
+        _g++; _i = 0; return true;
       }
 
       public ValueTask DisposeAsync() => default;
