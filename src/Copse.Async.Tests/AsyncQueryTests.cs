@@ -137,6 +137,39 @@ namespace Copse.Async.Tests
           $"LeaffixAggregate {tree}");
     }
 
+    [TestMethod]
+    public async Task TreeSlicing_MatchesSync()
+    {
+      var forests = new[] { "a,b,c,d", "a(x,y),b,c(z),d", "a" };
+
+      foreach (var tree in forests)
+        for (var count = 0; count <= 4; count++)
+        {
+          CollectionAssert.AreEqual(
+            await ToList(Sync(tree).SkipTrees(count).PreorderTraversal()),
+            await ToList(Async(tree).SkipTrees(count).PreorderTraversal()),
+            $"SkipTrees {tree} {count}");
+
+          CollectionAssert.AreEqual(
+            await ToList(Sync(tree).TakeTrees(count).PreorderTraversal()),
+            await ToList(Async(tree).TakeTrees(count).PreorderTraversal()),
+            $"TakeTrees {tree} {count}");
+
+          CollectionAssert.AreEqual(
+            await ToList(Sync(tree).SkipLastTrees(count).PreorderTraversal()),
+            await ToList((await Async(tree).SkipLastTreesAsync(count)).PreorderTraversal()),
+            $"SkipLastTrees {tree} {count}");
+
+          CollectionAssert.AreEqual(
+            await ToList(Sync(tree).TakeLastTrees(count).PreorderTraversal()),
+            await ToList((await Async(tree).TakeLastTreesAsync(count)).PreorderTraversal()),
+            $"TakeLastTrees {tree} {count}");
+        }
+    }
+
+    // Sync PreorderTraversal returns IEnumerable; bridge it to the async ToList helper.
+    private static Task<List<string>> ToList(IEnumerable<string> source) => Task.FromResult(source.ToList());
+
     private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)
     {
       var list = new List<T>();
