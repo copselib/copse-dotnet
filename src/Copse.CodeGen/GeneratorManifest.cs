@@ -53,6 +53,10 @@ namespace Copse.CodeGen
         "Copse.SimpleSerializer/Generated/LevelOrderTextStream.g.cs",
         "AsyncLevelOrderTextStream", "LevelOrderTextStream", "Copse.SimpleSerializer"),
 
+      new("Copse.Linq.Async/Treenumerators/Filter/AsyncPruneAfterTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedPruneAfterTreenumerator.g.cs",
+        "AsyncPruneAfterTreenumerator", "GeneratedPruneAfterTreenumerator", "Copse.Linq.Generated"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),

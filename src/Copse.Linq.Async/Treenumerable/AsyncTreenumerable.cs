@@ -55,6 +55,15 @@ namespace Copse.Linq
       => new AsyncHideTreenumerable<TNode>(source);
 
     /// <summary>
+    /// Async <c>PruneAfter</c>: keeps each node that matches the predicate but sheds its subtree (the
+    /// matched node is the deepest of its lineage kept). Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+      => new AsyncPruneAfterTreenumerable<TNode>(source, predicate);
+
+    /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
@@ -234,6 +243,24 @@ namespace Copse.Linq
         => _Inner.MoveNextAsync(nodeTraversalStrategies);
 
       public ValueTask DisposeAsync() => _Inner.DisposeAsync();
+    }
+
+    private sealed class AsyncPruneAfterTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+    {
+      public AsyncPruneAfterTreenumerable(IAsyncTreenumerable<TNode> source, Func<NodeContext<TNode>, bool> predicate)
+      {
+        _Source = source;
+        _Predicate = predicate;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+      private readonly Func<NodeContext<TNode>, bool> _Predicate;
+
+      public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+        => new AsyncPruneAfterTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator, _Predicate);
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncPruneAfterTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator, _Predicate);
     }
   }
 }
