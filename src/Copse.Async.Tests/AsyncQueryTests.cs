@@ -91,6 +91,32 @@ namespace Copse.Async.Tests
       }
     }
 
+    [TestMethod]
+    public async Task RootfixAggregate_And_VisitStreamTraversals_MatchSync()
+    {
+      Func<NodeContext<string>, NodeContext<string>, string> concat = (acc, node) => acc.Node + node.Node;
+
+      foreach (var tree in Trees)
+      {
+        CollectionAssert.AreEqual(
+          Sync(tree).RootfixAggregate(concat, "").ToList(),
+          await ToList(Async(tree).RootfixAggregate(concat, "")),
+          $"RootfixAggregate {tree}");
+
+        CollectionAssert.AreEqual(
+          Sync(tree).GetDepthFirstTraversal().Select(Fmt).ToList(),
+          (await ToList(Async(tree).GetDepthFirstTraversal())).Select(Fmt).ToList(),
+          $"GetDepthFirstTraversal {tree}");
+
+        CollectionAssert.AreEqual(
+          Sync(tree).GetBreadthFirstTraversal().Select(Fmt).ToList(),
+          (await ToList(Async(tree).GetBreadthFirstTraversal())).Select(Fmt).ToList(),
+          $"GetBreadthFirstTraversal {tree}");
+      }
+
+      static string Fmt(NodeVisit<string> v) => $"{v.Mode}:{v.Node}:{v.VisitCount}:{v.Position.Depth},{v.Position.SiblingIndex}";
+    }
+
     private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)
     {
       var list = new List<T>();
