@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
+    <ProjectReference Include="..\Copse.Linq.Traversal\Copse.Linq.Traversal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

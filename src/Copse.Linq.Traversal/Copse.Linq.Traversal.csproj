@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Description>Shared Copse.Linq operator building blocks (MergeNode; the color-agnostic Where path state) used verbatim by both the sync operators (Copse.Linq) and their async twins (Copse.Linq.Async), so neither project depends on the other for them.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The Where path structs are internal; both the sync operators and the async twins share them. -->
+    <InternalsVisibleTo Include="Copse.Linq" />
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
+  </ItemGroup>
+
+</Project>
