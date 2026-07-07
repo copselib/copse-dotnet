@@ -23,7 +23,7 @@ namespace Copse.Generated
   /// </summary>
   public sealed class GeneratedDepthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
-    where TChildEnumerator : IForwardChildEnumerator<TNode>
+    where TChildEnumerator : IChildCursor<TNode>
   {
     public GeneratedDepthFirstTreenumerator(
       IEnumerable<TNode> rootNodes,
@@ -138,11 +138,11 @@ namespace Copse.Generated
     // THE SEAM: the ONLY line that differs from the sync twin -- an awaited pull instead of a sync one.
     private bool TryPushNextChild()
     {
-      if (!_Path.TopEnumerator.MoveNext())
+      var result = _Path.TopEnumerator.MoveNext();
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.TopEnumerator.Current;
-      Publish(ref _Path.PushChild(child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushChild(result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 

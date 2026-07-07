@@ -188,13 +188,11 @@ namespace Copse.Async.Tests
       private int _i;
       public AsyncChildEnumerator(int[] children) { _children = children; }
 
-      public NodeAndSiblingIndex<int> Current { get; private set; }
-
-      public async ValueTask<bool> MoveNextAsync()
+      public async ValueTask<ChildResult<int>> MoveNextAsync()
       {
         await Task.Yield(); // force real asynchrony on the child seam
-        if (_i < _children.Length) { Current = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return true; }
-        return false;
+        if (_i < _children.Length) { var r = new ChildResult<int>(new NodeAndSiblingIndex<int>(_children[_i], _i)); _i++; return r; }
+        return default;
       }
 
       public void Dispose() { }

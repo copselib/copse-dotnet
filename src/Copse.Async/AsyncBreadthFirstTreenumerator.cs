@@ -139,22 +139,22 @@ namespace Copse.Async
     // of via a ref parameter, which async methods forbid.
     private async ValueTask<bool> TryScheduleNextChildOfScheduleTopAsync()
     {
-      if (!await _Path.ScheduleTop.ChildEnumerator.MoveNextAsync().ConfigureAwait(false))
+      var result = await _Path.ScheduleTop.ChildEnumerator.MoveNextAsync().ConfigureAwait(false);
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.ScheduleTop.ChildEnumerator.Current;
-      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 
     // THE SEAM (queue front): awaited child pull.
     private async ValueTask<bool> TryScheduleNextChildOfFrontAsync()
     {
-      if (!await _Path.Front.ChildEnumerator.MoveNextAsync().ConfigureAwait(false))
+      var result = await _Path.Front.ChildEnumerator.MoveNextAsync().ConfigureAwait(false);
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.Front.ChildEnumerator.Current;
-      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 

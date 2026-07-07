@@ -59,18 +59,16 @@ namespace Copse.Benchmarks
     public void Dispose() { }
   }
 
-  internal struct ParityForwardChildEnumerator : IForwardChildEnumerator<int>
+  internal struct ParityChildCursor : IChildCursor<int>
   {
     private readonly int[] _children;
     private int _i;
-    private NodeAndSiblingIndex<int> _current;
-    public ParityForwardChildEnumerator(int[] children) { _children = children; _i = 0; _current = default; }
-    public bool MoveNext()
+    public ParityChildCursor(int[] children) { _children = children; _i = 0; }
+    public ChildResult<int> MoveNext()
     {
-      if (_i < _children.Length) { _current = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return true; }
-      return false;
+      if (_i < _children.Length) { var r = new ChildResult<int>(new NodeAndSiblingIndex<int>(_children[_i], _i)); _i++; return r; }
+      return default;
     }
-    public NodeAndSiblingIndex<int> Current => _current;
     public void Dispose() { }
   }
 
@@ -85,7 +83,7 @@ namespace Copse.Benchmarks
     [GlobalSetup] public void Setup() { _children = ParityTree.Build(N); _roots = new[] { 0 }; }
 
     private ParityChildEnumerator OutFactory(NodeContext<int> nc) => new(_children[nc.Node]);
-    private ParityForwardChildEnumerator FwdFactory(NodeContext<int> nc) => new(_children[nc.Node]);
+    private ParityChildCursor CursorFactory(NodeContext<int> nc) => new(_children[nc.Node]);
 
     [Benchmark(Baseline = true)]
     public long HandTuned()
@@ -93,7 +91,7 @@ namespace Copse.Benchmarks
 
     [Benchmark]
     public long Generated()
-      => ParityTree.Drain(new GeneratedBreadthFirstTreenumerator<int, int, ParityForwardChildEnumerator>(_roots, FwdFactory, i => i));
+      => ParityTree.Drain(new GeneratedBreadthFirstTreenumerator<int, int, ParityChildCursor>(_roots, CursorFactory, i => i));
   }
 
   [MemoryDiagnoser]

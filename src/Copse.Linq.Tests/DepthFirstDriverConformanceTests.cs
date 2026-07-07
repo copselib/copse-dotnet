@@ -71,9 +71,9 @@ namespace Copse.Linq.Tests
     private static ITreenumerator<string> GeneratedDft(string tree)
     {
       var (values, sizes) = EngineTree.ParseArrays(tree);
-      return new GeneratedDepthFirstTreenumerator<string, int, ForwardPreorderChildEnumerator>(
+      return new GeneratedDepthFirstTreenumerator<string, int, PreorderChildCursor>(
         RootIndices(sizes),
-        nc => new ForwardPreorderChildEnumerator(sizes, nc.Node),
+        nc => new PreorderChildCursor(sizes, nc.Node),
         i => values[i]);
     }
 

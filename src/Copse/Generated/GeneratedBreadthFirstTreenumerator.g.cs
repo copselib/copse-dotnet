@@ -24,7 +24,7 @@ namespace Copse.Generated
   /// </summary>
   public sealed class GeneratedBreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
-    where TChildEnumerator : IForwardChildEnumerator<TNode>
+    where TChildEnumerator : IChildCursor<TNode>
   {
     public GeneratedBreadthFirstTreenumerator(
       IEnumerable<TNode> rootNodes,
@@ -141,22 +141,22 @@ namespace Copse.Generated
     // of via a ref parameter, which async methods forbid.
     private bool TryScheduleNextChildOfScheduleTop()
     {
-      if (!_Path.ScheduleTop.ChildEnumerator.MoveNext())
+      var result = _Path.ScheduleTop.ChildEnumerator.MoveNext();
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.ScheduleTop.ChildEnumerator.Current;
-      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 
     // THE SEAM (queue front): awaited child pull.
     private bool TryScheduleNextChildOfFront()
     {
-      if (!_Path.Front.ChildEnumerator.MoveNext())
+      var result = _Path.Front.ChildEnumerator.MoveNext();
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.Front.ChildEnumerator.Current;
-      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 

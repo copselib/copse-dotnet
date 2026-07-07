@@ -136,11 +136,11 @@ namespace Copse.Async
     // THE SEAM: the ONLY line that differs from the sync twin -- an awaited pull instead of a sync one.
     private async ValueTask<bool> TryPushNextChildAsync()
     {
-      if (!await _Path.TopEnumerator.MoveNextAsync().ConfigureAwait(false))
+      var result = await _Path.TopEnumerator.MoveNextAsync().ConfigureAwait(false);
+      if (!result.HasChild)
         return false;
 
-      var child = _Path.TopEnumerator.Current;
-      Publish(ref _Path.PushChild(child.Node, child.SiblingIndex));
+      Publish(ref _Path.PushChild(result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
 

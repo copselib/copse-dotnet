@@ -52,7 +52,7 @@ namespace Copse.CodeGen
         ["AsyncWhereDepthFirstTreenumerator"] = "GeneratedWhereDepthFirstTreenumerator",
         ["AsyncWhereBreadthFirstTreenumerator"] = "GeneratedWhereBreadthFirstTreenumerator",
         ["IAsyncTreenumerator"] = "ITreenumerator",
-        ["IAsyncChildEnumerator"] = "IForwardChildEnumerator",
+        ["IAsyncChildEnumerator"] = "IChildCursor",
         ["IAsyncEnumerable"] = "IEnumerable",
         ["IAsyncEnumerator"] = "IEnumerator",
         ["TAsyncChildEnumerator"] = "TChildEnumerator",

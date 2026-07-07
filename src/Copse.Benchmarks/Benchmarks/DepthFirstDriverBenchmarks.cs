@@ -68,12 +68,12 @@ namespace Copse.Benchmarks
       return sum;
     }
 
-    // The actual CODEGEN'D sync twin (Copse.CodeGen output), pulling Current-style. Confirms the
-    // generated code -- not just the hand-written direct driver -- is at engine parity.
+    // The actual CODEGEN'D sync twin (Copse.CodeGen output), now pulling struct-return via IChildCursor.
+    // Confirms the generated code -- not just the hand-written cursor driver -- is at engine parity.
     [Benchmark]
     public long Generated()
     {
-      var t = new GeneratedDepthFirstTreenumerator<int, int, ArrayForwardChildEnumerator>(_roots, ForwardFactory, i => i);
+      var t = new GeneratedDepthFirstTreenumerator<int, int, ArrayChildCursor>(_roots, CursorFactory, i => i);
       long sum = 0;
       while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
         sum += t.VisitCount;
@@ -113,31 +113,6 @@ namespace Copse.Benchmarks
         }
         return default;
       }
-
-      public void Dispose() { }
-    }
-
-    private ArrayForwardChildEnumerator ForwardFactory(NodeContext<int> nc) => new ArrayForwardChildEnumerator(_children[nc.Node]);
-
-    private struct ArrayForwardChildEnumerator : IForwardChildEnumerator<int>
-    {
-      private readonly int[] _children;
-      private int _i;
-      private NodeAndSiblingIndex<int> _current;
-      public ArrayForwardChildEnumerator(int[] children) { _children = children; _i = 0; _current = default; }
-
-      public bool MoveNext()
-      {
-        if (_i < _children.Length)
-        {
-          _current = new NodeAndSiblingIndex<int>(_children[_i], _i);
-          _i++;
-          return true;
-        }
-        return false;
-      }
-
-      public NodeAndSiblingIndex<int> Current => _current;
 
       public void Dispose() { }
     }

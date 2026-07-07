@@ -17,9 +17,9 @@ namespace Copse.Linq.Tests
     private static ITreenumerator<string> GeneratedBft(string tree)
     {
       var (values, sizes) = EngineTree.ParseArrays(tree);
-      return new GeneratedBreadthFirstTreenumerator<string, int, ForwardPreorderChildEnumerator>(
+      return new GeneratedBreadthFirstTreenumerator<string, int, PreorderChildCursor>(
         RootIndices(sizes),
-        nc => new ForwardPreorderChildEnumerator(sizes, nc.Node),
+        nc => new PreorderChildCursor(sizes, nc.Node),
         i => values[i]);
     }
 
