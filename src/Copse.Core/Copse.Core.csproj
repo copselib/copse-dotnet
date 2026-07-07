@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>Core interfaces, enums, and node types for Copse, a high-performance .NET tree traversal and manipulation library.</Description>
+    <Description>The synchronous traversal contracts for Copse (ITreenumerator, ITreenumerable and its dimension-split parents), over the shared Copse.Vocabulary.</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The color-agnostic vocabulary (NodePosition, the enums, NodeVisit); shared with the async core. -->
+    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
   </ItemGroup>
 
 </Project>

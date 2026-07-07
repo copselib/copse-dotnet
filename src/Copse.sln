@@ -42,6 +42,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.CodeGen", "Copse.Code
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Async.Tests", "Copse.Async.Tests\Copse.Async.Tests.csproj", "{61509334-97B7-4150-A6D8-6ADD7508E8DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Copse.Vocabulary", "Copse.Vocabulary\Copse.Vocabulary.csproj", "{2002BB23-F754-4569-A22A-FBCB4FA958ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,6 +256,18 @@ Global
 		{61509334-97B7-4150-A6D8-6ADD7508E8DC}.Release|x64.Build.0 = Release|Any CPU
 		{61509334-97B7-4150-A6D8-6ADD7508E8DC}.Release|x86.ActiveCfg = Release|Any CPU
 		{61509334-97B7-4150-A6D8-6ADD7508E8DC}.Release|x86.Build.0 = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|x64.Build.0 = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Debug|x86.Build.0 = Debug|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|x64.Build.0 = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|x86.ActiveCfg = Release|Any CPU
+		{2002BB23-F754-4569-A22A-FBCB4FA958ED}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Mirrors Copse.Core: the async core contracts reference ONLY the sync core. -->
-    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <!-- Peers with Copse.Core over the shared vocabulary; it does NOT depend on the sync contracts. -->
+    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
   </ItemGroup>
 
 </Project>

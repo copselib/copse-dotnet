@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Copse.Core.Async
 {
   /// <summary>
-  /// Async analog of <see cref="ITreenumerator{TNode}"/>: the stateful traversal cursor, advanced with
+  /// Async analog of <c>ITreenumerator&lt;TNode&gt;</c>: the stateful traversal cursor, advanced with
   /// <see cref="MoveNextAsync"/>. Position/VisitCount/Mode semantics are identical to the synchronous
   /// contract -- the same visit stream, awaited.
   /// </summary>
