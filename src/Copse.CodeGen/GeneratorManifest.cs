@@ -1,22 +1,39 @@
 namespace Copse.CodeGen
 {
+  /// <summary>One async source and the sync twin it transcribes into (paths relative to the <c>src</c> root).</summary>
+  public readonly record struct GeneratorEntry(
+    string AsyncSource,
+    string Twin,
+    string AsyncClass,
+    string SyncClass,
+    string SyncNamespace);
+
   /// <summary>
-  /// The async-source -&gt; generated-sync-twin pairs (paths relative to the <c>src</c> root). Single
-  /// source of truth for both the regen tool (Program) and the drift-guard test, so they can never
-  /// disagree about which twins exist.
+  /// The async-source -&gt; generated-sync-twin manifest. Single source of truth for both the regen
+  /// tool (Program) and the drift-guard test. Each entry carries the target class name and namespace so
+  /// a twin can take over the CANONICAL engine name (e.g. AsyncDepthFirstTreenumerator ->
+  /// DepthFirstTreenumerator in Copse.Treenumerators) once the hand-tuned engine is retired, while other
+  /// twins stay Generated* until their hand-tuned original is retired.
   /// </summary>
   public static class GeneratorManifest
   {
-    public static readonly (string AsyncSource, string GeneratedTwin)[] Pairs =
+    public static readonly GeneratorEntry[] Entries =
     {
-      ("Copse.Async/AsyncDepthFirstTreenumerator.cs",
-        "Copse/Generated/GeneratedDepthFirstTreenumerator.g.cs"),
-      ("Copse.Async/AsyncBreadthFirstTreenumerator.cs",
-        "Copse/Generated/GeneratedBreadthFirstTreenumerator.g.cs"),
-      ("Copse.Linq.Async/AsyncWhereDepthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs"),
-      ("Copse.Linq.Async/AsyncWhereBreadthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedWhereBreadthFirstTreenumerator.g.cs"),
+      new("Copse.Async/AsyncDepthFirstTreenumerator.cs",
+        "Copse/Generated/GeneratedDepthFirstTreenumerator.g.cs",
+        "AsyncDepthFirstTreenumerator", "GeneratedDepthFirstTreenumerator", "Copse.Generated"),
+
+      new("Copse.Async/AsyncBreadthFirstTreenumerator.cs",
+        "Copse/Generated/GeneratedBreadthFirstTreenumerator.g.cs",
+        "AsyncBreadthFirstTreenumerator", "GeneratedBreadthFirstTreenumerator", "Copse.Generated"),
+
+      new("Copse.Linq.Async/AsyncWhereDepthFirstTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
+        "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),
+
+      new("Copse.Linq.Async/AsyncWhereBreadthFirstTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedWhereBreadthFirstTreenumerator.g.cs",
+        "AsyncWhereBreadthFirstTreenumerator", "GeneratedWhereBreadthFirstTreenumerator", "Copse.Linq.Generated"),
     };
   }
 }

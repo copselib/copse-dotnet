@@ -18,16 +18,16 @@ namespace Copse.Linq.Tests
       var srcRoot = FindSrcRoot();
       Assert.IsNotNull(srcRoot, "could not locate the src root (a directory containing Copse.sln).");
 
-      foreach (var (asyncSource, twin) in GeneratorManifest.Pairs)
+      foreach (var entry in GeneratorManifest.Entries)
       {
-        var sourcePath = Path.Combine(srcRoot, asyncSource);
-        var twinPath = Path.Combine(srcRoot, twin);
+        var sourcePath = Path.Combine(srcRoot, entry.AsyncSource);
+        var twinPath = Path.Combine(srcRoot, entry.Twin);
 
-        var expected = Normalize(AsyncToSync.Transform(File.ReadAllText(sourcePath), Path.GetFileName(sourcePath)));
+        var expected = Normalize(AsyncToSync.Transform(entry, File.ReadAllText(sourcePath)));
         var actual = Normalize(File.ReadAllText(twinPath));
 
         Assert.AreEqual(expected, actual,
-          $"{twin} is stale relative to {asyncSource}. Regenerate: dotnet run --project Copse.CodeGen");
+          $"{entry.Twin} is stale relative to {entry.AsyncSource}. Regenerate: dotnet run --project Copse.CodeGen");
       }
     }
 

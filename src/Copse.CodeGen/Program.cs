@@ -2,19 +2,11 @@ using Copse.CodeGen;
 using System;
 using System.IO;
 
-// Regenerate the sync twins from their async sources. The async source is the single source of truth;
-// the .g.cs twins are checked in and guarded against drift by GeneratedTwinDriftTests.
+// Regenerate the sync twins from their async sources (the manifest). The async source is the single
+// source of truth; the .g.cs twins are checked in and guarded against drift by GeneratedTwinDriftTests.
 //
 //   dotnet run --project Copse.CodeGen                 -> regenerate ALL twins in the manifest
 //   dotnet run --project Copse.CodeGen -- <src-root>   -> regenerate all, with an explicit src root
-//   dotnet run --project Copse.CodeGen -- <in> <out>   -> transcribe a single file (ad hoc)
-
-if (args.Length == 2)
-{
-  File.WriteAllText(args[1], AsyncToSync.Transform(File.ReadAllText(args[0]), Path.GetFileName(args[0])));
-  Console.WriteLine($"generated {args[1]}");
-  return 0;
-}
 
 var srcRoot = args.Length == 1 ? args[0] : FindSrcRoot();
 if (srcRoot is null)
@@ -23,12 +15,12 @@ if (srcRoot is null)
   return 1;
 }
 
-foreach (var (asyncSource, twin) in GeneratorManifest.Pairs)
+foreach (var entry in GeneratorManifest.Entries)
 {
-  var inPath = Path.Combine(srcRoot, asyncSource);
-  var outPath = Path.Combine(srcRoot, twin);
-  File.WriteAllText(outPath, AsyncToSync.Transform(File.ReadAllText(inPath), Path.GetFileName(inPath)));
-  Console.WriteLine($"generated {twin}");
+  var inPath = Path.Combine(srcRoot, entry.AsyncSource);
+  var outPath = Path.Combine(srcRoot, entry.Twin);
+  File.WriteAllText(outPath, AsyncToSync.Transform(entry, File.ReadAllText(inPath)));
+  Console.WriteLine($"generated {entry.Twin}");
 }
 return 0;
 
