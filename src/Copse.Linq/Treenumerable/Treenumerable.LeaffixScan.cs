@@ -82,17 +82,5 @@ namespace Copse.Linq
       return new PreorderTreenumerable<TAccumulate, PreorderArrayStore<TAccumulate>>(
         new PreorderArrayStore<TAccumulate>(accumulations.ToArray(), subtreeSizes.ToArray()));
     }
-
-    private readonly struct PendingNode<TSource>
-    {
-      public PendingNode(int index, NodeContext<TSource> context)
-      {
-        Index = index;
-        Context = context;
-      }
-
-      public int Index { get; }
-      public NodeContext<TSource> Context { get; }
-    }
   }
 }

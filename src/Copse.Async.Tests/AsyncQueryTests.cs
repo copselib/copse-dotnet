@@ -117,6 +117,26 @@ namespace Copse.Async.Tests
       static string Fmt(NodeVisit<string> v) => $"{v.Mode}:{v.Node}:{v.VisitCount}:{v.Position.Depth},{v.Position.SiblingIndex}";
     }
 
+    [TestMethod]
+    public async Task LeaffixAggregate_MatchesSync()
+    {
+      // Leaf count per root tree: leaves count 1, internal nodes sum their children's counts.
+      Func<NodeContext<string>, int> leaf = _ => 1;
+      Func<NodeContext<string>, ChildAccumulations<int>, int> acc = (_, kids) =>
+      {
+        var sum = 0;
+        foreach (var k in kids)
+          sum += k;
+        return sum;
+      };
+
+      foreach (var tree in Trees)
+        CollectionAssert.AreEqual(
+          Sync(tree).LeaffixAggregate(leaf, acc).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(leaf, acc)),
+          $"LeaffixAggregate {tree}");
+    }
+
     private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)
     {
       var list = new List<T>();
