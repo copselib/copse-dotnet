@@ -181,6 +181,21 @@ namespace Copse.Async.Tests
       Assert.AreEqual(2, acquisitions, "Defer builds a fresh tree per treenumerator acquisition");
     }
 
+    [TestMethod]
+    public async Task AsyncPreorderStream_OverSuspendingSource_MatchesGeneratedSyncStreamTwin()
+    {
+      // Preorder (value, depth) for 1(2(4,5),3(6)).
+      var nodes = new (int Value, int Depth)[] { (1, 0), (2, 1), (4, 2), (5, 2), (3, 1), (6, 2) };
+
+      var sync = Collect(new PreorderStreamDepthFirstTreenumerator<int, SyncPreorderStream>(
+        new SyncPreorderStream(nodes)));
+
+      var async = await CollectAsync(new AsyncPreorderStreamDepthFirstTreenumerator<int, SuspendingPreorderStream>(
+        new SuspendingPreorderStream(nodes)));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
     // --- Collection helpers ---
 
     private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);
@@ -247,6 +262,56 @@ namespace Copse.Async.Tests
       }
 
       public void Dispose() { }
+      public ValueTask DisposeAsync() => default;
+    }
+
+    // Preorder-stream doubles: a sync one for the generated twin, and a genuinely-suspending async
+    // one (Task.Yield on every read) for the driver. Both replay the same (value, depth) list.
+    private struct SyncPreorderStream : IPreorderStream<int>
+    {
+      private readonly (int Value, int Depth)[] _nodes;
+      private int _i;
+      public SyncPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; _i = 0; }
+
+      public PreorderRead<int> TryReadNext()
+      {
+        if (_i >= _nodes.Length) return default;
+        var (v, d) = _nodes[_i++];
+        return new PreorderRead<int>(v, d);
+      }
+
+      public PreorderRead<int> TrySkipToDepth(int maxDepth)
+      {
+        while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
+        return TryReadNext();
+      }
+
+      public void Dispose() { }
+    }
+
+    private sealed class SuspendingPreorderStream : IAsyncPreorderStream<int>
+    {
+      private readonly (int Value, int Depth)[] _nodes;
+      private int _i;
+      public SuspendingPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; }
+
+      public async ValueTask<PreorderRead<int>> TryReadNextAsync()
+      {
+        await Task.Yield(); // force real asynchrony on the read seam
+        if (_i >= _nodes.Length) return default;
+        var (v, d) = _nodes[_i++];
+        return new PreorderRead<int>(v, d);
+      }
+
+      public async ValueTask<PreorderRead<int>> TrySkipToDepthAsync(int maxDepth)
+      {
+        await Task.Yield();
+        while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
+        if (_i >= _nodes.Length) return default;
+        var (v, d) = _nodes[_i++];
+        return new PreorderRead<int>(v, d);
+      }
+
       public ValueTask DisposeAsync() => default;
     }
   }

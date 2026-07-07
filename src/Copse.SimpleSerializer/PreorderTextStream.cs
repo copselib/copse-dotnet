@@ -10,8 +10,9 @@ namespace Copse.SimpleSerializer
   // shared value-token layer (ValueTokenStreamScanner): quoted values may contain ANY character;
   // unquoted trailing line endings at end of input are ignored (files end in newlines).
   //
-  // TrySkipToDepth honors the skip contract: tokens belonging to deeper values are consumed
-  // WITHOUT being accumulated or mapped -- a skip costs I/O only.
+  // Struct-return read seam (TryReadNext/TrySkipToDepth -> PreorderRead): the shape shared with the
+  // async twin (AsyncPreorderTextStream). TrySkipToDepth honors the skip contract: tokens belonging
+  // to deeper values are consumed WITHOUT being accumulated or mapped -- a skip costs I/O only.
   //
   // Owns its reader; disposing the stream disposes the reader.
   internal sealed class PreorderTextStream<TValue> : IPreorderStream<TValue>
@@ -30,21 +31,16 @@ namespace Copse.SimpleSerializer
     private int _Depth;
     private bool _Exhausted;
 
-    public bool TryReadNext(out TValue value, out int depth)
-      => TryScan(int.MaxValue, out value, out depth);
+    public PreorderRead<TValue> TryReadNext() => TryScan(int.MaxValue);
 
-    public bool TrySkipToDepth(int maxDepth, out TValue value, out int depth)
-      => TryScan(maxDepth, out value, out depth);
+    public PreorderRead<TValue> TrySkipToDepth(int maxDepth) => TryScan(maxDepth);
 
     // Scan to the next value committing at depth <= maxDepth; deeper values are structural
     // noise for the caller and their characters are discarded unaccumulated.
-    private bool TryScan(int maxDepth, out TValue value, out int depth)
+    private PreorderRead<TValue> TryScan(int maxDepth)
     {
-      value = default;
-      depth = default;
-
       if (_Exhausted)
-        return false;
+        return default;
 
       while (true)
       {
@@ -53,7 +49,7 @@ namespace Copse.SimpleSerializer
         if (!_Scanner.TryScanEvent(accumulate, out var hasValue, out var terminator))
         {
           _Exhausted = true;
-          return false;
+          return default;
         }
 
         switch (terminator)
@@ -61,10 +57,10 @@ namespace Copse.SimpleSerializer
           case '(':
             if (hasValue && accumulate)
             {
-              value = _Map(_Scanner.GetValue());
-              depth = _Depth;
+              var value = _Map(_Scanner.GetValue());
+              var depth = _Depth;
               _Depth++;
-              return true;
+              return new PreorderRead<TValue>(value, depth);
             }
 
             _Depth++;
@@ -72,21 +68,17 @@ namespace Copse.SimpleSerializer
 
           case ',':
             if (hasValue && accumulate)
-            {
-              value = _Map(_Scanner.GetValue());
-              depth = _Depth;
-              return true;
-            }
+              return new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
 
             break;
 
           case ')':
             if (hasValue && accumulate)
             {
-              value = _Map(_Scanner.GetValue());
-              depth = _Depth;
+              var value = _Map(_Scanner.GetValue());
+              var depth = _Depth;
               _Depth--;
-              return true;
+              return new PreorderRead<TValue>(value, depth);
             }
 
             _Depth--;
@@ -102,13 +94,9 @@ namespace Copse.SimpleSerializer
             _Exhausted = true;
 
             if (hasValue && accumulate)
-            {
-              value = _Map(_Scanner.GetValue());
-              depth = _Depth;
-              return true;
-            }
+              return new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
 
-            return false;
+            return default;
         }
       }
     }

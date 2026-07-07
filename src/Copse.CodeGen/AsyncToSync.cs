@@ -48,6 +48,8 @@ namespace Copse.CodeGen
       {
         ["IAsyncTreenumerator"] = "ITreenumerator",
         ["IAsyncChildEnumerator"] = "IChildCursor",
+        ["IAsyncPreorderStream"] = "IPreorderStream",
+        ["IAsyncLevelOrderStream"] = "ILevelOrderStream",
         ["IAsyncEnumerable"] = "IEnumerable",
         ["IAsyncEnumerator"] = "IEnumerator",
         ["TAsyncChildEnumerator"] = "TChildEnumerator",

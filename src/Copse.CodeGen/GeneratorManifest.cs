@@ -29,6 +29,12 @@ namespace Copse.CodeGen
         "Copse/Treenumerators/BreadthFirstTreenumerator.g.cs",
         "AsyncBreadthFirstTreenumerator", "BreadthFirstTreenumerator", "Copse.Treenumerators"),
 
+      // The forward-only STREAM treenumerators: the twin takes over the canonical name (the
+      // hand-tuned out-style stream treenumerators are retired; struct-return SPI proven at parity).
+      new("Copse.Async/Treenumerators/AsyncPreorderStreamDepthFirstTreenumerator.cs",
+        "Copse/Treenumerators/PreorderStreamDepthFirstTreenumerator.g.cs",
+        "AsyncPreorderStreamDepthFirstTreenumerator", "PreorderStreamDepthFirstTreenumerator", "Copse.Treenumerators"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),
