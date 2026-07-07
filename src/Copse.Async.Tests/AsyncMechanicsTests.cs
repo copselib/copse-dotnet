@@ -114,6 +114,27 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task AsyncTakeNodesUntil_OverSuspendingInner_MatchesGeneratedSyncTwin()
+    {
+      Func<NodeContext<int>, bool> stopAt3 = nc => nc.Node == 3;
+
+      foreach (var keepFinalNode in new[] { true, false })
+      {
+        var sync = Collect(new GeneratedTakeNodesUntilTreenumerator<int>(
+          () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+            Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+          stopAt3, keepFinalNode));
+
+        var async = await CollectAsync(new AsyncTakeNodesUntilTreenumerator<int>(
+          () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+            AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+          stopAt3, keepFinalNode));
+
+        CollectionAssert.AreEqual(sync, async, $"keepFinalNode={keepFinalNode}");
+      }
+    }
+
+    [TestMethod]
     public async Task FluentWhereSelect_Composes()
     {
       // The deferred fluent operators compose on the async side: source.Where(...).Select(...).

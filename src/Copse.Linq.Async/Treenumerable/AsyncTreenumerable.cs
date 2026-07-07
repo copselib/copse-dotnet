@@ -64,6 +64,37 @@ namespace Copse.Linq
       => new AsyncPruneAfterTreenumerable<TNode>(source, predicate);
 
     /// <summary>
+    /// Async <c>PruneBefore</c>: prunes each subtree at (and including) the first node matching the
+    /// predicate -- no child promotion (SkipNodeAndDescendants). "Prune when true", so the removal
+    /// polarity inverts here at the operator, over the Where machinery (keep when true). Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> PruneBefore<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate)
+      => predicate == null ? source : new AsyncPruneBeforeTreenumerable<TNode>(source, predicate);
+
+    /// <summary>
+    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
+    /// iff <paramref name="keepFinalNode"/>. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> TakeNodesUntil<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => new AsyncTakeNodesUntilTreenumerable<TNode>(source, predicate, keepFinalNode);
+
+    /// <summary>
+    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// with an inverted predicate. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> TakeNodesWhile<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => source.TakeNodesUntil(nodeContext => !predicate(nodeContext), keepFinalNode);
+
+    /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
@@ -261,6 +292,52 @@ namespace Copse.Linq
 
       public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
         => new AsyncPruneAfterTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator, _Predicate);
+    }
+
+    private sealed class AsyncPruneBeforeTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+    {
+      public AsyncPruneBeforeTreenumerable(IAsyncTreenumerable<TNode> source, Func<NodeContext<TNode>, bool> predicate)
+      {
+        _Source = source;
+        _Predicate = predicate;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+      private readonly Func<NodeContext<TNode>, bool> _Predicate;
+
+      // PruneBefore is Where over the INVERTED predicate with SkipNodeAndDescendants (prune the
+      // subtree, no promotion) instead of Where's SkipNode (promote children).
+      public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+        => new AsyncWhereDepthFirstTreenumerator<TNode>(
+          _Source.GetAsyncDepthFirstTreenumerator,
+          nodeContext => !_Predicate(nodeContext),
+          NodeTraversalStrategies.SkipNodeAndDescendants);
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncWhereBreadthFirstTreenumerator<TNode>(
+          _Source.GetAsyncBreadthFirstTreenumerator,
+          nodeContext => !_Predicate(nodeContext),
+          NodeTraversalStrategies.SkipNodeAndDescendants);
+    }
+
+    private sealed class AsyncTakeNodesUntilTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+    {
+      public AsyncTakeNodesUntilTreenumerable(IAsyncTreenumerable<TNode> source, Func<NodeContext<TNode>, bool> predicate, bool keepFinalNode)
+      {
+        _Source = source;
+        _Predicate = predicate;
+        _KeepFinalNode = keepFinalNode;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+      private readonly Func<NodeContext<TNode>, bool> _Predicate;
+      private readonly bool _KeepFinalNode;
+
+      public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+        => new AsyncTakeNodesUntilTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator, _Predicate, _KeepFinalNode);
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncTakeNodesUntilTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator, _Predicate, _KeepFinalNode);
     }
   }
 }
