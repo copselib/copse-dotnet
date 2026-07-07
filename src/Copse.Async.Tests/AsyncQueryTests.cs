@@ -57,6 +57,48 @@ namespace Copse.Async.Tests
         await Async(tree).ConsumeAsync();
     }
 
+    [TestMethod]
+    public async Task Traversals_And_GetLeaves_MatchSync()
+    {
+      foreach (var tree in Trees)
+      {
+        CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(Async(tree).PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).PostorderTraversal().ToList(), await ToList(Async(tree).PostorderTraversal()), $"Postorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(Async(tree).LevelOrderTraversal()), $"LevelOrder {tree}");
+
+        CollectionAssert.AreEqual(Sync(tree).GetLeaves().ToList(), await ToList(Async(tree).GetLeaves()), $"GetLeaves-dft {tree}");
+        CollectionAssert.AreEqual(
+          ((IBreadthFirstTreenumerable<string>)Sync(tree)).GetLeaves().ToList(),
+          await ToList(((IAsyncBreadthFirstTreenumerable<string>)Async(tree)).GetLeaves()),
+          $"GetLeaves-bft {tree}");
+      }
+    }
+
+    [TestMethod]
+    public async Task GetLevels_And_GetBranches_MatchSync()
+    {
+      foreach (var tree in Trees)
+      {
+        CollectionAssert.AreEqual(
+          Sync(tree).GetLevels().Select(a => string.Join(",", a)).ToList(),
+          (await ToList(Async(tree).GetLevels())).Select(a => string.Join(",", a)).ToList(),
+          $"GetLevels {tree}");
+
+        CollectionAssert.AreEqual(
+          Sync(tree).GetBranches().Select(a => string.Join(",", a)).ToList(),
+          (await ToList(Async(tree).GetBranches())).Select(a => string.Join(",", a)).ToList(),
+          $"GetBranches {tree}");
+      }
+    }
+
+    private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)
+    {
+      var list = new List<T>();
+      await foreach (var x in source.ConfigureAwait(false))
+        list.Add(x);
+      return list;
+    }
+
     private static ITreenumerable<string> Sync(string tree) => TreeSerializer.DeserializeDepthFirstTree(tree);
     private static IAsyncTreenumerable<string> Async(string tree) => new AsyncFacade<string>(Sync(tree));
 
