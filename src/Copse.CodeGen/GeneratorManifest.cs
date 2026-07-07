@@ -21,19 +21,19 @@ namespace Copse.CodeGen
     {
       // The engines: the twin takes over the CANONICAL name in Copse.Treenumerators (the hand-tuned
       // DepthFirstTreenumerator / BreadthFirstTreenumerator are retired).
-      new("Copse.Async/AsyncDepthFirstTreenumerator.cs",
+      new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
 
-      new("Copse.Async/AsyncBreadthFirstTreenumerator.cs",
+      new("Copse.Async/Treenumerators/AsyncBreadthFirstTreenumerator.cs",
         "Copse/Treenumerators/BreadthFirstTreenumerator.g.cs",
         "AsyncBreadthFirstTreenumerator", "BreadthFirstTreenumerator", "Copse.Treenumerators"),
 
-      new("Copse.Linq.Async/AsyncWhereDepthFirstTreenumerator.cs",
+      new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),
 
-      new("Copse.Linq.Async/AsyncWhereBreadthFirstTreenumerator.cs",
+      new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereBreadthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereBreadthFirstTreenumerator.g.cs",
         "AsyncWhereBreadthFirstTreenumerator", "GeneratedWhereBreadthFirstTreenumerator", "Copse.Linq.Generated"),
     };

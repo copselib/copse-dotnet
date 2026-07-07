@@ -151,6 +151,36 @@ namespace Copse.Async.Tests
         $"Do should observe every visit ({seen.Count}), more than the schedule-only stream ({withDo.Count})");
     }
 
+    [TestMethod]
+    public async Task AsyncTree_Empty_YieldsNothing_BothDimensions()
+    {
+      var empty = AsyncTree.Empty<int>();
+      Assert.AreEqual(0, await empty.CountNodesAsync());
+      CollectionAssert.AreEqual(Array.Empty<int>(), await empty.ToListAsync());
+      CollectionAssert.AreEqual(new Visit[0], await CollectAsync(empty.GetAsyncBreadthFirstTreenumerator()));
+    }
+
+    [TestMethod]
+    public async Task AsyncTree_Defer_IsLazy_AndBuildsFreshPerAcquisition()
+    {
+      var acquisitions = 0;
+      var deferred = AsyncTree.Defer(() =>
+      {
+        acquisitions++;
+        return (IAsyncTreenumerable<int>)new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
+          AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+      });
+
+      Assert.AreEqual(0, acquisitions, "Defer must not run the factory before a treenumerator is acquired");
+
+      var first = await deferred.ToListAsync();
+      var second = await deferred.ToListAsync();
+
+      CollectionAssert.AreEqual(new[] { 1, 2, 3, 5, 4, 6, 7 }, first);
+      CollectionAssert.AreEqual(first, second);
+      Assert.AreEqual(2, acquisitions, "Defer builds a fresh tree per treenumerator acquisition");
+    }
+
     // --- Collection helpers ---
 
     private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);
