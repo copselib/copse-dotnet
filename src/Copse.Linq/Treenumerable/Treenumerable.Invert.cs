@@ -9,37 +9,55 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    // Mirror: reverse the order of every node's children (and the roots). The overload set
-    // encodes the organizing principle (see TRAVERSAL_DIMENSION_SPLIT.md): mirroring is
-    // WINDOWED under breadth-first arrival (reversing every sibling group reverses each level
-    // end-to-end -- O(width)) and TOTAL under depth-first arrival (the mirror owes the
-    // original LAST child right after the root), so:
+    // Mirror: reverse the order of every node's children (and the roots). Two regimes, by what
+    // the source can afford (see TRAVERSAL_DIMENSION_SPLIT.md):
     //
-    //  - a breadth-first-capable source streams its mirror, and gets back only the
-    //    breadth-first dimension (fullness of the SOURCE does not buy the mirror's depth-first
-    //    dimension; only random access does);
-    //  - a buffer -- the proof that the O(n) is already paid and seekable -- gets the full
-    //    composite back (the overload below);
-    //  - a depth-first-only source cannot call Invert at all: the only spelling is
-    //    .Memoize().Invert(), putting the O(n) visibly in the caller's code. There is no
-    //    spelling of silent buffering.
+    //  - A breadth-first-ONLY source (a level-order stream) streams its mirror in O(width):
+    //    reversing every sibling group reverses each level end-to-end, so no capture is needed
+    //    and the result stays a narrow breadth-first treenumerable.
+    //
+    //  - Anything else materializes. The mirror's depth-first dimension is TOTAL (it owes the
+    //    original's LAST child right after the root), so a full mirror needs the whole tree
+    //    captured. Rather than FORCE the caller to spell .Memoize()/.Materialize() first (the old
+    //    "disclose the O(n) on the input" rule, which left a depth-first-only source unable to
+    //    Invert at all), Invert captures internally and discloses the O(n) on the OUTPUT: it
+    //    returns an ITreenumerableBuffer -- a completed, owned capture. A buffer in hand skips to
+    //    the mirror build; a plain ITreenumerable (or a depth-first-only stream) is Materialized
+    //    first. (Overload resolution: a full source is equally breadth- and depth-first, so the
+    //    ITreenumerable overload disambiguates it to here; only a NARROW source reaches the
+    //    single-dimension overloads.)
+    //
+    // The mirror build still copies into fresh preorder arrays; the zero-copy mirrored VIEW over
+    // the capture's own arrays is the planned upgrade, arriving with the layout-typed buffer
+    // interfaces.
     public static IBreadthFirstTreenumerable<TNode> Invert<TNode>(this IBreadthFirstTreenumerable<TNode> source)
       => new LevelOrderStreamTreenumerable<TNode, InvertedLevelOrderStream<TNode>>(
         () => new InvertedLevelOrderStream<TNode>(source.GetBreadthFirstTreenumerator()));
 
-    // The buffer overload: a capture in hand makes the mirror's depth-first dimension
-    // affordable, so the mirror is a full citizen again. Built once, lazily (on first
-    // acquisition), by walking the capture's depth-first replay into mirrored preorder arrays
-    // -- one array build instead of the old materialize-then-copy, and the source itself is
-    // never re-enumerated. (The zero-copy mirrored VIEW over the capture's own arrays is the
-    // planned upgrade, arriving with the layout-typed buffer interfaces.)
-    public static ITreenumerable<TNode> Invert<TNode>(this ITreenumerableBuffer<TNode> source)
+    // The depth-first-only mirror cannot stream (the mirror owes the original's LAST child right
+    // after the root), so it captures: Materialize, then invert the capture. The O(n) is
+    // disclosed by the ITreenumerableBuffer return, not by a forced .Memoize() at the call site.
+    public static ITreenumerableBuffer<TNode> Invert<TNode>(this IDepthFirstTreenumerable<TNode> source)
+      => source.Materialize().Invert();
+
+    // The full-source convenience overload (also the disambiguator for a source that is both
+    // breadth- and depth-first): capture first, then invert the capture.
+    public static ITreenumerableBuffer<TNode> Invert<TNode>(this ITreenumerable<TNode> source)
+      => source.Materialize().Invert();
+
+    // The buffer overload: a capture in hand makes the mirror's depth-first dimension affordable,
+    // so the mirror is a full citizen -- returned as a completed ITreenumerableBuffer (the mirror
+    // owns fresh arrays; there is no live feed, so the non-disposable base). Built once, lazily
+    // on first acquisition, by walking the capture's depth-first replay into mirrored preorder
+    // arrays; the source itself is never re-enumerated.
+    public static ITreenumerableBuffer<TNode> Invert<TNode>(this ITreenumerableBuffer<TNode> source)
     {
       var mirror = new Lazy<PreorderTreenumerable<TNode, PreorderArrayStore<TNode>>>(() => BuildMirror(source));
 
-      return TreenumerableFactory.Create(
-        () => mirror.Value.GetBreadthFirstTreenumerator(),
-        () => mirror.Value.GetDepthFirstTreenumerator());
+      return new CompletedTreenumerableBuffer<TNode>(
+        TreenumerableFactory.Create(
+          () => mirror.Value.GetBreadthFirstTreenumerator(),
+          () => mirror.Value.GetDepthFirstTreenumerator()));
     }
 
     private static PreorderTreenumerable<TNode, PreorderArrayStore<TNode>> BuildMirror<TNode>(ITreenumerableBuffer<TNode> source)

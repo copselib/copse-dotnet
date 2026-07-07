@@ -79,14 +79,13 @@ namespace Copse.Linq.Tests
       foreach (var value in expected)
         Debug.WriteLine(value);
 
-      // Act: each dimension exercises its own overload -- breadth-first is the streaming
-      // mirror; depth-first is only reachable through a buffer (.Memoize().Invert()), which is
-      // the point of the overload set.
+      // Act: a full source's Invert now returns a completed buffer (both dimensions), so either
+      // traversal is reachable directly -- no explicit .Memoize() needed. (Narrow BFT-only
+      // streaming is covered by StreamedSourceTest below.)
       Debug.WriteLine($"{Environment.NewLine}-----Actual Values-----");
       var actual =
-        (treeTraversalStrategy == TreeTraversalStrategy.BreadthFirst
-          ? sut.Invert().GetBreadthFirstTraversal()
-          : sut.Memoize().Invert().GetTraversal(TreeTraversalStrategy.DepthFirst))
+        sut.Invert()
+        .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
 
@@ -124,6 +123,34 @@ namespace Copse.Linq.Tests
         .ToArray();
 
       CollectionAssert.AreEqual(expected, actual);
+    }
+
+    // A narrow depth-first-only stream can now Invert directly: it Materializes internally and
+    // returns a completed buffer (no forced .Memoize().Invert()), so BOTH mirror dimensions are
+    // reachable -- the capability the disclose-on-output redesign adds for narrow DFT sources.
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void NarrowDepthFirstStreamCanInvert(
+      string treeString,
+      string expectedTreeString)
+    {
+      var envelope = TreeSerializer.DeserializeDepthFirstTree(treeString).SerializeDepthFirstTree();
+
+      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+      {
+        var expected =
+          TreeSerializer.DeserializeDepthFirstTree(expectedTreeString).GetTraversal(strategy).ToArray();
+
+        // A fresh forward-only stream each time (Invert consumes it once to capture).
+        var actual =
+          TreeSerializer
+          .DeserializeDepthFirstTree(() => new System.IO.StringReader(envelope))
+          .Invert()
+          .GetTraversal(strategy)
+          .ToArray();
+
+        CollectionAssert.AreEqual(expected, actual, $"{strategy} {treeString}");
+      }
     }
   }
 }
