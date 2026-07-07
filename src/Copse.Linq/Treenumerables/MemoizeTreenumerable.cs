@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerables
   //
   // Single-threaded by contract: the buffers are append-only, but the shared feeds are live
   // treenumerators and concurrent fills would corrupt them.
-  internal sealed class MemoizeTreenumerable<TValue> : ITreenumerableBuffer<TValue>
+  internal sealed class MemoizeTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
   {
     public MemoizeTreenumerable(ITreenumerable<TValue> source)
     {

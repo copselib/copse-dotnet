@@ -9,7 +9,7 @@ namespace Copse.Linq.Treenumerables
   // playback, depth-first replays ride the same capture cross-order. Notably this is the ONLY
   // road to the depth-first dimension of a breadth-first-only source (there is no bounded
   // re-scan strategy for that direction) -- the escalation the split makes explicit.
-  internal sealed class MemoizeBreadthFirstSourceTreenumerable<TValue> : ITreenumerableBuffer<TValue>
+  internal sealed class MemoizeBreadthFirstSourceTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
   {
     public MemoizeBreadthFirstSourceTreenumerable(IBreadthFirstTreenumerable<TValue> source)
     {

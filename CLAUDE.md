@@ -97,8 +97,15 @@ The library **never performs node equality comparisons**. This is a deliberate d
   fresh treenumerator sits at before its first `MoveNext` — load-bearing; conformance-checked.
 - **NodeContext<T>** - Bundles node value with its position
 - **NodeVisit<T>** - Complete visit information including mode and visit count
-- **ITreenumerableBuffer<T>** - A re-traversable, lazily-growing capture of another tree (what
-  `Memoize`/`Materialize` return); the typed "upgrade" from a narrow source back to the composite.
+- **ITreenumerableBuffer<T>** - An owned, in-memory, re-traversable capture of a tree; the typed
+  "upgrade" from a narrow source back to the composite. Deliberately **not** `IDisposable` — a
+  completed capture holds only managed arrays, so it chains freely through the fluent surface.
+  What `Materialize`/`LeaffixScan`/`Invert` return.
+- **ILazyTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live source
+  feed**: the lazily-growing capture `Memoize` returns. Adds `IsComplete`/`GetBufferedCount`/
+  `Consume` and `IDisposable` (disposing retires the feed). Because it *is* an
+  `ITreenumerableBuffer` it composes anywhere a capture is expected, but the fluent surface sees
+  only the non-disposable base, so the caller keeps this reference to dispose it.
 
 ### The traversal-dimension split
 

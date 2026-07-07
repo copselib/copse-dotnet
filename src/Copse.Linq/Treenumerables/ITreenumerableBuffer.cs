@@ -3,13 +3,29 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // A treenumerable backed by an owned, lazily-growing capture of another treenumerable
-  // (see Memoize). IDisposable because the buffer holds live inner treenumerators paused
-  // mid-traversal over the source -- the captured data itself is just managed memory.
-  // Disposing stops all future source consumption: enumerators already replaying keep
-  // working over the captured region, but one that needs data beyond it throws
-  // ObjectDisposedException.
-  public interface ITreenumerableBuffer<TValue> : ITreenumerable<TValue>, IDisposable
+  // An owned, in-memory, re-traversable capture of a tree: a full ITreenumerable (both
+  // dimensions available, random access) whose backing storage it owns. This is the
+  // "materialized" disclosure marker that eager capture operators (Materialize, LeaffixScan,
+  // Invert) return -- the O(n) is already paid and the result is self-contained.
+  //
+  // Deliberately NOT IDisposable: a completed capture holds only managed arrays, with no live
+  // source feed to retire, so there is nothing to dispose and it chains freely through the
+  // fluent surface. The still-growing case -- which DOES hold a live feed -- is
+  // ILazyTreenumerableBuffer below.
+  public interface ITreenumerableBuffer<TValue> : ITreenumerable<TValue>
+  {
+  }
+
+  // A buffer still backed by a LIVE source feed: the lazily-growing capture Memoize returns.
+  // It holds inner treenumerators paused mid-traversal over the source (the captured data
+  // itself is just managed memory), so it is IDisposable -- disposing stops all future source
+  // consumption: enumerators already replaying keep working over the captured region, but one
+  // that needs data beyond it throws ObjectDisposedException.
+  //
+  // Because it IS an ITreenumerableBuffer it composes anywhere a capture is expected; but the
+  // fluent surface sees only the non-disposable base, so the caller keeps this reference to
+  // dispose it (a chain typed as the base will not).
+  public interface ILazyTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>, IDisposable
   {
     // True once either dimension's capture is complete: the whole tree is held and the source
     // is permanently retired -- no future enumeration, in either dimension, touches it again.

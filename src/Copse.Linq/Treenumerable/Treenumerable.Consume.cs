@@ -20,8 +20,9 @@ namespace Copse.Linq
     // member's invariant. Callers with a layout preference use Consume(TreeTraversalStrategy)
     // directly: declared intent outranks sunk cost. (Overload resolution keeps this and the
     // drain above apart: the buffer receiver is more specific, and the strategy-taking member
-    // on ITreenumerableBuffer beats any extension.)
-    public static void Consume<TValue>(this ITreenumerableBuffer<TValue> buffer)
+    // on ILazyTreenumerableBuffer beats any extension.) Growth control lives on the lazy buffer
+    // only -- a completed capture has nothing left to consume.
+    public static void Consume<TValue>(this ILazyTreenumerableBuffer<TValue> buffer)
       => buffer.Consume(
         buffer.GetBufferedCount(TreeTraversalStrategy.DepthFirst) >= buffer.GetBufferedCount(TreeTraversalStrategy.BreadthFirst)
           ? TreeTraversalStrategy.DepthFirst
