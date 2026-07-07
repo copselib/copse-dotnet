@@ -181,6 +181,24 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(sync, async);
     }
 
+    [TestMethod]
+    public async Task AsyncStructuralMergeBreadthFirst_OverSuspendingInners_MatchesGeneratedSyncTwin()
+    {
+      var sync = CollectMerge(new GeneratedStructuralMergeBreadthFirstTreenumerator<int, int>(
+        () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n)));
+
+      var async = await CollectMergeAsync(new AsyncStructuralMergeBreadthFirstTreenumerator<int, int>(
+        () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n)));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
     private static List<string> CollectMerge(ITreenumerator<MergeNode<int, int>> t)
     {
       var visits = new List<string>();

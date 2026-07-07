@@ -73,6 +73,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Generated/GeneratedStructuralMergeDepthFirstTreenumerator.g.cs",
         "AsyncStructuralMergeDepthFirstTreenumerator", "GeneratedStructuralMergeDepthFirstTreenumerator", "Copse.Linq.Generated"),
 
+      new("Copse.Linq.Async/Treenumerators/StructuralMerge/AsyncStructuralMergeBreadthFirstTreenumerator.cs",
+        "Copse.Linq/Generated/GeneratedStructuralMergeBreadthFirstTreenumerator.g.cs",
+        "AsyncStructuralMergeBreadthFirstTreenumerator", "GeneratedStructuralMergeBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),

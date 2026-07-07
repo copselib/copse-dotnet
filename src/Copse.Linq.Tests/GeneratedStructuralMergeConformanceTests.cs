@@ -31,35 +31,66 @@ namespace Copse.Linq.Tests
       ("a(b(d(g),e),c)", "a(b(d,e(h)),c(i))"),
     };
 
-    private static ITreenumerator<MergeNode<string, string>> Trusted(string left, string right)
+    private static ITreenumerator<MergeNode<string, string>> TrustedDft(string left, string right)
       => new StructuralMergeDepthFirstTreenumerator<string, string>(
         () => EngineTree.Parse(left).GetDepthFirstTreenumerator(),
         () => EngineTree.Parse(right).GetDepthFirstTreenumerator());
 
-    private static ITreenumerator<MergeNode<string, string>> Generated(string left, string right)
+    private static ITreenumerator<MergeNode<string, string>> GeneratedDft(string left, string right)
       => new GeneratedStructuralMergeDepthFirstTreenumerator<string, string>(
         () => EngineTree.Parse(left).GetDepthFirstTreenumerator(),
         () => EngineTree.Parse(right).GetDepthFirstTreenumerator());
 
+    private static ITreenumerator<MergeNode<string, string>> TrustedBft(string left, string right)
+      => new StructuralMergeBreadthFirstTreenumerator<string, string>(
+        () => EngineTree.Parse(left).GetBreadthFirstTreenumerator(),
+        () => EngineTree.Parse(right).GetBreadthFirstTreenumerator());
+
+    private static ITreenumerator<MergeNode<string, string>> GeneratedBft(string left, string right)
+      => new GeneratedStructuralMergeBreadthFirstTreenumerator<string, string>(
+        () => EngineTree.Parse(left).GetBreadthFirstTreenumerator(),
+        () => EngineTree.Parse(right).GetBreadthFirstTreenumerator());
+
     [TestMethod]
-    public void TraverseAll_MatchesTrusted()
+    public void DepthFirst_TraverseAll_MatchesTrusted()
     {
       foreach (var (left, right) in Pairs)
         AssertSameMergeStream(
-          Trusted(left, right), Generated(left, right),
+          TrustedDft(left, right), GeneratedDft(left, right),
           _ => NodeTraversalStrategies.TraverseAll,
           $"merge-dft ({left}) x ({right})");
     }
 
     [TestMethod]
-    public void EveryConsumerStrategy_MatchesTrusted()
+    public void DepthFirst_EveryConsumerStrategy_MatchesTrusted()
     {
       foreach (var (left, right) in Pairs)
         foreach (var strategy in VisitStreamConformance.SchedulingStrategies)
           AssertSameMergeStream(
-            Trusted(left, right), Generated(left, right),
+            TrustedDft(left, right), GeneratedDft(left, right),
             mode => mode == TreenumeratorMode.SchedulingNode ? strategy : NodeTraversalStrategies.TraverseAll,
             $"merge-dft ({left}) x ({right}) [{strategy}]");
+    }
+
+    [TestMethod]
+    public void BreadthFirst_TraverseAll_MatchesTrusted()
+    {
+      foreach (var (left, right) in Pairs)
+        AssertSameMergeStream(
+          TrustedBft(left, right), GeneratedBft(left, right),
+          _ => NodeTraversalStrategies.TraverseAll,
+          $"merge-bft ({left}) x ({right})");
+    }
+
+    [TestMethod]
+    public void BreadthFirst_EveryConsumerStrategy_MatchesTrusted()
+    {
+      foreach (var (left, right) in Pairs)
+        foreach (var strategy in VisitStreamConformance.SchedulingStrategies)
+          AssertSameMergeStream(
+            TrustedBft(left, right), GeneratedBft(left, right),
+            mode => mode == TreenumeratorMode.SchedulingNode ? strategy : NodeTraversalStrategies.TraverseAll,
+            $"merge-bft ({left}) x ({right}) [{strategy}]");
     }
 
     // Lockstep MergeNode-stream comparison (AssertSameStream is string-only), fully comparing the
