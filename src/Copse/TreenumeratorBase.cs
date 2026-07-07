@@ -1,8 +1,17 @@
 ﻿using Copse.Core;
-using System;
 
 namespace Copse
 {
+  // Hand-written twin of AsyncTreenumeratorBase (they are a maintained pair, NOT codegen'd from
+  // each other) even though the operators that derive from these ARE codegen'd. The base is the
+  // one place a pure await-strip breaks: its disposal seam is a no-op virtual, and an async no-op
+  // (`ValueTask OnDisposingAsync() => default;`) has no valid sync transcription -- `void
+  // OnDisposing() => default;` is illegal, so single-sourcing the base would force the transcriber
+  // to learn a SEMANTIC rule (rewrite a `default`-bodied method whose return just became void into
+  // `{ }`) that serves this one file alone. The codegen is only trustworthy while it stays a dumb,
+  // syntactic await-strip; buying ~40 lines of stable, rarely-touched base back at the cost of a
+  // permanent special-case is the wrong trade. So the base stays a hand-written parallel pair; the
+  // churn (the operators) is what the codegen earns its keep on.
   public abstract class TreenumeratorBase<TNode> : ITreenumerator<TNode>
   {
     public TNode Node { get; protected set; } = default;
@@ -35,31 +44,22 @@ namespace Copse
 
     protected bool Disposed { get; private set; } = false;
 
+    // No finalizer: treenumerators hold only managed state (inner treenumerators, child
+    // enumerators), so there is nothing for a finalize path to reclaim -- the canonical
+    // Dispose(bool)/GC.SuppressFinalize/~Finalizer boilerplate would release nothing here (the
+    // finalize path skips OnDisposing anyway). Disposal is just: run OnDisposing once. This also
+    // keeps the base structurally parallel to AsyncTreenumeratorBase (DisposeAsync/OnDisposingAsync).
     public void Dispose()
     {
-      Dispose(true);
-      GC.SuppressFinalize(this);
-    }
+      if (Disposed)
+        return;
 
-    private void Dispose(bool disposing)
-    {
-      if (!Disposed)
-      {
-        if (disposing)
-          OnDisposing();
-
-        Disposed = true;
-      }
+      OnDisposing();
+      Disposed = true;
     }
 
     protected virtual void OnDisposing()
     {
-    }
-
-    // Finalizer to ensure resources are released if Dispose is not called.
-    ~TreenumeratorBase()
-    {
-      Dispose(false);
     }
 
     #endregion IDisposable
