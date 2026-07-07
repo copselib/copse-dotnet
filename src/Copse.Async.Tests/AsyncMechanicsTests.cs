@@ -6,6 +6,7 @@ using Copse.Core.Async;
 using Copse.Linq;
 using Copse.Linq.Async;
 using Copse.Linq.Generated;
+using Copse.Linq.Treenumerators;
 using Copse.Treenumerators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -161,6 +162,45 @@ namespace Copse.Async.Tests
         sum, 0));
       CollectionAssert.AreEqual(syncBft, asyncBft, "BFT");
     }
+
+    [TestMethod]
+    public async Task AsyncStructuralMergeDepthFirst_OverSuspendingInners_MatchesGeneratedSyncTwin()
+    {
+      var sync = CollectMerge(new GeneratedStructuralMergeDepthFirstTreenumerator<int, int>(
+        () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
+          Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n)));
+
+      var async = await CollectMergeAsync(new AsyncStructuralMergeDepthFirstTreenumerator<int, int>(
+        () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
+        () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
+          AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n)));
+
+      CollectionAssert.AreEqual(sync, async);
+    }
+
+    private static List<string> CollectMerge(ITreenumerator<MergeNode<int, int>> t)
+    {
+      var visits = new List<string>();
+      using (t)
+        while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+          visits.Add(FormatMerge(t.Mode, t.Node, t.VisitCount, t.Position));
+      return visits;
+    }
+
+    private static async Task<List<string>> CollectMergeAsync(IAsyncTreenumerator<MergeNode<int, int>> t)
+    {
+      var visits = new List<string>();
+      await using (t.ConfigureAwait(false))
+        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+          visits.Add(FormatMerge(t.Mode, t.Node, t.VisitCount, t.Position));
+      return visits;
+    }
+
+    private static string FormatMerge(TreenumeratorMode mode, MergeNode<int, int> node, int visitCount, NodePosition position)
+      => $"{mode} L{node.HasLeft}:{node.Left} R{node.HasRight}:{node.Right} vc{visitCount} d{position.Depth} s{position.SiblingIndex}";
 
     [TestMethod]
     public async Task FluentWhereSelect_Composes()

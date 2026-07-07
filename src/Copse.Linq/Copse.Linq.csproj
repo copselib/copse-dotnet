@@ -17,6 +17,9 @@
     <InternalsVisibleTo Include="Copse.Linq.Async" />
     <!-- The parity benchmarks compare the internal hand-tuned Where against the generated twin. -->
     <InternalsVisibleTo Include="Copse.Benchmarks" />
+    <!-- StructuralMerge has no public operator (it is the internal engine for the set ops), so the
+         generated-twin conformance test builds the internal sync StructuralMerge as its oracle. -->
+    <InternalsVisibleTo Include="Copse.Linq.Tests" />
   </ItemGroup>
 
 </Project>
