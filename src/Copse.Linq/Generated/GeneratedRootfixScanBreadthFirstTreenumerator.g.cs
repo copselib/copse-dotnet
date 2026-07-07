@@ -11,23 +11,19 @@ using System.Collections.Generic;
 namespace Copse.Linq.Generated
 {
   /// <summary>
-  /// Breadth-first <b>async</b> <c>RootfixScan</c>: the direct-style async port of
-  /// <c>Copse.Linq.Treenumerators.RootfixScanBreadthFirstTreenumerator</c>. The BFT cumulative scan,
-  /// tracking the parent's accumulated value across the level buffers as scheduling and visiting are
-  /// decoupled. The only seam is the awaited inner pull; all level/skip state is synchronous.
-  ///
-  /// <para><b>This is the codegen source of truth for the sync RootfixScan (BFT) twin.</b> Strip the
-  /// <c>await</c> and it becomes the synchronous driver.</para>
+  /// Breadth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
+  /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. The BFT cumulative
+  /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
+  /// are decoupled; all level/skip state is synchronous.
   /// </summary>
   public sealed class GeneratedRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
-    : ITreenumerator<TAccumulate>
+    : TreenumeratorWrapper<TNode, TAccumulate>
   {
     public GeneratedRootfixScanBreadthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed) : base(innerTreenumeratorFactory)
     {
-      _Inner = innerTreenumeratorFactory();
       _Accumulator = accumulator;
 
       var seedVisit =
@@ -40,7 +36,6 @@ namespace Copse.Linq.Generated
       _CurrentLevel.AddLast(seedVisit);
     }
 
-    private readonly ITreenumerator<TNode> _Inner;
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
 
     private RefSemiDeque<NodeVisit<TAccumulate>> _CurrentLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
@@ -49,29 +44,10 @@ namespace Copse.Linq.Generated
     private Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
 
     // Tracks whether we've scheduled any children since the last node was pushed to _SkippedStack.
+    // This helps detect when we've moved to scheduling children of a different parent.
     private bool _ScheduledChildrenSinceSkip = false;
 
-    private bool _Finished;
-
-    public TAccumulate Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = OnMoveNext(nodeTraversalStrategies);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (Mode == TreenumeratorMode.SchedulingNode)
       {
@@ -84,10 +60,10 @@ namespace Copse.Linq.Generated
         }
       }
 
-      if (!_Inner.MoveNext(nodeTraversalStrategies))
+      if (!InnerTreenumerator.MoveNext(nodeTraversalStrategies))
         return false;
 
-      if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
+      if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         OnSchedulingNode();
       else
         OnVisitingNode();
@@ -97,7 +73,7 @@ namespace Copse.Linq.Generated
 
     private void OnSchedulingNode()
     {
-      var parentDepth = _Inner.Position.Depth - 1;
+      var parentDepth = InnerTreenumerator.Position.Depth - 1;
 
       // Pop skipped items that are not the immediate parent
       while (_SkippedStack.Count > 0
@@ -106,9 +82,9 @@ namespace Copse.Linq.Generated
         _SkippedStack.Pop();
       }
 
-      // Sibling index 0 after scheduling children from the skipped node means we moved to a
-      // different parent's children; pop from the skipped stack.
-      if (_Inner.Position.SiblingIndex == 0
+      // When sibling index is 0 and we've already scheduled some children from the skipped node,
+      // we've moved to a different parent's children. Pop from the skipped stack.
+      if (InnerTreenumerator.Position.SiblingIndex == 0
         && _ScheduledChildrenSinceSkip
         && _SkippedStack.Count > 0)
       {
@@ -116,7 +92,12 @@ namespace Copse.Linq.Generated
         _ScheduledChildrenSinceSkip = false;
       }
 
-      // Find the parent node visit (current level front / skipped stack / next level front / seed).
+      // Find the parent node visit:
+      // 1. If _CurrentLevel[0] has parent depth, use it (we're currently visiting the parent)
+      // 2. Else if skipped stack has an item at parent depth, use it (parent was skipped)
+      // 3. Else if _NextLevel has items at parent depth, use the first one
+      //    (this happens when grandparent was skipped but parent wasn't yet visited)
+      // 4. Else use _CurrentLevel[0] (for root nodes, parent is seed at depth -1)
       NodeVisit<TAccumulate> accumulateNodeVisit;
       if (_CurrentLevel.GetFirst().Position.Depth == parentDepth)
         accumulateNodeVisit = _CurrentLevel.GetFirst();
@@ -127,14 +108,9 @@ namespace Copse.Linq.Generated
       else
         accumulateNodeVisit = _CurrentLevel.GetFirst();
 
-      var node = _Accumulator(accumulateNodeVisit.ToNodeContext(), new NodeContext<TNode>(_Inner.Node, _Inner.Position));
+      var node = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
 
-      var visit =
-        new NodeVisit<TAccumulate>(
-          _Inner.Mode,
-          node,
-          _Inner.VisitCount,
-          _Inner.Position);
+      var visit = InnerTreenumerator.ToNodeVisit().WithNode(node);
 
       _NextLevel.AddLast(visit);
 
@@ -145,7 +121,7 @@ namespace Copse.Linq.Generated
 
     private void OnVisitingNode()
     {
-      if (_Inner.VisitCount == 1)
+      if (InnerTreenumerator.VisitCount == 1)
       {
         _SkippedStack.Clear();
         _CurrentLevel.RemoveFirst();
@@ -153,9 +129,10 @@ namespace Copse.Linq.Generated
         if (_CurrentLevel.Count == 0)
           (_CurrentLevel, _NextLevel) = (_NextLevel, _CurrentLevel);
 
-        // Remove items skipped by the inner treenumerator (e.g. SkipSiblings on earlier siblings).
+        // Remove items that were skipped by the inner treenumerator
+        // (e.g., due to SkipSiblings affecting earlier siblings)
         while (_CurrentLevel.Count > 0
-          && _CurrentLevel.GetFirst().Position != _Inner.Position)
+          && _CurrentLevel.GetFirst().Position != InnerTreenumerator.Position)
         {
           _CurrentLevel.RemoveFirst();
         }
@@ -165,10 +142,10 @@ namespace Copse.Linq.Generated
 
       var newVisit =
         new NodeVisit<TAccumulate>(
-          _Inner.Mode,
+          InnerTreenumerator.Mode,
           visit.Node,
-          _Inner.VisitCount,
-          _Inner.Position);
+          InnerTreenumerator.VisitCount,
+          InnerTreenumerator.Position);
 
       visit = newVisit;
 
@@ -182,7 +159,5 @@ namespace Copse.Linq.Generated
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }
