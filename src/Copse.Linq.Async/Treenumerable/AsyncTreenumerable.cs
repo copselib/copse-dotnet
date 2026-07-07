@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
-using Copse.Linq.Async; // AsyncWhereDepthFirstTreenumerator
+using Copse.Linq.Async;
+using Copse.Linq.Treenumerators; // AsyncWhereDepthFirstTreenumerator
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -104,6 +105,45 @@ namespace Copse.Linq
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed)
       => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(source, accumulator, seed);
+
+    // ----- Set operations (structural, by sibling-index position): each is a projection over the
+    // structural merge of the two operands (the async StructuralMerge treenumerators). -----
+
+    /// <summary>
+    /// Async <c>Union</c>: the structural merge of two trees by position -- each merged node carries
+    /// whichever side(s) have a node at that position. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
+      this IAsyncTreenumerable<TLeft> left,
+      IAsyncTreenumerable<TRight> right)
+      => new AsyncStructuralMergeTreenumerable<TLeft, TRight>(left, right);
+
+    /// <summary>
+    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
+      this IAsyncTreenumerable<TLeft> left,
+      IAsyncTreenumerable<TRight> right)
+      => left.Union(right).PruneBefore(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
+
+    /// <summary>
+    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// to the left values. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TLeft> Subtract<TLeft, TRight>(
+      this IAsyncTreenumerable<TLeft> left,
+      IAsyncTreenumerable<TRight> right)
+      => left.Union(right)
+        .Where(mergeNodeContext => !mergeNodeContext.Node.HasRight)
+        .Select(mergeNode => mergeNode.Left);
+
+    /// <summary>
+    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
+      this IAsyncTreenumerable<TLeft> left,
+      IAsyncTreenumerable<TRight> right)
+      => left.Union(right).Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -372,6 +412,26 @@ namespace Copse.Linq
 
       public IAsyncTreenumerator<TAccumulate> GetAsyncBreadthFirstTreenumerator()
         => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(_Source.GetAsyncBreadthFirstTreenumerator, _Accumulator, _Seed);
+    }
+
+    private sealed class AsyncStructuralMergeTreenumerable<TLeft, TRight> : IAsyncTreenumerable<MergeNode<TLeft, TRight>>
+    {
+      public AsyncStructuralMergeTreenumerable(IAsyncTreenumerable<TLeft> left, IAsyncTreenumerable<TRight> right)
+      {
+        _Left = left;
+        _Right = right;
+      }
+
+      private readonly IAsyncTreenumerable<TLeft> _Left;
+      private readonly IAsyncTreenumerable<TRight> _Right;
+
+      public IAsyncTreenumerator<MergeNode<TLeft, TRight>> GetAsyncDepthFirstTreenumerator()
+        => new AsyncStructuralMergeDepthFirstTreenumerator<TLeft, TRight>(
+          _Left.GetAsyncDepthFirstTreenumerator, _Right.GetAsyncDepthFirstTreenumerator);
+
+      public IAsyncTreenumerator<MergeNode<TLeft, TRight>> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>(
+          _Left.GetAsyncBreadthFirstTreenumerator, _Right.GetAsyncBreadthFirstTreenumerator);
     }
   }
 }
