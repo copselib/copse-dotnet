@@ -1,0 +1,26 @@
+using Copse.Core;
+
+namespace Copse.Linq.Treenumerables
+{
+  // A completed, owned, in-memory capture presented as the non-disposable ITreenumerableBuffer
+  // marker: a thin wrapper that delegates both dimensions to an inner in-memory treenumerable
+  // (a flat store). This is what the eager capture operators (LeaffixScan, Invert) return once
+  // their store is built -- the O(n) is disclosed by the buffer type, but there is no live
+  // source feed, so nothing to dispose.
+  //
+  // The inner may build lazily on first acquisition; "completed" is about there being no live
+  // feed to retire, not about eagerness. (The flat-store treenumerable is in Copse and cannot
+  // implement this Copse.Linq interface directly, hence the wrapper.)
+  internal sealed class CompletedTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>
+  {
+    public CompletedTreenumerableBuffer(ITreenumerable<TValue> capture)
+    {
+      _Capture = capture;
+    }
+
+    private readonly ITreenumerable<TValue> _Capture;
+
+    public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _Capture.GetDepthFirstTreenumerator();
+    public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Capture.GetBreadthFirstTreenumerator();
+  }
+}
