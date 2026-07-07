@@ -39,6 +39,20 @@ namespace Copse.CodeGen
         "Copse/Treenumerators/LevelOrderStreamBreadthFirstTreenumerator.g.cs",
         "AsyncLevelOrderStreamBreadthFirstTreenumerator", "LevelOrderStreamBreadthFirstTreenumerator", "Copse.Treenumerators"),
 
+      // The serializer's async I/O layer: the async scanner and the two async text streams are the
+      // sources; their sync twins are the forward-only deserialize path (all target frameworks).
+      new("Copse.SimpleSerializer/AsyncValueTokenStreamScanner.cs",
+        "Copse.SimpleSerializer/Generated/ValueTokenStreamScanner.g.cs",
+        "AsyncValueTokenStreamScanner", "ValueTokenStreamScanner", "Copse.SimpleSerializer"),
+
+      new("Copse.SimpleSerializer/AsyncPreorderTextStream.cs",
+        "Copse.SimpleSerializer/Generated/PreorderTextStream.g.cs",
+        "AsyncPreorderTextStream", "PreorderTextStream", "Copse.SimpleSerializer"),
+
+      new("Copse.SimpleSerializer/AsyncLevelOrderTextStream.cs",
+        "Copse.SimpleSerializer/Generated/LevelOrderTextStream.g.cs",
+        "AsyncLevelOrderTextStream", "LevelOrderTextStream", "Copse.SimpleSerializer"),
+
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),

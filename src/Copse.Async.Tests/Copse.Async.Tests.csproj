@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Copse.Async\Copse.Async.csproj" />
     <ProjectReference Include="..\Copse.Linq\Copse.Linq.csproj" />
     <ProjectReference Include="..\Copse.Linq.Async\Copse.Linq.Async.csproj" />
+    <ProjectReference Include="..\Copse.SimpleSerializer\Copse.SimpleSerializer.csproj" />
   </ItemGroup>
 
 </Project>

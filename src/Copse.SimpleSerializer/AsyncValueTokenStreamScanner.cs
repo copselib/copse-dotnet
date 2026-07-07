@@ -1,0 +1,161 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Copse.SimpleSerializer
+{
+  // ValueToken's ASYNC reader over a forward-only TextReader (awaits ReadAsync at the char seam),
+  // shared by both async text streams. Same event contract as ValueTokenStringScanner -- an optional
+  // value, then the structural character that terminated it ('\0' at end of text, delivered exactly
+  // once) -- pulled one character at a time. accumulate: false honors the skip contract: the token is
+  // consumed and reported but its characters are never buffered, so a skip costs I/O only. The
+  // one-character pushback (needed to tell '""' from a closing quote) replaces TextReader.Peek.
+  //
+  // This is the single source of truth. Strip the awaits and it collapses to the synchronous
+  // ValueTokenStreamScanner (the checked-in .g.cs twin). The struct-return ScanEvent replaces the
+  // out params, which cannot cross an await. Does NOT own the reader; the enclosing stream does.
+  internal sealed class AsyncValueTokenStreamScanner
+  {
+    public AsyncValueTokenStreamScanner(TextReader reader)
+    {
+      _Reader = reader;
+    }
+
+    private readonly TextReader _Reader;
+    private readonly StringBuilder _ValueBuilder = new StringBuilder();
+    private readonly char[] _OneChar = new char[1];
+
+    private int _Pushback = -1;
+    private bool _EndDelivered;
+
+    // The value of the last accumulated event with hasValue = true; valid until the next scan.
+    public string GetValue() => _ValueBuilder.ToString();
+
+    public async ValueTask<ScanEvent> TryScanEventAsync(bool accumulate)
+    {
+      if (_EndDelivered)
+        return default;
+
+      _ValueBuilder.Clear();
+      var started = false;
+      var survivesTrim = false; // a bare token of nothing but line endings vanishes at end of input
+
+      while (true)
+      {
+        var read = await ReadCharacterAsync().ConfigureAwait(false);
+
+        if (read < 0)
+        {
+          _EndDelivered = true;
+
+          var hasValue = false;
+
+          if (started && survivesTrim)
+          {
+            if (accumulate)
+              while (_ValueBuilder.Length > 0
+                && (_ValueBuilder[_ValueBuilder.Length - 1] == '\r' || _ValueBuilder[_ValueBuilder.Length - 1] == '\n'))
+                _ValueBuilder.Length--;
+
+            hasValue = true;
+          }
+
+          return new ScanEvent(hasValue, '\0');
+        }
+
+        var character = (char)read;
+
+        if (ValueToken.IsStructural(character))
+          return new ScanEvent(started, character);
+
+        if (!started && character == ValueToken.Quote)
+        {
+          await ScanQuotedAsync(accumulate).ConfigureAwait(false);
+          var terminator = await ScanTerminatorAfterQuoteAsync().ConfigureAwait(false);
+          return new ScanEvent(true, terminator);
+        }
+
+        started = true;
+
+        if (character != '\r' && character != '\n')
+          survivesTrim = true;
+
+        if (accumulate)
+          _ValueBuilder.Append(character);
+      }
+    }
+
+    private async ValueTask ScanQuotedAsync(bool accumulate)
+    {
+      while (true)
+      {
+        var read = await ReadCharacterAsync().ConfigureAwait(false);
+
+        if (read < 0)
+          throw new FormatException("Unterminated quoted value.");
+
+        var character = (char)read;
+
+        if (character == ValueToken.Quote)
+        {
+          var next = await ReadCharacterAsync().ConfigureAwait(false);
+
+          if (next == ValueToken.Quote)
+          {
+            if (accumulate)
+              _ValueBuilder.Append(ValueToken.Quote);
+
+            continue;
+          }
+
+          if (next >= 0)
+            _Pushback = next;
+
+          return;
+        }
+
+        if (accumulate)
+          _ValueBuilder.Append(character);
+      }
+    }
+
+    private async ValueTask<char> ScanTerminatorAfterQuoteAsync()
+    {
+      while (true)
+      {
+        var read = await ReadCharacterAsync().ConfigureAwait(false);
+
+        if (read < 0)
+        {
+          _EndDelivered = true;
+          return '\0';
+        }
+
+        var character = (char)read;
+
+        if (character == '\r' || character == '\n')
+          continue;
+
+        if (ValueToken.IsStructural(character))
+          return character;
+
+        throw new FormatException(
+          $"Unexpected '{character}' after a quoted value: expected a structural character or end of text.");
+      }
+    }
+
+    private async ValueTask<int> ReadCharacterAsync()
+    {
+      if (_Pushback >= 0)
+      {
+        var pending = _Pushback;
+        _Pushback = -1;
+        return pending;
+      }
+
+      var count = await _Reader.ReadAsync(_OneChar, 0, 1).ConfigureAwait(false);
+      return count == 0 ? -1 : _OneChar[0];
+    }
+  }
+}
