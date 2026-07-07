@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Core.Async
+namespace Copse.Async
 {
   /// <summary>
   /// Async analog of <c>Copse.IChildEnumerator&lt;TNode&gt;</c>. The pull returns the next child BY VALUE

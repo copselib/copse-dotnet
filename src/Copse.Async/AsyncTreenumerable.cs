@@ -5,15 +5,16 @@ using System.Collections.Generic;
 namespace Copse.Async
 {
   /// <summary>
-  /// A deferred async treenumerable over a hierarchical source: a fresh roots stream + child-enumerator
-  /// factory per enumeration, mapped to values. The async analog of the engine-backed treenumerable, so
-  /// operators (Copse.Linq.AsyncTreenumerable's Where / Select) have something to wrap.
+  /// The async engine-backed treenumerable over a hierarchical source (a fresh roots stream +
+  /// child-enumerator factory per enumeration, mapped to values). The async analog of the sync
+  /// engine base <c>Copse.Treenumerables.Treenumerable&lt;,,&gt;</c>: a composite
+  /// <see cref="IAsyncTreenumerable{TValue}"/> that affords BOTH traversal dimensions.
   /// </summary>
-  public sealed class AsyncDepthFirstTreenumerable<TValue, TNode, TAsyncChildEnumerator>
+  public sealed class AsyncTreenumerable<TValue, TNode, TAsyncChildEnumerator>
     : IAsyncTreenumerable<TValue>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
   {
-    public AsyncDepthFirstTreenumerable(
+    public AsyncTreenumerable(
       Func<IAsyncEnumerable<TNode>> rootsFactory,
       Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<TNode, TValue> map)
@@ -29,6 +30,10 @@ namespace Copse.Async
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
       => new AsyncDepthFirstTreenumerator<TValue, TNode, TAsyncChildEnumerator>(
+        _RootsFactory(), _ChildEnumeratorFactory, _Map);
+
+    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
+      => new AsyncBreadthFirstTreenumerator<TValue, TNode, TAsyncChildEnumerator>(
         _RootsFactory(), _ChildEnumeratorFactory, _Map);
   }
 }

@@ -82,6 +82,12 @@ namespace Copse.Linq
           _Source.GetAsyncDepthFirstTreenumerator,
           _Predicate,
           NodeTraversalStrategies.SkipNode);
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncWhereBreadthFirstTreenumerator<TNode>(
+          _Source.GetAsyncBreadthFirstTreenumerator,
+          _Predicate,
+          NodeTraversalStrategies.SkipNode);
     }
 
     private sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncTreenumerable<TResult>
@@ -97,6 +103,9 @@ namespace Copse.Linq
 
       public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator()
         => new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncDepthFirstTreenumerator(), _Selector);
+
+      public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncBreadthFirstTreenumerator(), _Selector);
     }
 
     private sealed class AsyncSelectTreenumerator<TSource, TResult> : IAsyncTreenumerator<TResult>

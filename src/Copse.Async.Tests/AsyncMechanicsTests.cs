@@ -98,7 +98,7 @@ namespace Copse.Async.Tests
     public async Task FluentWhereSelect_Composes()
     {
       // The deferred fluent operators compose on the async side: source.Where(...).Select(...).
-      IAsyncTreenumerable<int> source = new AsyncDepthFirstTreenumerable<int, int, AsyncChildEnumerator>(
+      IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
         AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
 
       var composed = await CollectAsync(source.Where(KeepNot3).Select(n => n * 10).GetAsyncDepthFirstTreenumerator());
@@ -118,7 +118,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task Terminals_CountAndToList_OverAsyncPipeline()
     {
-      IAsyncTreenumerable<int> source = new AsyncDepthFirstTreenumerable<int, int, AsyncChildEnumerator>(
+      IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
         AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
 
       // 7 nodes in the forest; DFT schedule order.

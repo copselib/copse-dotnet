@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Mirrors Copse.Core: the async core contracts reference ONLY the sync core. -->
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
-    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,15 @@
 namespace Copse.Core.Async
 {
   /// <summary>
-  /// Async analog of <c>ITreenumerable</c> -- a factory for async traversal cursors. Pared to the
-  /// depth-first dimension for the prototype; the full traversal-dimension split (a breadth-first
-  /// counterpart, narrow single-dimension interfaces) mirrors the synchronous design and is deferred.
+  /// Async analog of <c>ITreenumerable</c>: the pure composite of the two traversal-dimension
+  /// interfaces -- an async tree that affordably offers BOTH traversal streams. Sources that afford
+  /// only one dimension (e.g. a forward-only async serialized stream) implement the matching narrow
+  /// interface (<see cref="IAsyncDepthFirstTreenumerable{TNode}"/> or
+  /// <see cref="IAsyncBreadthFirstTreenumerable{TNode}"/>) instead.
   /// </summary>
   public interface IAsyncTreenumerable<TNode>
+    : IAsyncDepthFirstTreenumerable<TNode>,
+      IAsyncBreadthFirstTreenumerable<TNode>
   {
-    IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator();
   }
 }
