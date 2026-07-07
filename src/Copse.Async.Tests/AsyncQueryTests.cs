@@ -167,6 +167,35 @@ namespace Copse.Async.Tests
         }
     }
 
+    [TestMethod]
+    public async Task Tokenizers_And_Formatting_MatchSync()
+    {
+      var trees = new[] { "a", "a(b,c,d)", "a(b(e),c)", "a,b,c", "a(b(d,e),c)", "a(b(d,e,f),c(g,h,i))" };
+
+      foreach (var tree in trees)
+      {
+        CollectionAssert.AreEqual(
+          Sync(tree).ToDepthFirstTreeTokenizer().Select(x => x.ToString()).ToList(),
+          (await ToList(Async(tree).ToDepthFirstTreeTokenizer())).Select(x => x.ToString()).ToList(),
+          $"DepthFirstTokenizer {tree}");
+
+        CollectionAssert.AreEqual(
+          Sync(tree).ToBreadthFirstTreeTokenizer().Select(x => x.ToString()).ToList(),
+          (await ToList(Async(tree).ToBreadthFirstTreeTokenizer())).Select(x => x.ToString()).ToList(),
+          $"BreadthFirstTokenizer {tree}");
+
+        CollectionAssert.AreEqual(
+          Sync(tree).ToFormattedLines(2).ToList(),
+          await ToList(Async(tree).ToFormattedLines(2)),
+          $"ToFormattedLines {tree}");
+
+        Assert.AreEqual(
+          Sync(tree).ToFormattedString(1),
+          await Async(tree).ToFormattedStringAsync(1),
+          $"ToFormattedString {tree}");
+      }
+    }
+
     // Sync PreorderTraversal returns IEnumerable; bridge it to the async ToList helper.
     private static Task<List<string>> ToList(IEnumerable<string> source) => Task.FromResult(source.ToList());
 
