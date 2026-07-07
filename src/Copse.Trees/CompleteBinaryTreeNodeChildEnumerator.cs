@@ -1,7 +1,9 @@
-﻿namespace Copse.Trees
+using Copse.Traversal;
+
+namespace Copse.Trees
 {
   public struct CompleteBinaryTreeNodeChildEnumerator
-    : IChildEnumerator<int>
+    : IChildCursor<int>
   {
     public CompleteBinaryTreeNodeChildEnumerator(int parentValue)
     {
@@ -39,19 +41,18 @@
 
     private int _ChildValue;
 
-    public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+    public ChildResult<int> MoveNext()
     {
       if (_Disposed || _ChildValue == int.MaxValue)
       {
-        childNodeAndSiblingIndex = default;
-        return false;
+        return default;
       }
 
-      childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(_ChildValue, (int)(_ChildValue % 2));
+      var child = new NodeAndSiblingIndex<int>(_ChildValue, (int)(_ChildValue % 2));
 
       TryIncrementChildValue();
 
-      return true;
+      return new ChildResult<int>(child);
     }
 
     private bool _Disposed;

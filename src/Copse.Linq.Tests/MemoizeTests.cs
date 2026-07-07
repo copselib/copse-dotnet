@@ -1,3 +1,4 @@
+using Copse.Traversal;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 using Copse.SimpleSerializer;
@@ -457,7 +458,7 @@ namespace Copse.Linq.Tests
         nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
         0);
 
-    private struct InfiniteBinaryChildEnumerator : IChildEnumerator<int>
+    private struct InfiniteBinaryChildEnumerator : IChildCursor<int>
     {
       public InfiniteBinaryChildEnumerator(int parent)
       {
@@ -470,17 +471,14 @@ namespace Copse.Linq.Tests
       private int _SiblingIndex;
       private bool _Disposed;
 
-      public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+      public ChildResult<int> MoveNext()
       {
         if (_Disposed || _SiblingIndex >= 2)
-        {
-          childNodeAndSiblingIndex = default;
-          return false;
-        }
+          return default;
 
-        childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
+        var child = new NodeAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
         _SiblingIndex++;
-        return true;
+        return new ChildResult<int>(child);
       }
 
       public void Dispose() => _Disposed = true;

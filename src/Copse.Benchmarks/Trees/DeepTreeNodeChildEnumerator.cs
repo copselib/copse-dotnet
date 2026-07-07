@@ -1,7 +1,9 @@
-﻿namespace Copse.Benchmarks.Trees
+using Copse.Traversal;
+
+namespace Copse.Benchmarks.Trees
 {
   public struct DeepTreeNodeChildEnumerator
-    : IChildEnumerator<int>
+    : IChildCursor<int>
   {
     public DeepTreeNodeChildEnumerator(int ancestorCount)
     {
@@ -10,17 +12,14 @@
 
     private int _AncestorCount;
 
-    public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+    public ChildResult<int> MoveNext()
     {
       if (_AncestorCount == 0)
-      {
-        childNodeAndSiblingIndex = default;
-        return false;
-      }
+        return default;
 
-      childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(_AncestorCount, 0);
+      var child = new NodeAndSiblingIndex<int>(_AncestorCount, 0);
       _AncestorCount = 0;
-      return true;
+      return new ChildResult<int>(child);
     }
 
     public void Dispose()

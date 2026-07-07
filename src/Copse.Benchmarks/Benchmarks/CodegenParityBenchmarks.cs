@@ -1,7 +1,5 @@
 using BenchmarkDotNet.Attributes;
-using Copse;
 using Copse.Core;
-using Copse.Generated;       // engine twins (GeneratedBreadthFirstTreenumerator)
 using Copse.Linq.Generated;  // Where twins
 using Copse.Linq.Treenumerators; // WhereDepthFirstTreenumerator / WhereBreadthFirstTreenumerator (internal, via IVT)
 using Copse.Traversal;
@@ -10,13 +8,13 @@ using System;
 
 namespace Copse.Benchmarks
 {
-  // The codegen ADOPTION gate: does the generated sync twin match the hand-tuned sync code's perf?
-  // If yes, the twins can REPLACE the hand-written engines/operators (the DRY payoff). Same-run
-  // baseline ratios (hardware-noise-immune). Category "Parity" -> off the continuous dashboard;
-  // run: dotnet run -c Release -- --anyCategories Parity
+  // The codegen ADOPTION gate for the Where wrappers: does the generated sync twin match the
+  // hand-tuned sync operator's perf? If yes, the twins can REPLACE the hand-written operators (the
+  // DRY payoff). Same-run baseline ratios (hardware-noise-immune). Category "Parity" -> off the
+  // continuous dashboard; run: dotnet run -c Release -- --anyCategories Parity
   //
-  // (The DFS engine is already covered by DepthFirstDriverBenchmarks at ~1.0x; these add the untested
-  // comparisons: the BFS engine -- whose async port RESTRUCTURED the seams -- and both Where wrappers.)
+  // (The engines are already adopted -- the generated twin IS DepthFirst/BreadthFirstTreenumerator
+  // now, so there is nothing left to A/B there. These isolate the two remaining hand-tuned operators.)
 
   internal static class ParityTree
   {
@@ -46,19 +44,6 @@ namespace Copse.Benchmarks
     public static readonly Func<NodeContext<int>, bool> Keep = nc => nc.Node % 3 != 0;
   }
 
-  internal struct ParityChildEnumerator : IChildEnumerator<int>
-  {
-    private readonly int[] _children;
-    private int _i;
-    public ParityChildEnumerator(int[] children) { _children = children; _i = 0; }
-    public bool MoveNext(out NodeAndSiblingIndex<int> child)
-    {
-      if (_i < _children.Length) { child = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return true; }
-      child = default; return false;
-    }
-    public void Dispose() { }
-  }
-
   internal struct ParityChildCursor : IChildCursor<int>
   {
     private readonly int[] _children;
@@ -74,28 +59,6 @@ namespace Copse.Benchmarks
 
   [MemoryDiagnoser]
   [BenchmarkCategory("Parity")]
-  public class BfsEngineParity
-  {
-    [Params(1 << 18)] public int N;
-    private int[][] _children;
-    private int[] _roots;
-
-    [GlobalSetup] public void Setup() { _children = ParityTree.Build(N); _roots = new[] { 0 }; }
-
-    private ParityChildEnumerator OutFactory(NodeContext<int> nc) => new(_children[nc.Node]);
-    private ParityChildCursor CursorFactory(NodeContext<int> nc) => new(_children[nc.Node]);
-
-    [Benchmark(Baseline = true)]
-    public long HandTuned()
-      => ParityTree.Drain(new BreadthFirstTreenumerator<int, int, ParityChildEnumerator>(_roots, OutFactory, i => i));
-
-    [Benchmark]
-    public long Generated()
-      => ParityTree.Drain(new GeneratedBreadthFirstTreenumerator<int, int, ParityChildCursor>(_roots, CursorFactory, i => i));
-  }
-
-  [MemoryDiagnoser]
-  [BenchmarkCategory("Parity")]
   public class DftWhereParity
   {
     [Params(1 << 18)] public int N;
@@ -106,7 +69,7 @@ namespace Copse.Benchmarks
 
     // Same inner engine for both, so the ratio isolates the Where wrapper cost.
     private Func<ITreenumerator<int>> Inner
-      => () => new DepthFirstTreenumerator<int, int, ParityChildEnumerator>(_roots, nc => new ParityChildEnumerator(_children[nc.Node]), i => i);
+      => () => new DepthFirstTreenumerator<int, int, ParityChildCursor>(_roots, nc => new ParityChildCursor(_children[nc.Node]), i => i);
 
     [Benchmark(Baseline = true)]
     public long HandTuned()
@@ -128,7 +91,7 @@ namespace Copse.Benchmarks
     [GlobalSetup] public void Setup() { _children = ParityTree.Build(N); _roots = new[] { 0 }; }
 
     private Func<ITreenumerator<int>> Inner
-      => () => new BreadthFirstTreenumerator<int, int, ParityChildEnumerator>(_roots, nc => new ParityChildEnumerator(_children[nc.Node]), i => i);
+      => () => new BreadthFirstTreenumerator<int, int, ParityChildCursor>(_roots, nc => new ParityChildCursor(_children[nc.Node]), i => i);
 
     [Benchmark(Baseline = true)]
     public long HandTuned()

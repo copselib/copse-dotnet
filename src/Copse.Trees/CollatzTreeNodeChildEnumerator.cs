@@ -1,7 +1,9 @@
-﻿namespace Copse.Trees
+using Copse.Traversal;
+
+namespace Copse.Trees
 {
   public struct CollatzTreeNodeChildEnumerator
-    : IChildEnumerator<ulong>
+    : IChildCursor<ulong>
   {
     public CollatzTreeNodeChildEnumerator(ulong value)
     {
@@ -20,22 +22,21 @@
     private ulong GetFirstChild() => checked(Value * 2);
     private ulong GetSecondChild() => (Value - 1) / 3;
 
-    public bool MoveNext(out NodeAndSiblingIndex<ulong> childNodeAndSiblingIndex)
+    public ChildResult<ulong> MoveNext()
     {
       if (_Disposed || CurrentIndex == ChildCount)
       {
-        childNodeAndSiblingIndex = default;
-        return false;
+        return default;
       }
 
       _CurrentIndexByte++;
 
-      childNodeAndSiblingIndex =
+      var child =
         new NodeAndSiblingIndex<ulong>(
           CurrentIndex == 0 ? GetFirstChild() : GetSecondChild(),
           CurrentIndex);
 
-      return true;
+      return new ChildResult<ulong>(child);
     }
 
     private bool _Disposed;

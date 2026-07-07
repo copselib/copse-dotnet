@@ -7,7 +7,7 @@ using Copse.Traversal;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Generated
+namespace Copse.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> treenumerator: the direct-style async port of
@@ -22,11 +22,11 @@ namespace Copse.Generated
   /// <c>_Path.Front</c> access (semantically identical -- Front returns a ref to the same slot). This is
   /// the one restructuring the async port imposes on the engines; everything else mirrors the sync driver.</para>
   /// </summary>
-  public sealed class GeneratedBreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
+  public sealed class BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
     where TChildEnumerator : IChildCursor<TNode>
   {
-    public GeneratedBreadthFirstTreenumerator(
+    public BreadthFirstTreenumerator(
       IEnumerable<TNode> rootNodes,
       Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
       Func<TNode, TValue> map)

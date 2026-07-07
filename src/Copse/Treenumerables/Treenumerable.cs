@@ -1,4 +1,5 @@
 ﻿using Copse.Core;
+using Copse.Traversal;
 using Copse.Treenumerators;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 namespace Copse.Treenumerables
 {
   public class Treenumerable<TValue, TNode, TChildEnumerator> : ITreenumerable<TValue>
-    where TChildEnumerator : IChildEnumerator<TNode>
+    where TChildEnumerator : IChildCursor<TNode>
   {
     public Treenumerable(
       Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
@@ -57,7 +58,7 @@ namespace Copse.Treenumerables
   // PreorderTree's int index) use the three-parameter base above with an explicit resolution map.
   public class Treenumerable<TNode, TChildEnumerator>
     : Treenumerable<TNode, TNode, TChildEnumerator>
-    where TChildEnumerator : IChildEnumerator<TNode>
+    where TChildEnumerator : IChildCursor<TNode>
   {
     public Treenumerable(
       Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
