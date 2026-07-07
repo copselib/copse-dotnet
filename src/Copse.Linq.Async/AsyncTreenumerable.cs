@@ -14,8 +14,8 @@ namespace Copse.Linq
   /// sync names (no <c>Async</c> suffix) and are overload-resolved by the async receiver type; terminal
   /// operators carry the <c>Async</c> suffix (they return an awaitable).
   ///
-  /// <para>Prototype: deferred <c>Where</c> / <c>Select</c> and terminal <c>CountNodesAsync</c> /
-  /// <c>ToListAsync</c>, depth-first dimension only.</para>
+  /// <para>Deferred: <c>Where</c> / <c>Select</c> / <c>Do</c> / <c>Hide</c> (both traversal dimensions);
+  /// terminals <c>CountNodesAsync</c> / <c>ToListAsync</c>.</para>
   /// </summary>
   public static class AsyncTreenumerable
   {
@@ -35,6 +35,24 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
       => new AsyncSelectTreenumerable<TSource, TResult>(source, selector);
+
+    /// <summary>
+    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> Do<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Action<NodeVisit<TNode>> onNext)
+      => new AsyncDoTreenumerable<TNode>(source, onNext);
+
+    /// <summary>
+    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// for) the concrete source type. Deferred.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> Hide<TNode>(
+      this IAsyncTreenumerable<TNode> source)
+      => new AsyncHideTreenumerable<TNode>(source);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -132,6 +150,88 @@ namespace Copse.Linq
         Node = _Selector(_Inner.Node);
         return true;
       }
+
+      public ValueTask DisposeAsync() => _Inner.DisposeAsync();
+    }
+
+    private sealed class AsyncDoTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+    {
+      public AsyncDoTreenumerable(IAsyncTreenumerable<TNode> source, Action<NodeVisit<TNode>> onNext)
+      {
+        _Source = source;
+        _OnNext = onNext;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+      private readonly Action<NodeVisit<TNode>> _OnNext;
+
+      public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+        => new AsyncDoTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator(), _OnNext);
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncDoTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator(), _OnNext);
+    }
+
+    private sealed class AsyncDoTreenumerator<TNode> : IAsyncTreenumerator<TNode>
+    {
+      public AsyncDoTreenumerator(IAsyncTreenumerator<TNode> inner, Action<NodeVisit<TNode>> onNext)
+      {
+        _Inner = inner;
+        _OnNext = onNext;
+      }
+
+      private readonly IAsyncTreenumerator<TNode> _Inner;
+      private readonly Action<NodeVisit<TNode>> _OnNext;
+
+      public TNode Node => _Inner.Node;
+      public int VisitCount => _Inner.VisitCount;
+      public TreenumeratorMode Mode => _Inner.Mode;
+      public NodePosition Position => _Inner.Position;
+
+      public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+      {
+        if (!await _Inner.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
+          return false;
+
+        _OnNext?.Invoke(new NodeVisit<TNode>(_Inner.Mode, _Inner.Node, _Inner.VisitCount, _Inner.Position));
+        return true;
+      }
+
+      public ValueTask DisposeAsync() => _Inner.DisposeAsync();
+    }
+
+    private sealed class AsyncHideTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+    {
+      public AsyncHideTreenumerable(IAsyncTreenumerable<TNode> source)
+      {
+        _Source = source;
+      }
+
+      private readonly IAsyncTreenumerable<TNode> _Source;
+
+      public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+        => new AsyncHideTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator());
+
+      public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+        => new AsyncHideTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator());
+    }
+
+    private sealed class AsyncHideTreenumerator<TNode> : IAsyncTreenumerator<TNode>
+    {
+      public AsyncHideTreenumerator(IAsyncTreenumerator<TNode> inner)
+      {
+        _Inner = inner;
+      }
+
+      private readonly IAsyncTreenumerator<TNode> _Inner;
+
+      public TNode Node => _Inner.Node;
+      public int VisitCount => _Inner.VisitCount;
+      public TreenumeratorMode Mode => _Inner.Mode;
+      public NodePosition Position => _Inner.Position;
+
+      public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+        => _Inner.MoveNextAsync(nodeTraversalStrategies);
 
       public ValueTask DisposeAsync() => _Inner.DisposeAsync();
     }

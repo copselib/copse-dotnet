@@ -131,6 +131,26 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(new[] { 1, 2, 5, 4, 6, 7 }, await source.Where(KeepNot3).ToListAsync());
     }
 
+    [TestMethod]
+    public async Task DoAndHide_ForwardStreamUnchanged_OverAsyncPipeline()
+    {
+      IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
+        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+
+      var baseline = await source.ToListAsync();
+
+      // Hide forwards the visit stream unchanged behind the plain contract.
+      CollectionAssert.AreEqual(baseline, await source.Hide().ToListAsync());
+
+      // Do forwards unchanged AND runs its side effect on every emitted visit (schedule + visiting),
+      // so it observes strictly more than the schedule-only node list.
+      var seen = new List<int>();
+      var withDo = await source.Do(v => seen.Add(v.Node)).ToListAsync();
+      CollectionAssert.AreEqual(baseline, withDo);
+      Assert.IsTrue(seen.Count > withDo.Count,
+        $"Do should observe every visit ({seen.Count}), more than the schedule-only stream ({withDo.Count})");
+    }
+
     // --- Collection helpers ---
 
     private readonly record struct Visit(TreenumeratorMode Mode, int Node, int VisitCount, int Depth, int SiblingIndex);
