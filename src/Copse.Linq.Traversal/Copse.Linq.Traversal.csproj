@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Description>Shared Copse.Linq operator building blocks (MergeNode; the color-agnostic Where path state) used verbatim by both the sync operators (Copse.Linq) and their async twins (Copse.Linq.Async), so neither project depends on the other for them.</Description>
   </PropertyGroup>

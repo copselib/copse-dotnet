@@ -1,5 +1,4 @@
 ﻿using Copse.Treenumerables;
-using Copse.Trees;
 
 namespace Copse.Trees
 {

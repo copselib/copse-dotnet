@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Description>Async treenumerators and operators for Copse, driving the shared DFT path with awaited pulls. Prototype.</Description>
   </PropertyGroup>
@@ -11,6 +11,13 @@
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse.Core.Async\Copse.Core.Async.csproj" />
     <ProjectReference Include="..\Copse.Traversal\Copse.Traversal.csproj" />
+  </ItemGroup>
+
+  <!-- netstandard2.1 and net8.0 have IAsyncEnumerable/IAsyncDisposable/ValueTask in-box; net48 and
+       netstandard2.0 get them from the Microsoft polyfill (System.Threading.Tasks.Extensions rides
+       along transitively). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
