@@ -12,9 +12,33 @@ namespace Copse.Linq
     /// value per leaf, the fold of the accumulator down that root-to-leaf path.
     /// </summary>
     public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+    {
+      return
+        source
+        .RootfixScan(accumulator, seed)
+        .GetLeaves();
+    }
+
+    /// <summary>The breadth-first dual: leaf accumulations in level order.</summary>
+    public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+    {
+      return
+        source
+        .RootfixScan(accumulator, seed)
+        .GetLeaves();
+    }
+
+    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
+    public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed)
-      => source.RootfixScan(accumulator, seed).GetLeaves();
+      => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, accumulator, seed);
   }
 }

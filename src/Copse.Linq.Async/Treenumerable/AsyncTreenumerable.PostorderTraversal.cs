@@ -1,4 +1,3 @@
-using Copse;
 using Copse.Core;
 using Copse.Core.Async;
 using System.Collections.Generic;
@@ -15,14 +14,16 @@ namespace Copse.Linq
         yield break;
 
       var nodes = new RefSemiDeque<TNode>();
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
+
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
       {
-        while (await t.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
         {
-          while (nodes.Count - 1 >= t.Position.Depth)
+          while (nodes.Count - 1 >= treenumerator.Position.Depth)
             yield return nodes.RemoveLast();
-          nodes.AddLast(t.Node);
+
+          nodes.AddLast(treenumerator.Node);
         }
       }
 

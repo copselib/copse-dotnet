@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Copse.Async.Treenumerators;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   /// <summary>
   /// The async engine-backed treenumerable over a hierarchical source (a roots stream +

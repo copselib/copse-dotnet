@@ -7,16 +7,16 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Terminal: the number of trees in the forest (root nodes). Drives with SkipNodeAndDescendants so
-    /// each root is scheduled once and its subtree skipped. Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Terminal: the number of trees in the forest (root nodes) -- the count of <c>GetRoots</c>.
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
-    public static async ValueTask<int> CountTreesAsync<TNode>(this IAsyncTreenumerable<TNode> source)
+    public static async ValueTask<int> CountTreesAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
     {
       var count = 0;
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
-          count++;
+
+      await foreach (var root in source.GetRoots().ConfigureAwait(false))
+        count++;
+
       return count;
     }
   }

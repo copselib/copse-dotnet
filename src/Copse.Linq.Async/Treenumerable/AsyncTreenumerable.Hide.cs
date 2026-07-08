@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 
@@ -13,8 +12,18 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerable<TNode> Hide<TNode>(
       this IAsyncTreenumerable<TNode> source)
-      => new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator),
+    {
+      return new AsyncHideTreenumerable<TNode>(source);
+    }
+
+    public static IAsyncDepthFirstTreenumerable<TNode> Hide<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source)
+      => AsyncTreenumerableFactory.CreateDepthFirst(
         () => new AsyncHideTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator));
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> Hide<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source)
+      => AsyncTreenumerableFactory.CreateBreadthFirst(
+        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator));
   }
 }

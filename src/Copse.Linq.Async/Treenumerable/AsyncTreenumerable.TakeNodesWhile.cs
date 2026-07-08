@@ -1,5 +1,6 @@
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async;
 using System;
 
 namespace Copse.Linq
@@ -14,6 +15,26 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)
-      => source.TakeNodesUntil(nodeContext => !predicate(nodeContext), keepFinalNode);
+      => AsyncTreenumerableFactory.Create(
+        () => new AsyncTakeNodesUntilTreenumerator<TNode>(
+          source.GetAsyncBreadthFirstTreenumerator,
+          nodeVisit => !predicate(nodeVisit),
+          keepFinalNode),
+        () => new AsyncTakeNodesUntilTreenumerator<TNode>(
+          source.GetAsyncDepthFirstTreenumerator,
+          nodeVisit => !predicate(nodeVisit),
+          keepFinalNode));
+
+    public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => source.TakeNodesUntil(nodeVisit => !predicate(nodeVisit), keepFinalNode);
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      bool keepFinalNode)
+      => source.TakeNodesUntil(nodeVisit => !predicate(nodeVisit), keepFinalNode);
   }
 }

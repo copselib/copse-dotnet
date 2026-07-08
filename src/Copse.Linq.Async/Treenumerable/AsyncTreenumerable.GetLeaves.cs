@@ -10,22 +10,22 @@ namespace Copse.Linq
     /// <summary>The tree's leaf nodes in preorder, as a lazy async sequence (depth-first dimension).</summary>
     public static async IAsyncEnumerable<TNode> GetLeaves<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
       {
-        if (!await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        if (!await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
           yield break;
 
-        var previousNode = t.Node;
-        var previousDepth = t.Position.Depth;
+        TNode previousNode = treenumerator.Node;
+        int previousDepth = treenumerator.Position.Depth;
 
-        while (await t.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
         {
-          if (previousDepth >= t.Position.Depth)
+          if (previousDepth >= treenumerator.Position.Depth)
             yield return previousNode;
 
-          previousNode = t.Node;
-          previousDepth = t.Position.Depth;
+          previousNode = treenumerator.Node;
+          previousDepth = treenumerator.Position.Depth;
         }
 
         yield return previousNode;
@@ -38,25 +38,25 @@ namespace Copse.Linq
     /// </summary>
     public static async IAsyncEnumerable<TNode> GetLeaves<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var t = source.GetAsyncBreadthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
+      var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
       {
         var hasPending = false;
         var pending = default(TNode);
 
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
-          if (t.Mode == TreenumeratorMode.SchedulingNode)
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
           {
             // The pending first-visited node just scheduled a child: not a leaf.
             hasPending = false;
           }
-          else if (t.VisitCount == 1)
+          else if (treenumerator.VisitCount == 1)
           {
             if (hasPending)
               yield return pending;
 
-            pending = t.Node;
+            pending = treenumerator.Node;
             hasPending = true;
           }
         }

@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -10,21 +9,57 @@ namespace Copse.Linq
   {
     /// <summary>
     /// Async <c>PruneBefore</c>: prunes each subtree at (and including) the first node matching the
-    /// predicate -- no child promotion (SkipNodeAndDescendants). "Prune when true", so the removal
-    /// polarity inverts here at the operator, over the Where machinery (keep when true). Deferred.
+    /// predicate -- no child promotion (SkipNodeAndDescendants). Deferred.
     /// </summary>
-    public static IAsyncTreenumerable<TNode> PruneBefore<TNode>(
-      this IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+    public static IAsyncTreenumerable<T> PruneBefore<T>(
+      this IAsyncTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncWhereBreadthFirstTreenumerator<TNode>(
-          source.GetAsyncBreadthFirstTreenumerator, nodeContext => !predicate(nodeContext), NodeTraversalStrategies.SkipNodeAndDescendants),
-        () => new AsyncWhereDepthFirstTreenumerator<TNode>(
-          source.GetAsyncDepthFirstTreenumerator, nodeContext => !predicate(nodeContext), NodeTraversalStrategies.SkipNodeAndDescendants));
+      return
+        AsyncTreenumerableFactory.Create(
+          // PruneBefore's predicate means "prune when true"; the Where machinery keeps when
+          // true (the LINQ convention), so removal semantics invert here, at the operator.
+          () => new AsyncWhereBreadthFirstTreenumerator<T>(
+            source.GetAsyncBreadthFirstTreenumerator,
+            nodeContext => !predicate(nodeContext),
+            NodeTraversalStrategies.SkipNodeAndDescendants),
+          () => new AsyncWhereDepthFirstTreenumerator<T>(
+            source.GetAsyncDepthFirstTreenumerator,
+            nodeContext => !predicate(nodeContext),
+            NodeTraversalStrategies.SkipNodeAndDescendants));
+    }
+
+    public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
+      this IAsyncDepthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateDepthFirst(
+          () => new AsyncWhereDepthFirstTreenumerator<T>(
+            source.GetAsyncDepthFirstTreenumerator,
+            nodeContext => !predicate(nodeContext),
+            NodeTraversalStrategies.SkipNodeAndDescendants));
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
+      this IAsyncBreadthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateBreadthFirst(
+          () => new AsyncWhereBreadthFirstTreenumerator<T>(
+            source.GetAsyncBreadthFirstTreenumerator,
+            nodeContext => !predicate(nodeContext),
+            NodeTraversalStrategies.SkipNodeAndDescendants));
     }
   }
 }

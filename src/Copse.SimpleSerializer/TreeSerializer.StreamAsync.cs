@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Async.Treenumerables;
 using Copse.Core.Async;
 using System;
 using System.IO;

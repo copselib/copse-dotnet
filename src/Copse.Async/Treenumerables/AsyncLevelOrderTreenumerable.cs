@@ -1,7 +1,7 @@
 using Copse.Core.Async;
 using Copse.Async.Treenumerators;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   /// <summary>
   /// An async tree stored in flat level-order form, and the codegen source of truth for its sync

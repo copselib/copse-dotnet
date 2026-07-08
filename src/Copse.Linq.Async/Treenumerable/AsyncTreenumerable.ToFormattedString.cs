@@ -10,11 +10,17 @@ namespace Copse.Linq
   {
     /// <summary>The tree rendered as a single box-drawing string (lines joined by the platform newline).</summary>
     public static ValueTask<string> ToFormattedStringAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
-      => source.ToFormattedStringAsync(node => node.ToString(), 0);
+    {
+      return source.ToFormattedStringAsync(node => node.ToString(), 0);
+    }
 
     /// <summary>The tree rendered as a single box-drawing string with the given branch padding width.</summary>
-    public static ValueTask<string> ToFormattedStringAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, int paddingSize)
-      => source.ToFormattedStringAsync(node => node.ToString(), paddingSize);
+    public static ValueTask<string> ToFormattedStringAsync<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      int paddingSize)
+    {
+      return source.ToFormattedStringAsync(node => node.ToString(), paddingSize);
+    }
 
     /// <summary>The tree rendered as a single box-drawing string with a custom node formatter and branch padding.</summary>
     public static async ValueTask<string> ToFormattedStringAsync<TNode>(

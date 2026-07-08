@@ -1,7 +1,7 @@
 using Copse.Core.Async;
 using System;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   // Async tree SOURCES (factories), the async analog of Copse.Treenumerables.Tree: they MAKE async
   // trees rather than transform them, so they live with the concrete async treenumerables here, not

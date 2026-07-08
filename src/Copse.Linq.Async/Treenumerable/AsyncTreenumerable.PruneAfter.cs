@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -12,11 +11,41 @@ namespace Copse.Linq
     /// Async <c>PruneAfter</c>: keeps each node that matches the predicate but sheds its subtree (the
     /// matched node is the deepest of its lineage kept). Deferred.
     /// </summary>
-    public static IAsyncTreenumerable<TNode> PruneAfter<TNode>(
-      this IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-      => new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncPruneAfterTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, predicate),
-        () => new AsyncPruneAfterTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, predicate));
+    public static IAsyncTreenumerable<T> PruneAfter<T>(
+      this IAsyncTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.Create(
+          () => new AsyncPruneAfterTreenumerator<T>(source.GetAsyncBreadthFirstTreenumerator, predicate),
+          () => new AsyncPruneAfterTreenumerator<T>(source.GetAsyncDepthFirstTreenumerator, predicate));
+    }
+
+    public static IAsyncDepthFirstTreenumerable<T> PruneAfter<T>(
+      this IAsyncDepthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateDepthFirst(
+          () => new AsyncPruneAfterTreenumerator<T>(source.GetAsyncDepthFirstTreenumerator, predicate));
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<T> PruneAfter<T>(
+      this IAsyncBreadthFirstTreenumerable<T> source,
+      Func<NodeContext<T>, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateBreadthFirst(
+          () => new AsyncPruneAfterTreenumerator<T>(source.GetAsyncBreadthFirstTreenumerator, predicate));
+    }
   }
 }

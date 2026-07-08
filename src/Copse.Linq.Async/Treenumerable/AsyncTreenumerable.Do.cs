@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -15,8 +14,39 @@ namespace Copse.Linq
     public static IAsyncTreenumerable<TNode> Do<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Action<NodeVisit<TNode>> onNext)
-      => new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext),
-        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
+    {
+      if (onNext == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory
+        .Create(
+          () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext),
+          () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
+    }
+
+    public static IAsyncDepthFirstTreenumerable<TNode> Do<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Action<NodeVisit<TNode>> onNext)
+    {
+      if (onNext == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateDepthFirst(
+          () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> Do<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Action<NodeVisit<TNode>> onNext)
+    {
+      if (onNext == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateBreadthFirst(
+          () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext));
+    }
   }
 }

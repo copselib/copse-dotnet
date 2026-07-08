@@ -1,11 +1,11 @@
 using Copse;
 using Copse.Async;
+using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq;
 using Copse.Linq.Async;
-using Copse.Linq.Treenumerators;
 using Copse.Linq.Treenumerators;
 using Copse.Treenumerators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

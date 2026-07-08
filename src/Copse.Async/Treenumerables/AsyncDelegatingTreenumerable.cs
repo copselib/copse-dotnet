@@ -1,7 +1,7 @@
 using Copse.Core.Async;
 using System;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   // Async analog of Copse.Treenumerables.DelegatingTreenumerable: a composite async tree whose two
   // dimension cursors come from injected factories. This is what AsyncTree.Defer returns -- the

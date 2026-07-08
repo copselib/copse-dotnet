@@ -13,11 +13,11 @@ namespace Copse.Linq
       if (source == null)
         yield break;
 
-      var t = source.GetAsyncBreadthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-          if (t.VisitCount == 0)
-            yield return t.Node;
+      var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+          if (treenumerator.VisitCount == 0)
+            yield return treenumerator.Node;
     }
   }
 }

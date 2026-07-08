@@ -1,6 +1,6 @@
-using Copse;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,6 +13,10 @@ namespace Copse.Linq
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
     /// sequence -- one value per root tree, the fold of the accumulator up from that tree's leaves.
     /// Each node accumulates over its children's accumulations (or the leaf selector at a leaf).
+    /// Lazy per root -- a root is emitted the moment its subtree completes, and the flat buffers are
+    /// then reused for the next root, so peak memory is the largest root subtree (not the whole
+    /// forest) and a consumer that stops early traverses fewer roots. Zero per-node alloc: children
+    /// are read via the no-copy ChildAccumulations view (see LeaffixScan).
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
@@ -34,15 +38,15 @@ namespace Copse.Linq
           : accumulator(pending.Context, new ChildAccumulations<TAccumulate>(accumulations, subtreeSizes, index));
       }
 
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
       {
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
-          if (t.Mode != TreenumeratorMode.SchedulingNode)
+          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 
-          var depth = t.Position.Depth;
+          var depth = treenumerator.Position.Depth;
 
           while (path.Count > depth)
             Close();
@@ -54,7 +58,7 @@ namespace Copse.Linq
             subtreeSizes.Clear();
           }
 
-          path.Push(new PendingNode<TSource>(accumulations.Count, new NodeContext<TSource>(t.Node, t.Position)));
+          path.Push(new PendingNode<TSource>(accumulations.Count, treenumerator.ToNodeContext()));
           accumulations.Add(default);
           subtreeSizes.Add(0);
         }

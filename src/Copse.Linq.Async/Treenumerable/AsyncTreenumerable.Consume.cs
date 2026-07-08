@@ -11,13 +11,13 @@ namespace Copse.Linq
     /// Terminal: drives the tree to exhaustion for its side effects, discarding the visit stream.
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
-    public static async ValueTask ConsumeAsync<TNode>(this IAsyncTreenumerable<TNode> source)
+    public static async ValueTask ConsumeAsync<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      TreeTraversalStrategy treeTraversalStrategy = default)
     {
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-        }
+      var treenumerator = source.GetAsyncTreenumerator(treeTraversalStrategy);
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
     }
 
     /// <summary>
@@ -39,20 +39,16 @@ namespace Copse.Linq
 
     public static async ValueTask ConsumeAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-        }
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
     }
 
     public static async ValueTask ConsumeAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var t = source.GetAsyncBreadthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-        }
+      var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
     }
   }
 }

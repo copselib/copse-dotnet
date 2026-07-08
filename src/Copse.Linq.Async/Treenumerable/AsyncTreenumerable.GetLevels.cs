@@ -1,4 +1,3 @@
-using Copse;
 using Copse.Core;
 using Copse.Core.Async;
 using System.Collections.Generic;
@@ -13,21 +12,22 @@ namespace Copse.Linq
     {
       var depth = 0;
       var deque = new RefSemiDeque<TNode>();
-      var t = source.GetAsyncBreadthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
+
+      var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
       {
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
-          if (t.Mode != TreenumeratorMode.SchedulingNode)
+          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 
-          if (t.Position.Depth != depth)
+          if (treenumerator.Position.Depth != depth)
           {
             depth++;
             yield return CopyDequeToArray(deque);
           }
 
-          deque.AddLast(t.Node);
+          deque.AddLast(treenumerator.Node);
         }
 
         if (deque.Count > 0)
@@ -36,10 +36,10 @@ namespace Copse.Linq
 
       TNode[] CopyDequeToArray(RefSemiDeque<TNode> localDeque)
       {
-        var result = new TNode[localDeque.Count];
+        var result = new TNode[deque.Count];
 
-        for (int i = localDeque.Count - 1; i >= 0; i--)
-          result[i] = localDeque.RemoveLast();
+        for (int i = deque.Count - 1; i >= 0; i--)
+          result[i] = deque.RemoveLast();
 
         return result;
       }

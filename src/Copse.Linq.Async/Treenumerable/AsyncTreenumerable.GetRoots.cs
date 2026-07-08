@@ -12,12 +12,14 @@ namespace Copse.Linq
     /// root is scheduled once and its subtree skipped. Deferred sequence -&gt; keeps the sync name (returns
     /// <see cref="IAsyncEnumerable{TNode}"/>, the async analog of the sync <c>IEnumerable</c> result).
     /// </summary>
-    public static async IAsyncEnumerable<TNode> GetRoots<TNode>(this IAsyncTreenumerable<TNode> source)
+    public static async IAsyncEnumerable<TNode> GetRoots<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
-          yield return t.Node;
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+      {
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
+          yield return treenumerator.Node;
+      }
     }
   }
 }

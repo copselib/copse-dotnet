@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -17,8 +16,34 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed)
-      => new AsyncDelegatingTreenumerable<TAccumulate>(
-        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(source.GetAsyncBreadthFirstTreenumerator, accumulator, seed),
-        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(source.GetAsyncDepthFirstTreenumerator, accumulator, seed));
+      => AsyncTreenumerableFactory.Create(
+        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetAsyncBreadthFirstTreenumerator,
+          accumulator,
+          seed),
+        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetAsyncDepthFirstTreenumerator,
+          accumulator,
+          seed));
+
+    public static IAsyncDepthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+      => AsyncTreenumerableFactory.CreateDepthFirst(
+        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetAsyncDepthFirstTreenumerator,
+          accumulator,
+          seed));
+
+    public static IAsyncBreadthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
+      => AsyncTreenumerableFactory.CreateBreadthFirst(
+        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
+          source.GetAsyncBreadthFirstTreenumerator,
+          accumulator,
+          seed));
   }
 }

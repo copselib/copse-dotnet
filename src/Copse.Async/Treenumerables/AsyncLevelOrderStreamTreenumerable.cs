@@ -2,7 +2,7 @@ using Copse.Core.Async;
 using System;
 using Copse.Async.Treenumerators;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   /// <summary>
   /// An async tree streaming from a forward-only level-order source: the async analog of

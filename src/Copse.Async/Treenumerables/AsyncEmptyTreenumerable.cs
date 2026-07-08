@@ -1,7 +1,7 @@
 using Copse.Core.Async;
 using Copse.Async.Treenumerators;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerables
 {
   // Async analog of Copse.Treenumerables.EmptyTreenumerable: the empty async tree. A composite (it
   // affords both dimensions -- an empty stream is trivially both), backed by the shared empty cursor.
