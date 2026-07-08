@@ -68,6 +68,10 @@ namespace Copse.CodeGen
         ["IAsyncEnumerator"] = "IEnumerator",
         ["TAsyncChildEnumerator"] = "TChildEnumerator",
         ["GetAsyncEnumerator"] = "GetEnumerator",
+        ["IAsyncTreenumerableBuffer"] = "ITreenumerableBuffer",
+        ["IAsyncLazyTreenumerableBuffer"] = "ILazyTreenumerableBuffer",
+        ["AsyncRefCountDisposable"] = "RefCountDisposable",
+        ["AsyncDisposable"] = "Disposable",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()
@@ -85,6 +89,8 @@ namespace Copse.CodeGen
       {
         ["Copse.Core.Async"] = "Copse.Core",
         ["Copse.Async.Treenumerators"] = "Copse.Treenumerators",
+        ["Copse.Linq.Async.Treenumerators"] = "Copse.Linq.Treenumerators",
+        ["Copse.Linq.Async.Treenumerables"] = "Copse.Linq.Treenumerables",
       };
 
       private readonly string _asyncClass;

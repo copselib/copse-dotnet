@@ -123,6 +123,42 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereBreadthFirstTreenumerator.cs",
         "Copse.Linq/Generated/GeneratedWhereBreadthFirstTreenumerator.g.cs",
         "AsyncWhereBreadthFirstTreenumerator", "GeneratedWhereBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+
+      // The memoize cluster: twins take over the CANONICAL names (big-bang adoption like the
+      // engines -- the hand-written sync memoize machinery is retired; MemoizeTests plus the
+      // conformance matrix are the non-differential oracle). The cluster's classes reference
+      // each other, so Generated*-style validation naming is not an option here.
+      new("Copse.Linq.Async/Treenumerables/IAsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/ITreenumerableBuffer.g.cs",
+        "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstBuffer.cs",
+        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstBuffer.g.cs",
+        "AsyncMemoizeDepthFirstBuffer", "MemoizeDepthFirstBuffer", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstBuffer.cs",
+        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstBuffer.g.cs",
+        "AsyncMemoizeBreadthFirstBuffer", "MemoizeBreadthFirstBuffer", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstStore.cs",
+        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstStore.g.cs",
+        "AsyncMemoizeDepthFirstStore", "MemoizeDepthFirstStore", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstStore.cs",
+        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstStore.g.cs",
+        "AsyncMemoizeBreadthFirstStore", "MemoizeBreadthFirstStore", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeTreenumerable.cs",
+        "Copse.Linq/Treenumerables/MemoizeTreenumerable.g.cs",
+        "AsyncMemoizeTreenumerable", "MemoizeTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeDepthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/MemoizeDepthFirstSourceTreenumerable.g.cs",
+        "AsyncMemoizeDepthFirstSourceTreenumerable", "MemoizeDepthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/MemoizeBreadthFirstSourceTreenumerable.g.cs",
+        "AsyncMemoizeBreadthFirstSourceTreenumerable", "MemoizeBreadthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
     };
   }
 }
