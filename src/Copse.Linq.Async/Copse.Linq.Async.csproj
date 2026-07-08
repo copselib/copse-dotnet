@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Copse.Linq.Traversal\Copse.Linq.Traversal.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
+  </ItemGroup>
+
 </Project>

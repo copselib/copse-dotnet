@@ -6,7 +6,7 @@ using Copse.Core;
 using Copse.Linq.Extensions;
 using System;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// <b>async</b> <c>PruneAfter</c> and the codegen source of truth for its sync twin: strip the
@@ -14,10 +14,10 @@ namespace Copse.Linq.Generated
   /// except that a scheduled node matching the predicate keeps its own visit but sheds its subtree
   /// (<see cref="NodeTraversalStrategies.SkipDescendants"/> is added to the pull). Dimension-agnostic.
   /// </summary>
-  public sealed class GeneratedPruneAfterTreenumerator<TNode>
+  internal sealed class PruneAfterTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>
   {
-    public GeneratedPruneAfterTreenumerator(
+    public PruneAfterTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate)
       : base(innerTreenumeratorFactory)

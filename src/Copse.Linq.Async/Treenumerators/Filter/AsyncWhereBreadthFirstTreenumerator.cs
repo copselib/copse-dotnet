@@ -21,7 +21,7 @@ namespace Copse.Linq.Async
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  public sealed class AsyncWhereBreadthFirstTreenumerator<TNode>
+  internal sealed class AsyncWhereBreadthFirstTreenumerator<TNode>
     : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(

@@ -16,7 +16,7 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       Action<NodeVisit<TNode>> onNext)
       => new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator(), onNext),
-        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator(), onNext));
+        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext),
+        () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
   }
 }

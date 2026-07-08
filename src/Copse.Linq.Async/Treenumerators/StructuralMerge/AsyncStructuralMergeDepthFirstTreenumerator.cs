@@ -19,7 +19,7 @@ namespace Copse.Linq.Async
   /// the <c>await</c>s and it becomes the synchronous driver. No ref locals cross an await -- the two
   /// operand pulls are guarded by booleans computed before them.</para>
   /// </summary>
-  public sealed class AsyncStructuralMergeDepthFirstTreenumerator<TLeft, TRight>
+  internal sealed class AsyncStructuralMergeDepthFirstTreenumerator<TLeft, TRight>
     : AsyncTreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public AsyncStructuralMergeDepthFirstTreenumerator(

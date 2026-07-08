@@ -14,7 +14,7 @@ namespace Copse.Linq.Async
   /// and later siblings are pruned), optionally keeping the matched node itself
   /// (<paramref name="keepFinalNode"/>). Dimension-agnostic.
   /// </summary>
-  public sealed class AsyncTakeNodesUntilTreenumerator<TNode>
+  internal sealed class AsyncTakeNodesUntilTreenumerator<TNode>
     : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncTakeNodesUntilTreenumerator(

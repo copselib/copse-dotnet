@@ -14,6 +14,6 @@ namespace Copse.Linq
       IAsyncTreenumerable<TRight> right)
       => left.Union(right)
         .Where(mergeNodeContext => !mergeNodeContext.Node.HasRight)
-        .Select(mergeNode => mergeNode.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
   }
 }

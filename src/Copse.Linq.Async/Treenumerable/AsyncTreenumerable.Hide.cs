@@ -14,7 +14,7 @@ namespace Copse.Linq
     public static IAsyncTreenumerable<TNode> Hide<TNode>(
       this IAsyncTreenumerable<TNode> source)
       => new AsyncDelegatingTreenumerable<TNode>(
-        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator()),
-        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator()));
+        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator),
+        () => new AsyncHideTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator));
   }
 }

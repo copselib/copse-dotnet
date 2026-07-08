@@ -16,7 +16,7 @@ namespace Copse.Linq.Async
   /// the sync driver uses, verbatim) -- the test that the codegen approach holds for the library's
   /// most intricate operator, not just the engine.
   /// </summary>
-  public sealed class AsyncWhereDepthFirstTreenumerator<TNode>
+  internal sealed class AsyncWhereDepthFirstTreenumerator<TNode>
     : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncWhereDepthFirstTreenumerator(

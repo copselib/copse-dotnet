@@ -7,7 +7,7 @@ using Copse.Linq.Treenumerators; // MergeNode
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> <c>StructuralMerge</c>: the direct-style async port of
@@ -20,10 +20,10 @@ namespace Copse.Linq.Generated
   /// the <c>await</c>s and it becomes the synchronous driver. No ref locals cross an await -- the two
   /// operand pulls are guarded by booleans computed before them.</para>
   /// </summary>
-  public sealed class GeneratedStructuralMergeDepthFirstTreenumerator<TLeft, TRight>
+  internal sealed class StructuralMergeDepthFirstTreenumerator<TLeft, TRight>
     : TreenumeratorBase<MergeNode<TLeft, TRight>>
   {
-    public GeneratedStructuralMergeDepthFirstTreenumerator(
+    public StructuralMergeDepthFirstTreenumerator(
       Func<ITreenumerator<TLeft>> leftTreenumeratorFactory,
       Func<ITreenumerator<TRight>> rightTreenumeratorFactory)
     {

@@ -1,31 +1,35 @@
 using Copse.Core;
 using Copse.Core.Async;
+using System;
 using System.Threading.Tasks;
 
 namespace Copse.Linq.Async
 {
   /// <summary>
-  /// <b>async</b> <c>Hide</c>: forwards the inner (async) visit stream unchanged. Behind the plain
-  /// <see cref="IAsyncTreenumerable{TNode}"/> contract this hides the concrete source type from
-  /// callers. Dimension-agnostic; a pure passthrough, hand-written (no cadence).
+  /// <b>async</b> <c>Hide</c> and the codegen source of truth for its sync twin: forwards the inner
+  /// (async) visit stream unchanged. Behind the plain <see cref="IAsyncTreenumerable{TNode}"/>
+  /// contract this hides the concrete source type from callers. Dimension-agnostic.
   /// </summary>
-  public sealed class AsyncHideTreenumerator<TNode> : IAsyncTreenumerator<TNode>
+  internal sealed class AsyncHideTreenumerator<TNode> : IAsyncTreenumerator<TNode>
   {
-    public AsyncHideTreenumerator(IAsyncTreenumerator<TNode> inner)
+    public AsyncHideTreenumerator(
+      Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory)
     {
-      _Inner = inner;
+      _InnerTreenumerator = innerTreenumeratorFactory();
     }
 
-    private readonly IAsyncTreenumerator<TNode> _Inner;
+    private readonly IAsyncTreenumerator<TNode> _InnerTreenumerator;
 
-    public TNode Node => _Inner.Node;
-    public int VisitCount => _Inner.VisitCount;
-    public TreenumeratorMode Mode => _Inner.Mode;
-    public NodePosition Position => _Inner.Position;
+    public TNode Node => _InnerTreenumerator.Node;
+    public int VisitCount => _InnerTreenumerator.VisitCount;
+    public TreenumeratorMode Mode => _InnerTreenumerator.Mode;
+    public NodePosition Position => _InnerTreenumerator.Position;
 
     public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-      => _Inner.MoveNextAsync(nodeTraversalStrategies);
+    {
+      return _InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies);
+    }
 
-    public ValueTask DisposeAsync() => _Inner.DisposeAsync();
+    public ValueTask DisposeAsync() => _InnerTreenumerator.DisposeAsync();
   }
 }

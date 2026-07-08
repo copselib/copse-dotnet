@@ -21,6 +21,9 @@
     <!-- StructuralMerge has no public operator (it is the internal engine for the set ops), so the
          generated-twin conformance test builds the internal sync StructuralMerge as its oracle. -->
     <InternalsVisibleTo Include="Copse.Linq.Tests" />
+    <!-- The async mechanics tests lockstep each async operator treenumerator against its adopted
+         (internal) sync twin. -->
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
   </ItemGroup>
 
 </Project>

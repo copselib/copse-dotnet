@@ -13,7 +13,7 @@ namespace Copse.Linq.Async
   /// except that a scheduled node matching the predicate keeps its own visit but sheds its subtree
   /// (<see cref="NodeTraversalStrategies.SkipDescendants"/> is added to the pull). Dimension-agnostic.
   /// </summary>
-  public sealed class AsyncPruneAfterTreenumerator<TNode>
+  internal sealed class AsyncPruneAfterTreenumerator<TNode>
     : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncPruneAfterTreenumerator(

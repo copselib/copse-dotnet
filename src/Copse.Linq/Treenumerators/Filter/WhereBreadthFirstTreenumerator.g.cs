@@ -7,7 +7,7 @@ using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereBreadthFirstPath (internal, via InternalsVisibleTo)
 using System;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
@@ -22,10 +22,10 @@ namespace Copse.Linq.Generated
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  public sealed class GeneratedWhereBreadthFirstTreenumerator<TNode>
+  internal sealed class WhereBreadthFirstTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>
   {
-    public GeneratedWhereBreadthFirstTreenumerator(
+    public WhereBreadthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       NodeTraversalStrategies nodeTraversalStrategy)

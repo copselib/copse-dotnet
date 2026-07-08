@@ -7,7 +7,7 @@ using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
@@ -16,10 +16,10 @@ namespace Copse.Linq.Generated
   /// accumulated value -- transforming the inner TNode stream into a TAccumulate stream; all
   /// accumulation state is synchronous stacks.
   /// </summary>
-  public sealed class GeneratedRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
+  internal sealed class RootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
     : TreenumeratorWrapper<TNode, TAccumulate>
   {
-    public GeneratedRootfixScanDepthFirstTreenumerator(
+    public RootfixScanDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed) : base(innerTreenumeratorFactory)

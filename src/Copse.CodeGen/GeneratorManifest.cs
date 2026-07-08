@@ -92,37 +92,53 @@ namespace Copse.CodeGen
         "Copse.SimpleSerializer/Generated/LevelOrderTextStream.g.cs",
         "AsyncLevelOrderTextStream", "LevelOrderTextStream", "Copse.SimpleSerializer"),
 
+      // The operator treenumerators: twins take over the CANONICAL names (the hand-tuned sync
+      // operators are retired; the operators' own suites + VisitStreamConformance are the
+      // non-differential oracle, so the Generated*-vs-hand-written differential tests go with
+      // them -- same as the engine A/B teardown).
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncPruneAfterTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedPruneAfterTreenumerator.g.cs",
-        "AsyncPruneAfterTreenumerator", "GeneratedPruneAfterTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/Filter/PruneAfterTreenumerator.g.cs",
+        "AsyncPruneAfterTreenumerator", "PruneAfterTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncTakeNodesUntilTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedTakeNodesUntilTreenumerator.g.cs",
-        "AsyncTakeNodesUntilTreenumerator", "GeneratedTakeNodesUntilTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/Filter/TakeNodesUntilTreenumerator.g.cs",
+        "AsyncTakeNodesUntilTreenumerator", "TakeNodesUntilTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanDepthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedRootfixScanDepthFirstTreenumerator.g.cs",
-        "AsyncRootfixScanDepthFirstTreenumerator", "GeneratedRootfixScanDepthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/RootfixScan/RootfixScanDepthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanDepthFirstTreenumerator", "RootfixScanDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanBreadthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedRootfixScanBreadthFirstTreenumerator.g.cs",
-        "AsyncRootfixScanBreadthFirstTreenumerator", "GeneratedRootfixScanBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/RootfixScan/RootfixScanBreadthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanBreadthFirstTreenumerator", "RootfixScanBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/StructuralMerge/AsyncStructuralMergeDepthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedStructuralMergeDepthFirstTreenumerator.g.cs",
-        "AsyncStructuralMergeDepthFirstTreenumerator", "GeneratedStructuralMergeDepthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/StructuralMerge/StructuralMergeDepthFirstTreenumerator.g.cs",
+        "AsyncStructuralMergeDepthFirstTreenumerator", "StructuralMergeDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/StructuralMerge/AsyncStructuralMergeBreadthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedStructuralMergeBreadthFirstTreenumerator.g.cs",
-        "AsyncStructuralMergeBreadthFirstTreenumerator", "GeneratedStructuralMergeBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/StructuralMerge/StructuralMergeBreadthFirstTreenumerator.g.cs",
+        "AsyncStructuralMergeBreadthFirstTreenumerator", "StructuralMergeBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedWhereDepthFirstTreenumerator.g.cs",
-        "AsyncWhereDepthFirstTreenumerator", "GeneratedWhereDepthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/Filter/WhereDepthFirstTreenumerator.g.cs",
+        "AsyncWhereDepthFirstTreenumerator", "WhereDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereBreadthFirstTreenumerator.cs",
-        "Copse.Linq/Generated/GeneratedWhereBreadthFirstTreenumerator.g.cs",
-        "AsyncWhereBreadthFirstTreenumerator", "GeneratedWhereBreadthFirstTreenumerator", "Copse.Linq.Generated"),
+        "Copse.Linq/Treenumerators/Filter/WhereBreadthFirstTreenumerator.g.cs",
+        "AsyncWhereBreadthFirstTreenumerator", "WhereBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Do/AsyncDoTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Do/DoTreenumerator.g.cs",
+        "AsyncDoTreenumerator", "DoTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Hide/AsyncHideTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Hide/HideTreenumerator.g.cs",
+        "AsyncHideTreenumerator", "HideTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/Select/AsyncSelectTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Select/SelectTreenumerator.g.cs",
+        "AsyncSelectTreenumerator", "SelectTreenumerator", "Copse.Linq.Treenumerators"),
 
       // The memoize cluster: twins take over the CANONICAL names (big-bang adoption like the
       // engines -- the hand-written sync memoize machinery is retired; MemoizeTests plus the

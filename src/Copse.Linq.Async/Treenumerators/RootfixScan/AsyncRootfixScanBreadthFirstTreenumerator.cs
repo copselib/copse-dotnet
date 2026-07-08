@@ -15,7 +15,7 @@ namespace Copse.Linq.Async
   /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
   /// are decoupled; all level/skip state is synchronous.
   /// </summary>
-  public sealed class AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
+  internal sealed class AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
     : AsyncTreenumeratorWrapper<TNode, TAccumulate>
   {
     public AsyncRootfixScanBreadthFirstTreenumerator(

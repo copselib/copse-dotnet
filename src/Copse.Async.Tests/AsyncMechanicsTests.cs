@@ -5,7 +5,7 @@ using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq;
 using Copse.Linq.Async;
-using Copse.Linq.Generated;
+using Copse.Linq.Treenumerators;
 using Copse.Linq.Treenumerators;
 using Copse.Treenumerators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -67,7 +67,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncWhereDepthFirst_OverSuspendingInner_MatchesGeneratedSyncWhere()
     {
-      var sync = Collect(new GeneratedWhereDepthFirstTreenumerator<int>(
+      var sync = Collect(new WhereDepthFirstTreenumerator<int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         KeepNot3, NodeTraversalStrategies.SkipNode));
@@ -83,7 +83,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncWhereBreadthFirst_OverSuspendingBfsInner_MatchesGeneratedSyncWhere()
     {
-      var sync = Collect(new GeneratedWhereBreadthFirstTreenumerator<int>(
+      var sync = Collect(new WhereBreadthFirstTreenumerator<int>(
         () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         KeepNot3, NodeTraversalStrategies.SkipNode));
@@ -101,7 +101,7 @@ namespace Copse.Async.Tests
     {
       Func<NodeContext<int>, bool> pruneAt3 = nc => nc.Node == 3;
 
-      var sync = Collect(new GeneratedPruneAfterTreenumerator<int>(
+      var sync = Collect(new PruneAfterTreenumerator<int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         pruneAt3));
@@ -121,7 +121,7 @@ namespace Copse.Async.Tests
 
       foreach (var keepFinalNode in new[] { true, false })
       {
-        var sync = Collect(new GeneratedTakeNodesUntilTreenumerator<int>(
+        var sync = Collect(new TakeNodesUntilTreenumerator<int>(
           () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
             Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
           stopAt3, keepFinalNode));
@@ -141,7 +141,7 @@ namespace Copse.Async.Tests
       Func<NodeContext<int>, NodeContext<int>, int> sum = (acc, node) => acc.Node + node.Node;
 
       // Depth-first
-      var syncDft = Collect(new GeneratedRootfixScanDepthFirstTreenumerator<int, int>(
+      var syncDft = Collect(new RootfixScanDepthFirstTreenumerator<int, int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         sum, 0));
@@ -152,7 +152,7 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(syncDft, asyncDft, "DFT");
 
       // Breadth-first
-      var syncBft = Collect(new GeneratedRootfixScanBreadthFirstTreenumerator<int, int>(
+      var syncBft = Collect(new RootfixScanBreadthFirstTreenumerator<int, int>(
         () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         sum, 0));
@@ -166,7 +166,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncStructuralMergeDepthFirst_OverSuspendingInners_MatchesGeneratedSyncTwin()
     {
-      var sync = CollectMerge(new GeneratedStructuralMergeDepthFirstTreenumerator<int, int>(
+      var sync = CollectMerge(new StructuralMergeDepthFirstTreenumerator<int, int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
@@ -184,7 +184,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncStructuralMergeBreadthFirst_OverSuspendingInners_MatchesGeneratedSyncTwin()
     {
-      var sync = CollectMerge(new GeneratedStructuralMergeBreadthFirstTreenumerator<int, int>(
+      var sync = CollectMerge(new StructuralMergeBreadthFirstTreenumerator<int, int>(
         () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
@@ -227,10 +227,10 @@ namespace Copse.Async.Tests
       IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
         nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
 
-      var composed = await CollectAsync(source.Where(KeepNot3).Select(n => n * 10).GetAsyncDepthFirstTreenumerator());
+      var composed = await CollectAsync(source.Where(KeepNot3).Select(nc => nc.Node * 10).GetAsyncDepthFirstTreenumerator());
 
       // Expected: the generated sync Where's first-visit nodes, mapped.
-      var syncWhere = Collect(new GeneratedWhereDepthFirstTreenumerator<int>(
+      var syncWhere = Collect(new WhereDepthFirstTreenumerator<int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         KeepNot3, NodeTraversalStrategies.SkipNode));

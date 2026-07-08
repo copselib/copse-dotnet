@@ -7,7 +7,7 @@ using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
@@ -17,10 +17,10 @@ namespace Copse.Linq.Generated
   /// the sync driver uses, verbatim) -- the test that the codegen approach holds for the library's
   /// most intricate operator, not just the engine.
   /// </summary>
-  public sealed class GeneratedWhereDepthFirstTreenumerator<TNode>
+  internal sealed class WhereDepthFirstTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>
   {
-    public GeneratedWhereDepthFirstTreenumerator(
+    public WhereDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       NodeTraversalStrategies nodeTraversalStrategy)

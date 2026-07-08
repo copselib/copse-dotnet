@@ -6,7 +6,7 @@ using Copse.Core;
 using Copse.Linq.Extensions;
 using System;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// <b>async</b> <c>TakeNodesUntil</c> and the codegen source of truth for its sync twin: strip the
@@ -15,10 +15,10 @@ namespace Copse.Linq.Generated
   /// and later siblings are pruned), optionally keeping the matched node itself
   /// (<paramref name="keepFinalNode"/>). Dimension-agnostic.
   /// </summary>
-  public sealed class GeneratedTakeNodesUntilTreenumerator<TNode>
+  internal sealed class TakeNodesUntilTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>
   {
-    public GeneratedTakeNodesUntilTreenumerator(
+    public TakeNodesUntilTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)

@@ -22,7 +22,7 @@ namespace Copse.Linq.Async
   /// so each GetFirst returns the same frame). The other queue-front refs are block-scoped before their
   /// seam or in synchronous methods, so they stay as-is.</para>
   /// </summary>
-  public sealed class AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
+  internal sealed class AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
     : AsyncTreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public AsyncStructuralMergeBreadthFirstTreenumerator(

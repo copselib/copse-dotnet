@@ -15,7 +15,7 @@ namespace Copse.Linq.Async
   /// accumulated value -- transforming the inner TNode stream into a TAccumulate stream; all
   /// accumulation state is synchronous stacks.
   /// </summary>
-  public sealed class AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
+  internal sealed class AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
     : AsyncTreenumeratorWrapper<TNode, TAccumulate>
   {
     public AsyncRootfixScanDepthFirstTreenumerator(

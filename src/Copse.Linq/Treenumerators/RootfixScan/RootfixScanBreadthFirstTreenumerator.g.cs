@@ -8,7 +8,7 @@ using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
@@ -16,10 +16,10 @@ namespace Copse.Linq.Generated
   /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
   /// are decoupled; all level/skip state is synchronous.
   /// </summary>
-  public sealed class GeneratedRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
+  internal sealed class RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
     : TreenumeratorWrapper<TNode, TAccumulate>
   {
-    public GeneratedRootfixScanBreadthFirstTreenumerator(
+    public RootfixScanBreadthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed) : base(innerTreenumeratorFactory)

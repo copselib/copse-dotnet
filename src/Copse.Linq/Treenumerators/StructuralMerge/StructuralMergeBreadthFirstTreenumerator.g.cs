@@ -7,7 +7,7 @@ using Copse.Core;
 using Copse.Linq.Treenumerators; // MergeNode
 using System;
 
-namespace Copse.Linq.Generated
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> <c>StructuralMerge</c>: the direct-style async port of
@@ -23,10 +23,10 @@ namespace Copse.Linq.Generated
   /// so each GetFirst returns the same frame). The other queue-front refs are block-scoped before their
   /// seam or in synchronous methods, so they stay as-is.</para>
   /// </summary>
-  public sealed class GeneratedStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
+  internal sealed class StructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
     : TreenumeratorBase<MergeNode<TLeft, TRight>>
   {
-    public GeneratedStructuralMergeBreadthFirstTreenumerator(
+    public StructuralMergeBreadthFirstTreenumerator(
       Func<ITreenumerator<TLeft>> leftTreenumeratorFactory,
       Func<ITreenumerator<TRight>> rightTreenumeratorFactory)
     {
