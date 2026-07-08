@@ -24,6 +24,9 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
+      new("Copse.Async/Treenumerators/AsyncPreorderStoreDepthFirstTreenumerator.cs",
+        "Copse/Treenumerators/PreorderStoreDepthFirstTreenumerator.g.cs",
+        "AsyncPreorderStoreDepthFirstTreenumerator", "PreorderStoreDepthFirstTreenumerator", "Copse.Treenumerators"),
 
       new("Copse.Async/Treenumerators/AsyncBreadthFirstTreenumerator.cs",
         "Copse/Treenumerators/BreadthFirstTreenumerator.g.cs",

@@ -56,6 +56,8 @@ namespace Copse.CodeGen
         ["IAsyncChildEnumerator"] = "IChildEnumerator",
         ["IAsyncPreorderStream"] = "IPreorderStream",
         ["IAsyncLevelOrderStream"] = "ILevelOrderStream",
+        ["IAsyncPreorderStore"] = "IPreorderStore",
+        ["IAsyncLevelOrderStore"] = "ILevelOrderStore",
         ["AsyncValueTokenStreamScanner"] = "ValueTokenStreamScanner",
         ["IAsyncEnumerable"] = "IEnumerable",
         ["IAsyncEnumerator"] = "IEnumerator",
