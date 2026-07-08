@@ -1,0 +1,232 @@
+using Copse.Core;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+
+namespace Copse.Async
+{
+  /// <summary>
+  /// Depth-first <b>async</b> treenumerator over a level-order store, and the codegen source of truth
+  /// for its sync twin: strip the <c>await</c> on the store's grow calls and it becomes the
+  /// synchronous driver. The CROSS-ORDER member of the flat family's DFT pair -- children come from
+  /// the store's contiguous child spans (child ordinal k is store index firstChildIndex + k) -- so
+  /// descending is index chasing, O(depth). Grow calls are awaited so a store still capturing from
+  /// an async feed fills just in time; GetFirstChildIndex/GetValue stay sync.
+  /// </summary>
+  public sealed class AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, TStore>
+    : AsyncTreenumeratorBase<TValue>
+    where TStore : IAsyncLevelOrderStore<TValue>
+  {
+    public AsyncLevelOrderStoreDepthFirstTreenumerator(TStore store)
+    {
+      _Store = store;
+      _Path = new RefSemiDeque<Level>();
+    }
+
+    // Non-readonly so interface calls on a struct store mutate it in place rather than a
+    // defensive copy.
+    private TStore _Store;
+
+    // Root-to-current path, including SkipNode'd levels (kept resident, flagged, so their
+    // children promote into their slot).
+    private readonly RefSemiDeque<Level> _Path;
+
+    private int _RootsSeen;
+    private bool _RootsFinished;
+
+    // Raw depth of the most recently emitted VisitingNode; lets a backtracked-to level tell
+    // whether it already took its return visit (see Backtrack).
+    private int _DepthOfLastVisitedNode = -1;
+
+    private struct Level
+    {
+      public int NodeIndex;
+      public NodePosition Position;
+      public int VisitCount;
+      public bool Skipped;           // SkipNode'd: no visits, resident only to promote children.
+      public bool ChildrenDisabled;  // SkipDescendants/SkipSiblings: yield no more children.
+      public int NextChildOrdinal;
+    }
+
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    {
+      if (_Path.Count == 0)
+        return await MoveToNextRootNode().ConfigureAwait(false);
+
+      // The strategy applies to the node just scheduled; visiting nodes ignore it.
+      if (Mode == TreenumeratorMode.SchedulingNode)
+        return await OnScheduling(nodeTraversalStrategies).ConfigureAwait(false);
+
+      return await OnVisiting().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> MoveToNextRootNode()
+    {
+      if (_RootsFinished || !await _Store.EnsureRootAvailableAsync(_RootsSeen).ConfigureAwait(false))
+        return false;
+
+      // Roots are the depth-0 prefix: ordinal and store index coincide.
+      PushLevel(_RootsSeen, new NodePosition(_RootsSeen, 0));
+
+      _RootsSeen++;
+
+      return true;
+    }
+
+    private async ValueTask<bool> OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
+    {
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+        if (SkipRemainingSiblings())
+          _RootsFinished = true;
+
+      // SkipNodeAndDescendants is a superset of SkipNode (HasNodeTraversalStrategies is an
+      // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
+      // promotion path and wrongly promote the descendants we are meant to prune.
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+        return await Backtrack().ConfigureAwait(false);
+
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
+      {
+        _Path.GetLast().Skipped = true;
+
+        if (await TryPushNextChild().ConfigureAwait(false))
+          return true;
+
+        // No children to promote: a childless SkipNode'd node emits nothing.
+        return await Backtrack().ConfigureAwait(false);
+      }
+
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+        _Path.GetLast().ChildrenDisabled = true;
+
+      // Accept (TraverseAll, or the SkipDescendants fall-through): emit the node's first visit.
+      TakeNextVisit();
+
+      return true;
+    }
+
+    private async ValueTask<bool> OnVisiting()
+    {
+      if (await TryPushNextChild().ConfigureAwait(false))
+        return true;
+
+      return await Backtrack().ConfigureAwait(false);
+    }
+
+    // Unwind finished levels and emit the next owed visit; see the sync twin.
+    private async ValueTask<bool> Backtrack()
+    {
+      while (true)
+      {
+        _Path.RemoveLast();
+
+        if (_Path.Count == 0)
+          return await MoveToNextRootNode().ConfigureAwait(false);
+
+        // A copy (not a ref) for the pre-await reads: nothing mutates this level here, and a ref
+        // local may not survive the TryPushNextChild await below.
+        var top = _Path.GetLast();
+
+        if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
+        {
+          if (await TryPushNextChild().ConfigureAwait(false))
+            return true;
+
+          continue;
+        }
+
+        TakeNextVisit();
+
+        return true;
+      }
+    }
+
+    // THE SEAM, child-span edition: the active level's next child is child ordinal
+    // NextChildOrdinal, at store index firstChildIndex + ordinal once the store has grown far
+    // enough to prove it exists.
+    //
+    // The pre-await reads use a copy of the top level; the mutation re-acquires it by ref after the
+    // grow await (the deque is stable across it, so the top is the same slot), because a ref local
+    // may not cross an await.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private async ValueTask<bool> TryPushNextChild()
+    {
+      var top = _Path.GetLast();
+
+      if (top.ChildrenDisabled)
+        return false;
+
+      var ordinal = top.NextChildOrdinal;
+
+      if (!await _Store.EnsureChildAvailableAsync(top.NodeIndex, ordinal).ConfigureAwait(false))
+        return false;
+
+      var childIndex = _Store.GetFirstChildIndex(top.NodeIndex) + ordinal;
+
+      ref var topSlot = ref _Path.GetLast();
+
+      topSlot.NextChildOrdinal++;
+
+      var position = new NodePosition(ordinal, topSlot.Position.Depth + 1);
+
+      PushLevel(childIndex, position);
+
+      return true;
+    }
+
+    // Schedule a node as a new level and publish its scheduling visit.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void PushLevel(int nodeIndex, NodePosition position)
+    {
+      _Path.AddLast(new Level
+      {
+        NodeIndex = nodeIndex,
+        Position = position,
+      });
+
+      Mode = TreenumeratorMode.SchedulingNode;
+      Node = _Store.GetValue(nodeIndex);
+      VisitCount = 0;
+      Position = position;
+    }
+
+    // Emit the active accepted node's next visit (its first, or a between/after-children return
+    // visit).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void TakeNextVisit()
+    {
+      ref var top = ref _Path.GetLast();
+
+      top.VisitCount++;
+      _DepthOfLastVisitedNode = top.Position.Depth;
+
+      Mode = TreenumeratorMode.VisitingNode;
+      Node = _Store.GetValue(top.NodeIndex);
+      VisitCount = top.VisitCount;
+      Position = top.Position;
+    }
+
+    // SkipSiblings: silence every level that could still yield an effective sibling of the
+    // just-scheduled node -- its skipped ancestors up through its nearest accepted one. No
+    // accepted ancestor means the node is an effective root: silence everything below and tell
+    // the driver to end root enumeration.
+    private bool SkipRemainingSiblings()
+    {
+      var wasEffectiveRoot = true;
+
+      for (int i = 1; i < _Path.Count; i++)
+      {
+        ref var level = ref _Path.GetFromBack(i);
+
+        level.ChildrenDisabled = true;
+
+        if (!level.Skipped)
+        {
+          wasEffectiveRoot = false;
+          break;
+        }
+      }
+
+      return wasEffectiveRoot;
+    }
+  }
+}
