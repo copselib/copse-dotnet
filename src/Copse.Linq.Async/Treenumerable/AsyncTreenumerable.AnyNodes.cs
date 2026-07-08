@@ -2,6 +2,7 @@ using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -17,7 +18,8 @@ namespace Copse.Linq
     public static async ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate,
-      TreeTraversalStrategy treeTraversalStrategy = default)
+      TreeTraversalStrategy treeTraversalStrategy = default,
+      CancellationToken cancellationToken = default)
     {
       var nodeTraversalStrategies =
         treeTraversalStrategy == TreeTraversalStrategy.BreadthFirst
@@ -27,34 +29,45 @@ namespace Copse.Linq
       var treenumerator = source.GetAsyncTreenumerator(treeTraversalStrategy);
       await using (treenumerator.ConfigureAwait(false))
         while (await treenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }
 
     public static async ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeContext<TNode>, bool> predicate,
+      CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }
 
     public static async ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeContext<TNode>, bool> predicate,
+      CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }

@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -11,14 +12,17 @@ namespace Copse.Linq
     /// Terminal: the node values of the (filtered) tree, in depth-first schedule order (each node
     /// once). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
-    public static async ValueTask<List<TNode>> ToListAsync<TNode>(this IAsyncTreenumerable<TNode> source)
+    public static async ValueTask<List<TNode>> ToListAsync<TNode>(this IAsyncTreenumerable<TNode> source, CancellationToken cancellationToken = default)
     {
       var list = new List<TNode>();
-      var t = source.GetAsyncDepthFirstTreenumerator();
-      await using (t.ConfigureAwait(false))
-        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-          if (t.Mode == TreenumeratorMode.SchedulingNode)
-            list.Add(t.Node);
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
+            list.Add(treenumerator.Node);
+        }
       return list;
     }
   }

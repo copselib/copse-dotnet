@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -13,9 +14,10 @@ namespace Copse.Linq
     /// </summary>
     public static async ValueTask<IAsyncTreenumerable<TNode>> TakeLastTreesAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
-      int count)
+      int count,
+      CancellationToken cancellationToken = default)
     {
-      var treeCount = await source.CountTreesAsync().ConfigureAwait(false);
+      var treeCount = await source.CountTreesAsync(cancellationToken).ConfigureAwait(false);
 
       var skipCount = Math.Max(treeCount - count, 0);
 

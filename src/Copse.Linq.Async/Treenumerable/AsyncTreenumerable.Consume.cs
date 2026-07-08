@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Treenumerables;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -13,11 +14,15 @@ namespace Copse.Linq
     /// </summary>
     public static async ValueTask ConsumeAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
-      TreeTraversalStrategy treeTraversalStrategy = default)
+      TreeTraversalStrategy treeTraversalStrategy = default,
+      CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncTreenumerator(treeTraversalStrategy);
       await using (treenumerator.ConfigureAwait(false))
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+        }
     }
 
     /// <summary>
@@ -37,18 +42,24 @@ namespace Copse.Linq
           ? TreeTraversalStrategy.DepthFirst
           : TreeTraversalStrategy.BreadthFirst);
 
-    public static async ValueTask ConsumeAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
+    public static async ValueTask ConsumeAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+        }
     }
 
-    public static async ValueTask ConsumeAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source)
+    public static async ValueTask ConsumeAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false)) ;
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+        }
     }
   }
 }

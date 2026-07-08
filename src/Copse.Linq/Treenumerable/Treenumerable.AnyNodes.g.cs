@@ -29,8 +29,10 @@ namespace Copse.Linq
       var treenumerator = source.GetTreenumerator(treeTraversalStrategy);
       using (treenumerator)
         while (treenumerator.MoveNext(nodeTraversalStrategies))
+        {
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }
@@ -42,8 +44,10 @@ namespace Copse.Linq
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode))
+        {
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }
@@ -55,8 +59,10 @@ namespace Copse.Linq
       var treenumerator = source.GetBreadthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
             return true;
+        }
 
       return false;
     }

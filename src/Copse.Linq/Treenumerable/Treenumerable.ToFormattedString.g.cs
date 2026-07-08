@@ -32,7 +32,9 @@ namespace Copse.Linq
     {
       var lines = new List<string>();
       foreach (var line in source.ToFormattedLines(stringFormatter, paddingSize))
+      {
         lines.Add(line);
+      }
 
       return string.Join(Environment.NewLine, lines);
     }

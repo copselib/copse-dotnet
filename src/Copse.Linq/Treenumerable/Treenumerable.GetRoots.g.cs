@@ -20,7 +20,9 @@ namespace Copse.Linq
       using (treenumerator)
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNodeAndDescendants))
+        {
           yield return treenumerator.Node;
+        }
       }
     }
   }

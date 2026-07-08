@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -12,13 +13,16 @@ namespace Copse.Linq
     /// root is scheduled once and its subtree skipped. Deferred sequence -&gt; keeps the sync name (returns
     /// <see cref="IAsyncEnumerable{TNode}"/>, the async analog of the sync <c>IEnumerable</c> result).
     /// </summary>
-    public static async IAsyncEnumerable<TNode> GetRoots<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
+    public static async IAsyncEnumerable<TNode> GetRoots<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
       {
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
           yield return treenumerator.Node;
+        }
       }
     }
   }

@@ -19,7 +19,9 @@ namespace Copse.Linq
     {
       var treenumerator = source.GetTreenumerator(treeTraversalStrategy);
       using (treenumerator)
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+        }
     }
 
     /// <summary>
@@ -43,14 +45,18 @@ namespace Copse.Linq
     {
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+        }
     }
 
     public static void Consume<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       var treenumerator = source.GetBreadthFirstTreenumerator();
       using (treenumerator)
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) ;
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+        }
     }
   }
 }
