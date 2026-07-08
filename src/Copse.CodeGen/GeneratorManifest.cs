@@ -159,6 +159,16 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
         "Copse.Linq/Treenumerables/MemoizeBreadthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeBreadthFirstSourceTreenumerable", "MemoizeBreadthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
+
+      // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
+      // memoize cluster.
+      new("Copse.Linq.Async/Treenumerables/AsyncCompletedTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/CompletedTreenumerableBuffer.g.cs",
+        "AsyncCompletedTreenumerableBuffer", "CompletedTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerators/Invert/AsyncInvertedLevelOrderStream.cs",
+        "Copse.Linq/Treenumerators/Invert/InvertedLevelOrderStream.g.cs",
+        "AsyncInvertedLevelOrderStream", "InvertedLevelOrderStream", "Copse.Linq.Treenumerators"),
     };
   }
 }

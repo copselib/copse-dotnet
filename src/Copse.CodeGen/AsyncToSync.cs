@@ -104,6 +104,22 @@ namespace Copse.CodeGen
         _syncNamespace = syncNamespace;
       }
 
+      // A sync-completing wrap -- new ValueTask<X>(expr) in a non-async ValueTask-returning
+      // method -- collapses to its payload expression in the sync twin. (The text-level
+      // ValueTask<X> fixup only rewrites the TYPE, which would otherwise leave `new X(expr)`.)
+      public override SyntaxNode VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+      {
+        if (node.Type is GenericNameSyntax generic
+          && generic.Identifier.Text == "ValueTask"
+          && node.ArgumentList?.Arguments.Count == 1)
+        {
+          var argument = (ExpressionSyntax)Visit(node.ArgumentList.Arguments[0].Expression);
+          return argument.WithTriviaFrom(node);
+        }
+
+        return base.VisitObjectCreationExpression(node);
+      }
+
       public override SyntaxNode VisitUsingDirective(UsingDirectiveSyntax node)
       {
         var name = node.Name?.ToString();
