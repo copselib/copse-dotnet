@@ -8,18 +8,27 @@ using System.Text;
 
 namespace Copse.SimpleSerializer
 {
-  // ValueToken's ASYNC reader over a forward-only TextReader (awaits ReadAsync at the char seam),
-  // shared by both async text streams. Same event contract as ValueTokenStringScanner -- an optional
-  // value, then the structural character that terminated it ('\0' at end of text, delivered exactly
-  // once) -- pulled one character at a time. accumulate: false honors the skip contract: the token is
-  // consumed and reported but its characters are never buffered, so a skip costs I/O only. The
-  // one-character pushback (needed to tell '""' from a closing quote) replaces TextReader.Peek.
+  // ValueToken's ASYNC reader over a forward-only TextReader, shared by both async text streams.
+  // Same event contract as ValueTokenStringScanner -- an optional value, then the structural
+  // character that terminated it ('\0' at end of text, delivered exactly once). accumulate: false
+  // honors the skip contract: the token is consumed and reported but its characters are never
+  // buffered, so a skip costs I/O only.
+  //
+  // I/O happens at BLOCK granularity: one awaited ReadAsync refills the block buffer, and every
+  // character between refills is served synchronously from it -- never an await per character.
+  // The one-character pushback (needed to tell '""' from a closing quote) is a position
+  // decrement into the block; it never crosses a refill because the pushed-back character was
+  // just read from the current block.
   //
   // This is the single source of truth. Strip the awaits and it collapses to the synchronous
-  // ValueTokenStreamScanner (the checked-in .g.cs twin). The struct-return ScanEvent replaces the
-  // out params, which cannot cross an await. Does NOT own the reader; the enclosing stream does.
+  // ValueTokenStreamScanner (the checked-in .g.cs twin) -- which reads the same block-buffered
+  // way, so the single source buys both colors the batched I/O. The struct-return ScanEvent
+  // replaces the out params, which cannot cross an await. Does NOT own the reader; the enclosing
+  // stream does.
   internal sealed class ValueTokenStreamScanner
   {
+    private const int BlockSize = 4096;
+
     public ValueTokenStreamScanner(TextReader reader)
     {
       _Reader = reader;
@@ -27,9 +36,12 @@ namespace Copse.SimpleSerializer
 
     private readonly TextReader _Reader;
     private readonly StringBuilder _ValueBuilder = new StringBuilder();
-    private readonly char[] _OneChar = new char[1];
+    private readonly char[] _Block = new char[BlockSize];
 
-    private int _Pushback = -1;
+    // The served [_Position, _Length) window of _Block; equal means drained (refill on next read).
+    private int _Position;
+    private int _Length;
+
     private bool _EndDelivered;
 
     // The value of the last accumulated event with hasValue = true; valid until the next scan.
@@ -112,8 +124,10 @@ namespace Copse.SimpleSerializer
             continue;
           }
 
+          // Push the lookahead character back into the block: it was just served from
+          // [_Position - 1], so stepping back re-serves it (nothing to restore at end of text).
           if (next >= 0)
-            _Pushback = next;
+            _Position--;
 
           return;
         }
@@ -148,17 +162,20 @@ namespace Copse.SimpleSerializer
       }
     }
 
+    // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
+    // text (a drained reader keeps answering 0, so post-end calls stay correct).
     private int ReadCharacter()
     {
-      if (_Pushback >= 0)
+      if (_Position == _Length)
       {
-        var pending = _Pushback;
-        _Pushback = -1;
-        return pending;
+        _Length = _Reader.Read(_Block, 0, _Block.Length);
+        _Position = 0;
+
+        if (_Length == 0)
+          return -1;
       }
 
-      var count = _Reader.Read(_OneChar, 0, 1);
-      return count == 0 ? -1 : _OneChar[0];
+      return _Block[_Position++];
     }
   }
 }

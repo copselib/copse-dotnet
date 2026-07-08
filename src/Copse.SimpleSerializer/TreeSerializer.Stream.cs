@@ -49,18 +49,7 @@ namespace Copse.SimpleSerializer
     public static IBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeFromFile(string path)
       => DeserializeBreadthFirstTreeFromFile(path, value => value);
 
-    // ----- Serialize (tree -> writer) -----
-
-    public static void SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
-      => PreorderTextWriter.WritePayload(treenumerable, writer, map);
-
-    public static void SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> treenumerable, TextWriter writer)
-      => treenumerable.SerializeDepthFirstTree(writer, node => node);
-
-    public static void SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
-      => LevelOrderTextWriter.WritePayload(treenumerable, writer, map);
-
-    public static void SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> treenumerable, TextWriter writer)
-      => treenumerable.SerializeBreadthFirstTree(writer, node => node);
+    // The Serialize (tree -> writer) surface lives in TreeSerializer.Serialize.g.cs, generated
+    // from TreeSerializer.SerializeAsync.cs.
   }
 }

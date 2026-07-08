@@ -35,6 +35,9 @@
     <Compile Remove="AsyncPreorderTextStream.cs" />
     <Compile Remove="AsyncLevelOrderTextStream.cs" />
     <Compile Remove="TreeSerializer.StreamAsync.cs" />
+    <Compile Remove="AsyncPreorderTextWriter.cs" />
+    <Compile Remove="AsyncLevelOrderTextWriter.cs" />
+    <Compile Remove="TreeSerializer.SerializeAsync.cs" />
   </ItemGroup>
 
 </Project>

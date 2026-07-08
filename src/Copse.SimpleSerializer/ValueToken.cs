@@ -43,29 +43,30 @@ namespace Copse.SimpleSerializer
       return false;
     }
 
-    // A null map result serializes as the empty string -- the text format has no null.
-    public static void Write(TextWriter writer, string value)
+    // A null map result serializes as the empty string -- the text format has no null. Appends
+    // into the writers' shared block buffer (see TextBlockBuffer); the writers own the drains.
+    public static void AppendTo(TextBlockBuffer buffer, string value)
     {
       if (value != null && !NeedsQuoting(value))
       {
-        writer.Write(value);
+        buffer.Append(value);
         return;
       }
 
-      writer.Write(Quote);
+      buffer.Append(Quote);
 
       if (value != null)
       {
         foreach (var character in value)
         {
           if (character == Quote)
-            writer.Write(Quote);
+            buffer.Append(Quote);
 
-          writer.Write(character);
+          buffer.Append(character);
         }
       }
 
-      writer.Write(Quote);
+      buffer.Append(Quote);
     }
   }
 }

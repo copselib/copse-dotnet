@@ -92,6 +92,20 @@ namespace Copse.CodeGen
         "Copse.SimpleSerializer/Generated/LevelOrderTextStream.g.cs",
         "AsyncLevelOrderTextStream", "LevelOrderTextStream", "Copse.SimpleSerializer"),
 
+      // The serializer's WRITE side: block-buffered async writers are the sources; their sync
+      // twins (and the sync Serialize fluent surface) are generated.
+      new("Copse.SimpleSerializer/AsyncPreorderTextWriter.cs",
+        "Copse.SimpleSerializer/Generated/PreorderTextWriter.g.cs",
+        "AsyncPreorderTextWriter", "PreorderTextWriter", "Copse.SimpleSerializer"),
+
+      new("Copse.SimpleSerializer/AsyncLevelOrderTextWriter.cs",
+        "Copse.SimpleSerializer/Generated/LevelOrderTextWriter.g.cs",
+        "AsyncLevelOrderTextWriter", "LevelOrderTextWriter", "Copse.SimpleSerializer"),
+
+      new("Copse.SimpleSerializer/TreeSerializer.SerializeAsync.cs",
+        "Copse.SimpleSerializer/Generated/TreeSerializer.Serialize.g.cs",
+        "TreeSerializer", "TreeSerializer", "Copse.SimpleSerializer"),
+
       // The operator treenumerators: twins take over the CANONICAL names (the hand-tuned sync
       // operators are retired; the operators' own suites + VisitStreamConformance are the
       // non-differential oracle, so the Generated*-vs-hand-written differential tests go with
