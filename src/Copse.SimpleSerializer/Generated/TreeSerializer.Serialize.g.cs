@@ -13,7 +13,8 @@ namespace Copse.SimpleSerializer
     // The async serialize surface: awaited writes over a forward-only TextWriter, receivers on
     // the ASYNC narrow contracts -- the only road to text for a tree whose pulls suspend (an
     // async memo, an async-deserialized stream). Awaitable -> carries the Async suffix. This is
-    // the codegen source of truth for the sync Serialize surface (TreeSerializer.Serialize.g.cs).
+    // the codegen source of truth for the sync Serialize surface (TreeSerializer.Serialize.g.cs);
+    // the CancellationToken (checked once per emitted visit in the writers) is elided from it.
     public static void SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
       => PreorderTextWriter.WritePayload(treenumerable, writer, map);
 

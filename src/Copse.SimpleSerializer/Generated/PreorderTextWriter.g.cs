@@ -33,6 +33,7 @@ namespace Copse.SimpleSerializer
 
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
+
           if (treenumerator.VisitCount != 1)
             continue;
 

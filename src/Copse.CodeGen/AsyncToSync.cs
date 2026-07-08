@@ -15,9 +15,10 @@ namespace Copse.CodeGen
   /// <para>Strips async/await/ConfigureAwait, drops async-only usings, rehomes the namespace, renames
   /// the class (per-entry, so a twin can take a canonical name), and renames the async identifiers to
   /// their sync counterparts -- explicit type renames plus a generic "strip the Async suffix from
-  /// method names" rule. Trivia is preserved. Known limitation: a sync method legitimately named
-  /// <c>*Async</c> would be wrongly stripped; cancellation plumbing is not elided in general
-  /// (only the sole CancellationToken parameter of <c>GetAsyncEnumerator</c> declarations).</para>
+  /// method names" rule, and elides cancellation plumbing wholesale (CancellationToken
+  /// parameters/fields, ThrowIfCancellationRequested guards, forwarded arguments -- see the
+  /// elision block for the naming convention it relies on). Trivia is preserved. Known
+  /// limitation: a sync method legitimately named <c>*Async</c> would be wrongly stripped.</para>
   /// </summary>
   public static class AsyncToSync
   {
@@ -269,27 +270,82 @@ namespace Copse.CodeGen
         return base.VisitInvocationExpression(node);
       }
 
-      // Drop the `async` modifier. Also: IAsyncEnumerable<T>.GetAsyncEnumerator(CancellationToken)
-      // transcribes to the parameterless IEnumerable<T>.GetEnumerator(), so a sole
-      // CancellationToken parameter on a GetAsyncEnumerator declaration is removed (the async
-      // source must not consume the token in code that transcribes -- cancellation plumbing is
-      // not carried into the sync twin).
+      // Drop the `async` modifier.
       public override SyntaxNode VisitMethodDeclaration(MethodDeclarationSyntax node)
       {
-        var isGetAsyncEnumerator = node.Identifier.ValueText == "GetAsyncEnumerator";
-
         node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node);
         if (node.Modifiers.Any(SyntaxKind.AsyncKeyword))
           node = node.WithModifiers(
             SyntaxFactory.TokenList(node.Modifiers.Where(m => !m.IsKind(SyntaxKind.AsyncKeyword))));
 
-        if (isGetAsyncEnumerator
-          && node.ParameterList.Parameters.Count == 1
-          && node.ParameterList.Parameters[0].Type?.ToString().EndsWith("CancellationToken", StringComparison.Ordinal) == true)
-          node = node.WithParameterList(
-            node.ParameterList.WithParameters(default(SeparatedSyntaxList<ParameterSyntax>)));
-
         return node;
+      }
+
+      // ----- Cancellation plumbing elision. The sync twin has no cancellation concept, so the
+      // transform strips it wholesale, under the repo convention: the parameter is always named
+      // `cancellationToken` (optionally [EnumeratorCancellation]), a stored copy is always the
+      // field `_CancellationToken`, guards are always standalone
+      // `...ThrowIfCancellationRequested();` statements, and call sites forward one of those two
+      // names verbatim. (This also covers GetAsyncEnumerator(CancellationToken) -> the
+      // parameterless IEnumerable<T>.GetEnumerator().)
+
+      private static bool IsCancellationTokenType(TypeSyntax type)
+        => type != null && type.ToString().TrimEnd('?') == "CancellationToken";
+
+      private static bool IsCancellationIdentifier(ExpressionSyntax expression)
+        => expression is IdentifierNameSyntax identifier
+          && (identifier.Identifier.ValueText == "cancellationToken"
+            || identifier.Identifier.ValueText == "_CancellationToken");
+
+      public override SyntaxNode VisitParameterList(ParameterListSyntax node)
+      {
+        node = (ParameterListSyntax)base.VisitParameterList(node);
+
+        var removed = node.Parameters.Where(p => IsCancellationTokenType(p.Type)).ToList();
+        if (removed.Count == 0)
+          return node;
+
+        // RemoveNodes drops each parameter with its adjacent separator, preserving the
+        // remaining separators' trivia (a rebuilt SeparatedList would lose the ", " spacing).
+        return node.RemoveNodes(removed, SyntaxRemoveOptions.KeepNoTrivia);
+      }
+
+      public override SyntaxNode VisitArgumentList(ArgumentListSyntax node)
+      {
+        node = (ArgumentListSyntax)base.VisitArgumentList(node);
+
+        var removed = node.Arguments.Where(a => IsCancellationIdentifier(a.Expression)).ToList();
+        if (removed.Count == 0)
+          return node;
+
+        return node.RemoveNodes(removed, SyntaxRemoveOptions.KeepNoTrivia);
+      }
+
+      // Drop `CancellationToken _CancellationToken;` fields.
+      public override SyntaxNode VisitFieldDeclaration(FieldDeclarationSyntax node)
+      {
+        if (IsCancellationTokenType(node.Declaration.Type))
+          return null;
+
+        return base.VisitFieldDeclaration(node);
+      }
+
+      // Drop `..ThrowIfCancellationRequested();` guards and `_CancellationToken = cancellationToken;`
+      // constructor assignments.
+      public override SyntaxNode VisitExpressionStatement(ExpressionStatementSyntax node)
+      {
+        if (node.Expression is InvocationExpressionSyntax invocation
+          && invocation.Expression is MemberAccessExpressionSyntax guardAccess
+          && guardAccess.Name.Identifier.ValueText == "ThrowIfCancellationRequested"
+          && IsCancellationIdentifier(guardAccess.Expression))
+          return null;
+
+        if (node.Expression is AssignmentExpressionSyntax assignment
+          && IsCancellationIdentifier(assignment.Left)
+          && IsCancellationIdentifier(assignment.Right))
+          return null;
+
+        return base.VisitExpressionStatement(node);
       }
 
       // Drop the `async` modifier from local functions (async iterator helpers in the fluent layer).

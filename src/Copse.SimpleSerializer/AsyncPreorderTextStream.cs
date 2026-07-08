@@ -1,6 +1,7 @@
 using Copse.Async;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.SimpleSerializer
@@ -13,10 +14,10 @@ namespace Copse.SimpleSerializer
   // Copse.SimpleSerializer.PreorderTextStream (the checked-in .g.cs twin). Owns its reader.
   internal sealed class AsyncPreorderTextStream<TValue> : IAsyncPreorderStream<TValue>
   {
-    public AsyncPreorderTextStream(TextReader reader, Func<string, TValue> map)
+    public AsyncPreorderTextStream(TextReader reader, Func<string, TValue> map, CancellationToken cancellationToken)
     {
       _Reader = reader;
-      _Scanner = new AsyncValueTokenStreamScanner(reader);
+      _Scanner = new AsyncValueTokenStreamScanner(reader, cancellationToken);
       _Map = map;
     }
 

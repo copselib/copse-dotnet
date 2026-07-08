@@ -20,11 +20,16 @@ namespace Copse.SimpleSerializer
   // decrement into the block; it never crosses a refill because the pushed-back character was
   // just read from the current block.
   //
+  // Cancellation is cooperative at the same block granularity: the token is checked before each
+  // refill (once per 4096 characters of I/O), not per character. The in-flight ReadAsync itself
+  // is not cancellable -- the Memory<char>/CancellationToken reader overloads do not exist on
+  // net48/netstandard2.0, and a block completes quickly anyway.
+  //
   // This is the single source of truth. Strip the awaits and it collapses to the synchronous
   // ValueTokenStreamScanner (the checked-in .g.cs twin) -- which reads the same block-buffered
-  // way, so the single source buys both colors the batched I/O. The struct-return ScanEvent
-  // replaces the out params, which cannot cross an await. Does NOT own the reader; the enclosing
-  // stream does.
+  // way, so the single source buys both colors the batched I/O; the cancellation plumbing is
+  // elided from the twin entirely. The struct-return ScanEvent replaces the out params, which
+  // cannot cross an await. Does NOT own the reader; the enclosing stream does.
   internal sealed class ValueTokenStreamScanner
   {
     private const int BlockSize = 4096;
@@ -168,6 +173,7 @@ namespace Copse.SimpleSerializer
     {
       if (_Position == _Length)
       {
+
         _Length = _Reader.Read(_Block, 0, _Block.Length);
         _Position = 0;
 

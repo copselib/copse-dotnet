@@ -40,6 +40,7 @@ namespace Copse.SimpleSerializer
 
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
+
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
           {
             if (pendingSeparators.Count > 0)

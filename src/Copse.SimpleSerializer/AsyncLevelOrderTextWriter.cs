@@ -3,6 +3,7 @@ using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.SimpleSerializer
@@ -26,7 +27,8 @@ namespace Copse.SimpleSerializer
     public static async ValueTask WritePayloadAsync<TNode>(
       IAsyncBreadthFirstTreenumerable<TNode> treenumerable,
       TextWriter writer,
-      Func<TNode, string> map)
+      Func<TNode, string> map,
+      CancellationToken cancellationToken)
     {
       var treenumerator = treenumerable.GetAsyncBreadthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
@@ -38,6 +40,8 @@ namespace Copse.SimpleSerializer
 
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
+          cancellationToken.ThrowIfCancellationRequested();
+
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
           {
             if (pendingSeparators.Count > 0)
