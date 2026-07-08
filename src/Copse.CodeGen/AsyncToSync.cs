@@ -58,6 +58,11 @@ namespace Copse.CodeGen
         ["IAsyncLevelOrderStream"] = "ILevelOrderStream",
         ["IAsyncPreorderStore"] = "IPreorderStore",
         ["IAsyncLevelOrderStore"] = "ILevelOrderStore",
+        ["IAsyncTreenumerable"] = "ITreenumerable",
+        ["IAsyncDepthFirstTreenumerable"] = "IDepthFirstTreenumerable",
+        ["IAsyncBreadthFirstTreenumerable"] = "IBreadthFirstTreenumerable",
+        ["GetAsyncDepthFirstTreenumerator"] = "GetDepthFirstTreenumerator",
+        ["GetAsyncBreadthFirstTreenumerator"] = "GetBreadthFirstTreenumerator",
         ["AsyncValueTokenStreamScanner"] = "ValueTokenStreamScanner",
         ["IAsyncEnumerable"] = "IEnumerable",
         ["IAsyncEnumerator"] = "IEnumerator",
@@ -67,9 +72,18 @@ namespace Copse.CodeGen
 
       private static readonly HashSet<string> DroppedUsings = new()
       {
-        "Copse.Core.Async",
         "Copse.Async",
         "System.Threading.Tasks",
+      };
+
+      // Async-only namespaces that MAP to a sync namespace rather than drop: a source that imports
+      // only the async contract (e.g. a treenumerable over IAsyncTreenumerable) still needs the
+      // sync contract's namespace after transcription. A source that imports BOTH (the engine
+      // treenumerators) maps the async one onto its existing sync one; the duplicate is deduped in
+      // VisitCompilationUnit, keeping the original's position -- so those outputs are unchanged.
+      private static readonly Dictionary<string, string> MappedUsings = new()
+      {
+        ["Copse.Core.Async"] = "Copse.Core",
       };
 
       private readonly string _asyncClass;
@@ -84,7 +98,29 @@ namespace Copse.CodeGen
       }
 
       public override SyntaxNode VisitUsingDirective(UsingDirectiveSyntax node)
-        => DroppedUsings.Contains(node.Name?.ToString()) ? null : base.VisitUsingDirective(node);
+      {
+        var name = node.Name?.ToString();
+
+        if (name != null && DroppedUsings.Contains(name))
+          return null;
+
+        if (name != null && MappedUsings.TryGetValue(name, out var mapped))
+          return node.WithName(SyntaxFactory.ParseName(mapped).WithTriviaFrom(node.Name));
+
+        return base.VisitUsingDirective(node);
+      }
+
+      // Dedup usings after mapping (a source importing both Copse.Core and Copse.Core.Async maps to
+      // Copse.Core twice); keep the first occurrence so its position/trivia is preserved.
+      public override SyntaxNode VisitCompilationUnit(CompilationUnitSyntax node)
+      {
+        node = (CompilationUnitSyntax)base.VisitCompilationUnit(node);
+
+        var seen = new HashSet<string>();
+        var deduped = SyntaxFactory.List(node.Usings.Where(u => seen.Add(u.Name?.ToString() ?? "")));
+
+        return node.WithUsings(deduped);
+      }
 
       public override SyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
       {

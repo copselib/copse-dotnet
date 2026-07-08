@@ -21,6 +21,9 @@ namespace Copse.CodeGen
     {
       // The engines: the twin takes over the CANONICAL name in Copse.Treenumerators (the hand-tuned
       // DepthFirstTreenumerator / BreadthFirstTreenumerator are retired).
+      new("Copse.Async/Treenumerables/AsyncDelegatingTreenumerable.cs",
+        "Copse/Treenumerables/DelegatingTreenumerable.g.cs",
+        "AsyncDelegatingTreenumerable", "DelegatingTreenumerable", "Copse.Treenumerables"),
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
