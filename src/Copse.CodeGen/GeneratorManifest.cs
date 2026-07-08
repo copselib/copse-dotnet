@@ -48,6 +48,17 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerables/AsyncTreenumerable.cs",
         "Copse/Treenumerables/Treenumerable.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Treenumerables"),
+
+      // The tree-source factories: AsyncTree is the source of truth for Tree (the async-acquire
+      // Using overloads are async-only marker regions -- their transcription would collapse onto
+      // the sync-acquire twins). Retires the last hand-written concrete-treenumerable exception.
+      new("Copse.Async/Treenumerables/AsyncTree.cs",
+        "Copse/Treenumerables/Tree.g.cs",
+        "AsyncTree", "Tree", "Copse.Treenumerables"),
+
+      new("Copse.Async/Treenumerators/AsyncDisposeActionTreenumerator.cs",
+        "Copse/Treenumerators/DisposeActionTreenumerator.g.cs",
+        "AsyncDisposeActionTreenumerator", "DisposeActionTreenumerator", "Copse.Treenumerators"),
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),

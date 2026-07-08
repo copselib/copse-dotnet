@@ -1,5 +1,4 @@
 ﻿using Copse.Treenumerables;
-using System.Collections.Generic;
 
 namespace Copse.Trees
 {
