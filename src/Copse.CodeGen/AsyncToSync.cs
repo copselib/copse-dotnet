@@ -84,6 +84,7 @@ namespace Copse.CodeGen
       private static readonly Dictionary<string, string> MappedUsings = new()
       {
         ["Copse.Core.Async"] = "Copse.Core",
+        ["Copse.Async.Treenumerators"] = "Copse.Treenumerators",
       };
 
       private readonly string _asyncClass;
@@ -163,9 +164,16 @@ namespace Copse.CodeGen
         if (text == _asyncClass)
           return SyntaxFactory.Identifier(token.LeadingTrivia, _syncClass, token.TrailingTrivia);
 
-        // Explicit type renames (they don't end in "Async").
+        // Explicit type renames (interfaces, type params, and any that don't strip by rule).
         if (Renames.TryGetValue(text, out var renamed))
           return SyntaxFactory.Identifier(token.LeadingTrivia, renamed, token.TrailingTrivia);
+
+        // Generic: strip a leading "Async" from concrete type names (AsyncFooTreenumerable ->
+        // FooTreenumerable) so a body reference to a sibling async class transcribes untaught.
+        // Interfaces (IAsync...) and type params (TAsync...) don't start with "Async", so they go
+        // through the map above; the bare "Async" namespace segment is length 5, so it is intact.
+        if (text.Length > 5 && text.StartsWith("Async", StringComparison.Ordinal))
+          return SyntaxFactory.Identifier(token.LeadingTrivia, text.Substring(5), token.TrailingTrivia);
 
         // Generic: strip the "Async" suffix from method identifiers (MoveNextAsync -> MoveNext, and
         // every seam method). Guarded to length > 5 so the bare "Async" segment is intact.

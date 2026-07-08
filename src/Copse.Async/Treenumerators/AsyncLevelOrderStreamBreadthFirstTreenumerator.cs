@@ -3,7 +3,7 @@ using Copse.Core.Async;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> treenumerator over a forward-only level-order stream, in the

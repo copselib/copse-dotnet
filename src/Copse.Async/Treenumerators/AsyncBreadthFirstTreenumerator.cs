@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> treenumerator: the direct-style async port of

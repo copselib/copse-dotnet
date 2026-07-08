@@ -1,5 +1,6 @@
 using Copse.Core.Async;
 using System;
+using Copse.Async.Treenumerators;
 
 namespace Copse.Async
 {

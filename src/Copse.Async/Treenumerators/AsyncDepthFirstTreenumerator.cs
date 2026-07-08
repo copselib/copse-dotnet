@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> treenumerator in the <b>direct style</b>: the natural inlined control flow

@@ -2,7 +2,7 @@ using Copse.Core;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> treenumerator over a level-order store, and the codegen source of truth
