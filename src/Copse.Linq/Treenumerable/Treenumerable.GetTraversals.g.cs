@@ -91,7 +91,9 @@ namespace Copse.Linq
       using (treenumerator)
       {
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
           yield return treenumerator.ToNodeVisit();
+        }
       }
     }
   }

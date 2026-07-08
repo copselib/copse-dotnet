@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -13,30 +14,35 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>The tree rendered as box-drawing lines (one per node), as a lazy async sequence.</summary>
-    public static IAsyncEnumerable<string> ToFormattedLines<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
+    public static IAsyncEnumerable<string> ToFormattedLines<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
     {
-      return source.ToFormattedLines(node => node.ToString(), 0);
+      return source.ToFormattedLines(node => node.ToString(), 0, cancellationToken);
     }
 
     /// <summary>The tree rendered as box-drawing lines with the given branch padding width.</summary>
     public static IAsyncEnumerable<string> ToFormattedLines<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      int paddingSize)
+      int paddingSize,
+      CancellationToken cancellationToken = default)
     {
-      return source.ToFormattedLines(node => node.ToString(), paddingSize);
+      return source.ToFormattedLines(node => node.ToString(), paddingSize, cancellationToken);
     }
 
     /// <summary>The tree rendered as box-drawing lines with a custom node formatter and branch padding.</summary>
     public static async IAsyncEnumerable<string> ToFormattedLines<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, string> stringFormatter,
-      int paddingSize)
+      int paddingSize,
+      [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       // The renderer walks the token stream in reverse (deepest-last), which requires the whole
       // stream in hand -- so drain the async tokenizer first, then do the (synchronous) drawing.
       var tokens = new List<DepthFirstTreeToken<TNode>>();
       await foreach (var token in source.ToDepthFirstTreeTokenizer().ConfigureAwait(false))
+      {
+        cancellationToken.ThrowIfCancellationRequested();
         tokens.Add(token);
+      }
 
       const char BAR_NODE = '│';
       const char INTERIOR_BRANCH_NODE = '├';

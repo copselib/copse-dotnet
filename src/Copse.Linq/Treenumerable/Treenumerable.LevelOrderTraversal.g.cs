@@ -18,8 +18,10 @@ namespace Copse.Linq
       var treenumerator = source.GetBreadthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
           if (treenumerator.VisitCount == 0)
             yield return treenumerator.Node;
+        }
     }
   }
 }

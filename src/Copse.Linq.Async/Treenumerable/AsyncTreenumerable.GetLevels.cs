@@ -1,6 +1,7 @@
 using Copse.Core;
 using Copse.Core.Async;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -8,7 +9,7 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>The tree's nodes grouped by depth (one array per level), as a lazy async sequence.</summary>
-    public static async IAsyncEnumerable<TNode[]> GetLevels<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source)
+    public static async IAsyncEnumerable<TNode[]> GetLevels<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var depth = 0;
       var deque = new RefSemiDeque<TNode>();
@@ -18,6 +19,7 @@ namespace Copse.Linq
       {
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 

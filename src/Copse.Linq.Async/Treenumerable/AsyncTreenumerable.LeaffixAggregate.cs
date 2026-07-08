@@ -3,6 +3,7 @@ using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -21,7 +22,8 @@ namespace Copse.Linq
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafSelector,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var accumulations = new List<TAccumulate>();
       var subtreeSizes = new List<int>();
@@ -43,6 +45,7 @@ namespace Copse.Linq
       {
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 

@@ -38,7 +38,9 @@ namespace Copse.Linq
       // stream in hand -- so drain the async tokenizer first, then do the (synchronous) drawing.
       var tokens = new List<DepthFirstTreeToken<TNode>>();
       foreach (var token in source.ToDepthFirstTreeTokenizer())
+      {
         tokens.Add(token);
+      }
 
       const char BAR_NODE = '│';
       const char INTERIOR_BRANCH_NODE = '├';

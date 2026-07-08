@@ -18,7 +18,9 @@ namespace Copse.Linq
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode))
+        {
           yield return treenumerator.Node;
+        }
     }
   }
 }

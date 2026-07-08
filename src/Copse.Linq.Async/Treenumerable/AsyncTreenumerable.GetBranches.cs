@@ -3,6 +3,7 @@ using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -10,7 +11,7 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>The tree's root-to-leaf paths (each as a node array), as a lazy async sequence.</summary>
-    public static async IAsyncEnumerable<TNode[]> GetBranches<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
+    public static async IAsyncEnumerable<TNode[]> GetBranches<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var branch = new List<NodeContext<TNode>>();
 
@@ -24,6 +25,7 @@ namespace Copse.Linq
 
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
+          cancellationToken.ThrowIfCancellationRequested();
           if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 
