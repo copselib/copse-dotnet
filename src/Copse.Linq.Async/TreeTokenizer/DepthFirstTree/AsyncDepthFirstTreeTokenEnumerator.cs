@@ -3,6 +3,7 @@ using Copse.Core.Async;
 using Copse.Linq.TreeTokenizer.DepthFirstTree;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq.Async.TreeTokenizer.DepthFirstTree
@@ -12,12 +13,14 @@ namespace Copse.Linq.Async.TreeTokenizer.DepthFirstTree
   // closes back to the roots.
   internal sealed class AsyncDepthFirstTreeTokenEnumerator<TNode> : IAsyncEnumerator<DepthFirstTreeToken<TNode>>
   {
-    public AsyncDepthFirstTreeTokenEnumerator(IAsyncTreenumerator<TNode> breadthFirstTreenumerator)
+    public AsyncDepthFirstTreeTokenEnumerator(IAsyncTreenumerator<TNode> breadthFirstTreenumerator, CancellationToken cancellationToken)
     {
       _Treenumerator = breadthFirstTreenumerator;
+      _CancellationToken = cancellationToken;
     }
 
     private readonly IAsyncTreenumerator<TNode> _Treenumerator;
+    private readonly CancellationToken _CancellationToken;
 
     public DepthFirstTreeToken<TNode> Current { get; private set; }
 
@@ -32,6 +35,7 @@ namespace Copse.Linq.Async.TreeTokenizer.DepthFirstTree
 
     public async ValueTask<bool> MoveNextAsync()
     {
+      _CancellationToken.ThrowIfCancellationRequested();
       if (_CachedEndChildGroupTokenCount > 0)
       {
         _CachedEndChildGroupTokenCount--;

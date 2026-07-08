@@ -25,8 +25,8 @@ namespace Copse.Linq.Async.TreeTokenizer.DepthFirstTree
     {
       return
         _Enumerable != null
-          ? _Enumerable.GetAsyncEnumerator()
-          : new AsyncDepthFirstTreeTokenEnumerator<TNode>(_Treenumerable.GetAsyncDepthFirstTreenumerator());
+          ? _Enumerable.GetAsyncEnumerator(cancellationToken)
+          : new AsyncDepthFirstTreeTokenEnumerator<TNode>(_Treenumerable.GetAsyncDepthFirstTreenumerator(), cancellationToken);
     }
 
     // codegen: begin sync-only

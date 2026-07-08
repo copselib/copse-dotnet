@@ -29,8 +29,8 @@ namespace Copse.Linq.Async.TreeTokenizer.BreadthFirstTree
     {
       return
         _Enumerable != null
-          ? _Enumerable.GetAsyncEnumerator()
-          : new AsyncBreadthFirstTreeTokenEnumerator<TNode>(_Treenumerable.GetAsyncBreadthFirstTreenumerator());
+          ? _Enumerable.GetAsyncEnumerator(cancellationToken)
+          : new AsyncBreadthFirstTreeTokenEnumerator<TNode>(_Treenumerable.GetAsyncBreadthFirstTreenumerator(), cancellationToken);
     }
 
     // codegen: begin sync-only

@@ -3,6 +3,7 @@ using Copse.Core.Async;
 using Copse.Linq.TreeTokenizer.BreadthFirstTree;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Copse.Linq.Async.TreeTokenizer.BreadthFirstTree
@@ -13,12 +14,14 @@ namespace Copse.Linq.Async.TreeTokenizer.BreadthFirstTree
   // the stream (its level never gets nodes).
   internal sealed class AsyncBreadthFirstTreeTokenEnumerator<TNode> : IAsyncEnumerator<BreadthFirstTreeToken<TNode>>
   {
-    public AsyncBreadthFirstTreeTokenEnumerator(IAsyncTreenumerator<TNode> breadthFirstTreenumerator)
+    public AsyncBreadthFirstTreeTokenEnumerator(IAsyncTreenumerator<TNode> breadthFirstTreenumerator, CancellationToken cancellationToken)
     {
       _Treenumerator = breadthFirstTreenumerator;
+      _CancellationToken = cancellationToken;
     }
 
     private readonly IAsyncTreenumerator<TNode> _Treenumerator;
+    private readonly CancellationToken _CancellationToken;
     private readonly Queue<BreadthFirstTreeToken<TNode>> _CachedSeparators = new Queue<BreadthFirstTreeToken<TNode>>();
     private bool _HasCachedNode = false;
     private BreadthFirstTreeToken<TNode> _CachedNode;
@@ -34,6 +37,7 @@ namespace Copse.Linq.Async.TreeTokenizer.BreadthFirstTree
 
     public async ValueTask<bool> MoveNextAsync()
     {
+      _CancellationToken.ThrowIfCancellationRequested();
       if (_TreenumeratorEnumerationFinished)
         return OnTreenumeratorEnumerationFinished();
 
