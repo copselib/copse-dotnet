@@ -457,4 +457,4 @@ When implementing a new filtering operation similar to Where, consider:
 
 ## Target Frameworks
 
-Multi-targets .NET Framework 4.8, .NET 8.0, and .NET Standard 2.0.
+Library projects multi-target `net48;netstandard2.0;netstandard2.1;net8.0` (sync and async alike; polyfills — System.Memory, Microsoft.Bcl.AsyncInterfaces — are conditional on net48/netstandard2.0 only). Tests, benchmarks, and the codegen tool run on net8.0.
