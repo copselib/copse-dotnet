@@ -225,7 +225,7 @@ namespace Copse.Async.Tests
     {
       // The deferred fluent operators compose on the async side: source.Where(...).Select(...).
       IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
-        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+        nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
 
       var composed = await CollectAsync(source.Where(KeepNot3).Select(n => n * 10).GetAsyncDepthFirstTreenumerator());
 
@@ -245,7 +245,7 @@ namespace Copse.Async.Tests
     public async Task Terminals_CountAndToList_OverAsyncPipeline()
     {
       IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
-        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+        nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
 
       // 7 nodes in the forest; DFT schedule order.
       Assert.AreEqual(7, await source.CountNodesAsync());
@@ -260,7 +260,7 @@ namespace Copse.Async.Tests
     public async Task DoAndHide_ForwardStreamUnchanged_OverAsyncPipeline()
     {
       IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
-        AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+        nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
 
       var baseline = await source.ToListAsync();
 
@@ -293,7 +293,7 @@ namespace Copse.Async.Tests
       {
         acquisitions++;
         return (IAsyncTreenumerable<int>)new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
-          AsyncRoots, nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n);
+          nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
       });
 
       Assert.AreEqual(0, acquisitions, "Defer must not run the factory before a treenumerator is acquired");

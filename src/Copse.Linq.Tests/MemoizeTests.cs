@@ -455,7 +455,7 @@ namespace Copse.Linq.Tests
     private static ITreenumerable<int> InfiniteBinaryTree()
       => new Treenumerable<int, InfiniteBinaryChildEnumerator>(
         nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
-        0);
+        new[] { 0 });
 
     private struct InfiniteBinaryChildEnumerator : IChildEnumerator<int>
     {
