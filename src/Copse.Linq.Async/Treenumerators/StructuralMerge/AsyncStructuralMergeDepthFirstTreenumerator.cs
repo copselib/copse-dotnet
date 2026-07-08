@@ -1,3 +1,4 @@
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Treenumerators; // MergeNode
@@ -19,7 +20,7 @@ namespace Copse.Linq.Async
   /// operand pulls are guarded by booleans computed before them.</para>
   /// </summary>
   public sealed class AsyncStructuralMergeDepthFirstTreenumerator<TLeft, TRight>
-    : IAsyncTreenumerator<MergeNode<TLeft, TRight>>
+    : AsyncTreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public AsyncStructuralMergeDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TLeft>> leftTreenumeratorFactory,
@@ -43,27 +44,7 @@ namespace Copse.Linq.Async
 
     private Stack<NodeVisit<MergeNode<TLeft, TRight>>> _NodeVisits = new Stack<NodeVisit<MergeNode<TLeft, TRight>>>();
 
-    private bool _Finished;
-
-    public MergeNode<TLeft, TRight> Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       await HandleMoveNextForLeftAndRightTreenumeratorsAsync(nodeTraversalStrategies).ConfigureAwait(false);
 
@@ -307,13 +288,14 @@ namespace Copse.Linq.Async
       return parent.Depth < topVisit.Position.Depth ? parent : ForestRoot;
     }
 
-    private static readonly NodePosition ForestRoot = NodePosition.ForestRoot;
+    private static readonly NodePosition ForestRoot = NodePosition.ForestRoot; // canonical name now lives in Core
 
     private static bool HoldsEffectiveSibling(NodePosition operandPosition, NodePosition parent)
       => operandPosition.Depth > parent.Depth || operandPosition == parent;
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask OnDisposingAsync()
     {
+      await base.OnDisposingAsync().ConfigureAwait(false);
       await _LeftTreenumerator.DisposeAsync().ConfigureAwait(false);
       await _RightTreenumerator.DisposeAsync().ConfigureAwait(false);
     }

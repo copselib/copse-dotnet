@@ -105,18 +105,19 @@ namespace Copse.Linq.Treenumerators
       // which cancels the owing, or the front is the sentinel).
       if (_FrontReturnVisit == FrontReturnVisit.Owed && !previouslySeenNodeWasScheduledAndSkipped)
       {
-        ref var parentStatus = ref _Path.Front;
-
-        if (parentStatus.Position.Depth >= 0)
+        // Inlines _Path.Front (no ref local) so this stays identical to the async source of truth,
+        // where by-reference locals are illegal (CS8177). Front ref-returns the same slot each
+        // call, so this is semantically identical to holding a ref local.
+        if (_Path.Front.Position.Depth >= 0)
         {
           // The manufactured visit is emitted here. The inner's redundant between-children parent
           // visit is suppressed downstream by the Mode==Visiting / VisitCount comparison, not by
           // SuppressNextInner (that token is reserved for the consumer-skip-cancel 32b1f8f gate).
           _FrontReturnVisit = FrontReturnVisit.None;
           _DeferredStrategy = nodeTraversalStrategies;
-          parentStatus.VisitCount++;
+          _Path.Front.VisitCount++;
 
-          Publish(ref parentStatus, TreenumeratorMode.VisitingNode);
+          Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
           return true;
         }
       }
@@ -208,10 +209,9 @@ namespace Copse.Linq.Treenumerators
               _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
 
-              ref var parentStatus = ref _Path.Front;
-              parentStatus.VisitCount++;
+              _Path.Front.VisitCount++;
 
-              Publish(ref parentStatus, TreenumeratorMode.VisitingNode);
+              Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
 
               return true;
             }

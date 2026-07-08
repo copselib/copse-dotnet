@@ -360,8 +360,8 @@ namespace Copse.Linq.Treenumerators
     {
       base.OnDisposing();
 
-      _LeftTreenumerator?.Dispose();
-      _RightTreenumerator?.Dispose();
+      _LeftTreenumerator.Dispose();
+      _RightTreenumerator.Dispose();
     }
   }
 }

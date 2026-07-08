@@ -349,67 +349,67 @@ namespace Copse.Linq.Treenumerators
     // to scheduling the node's children / its next revisit / its retirement.
     private bool TryEmitOwedRevisit()
     {
-      // Ref into the queue front: mutations (ConsumedVC, VisitCount, RevisitedSlot) land in place,
-      // with no fat-frame copy-out/copy-back. Nothing below adds to or removes from _Queue, so the
-      // ref stays the front throughout.
-      ref var front = ref _Queue.GetFirst();
-      var frontDepth = front.Position.Depth;
+      // Mutations (ConsumedVC, VisitCount, RevisitedSlot) land in place via the ref-returning
+      // _Queue.GetFirst(), inlined at every use rather than held in a `ref var front` local -- the
+      // async source of truth cannot hold a by-reference local across its awaited AdvancePastConsumed
+      // calls (CS8177), so the generated twin inlines it and this stays identical.
+      var frontDepth = _Queue.GetFirst().Position.Depth;
 
-      if (front.VisitCount == 0)
+      if (_Queue.GetFirst().VisitCount == 0)
       {
         // Initial visit: fire once each present side has reached its node's initial visit (its next visit,
         // ConsumedVC 0 -> 1).
-        var leftReady = !front.HasLeft || SideHasNextFrontVisit(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, front.LeftConsumedVC);
-        var rightReady = !front.HasRight || SideHasNextFrontVisit(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, front.RightConsumedVC);
+        var leftReady = !_Queue.GetFirst().HasLeft || SideHasNextFrontVisit(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, _Queue.GetFirst().LeftConsumedVC);
+        var rightReady = !_Queue.GetFirst().HasRight || SideHasNextFrontVisit(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, _Queue.GetFirst().RightConsumedVC);
 
         if (!leftReady || !rightReady)
           return false;
 
-        if (front.HasLeft) { front.LeftConsumedVC++; AdvanceLeftPastConsumed(); }
-        if (front.HasRight) { front.RightConsumedVC++; AdvanceRightPastConsumed(); }
-        front.VisitCount = 1;
-        PublishFromFrame(front, TreenumeratorMode.VisitingNode);
+        if (_Queue.GetFirst().HasLeft) { _Queue.GetFirst().LeftConsumedVC++; AdvanceLeftPastConsumed(); }
+        if (_Queue.GetFirst().HasRight) { _Queue.GetFirst().RightConsumedVC++; AdvanceRightPastConsumed(); }
+        _Queue.GetFirst().VisitCount = 1;
+        PublishFromFrame(_Queue.GetFirst(), TreenumeratorMode.VisitingNode);
         return true;
       }
 
       // Between-children revisit. Hold while either present side is still promoting strictly deeper than
       // the front's direct-child level (still inside the current slot's subtree) so both sides finish the
       // slot first.
-      if (SideStillInCurrentSlot(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, front.HasLeft)
-        || SideStillInCurrentSlot(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, front.HasRight))
+      if (SideStillInCurrentSlot(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, _Queue.GetFirst().HasLeft)
+        || SideStillInCurrentSlot(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, _Queue.GetFirst().HasRight))
         return false;
 
       // A present side at its next between-children revisit completes the slot named by that side's last
       // direct child. Coalesce the two sides by sibling index: emit ONE merged revisit for the slot, and
       // consume the revisit on every present side that is at a revisit for that slot.
-      var leftAtRevisit = front.HasLeft
-        && SideHasNextFrontVisit(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, front.LeftConsumedVC);
-      var rightAtRevisit = front.HasRight
-        && SideHasNextFrontVisit(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, front.RightConsumedVC);
+      var leftAtRevisit = _Queue.GetFirst().HasLeft
+        && SideHasNextFrontVisit(_LeftTreenumerator, _LeftTreenumeratorFinished, frontDepth, _Queue.GetFirst().LeftConsumedVC);
+      var rightAtRevisit = _Queue.GetFirst().HasRight
+        && SideHasNextFrontVisit(_RightTreenumerator, _RightTreenumeratorFinished, frontDepth, _Queue.GetFirst().RightConsumedVC);
 
       var candidate = -1;
-      if (leftAtRevisit && front.LeftLastDirectChildSibling > front.RevisitedSlot)
-        candidate = Math.Max(candidate, front.LeftLastDirectChildSibling);
-      if (rightAtRevisit && front.RightLastDirectChildSibling > front.RevisitedSlot)
-        candidate = Math.Max(candidate, front.RightLastDirectChildSibling);
+      if (leftAtRevisit && _Queue.GetFirst().LeftLastDirectChildSibling > _Queue.GetFirst().RevisitedSlot)
+        candidate = Math.Max(candidate, _Queue.GetFirst().LeftLastDirectChildSibling);
+      if (rightAtRevisit && _Queue.GetFirst().RightLastDirectChildSibling > _Queue.GetFirst().RevisitedSlot)
+        candidate = Math.Max(candidate, _Queue.GetFirst().RightLastDirectChildSibling);
 
       if (candidate < 0)
         return false;
 
-      if (leftAtRevisit && front.LeftLastDirectChildSibling == candidate)
+      if (leftAtRevisit && _Queue.GetFirst().LeftLastDirectChildSibling == candidate)
       {
-        front.LeftConsumedVC++;
+        _Queue.GetFirst().LeftConsumedVC++;
         AdvanceLeftPastConsumed();
       }
-      if (rightAtRevisit && front.RightLastDirectChildSibling == candidate)
+      if (rightAtRevisit && _Queue.GetFirst().RightLastDirectChildSibling == candidate)
       {
-        front.RightConsumedVC++;
+        _Queue.GetFirst().RightConsumedVC++;
         AdvanceRightPastConsumed();
       }
 
-      front.RevisitedSlot = candidate;
-      front.VisitCount++;
-      PublishFromFrame(front, TreenumeratorMode.VisitingNode);
+      _Queue.GetFirst().RevisitedSlot = candidate;
+      _Queue.GetFirst().VisitCount++;
+      PublishFromFrame(_Queue.GetFirst(), TreenumeratorMode.VisitingNode);
       return true;
     }
 
@@ -561,8 +561,8 @@ namespace Copse.Linq.Treenumerators
     {
       base.OnDisposing();
 
-      _LeftTreenumerator?.Dispose();
-      _RightTreenumerator?.Dispose();
+      _LeftTreenumerator.Dispose();
+      _RightTreenumerator.Dispose();
     }
   }
 }

@@ -1,4 +1,5 @@
 using Copse;
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Treenumerators; // MergeNode
@@ -22,7 +23,7 @@ namespace Copse.Linq.Async
   /// seam or in synchronous methods, so they stay as-is.</para>
   /// </summary>
   public sealed class AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
-    : IAsyncTreenumerator<MergeNode<TLeft, TRight>>
+    : AsyncTreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public AsyncStructuralMergeBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TLeft>> leftTreenumeratorFactory,
@@ -53,13 +54,6 @@ namespace Copse.Linq.Async
     private int _LastScheduledRawDepth;
     private bool _LastScheduledWasRoot;
 
-    private bool _Finished;
-
-    public MergeNode<TLeft, TRight> Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
     private struct MergedFrame
     {
       public MergeNode<TLeft, TRight> Node;
@@ -81,20 +75,7 @@ namespace Copse.Linq.Async
       public bool HasRight => Node.HasRight;
     }
 
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // The strategy applies to the node JUST scheduled. SkipNode removes the merged frame we enqueued
       // for it (the inners promote/prune its children below).
@@ -448,8 +429,9 @@ namespace Copse.Linq.Async
       Position = frame.Position;
     }
 
-    public async ValueTask DisposeAsync()
+    protected override async ValueTask OnDisposingAsync()
     {
+      await base.OnDisposingAsync().ConfigureAwait(false);
       await _LeftTreenumerator.DisposeAsync().ConfigureAwait(false);
       await _RightTreenumerator.DisposeAsync().ConfigureAwait(false);
     }

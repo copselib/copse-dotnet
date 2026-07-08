@@ -1,5 +1,7 @@
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereBreadthFirstPath (internal, via InternalsVisibleTo)
 using System;
 using System.Threading.Tasks;
@@ -7,69 +9,63 @@ using System.Threading.Tasks;
 namespace Copse.Linq.Async
 {
   /// <summary>
-  /// Breadth-first <b>async</b> <c>Where</c>: the direct-style async port of
-  /// <c>Copse.Linq.Treenumerators.WhereBreadthFirstTreenumerator</c> -- the library's most intricate
-  /// operator (deferred parent visits, manufactured/suppressed visits, the O(1) skipped-ancestor prefix
-  /// carry). Shares the internal, color-agnostic <see cref="WhereBreadthFirstPath{TNode}"/> verbatim; the
-  /// only seams are the awaited inner pull (<c>await _Inner.MoveNextAsync</c>) and the predicate.
+  /// Breadth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
+  /// the single <c>await</c> on the inner pull and it becomes the sync BFT Where driver -- the library's
+  /// most intricate operator (deferred parent visits, manufactured/suppressed visits, the O(1)
+  /// skipped-ancestor prefix carry). All structural state lives in the shared, color-agnostic
+  /// <see cref="WhereBreadthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   ///
-  /// <para><b>Codegen source of truth for the sync BFT Where twin.</b> The sync driver uses
-  /// <c>ref var parentStatus = ref _Path.Front;</c> ref-locals, which are illegal in async methods, so
-  /// those two sites inline <c>_Path.Front</c> instead (semantically identical -- Front returns a ref to
-  /// the same slot each call). Everything else mirrors the sync driver line for line.</para>
+  /// <para>The two manufactured-parent-visit sites inline <c>_Path.Front</c> rather than taking a
+  /// <c>ref var parentStatus = ref _Path.Front;</c> local, because by-reference locals are illegal in
+  /// async methods (CS8177). <c>Front</c> ref-returns the same slot on each call, so this is
+  /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
+  /// twin matches byte-for-byte.</para>
   /// </summary>
   public sealed class AsyncWhereBreadthFirstTreenumerator<TNode>
-    : IAsyncTreenumerator<TNode>
+    : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       NodeTraversalStrategies nodeTraversalStrategy)
+      : base(innerTreenumeratorFactory)
     {
-      _Inner = innerTreenumeratorFactory();
       _Predicate = predicate;
       _NodeTraversalStrategy = nodeTraversalStrategy;
 
-      _Path = new WhereBreadthFirstPath<TNode>(_Inner.Node, _Inner.Position);
+      // Seed the path with a sentinel root taken from the inner treenumerator's initial position.
+      _Path = new WhereBreadthFirstPath<TNode>(InnerTreenumerator.Node, InnerTreenumerator.Position);
     }
 
-    private readonly IAsyncTreenumerator<TNode> _Inner;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
     private readonly NodeTraversalStrategies _NodeTraversalStrategy;
 
+    // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
+    // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
     private WhereBreadthFirstPath<TNode> _Path;
 
+    // The front (active effective parent)'s return-visit cadence against the inner stream.
+    // The wrapper must do TWO things the base engine never does: MANUFACTURE a visit the inner
+    // never emits (Owed), and SUPPRESS a visit the inner DID emit (SuppressNextInner). Distinct,
+    // not one bit.
     private enum FrontReturnVisit
     {
-      None,
-      Owed,
-      SuppressNextInner,
+      None,               // Front owes nothing; pass inner parent visits through untouched.
+      Owed,               // A promoted child was scheduled; manufacture the front's return visit next.
+      SuppressNextInner,  // An Owed return visit was CANCELLED by a consumer SkipNode (earlier promoted
+                          // siblings already advanced the front past the inner's between-children visit);
+                          // swallow that now-redundant inner parent visit ONCE. Armed ONLY by the
+                          // consumer-skip-cancel gate -- the normal emit path does NOT arm it (it relies
+                          // on the Mode==Visiting / VisitCount comparison instead).
     }
+
     private FrontReturnVisit _FrontReturnVisit = FrontReturnVisit.None;
 
+    // The consumer strategy held over a manufactured (Owed) parent visit, to be applied to the
+    // child's own visiting turn that follows it.
     private NodeTraversalStrategies? _DeferredStrategy = null;
 
-    private bool _Finished;
-
-    public TNode Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // Output the deferred schedule from a consumer-SkipNode'd parent transition.
       if (_Path.ConsumerSkipDeferredSchedulePending)
@@ -94,11 +90,16 @@ namespace Copse.Linq.Async
 
       var previouslySeenNodeWasScheduledAndSkipped =
         !Position.IsForestRoot
-        && _Inner.Mode == TreenumeratorMode.SchedulingNode
+        && InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
 
       if (previouslySeenNodeWasScheduledAndSkipped)
         _Path.Back.TraversalStrategy = nodeTraversalStrategies;
+
+      // SkipSiblings now passes straight through to the base engine, which handles it
+      // correctly under promotion (including effective-root SkipSiblings ending the root
+      // stream). The wrapper previously stripped and re-emulated it -- that was
+      // over-compensation for the then-broken base engine and produced wrong results.
 
       // Manufacture the front's owed return visit (unless this turn consumer-SkipNode's the child,
       // which cancels the owing, or the front is the sentinel). Inlines _Path.Front (no ref local).
@@ -106,10 +107,12 @@ namespace Copse.Linq.Async
       {
         if (_Path.Front.Position.Depth >= 0)
         {
+          // The manufactured visit is emitted here. The inner's redundant between-children parent
+          // visit is suppressed downstream by the Mode==Visiting / VisitCount comparison, not by
+          // SuppressNextInner (that token is reserved for the consumer-skip-cancel 32b1f8f gate).
           _FrontReturnVisit = FrontReturnVisit.None;
           _DeferredStrategy = nodeTraversalStrategies;
           _Path.Front.VisitCount++;
-
           Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
           return true;
         }
@@ -117,6 +120,12 @@ namespace Copse.Linq.Async
 
       if (previouslySeenNodeWasScheduledAndSkipped)
       {
+        // THE 32b1f8f GATE. A consumer-skip that cancels an Owed return visit means we already
+        // manufactured the front's between-children visit for this slot's earlier promoted siblings,
+        // so the inner's matching parent visit is now redundant: arm its one-shot suppression. The
+        // transition is Owed -> SuppressNextInner ONLY -- a not-Owed front leaves the inner's owed
+        // visit to pass through, so a None-origin consumer-skip can never arm suppression and the
+        // 32b1f8f swallowed-visit bug is structurally impossible.
         if (_FrontReturnVisit == FrontReturnVisit.Owed)
           _FrontReturnVisit = FrontReturnVisit.SuppressNextInner;
 
@@ -128,14 +137,12 @@ namespace Copse.Linq.Async
       if (_FrontReturnVisit == FrontReturnVisit.Owed)
         _FrontReturnVisit = FrontReturnVisit.None;
 
-      while (await _Inner.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
+      while (await InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
       {
-        if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
+        if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
-          var innerDepth = _Inner.Position.Depth;
-
-          var skipped = !_Predicate(new NodeContext<TNode>(_Inner.Node, _Inner.Position));
-
+          var innerDepth = InnerTreenumerator.Position.Depth;
+          var skipped = !_Predicate(InnerTreenumerator.ToNodeContext());
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
@@ -145,27 +152,36 @@ namespace Copse.Linq.Async
           }
 
           // --- Accepted node processing ---
-
+          // Remove consumer-SkipNode'd nodes before calculating effective position.
           var lastScheduleNodeVisitWasSkipped = _Path.Back.Skipped;
           var removedSkippedDepth = lastScheduleNodeVisitWasSkipped
             ? _Path.Back.Position.Depth
             : -1;
 
           if (lastScheduleNodeVisitWasSkipped)
+          {
+            // Record the removed parent at its effective depth so its children and
+            // subsequent siblings at the same depth get correct sibling indices.
             _Path.BeginRemovedSkippedParent(removedSkippedDepth);
+          }
 
           var effectivePosition = _Path.GetEffectivePosition(innerDepth, out var immediateParentIsSkipped);
-
           _Path.RecordAcceptedChild(effectivePosition);
 
+          // Reset the front's cadence for this freshly accepted child. A PROMOTED child (its
+          // immediate inner parent was predicate-filtered, and it is not itself an effective root)
+          // owes the front a manufactured return visit; anything else clears the token, dropping any
+          // prior suppression.
           _FrontReturnVisit = immediateParentIsSkipped && effectivePosition.Depth > 0
             ? FrontReturnVisit.Owed
             : FrontReturnVisit.None;
 
+          // An accepted child within the SkipNode'd subtree clears the flag.
           if (_Path.ConsumerSkippedSubtreeDepth >= 0
             && effectivePosition.Depth > _Path.ConsumerSkippedSubtreeDepth)
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
 
+          // Track entry into a consumer-SkipNode'd subtree.
           if (lastScheduleNodeVisitWasSkipped && removedSkippedDepth >= 0
             && effectivePosition.Depth > removedSkippedDepth)
           {
@@ -180,35 +196,32 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-
-              _Path.EnqueueAccepted(_Inner.Node, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
-
               _Path.Front.VisitCount++;
-
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
             }
 
+            // The last child was consumer-SkipNode'd, so no deferred V parent needed.
             _Path.ClearConsumerSkippedSubtree();
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(_Inner.Node, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
         }
         else // VisitingNode
         {
           // Swallow the inner's now-redundant between-children parent visit ONCE.
           if (_FrontReturnVisit == FrontReturnVisit.SuppressNextInner
-            && _Inner.VisitCount > 1)
+            && InnerTreenumerator.VisitCount > 1)
           {
             _FrontReturnVisit = FrontReturnVisit.None;
-
-            if (_Path.Front.VisitCount >= _Inner.VisitCount)
+            if (_Path.Front.VisitCount >= InnerTreenumerator.VisitCount)
               continue;
           }
 
-          if (_Inner.VisitCount == 1)
+          if (InnerTreenumerator.VisitCount == 1)
           {
             _Path.RetireFrontAndReanchor();
           }
@@ -218,14 +231,17 @@ namespace Copse.Linq.Async
           _Path.Front.VisitCount++;
         }
 
-        Publish(ref _Path.SelectPublishFrame(_Inner.Mode == TreenumeratorMode.SchedulingNode), _Inner.Mode);
+        Publish(ref _Path.SelectPublishFrame(InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode), InnerTreenumerator.Mode);
         return true;
       }
 
-      Publish(ref _Path.SelectPublishFrame(_Inner.Mode == TreenumeratorMode.SchedulingNode), _Inner.Mode);
+      Publish(ref _Path.SelectPublishFrame(InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode), InnerTreenumerator.Mode);
       return false;
     }
 
+    // The single publish funnel. Takes an EXPLICIT mode: the BFT wrapper publishes manufactured and
+    // deferred-schedule visits whose VisitCount does not match their mode (a deferred SCHEDULE carries a
+    // nonzero VisitCount), so the mode cannot be derived from VisitCount the way the DFT wrapper does.
     private void Publish(ref WhereBreadthFirstPath<TNode>.AcceptedFrame frame, TreenumeratorMode mode)
     {
       Mode = mode;
@@ -233,7 +249,5 @@ namespace Copse.Linq.Async
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }
-
-    public ValueTask DisposeAsync() => _Inner.DisposeAsync();
   }
 }

@@ -21,7 +21,7 @@ namespace Copse.Linq.Generated
   /// operand pulls are guarded by booleans computed before them.</para>
   /// </summary>
   public sealed class GeneratedStructuralMergeDepthFirstTreenumerator<TLeft, TRight>
-    : ITreenumerator<MergeNode<TLeft, TRight>>
+    : TreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public GeneratedStructuralMergeDepthFirstTreenumerator(
       Func<ITreenumerator<TLeft>> leftTreenumeratorFactory,
@@ -45,27 +45,7 @@ namespace Copse.Linq.Generated
 
     private Stack<NodeVisit<MergeNode<TLeft, TRight>>> _NodeVisits = new Stack<NodeVisit<MergeNode<TLeft, TRight>>>();
 
-    private bool _Finished;
-
-    public MergeNode<TLeft, TRight> Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = OnMoveNext(nodeTraversalStrategies);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       HandleMoveNextForLeftAndRightTreenumerators(nodeTraversalStrategies);
 
@@ -309,13 +289,14 @@ namespace Copse.Linq.Generated
       return parent.Depth < topVisit.Position.Depth ? parent : ForestRoot;
     }
 
-    private static readonly NodePosition ForestRoot = NodePosition.ForestRoot;
+    private static readonly NodePosition ForestRoot = NodePosition.ForestRoot; // canonical name now lives in Core
 
     private static bool HoldsEffectiveSibling(NodePosition operandPosition, NodePosition parent)
       => operandPosition.Depth > parent.Depth || operandPosition == parent;
 
-    public void Dispose()
+    protected override void OnDisposing()
     {
+      base.OnDisposing();
       _LeftTreenumerator.Dispose();
       _RightTreenumerator.Dispose();
     }

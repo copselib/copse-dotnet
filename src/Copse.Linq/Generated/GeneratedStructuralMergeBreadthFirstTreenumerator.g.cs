@@ -24,7 +24,7 @@ namespace Copse.Linq.Generated
   /// seam or in synchronous methods, so they stay as-is.</para>
   /// </summary>
   public sealed class GeneratedStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>
-    : ITreenumerator<MergeNode<TLeft, TRight>>
+    : TreenumeratorBase<MergeNode<TLeft, TRight>>
   {
     public GeneratedStructuralMergeBreadthFirstTreenumerator(
       Func<ITreenumerator<TLeft>> leftTreenumeratorFactory,
@@ -55,13 +55,6 @@ namespace Copse.Linq.Generated
     private int _LastScheduledRawDepth;
     private bool _LastScheduledWasRoot;
 
-    private bool _Finished;
-
-    public MergeNode<TLeft, TRight> Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
     private struct MergedFrame
     {
       public MergeNode<TLeft, TRight> Node;
@@ -83,20 +76,7 @@ namespace Copse.Linq.Generated
       public bool HasRight => Node.HasRight;
     }
 
-    public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = OnMoveNext(nodeTraversalStrategies);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // The strategy applies to the node JUST scheduled. SkipNode removes the merged frame we enqueued
       // for it (the inners promote/prune its children below).
@@ -450,8 +430,9 @@ namespace Copse.Linq.Generated
       Position = frame.Position;
     }
 
-    public void Dispose()
+    protected override void OnDisposing()
     {
+      base.OnDisposing();
       _LeftTreenumerator.Dispose();
       _RightTreenumerator.Dispose();
     }
