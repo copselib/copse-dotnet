@@ -10,24 +10,20 @@ using System.Collections.Generic;
 namespace Copse.Linq.Generated
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>RootfixScan</c>: the direct-style async port of
-  /// <c>Copse.Linq.Treenumerators.RootfixScanDepthFirstTreenumerator</c>. A cumulative scan from the
-  /// root -- each scheduled node's value is the accumulator applied to its parent's accumulated value
-  /// -- transforming the inner (async) <c>TNode</c> stream into a <c>TAccumulate</c> stream. The only
-  /// seam is the awaited inner pull; all accumulation state is synchronous stacks.
-  ///
-  /// <para><b>This is the codegen source of truth for the sync RootfixScan (DFT) twin.</b> Strip the
-  /// <c>await</c> and it becomes the synchronous driver.</para>
+  /// Depth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
+  /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. A cumulative
+  /// scan from the root -- each scheduled node's value is the accumulator applied to its parent's
+  /// accumulated value -- transforming the inner TNode stream into a TAccumulate stream; all
+  /// accumulation state is synchronous stacks.
   /// </summary>
   public sealed class GeneratedRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
-    : ITreenumerator<TAccumulate>
+    : TreenumeratorWrapper<TNode, TAccumulate>
   {
     public GeneratedRootfixScanDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed) : base(innerTreenumeratorFactory)
     {
-      _Inner = innerTreenumeratorFactory();
       _Accumulator = accumulator;
 
       var seedVisit =
@@ -40,18 +36,10 @@ namespace Copse.Linq.Generated
       _Stack.Push(seedVisit);
     }
 
-    private readonly ITreenumerator<TNode> _Inner;
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
 
     private readonly Stack<NodeVisit<TAccumulate>> _Stack = new Stack<NodeVisit<TAccumulate>>();
     private readonly Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
-
-    private bool _Finished;
-
-    public TAccumulate Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
     private Stack<NodeVisit<TAccumulate>> GetStackWithDeepestNodeVisit()
     {
@@ -68,33 +56,20 @@ namespace Copse.Linq.Generated
 
     private NodeVisit<TAccumulate> PopStackWithDeepestNodeVisit() => GetStackWithDeepestNodeVisit().Pop();
 
-    public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (_Finished)
-        return false;
-
-      var moved = OnMoveNext(nodeTraversalStrategies);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Inner.Mode == TreenumeratorMode.SchedulingNode
+      if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         _SkippedStack.Push(_Stack.Pop());
       }
 
-      if (!_Inner.MoveNext(nodeTraversalStrategies))
+      if (!InnerTreenumerator.MoveNext(nodeTraversalStrategies))
         return false;
 
-      var currentDepth = _Inner.Position.Depth;
+      var currentDepth = InnerTreenumerator.Position.Depth;
 
-      if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
+      if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
       {
         while (GetDeepestSeenDepth() >= currentDepth)
           PopStackWithDeepestNodeVisit();
@@ -106,16 +81,16 @@ namespace Copse.Linq.Generated
       }
 
       var node =
-        _Inner.Mode == TreenumeratorMode.SchedulingNode
-        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), new NodeContext<TNode>(_Inner.Node, _Inner.Position))
+        InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
+        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), InnerTreenumerator.ToNodeContext())
         : _Stack.Pop().Node;
 
       var newVisit =
         new NodeVisit<TAccumulate>(
-          _Inner.Mode,
+          InnerTreenumerator.Mode,
           node,
-          _Inner.VisitCount,
-          _Inner.Position);
+          InnerTreenumerator.VisitCount,
+          InnerTreenumerator.Position);
 
       _Stack.Push(newVisit);
 
@@ -131,7 +106,5 @@ namespace Copse.Linq.Generated
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }

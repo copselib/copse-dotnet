@@ -1,74 +1,55 @@
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Extensions;
 using System;
 using System.Threading.Tasks;
 
 namespace Copse.Linq.Async
 {
   /// <summary>
-  /// <b>async</b> <c>TakeNodesUntil</c>: the direct-style async port of
-  /// <c>Copse.Linq.Treenumerators.TakeNodesUntilTreenumerator</c>. Forwards the inner (async) visit
-  /// stream until a scheduled node matches the predicate; from there scheduling stops (the matched
-  /// node's subtree and later siblings are pruned), optionally keeping the matched node itself
-  /// (<paramref name="keepFinalNode"/>). Dimension-agnostic; the only seam is the awaited inner pull.
-  ///
-  /// <para><b>This is the codegen source of truth for the sync TakeNodesUntil twin.</b> Strip the
-  /// <c>await</c>s and it becomes the synchronous driver.</para>
+  /// <b>async</b> <c>TakeNodesUntil</c> and the codegen source of truth for its sync twin: strip the
+  /// <c>await</c>s and it becomes the synchronous driver. Forwards the inner visit stream until a
+  /// scheduled node matches the predicate; from there scheduling stops (the matched node's subtree
+  /// and later siblings are pruned), optionally keeping the matched node itself
+  /// (<paramref name="keepFinalNode"/>). Dimension-agnostic.
   /// </summary>
   public sealed class AsyncTakeNodesUntilTreenumerator<TNode>
-    : IAsyncTreenumerator<TNode>
+    : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncTakeNodesUntilTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)
+      : base(innerTreenumeratorFactory)
     {
-      _Inner = innerTreenumeratorFactory();
       _Predicate = predicate;
       _KeepFinalNode = keepFinalNode;
     }
 
-    private readonly IAsyncTreenumerator<TNode> _Inner;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
     private bool _KeepFinalNode;
     private bool _StopSchedulingNodes;
     private bool _FinalVisitRemaining = false;
 
-    private bool _Finished;
-
-    public TNode Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (_Finished)
+      if (EnumerationFinished)
         return false;
 
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-    {
       if (_StopSchedulingNodes)
         return await OnSchedulingStoppedAsync(nodeTraversalStrategies).ConfigureAwait(false);
 
-      if (!await _Inner.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
+      if (!await InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
         return false;
 
-      if (_Inner.Mode == TreenumeratorMode.VisitingNode)
+      if (InnerTreenumerator.Mode == TreenumeratorMode.VisitingNode)
       {
         UpdateState();
         return true;
       }
 
-      if (_Predicate(new NodeContext<TNode>(_Inner.Node, _Inner.Position)))
+      if (_Predicate(InnerTreenumerator.ToNodeContext()))
       {
         _StopSchedulingNodes = true;
 
@@ -92,22 +73,23 @@ namespace Copse.Linq.Async
       }
       else
       {
-        // SkipNodeAndDescendants rather than SkipAll: SkipSiblings would dispose the queue front's
-        // child enumerator, stranding already-queued nodes in BFS.
+        // Use SkipNodeAndDescendants instead of SkipAll to avoid the SkipSiblings
+        // side effect that disposes the queue's first item's child enumerator,
+        // which would prevent already-queued nodes from being visited in BFS.
         nodeTraversalStrategies = NodeTraversalStrategies.SkipNodeAndDescendants;
       }
 
       while (true)
       {
-        var result = await _Inner.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
+        var result = await InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
 
         if (!result)
           return false;
 
-        if (_Inner.Mode == TreenumeratorMode.VisitingNode
-          && (_Inner.VisitCount < 2
-          || _Inner.Position != Position
-          || _Inner.VisitCount != VisitCount + 1))
+        if (InnerTreenumerator.Mode == TreenumeratorMode.VisitingNode
+          && (InnerTreenumerator.VisitCount < 2
+          || InnerTreenumerator.Position != Position
+          || InnerTreenumerator.VisitCount != VisitCount + 1))
         {
           UpdateState();
           return true;
@@ -119,16 +101,14 @@ namespace Copse.Linq.Async
 
     private void UpdateState()
     {
-      Mode = _Inner.Mode;
+      Mode = InnerTreenumerator.Mode;
 
-      if (!_Finished)
+      if (!EnumerationFinished)
       {
-        Node = _Inner.Node;
-        VisitCount = _Inner.VisitCount;
-        Position = _Inner.Position;
+        Node = InnerTreenumerator.Node;
+        VisitCount = InnerTreenumerator.VisitCount;
+        Position = InnerTreenumerator.Position;
       }
     }
-
-    public ValueTask DisposeAsync() => _Inner.DisposeAsync();
   }
 }

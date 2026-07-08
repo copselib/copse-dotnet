@@ -1,5 +1,7 @@
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
 using System.Threading.Tasks;
@@ -7,60 +9,36 @@ using System.Threading.Tasks;
 namespace Copse.Linq.Async
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>Where</c>: the direct-style async port of
-  /// <c>Copse.Linq.Treenumerators.WhereDepthFirstTreenumerator</c>. Filters the inner (async) visit
-  /// stream, promoting a predicate-skipped node's children into its parent's slot -- with the only
-  /// seams being the awaited inner pull (<c>await _Inner.MoveNextAsync</c>) and the predicate.
-  ///
-  /// <para><b>This is the codegen source of truth for the sync Where twin.</b> All structural state
-  /// lives in the shared, color-agnostic <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the
-  /// sync driver uses, verbatim). Strip the <c>await</c>s and this becomes the sync Where driver -- the
-  /// test that the codegen approach holds for the library's most intricate operator, not just the
-  /// engine.</para>
+  /// Depth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
+  /// the <c>await</c>s and it becomes the sync Where driver. Filters the inner visit stream,
+  /// promoting a predicate-skipped node's children into its parent's slot. All structural state
+  /// lives in the shared, color-agnostic <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct
+  /// the sync driver uses, verbatim) -- the test that the codegen approach holds for the library's
+  /// most intricate operator, not just the engine.
   /// </summary>
   public sealed class AsyncWhereDepthFirstTreenumerator<TNode>
-    : IAsyncTreenumerator<TNode>
+    : AsyncTreenumeratorWrapper<TNode>
   {
     public AsyncWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TNode>, bool> predicate,
       NodeTraversalStrategies nodeTraversalStrategy)
+      : base(innerTreenumeratorFactory)
     {
-      _Inner = innerTreenumeratorFactory();
       _Predicate = predicate;
       _NodeTraversalStrategy = nodeTraversalStrategy;
 
       // Seed the path with a sentinel root: the virtual forest root by definition.
-      _Path = new WhereDepthFirstPath<TNode>(_Inner.Node, NodePosition.ForestRoot);
+      _Path = new WhereDepthFirstPath<TNode>(InnerTreenumerator.Node, NodePosition.ForestRoot);
     }
 
-    private readonly IAsyncTreenumerator<TNode> _Inner;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
     private readonly NodeTraversalStrategies _NodeTraversalStrategy;
 
     private WhereDepthFirstPath<TNode> _Path;
     private bool _HasCachedChild = false;
-    private bool _Finished;
 
-    public TNode Node { get; private set; } = default;
-    public int VisitCount { get; private set; } = 0;
-    public TreenumeratorMode Mode { get; private set; } = default;
-    public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
-
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
-    {
-      if (_Finished)
-        return false;
-
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
-
-      if (!moved)
-        _Finished = true;
-
-      return moved;
-    }
-
-    private async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_HasCachedChild)
       {
@@ -71,7 +49,7 @@ namespace Copse.Linq.Async
 
       // If the consumer skipped the node we just scheduled, move it to the skipped stack so its
       // descendants get promoted. Never move the sentinel (the only node when AcceptedCount == 1).
-      if (_Inner.Mode == TreenumeratorMode.SchedulingNode
+      if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         && _Path.AcceptedCount > 1
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
@@ -82,15 +60,15 @@ namespace Copse.Linq.Async
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Do not apply any traversal strategies to the sentinel node.
-      if (_Inner.Position.IsForestRoot)
+      if (InnerTreenumerator.Position.IsForestRoot)
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
       // Enumerate until we yield something or exhaust the inner enumerator. THE SEAM: awaited inner pull.
-      while (await _Inner.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
+      while (await InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
       {
         nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
 
-        if (_Inner.Mode == TreenumeratorMode.SchedulingNode)
+        if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
           if (!OnScheduling())
           {
@@ -110,15 +88,15 @@ namespace Copse.Linq.Async
 
     private bool OnScheduling()
     {
-      _Path.PopDeeperThanForScheduling(_Inner.Position.Depth);
+      _Path.PopDeeperThanForScheduling(InnerTreenumerator.Position.Depth);
 
-      if (!_Predicate(new NodeContext<TNode>(_Inner.Node, _Inner.Position)))
+      if (!_Predicate(InnerTreenumerator.ToNodeContext()))
         return false;
 
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(_Inner.Node, _Inner.Position);
+      _Path.PushAcceptedChild(InnerTreenumerator.Node, InnerTreenumerator.Position);
 
       if (cacheChild)
       {
@@ -136,11 +114,11 @@ namespace Copse.Linq.Async
     private bool OnVisiting()
     {
       _Path.PopDeeperThanForVisiting(
-        _Inner.Position.Depth,
+        InnerTreenumerator.Position.Depth,
         out var removedVisitedNodes,
         out var removedSkippedNodes);
 
-      if (_Path.ShouldSuppressVisit(_Inner.Position, removedVisitedNodes, removedSkippedNodes))
+      if (_Path.ShouldSuppressVisit(InnerTreenumerator.Position, removedVisitedNodes, removedSkippedNodes))
         return false;
 
       Publish(ref _Path.TakeCurrentVisit());
@@ -158,7 +136,5 @@ namespace Copse.Linq.Async
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }
-
-    public ValueTask DisposeAsync() => _Inner.DisposeAsync();
   }
 }
