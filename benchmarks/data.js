@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783625862584,
+  "lastUpdate": 1783625862886,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -35742,6 +35742,102 @@ window.BENCHMARK_DATA = {
             "value": 2427340.8328683036,
             "unit": "ns",
             "range": "± 8267.707229959833"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6c016fbaf372d7b88f437e99727dca7f4018c778",
+          "message": "Merge feature/async-prototype: the async library, and sync generated from it\n\nThe async Copse family (Copse.Core.Async, Copse.Async, Copse.Linq.Async,\nasync serializer I/O) becomes the single source of truth: the synchronous\nlibraries' .g.cs files are generated from the async sources by Copse.CodeGen\nand guarded by GeneratedTwinDriftTests. See docs/ASYNC_CODEGEN.md.\n\nHighlights riding along:\n- Uniform TFM ladder (net48;netstandard2.0;netstandard2.1;net8.0) across all\n  library projects, polyfills conditional on the old targets only.\n- Edges-only cancellation: tokens on serializer I/O, terminals, iterators,\n  and tokenizers; MoveNextAsync/DisposeAsync stay token-free.\n- Block-granularity async serializer I/O (zero allocation overhead vs sync).\n- AsyncOverhead benchmark category: paired sync/async ratio classes; CI\n  benchmark matrix (8 legs incl. LINQ split), Bencher project-key auth,\n  gh-pages stores gated to main.\n- 1:1 lockstep NuGet packaging (11 packages) with MinVer + Trusted Publishing.\n- UnionTest_BreadthFirst unskipped: all 4,376 rows pass (23,670/0 suite-wide).\n\nVerified on the merged tree: 24,179 tests passed, 0 failed, 0 skipped,\nincluding the generated-twin drift guard.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T19:23:08Z",
+          "tree_id": "bc40401b60610bcedd5da42da3ea26acac27fb82",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6c016fbaf372d7b88f437e99727dca7f4018c778"
+        },
+        "date": 1783625862830,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2204249.0546875,
+            "unit": "ns",
+            "range": "± 6611.771585603222"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2175108.33203125,
+            "unit": "ns",
+            "range": "± 7343.2923185954705"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4305049.4375,
+            "unit": "ns",
+            "range": "± 26756.736547166583"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 703912.276171875,
+            "unit": "ns",
+            "range": "± 1977.3673861396367"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 878686.6666015625,
+            "unit": "ns",
+            "range": "± 1567.0244338909397"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 463457.21638371394,
+            "unit": "ns",
+            "range": "± 595.1694338569655"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 6328455.926041666,
+            "unit": "ns",
+            "range": "± 47795.87882066016"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 6275086.786979167,
+            "unit": "ns",
+            "range": "± 11572.174256177299"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 28142057.35267857,
+            "unit": "ns",
+            "range": "± 202730.3442050498"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2780210.2472098214,
+            "unit": "ns",
+            "range": "± 3518.0703237376524"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2174260.982096354,
+            "unit": "ns",
+            "range": "± 5941.890603728642"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2470056.2057291665,
+            "unit": "ns",
+            "range": "± 13622.777337450005"
           }
         ]
       }
