@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  # Manual runs against any branch (pick the branch in the Run workflow dropdown): the pre-merge
+  # "see the numbers first" path. Bencher files results under the actual branch name, so feature
+  # runs never pollute main's history (Bencher handles feature-branch baselines natively).
+  workflow_dispatch:
 
 # Ensure only one benchmark PUBLISH at a time to prevent gh-pages conflicts (the matrix legs
 # are safely concurrent; only the publish job touches gh-pages).
@@ -332,7 +336,7 @@ jobs:
             bencher run \
               --project "$BENCHER_PROJECT" \
               --token "$BENCHER_API_TOKEN" \
-              --branch main \
+              --branch "$GITHUB_REF_NAME" \
               --testbed ubuntu-latest \
               --adapter c_sharp_dot_net \
               --file "$FILE" \
