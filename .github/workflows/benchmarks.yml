@@ -61,6 +61,7 @@ jobs:
         run: |
           mkdir -p src/Copse.Benchmarks/artifacts/${{ matrix.category }}
           grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- \
+            | sed -E 's/\((R|TM)\)//gi' \
             | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9\n' '-' | tr -s '-' | sed 's/^-//; s/-$//' \
             > src/Copse.Benchmarks/artifacts/${{ matrix.category }}/cpu.txt
           echo "Runner CPU: $(cat src/Copse.Benchmarks/artifacts/${{ matrix.category }}/cpu.txt)"

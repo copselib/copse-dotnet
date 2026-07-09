@@ -14,11 +14,14 @@ namespace Copse.Benchmarks
   /// noisy on both local machines and shared CI runners, so historically each benchmark's node
   /// count was bumped until repeated local runs stopped swinging -- which fixed the noise but
   /// left nearly every benchmark at a different, undocumented size. The standardization keeps the
-  /// noise constraint as an invariant -- the CHEAPEST per-node operation in the suite (flat
-  /// decode / skip-drain, ~15-30 ns/node) must clear ~10 ms on the SLOWEST runner CPU observed --
-  /// while making every operator and shape directly comparable. At the Mega tier the fastest
-  /// rows land at ~15-30 ms and the heaviest (1M x 1M Union) near one second: all comfortably
-  /// measurable, none wasteful.</para>
+  /// noise constraint as an invariant -- every row must clear ~1 ms (the observed noise
+  /// threshold) on the SLOWEST runner CPU seen, with ~10 ms as the design target -- while making
+  /// every operator and shape directly comparable. Measured at the Mega tier (first run,
+  /// 2026-07-09): the cheapest rows are the trivial-forest drains at ~2.6 ns/node (~3 ms; the
+  /// forest has no child pulls at all), most rows land 10-300 ms, and the heaviest (Mega x Mega
+  /// Union) near a second: all above the threshold, none wasteful. If forest rows ever prove
+  /// noisy in practice, revisit -- do NOT bump only the forest parameter; that would break
+  /// cross-shape comparability.</para>
   ///
   /// <para><b>Why tiers quantize per shape.</b> Shapes cannot hit an exact shared count: binary
   /// trees grow as 2^d - 1, the triangle as d(d+1)/2. Each tier names a power-of-two TARGET and

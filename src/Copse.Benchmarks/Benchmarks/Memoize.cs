@@ -66,15 +66,16 @@ namespace Copse.Benchmarks
 
     // --- Laziness: a bounded prefix over an UNBOUNDED source captures only what the replay
     // touches (the unpruned TriangleTree, deliberately outside the canonical tiers -- the whole
-    // point is that no tier bounds it). The allocation column is the claim being tested.
+    // point is that no tier bounds it). The allocation column is the claim being tested; the
+    // prefix is 2^19 pulls so the time column also clears the noise floor.
 
     [Benchmark]
-    public void Partial_Bft_10K_of_UnboundedTriangle()
+    public void Partial_Bft_512K_of_UnboundedTriangle()
     {
       var memo = new Copse.Trees.TriangleTree().Memoize();
 
       using (var replay = memo.GetBreadthFirstTreenumerator())
-        for (var i = 0; i < 10_000; i++)
+        for (var i = 0; i < 1 << 19; i++)
           if (!replay.MoveNext(NodeTraversalStrategies.TraverseAll))
             break;
     }
