@@ -123,9 +123,13 @@ jobs:
           git branch -D gh-pages 2>/dev/null || true
           git update-ref -d refs/heads/gh-pages 2>/dev/null || true
 
-      # Store results for each category. The FIRST store fetches gh-pages; the rest skip the
-      # fetch; the LAST store auto-pushes all accumulated results at once.
+      # Store results for each category -- MAIN ONLY: the gh-pages dashboard is main's trend
+      # line, so dispatch runs against feature branches must not append to it (their numbers
+      # live in the run artifacts and in Bencher, which files them under the branch name).
+      # The FIRST store fetches gh-pages; the rest skip the fetch; the LAST store auto-pushes
+      # all accumulated results at once.
       - name: Store Traversal benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Traversal Benchmarks
@@ -140,6 +144,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store LINQ benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: LINQ Benchmarks
@@ -155,6 +160,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Conversion benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Conversion Benchmarks
@@ -170,6 +176,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store DataStructures benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: DataStructures Benchmarks
@@ -185,6 +192,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Serialization benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Serialization Benchmarks
@@ -200,6 +208,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store AsyncOverhead benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: AsyncOverhead Benchmarks
@@ -216,6 +225,7 @@ jobs:
 
       # Store memory benchmark results for each category
       - name: Store Traversal memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Traversal Memory
@@ -231,6 +241,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store LINQ memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: LINQ Memory
@@ -246,6 +257,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Conversion memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Conversion Memory
@@ -261,6 +273,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store DataStructures memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: DataStructures Memory
@@ -276,6 +289,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Serialization memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Serialization Memory
@@ -292,6 +306,7 @@ jobs:
 
       # Final benchmark-action step: auto-push commits all accumulated category results at once.
       - name: Store AsyncOverhead memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: AsyncOverhead Memory
