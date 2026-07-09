@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783634677040,
+  "lastUpdate": 1783634677292,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -37075,6 +37075,90 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/6c016fbaf372d7b88f437e99727dca7f4018c778"
         },
         "date": 1783625864615,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 153113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 86489,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1311,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 415379,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 446947,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251211,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c8727a8ef5b61cab56c497a4d1b62ca0944ef77",
+          "message": "Benchmark reorg 4/4: Serialization alignment + the ten-family CI matrix\n\nSerialization adopts the shape vocabulary and the Mega-tier forest;\nthe chain rows stay at 100K as the documented tier exception (a\nMega-tier chain serialization is a ~10 MB string per op).\n\nbenchmarks.yml: one leg per family, single-tag selection (partition by\nconstruction -- no cross-leg tag bookkeeping), 10 suites x time+memory\nstored to gh-pages, and per-CPU-model Bencher testbeds: each leg\nrecords its runner's CPU into the artifact and the publish job files\neach family's report under that testbed, so thresholds learn per-CPU\npopulations and fleet changes stop reading as regressions.\n\nSuite: 137 benchmarks, verified as an exact partition (family counts\nsum to the flat total) and smoke-tested including the first-ever\nRootfix and SymmetricDifference coverage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T21:49:58Z",
+          "tree_id": "1143011cb54498178341b847607d44f5ff9f26e8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4c8727a8ef5b61cab56c497a4d1b62ca0944ef77"
+        },
+        "date": 1783634677251,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
