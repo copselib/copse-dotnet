@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783640276343,
+  "lastUpdate": 1783640276595,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -35042,6 +35042,66 @@ window.BENCHMARK_DATA = {
             "value": 152426101.515625,
             "unit": "ns",
             "range": "± 1629496.1168248183"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "79b313175645f43913a7536fcc34cdf928890320",
+          "message": "Docs: BENCHMARKING.md describes the ten-family suite\n\nRewritten for the reorg: family table, naming convention, CanonicalTrees\nas the workload registry, the AsyncOverhead same-run-ratio doctrine,\nper-CPU Bencher testbeds, the archived-series dashboard behavior, the\nadd-a-benchmark checklist (family tag routes everything), and the\nCPU-lottery reading guide. Also drops the fictional pull-request\ntrigger the old text described.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T23:18:21Z",
+          "tree_id": "31993732676fd22d0f1941e219311bcfc558be66",
+          "url": "https://github.com/copselib/copse-dotnet/commit/79b313175645f43913a7536fcc34cdf928890320"
+        },
+        "date": 1783640276550,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 62033019.6984127,
+            "unit": "ns",
+            "range": "± 134436.2804138624"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 8105254.433333334,
+            "unit": "ns",
+            "range": "± 108861.58086064897"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 101633159.81428573,
+            "unit": "ns",
+            "range": "± 773938.65386969"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 13019706.950892856,
+            "unit": "ns",
+            "range": "± 88167.52131447443"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 138720269.59615386,
+            "unit": "ns",
+            "range": "± 693145.0285963379"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 120616717.77333334,
+            "unit": "ns",
+            "range": "± 341903.88221648947"
           }
         ]
       }
