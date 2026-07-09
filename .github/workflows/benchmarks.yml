@@ -29,13 +29,28 @@ jobs:
   # (the AsyncOverhead sync/async pairs especially) live in the SAME category and therefore the
   # same leg -- same-run ratios are the only trustworthy numbers on shared runners; splitting a
   # comparison across runners would compare two different machines.
+  #
+  # LINQ is too big for one leg (~17 min vs 2-7 for the rest), so it runs as three legs split by
+  # the sub-category tags already on the classes. The three --anyCategories tag sets must PARTITION
+  # the LINQ category (disjoint + complete: 30 + 16 + 10 = 56 as of this writing) -- a class with a
+  # new tag outside these sets silently drops out of CI, so when adding a LINQ benchmark class,
+  # reuse an existing tag or add the new tag to a leg here. The publish job reassembles the three
+  # legs into a single LINQ result set, so the dashboard suite and Bencher names see no split.
   run:
     name: Run ${{ matrix.category }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        category: [Traversal, LINQ, Conversion, DataStructures, Serialization, AsyncOverhead]
+        include:
+          - { category: Traversal,      args: '--allCategories Traversal' }
+          - { category: LinqStreaming,  args: '--allCategories LINQ --anyCategories Query Filter Pruning Skip Projection' }
+          - { category: LinqBuffering,  args: '--allCategories LINQ --anyCategories Memoize Materialize Invert Leaffix' }
+          - { category: LinqMerge,      args: '--allCategories LINQ --anyCategories Merge' }
+          - { category: Conversion,     args: '--allCategories Conversion' }
+          - { category: DataStructures, args: '--allCategories DataStructures' }
+          - { category: Serialization,  args: '--allCategories Serialization' }
+          - { category: AsyncOverhead,  args: '--allCategories AsyncOverhead' }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -54,7 +69,7 @@ jobs:
       - name: Run ${{ matrix.category }} benchmarks
         run: |
           cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories ${{ matrix.category }} --artifacts ./artifacts/${{ matrix.category }} --join
+          dotnet run -c Release --no-build -- --exporters json ${{ matrix.args }} --artifacts ./artifacts/${{ matrix.category }} --join
 
       - name: Upload ${{ matrix.category }} results
         uses: actions/upload-artifact@v7
@@ -103,6 +118,14 @@ jobs:
       - name: Find results and create memory benchmarks
         id: find-results
         run: |
+          # Reassemble the three LINQ legs into one LINQ result set (keeps the first leg's
+          # metadata; concatenates the Benchmarks arrays), so the dashboard keeps its single
+          # "LINQ Benchmarks" suite and Bencher gets one upload.
+          mkdir -p src/Copse.Benchmarks/artifacts/LINQ/results
+          jq -s '.[0] * {Benchmarks: (map(.Benchmarks) | add)}' \
+            src/Copse.Benchmarks/artifacts/Linq*/results/*-report-full-compressed.json \
+            > src/Copse.Benchmarks/artifacts/LINQ/results/BenchmarkRun-joined-linq-report-full-compressed.json
+
           for category in Traversal LINQ Conversion DataStructures Serialization AsyncOverhead; do
             # Find the runtime benchmark JSON file
             RESULTS_FILE=$(find src/Copse.Benchmarks/artifacts/$category/results -name "*-report-full-compressed.json" -type f | head -n 1)
