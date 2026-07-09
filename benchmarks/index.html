@@ -51,6 +51,9 @@
   td.name { font-family:var(--mono); font-size:13px; }
   .cls { color:var(--muted); }
   .badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:999px; background:var(--chip); color:var(--muted); margin-left:6px; }
+  .badge.arch { background:transparent; border:1px dashed var(--muted); }
+  tr.brow.archived td { color:var(--muted); }
+  tr.brow.archived td.name { font-style:italic; }
   .delta.bad { color:var(--bad); } .delta.good { color:var(--good); } .delta.flat { color:var(--muted); }
   .spark { display:block; }
   tr.detail td { background:transparent; }
@@ -83,6 +86,7 @@
       <option value="latest">Latest value</option>
       <option value="name">Name</option>
     </select>
+    <label class="lbl"><input id="arch" type="checkbox" /> show archived</label>
     <span class="count" id="count"></span>
   </div>
 </header>
@@ -94,7 +98,7 @@
 <script>
 "use strict";
 const SMALLER_IS_BETTER = true; // every metric here (time, memory) is smaller-better
-const state = { q:"", group:"suite", sort:"delta", collapsed:new Set(), open:new Set() };
+const state = { q:"", group:"suite", sort:"delta", showArchived:false, collapsed:new Set(), open:new Set() };
 
 function dataset() { return window.BENCHMARK_DATA; }
 
@@ -103,7 +107,20 @@ function buildRows() {
   const data = dataset();
   const rows = [];
   if (!data || !data.entries) return rows;
+  // Archived detection: a name absent from its suite's most recent run was renamed or deleted,
+  // and a suite that missed the most recent publish (all suites publish together, minutes apart,
+  // so a generous window suffices) was retired wholesale. Both stay charted as history but read
+  // as "archived" rather than live.
+  const suiteMax = new Map();
+  let globalMax = 0;
   for (const suite of Object.keys(data.entries)) {
+    const max = Math.max(0, ...data.entries[suite].map(c=>c.date));
+    suiteMax.set(suite, max);
+    globalMax = Math.max(globalMax, max);
+  }
+  const PUBLISH_WINDOW = 3*24*3600*1000;
+  for (const suite of Object.keys(data.entries)) {
+    const suiteStale = globalMax - suiteMax.get(suite) > PUBLISH_WINDOW;
     const commits = data.entries[suite].slice().sort((a,b)=>a.date-b.date);
     const series = new Map();
     for (const c of commits) {
@@ -125,7 +142,9 @@ function buildRows() {
       const metric = unit==="bytes" ? "Memory" : "Time";
       const engine = /BreadthFirst|Bft|LevelOrder/i.test(short) ? "BFT"
                    : /DepthFirst|Dft|Preorder|PostOrder/i.test(short) ? "DFT" : "—";
-      rows.push({ suite, full, cls, method, short, unit, metric, engine, series:pts, latest, prev, deltaPct });
+      const lastSeen = pts[pts.length-1].date;
+      const archived = suiteStale || lastSeen < suiteMax.get(suite);
+      rows.push({ suite, full, cls, method, short, unit, metric, engine, series:pts, latest, prev, deltaPct, archived, lastSeen });
     }
   }
   return rows;
@@ -150,17 +169,20 @@ function fmtDelta(d) {
   return [s, cls];
 }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fmtDate(ms){ return new Date(ms).toISOString().slice(0,10); }
 
 // ---- inline SVG ----
-function sparkline(pts) {
+function sparkline(pts, archived) {
   if (pts.length<2) return '<svg class="spark" width="120" height="22"><text x="0" y="15">single point</text></svg>';
   const vs = pts.map(p=>p.value), mn=Math.min(...vs), mx=Math.max(...vs), W=120,H=22,P=2;
   const x=i=>P+i*(W-2*P)/(pts.length-1);
   const y=v=>mx===mn ? H/2 : H-P-(v-mn)/(mx-mn)*(H-2*P);
   const d=pts.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.value).toFixed(1)).join(" ");
   const last=pts[pts.length-1];
-  return `<svg class="spark" width="${W}" height="${H}"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`
-       + `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="2" fill="var(--accent)"/></svg>`;
+  const stroke = archived ? 'stroke="var(--muted)" stroke-dasharray="3 2"' : 'stroke="var(--accent)"';
+  const fill = archived ? "var(--muted)" : "var(--accent)";
+  return `<svg class="spark" width="${W}" height="${H}"><path d="${d}" fill="none" ${stroke} stroke-width="1.5"/>`
+       + `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="2" fill="${fill}"/></svg>`;
 }
 function bigChart(pts, unit) {
   if (pts.length<2) return '<div class="note">No history yet — only one commit recorded. (Toggle “Demo history” to see the trend UI populated.)</div>';
@@ -174,8 +196,8 @@ function bigChart(pts, unit) {
     g+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)"/><text x="6" y="${(+yy+3).toFixed(1)}">${esc(fmtVal(v,unit))}</text>`; }
   let dots="";
   pts.forEach((p,i)=>{ dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2.5" fill="var(--accent)">`
-    +`<title>${esc((p.id||"").slice(0,10))} — ${esc(fmtVal(p.value,unit))}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
-  const d0=new Date(pts[0].date).toISOString().slice(0,10), d1=new Date(pts[pts.length-1].date).toISOString().slice(0,10);
+    +`<title>${esc((p.id||"").slice(0,10))} · ${fmtDate(p.date)} — ${esc(fmtVal(p.value,unit))}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
+  const d0=fmtDate(pts[0].date), d1=fmtDate(pts[pts.length-1].date);
   return `<svg width="${W}" height="${H}" role="img">${g}<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
        + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text></svg>`;
 }
@@ -186,11 +208,14 @@ function render() {
   const d = dataset();
   sub.textContent = d ? ("· updated "+new Date(d.lastUpdate).toISOString().slice(0,10)) : "· no data";
   let rows = buildRows();
+  const archivedTotal = rows.filter(r=>r.archived).length;
+  if (!state.showArchived) rows = rows.filter(r=>!r.archived);
   const q = state.q.trim().toLowerCase();
   if (q) rows = rows.filter(r => (r.short+" "+r.suite+" "+r.engine+" "+r.metric).toLowerCase().includes(q));
-  document.getElementById("count").textContent = rows.length+" benchmarks";
+  const hiddenNote = (!state.showArchived && archivedTotal) ? ` · ${archivedTotal} archived hidden` : "";
+  document.getElementById("count").textContent = rows.length+" benchmarks"+hiddenNote;
 
-  renderMovers(rows);
+  renderMovers(rows.filter(r=>!r.archived));
 
   // group
   const groups = new Map();
@@ -225,14 +250,17 @@ function render() {
 function rowHtml(r) {
   const [ds,dc] = fmtDelta(r.deltaPct);
   const open = state.open.has(r.full);
-  const badge = r.engine!=="—" ? `<span class="badge">${r.engine}</span>` : "";
-  let html = `<tr class="brow" data-full="${esc(r.full)}"><td>${open?"▾":"▸"}</td>`
+  const badge = (r.engine!=="—" ? `<span class="badge">${r.engine}</span>` : "")
+    + (r.archived ? `<span class="badge arch">archived</span>` : "");
+  let html = `<tr class="brow${r.archived?" archived":""}" data-full="${esc(r.full)}"><td>${open?"▾":"▸"}</td>`
     + `<td class="name"><span class="cls">${esc(r.cls)}.</span>${esc(r.method)}${badge}</td>`
     + `<td class="num">${esc(fmtVal(r.latest,r.unit))}</td>`
     + `<td class="num delta ${dc}">${esc(ds)}</td>`
-    + `<td>${sparkline(r.series)}</td></tr>`;
-  if (open) html += `<tr class="detail"><td></td><td colspan="4"><div class="panel">${bigChart(r.series,r.unit)}`
-    + `<div class="commits">${r.series.slice(-6).reverse().map(p=>`${esc((p.id||"").slice(0,8))}  ${esc(fmtVal(p.value,r.unit))}  ${esc(p.msg).slice(0,60)}`).join("<br>")}</div>`
+    + `<td>${sparkline(r.series, r.archived)}</td></tr>`;
+  if (open) html += `<tr class="detail"><td></td><td colspan="4"><div class="panel">`
+    + (r.archived ? `<div class="note">Archived — last reported ${fmtDate(r.lastSeen)}; absent from the latest benchmark run (renamed or removed).</div>` : "")
+    + `${bigChart(r.series,r.unit)}`
+    + `<div class="commits">${r.series.slice(-6).reverse().map(p=>`${fmtDate(p.date)}  ${esc((p.id||"").slice(0,8))}  ${esc(fmtVal(p.value,r.unit))}  ${esc(p.msg).slice(0,60)}`).join("<br>")}</div>`
     + `</div></td></tr>`;
   return html;
 }
@@ -254,6 +282,7 @@ function renderMovers(rows) {
 document.getElementById("q").addEventListener("input", e=>{ state.q=e.target.value; render(); });
 document.getElementById("group").addEventListener("change", e=>{ state.group=e.target.value; state.collapsed.clear(); render(); });
 document.getElementById("sort").addEventListener("change", e=>{ state.sort=e.target.value; render(); });
+document.getElementById("arch").addEventListener("change", e=>{ state.showArchived=e.target.checked; render(); });
 document.getElementById("main").addEventListener("click", e=>{
   const h2=e.target.closest("h2[data-key]");
   if (h2){ const k=h2.dataset.key; state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k); render(); return; }
