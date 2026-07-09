@@ -158,7 +158,6 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    [Ignore("Ignore until I am prepared to start fixing BFT.")]
     public void UnionTest_BreadthFirst(
       string leftTreeString,
       string rightTreeString,
