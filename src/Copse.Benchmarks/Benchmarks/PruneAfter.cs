@@ -1,28 +1,36 @@
 using Copse.Core;
 using Copse.Linq;
 using BenchmarkDotNet.Attributes;
-using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // Forest_All prunes every root after its visit (maximum prune throughput); Triangle_HalfDepth
+  // cuts the triangle at half depth (a realistic partial prune: roughly a quarter of the nodes
+  // survive, and the cut runs through live traversal state).
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Pruning")]
+  [BenchmarkCategory("Streaming", "Prune")]
   public class PruneAfter
   {
-    [Benchmark]
-    public void Bft_TrivialForest_1M() =>
-      Enumerable
-      .Range(0, 1_000_000)
-      .ToTrivialForest()
-      .PruneAfter(_ => true)
-      .Consume(TreeTraversalStrategy.BreadthFirst);
+    private const int HalfDepth = 724;
 
     [Benchmark]
-    public void Dft_TrivialForest_1M() =>
-      Enumerable
-      .Range(0, 1_000_000)
-      .ToTrivialForest()
-      .PruneAfter(_ => true)
+    public void Dft_Forest_All() =>
+      CanonicalTrees.MegaForest().PruneAfter(_ => true).Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Forest_All() =>
+      CanonicalTrees.MegaForest().PruneAfter(_ => true).Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Triangle_HalfDepth() =>
+      CanonicalTrees.MegaTriangleTree()
+      .PruneAfter(nodeContext => nodeContext.Position.Depth == HalfDepth)
       .Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_HalfDepth() =>
+      CanonicalTrees.MegaTriangleTree()
+      .PruneAfter(nodeContext => nodeContext.Position.Depth == HalfDepth)
+      .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }

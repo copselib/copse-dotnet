@@ -1,23 +1,43 @@
-﻿using Copse.Linq;
+using Copse.Core;
+using Copse.Linq;
 using BenchmarkDotNet.Attributes;
-using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // Composition rows stack four projections (measures wrapper fusion / per-layer cost);
+  // the Binary rows are the single-projection baseline.
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Projection")]
+  [BenchmarkCategory("Streaming", "Select")]
   public class Select
   {
     [Benchmark]
-    public int SelectComposition() =>
-      Enumerable
-      .Range(0, 1_000_000)
-      .ToTrivialForest()
+    public void Dft_Forest_Composition() =>
+      CanonicalTrees.MegaForest()
       .Select(x => x.Node * 2)
       .Select(x => x.Node + 'a')
       .Select(x => x.Node + 1)
       .Select(x => (char)x.Node)
-      .PreorderTraversal()
-      .Count();
+      .Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Forest_Composition() =>
+      CanonicalTrees.MegaForest()
+      .Select(x => x.Node * 2)
+      .Select(x => x.Node + 'a')
+      .Select(x => x.Node + 1)
+      .Select(x => (char)x.Node)
+      .Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Binary() =>
+      CanonicalTrees.MegaBinaryTree()
+      .Select(x => x.Node * 2)
+      .Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Binary() =>
+      CanonicalTrees.MegaBinaryTree()
+      .Select(x => x.Node * 2)
+      .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }
