@@ -1,39 +1,28 @@
-﻿using Copse.Linq;
-using Copse.Trees;
+using Copse.Linq;
 using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
+  // The level-order visit-stream adapter over the breadth-first drain (dimension-locked:
+  // level-order is a BFT-derived order, so rows carry no Dft_/Bft_ prefix).
   [MemoryDiagnoser]
-  [BenchmarkCategory("Traversal", "LevelOrder")]
+  [BenchmarkCategory("VisitStream", "LevelOrder")]
   public class LevelOrderTraversal
   {
     [Benchmark]
-    public void DeepTree() =>
-      Treenumerables
-      .GetDeepTree(20)
-      .LevelOrderTraversal()
-      .Consume();
+    public void Chain() =>
+      CanonicalTrees.MegaChainTree().LevelOrderTraversal().Consume();
 
     [Benchmark]
-    public void TriangleTree_PruneAfter_1447() =>
-      new TriangleTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == 1447)
-      .LevelOrderTraversal()
-      .Consume();
+    public void Forest() =>
+      CanonicalTrees.MegaForest().LevelOrderTraversal().Consume();
 
     [Benchmark]
-    public void CompleteBinaryTree_PruneBefore_20() =>
-      new CompleteBinaryTree()
-      .PruneBefore(nodeContext => nodeContext.Position.Depth == 20)
-      .LevelOrderTraversal()
-      .Consume();
+    public void Binary() =>
+      CanonicalTrees.MegaBinaryTree().LevelOrderTraversal().Consume();
 
     [Benchmark]
-    public void CompleteBinaryTree_PruneAfter_19() =>
-      new CompleteBinaryTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == 19)
-      .LevelOrderTraversal()
-      .Consume();
+    public void Triangle() =>
+      CanonicalTrees.MegaTriangleTree().LevelOrderTraversal().Consume();
   }
 }

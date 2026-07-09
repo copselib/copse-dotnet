@@ -1,39 +1,28 @@
 using Copse.Linq;
-using Copse.Trees;
 using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
+  // The postorder visit-stream adapter over the depth-first drain (dimension-locked: postorder
+  // is a DFT-derived order, so rows carry no Dft_/Bft_ prefix).
   [MemoryDiagnoser]
-  [BenchmarkCategory("Traversal", "Postorder")]
+  [BenchmarkCategory("VisitStream", "Postorder")]
   public class PostorderTraversal
   {
     [Benchmark]
-    public void DeepTree() =>
-      Treenumerables
-      .GetDeepTree(20)
-      .PostorderTraversal()
-      .Consume();
+    public void Chain() =>
+      CanonicalTrees.MegaChainTree().PostorderTraversal().Consume();
 
     [Benchmark]
-    public void TriangleTree_PruneAfter_1447() =>
-      new TriangleTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == 1447)
-      .PostorderTraversal()
-      .Consume();
+    public void Forest() =>
+      CanonicalTrees.MegaForest().PostorderTraversal().Consume();
 
     [Benchmark]
-    public void CompleteBinaryTree_PruneBefore_20() =>
-      new CompleteBinaryTree()
-      .PruneBefore(nodeContext => nodeContext.Position.Depth == 20)
-      .PostorderTraversal()
-      .Consume();
+    public void Binary() =>
+      CanonicalTrees.MegaBinaryTree().PostorderTraversal().Consume();
 
     [Benchmark]
-    public void CompleteBinaryTree_PruneAfter_19() =>
-      new CompleteBinaryTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == 19)
-      .PostorderTraversal()
-      .Consume();
+    public void Triangle() =>
+      CanonicalTrees.MegaTriangleTree().PostorderTraversal().Consume();
   }
 }
