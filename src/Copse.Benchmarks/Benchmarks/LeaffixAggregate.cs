@@ -1,13 +1,15 @@
-﻿using Copse;
+using Copse;
+using Copse.Core;
 using Copse.Linq;
-using Copse.Trees;
 using BenchmarkDotNet.Attributes;
 using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // Leaves-to-root aggregation to a flat sequence (dimension-locked: the aggregation order is
+  // inherently leaffix, so rows carry no Dft_/Bft_ prefix).
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Leaffix")]
+  [BenchmarkCategory("Aggregate", "Leaffix")]
   public class LeaffixAggregate
   {
     private static int SubtreeNodeCount(NodeContext<int> nodeContext, ChildAccumulations<int> children)
@@ -19,22 +21,15 @@ namespace Copse.Benchmarks
     }
 
     [Benchmark]
-    public int TriangleTree_1448()
-      => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .LeaffixAggregate(_ => 1, SubtreeNodeCount)
-        .Sum();
+    public int Triangle() =>
+      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
 
     [Benchmark]
-    public int DegenerateTree_1M()
-      => Enumerable.Range(0, 1_000_000).ToDegenerateTree()
-        .LeaffixAggregate(_ => 1, SubtreeNodeCount)
-        .Sum();
+    public int Chain() =>
+      CanonicalTrees.MegaChainTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
 
     [Benchmark]
-    public int TrivialForest_1M()
-      => Enumerable.Range(0, 1_000_000).ToTrivialForest()
-        .LeaffixAggregate(_ => 1, SubtreeNodeCount)
-        .Sum();
+    public int Forest() =>
+      CanonicalTrees.MegaForest().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
   }
 }

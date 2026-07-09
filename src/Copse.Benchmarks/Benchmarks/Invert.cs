@@ -1,27 +1,44 @@
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Linq;
-using Copse.Trees;
 using BenchmarkDotNet.Attributes;
-using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // The mirror over a full source captures into mirrored preorder arrays (the buffer return
+  // type discloses the O(n)), so per the buffer-producer rule these drain BOTH dimensions --
+  // the pending regime/laziness decision for Invert will show up here as a step change in the
+  // Bft rows' allocation column. Typed as plain trees for the same overload-resolution reason
+  // as the Memoize replays.
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Invert")]
+  [BenchmarkCategory("Buffer", "Invert")]
   public class Invert
   {
-    // The streaming mirror composes for free, so these drain it: a full breadth-first pass over
-    // the mirrored tree (the old rows measured compose-time materialization, which no longer
-    // exists).
     [Benchmark]
-    public void TriangleTree_1448()
-      => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .Invert()
-        .Consume();
+    public void Dft_Triangle()
+    {
+      ITreenumerable<int> mirror = CanonicalTrees.MegaTriangleTree().Invert();
+      mirror.Consume(TreeTraversalStrategy.DepthFirst);
+    }
 
     [Benchmark]
-    public void DegenerateTree_1M()
-      => Enumerable.Range(0, 1_000_000).ToDegenerateTree().Invert().Consume();
+    public void Bft_Triangle()
+    {
+      ITreenumerable<int> mirror = CanonicalTrees.MegaTriangleTree().Invert();
+      mirror.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
+
+    [Benchmark]
+    public void Dft_Chain()
+    {
+      ITreenumerable<int> mirror = CanonicalTrees.MegaChainTree().Invert();
+      mirror.Consume(TreeTraversalStrategy.DepthFirst);
+    }
+
+    [Benchmark]
+    public void Bft_Chain()
+    {
+      ITreenumerable<int> mirror = CanonicalTrees.MegaChainTree().Invert();
+      mirror.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
   }
 }

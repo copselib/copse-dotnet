@@ -1,14 +1,15 @@
-﻿using Copse;
+using Copse;
 using Copse.Core;
 using Copse.Linq;
-using Copse.Trees;
 using BenchmarkDotNet.Attributes;
-using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // Leaves-to-root cumulative scan: a buffer producer (the scan must see the whole subtree
+  // before its root emits), so per the buffer-producer rule the result drains both dimensions.
+  // Typed as plain trees for the same overload-resolution reason as the Memoize replays.
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Leaffix")]
+  [BenchmarkCategory("Aggregate", "Leaffix")]
   public class LeaffixScan
   {
     // Each node accumulates its own subtree node count from its children's counts.
@@ -21,14 +22,31 @@ namespace Copse.Benchmarks
     }
 
     [Benchmark]
-    public void TriangleTree_1448()
-      => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .LeaffixScan(_ => 1, SubtreeNodeCount).Consume();
+    public void Dft_Triangle()
+    {
+      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      scan.Consume(TreeTraversalStrategy.DepthFirst);
+    }
 
     [Benchmark]
-    public void DegenerateTree_1M()
-      => Enumerable.Range(0, 1_000_000).ToDegenerateTree()
-        .LeaffixScan(_ => 1, SubtreeNodeCount).Consume();
+    public void Bft_Triangle()
+    {
+      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      scan.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
+
+    [Benchmark]
+    public void Dft_Chain()
+    {
+      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      scan.Consume(TreeTraversalStrategy.DepthFirst);
+    }
+
+    [Benchmark]
+    public void Bft_Chain()
+    {
+      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      scan.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
   }
 }

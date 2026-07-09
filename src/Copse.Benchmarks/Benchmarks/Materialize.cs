@@ -1,23 +1,30 @@
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Linq;
-using Copse.Trees;
 using BenchmarkDotNet.Attributes;
-using System.Linq;
 
 namespace Copse.Benchmarks
 {
+  // The capture (build) path only: drive the source once into a completed buffer and discard
+  // it -- replay cost lives in the Memoize benchmarks. Both capture dimensions, per the
+  // buffer-producer rule (capture layout differs by dimension).
   [MemoryDiagnoser]
-  [BenchmarkCategory("LINQ", "Materialize")]
+  [BenchmarkCategory("Buffer", "Materialize")]
   public class Materialize
   {
     [Benchmark]
-    public ITreenumerable<int> TriangleTree_1448()
-      => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == 1448)
-        .Materialize();
+    public ITreenumerable<int> DftCapture_Triangle()
+      => CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public ITreenumerable<int> DegenerateTree_1M()
-      => Enumerable.Range(0, 1_000_000).ToDegenerateTree().Materialize();
+    public ITreenumerable<int> BftCapture_Triangle()
+      => CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public ITreenumerable<int> DftCapture_Chain()
+      => CanonicalTrees.MegaChainTree().Materialize(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public ITreenumerable<int> BftCapture_Chain()
+      => CanonicalTrees.MegaChainTree().Materialize(TreeTraversalStrategy.BreadthFirst);
   }
 }
