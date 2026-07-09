@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783610462394,
+  "lastUpdate": 1783610462659,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -30341,6 +30341,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
             "value": 64249655,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6faf546f27c033fd7d4a5ea58e00edbd9a1687cc",
+          "message": "CI: enable manual dispatch of the benchmarks workflow\n\nThe Run workflow button only appears when the workflow file on the\ndefault branch declares workflow_dispatch. Dispatching against a\nfeature branch then executes that branch's version of the workflow,\nso pre-merge benchmark runs work without merging anything.\n\nThis line is superseded wholesale when feature/async-prototype merges\n(its benchmarks.yml already carries the trigger).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T14:49:08Z",
+          "tree_id": "683d748a42604fb63eecb7c94aaaa247546e6c2f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6faf546f27c033fd7d4a5ea58e00edbd9a1687cc"
+        },
+        "date": 1783610462618,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 32161370,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 32160564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 32160586,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 64248363,
             "unit": "bytes"
           }
         ]
