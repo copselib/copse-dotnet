@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783634671845,
+  "lastUpdate": 1783634672135,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -36710,6 +36710,104 @@ window.BENCHMARK_DATA = {
             "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
             "value": 251211,
             "unit": "bytes"
+          }
+        ]
+      }
+    ],
+    "VisitStream Benchmarks": [
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c8727a8ef5b61cab56c497a4d1b62ca0944ef77",
+          "message": "Benchmark reorg 4/4: Serialization alignment + the ten-family CI matrix\n\nSerialization adopts the shape vocabulary and the Mega-tier forest;\nthe chain rows stay at 100K as the documented tier exception (a\nMega-tier chain serialization is a ~10 MB string per op).\n\nbenchmarks.yml: one leg per family, single-tag selection (partition by\nconstruction -- no cross-leg tag bookkeeping), 10 suites x time+memory\nstored to gh-pages, and per-CPU-model Bencher testbeds: each leg\nrecords its runner's CPU into the artifact and the publish job files\neach family's report under that testbed, so thresholds learn per-CPU\npopulations and fleet changes stop reading as regressions.\n\nSuite: 137 benchmarks, verified as an exact partition (family counts\nsum to the flat total) and smoke-tested including the first-ever\nRootfix and SymmetricDifference coverage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T21:49:58Z",
+          "tree_id": "1143011cb54498178341b847607d44f5ff9f26e8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4c8727a8ef5b61cab56c497a4d1b62ca0944ef77"
+        },
+        "date": 1783634672096,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 23550537.38839286,
+            "unit": "ns",
+            "range": "± 33796.082855771725"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 7328704.343229166,
+            "unit": "ns",
+            "range": "± 37879.6920127234"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 138063176.5892857,
+            "unit": "ns",
+            "range": "± 595454.7677928902"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 55232606.62962962,
+            "unit": "ns",
+            "range": "± 100764.83920286286"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 20054522.2,
+            "unit": "ns",
+            "range": "± 34174.956581495026"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11781720.206473215,
+            "unit": "ns",
+            "range": "± 49135.98992980863"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 87654098.51388888,
+            "unit": "ns",
+            "range": "± 180150.4704278514"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 26908808.1,
+            "unit": "ns",
+            "range": "± 50778.48552423765"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 10696001.983072916,
+            "unit": "ns",
+            "range": "± 20667.63832122921"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5395802.222916666,
+            "unit": "ns",
+            "range": "± 10310.694997504253"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 86344345.5128205,
+            "unit": "ns",
+            "range": "± 190259.4491439721"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 23447636.685416665,
+            "unit": "ns",
+            "range": "± 67113.60318288741"
           }
         ]
       }
