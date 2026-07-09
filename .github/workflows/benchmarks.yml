@@ -33,10 +33,10 @@ jobs:
         category: [Traversal, LINQ, Conversion, DataStructures, Serialization, AsyncOverhead]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
 
@@ -52,7 +52,7 @@ jobs:
           dotnet run -c Release --no-build -- --exporters json --allCategories ${{ matrix.category }} --artifacts ./artifacts/${{ matrix.category }} --join
 
       - name: Upload ${{ matrix.category }} results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.category }}
           path: src/Copse.Benchmarks/artifacts/${{ matrix.category }}/
@@ -65,14 +65,14 @@ jobs:
     needs: run
     runs-on: ubuntu-latest
     # Surfaced as an env var so the Bencher steps can gate on its presence: the `secrets` context
-    # is not available in a step-level `if:`, but `env` is. Empty until the BENCHER_API_TOKEN repo
+    # is not available in a step-level `if:`, but `env` is. Empty until the BENCHER_API_KEY repo
     # secret is added, at which point the Bencher steps at the end activate. The gh-pages dashboard
     # is entirely unaffected either way.
     env:
-      BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+      BENCHER_API_KEY: ${{ secrets.BENCHER_API_KEY }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Create gh-pages branch if it doesn't exist
         run: |
@@ -91,7 +91,7 @@ jobs:
           fi
 
       - name: Download benchmark results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: src/Copse.Benchmarks/artifacts/
 
@@ -306,13 +306,13 @@ jobs:
       # steps above consume, so it is purely additive: it never writes benchmarks/data.js and never
       # touches the custom dashboard. Placed AFTER the gh-pages storage steps so that a Bencher
       # failure (bad project slug, API hiccup) can't break the dashboard push. The whole block
-      # no-ops until the BENCHER_API_TOKEN repo secret exists. ---
+      # no-ops until the BENCHER_API_KEY repo secret exists. ---
       - name: Install Bencher CLI
-        if: ${{ env.BENCHER_API_TOKEN != '' }}
+        if: ${{ env.BENCHER_API_KEY != '' }}
         uses: bencherdev/bencher@main
 
       - name: Upload results to Bencher
-        if: ${{ env.BENCHER_API_TOKEN != '' }}
+        if: ${{ env.BENCHER_API_KEY != '' }}
         env:
           # Set a BENCHER_PROJECT repo variable to your Bencher project slug. Defaults to the
           # repo name if unset -- change this or the variable so the two match.
@@ -335,7 +335,7 @@ jobs:
             echo "Uploading $category -> Bencher ($FILE)"
             bencher run \
               --project "$BENCHER_PROJECT" \
-              --token "$BENCHER_API_TOKEN" \
+              --key "$BENCHER_API_KEY" \
               --branch "$GITHUB_REF_NAME" \
               --testbed ubuntu-latest \
               --adapter c_sharp_dot_net \
