@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783610462117,
+  "lastUpdate": 1783610462394,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -29015,6 +29015,40 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/52df4869e2e1db33b3ded6031faeb9a21ae95967"
         },
         "date": 1783369077164,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToDegenerateTree",
+            "value": 564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.EnumerableToTree.ToTrivialForest",
+            "value": 275,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6faf546f27c033fd7d4a5ea58e00edbd9a1687cc",
+          "message": "CI: enable manual dispatch of the benchmarks workflow\n\nThe Run workflow button only appears when the workflow file on the\ndefault branch declares workflow_dispatch. Dispatching against a\nfeature branch then executes that branch's version of the workflow,\nso pre-merge benchmark runs work without merging anything.\n\nThis line is superseded wholesale when feature/async-prototype merges\n(its benchmarks.yml already carries the trigger).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T14:49:08Z",
+          "tree_id": "683d748a42604fb63eecb7c94aaaa247546e6c2f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6faf546f27c033fd7d4a5ea58e00edbd9a1687cc"
+        },
+        "date": 1783610462352,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
