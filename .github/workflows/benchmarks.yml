@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    # Dashboard-only changes are deployed by deploy-dashboard.yml; re-measuring nothing helps
+    # no one.
+    paths-ignore:
+      - 'benchmark-dashboard/**'
+      - '.github/workflows/deploy-dashboard.yml'
   # Manual runs against any branch (pick the branch in the Run workflow dropdown): the pre-merge
   # "see the numbers first" path. Bencher files results under the actual branch name, so feature
   # runs never pollute main's history (Bencher handles feature-branch baselines natively).
