@@ -97,8 +97,15 @@ The library **never performs node equality comparisons**. This is a deliberate d
   fresh treenumerator sits at before its first `MoveNext` — load-bearing; conformance-checked.
 - **NodeContext<T>** - Bundles node value with its position
 - **NodeVisit<T>** - Complete visit information including mode and visit count
-- **ITreenumerableBuffer<T>** - A re-traversable, lazily-growing capture of another tree (what
-  `Memoize`/`Materialize` return); the typed "upgrade" from a narrow source back to the composite.
+- **ITreenumerableBuffer<T>** - An owned, in-memory, re-traversable capture of a tree; the typed
+  "upgrade" from a narrow source back to the composite. Deliberately **not** `IDisposable` — a
+  completed capture holds only managed arrays, so it chains freely through the fluent surface.
+  What `Materialize`/`LeaffixScan`/`Invert` return.
+- **ILazyTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live source
+  feed**: the lazily-growing capture `Memoize` returns. Adds `IsComplete`/`GetBufferedCount`/
+  `Consume` and `IDisposable` (disposing retires the feed). Because it *is* an
+  `ITreenumerableBuffer` it composes anywhere a capture is expected, but the fluent surface sees
+  only the non-disposable base, so the caller keeps this reference to dispose it.
 
 ### The traversal-dimension split
 
@@ -450,4 +457,4 @@ When implementing a new filtering operation similar to Where, consider:
 
 ## Target Frameworks
 
-Multi-targets .NET Framework 4.8, .NET 8.0, and .NET Standard 2.0.
+Library projects multi-target `net48;netstandard2.0;netstandard2.1;net8.0` (sync and async alike; polyfills — System.Memory, Microsoft.Bcl.AsyncInterfaces — are conditional on net48/netstandard2.0 only). Tests, benchmarks, and the codegen tool run on net8.0.

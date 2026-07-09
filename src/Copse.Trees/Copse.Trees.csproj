@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
+    <ProjectReference Include="..\Copse.Traversal\Copse.Traversal.csproj" />
     <ProjectReference Include="..\Copse.Linq\Copse.Linq.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
   </ItemGroup>

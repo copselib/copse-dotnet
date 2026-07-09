@@ -1,4 +1,5 @@
-﻿namespace Copse
+
+namespace Copse
 {
   // Enumerates the children of a node in a flat pre-order tree (see PreorderTree). A node's
   // children occupy the contiguous span (i, i + subtreeSizes[i]); we hop over each child's
@@ -20,20 +21,17 @@
     private int _SiblingIndex;
     private bool _Disposed;
 
-    public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+    public ChildResult<int> MoveNext()
     {
       // Dispose() is how the engine signals SkipDescendants/SkipSiblings: once disposed we must
       // yield no further children (see TriangleTreeNodeChildEnumerator for the same contract).
       if (_Disposed || _Cursor >= _End)
-      {
-        childNodeAndSiblingIndex = default;
-        return false;
-      }
+        return default;
 
-      childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(_Cursor, _SiblingIndex);
+      var child = new NodeAndSiblingIndex<int>(_Cursor, _SiblingIndex);
       _SiblingIndex++;
       _Cursor += _SubtreeSizes[_Cursor]; // skip the child's whole subtree
-      return true;
+      return new ChildResult<int>(child);
     }
 
     public void Dispose() => _Disposed = true;

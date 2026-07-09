@@ -1,4 +1,4 @@
-﻿namespace Copse.Trees
+namespace Copse.Trees
 {
   public struct NDecrementTreeNodeChildEnumerator
     : IChildEnumerator<int>
@@ -11,17 +11,16 @@
 
     private int _Depth;
 
-    public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+    public ChildResult<int> MoveNext()
     {
       if (_Disposed || _Depth == 0)
       {
-        childNodeAndSiblingIndex = default;
-        return false;
+        return default;
       }
 
       _Depth--;
-      childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(_Depth, 0);
-      return true;
+      var child = new NodeAndSiblingIndex<int>(_Depth, 0);
+      return new ChildResult<int>(child);
     }
 
     private bool _Disposed;

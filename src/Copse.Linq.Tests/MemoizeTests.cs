@@ -455,7 +455,7 @@ namespace Copse.Linq.Tests
     private static ITreenumerable<int> InfiniteBinaryTree()
       => new Treenumerable<int, InfiniteBinaryChildEnumerator>(
         nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
-        0);
+        new[] { 0 });
 
     private struct InfiniteBinaryChildEnumerator : IChildEnumerator<int>
     {
@@ -470,17 +470,14 @@ namespace Copse.Linq.Tests
       private int _SiblingIndex;
       private bool _Disposed;
 
-      public bool MoveNext(out NodeAndSiblingIndex<int> childNodeAndSiblingIndex)
+      public ChildResult<int> MoveNext()
       {
         if (_Disposed || _SiblingIndex >= 2)
-        {
-          childNodeAndSiblingIndex = default;
-          return false;
-        }
+          return default;
 
-        childNodeAndSiblingIndex = new NodeAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
+        var child = new NodeAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
         _SiblingIndex++;
-        return true;
+        return new ChildResult<int>(child);
       }
 
       public void Dispose() => _Disposed = true;

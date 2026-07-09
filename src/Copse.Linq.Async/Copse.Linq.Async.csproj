@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <Description>Async LINQ-style tree operators for Copse: the full Copse.Linq surface (Where, Select, set operations, aggregation, Memoize/Materialize, serial tokenizers, and more) over awaited pulls. The codegen source of truth the synchronous Copse.Linq package is generated from.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
+    <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+    <ProjectReference Include="..\Copse.Core.Async\Copse.Core.Async.csproj" />
+    <ProjectReference Include="..\Copse.Async\Copse.Async.csproj" />
+    <ProjectReference Include="..\Copse.Linq.Traversal\Copse.Linq.Traversal.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
+  </ItemGroup>
+
+  <!-- netstandard2.1 and net8.0 have IAsyncEnumerable/IAsyncDisposable/ValueTask in-box; net48 and
+       netstandard2.0 get them from the Microsoft polyfill (System.Threading.Tasks.Extensions rides
+       along transitively). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

@@ -15,6 +15,15 @@ namespace Copse.TestUtils
     // siblings; ')' closes a subtree.
     public static PreorderTree<string> Parse(string tree)
     {
+      var (values, subtreeSizes) = ParseArrays(tree);
+      return new PreorderTree<string>(values, subtreeSizes);
+    }
+
+    // The raw flat pre-order encoding behind Parse: node i's value is Values[i] and its subtree spans
+    // [i, i + SubtreeSizes[i]). Exposed so alternative engine drivers (e.g. the sync cadence
+    // treenumerator) can be built over the identical source the oracle uses.
+    public static (string[] Values, int[] SubtreeSizes) ParseArrays(string tree)
+    {
       var values = new List<string>();
       var subtreeSizes = new List<int>();
       var open = new Stack<int>();
@@ -61,7 +70,7 @@ namespace Copse.TestUtils
 
       Commit(tree.Length, asParent: false);
 
-      return new PreorderTree<string>(values.ToArray(), subtreeSizes.ToArray());
+      return (values.ToArray(), subtreeSizes.ToArray());
     }
   }
 }

@@ -1,12 +1,7 @@
 ﻿using Copse.Treenumerables;
-using Copse.Trees;
 
 namespace Copse.Trees
 {
-  /// <summary>
-  /// Interesting fact about this tree is that the width of the levels follows
-  /// Pascal's triangle.
-  /// </summary>
   public class TriangleTree : Treenumerable<int, TriangleTreeNodeChildEnumerator>
   {
     public TriangleTree()

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Description>LINQ-style query, transformation, and set operations over trees for Copse (Where, Select, SelectMany, Union, aggregation, and more).</Description>
   </PropertyGroup>
@@ -10,6 +10,20 @@
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
+    <ProjectReference Include="..\Copse.Linq.Traversal\Copse.Linq.Traversal.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The async Where (Copse.Linq.Async) shares the internal WhereDepthFirstPath verbatim. -->
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
+    <!-- The parity benchmarks compare the internal hand-tuned Where against the generated twin. -->
+    <InternalsVisibleTo Include="Copse.Benchmarks" />
+    <!-- StructuralMerge has no public operator (it is the internal engine for the set ops), so the
+         generated-twin conformance test builds the internal sync StructuralMerge as its oracle. -->
+    <InternalsVisibleTo Include="Copse.Linq.Tests" />
+    <!-- The async mechanics tests lockstep each async operator treenumerator against its adopted
+         (internal) sync twin. -->
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
   </ItemGroup>
 
 </Project>

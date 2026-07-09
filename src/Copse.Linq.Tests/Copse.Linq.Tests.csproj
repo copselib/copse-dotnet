@@ -18,6 +18,8 @@
     <ProjectReference Include="..\Copse.Linq\Copse.Linq.csproj" />
     <ProjectReference Include="..\Copse.TestUtils\Copse.TestUtils.csproj" />
     <ProjectReference Include="..\Copse.SimpleSerializer\Copse.SimpleSerializer.csproj" />
+    <!-- The transform + manifest, for the generated-twin drift guard. -->
+    <ProjectReference Include="..\Copse.CodeGen\Copse.CodeGen.csproj" />
   </ItemGroup>
 
 </Project>

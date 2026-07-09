@@ -4,14 +4,18 @@ on:
   push:
     branches:
       - main
-    # Dashboard-only changes are deployed by deploy-dashboard.yml; re-measuring nothing for
-    # 25 minutes helps no one.
+    # Dashboard-only changes are deployed by deploy-dashboard.yml; re-measuring nothing helps
+    # no one.
     paths-ignore:
       - 'benchmark-dashboard/**'
       - '.github/workflows/deploy-dashboard.yml'
+  # Manual runs against any branch (pick the branch in the Run workflow dropdown): the pre-merge
+  # "see the numbers first" path. Bencher files results under the actual branch name, so feature
+  # runs never pollute main's history (Bencher handles feature-branch baselines natively).
   workflow_dispatch:
 
-# Ensure only one benchmark run at a time to prevent gh-pages conflicts
+# Ensure only one benchmark PUBLISH at a time to prevent gh-pages conflicts (the matrix legs
+# are safely concurrent; only the publish job touches gh-pages).
 concurrency:
   group: benchmarks
   cancel-in-progress: false
@@ -21,14 +25,69 @@ permissions:
   deployments: write
 
 jobs:
-  benchmark:
-    name: Run BenchmarkDotNet
+  # One leg per category, in parallel. IMPORTANT: benchmarks that must be COMPARED to each other
+  # (the AsyncOverhead sync/async pairs especially) live in the SAME category and therefore the
+  # same leg -- same-run ratios are the only trustworthy numbers on shared runners; splitting a
+  # comparison across runners would compare two different machines.
+  #
+  # LINQ is too big for one leg (~17 min vs 2-7 for the rest), so it runs as three legs split by
+  # the sub-category tags already on the classes. The three --anyCategories tag sets must PARTITION
+  # the LINQ category (disjoint + complete: 30 + 16 + 10 = 56 as of this writing) -- a class with a
+  # new tag outside these sets silently drops out of CI, so when adding a LINQ benchmark class,
+  # reuse an existing tag or add the new tag to a leg here. The publish job reassembles the three
+  # legs into a single LINQ result set, so the dashboard suite and Bencher names see no split.
+  run:
+    name: Run ${{ matrix.category }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { category: Traversal,      args: '--allCategories Traversal' }
+          - { category: LinqStreaming,  args: '--allCategories LINQ --anyCategories Query Filter Pruning Skip Projection' }
+          - { category: LinqBuffering,  args: '--allCategories LINQ --anyCategories Memoize Materialize Invert Leaffix' }
+          - { category: LinqMerge,      args: '--allCategories LINQ --anyCategories Merge' }
+          - { category: Conversion,     args: '--allCategories Conversion' }
+          - { category: DataStructures, args: '--allCategories DataStructures' }
+          - { category: Serialization,  args: '--allCategories Serialization' }
+          - { category: AsyncOverhead,  args: '--allCategories AsyncOverhead' }
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/Copse.sln
+
+      - name: Build benchmarks
+        run: dotnet build src/Copse.Benchmarks/Copse.Benchmarks.csproj -c Release --no-restore
+
+      - name: Run ${{ matrix.category }} benchmarks
+        run: |
+          cd src/Copse.Benchmarks
+          dotnet run -c Release --no-build -- --exporters json ${{ matrix.args }} --artifacts ./artifacts/${{ matrix.category }} --join
+
+      - name: Upload ${{ matrix.category }} results
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.category }}
+          path: src/Copse.Benchmarks/artifacts/${{ matrix.category }}/
+          retention-days: 30
+
+  # Single publisher: reassembles the legs' artifacts, then stores to gh-pages and Bencher
+  # sequentially (gh-pages writes must not race).
+  publish:
+    name: Publish results
+    needs: run
     runs-on: ubuntu-latest
     # Surfaced as an env var so the Bencher steps can gate on its presence: the `secrets` context
     # is not available in a step-level `if:`, but `env` is. Empty until the BENCHER_API_KEY repo
-    # secret is added (a Bencher PROJECT key -- console -> project -> Keys -- prefixed
-    # `bencher_run_`), at which point the Bencher steps at the end activate. The gh-pages
-    # dashboard is entirely unaffected either way.
+    # secret is added, at which point the Bencher steps at the end activate. The gh-pages dashboard
+    # is entirely unaffected either way.
     env:
       BENCHER_API_KEY: ${{ secrets.BENCHER_API_KEY }}
     steps:
@@ -51,48 +110,23 @@ jobs:
             echo "gh-pages branch already exists"
           fi
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: Download benchmark results
+        uses: actions/download-artifact@v7
         with:
-          dotnet-version: '8.0.x'
+          path: src/Copse.Benchmarks/artifacts/
 
-      - name: Restore dependencies
-        run: dotnet restore src/Copse.sln
-
-      - name: Build benchmarks
-        run: dotnet build src/Copse.Benchmarks/Copse.Benchmarks.csproj -c Release --no-restore
-
-      # Run benchmarks by category for better organization
-      - name: Run Traversal benchmarks
-        run: |
-          cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories Traversal --artifacts ./artifacts/Traversal --join
-
-      - name: Run LINQ benchmarks
-        run: |
-          cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories LINQ --artifacts ./artifacts/LINQ --join
-
-      - name: Run Conversion benchmarks
-        run: |
-          cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories Conversion --artifacts ./artifacts/Conversion --join
-
-      - name: Run DataStructures benchmarks
-        run: |
-          cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories DataStructures --artifacts ./artifacts/DataStructures --join
-
-      - name: Run Serialization benchmarks
-        run: |
-          cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json --allCategories Serialization --artifacts ./artifacts/Serialization --join
-
-      # Find benchmark result files and create memory benchmark JSON files
       - name: Find results and create memory benchmarks
         id: find-results
         run: |
-          for category in Traversal LINQ Conversion DataStructures Serialization; do
+          # Reassemble the three LINQ legs into one LINQ result set (keeps the first leg's
+          # metadata; concatenates the Benchmarks arrays), so the dashboard keeps its single
+          # "LINQ Benchmarks" suite and Bencher gets one upload.
+          mkdir -p src/Copse.Benchmarks/artifacts/LINQ/results
+          jq -s '.[0] * {Benchmarks: (map(.Benchmarks) | add)}' \
+            src/Copse.Benchmarks/artifacts/Linq*/results/*-report-full-compressed.json \
+            > src/Copse.Benchmarks/artifacts/LINQ/results/BenchmarkRun-joined-linq-report-full-compressed.json
+
+          for category in Traversal LINQ Conversion DataStructures Serialization AsyncOverhead; do
             # Find the runtime benchmark JSON file
             RESULTS_FILE=$(find src/Copse.Benchmarks/artifacts/$category/results -name "*-report-full-compressed.json" -type f | head -n 1)
             echo "${category,,}_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
@@ -112,8 +146,13 @@ jobs:
           git branch -D gh-pages 2>/dev/null || true
           git update-ref -d refs/heads/gh-pages 2>/dev/null || true
 
-      # Store results for each category
+      # Store results for each category -- MAIN ONLY: the gh-pages dashboard is main's trend
+      # line, so dispatch runs against feature branches must not append to it (their numbers
+      # live in the run artifacts and in Bencher, which files them under the branch name).
+      # The FIRST store fetches gh-pages; the rest skip the fetch; the LAST store auto-pushes
+      # all accumulated results at once.
       - name: Store Traversal benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Traversal Benchmarks
@@ -128,6 +167,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store LINQ benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: LINQ Benchmarks
@@ -143,6 +183,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Conversion benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Conversion Benchmarks
@@ -158,6 +199,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store DataStructures benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: DataStructures Benchmarks
@@ -173,6 +215,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Serialization benchmark results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Serialization Benchmarks
@@ -187,8 +230,25 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      # Store memory benchmark results for each category (main branch only)
+      - name: Store AsyncOverhead benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: AsyncOverhead Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.asyncoverhead_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      # Store memory benchmark results for each category
       - name: Store Traversal memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Traversal Memory
@@ -204,6 +264,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store LINQ memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: LINQ Memory
@@ -219,6 +280,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store Conversion memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Conversion Memory
@@ -234,6 +296,7 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       - name: Store DataStructures memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: DataStructures Memory
@@ -248,13 +311,30 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      # Final benchmark-action step: auto-push commits all accumulated category results at once.
       - name: Store Serialization memory results
+        if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Serialization Memory
           tool: 'customSmallerIsBetter'
           output-file-path: src/Copse.Benchmarks/artifacts/Serialization/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      # Final benchmark-action step: auto-push commits all accumulated category results at once.
+      - name: Store AsyncOverhead memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: AsyncOverhead Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/AsyncOverhead/results/memory-benchmarks.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           skip-fetch-gh-pages: true
@@ -285,8 +365,11 @@ jobs:
           # One report per category, all on the same branch/testbed/commit. The testbed name
           # records that these ran on a shared GitHub runner -- Bencher's per-benchmark thresholds
           # (below) learn each benchmark's own historical spread on THIS testbed, which is how a
-          # noisy runner is handled without a dedicated machine.
-          for category in Traversal LINQ Conversion DataStructures Serialization; do
+          # noisy runner is handled without a dedicated machine. NOTE: each category leg ran on a
+          # DIFFERENT runner instance; cross-category absolute comparisons were never meaningful
+          # on shared runners anyway -- within-category ratios (the AsyncOverhead pairs) are the
+          # trustworthy numbers, and those always share a leg.
+          for category in Traversal LINQ Conversion DataStructures Serialization AsyncOverhead; do
             FILE=$(find "src/Copse.Benchmarks/artifacts/$category/results" -name "*-report-full-compressed.json" -type f | head -n 1)
             if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
               echo "::warning::No Bencher results file for $category; skipping."
@@ -296,7 +379,7 @@ jobs:
             bencher run \
               --project "$BENCHER_PROJECT" \
               --key "$BENCHER_API_KEY" \
-              --branch main \
+              --branch "$GITHUB_REF_NAME" \
               --testbed ubuntu-latest \
               --adapter c_sharp_dot_net \
               --file "$FILE" \
@@ -310,11 +393,3 @@ jobs:
           # during the trial. Add --error-on-alert once you trust the thresholds and want
           # regressions to block main. Early runs won't alert until each benchmark has a few
           # samples of history to compare against.
-
-      - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: benchmark-results
-          path: src/Copse.Benchmarks/artifacts/
-          retention-days: 30

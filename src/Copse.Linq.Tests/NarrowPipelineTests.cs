@@ -194,8 +194,10 @@ namespace Copse.Linq.Tests
     {
       var materialized = StreamDepthFirst("a(b(d,e),c)").Materialize();
 
-      Assert.IsTrue(materialized.IsComplete);
-      Assert.AreEqual(5, materialized.GetBufferedCount(TreeTraversalStrategy.DepthFirst));
+      // A completed capture by contract; the BFT replay below proves it -- serving the whole
+      // breadth-first stream cross-order from a depth-first capture is only possible once the
+      // entire tree is captured. (Size verified observably, not via the hidden buffer introspection.)
+      Assert.AreEqual(5, materialized.CountNodes());
 
       VisitStreamConformance.AssertSameStream(
         VisitStreamConformance.Engine("a(b(d,e),c)", depthFirst: false),

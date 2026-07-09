@@ -1,0 +1,26 @@
+using Copse.Core;
+using Copse.Core.Async;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Copse.Linq
+{
+  public static partial class AsyncTreenumerable
+  {
+    /// <summary>The tree's node values in preorder (depth-first schedule order), as a lazy async sequence.</summary>
+    public static async IAsyncEnumerable<TNode> PreorderTraversal<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+      if (source == null)
+        yield break;
+
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+          yield return treenumerator.Node;
+        }
+    }
+  }
+}

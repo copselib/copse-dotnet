@@ -86,8 +86,9 @@ namespace Copse.Linq.Tests
 
       var materialized = counting.Materialize();
 
-      // The whole capture happened inside the call -- before any replay exists.
-      Assert.IsTrue(materialized.IsComplete);
+      // The whole capture happened inside the call -- the source was enumerated once, before any
+      // replay exists. (Completeness is now the return type's contract, proven below: a partial
+      // capture could not serve full replays without re-touching the source.)
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
 
       // Replays ride the capture; the source is never touched again, in either dimension.
