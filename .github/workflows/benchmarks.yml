@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # Ensure only one benchmark run at a time to prevent gh-pages conflicts
 concurrency:
