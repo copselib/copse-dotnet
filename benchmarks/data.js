@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783640276840,
+  "lastUpdate": 1783640277095,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -37220,6 +37220,102 @@ window.BENCHMARK_DATA = {
             "value": 2495663.9190848214,
             "unit": "ns",
             "range": "± 6195.532226525372"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "79b313175645f43913a7536fcc34cdf928890320",
+          "message": "Docs: BENCHMARKING.md describes the ten-family suite\n\nRewritten for the reorg: family table, naming convention, CanonicalTrees\nas the workload registry, the AsyncOverhead same-run-ratio doctrine,\nper-CPU Bencher testbeds, the archived-series dashboard behavior, the\nadd-a-benchmark checklist (family tag routes everything), and the\nCPU-lottery reading guide. Also drops the fictional pull-request\ntrigger the old text described.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T23:18:21Z",
+          "tree_id": "31993732676fd22d0f1941e219311bcfc558be66",
+          "url": "https://github.com/copselib/copse-dotnet/commit/79b313175645f43913a7536fcc34cdf928890320"
+        },
+        "date": 1783640277056,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2158214.4036458335,
+            "unit": "ns",
+            "range": "± 5934.492580840852"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2182298.6002604165,
+            "unit": "ns",
+            "range": "± 5304.422772235096"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4118774.2313701925,
+            "unit": "ns",
+            "range": "± 5089.597595549834"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 692251.9521484375,
+            "unit": "ns",
+            "range": "± 1740.4027766650263"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 914523.1158203125,
+            "unit": "ns",
+            "range": "± 4626.1584223100335"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 445363.6123372396,
+            "unit": "ns",
+            "range": "± 2614.9536333141614"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 6386119.0265625,
+            "unit": "ns",
+            "range": "± 26945.634243331147"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 6161184.10625,
+            "unit": "ns",
+            "range": "± 57800.6332339923"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 28147470.973214287,
+            "unit": "ns",
+            "range": "± 74687.76553948194"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2899652.8836495536,
+            "unit": "ns",
+            "range": "± 12106.11673493263"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2178128.36015625,
+            "unit": "ns",
+            "range": "± 8544.086158123137"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2464129.1197916665,
+            "unit": "ns",
+            "range": "± 13445.869087680263"
           }
         ]
       }
