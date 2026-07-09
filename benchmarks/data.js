@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783625861975,
+  "lastUpdate": 1783625862295,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -17422,6 +17422,54 @@ window.BENCHMARK_DATA = {
             "value": 14225789.160348361,
             "unit": "ns",
             "range": "± 632720.9192863844"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6c016fbaf372d7b88f437e99727dca7f4018c778",
+          "message": "Merge feature/async-prototype: the async library, and sync generated from it\n\nThe async Copse family (Copse.Core.Async, Copse.Async, Copse.Linq.Async,\nasync serializer I/O) becomes the single source of truth: the synchronous\nlibraries' .g.cs files are generated from the async sources by Copse.CodeGen\nand guarded by GeneratedTwinDriftTests. See docs/ASYNC_CODEGEN.md.\n\nHighlights riding along:\n- Uniform TFM ladder (net48;netstandard2.0;netstandard2.1;net8.0) across all\n  library projects, polyfills conditional on the old targets only.\n- Edges-only cancellation: tokens on serializer I/O, terminals, iterators,\n  and tokenizers; MoveNextAsync/DisposeAsync stay token-free.\n- Block-granularity async serializer I/O (zero allocation overhead vs sync).\n- AsyncOverhead benchmark category: paired sync/async ratio classes; CI\n  benchmark matrix (8 legs incl. LINQ split), Bencher project-key auth,\n  gh-pages stores gated to main.\n- 1:1 lockstep NuGet packaging (11 packages) with MinVer + Trusted Publishing.\n- UnionTest_BreadthFirst unskipped: all 4,376 rows pass (23,670/0 suite-wide).\n\nVerified on the merged tree: 24,179 tests passed, 0 failed, 0 skipped,\nincluding the generated-twin drift guard.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T19:23:08Z",
+          "tree_id": "bc40401b60610bcedd5da42da3ea26acac27fb82",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6c016fbaf372d7b88f437e99727dca7f4018c778"
+        },
+        "date": 1783625862235,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 13475652.665625,
+            "unit": "ns",
+            "range": "± 242373.3351970322"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 27562956.58125,
+            "unit": "ns",
+            "range": "± 173594.01516602794"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 23134955.164583333,
+            "unit": "ns",
+            "range": "± 168198.70685289087"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 19614006.086805556,
+            "unit": "ns",
+            "range": "± 534418.3470271779"
           }
         ]
       }
