@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783616080785,
+  "lastUpdate": 1783616081340,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -34448,6 +34448,102 @@ window.BENCHMARK_DATA = {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Wide_ToInt_SpanMap",
             "value": 8391149,
             "unit": "bytes"
+          }
+        ]
+      }
+    ],
+    "AsyncOverhead Benchmarks": [
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "5747a508946f2e10a46592f8678721a4d7027a86",
+          "message": "CI: benchmarks runnable on demand against any branch\n\nworkflow_dispatch trigger + Bencher --branch \"$GITHUB_REF_NAME\" instead of the hardcoded main,\nso a pre-merge manual run (e.g. on feature/async-prototype, before tagging an alpha) produces\nreal numbers -- including the AsyncOverhead ratio pairs -- without polluting main's Bencher\nhistory; Bencher tracks feature branches as first-class baselines.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T05:17:39Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/5747a508946f2e10a46592f8678721a4d7027a86"
+        },
+        "date": 1783616081304,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2108490.011458333,
+            "unit": "ns",
+            "range": "± 5552.791138607262"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2124902.1953125,
+            "unit": "ns",
+            "range": "± 5387.618802389724"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4232225.529017857,
+            "unit": "ns",
+            "range": "± 7236.278051330974"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 687585.7774414063,
+            "unit": "ns",
+            "range": "± 2117.4090721874904"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 879805.2140066965,
+            "unit": "ns",
+            "range": "± 2013.9108690177163"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 442802.3727213542,
+            "unit": "ns",
+            "range": "± 1457.0205034581163"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 6222989.564583333,
+            "unit": "ns",
+            "range": "± 27176.553555286395"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 6098024.8015625,
+            "unit": "ns",
+            "range": "± 20388.83635618727"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 28342584.391666666,
+            "unit": "ns",
+            "range": "± 474771.05686601653"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2908729.3057291666,
+            "unit": "ns",
+            "range": "± 10236.694792714643"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2259753.07578125,
+            "unit": "ns",
+            "range": "± 7888.223546730961"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2427340.8328683036,
+            "unit": "ns",
+            "range": "± 8267.707229959833"
           }
         ]
       }
