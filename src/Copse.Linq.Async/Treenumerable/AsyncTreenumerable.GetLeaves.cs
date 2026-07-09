@@ -73,7 +73,7 @@ namespace Copse.Linq
     /// With both narrow overloads present, a full <see cref="IAsyncTreenumerable{TNode}"/> needs its own
     /// overload to resolve (neither narrow one is better); it keeps the depth-first behavior.
     /// </summary>
-    public static IAsyncEnumerable<TNode> GetLeaves<TNode>(this IAsyncTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public static IAsyncEnumerable<TNode> GetLeaves<TNode>(this IAsyncTreenumerable<TNode> source, CancellationToken cancellationToken = default)
       => GetLeaves((IAsyncDepthFirstTreenumerable<TNode>)source, cancellationToken);
   }
 }
