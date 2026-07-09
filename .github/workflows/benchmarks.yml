@@ -25,32 +25,19 @@ permissions:
   deployments: write
 
 jobs:
-  # One leg per category, in parallel. IMPORTANT: benchmarks that must be COMPARED to each other
-  # (the AsyncOverhead sync/async pairs especially) live in the SAME category and therefore the
+  # One leg per family, in parallel. Every benchmark class carries exactly one family tag
+  # (its first BenchmarkCategory value), so the legs partition the suite by construction --
+  # no cross-leg tag bookkeeping. IMPORTANT: benchmarks that must be COMPARED to each other
+  # (the AsyncOverhead sync/async pairs especially) live in the SAME family and therefore the
   # same leg -- same-run ratios are the only trustworthy numbers on shared runners; splitting a
   # comparison across runners would compare two different machines.
-  #
-  # LINQ is too big for one leg (~17 min vs 2-7 for the rest), so it runs as three legs split by
-  # the sub-category tags already on the classes. The three --anyCategories tag sets must PARTITION
-  # the LINQ category (disjoint + complete: 30 + 16 + 10 = 56 as of this writing) -- a class with a
-  # new tag outside these sets silently drops out of CI, so when adding a LINQ benchmark class,
-  # reuse an existing tag or add the new tag to a leg here. The publish job reassembles the three
-  # legs into a single LINQ result set, so the dashboard suite and Bencher names see no split.
   run:
     name: Run ${{ matrix.category }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { category: Traversal,      args: '--allCategories Traversal' }
-          - { category: LinqStreaming,  args: '--allCategories LINQ --anyCategories Query Filter Pruning Skip Projection' }
-          - { category: LinqBuffering,  args: '--allCategories LINQ --anyCategories Memoize Materialize Invert Leaffix' }
-          - { category: LinqMerge,      args: '--allCategories LINQ --anyCategories Merge' }
-          - { category: Conversion,     args: '--allCategories Conversion' }
-          - { category: DataStructures, args: '--allCategories DataStructures' }
-          - { category: Serialization,  args: '--allCategories Serialization' }
-          - { category: AsyncOverhead,  args: '--allCategories AsyncOverhead' }
+        category: [Traversal, VisitStream, Query, Streaming, Merge, Buffer, Aggregate, Serialization, DataStructures, AsyncOverhead]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -66,10 +53,22 @@ jobs:
       - name: Build benchmarks
         run: dotnet build src/Copse.Benchmarks/Copse.Benchmarks.csproj -c Release --no-restore
 
+      # Shared runners are a CPU lottery (EPYC 7763 / EPYC 9V74 / Xeon 8573C observed, ~±30%
+      # apart) and every leg draws its own machine. Record which model ran THIS leg so the
+      # Bencher upload can file results under a per-CPU testbed -- per-benchmark thresholds
+      # then learn each CPU's population separately instead of swallowing the fleet spread.
+      - name: Record runner CPU model
+        run: |
+          mkdir -p src/Copse.Benchmarks/artifacts/${{ matrix.category }}
+          grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- \
+            | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9\n' '-' | tr -s '-' | sed 's/^-//; s/-$//' \
+            > src/Copse.Benchmarks/artifacts/${{ matrix.category }}/cpu.txt
+          echo "Runner CPU: $(cat src/Copse.Benchmarks/artifacts/${{ matrix.category }}/cpu.txt)"
+
       - name: Run ${{ matrix.category }} benchmarks
         run: |
           cd src/Copse.Benchmarks
-          dotnet run -c Release --no-build -- --exporters json ${{ matrix.args }} --artifacts ./artifacts/${{ matrix.category }} --join
+          dotnet run -c Release --no-build -- --exporters json --allCategories ${{ matrix.category }} --artifacts ./artifacts/${{ matrix.category }} --join
 
       - name: Upload ${{ matrix.category }} results
         uses: actions/upload-artifact@v7
@@ -118,15 +117,7 @@ jobs:
       - name: Find results and create memory benchmarks
         id: find-results
         run: |
-          # Reassemble the three LINQ legs into one LINQ result set (keeps the first leg's
-          # metadata; concatenates the Benchmarks arrays), so the dashboard keeps its single
-          # "LINQ Benchmarks" suite and Bencher gets one upload.
-          mkdir -p src/Copse.Benchmarks/artifacts/LINQ/results
-          jq -s '.[0] * {Benchmarks: (map(.Benchmarks) | add)}' \
-            src/Copse.Benchmarks/artifacts/Linq*/results/*-report-full-compressed.json \
-            > src/Copse.Benchmarks/artifacts/LINQ/results/BenchmarkRun-joined-linq-report-full-compressed.json
-
-          for category in Traversal LINQ Conversion DataStructures Serialization AsyncOverhead; do
+          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures AsyncOverhead; do
             # Find the runtime benchmark JSON file
             RESULTS_FILE=$(find src/Copse.Benchmarks/artifacts/$category/results -name "*-report-full-compressed.json" -type f | head -n 1)
             echo "${category,,}_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
@@ -146,7 +137,7 @@ jobs:
           git branch -D gh-pages 2>/dev/null || true
           git update-ref -d refs/heads/gh-pages 2>/dev/null || true
 
-      # Store results for each category -- MAIN ONLY: the gh-pages dashboard is main's trend
+      # Store results for each family -- MAIN ONLY: the gh-pages dashboard is main's trend
       # line, so dispatch runs against feature branches must not append to it (their numbers
       # live in the run artifacts and in Bencher, which files them under the branch name).
       # The FIRST store fetches gh-pages; the rest skip the fetch; the LAST store auto-pushes
@@ -166,13 +157,13 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store LINQ benchmark results
+      - name: Store VisitStream benchmark results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: LINQ Benchmarks
+          name: VisitStream Benchmarks
           tool: 'benchmarkdotnet'
-          output-file-path: ${{ steps.find-results.outputs.linq_file }}
+          output-file-path: ${{ steps.find-results.outputs.visitstream_file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -182,13 +173,13 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store Conversion benchmark results
+      - name: Store Query benchmark results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Conversion Benchmarks
+          name: Query Benchmarks
           tool: 'benchmarkdotnet'
-          output-file-path: ${{ steps.find-results.outputs.conversion_file }}
+          output-file-path: ${{ steps.find-results.outputs.query_file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -198,13 +189,61 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store DataStructures benchmark results
+      - name: Store Streaming benchmark results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: DataStructures Benchmarks
+          name: Streaming Benchmarks
           tool: 'benchmarkdotnet'
-          output-file-path: ${{ steps.find-results.outputs.datastructures_file }}
+          output-file-path: ${{ steps.find-results.outputs.streaming_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Merge benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Merge Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.merge_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Buffer benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Buffer Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.buffer_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Aggregate benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Aggregate Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.aggregate_file }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -230,6 +269,22 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
+      - name: Store DataStructures benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: DataStructures Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.datastructures_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
       - name: Store AsyncOverhead benchmark results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
@@ -246,7 +301,7 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      # Store memory benchmark results for each category
+      # Store memory benchmark results for each family
       - name: Store Traversal memory results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
@@ -263,13 +318,13 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store LINQ memory results
+      - name: Store VisitStream memory results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: LINQ Memory
+          name: VisitStream Memory
           tool: 'customSmallerIsBetter'
-          output-file-path: src/Copse.Benchmarks/artifacts/LINQ/results/memory-benchmarks.json
+          output-file-path: src/Copse.Benchmarks/artifacts/VisitStream/results/memory-benchmarks.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -279,13 +334,13 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store Conversion memory results
+      - name: Store Query memory results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Conversion Memory
+          name: Query Memory
           tool: 'customSmallerIsBetter'
-          output-file-path: src/Copse.Benchmarks/artifacts/Conversion/results/memory-benchmarks.json
+          output-file-path: src/Copse.Benchmarks/artifacts/Query/results/memory-benchmarks.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -295,13 +350,61 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      - name: Store DataStructures memory results
+      - name: Store Streaming memory results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: DataStructures Memory
+          name: Streaming Memory
           tool: 'customSmallerIsBetter'
-          output-file-path: src/Copse.Benchmarks/artifacts/DataStructures/results/memory-benchmarks.json
+          output-file-path: src/Copse.Benchmarks/artifacts/Streaming/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Merge memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Merge Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/Merge/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Buffer memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Buffer Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/Buffer/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store Aggregate memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Aggregate Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/Aggregate/results/memory-benchmarks.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: false
           skip-fetch-gh-pages: true
@@ -327,7 +430,23 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
-      # Final benchmark-action step: auto-push commits all accumulated category results at once.
+      - name: Store DataStructures memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: DataStructures Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/DataStructures/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      # Final benchmark-action step: auto-push commits all accumulated family results at once.
       - name: Store AsyncOverhead memory results
         if: github.ref == 'refs/heads/main'
         uses: benchmark-action/github-action-benchmark@v1
@@ -345,8 +464,8 @@ jobs:
           benchmark-data-dir-path: benchmarks
 
       # --- Bencher (continuous-benchmarking SaaS), running side-by-side with the gh-pages
-      # dashboard as a trial. It reads the SAME BenchmarkDotNet JSON the github-action-benchmark
-      # steps above consume, so it is purely additive: it never writes benchmarks/data.js and never
+      # dashboard. It reads the SAME BenchmarkDotNet JSON the github-action-benchmark steps
+      # above consume, so it is purely additive: it never writes benchmarks/data.js and never
       # touches the custom dashboard. Placed AFTER the gh-pages storage steps so that a Bencher
       # failure (bad project slug, API hiccup) can't break the dashboard push. The whole block
       # no-ops until the BENCHER_API_KEY repo secret exists. ---
@@ -362,25 +481,27 @@ jobs:
           BENCHER_PROJECT: ${{ vars.BENCHER_PROJECT || 'copse-dotnet' }}
         run: |
           set -euo pipefail
-          # One report per category, all on the same branch/testbed/commit. The testbed name
-          # records that these ran on a shared GitHub runner -- Bencher's per-benchmark thresholds
-          # (below) learn each benchmark's own historical spread on THIS testbed, which is how a
-          # noisy runner is handled without a dedicated machine. NOTE: each category leg ran on a
-          # DIFFERENT runner instance; cross-category absolute comparisons were never meaningful
-          # on shared runners anyway -- within-category ratios (the AsyncOverhead pairs) are the
-          # trustworthy numbers, and those always share a leg.
-          for category in Traversal LINQ Conversion DataStructures Serialization AsyncOverhead; do
+          # One report per family, filed under a PER-CPU-MODEL testbed (recorded by each leg):
+          # shared runners are a CPU lottery, and per-CPU testbeds let Bencher's per-benchmark
+          # thresholds learn each machine model's population separately -- a fleet change shows
+          # up as a new testbed, not a fake regression. Cross-family absolute comparisons were
+          # never meaningful on shared runners anyway (every leg is a different machine);
+          # within-family ratios (the AsyncOverhead pairs) are the trustworthy numbers, and
+          # those always share a leg.
+          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures AsyncOverhead; do
             FILE=$(find "src/Copse.Benchmarks/artifacts/$category/results" -name "*-report-full-compressed.json" -type f | head -n 1)
             if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
               echo "::warning::No Bencher results file for $category; skipping."
               continue
             fi
-            echo "Uploading $category -> Bencher ($FILE)"
+            TESTBED=$(cat "src/Copse.Benchmarks/artifacts/$category/cpu.txt" 2>/dev/null || true)
+            TESTBED=${TESTBED:-ubuntu-latest}
+            echo "Uploading $category -> Bencher ($FILE) on testbed $TESTBED"
             bencher run \
               --project "$BENCHER_PROJECT" \
               --key "$BENCHER_API_KEY" \
               --branch "$GITHUB_REF_NAME" \
-              --testbed ubuntu-latest \
+              --testbed "$TESTBED" \
               --adapter c_sharp_dot_net \
               --file "$FILE" \
               --threshold-measure latency \
