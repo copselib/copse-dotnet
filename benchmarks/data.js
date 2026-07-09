@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783369077729,
+  "lastUpdate": 1783610460459,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -4320,6 +4320,150 @@ window.BENCHMARK_DATA = {
             "value": 37863507.385714285,
             "unit": "ns",
             "range": "± 82416.83482589638"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6faf546f27c033fd7d4a5ea58e00edbd9a1687cc",
+          "message": "CI: enable manual dispatch of the benchmarks workflow\n\nThe Run workflow button only appears when the workflow file on the\ndefault branch declares workflow_dispatch. Dispatching against a\nfeature branch then executes that branch's version of the workflow,\nso pre-merge benchmark runs work without merging anything.\n\nThis line is superseded wholesale when feature/async-prototype merges\n(its benchmarks.yml already carries the trigger).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T14:49:08Z",
+          "tree_id": "683d748a42604fb63eecb7c94aaaa247546e6c2f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6faf546f27c033fd7d4a5ea58e00edbd9a1687cc"
+        },
+        "date": 1783610459237,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TriangleTree_2896",
+            "value": 229775328.9285714,
+            "unit": "ns",
+            "range": "± 2155337.1437323284"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 266110582.83333334,
+            "unit": "ns",
+            "range": "± 2376626.51087961"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.TrivialForest_4M",
+            "value": 13838280.11298077,
+            "unit": "ns",
+            "range": "± 99108.36059084095"
+          },
+          {
+            "name": "Copse.Benchmarks.BreadthFirstTreenumerator.DegenerateTree_4M",
+            "value": 85573202.86666666,
+            "unit": "ns",
+            "range": "± 553938.0553826649"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TriangleTree_2896",
+            "value": 199730991.26666668,
+            "unit": "ns",
+            "range": "± 972218.8229728764"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.CompleteBinaryTree_21",
+            "value": 223600914.92307693,
+            "unit": "ns",
+            "range": "± 2667723.157896582"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.TrivialForest_4M",
+            "value": 14993832.335416667,
+            "unit": "ns",
+            "range": "± 35739.569994252706"
+          },
+          {
+            "name": "Copse.Benchmarks.DepthFirstTreenumerator.DegenerateTree_4M",
+            "value": 56293566.16239316,
+            "unit": "ns",
+            "range": "± 397739.41642945015"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.DeepTree",
+            "value": 44812177.86666667,
+            "unit": "ns",
+            "range": "± 181017.73827755125"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 66250391.858333334,
+            "unit": "ns",
+            "range": "± 509166.80380720546"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 148148168.9107143,
+            "unit": "ns",
+            "range": "± 290216.62311669166"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 74503632.49523811,
+            "unit": "ns",
+            "range": "± 386194.3587875892"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.DeepTree",
+            "value": 57270347.11851852,
+            "unit": "ns",
+            "range": "± 1034985.3083707147"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 34449053.0047619,
+            "unit": "ns",
+            "range": "± 135673.8915738027"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 113712089.92000002,
+            "unit": "ns",
+            "range": "± 1242921.1466926495"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.CompleteBinaryTree_PruneAfter_19",
+            "value": 43208074.344444446,
+            "unit": "ns",
+            "range": "± 201382.97189997337"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.DeepTree",
+            "value": 22239030.598958332,
+            "unit": "ns",
+            "range": "± 34390.65559254203"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.TriangleTree_PruneAfter_1447",
+            "value": 32561886.6125,
+            "unit": "ns",
+            "range": "± 49767.887742846775"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneBefore_20",
+            "value": 101254363.81538461,
+            "unit": "ns",
+            "range": "± 665500.5030719077"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.CompleteBinaryTree_PruneAfterDepth_19",
+            "value": 36665794.37244897,
+            "unit": "ns",
+            "range": "± 104519.71806310744"
           }
         ]
       }
