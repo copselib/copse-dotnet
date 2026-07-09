@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783634672135,
+  "lastUpdate": 1783634672386,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -36808,6 +36808,152 @@ window.BENCHMARK_DATA = {
             "value": 23447636.685416665,
             "unit": "ns",
             "range": "± 67113.60318288741"
+          }
+        ]
+      }
+    ],
+    "Query Benchmarks": [
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c8727a8ef5b61cab56c497a4d1b62ca0944ef77",
+          "message": "Benchmark reorg 4/4: Serialization alignment + the ten-family CI matrix\n\nSerialization adopts the shape vocabulary and the Mega-tier forest;\nthe chain rows stay at 100K as the documented tier exception (a\nMega-tier chain serialization is a ~10 MB string per op).\n\nbenchmarks.yml: one leg per family, single-tag selection (partition by\nconstruction -- no cross-leg tag bookkeeping), 10 suites x time+memory\nstored to gh-pages, and per-CPU-model Bencher testbeds: each leg\nrecords its runner's CPU into the artifact and the publish job files\neach family's report under that testbed, so thresholds learn per-CPU\npopulations and fleet changes stop reading as regressions.\n\nSuite: 137 benchmarks, verified as an exact partition (family counts\nsum to the flat total) and smoke-tested including the first-ever\nRootfix and SymmetricDifference coverage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T21:49:58Z",
+          "tree_id": "1143011cb54498178341b847607d44f5ff9f26e8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4c8727a8ef5b61cab56c497a4d1b62ca0944ef77"
+        },
+        "date": 1783634672347,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12177943.96514423,
+            "unit": "ns",
+            "range": "± 7727.956362402083"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 23324726.139423076,
+            "unit": "ns",
+            "range": "± 131737.51229540567"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3612748.630301339,
+            "unit": "ns",
+            "range": "± 2171.934048982307"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6197655.995605469,
+            "unit": "ns",
+            "range": "± 119853.65290511455"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 109834480.55714288,
+            "unit": "ns",
+            "range": "± 1287648.1377188335"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 143262406.67307693,
+            "unit": "ns",
+            "range": "± 439337.35145395604"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 31836330.05,
+            "unit": "ns",
+            "range": "± 469729.54516136803"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 52206955.683673464,
+            "unit": "ns",
+            "range": "± 99963.75134284605"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11863485.583705356,
+            "unit": "ns",
+            "range": "± 29802.665490991938"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11368329.673958333,
+            "unit": "ns",
+            "range": "± 156214.83636217684"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3112643.212109375,
+            "unit": "ns",
+            "range": "± 25591.18188996514"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3147976.656119792,
+            "unit": "ns",
+            "range": "± 40009.07866091366"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 100497053.72857143,
+            "unit": "ns",
+            "range": "± 548479.4974784002"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 81711817.38461538,
+            "unit": "ns",
+            "range": "± 194095.16336418348"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 44491341.9,
+            "unit": "ns",
+            "range": "± 459341.97165136127"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20466119.697916668,
+            "unit": "ns",
+            "range": "± 68481.5669295025"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 99865377.32142858,
+            "unit": "ns",
+            "range": "± 160110.28058794572"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 147585180.5,
+            "unit": "ns",
+            "range": "± 1252421.619473386"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18039275.310416665,
+            "unit": "ns",
+            "range": "± 32004.430468644103"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42425971.03205128,
+            "unit": "ns",
+            "range": "± 115130.42967721562"
           }
         ]
       }
