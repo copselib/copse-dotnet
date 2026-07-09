@@ -4,7 +4,8 @@
     <!-- Multi-target to match Copse (the sync lib), which now references this for the sync cadence driver. -->
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Description>Shared sans-I/O traversal cadence for Copse, drivable by both a sync (MoveNext) and an async (MoveNextAsync) treenumerator. Prototype.</Description>
+    <IsPackable>true</IsPackable>
+    <Description>Shared sans-I/O traversal cadence for Copse, drivable by both a sync (MoveNext) and an async (MoveNextAsync) treenumerator. Infrastructure package: referenced automatically by the Copse packages -- you do not need to install it directly.</Description>
   </PropertyGroup>
 
   <ItemGroup>

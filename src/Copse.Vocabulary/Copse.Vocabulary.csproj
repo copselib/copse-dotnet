@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>The color-agnostic traversal vocabulary for Copse -- NodePosition, NodeVisit, TreenumeratorMode, NodeTraversalStrategies, TreeTraversalStrategy. The true dependency root (references nothing); shared verbatim by the sync core (Copse.Core) and the async core (Copse.Core.Async). Types keep the Copse.Core namespace.</Description>
+    <Description>The color-agnostic traversal vocabulary for Copse -- NodePosition, NodeVisit, TreenumeratorMode, NodeTraversalStrategies, TreeTraversalStrategy. The true dependency root (references nothing); shared verbatim by the sync core (Copse.Core) and the async core (Copse.Core.Async). Types keep the Copse.Core namespace. Infrastructure package: referenced automatically by the Copse packages -- you do not need to install it directly.</Description>
   </PropertyGroup>
 
 </Project>

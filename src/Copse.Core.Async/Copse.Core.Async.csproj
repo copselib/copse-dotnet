@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Description>Async contracts for Copse: IAsyncChildEnumerator / IAsyncTreenumerator / IAsyncTreenumerable. Prototype.</Description>
+    <IsPackable>true</IsPackable>
+    <Description>Async contracts for Copse: IAsyncTreenumerable (and its two single-dimension parents) and IAsyncTreenumerator -- the awaited-pull duals of Copse.Core, sharing its traversal vocabulary.</Description>
   </PropertyGroup>
 
   <ItemGroup>
