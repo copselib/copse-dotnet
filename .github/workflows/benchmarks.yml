@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    # Dashboard-only changes are deployed by deploy-dashboard.yml; re-measuring nothing for
+    # 25 minutes helps no one.
+    paths-ignore:
+      - 'benchmark-dashboard/**'
+      - '.github/workflows/deploy-dashboard.yml'
   workflow_dispatch:
 
 # Ensure only one benchmark run at a time to prevent gh-pages conflicts
