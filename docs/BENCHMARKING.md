@@ -1,201 +1,111 @@
-# Continuous Benchmarking Setup
+# Continuous Benchmarking
 
-This document explains the continuous benchmarking setup for the Copse project.
+This document explains the benchmark suite's organization and the continuous benchmarking setup.
 
-## Overview
+## Suite organization
 
-The project uses [BenchmarkDotNet](https://benchmarkdotnet.org/) for performance benchmarking and GitHub Actions for continuous integration. Benchmarks run automatically on every push to `main` and on pull requests.
+The suite is ~137 benchmarks in **ten families**, one `[BenchmarkCategory]` family tag per class,
+so the CI legs partition the suite by construction:
 
-## What's Automated
+| Family | Classes | What it measures |
+|---|---|---|
+| `Traversal` | Traversal, TraversalScaling | The raw engine drain (the baseline everything else is implicitly measured against); Scaling holds the only Stress-tier rows |
+| `VisitStream` | Preorder/Postorder/LevelOrderTraversal | The filtered visit-stream adapters (dimension-locked) |
+| `Query` | CountNodes, AllNodes, GetLeaves | Predicate/extraction terminals |
+| `Streaming` | Where, PruneAfter, PruneBefore, Select | The streaming operator spine |
+| `Merge` | Union, SymmetricDifference | Structural merge; SymmetricDifference-on-identical is the suppression pole of the Union-on-identical emission pole (their gap isolates emission cost) |
+| `Buffer` | Materialize, Memoize, Invert | Capture builds and replays (capture-dimension × drain-dimension) |
+| `Aggregate` | Leaffix/RootfixScan, Leaffix/RootfixAggregate | The cumulative-scan and aggregation duals |
+| `Serialization` | Serialization | TreeSerializer round-trips |
+| `DataStructures` | RefSemiDeque | The chunked ref-access collections |
+| `AsyncOverhead` | AsyncOverhead* pairs | Sync/async ratio pairs — a different instrument (see below) |
 
-### On Push to Main
-- Runs all benchmarks in the `Copse.Benchmarks` project
-- Stores results in the `gh-pages` branch
-- Compares against historical data
-- Alerts if performance regresses by >150%
-- Tracks regressions (>150% threshold) in the stored data — no commit comments or notifications are posted; regressions are visible on the GitHub Pages dashboard
-- Publishes results to GitHub Pages
+**Naming**: class = operator; method = `{Dft|Bft}_{Shape}[_{Variant}]`. Dimension-locked rows
+(preorder is DFT-derived, leaffix order is inherent, …) carry no prefix — an absent dimension row
+*is* the documentation that the dimension doesn't apply.
 
-### On Pull Requests
-- Runs all benchmarks
-- Compares PR performance against main branch
-- Comments on PR if performance changes significantly
-- Does NOT fail the build (informational only)
-- Uploads results as artifacts for review
+**Workloads** come exclusively from `CanonicalTrees` (`src/Copse.Benchmarks/CanonicalTrees.cs`) —
+the documented shape/size registry. Read its doc comment before adding or resizing anything: it
+records the size tiers (Mega ≈ 2^20 quantized per shape; Stress ≈ 2^22, engine rows only), the
+noise-floor invariant and its origin, the per-shape quantization table, and the exception policy.
 
-## Viewing Benchmark Results
+**AsyncOverhead is different on purpose**: each class pairs one workload in both colors with the
+sync side as `Baseline`, so the Ratio column is the ValueTask seam cost. Pairs must stay in one
+class (same CI leg, same machine) — same-run ratios are the only trustworthy numbers on shared
+runners.
 
-### GitHub Pages Dashboard
-Once set up, benchmark trends will be available at:
-```
-https://<your-username>.github.io/<repository-name>/benchmarks/
-```
+## What's automated
 
-### Artifacts
-Every benchmark run uploads full BenchmarkDotNet artifacts that can be downloaded from:
-- Actions → Select workflow run → Artifacts section
-- Artifacts are retained for 30 days
+On every push to `main` (and manual `workflow_dispatch` against any branch):
+- Ten matrix legs run in parallel, one per family (`--allCategories <Family>`), worst leg ~9 min.
+- Each leg records its runner's CPU model into the artifact (shared runners are a CPU lottery —
+  EPYC 7763 / EPYC 9V74 / Xeon 8573C observed, ~±30% apart — and every leg draws its own machine).
+- A single publish job then:
+  - stores time + memory results per family to `gh-pages` — **main only**; branch dispatch runs
+    never touch the dashboard's trend lines;
+  - uploads one Bencher report per family, filed under a **per-CPU-model testbed**
+    (e.g. `amd-epyc-7763-64-core-processor`), so Bencher's per-benchmark t-test thresholds learn
+    each CPU's population separately and fleet changes never read as regressions. Skipped until
+    the `BENCHER_API_KEY` repo secret (a Bencher *project* key, prefix `bencher_run_`) exists.
 
-## Configuration
+Full BenchmarkDotNet artifacts upload on every run (30-day retention) — including
+`HostEnvironmentInfo`, which records the CPU model. **Check it before believing any cross-run
+delta**; same-run ratios are the only comparison the runner lottery can't fool.
 
-### Alert Threshold
-Currently set to **150%** regression (line 58, 76 in [benchmarks.yml](../.github/workflows/benchmarks.yml))
+## Viewing results
 
-To adjust:
-```yaml
-alert-threshold: '150%'  # Change to desired percentage
-```
+- **Dashboard** (gh-pages, source in `benchmark-dashboard/index.html`, deployed by
+  `deploy-dashboard.yml`): grouping, filtering, sparklines, expandable charts with per-commit
+  dates. Renamed or deleted benchmarks automatically become **archived** (hidden behind the
+  "show archived" toggle, shown muted with their last-reported date) — history is never deleted,
+  it just stops cluttering the live view.
+- **Bencher** (`bencher.dev/console`, project `copse-dotnet`): the Perf page renders once you
+  select branch + testbed + measure + benchmarks; per-report links are printed in the publish log.
 
-### Fail on Alert
-Currently set to `false` - benchmarks won't fail the build on regression
+## Running locally
 
-To make regressions fail the build:
-```yaml
-fail-on-alert: true  # Change to true
-```
-
-## Running Benchmarks Locally
-
-The benchmark project automatically uses **fast ShortRun mode** for local development and **accurate default mode** in CI.
-
-### Run Specific Benchmark Class
 ```bash
 cd src/Copse.Benchmarks
-dotnet run -c Release -- --filter '*DepthFirstTreenumerator*'
-```
 
-### Run by Category
-```bash
-# Run all traversal benchmarks
-dotnet run -c Release -- --filter '*' --category Traversal
+# One family
+dotnet run -c Release -- --allCategories Streaming
 
-# Run all LINQ benchmarks
-dotnet run -c Release -- --filter '*' --category LINQ
+# One class / one row
+dotnet run -c Release -- --filter '*Where*'
+dotnet run -c Release -- --filter '*Union.Dft_Chains*'
 
-# Run depth-first related benchmarks (traversal + LINQ where)
-dotnet run -c Release -- --filter '*' --category DepthFirst
-
-# Combine categories
-dotnet run -c Release -- --filter '*' --category Traversal --category LINQ
-```
-
-Categories are declared by each benchmark class's `[BenchmarkCategory]` attribute — that's the
-source of truth. The vocabulary currently in use: feature areas (`Traversal`, `LINQ`,
-`Conversion`, `DataStructures`, `Serialization`), operations (`Query`, `Filter`, `Projection`,
-`Pruning`, `Skip`, `Merge`, `Invert`, `Leaffix`, `Materialize`, `Memoize`), and traversal
-dimensions (`DepthFirst`, `BreadthFirst`, `Preorder`, `Postorder`, `LevelOrder`).
-
-### List Available Benchmarks
-```bash
+# List everything
 dotnet run -c Release -- --list flat
-dotnet run -c Release -- --list tree
 ```
 
-### Interactive Mode
-Run without arguments to choose interactively:
-```bash
-dotnet run -c Release
-```
+Local runs automatically use fast `ShortRun` mode; CI uses the accurate default job (detected via
+`GITHUB_ACTIONS`). Local absolute numbers are only comparable to other runs on the same machine.
 
-### Run All Benchmarks (Like CI)
-```bash
-cd src/Copse.Benchmarks
-dotnet run -c Release -- --filter '*'
-```
+## Adding a benchmark
 
-### Export Results
-```bash
-cd src/Copse.Benchmarks
-dotnet run -c Release -- --filter '*DepthFirst*' --exporters json html
-```
+1. Add rows to the matching operator class (or a new class in `Benchmarks/`), tagged
+   `[BenchmarkCategory("<Family>", "<Sub>")]` — the **first** tag must be an existing family, which
+   is what routes it to a CI leg, a dashboard suite, and a Bencher report automatically.
+2. Take workloads from `CanonicalTrees`; follow the `{Dft|Bft}_{Shape}[_{Variant}]` naming; give
+   both dimension rows if the operator supports both, and the capture×drain matrix if it returns
+   a buffer.
+3. Sanity: every time row should clear ~1 ms on the slowest runner (~10 ms target) — see the
+   noise-floor notes in `CanonicalTrees`.
 
-## Adding New Benchmarks
+Adding a whole new **family** is a bigger step: the workflow's matrix list, the publish job's
+find-results loop, two store steps, and the Bencher loop all enumerate families explicitly in
+`.github/workflows/benchmarks.yml`.
 
-1. Create a new class in `src/Copse.Benchmarks/Benchmarks/`
-2. Add `[MemoryDiagnoser]` and `[BenchmarkCategory]` attributes
-3. Mark benchmark methods with `[Benchmark]`
-4. **No Program.cs changes needed** - auto-discovered!
+## Configuration notes
 
-Example:
-```csharp
-using BenchmarkDotNet.Attributes;
-
-namespace Copse.Benchmarks;
-
-[MemoryDiagnoser]
-[BenchmarkCategory("YourCategory")]
-public class MyBenchmark
-{
-    [Benchmark]
-    public void MyOperation()
-    {
-        // Code to benchmark
-    }
-}
-```
-
-The benchmark will automatically be discovered and run in CI. Locally, you can run it with:
-```bash
-dotnet run -c Release -- --filter '*MyBenchmark*'
-```
-
-## First-Time Setup
-
-### Enable GitHub Pages
-1. Go to repository Settings → Pages
-2. Source: Deploy from a branch
-3. Branch: `gh-pages` / `/(root)`
-4. Save
-
-The first benchmark run on `main` will create the `gh-pages` branch automatically.
-
-### Workflow Permissions
-The workflow requires these permissions (already configured):
-- `contents: write` - to push results to gh-pages
-- `deployments: write` - for GitHub Pages deployment
-- `pull-requests: write` - to comment on PRs
-
-## Best Practices
-
-### Benchmark Stability
-- Benchmarks run on GitHub-hosted runners (ubuntu-latest)
-- Shared infrastructure may cause variability
-- Alert threshold accounts for normal variance
-- Focus on significant regressions (>150%)
-
-### Benchmark Duration
-- **Local**: Automatically uses `ShortRunJob` for fast iterations (~15-30s per benchmark)
-- **CI**: Automatically uses default job for accurate measurements (~1-2min per benchmark)
-- Detection is automatic via `GITHUB_ACTIONS` environment variable
-
-### Memory Benchmarks
-- `[MemoryDiagnoser]` tracks allocations
-- Useful for detecting allocation regressions
-- Minimal overhead on runtime benchmarks
-
-## Troubleshooting
-
-### Workflow Fails - Results File Not Found
-The workflow automatically finds the results file. If it fails:
-1. Check BenchmarkDotNet.Artifacts/results/ was created
-2. Verify benchmarks actually ran (check logs)
-3. Ensure at least one benchmark completed successfully
-
-### No GitHub Pages Site
-1. Verify gh-pages branch was created
-2. Check Settings → Pages is configured
-3. Wait a few minutes after first push to gh-pages
-4. Check Actions tab for Pages deployment
-
-### Benchmarks Take Too Long
-Consider:
-1. Using `[ShortRunJob]` for development
-2. Filtering benchmarks: `--filter '*SpecificClass*'`
-3. Running fewer iterations locally
-4. Splitting into separate workflow files by category
+- `alert-threshold: '150%'`, `fail-on-alert: false` on the gh-pages stores — informational only.
+- Bencher runs without `--error-on-alert` (trial mode); add it once thresholds have history and
+  regressions should block.
+- The first store step fetches gh-pages, the rest skip the fetch, the last one auto-pushes — one
+  gh-pages commit per run.
 
 ## References
 
-- [BenchmarkDotNet Documentation](https://benchmarkdotnet.org/)
-- [GitHub Action Benchmark](https://github.com/benchmark-action/github-action-benchmark)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [BenchmarkDotNet](https://benchmarkdotnet.org/)
+- [github-action-benchmark](https://github.com/benchmark-action/github-action-benchmark)
+- [Bencher](https://bencher.dev/docs/)
