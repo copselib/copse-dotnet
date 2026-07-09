@@ -11,7 +11,5 @@ namespace Copse.Benchmarks.Trees
           EnumerableExtensions.Geometric(1, 2).Take(width))
     {
     }
-
-    private readonly int _Width;
   }
 }
