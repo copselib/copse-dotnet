@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783634675941,
+  "lastUpdate": 1783634676183,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -38197,6 +38197,107 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
             "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      }
+    ],
+    "Buffer Memory": [
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4c8727a8ef5b61cab56c497a4d1b62ca0944ef77",
+          "message": "Benchmark reorg 4/4: Serialization alignment + the ten-family CI matrix\n\nSerialization adopts the shape vocabulary and the Mega-tier forest;\nthe chain rows stay at 100K as the documented tier exception (a\nMega-tier chain serialization is a ~10 MB string per op).\n\nbenchmarks.yml: one leg per family, single-tag selection (partition by\nconstruction -- no cross-leg tag bookkeeping), 10 suites x time+memory\nstored to gh-pages, and per-CPU-model Bencher testbeds: each leg\nrecords its runner's CPU into the artifact and the publish job files\neach family's report under that testbed, so thresholds learn per-CPU\npopulations and fleet changes stop reading as regressions.\n\nSuite: 137 benchmarks, verified as an exact partition (family counts\nsum to the flat total) and smoke-tested including the first-ever\nRootfix and SymmetricDifference coverage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-09T21:49:58Z",
+          "tree_id": "1143011cb54498178341b847607d44f5ff9f26e8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4c8727a8ef5b61cab56c497a4d1b62ca0944ef77"
+        },
+        "date": 1783634676143,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 42112781,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 42170600,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71350693,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 41966955,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16848065,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400272,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21012604,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12586878,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58227,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597792,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_10K_of_UnboundedTriangle",
+            "value": 80040,
             "unit": "bytes"
           }
         ]
