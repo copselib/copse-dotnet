@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783705008607,
+  "lastUpdate": 1783705008954,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -50848,6 +50848,162 @@ window.BENCHMARK_DATA = {
             "value": 8095429.103125,
             "unit": "ns",
             "range": "± 8078.67008545357"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b892c9db33b80ef98b491654319f4e3cbc839cc5",
+          "message": "Async-suffix the probe-idiom pull helpers\n\nThe first probe-idiom wave (ad231c8) left the store decoders' hot\nhelpers suffix-less (Advance, Backtrack, TryPushNextChild, ...); the\nlater stream-decoder and engine waves suffixed theirs. TAP naming keys\non the return type -- these return awaitables that can genuinely be\npending -- so standardize on the suffix. Pure async-side rename: the\ntransform strips a trailing Async, so every regenerated twin is\nbyte-identical.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:49:14Z",
+          "tree_id": "e308a34648f98eb7c67d74d6d4ea3277e9aa16d9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b892c9db33b80ef98b491654319f4e3cbc839cc5"
+        },
+        "date": 1783705008891,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 12872417.049107144,
+            "unit": "ns",
+            "range": "± 103297.5211395737"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 9184480.733173076,
+            "unit": "ns",
+            "range": "± 13259.00848770852"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 12901176.344951924,
+            "unit": "ns",
+            "range": "± 90310.10707973833"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 8398784.542410715,
+            "unit": "ns",
+            "range": "± 47941.817181275255"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 19043741.929166667,
+            "unit": "ns",
+            "range": "± 151425.93574971592"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 22051671.637019232,
+            "unit": "ns",
+            "range": "± 64483.01901234951"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 21061874.067307692,
+            "unit": "ns",
+            "range": "± 55890.746150779094"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 25356250.827083334,
+            "unit": "ns",
+            "range": "± 110361.36917108508"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 36973979.85204082,
+            "unit": "ns",
+            "range": "± 67548.92885343904"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 50200885.65714286,
+            "unit": "ns",
+            "range": "± 85598.82626600678"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 140593565.20652175,
+            "unit": "ns",
+            "range": "± 3551842.8802001374"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 159616637.35897437,
+            "unit": "ns",
+            "range": "± 380083.05311182246"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 62307435.1925926,
+            "unit": "ns",
+            "range": "± 187227.63972802996"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 64382664.53571428,
+            "unit": "ns",
+            "range": "± 329873.60350799817"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 73391187.25714286,
+            "unit": "ns",
+            "range": "± 169899.22179993294"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 73835593.60952382,
+            "unit": "ns",
+            "range": "± 466788.55584242224"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 17289920.884277344,
+            "unit": "ns",
+            "range": "± 792714.9901918209"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 25327972.275735293,
+            "unit": "ns",
+            "range": "± 1357420.2081837961"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 39473487.692307696,
+            "unit": "ns",
+            "range": "± 75166.20104410732"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 37629136.60204082,
+            "unit": "ns",
+            "range": "± 71875.5040657594"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 8840813.056919644,
+            "unit": "ns",
+            "range": "± 12935.297592754632"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 8103543.09765625,
+            "unit": "ns",
+            "range": "± 18244.87477034861"
           }
         ]
       }
