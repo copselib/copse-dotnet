@@ -18,6 +18,12 @@ namespace Copse.Treenumerators
   /// <c>.g.cs</c> twin). Two async-legality restructurings vs a naive port: the ref-typed
   /// TryScheduleNextChildOf parameter became a bool discriminator (a ref param can't be in an async
   /// method) and phase 3's visit-front ref is scoped before the await (a ref local can't cross it).</para>
+  ///
+  /// <para><b>Locality:</b> visits publish from the FRAME (the value is carried out of the window
+  /// once, at schedule time) and the current group's owner span accumulates in mirror fields
+  /// flushed once per group boundary -- the per-visit and per-item paths touch no window entry.
+  /// The window is O(width) (megabytes at the Mega tier), and per-item random access into it was
+  /// the dominant cost the FlatDecode family measured before those two moves.</para>
   /// </summary>
   public sealed class LevelOrderStreamBreadthFirstTreenumerator<TValue, TStream>
     : ITreenumerator<TValue>
@@ -48,6 +54,16 @@ namespace Copse.Treenumerators
     private int _RootCount;
     private bool _StreamExhausted;
     private bool _SuppressFutureRoots; // SkipSiblings on an effective root: discard the rest of group 0
+
+    // The CURRENT group's owner state, mirrored into fields so the per-item parse path touches
+    // no window entry: the suppression flag loads when the group opens, the child span
+    // accumulates here, and one flush writes it back at the group boundary -- one window touch
+    // per GROUP instead of two or three per item. Kept exact mid-group: the one strategy that
+    // can suppress the owner of the group the cursor is inside (SkipSiblings silencing the
+    // visit front) updates the mirror too.
+    private bool _CurrentGroupSuppressed;
+    private int _CurrentGroupFirstChildIndex = -1;
+    private int _CurrentGroupChildCount;
 
     private struct Entry
     {
@@ -83,6 +99,8 @@ namespace Copse.Treenumerators
     private struct Frame
     {
       public int NodeIndex;
+      public TValue Node; // carried from the window at schedule time: visits publish from the
+                          // frame and never re-touch the window
       public NodePosition Position;
       public int VisitCount;
       public int NextChildOrdinal;
@@ -202,6 +220,9 @@ namespace Copse.Treenumerators
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
       {
         // Erase the node and its subtree; the slot enqueues nothing, the group gets discarded.
+        // (No suppression-mirror update here or in the SkipDescendants arm: the cursor cannot
+        // be inside a just-scheduled node's group -- its own group sits positionally AFTER the
+        // group it was read from.)
         GetEntry(_ScheduleStack.GetLast().NodeIndex).SuppressChildren = true;
         _ScheduleStack.RemoveLast();
         return;
@@ -249,7 +270,7 @@ namespace Copse.Treenumerators
       if (!TryEnsureChild(nodeIndex, ordinal))
         return false;
 
-      var childIndex = GetEntry(nodeIndex).FirstChildIndex + ordinal;
+      var childIndex = GetFirstChildIndex(nodeIndex) + ordinal;
 
       // The parse leaves the schedule stack / visit queue untouched, so the same frame is here.
       if (fromVisitFront)
@@ -275,18 +296,22 @@ namespace Copse.Treenumerators
       return true;
     }
 
-    // Schedule a node onto the schedule stack and publish its scheduling visit.
+    // Schedule a node onto the schedule stack and publish its scheduling visit. The value is
+    // read from the window ONCE, here, and carried in the frame from then on.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void PushScheduled(int nodeIndex, NodePosition position)
     {
+      var node = GetEntry(nodeIndex).Value;
+
       _ScheduleStack.AddLast(new Frame
       {
         NodeIndex = nodeIndex,
+        Node = node,
         Position = position,
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = GetEntry(nodeIndex).Value;
+      Node = node;
       VisitCount = 0;
       Position = position;
     }
@@ -295,7 +320,7 @@ namespace Copse.Treenumerators
     private void PublishVisit(ref Frame frame)
     {
       Mode = TreenumeratorMode.VisitingNode;
-      Node = GetEntry(frame.NodeIndex).Value;
+      Node = frame.Node;
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }
@@ -322,6 +347,10 @@ namespace Copse.Treenumerators
       if (_ScheduleStack.GetLast().Position.Depth == _ScheduleStack.Count - 1)
       {
         _SuppressFutureRoots = true;
+
+        if (_CurrentGroupOwner == -1)
+          _CurrentGroupSuppressed = true; // the cursor may still be inside the roots group
+
         return true;
       }
 
@@ -329,6 +358,9 @@ namespace Copse.Treenumerators
 
       front.ChildrenDisabled = true;
       GetEntry(front.NodeIndex).SuppressChildren = true;
+
+      if (front.NodeIndex == _CurrentGroupOwner)
+        _CurrentGroupSuppressed = true; // the cursor may be inside the front's own group
 
       return false;
     }
@@ -350,7 +382,7 @@ namespace Copse.Treenumerators
 
     private bool TryEnsureChild(int parent, int k)
     {
-      while (GetEntry(parent).ChildCount <= k)
+      while (GetChildCount(parent) <= k)
       {
         // The parent's group is fully consumed once the cursor has moved past it (groups arrive
         // in owner order) or the stream ended (all unwritten groups are empty).
@@ -363,23 +395,28 @@ namespace Copse.Treenumerators
       return true;
     }
 
+    // Live owner-aware reads: the current group's span lives in the mirror fields until the
+    // boundary flush, so a parent whose group the cursor is inside reads from the fields and
+    // everyone else from the window.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetChildCount(int parent)
+      => parent == _CurrentGroupOwner ? _CurrentGroupChildCount : GetEntry(parent).ChildCount;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetFirstChildIndex(int parent)
+      => parent == _CurrentGroupOwner ? _CurrentGroupFirstChildIndex : GetEntry(parent).FirstChildIndex;
+
     // Advance the parse by one item or one group boundary. A suppressed owner's group is
     // discarded UNMAPPED in one step, its count appended as suppressed entries (the cascade
     // that prunes whole subtrees out of a positional encoding).
     private void ParseOneStep()
     {
-      var owner = _CurrentGroupOwner;
-
-      var suppressed = owner == -1
-        ? _SuppressFutureRoots
-        : GetEntry(owner).SuppressChildren;
-
-      if (suppressed)
+      if (_CurrentGroupSuppressed)
       {
         var discarded = _Stream.SkipGroupRemainder();
 
         for (int i = 0; i < discarded; i++)
-          AppendEntry(default, suppressChildren: true, owner);
+          AppendEntry(default, suppressChildren: true);
 
         AdvanceGroup();
 
@@ -390,7 +427,7 @@ namespace Copse.Treenumerators
 
       if (read.HasValue)
       {
-        AppendEntry(read.Value, suppressChildren: false, owner);
+        AppendEntry(read.Value, suppressChildren: false);
 
         return;
       }
@@ -398,7 +435,7 @@ namespace Copse.Treenumerators
       AdvanceGroup();
     }
 
-    private void AppendEntry(TValue value, bool suppressChildren, int owner)
+    private void AppendEntry(TValue value, bool suppressChildren)
     {
       var index = _AppendedCount++;
 
@@ -409,27 +446,52 @@ namespace Copse.Treenumerators
         SuppressChildren = suppressChildren,
       });
 
-      if (owner == -1)
+      if (_CurrentGroupOwner == -1)
       {
         _RootCount++;
+        return;
+      }
+
+      if (_CurrentGroupChildCount == 0)
+        _CurrentGroupFirstChildIndex = index;
+
+      _CurrentGroupChildCount++;
+    }
+
+    // Group boundary: flush the mirrored span to the owner's entry (the one window touch the
+    // group pays), then advance and open the next group's mirror. Exhaustion still flushes --
+    // the final group's span must land.
+    private void AdvanceGroup()
+    {
+      FlushCurrentGroup();
+
+      if (_Stream.TryMoveToNextGroup())
+      {
+        _CurrentGroupOwner++;
+        OpenCurrentGroup();
       }
       else
       {
-        ref var ownerEntry = ref GetEntry(owner);
-
-        if (ownerEntry.ChildCount == 0)
-          ownerEntry.FirstChildIndex = index;
-
-        ownerEntry.ChildCount++;
+        _StreamExhausted = true;
       }
     }
 
-    private void AdvanceGroup()
+    private void FlushCurrentGroup()
     {
-      if (_Stream.TryMoveToNextGroup())
-        _CurrentGroupOwner++;
-      else
-        _StreamExhausted = true;
+      if (_CurrentGroupOwner == -1)
+        return; // roots count straight into _RootCount
+
+      ref var owner = ref GetEntry(_CurrentGroupOwner);
+
+      owner.FirstChildIndex = _CurrentGroupFirstChildIndex;
+      owner.ChildCount = _CurrentGroupChildCount;
+    }
+
+    private void OpenCurrentGroup()
+    {
+      _CurrentGroupFirstChildIndex = -1;
+      _CurrentGroupChildCount = 0;
+      _CurrentGroupSuppressed = GetEntry(_CurrentGroupOwner).SuppressChildren;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
