@@ -72,7 +72,8 @@ The library **never performs node equality comparisons**. This is a deliberate d
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
   treenumerators, over flat preorder/level-order encodings). Also the tree-source factories
-  (`Tree.Defer`/`Using`/`Empty`) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
+  (`Tree.Defer`/`Lazy`/`Using`/`Empty` — Defer builds fresh per acquisition, Lazy pins the first
+  construction) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
 - **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the
   memoize machinery rides the flat family, not a private engine).
 - **Copse.Linq.Experimental** - In-progress operators (`ExpandNodes`, `Graft`).

@@ -39,6 +39,59 @@ namespace Copse.Async.Treenumerables
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(
         () => treenumerableFactory().GetAsyncBreadthFirstTreenumerator());
 
+    // ----- Lazy (pinned factory; call-by-need where Defer is call-by-name): the factory runs
+    // ONCE, at the first treenumerator acquisition, and the constructed tree is pinned -- every
+    // later acquisition, in either dimension, traverses the same tree object. This pins the
+    // tree's IDENTITY (an impure factory can no longer hand the dimensions different trees),
+    // not its data; Memoize is the next rung up, pinning the traversal data itself.
+    //
+    // Lazy is for expensive CONSTRUCTION, not resource acquisition: a pinned tree has no
+    // release point, so a factory that acquires belongs to Using (whose per-acquisition
+    // treenumerator is the release point). Construction is not synchronized -- the pin has the
+    // same single-consumer contract as the traversals it feeds.
+    public static IAsyncTreenumerable<TNode> Lazy<TNode>(Func<IAsyncTreenumerable<TNode>> treenumerableFactory)
+    {
+      var lazyTree = new Lazy<IAsyncTreenumerable<TNode>>(treenumerableFactory);
+
+      return new AsyncDelegatingTreenumerable<TNode>(
+        () => lazyTree.Value.GetAsyncBreadthFirstTreenumerator(),
+        () => lazyTree.Value.GetAsyncDepthFirstTreenumerator());
+    }
+
+    // The dimension-observing form: the first demand carries information -- WHICH dimension was
+    // asked first -- and a one-time construction with a representation choice (a capture that
+    // could lay out preorder or level-order) can use it to favor its first consumer. The
+    // constructed tree is pinned for both dimensions regardless of which one it favors.
+    public static IAsyncTreenumerable<TNode> Lazy<TNode>(Func<TreeTraversalStrategy, IAsyncTreenumerable<TNode>> treenumerableFactory)
+    {
+      IAsyncTreenumerable<TNode> constructedTree = null;
+
+      IAsyncTreenumerable<TNode> GetOrConstruct(TreeTraversalStrategy firstDimension)
+        => constructedTree ?? (constructedTree = treenumerableFactory(firstDimension));
+
+      return new AsyncDelegatingTreenumerable<TNode>(
+        () => GetOrConstruct(TreeTraversalStrategy.BreadthFirst).GetAsyncBreadthFirstTreenumerator(),
+        () => GetOrConstruct(TreeTraversalStrategy.DepthFirst).GetAsyncDepthFirstTreenumerator());
+    }
+
+    // The narrow duals need no dimension-observing form: with one dimension there is nothing
+    // to observe.
+    public static IAsyncDepthFirstTreenumerable<TNode> LazyDepthFirst<TNode>(Func<IAsyncDepthFirstTreenumerable<TNode>> treenumerableFactory)
+    {
+      var lazyTree = new Lazy<IAsyncDepthFirstTreenumerable<TNode>>(treenumerableFactory);
+
+      return new AsyncDelegatingDepthFirstTreenumerable<TNode>(
+        () => lazyTree.Value.GetAsyncDepthFirstTreenumerator());
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> LazyBreadthFirst<TNode>(Func<IAsyncBreadthFirstTreenumerable<TNode>> treenumerableFactory)
+    {
+      var lazyTree = new Lazy<IAsyncBreadthFirstTreenumerable<TNode>>(treenumerableFactory);
+
+      return new AsyncDelegatingBreadthFirstTreenumerable<TNode>(
+        () => lazyTree.Value.GetAsyncBreadthFirstTreenumerator());
+    }
+
     // ----- Using (resource-owning factory; Ix's Using). The ownership rule: each treenumerator
     // acquisition acquires its OWN resource, disposed when that treenumerator is disposed (or if
     // construction throws before a treenumerator exists). ITreenumerator.Dispose is the

@@ -307,6 +307,44 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task AsyncTree_Lazy_PinsTheFirstConstruction()
+    {
+      var constructions = 0;
+      var lazyTree = AsyncTree.Lazy(() =>
+      {
+        constructions++;
+        return (IAsyncTreenumerable<int>)new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
+          nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
+      });
+
+      Assert.AreEqual(0, constructions, "Lazy must not run the factory before a treenumerator is acquired");
+
+      var first = await lazyTree.ToListAsync();
+      var second = await lazyTree.ToListAsync();
+
+      CollectionAssert.AreEqual(new[] { 1, 2, 3, 5, 4, 6, 7 }, first);
+      CollectionAssert.AreEqual(first, second);
+      Assert.AreEqual(1, constructions, "Lazy pins the first construction for every later acquisition");
+    }
+
+    [TestMethod]
+    public async Task AsyncTree_Lazy_DimensionObservingFactoryRunsOnceWithTheFirstDimension()
+    {
+      var observedDimensions = new List<TreeTraversalStrategy>();
+      var lazyTree = AsyncTree.Lazy(firstDimension =>
+      {
+        observedDimensions.Add(firstDimension);
+        return (IAsyncTreenumerable<int>)new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
+          nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
+      });
+
+      await CollectAsync(lazyTree.GetAsyncBreadthFirstTreenumerator());
+      await CollectAsync(lazyTree.GetAsyncDepthFirstTreenumerator());
+
+      CollectionAssert.AreEqual(new[] { TreeTraversalStrategy.BreadthFirst }, observedDimensions);
+    }
+
+    [TestMethod]
     public async Task AsyncPreorderStream_OverSuspendingSource_MatchesGeneratedSyncStreamTwin()
     {
       // Preorder (value, depth) for 1(2(4,5),3(6)).

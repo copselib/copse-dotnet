@@ -55,14 +55,20 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<TNode> Invert<TNode>(this ITreenumerableBuffer<TNode> source)
       => DeferredMirror(source);
 
+    // The mirror's construction is pinned to the FIRST dimension pulled (Tree.Lazy): the
+    // capture's layout is a representation choice the first consumer should get to make. Today
+    // both dimensions get the preorder layout (breadth-first rides it cross-order); when a
+    // level-order array store exists, the breadth-first arm becomes a level-order mirror --
+    // native replay for the dimension that asked -- without touching this shape.
     private static ITreenumerableBuffer<TNode> DeferredMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
+      => new CompletedTreenumerableBuffer<TNode>(
+        Tree.Lazy(firstDimension => PreorderMirror(source)));
+
+    private static ITreenumerable<TNode> PreorderMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
       var mirror = new LazyBuiltPreorderStore<TNode>(() => BuildMirror(source));
 
-      return new CompletedTreenumerableBuffer<TNode>(
-        new DelegatingTreenumerable<TNode>(
-          () => new PreorderStoreBreadthFirstTreenumerator<TNode, LazyBuiltPreorderStore<TNode>>(mirror),
-          () => new PreorderStoreDepthFirstTreenumerator<TNode, LazyBuiltPreorderStore<TNode>>(mirror)));
+      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(mirror);
     }
 
     private static PreorderArrayStore<TNode> BuildMirror<TNode>(IDepthFirstTreenumerable<TNode> source)

@@ -23,11 +23,10 @@ namespace Copse.Linq
     /// MANUFACTURES owned O(n) storage: the projected accumulations are new values that exist
     /// nowhere in the source, and a root's value IS its whole subtree's aggregate -- the source
     /// is fully consumed before the first result visit can be published, so the result is a
-    /// completed capture, not a lazy stream. Deferred like the sync twin (hence the sync name):
-    /// the awaited build runs ONCE, on the first replay pull, through the lazy-built store's
-    /// grow seam -- async cannot defer inside a sync-signature treenumerator factory the way the
-    /// sync operator's <c>Lazy&lt;&gt;</c> does. The source is consumed depth-first only, so a
-    /// streamed narrow source can leaffix.</para>
+    /// completed capture, not a lazy stream. Deferred (hence the sync name): construction is
+    /// pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited build runs
+    /// ONCE, on the first replay pull, through the lazy-built store's grow seam. The source is
+    /// consumed depth-first only, so a streamed narrow source can leaffix.</para>
     ///
     /// <para>Single forward DFS pass into flat pre-order arrays; see the sync operator for the
     /// construction notes (subtree-size hop, O(depth) working set).</para>
@@ -36,14 +35,18 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
+      => new AsyncCompletedTreenumerableBuffer<TAccumulate>(
+        AsyncTree.Lazy(firstDimension => PreorderScan(source, leafNodeSelector, accumulator)));
+
+    private static IAsyncTreenumerable<TAccumulate> PreorderScan<TSource, TAccumulate>(
+      IAsyncDepthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
     {
       var scanned = new AsyncLazyBuiltPreorderStore<TAccumulate>(
         () => BuildLeaffixScanAsync(source, leafNodeSelector, accumulator));
 
-      return new AsyncCompletedTreenumerableBuffer<TAccumulate>(
-        new AsyncDelegatingTreenumerable<TAccumulate>(
-          () => new AsyncPreorderStoreBreadthFirstTreenumerator<TAccumulate, AsyncLazyBuiltPreorderStore<TAccumulate>>(scanned),
-          () => new AsyncPreorderStoreDepthFirstTreenumerator<TAccumulate, AsyncLazyBuiltPreorderStore<TAccumulate>>(scanned)));
+      return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyBuiltPreorderStore<TAccumulate>>(scanned);
     }
 
     private static async ValueTask<PreorderArrayStore<TAccumulate>> BuildLeaffixScanAsync<TSource, TAccumulate>(
