@@ -257,10 +257,13 @@ function render() {
 
 function rowHtml(r) {
   const [ds,dc] = fmtDelta(r.deltaPct);
-  const open = state.open.has(r.full);
+  // Open-state key is suite-qualified: the same benchmark name exists in a suite's time and
+  // memory variants, and a bare-name key toggled both rows at once.
+  const rowKey = r.suite + "|" + r.full;
+  const open = state.open.has(rowKey);
   const badge = (r.engine!=="—" ? `<span class="badge">${r.engine}</span>` : "")
     + (r.archived ? `<span class="badge arch">archived</span>` : "");
-  let html = `<tr class="brow${r.archived?" archived":""}" data-full="${esc(r.full)}"><td>${open?"▾":"▸"}</td>`
+  let html = `<tr class="brow${r.archived?" archived":""}" data-full="${esc(rowKey)}"><td>${open?"▾":"▸"}</td>`
     + `<td class="name"><span class="cls">${esc(r.cls)}.</span>${esc(r.method)}${badge}</td>`
     + `<td class="num">${esc(fmtVal(r.latest,r.unit))}</td>`
     + `<td class="num delta ${dc}">${esc(ds)}</td>`
