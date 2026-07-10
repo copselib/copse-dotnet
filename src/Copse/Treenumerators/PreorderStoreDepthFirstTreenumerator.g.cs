@@ -13,8 +13,10 @@ namespace Copse.Treenumerators
   /// <c>await</c> on the store's grow calls and it becomes the synchronous driver. Native playback
   /// for the flat family from span arithmetic -- a node's first child is the next store index, a
   /// child's next sibling is the child's index plus its (ensured-closed) subtree size -- with the
-  /// grow calls (<c>EnsureBufferedAsync</c>/<c>EnsureSubtreeClosedAsync</c>) awaited so a store
-  /// still capturing from an async feed fills just in time. GetValue/GetSubtreeSize stay sync.
+  /// grow calls (<c>EnsureBufferedAsync</c>/<c>EnsureSubtreeClosedAsync</c>) PROBED so a store
+  /// still capturing from an async feed fills just in time while an already-buffered answer
+  /// costs no state machine at all (the fast-path probe idiom -- see AsyncToSync).
+  /// GetValue/GetSubtreeSize stay sync.
   /// </summary>
   public sealed class PreorderStoreDepthFirstTreenumerator<TValue, TStore>
     : TreenumeratorBase<TValue>
@@ -53,6 +55,10 @@ namespace Copse.Treenumerators
       public int NextSiblingIndex;
     }
 
+    // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
+    // stays ordinary method calls whenever the store answers inline (a completed capture always
+    // does; a growing one does whenever the answer is already buffered). Only a genuinely
+    // pending grow enters an async continuation -- see the fast-path idiom note in AsyncToSync.
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // Nothing descended yet: schedule the next root (the first move, or the gap between roots).
@@ -71,11 +77,22 @@ namespace Copse.Treenumerators
       if (_RootsFinished)
         return false;
 
-      var candidate = _LastRootIndex < 0
-        ? 0
-        : _LastRootIndex + _Store.EnsureSubtreeClosed(_LastRootIndex);
+      int candidate;
 
-      if (!_Store.EnsureBuffered(candidate))
+      if (_LastRootIndex < 0)
+      {
+        candidate = 0;
+      }
+      else
+      {
+        var closed = _Store.EnsureSubtreeClosed(_LastRootIndex);
+
+        candidate = _LastRootIndex + closed;
+      }
+
+      var buffered = _Store.EnsureBuffered(candidate);
+
+      if (!buffered)
       {
         _RootsFinished = true;
         return false;
@@ -106,7 +123,9 @@ namespace Copse.Treenumerators
       {
         _Path.GetLast().Skipped = true;
 
-        if (TryPushNextChild())
+        var pushed = TryPushNextChild();
+
+        if (pushed)
           return true;
 
         // No children to promote: a childless SkipNode'd node emits nothing.
@@ -126,7 +145,9 @@ namespace Copse.Treenumerators
     // left.
     private bool OnVisiting()
     {
-      if (TryPushNextChild())
+      var pushed = TryPushNextChild();
+
+      if (pushed)
         return true;
 
       return Backtrack();
@@ -145,13 +166,15 @@ namespace Copse.Treenumerators
         if (_Path.Count == 0)
           return MoveToNextRootNode();
 
-        // A copy (not a ref) for the pre-await reads: nothing mutates this level here, and a ref
-        // local may not survive the TryPushNextChild await below.
+        // A copy (not a ref): a pending push resumes through a continuation that re-enters this
+        // method, so nothing here may have mutated the level.
         var top = _Path.GetLast();
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          if (TryPushNextChild())
+          var pushed = TryPushNextChild();
+
+          if (pushed)
             return true;
 
           continue;
@@ -168,9 +191,10 @@ namespace Copse.Treenumerators
     // sibling); it belongs to this level while the level's span is still open (everything
     // appended past a still-open node lies inside it) or contains the candidate.
     //
-    // The pre-await reads use a copy of the top level; the mutation re-acquires it by ref after
-    // the grow awaits (the deque is stable across them, so the top is the same slot), because a
-    // ref local may not cross an await.
+    // The pre-probe reads use a copy of the top level: a pending grow resumes through a
+    // continuation that RE-ENTERS this method (the re-issued grow is idempotent and answers
+    // inline the second time), so nothing may mutate before the probes; the mutation re-acquires
+    // the top by ref after them.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool TryPushNextChild()
     {
@@ -179,11 +203,22 @@ namespace Copse.Treenumerators
       if (top.ChildrenDisabled)
         return false;
 
-      var candidate = top.LastChildIndex < 0
-        ? top.NodeIndex + 1
-        : top.LastChildIndex + _Store.EnsureSubtreeClosed(top.LastChildIndex);
+      int candidate;
 
-      if (!_Store.EnsureBuffered(candidate))
+      if (top.LastChildIndex < 0)
+      {
+        candidate = top.NodeIndex + 1;
+      }
+      else
+      {
+        var closed = _Store.EnsureSubtreeClosed(top.LastChildIndex);
+
+        candidate = top.LastChildIndex + closed;
+      }
+
+      var buffered = _Store.EnsureBuffered(candidate);
+
+      if (!buffered)
         return false;
 
       var parentSubtreeSize = _Store.GetSubtreeSize(top.NodeIndex);
@@ -201,6 +236,7 @@ namespace Copse.Treenumerators
 
       return true;
     }
+
 
     // Schedule a node as a new level and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

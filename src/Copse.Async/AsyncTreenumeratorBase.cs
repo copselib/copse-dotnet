@@ -20,12 +20,31 @@ namespace Copse.Async
     protected bool EnumerationFinished { get; private set; }
 
 
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategy)
+    // NOT async: when the derived pull completes synchronously (a buffered store, an in-memory
+    // tree -- the overwhelmingly common case) the whole move is ordinary method calls, no state
+    // machine; the continuation below is entered only when the pull genuinely suspends. This one
+    // fast path removes a per-pull state machine from EVERY derived treenumerator at once.
+    public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategy)
     {
       if (Disposed || EnumerationFinished)
-        return false;
+        return new ValueTask<bool>(false);
 
-      if (await OnMoveNextAsync(nodeTraversalStrategy).ConfigureAwait(false))
+      var moved = OnMoveNextAsync(nodeTraversalStrategy);
+
+      if (!moved.IsCompletedSuccessfully)
+        return AwaitThenFinishMoveNextAsync(moved);
+
+      if (moved.Result)
+        return new ValueTask<bool>(true);
+
+      EnumerationFinished = true;
+
+      return new ValueTask<bool>(false);
+    }
+
+    private async ValueTask<bool> AwaitThenFinishMoveNextAsync(ValueTask<bool> pendingMove)
+    {
+      if (await pendingMove.ConfigureAwait(false))
         return true;
 
       EnumerationFinished = true;

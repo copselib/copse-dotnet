@@ -227,6 +227,44 @@ namespace Copse.CodeGen
         return base.VisitObjectCreationExpression(node);
       }
 
+      // ----- The ValueTask fast-path idiom (the async seam eliminator). A hot method stays
+      // NON-async by probing a grow call's ValueTask and deferring to an async continuation only
+      // when it is genuinely pending:
+      //
+      //   var closed = _Store.EnsureSubtreeClosedAsync(index);
+      //
+      //   if (!closed.IsCompletedSuccessfully)
+      //     return AwaitThenTryPushNextChildAsync(closed);
+      //
+      //   var candidate = index + closed.Result;
+      //
+      // The sync twin can never be pending, so the guard statement VANISHES and `closed.Result`
+      // collapses to `closed` -- leaving exactly the hand-written sync shape (the continuation
+      // methods live in async-only marker regions). The member names are RESERVED by these two
+      // rules: `.IsCompletedSuccessfully` and `.Result` in a manifest source always mean this
+      // idiom -- neither appears anywhere else, and a future non-idiom use would transcribe
+      // wrongly rather than fail loudly.
+
+      public override SyntaxNode VisitIfStatement(IfStatementSyntax node)
+      {
+        if (node.Else == null
+          && node.Condition is PrefixUnaryExpressionSyntax negation
+          && negation.IsKind(SyntaxKind.LogicalNotExpression)
+          && negation.Operand is MemberAccessExpressionSyntax probe
+          && probe.Name.Identifier.ValueText == "IsCompletedSuccessfully")
+          return null;
+
+        return base.VisitIfStatement(node);
+      }
+
+      public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+      {
+        if (node.Name.Identifier.ValueText == "Result")
+          return ((ExpressionSyntax)Visit(node.Expression)).WithTriviaFrom(node);
+
+        return base.VisitMemberAccessExpression(node);
+      }
+
       public override SyntaxNode VisitUsingDirective(UsingDirectiveSyntax node)
       {
         var name = node.Name?.ToString();
