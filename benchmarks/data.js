@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783714908418,
+  "lastUpdate": 1783714908753,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -47218,6 +47218,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
             "value": 1789281,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840378,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 415377,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 446945,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b3629918092be83d27e564368556fcd22b45e1ec",
+          "message": "Bencher: upload class-qualified names via BMF, not the C# adapter\n\nThe c_sharp_dot_net adapter names benchmarks Namespace.Method -- it\ndrops the declaring class -- so the ~151-row suite collapsed into 66\nBencher benchmarks: all seven AsyncOverhead Sync/Async pairs merged\ninto two series, Bft_Triangle mixed seven families, and every\nthreshold learned a meaningless mixed population (51 standing junk\nalerts). Convert each leg's joined full-compressed JSON to Bencher\nMetric Format keyed by BenchmarkDotNet's FullName (class-qualified,\none series per real row) and upload with --adapter json. Latency only,\nvalue plus/minus one standard deviation.\n\nAlso raises the threshold upper boundary 0.95 -> 0.98: at 0.95 every\nseries false-positives ~5% of runs by design, a steady alert drip\nacross ~150 benchmarks x 5 per-CPU testbeds.\n\nThe Bencher project is being wiped in parallel; series restart fresh\nunder the correct names.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T20:08:47Z",
+          "tree_id": "9d4168dc09b53a75fa25e40876d4513b40eaac0a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b3629918092be83d27e564368556fcd22b45e1ec"
+        },
+        "date": 1783714908693,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 153113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 86489,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1789282,
             "unit": "bytes"
           },
           {
