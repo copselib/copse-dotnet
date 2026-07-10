@@ -66,17 +66,23 @@ namespace Copse.Async.Treenumerators
       public int NextSiblingIndex;
     }
 
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    // NOT async, and neither are the pull helpers below: every stream seam is PROBED, and a
+    // pull the stream answers inline is ordinary method calls with no state machine -- the
+    // fast-path probe idiom (see AsyncToSync).
+    public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
-        return false;
+        return new ValueTask<bool>(false);
 
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
+      var moved = OnMoveNextAsync(nodeTraversalStrategies);
 
-      if (!moved)
+      if (!moved.IsCompletedSuccessfully)
+        return AwaitThenFinishMoveNextAsync(moved);
+
+      if (!moved.Result)
         _Finished = true;
 
-      return moved;
+      return new ValueTask<bool>(moved.Result);
     }
 
     private ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
@@ -91,25 +97,30 @@ namespace Copse.Async.Treenumerators
       return OnVisitingAsync();
     }
 
-    private async ValueTask<bool> MoveToNextRootNodeAsync()
+    private ValueTask<bool> MoveToNextRootNodeAsync()
     {
       if (_RootsFinished)
-        return false;
+        return new ValueTask<bool>(false);
 
       // Roots are the forest's children: the same lookahead logic with the virtual forest
       // level at depth -1 (any remaining deeper content is a pruned ex-root's subtree).
-      if (!await TryEnsureLookaheadAtOrAboveAsync(0).ConfigureAwait(false))
-        return false;
+      var ensured = TryEnsureLookaheadAtOrAboveAsync(0);
+
+      if (!ensured.IsCompletedSuccessfully)
+        return AwaitThenMoveToNextRootNodeAsync(ensured);
+
+      if (!ensured.Result)
+        return new ValueTask<bool>(false);
 
       var value = _LookaheadValue;
       _HasLookahead = false;
 
       PushLevel(value, new NodePosition(_RootsSeen++, 0));
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> OnSchedulingAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    private ValueTask<bool> OnSchedulingAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
         if (SkipRemainingSiblings())
@@ -119,17 +130,22 @@ namespace Copse.Async.Treenumerators
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
-        return await BacktrackAsync().ConfigureAwait(false);
+        return BacktrackAsync();
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         _Path.GetLast().Skipped = true;
 
-        if (await TryPushNextChildAsync().ConfigureAwait(false))
-          return true;
+        var pushed = TryPushNextChildAsync();
+
+        if (!pushed.IsCompletedSuccessfully)
+          return AwaitPushThenBacktrackAsync(pushed);
+
+        if (pushed.Result)
+          return new ValueTask<bool>(true);
 
         // No children to promote: a childless SkipNode'd node emits nothing.
-        return await BacktrackAsync().ConfigureAwait(false);
+        return BacktrackAsync();
       }
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
@@ -138,41 +154,52 @@ namespace Copse.Async.Treenumerators
       // Accept (TraverseAll, or the SkipDescendants fall-through): emit the node's first visit.
       TakeNextVisit();
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> OnVisitingAsync()
+    private ValueTask<bool> OnVisitingAsync()
     {
-      if (await TryPushNextChildAsync().ConfigureAwait(false))
-        return true;
+      var pushed = TryPushNextChildAsync();
 
-      return await BacktrackAsync().ConfigureAwait(false);
+      if (!pushed.IsCompletedSuccessfully)
+        return AwaitPushThenBacktrackAsync(pushed);
+
+      if (pushed.Result)
+        return new ValueTask<bool>(true);
+
+      return BacktrackAsync();
     }
 
     // Unwind finished levels and emit the next owed visit; see the store twin.
-    private async ValueTask<bool> BacktrackAsync()
+    private ValueTask<bool> BacktrackAsync()
     {
       while (true)
       {
         _Path.RemoveLast();
 
         if (_Path.Count == 0)
-          return await MoveToNextRootNodeAsync().ConfigureAwait(false);
+          return MoveToNextRootNodeAsync();
 
-        // A value copy (not a ref local): a ref local may not cross the await below.
+        // A value copy (not a ref): a pending push resumes through a continuation that
+        // re-enters this method, so nothing here may have mutated the level.
         var top = _Path.GetLast();
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          if (await TryPushNextChildAsync().ConfigureAwait(false))
-            return true;
+          var pushed = TryPushNextChildAsync();
+
+          if (!pushed.IsCompletedSuccessfully)
+            return AwaitPushThenBacktrackAsync(pushed);
+
+          if (pushed.Result)
+            return new ValueTask<bool>(true);
 
           continue;
         }
 
         TakeNextVisit();
 
-        return true;
+        return new ValueTask<bool>(true);
       }
     }
 
@@ -181,67 +208,99 @@ namespace Copse.Async.Treenumerators
     // is discarded unmapped; anything shallower belongs to an ancestor and stays in the
     // lookahead for the backtrack to find.
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private async ValueTask<bool> TryPushNextChildAsync()
+    private ValueTask<bool> TryPushNextChildAsync()
     {
       if (_Path.GetLast().ChildrenDisabled)
-        return false;
+        return new ValueTask<bool>(false);
 
       var childDepth = _Path.GetLast().Position.Depth + 1;
 
-      if (!await TryEnsureLookaheadAtOrAboveAsync(childDepth).ConfigureAwait(false))
-        return false;
+      var ensured = TryEnsureLookaheadAtOrAboveAsync(childDepth);
+
+      if (!ensured.IsCompletedSuccessfully)
+        return AwaitThenTryPushNextChildAsync(ensured);
+
+      if (!ensured.Result)
+        return new ValueTask<bool>(false);
 
       if (_LookaheadDepth != childDepth)
-        return false;
+        return new ValueTask<bool>(false);
 
       var value = _LookaheadValue;
       _HasLookahead = false;
 
-      // Re-acquire the ref AFTER the await (a ref local may not cross it) to bump NextSiblingIndex
-      // in place. The path is untouched during the lookahead pull, so this is the same level.
+      // Re-acquire the ref AFTER the probe to bump NextSiblingIndex in place. The path is
+      // untouched during the lookahead pull, so this is the same level.
       ref var top = ref _Path.GetLast();
 
       var position = new NodePosition(top.NextSiblingIndex++, childDepth);
 
       PushLevel(value, position);
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
     // Fill the lookahead and discard past any content deeper than maxDepth (pruned subtrees the
-    // stream still holds). False when the stream exhausts first.
-    private async ValueTask<bool> TryEnsureLookaheadAtOrAboveAsync(int maxDepth)
+    // stream still holds). False when the stream exhausts first. A pending stream read resumes
+    // through a continuation that lands the read in the lookahead FIELDS and re-enters -- the
+    // filled lookahead makes re-entry skip straight to the depth check.
+    private ValueTask<bool> TryEnsureLookaheadAtOrAboveAsync(int maxDepth)
     {
       if (_StreamExhausted)
-        return false;
+        return new ValueTask<bool>(false);
 
       if (!_HasLookahead)
       {
-        var read = await _Stream.TryReadNextAsync().ConfigureAwait(false);
-        if (!read.HasValue)
-        {
-          _StreamExhausted = true;
-          return false;
-        }
+        var read = _Stream.TryReadNextAsync();
 
-        _LookaheadValue = read.Value;
-        _LookaheadDepth = read.Depth;
-        _HasLookahead = true;
+        if (!read.IsCompletedSuccessfully)
+          return AwaitReadThenEnsureLookaheadAsync(read, maxDepth);
+
+        if (!ConsumeRead(read.Result))
+          return new ValueTask<bool>(false);
       }
 
       if (_LookaheadDepth > maxDepth)
       {
-        var read = await _Stream.TrySkipToDepthAsync(maxDepth).ConfigureAwait(false);
-        if (!read.HasValue)
-        {
-          _HasLookahead = false;
-          _StreamExhausted = true;
-          return false;
-        }
+        var read = _Stream.TrySkipToDepthAsync(maxDepth);
 
-        _LookaheadValue = read.Value;
-        _LookaheadDepth = read.Depth;
+        if (!read.IsCompletedSuccessfully)
+          return AwaitSkipThenEnsureLookaheadAsync(read, maxDepth);
+
+        if (!ConsumeSkip(read.Result))
+          return new ValueTask<bool>(false);
       }
+
+      return new ValueTask<bool>(true);
+    }
+
+    // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
+    private bool ConsumeRead(PreorderRead<TValue> read)
+    {
+      if (!read.HasValue)
+      {
+        _StreamExhausted = true;
+        return false;
+      }
+
+      _LookaheadValue = read.Value;
+      _LookaheadDepth = read.Depth;
+      _HasLookahead = true;
+
+      return true;
+    }
+
+    private bool ConsumeSkip(PreorderRead<TValue> read)
+    {
+      if (!read.HasValue)
+      {
+        _HasLookahead = false;
+        _StreamExhausted = true;
+        return false;
+      }
+
+      _LookaheadValue = read.Value;
+      _LookaheadDepth = read.Depth;
 
       return true;
     }
@@ -301,6 +360,62 @@ namespace Copse.Async.Treenumerators
 
       return wasEffectiveRoot;
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. The read/skip continuations land the pending stream result
+    // in the lookahead fields (via the same Consume helpers as the fast path) and RE-ENTER the
+    // ensure -- the filled lookahead makes re-entry skip straight to the depth check; the other
+    // continuations re-enter their probing method (no mutation before the probes; re-entering
+    // Backtrack is its loop's `continue`).
+    private async ValueTask<bool> AwaitThenFinishMoveNextAsync(ValueTask<bool> pendingMove)
+    {
+      var moved = await pendingMove.ConfigureAwait(false);
+
+      if (!moved)
+        _Finished = true;
+
+      return moved;
+    }
+
+    private async ValueTask<bool> AwaitThenMoveToNextRootNodeAsync(ValueTask<bool> pendingEnsure)
+    {
+      await pendingEnsure.ConfigureAwait(false);
+
+      return await MoveToNextRootNodeAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitPushThenBacktrackAsync(ValueTask<bool> pendingPush)
+    {
+      if (await pendingPush.ConfigureAwait(false))
+        return true;
+
+      return await BacktrackAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenTryPushNextChildAsync(ValueTask<bool> pendingEnsure)
+    {
+      await pendingEnsure.ConfigureAwait(false);
+
+      return await TryPushNextChildAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<PreorderRead<TValue>> pendingRead, int maxDepth)
+    {
+      if (!ConsumeRead(await pendingRead.ConfigureAwait(false)))
+        return false;
+
+      return await TryEnsureLookaheadAtOrAboveAsync(maxDepth).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<PreorderRead<TValue>> pendingSkip, int maxDepth)
+    {
+      if (!ConsumeSkip(await pendingSkip.ConfigureAwait(false)))
+        return false;
+
+      return await TryEnsureLookaheadAtOrAboveAsync(maxDepth).ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     public async ValueTask DisposeAsync()
     {

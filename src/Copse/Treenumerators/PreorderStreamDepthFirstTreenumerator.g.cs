@@ -68,6 +68,9 @@ namespace Copse.Treenumerators
       public int NextSiblingIndex;
     }
 
+    // NOT async, and neither are the pull helpers below: every stream seam is PROBED, and a
+    // pull the stream answers inline is ordinary method calls with no state machine -- the
+    // fast-path probe idiom (see AsyncToSync).
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -100,7 +103,9 @@ namespace Copse.Treenumerators
 
       // Roots are the forest's children: the same lookahead logic with the virtual forest
       // level at depth -1 (any remaining deeper content is a pruned ex-root's subtree).
-      if (!TryEnsureLookaheadAtOrAbove(0))
+      var ensured = TryEnsureLookaheadAtOrAbove(0);
+
+      if (!ensured)
         return false;
 
       var value = _LookaheadValue;
@@ -127,7 +132,9 @@ namespace Copse.Treenumerators
       {
         _Path.GetLast().Skipped = true;
 
-        if (TryPushNextChild())
+        var pushed = TryPushNextChild();
+
+        if (pushed)
           return true;
 
         // No children to promote: a childless SkipNode'd node emits nothing.
@@ -145,7 +152,9 @@ namespace Copse.Treenumerators
 
     private bool OnVisiting()
     {
-      if (TryPushNextChild())
+      var pushed = TryPushNextChild();
+
+      if (pushed)
         return true;
 
       return Backtrack();
@@ -161,12 +170,15 @@ namespace Copse.Treenumerators
         if (_Path.Count == 0)
           return MoveToNextRootNode();
 
-        // A value copy (not a ref local): a ref local may not cross the await below.
+        // A value copy (not a ref): a pending push resumes through a continuation that
+        // re-enters this method, so nothing here may have mutated the level.
         var top = _Path.GetLast();
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          if (TryPushNextChild())
+          var pushed = TryPushNextChild();
+
+          if (pushed)
             return true;
 
           continue;
@@ -190,7 +202,9 @@ namespace Copse.Treenumerators
 
       var childDepth = _Path.GetLast().Position.Depth + 1;
 
-      if (!TryEnsureLookaheadAtOrAbove(childDepth))
+      var ensured = TryEnsureLookaheadAtOrAbove(childDepth);
+
+      if (!ensured)
         return false;
 
       if (_LookaheadDepth != childDepth)
@@ -199,8 +213,8 @@ namespace Copse.Treenumerators
       var value = _LookaheadValue;
       _HasLookahead = false;
 
-      // Re-acquire the ref AFTER the await (a ref local may not cross it) to bump NextSiblingIndex
-      // in place. The path is untouched during the lookahead pull, so this is the same level.
+      // Re-acquire the ref AFTER the probe to bump NextSiblingIndex in place. The path is
+      // untouched during the lookahead pull, so this is the same level.
       ref var top = ref _Path.GetLast();
 
       var position = new NodePosition(top.NextSiblingIndex++, childDepth);
@@ -211,7 +225,9 @@ namespace Copse.Treenumerators
     }
 
     // Fill the lookahead and discard past any content deeper than maxDepth (pruned subtrees the
-    // stream still holds). False when the stream exhausts first.
+    // stream still holds). False when the stream exhausts first. A pending stream read resumes
+    // through a continuation that lands the read in the lookahead FIELDS and re-enters -- the
+    // filled lookahead makes re-entry skip straight to the depth check.
     private bool TryEnsureLookaheadAtOrAbove(int maxDepth)
     {
       if (_StreamExhausted)
@@ -220,30 +236,49 @@ namespace Copse.Treenumerators
       if (!_HasLookahead)
       {
         var read = _Stream.TryReadNext();
-        if (!read.HasValue)
-        {
-          _StreamExhausted = true;
-          return false;
-        }
 
-        _LookaheadValue = read.Value;
-        _LookaheadDepth = read.Depth;
-        _HasLookahead = true;
+        if (!ConsumeRead(read))
+          return false;
       }
 
       if (_LookaheadDepth > maxDepth)
       {
         var read = _Stream.TrySkipToDepth(maxDepth);
-        if (!read.HasValue)
-        {
-          _HasLookahead = false;
-          _StreamExhausted = true;
-          return false;
-        }
 
-        _LookaheadValue = read.Value;
-        _LookaheadDepth = read.Depth;
+        if (!ConsumeSkip(read))
+          return false;
       }
+
+      return true;
+    }
+
+    // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
+    private bool ConsumeRead(PreorderRead<TValue> read)
+    {
+      if (!read.HasValue)
+      {
+        _StreamExhausted = true;
+        return false;
+      }
+
+      _LookaheadValue = read.Value;
+      _LookaheadDepth = read.Depth;
+      _HasLookahead = true;
+
+      return true;
+    }
+
+    private bool ConsumeSkip(PreorderRead<TValue> read)
+    {
+      if (!read.HasValue)
+      {
+        _HasLookahead = false;
+        _StreamExhausted = true;
+        return false;
+      }
+
+      _LookaheadValue = read.Value;
+      _LookaheadDepth = read.Depth;
 
       return true;
     }
@@ -303,6 +338,7 @@ namespace Copse.Treenumerators
 
       return wasEffectiveRoot;
     }
+
 
     public void Dispose()
     {
