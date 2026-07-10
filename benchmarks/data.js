@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783664099654,
+  "lastUpdate": 1783664099900,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -36722,6 +36722,66 @@ window.BENCHMARK_DATA = {
             "value": 148763055.52941176,
             "unit": "ns",
             "range": "± 2624725.384721597"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6695dea5afe71463695c9c3c01d907fef42d5237",
+          "message": "Windowed stream decoder: publish from frames, mirror the owner span\n\nTwo locality moves in AsyncLevelOrderStreamBreadthFirstTreenumerator\n(sync twin regenerated), proven against the FlatDecode rows:\n\n- Value-in-frame: the node value is read out of the window once, at\n  schedule time, and carried in the Frame; visits publish from the\n  frame. Kills the per-visit GetEntry (~2n chunk-resolved window\n  touches per drain).\n- Owner-span mirror: the current group's suppression flag and child\n  span live in fields, flushed to the owner's window entry once per\n  GROUP boundary instead of touched two-three times per item. Live\n  owner-aware reads (GetChildCount/GetFirstChildIndex) serve the\n  still-open group from the fields; the one strategy that can suppress\n  the current group's owner mid-group (SkipSiblings silencing the\n  visit front) updates the mirror, and a just-scheduled node's group\n  is provably ahead of the cursor, so the other suppression sites\n  need no mirror.\n\nLevelOrderStreamDecode (Mega, EPYC 7763 container, Job.Default):\nBinary 3,104.9 -> 1,067.0 ms (83x -> 29x vs the store decoder);\nTriangle 134.8 -> 87.5 ms (4.2x -> 2.7x). Riders: narrow streaming\nInvert, async level-order deserialize. Conformance battery green\n(the strategy matrix exercises the suppression mirror); full suite\n24,226.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:58:30Z",
+          "tree_id": "e7e0bc82b5303119326180765fba546e0ff7b269",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6695dea5afe71463695c9c3c01d907fef42d5237"
+        },
+        "date": 1783664099857,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 73574292.93877551,
+            "unit": "ns",
+            "range": "± 113124.51543687559"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10670424.619419644,
+            "unit": "ns",
+            "range": "± 66296.34835058427"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 128904936,
+            "unit": "ns",
+            "range": "± 1119981.8065857398"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17741555.197916668,
+            "unit": "ns",
+            "range": "± 169492.04492673348"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 173997013.52845526,
+            "unit": "ns",
+            "range": "± 6267418.67835168"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 154917620.80882353,
+            "unit": "ns",
+            "range": "± 2269965.957770844"
           }
         ]
       }
