@@ -38,28 +38,61 @@ namespace Copse.Dags.Tests
     public decimal Money { get; set; }
   }
 
-  // Stand-in for the real fairness algorithm: largest-remainder penny allocation. The two
-  // properties the passes below rely on: EXACTNESS (outputs sum to precisely the input) and
-  // renormalization (weights need not sum to 1 -- surviving siblings split pro rata after a
-  // blocker is pruned away).
+  // Stand-in for the real fairness algorithm: largest-remainder allocation, in the WORK API's
+  // shape -- setter-callback assignment, rounding decimals, validation mode. The two properties
+  // the passes below rely on: EXACTNESS (outputs sum to precisely the input) and renormalization
+  // (weights need not sum to 1 -- surviving siblings split pro rata after a blocker is pruned).
   internal static class AmountAllocator
   {
-    public static IReadOnlyList<decimal> Allocate(decimal amount, IReadOnlyList<decimal> weights)
+    public enum InputValidation { Strict }
+
+    public static void AllocateWithRounding<TItem>(
+      decimal amount,
+      int decimals,
+      IReadOnlyList<TItem> items,
+      Func<TItem, decimal> weightSelector,
+      Action<TItem, decimal> assignAmount,
+      InputValidation validation)
     {
+      var scale = 1m;
+      for (var decimalIndex = 0; decimalIndex < decimals; decimalIndex++)
+        scale *= 10m;
+
+      var weights = items.Select(weightSelector).ToList();
       var totalWeight = weights.Sum();
+
+      if (validation == InputValidation.Strict && totalWeight <= 0m)
+        throw new ArgumentException("Weights must sum to a positive total.", nameof(items));
+
       var flooredAmounts = weights
-        .Select(weight => Math.Floor(amount * weight / totalWeight * 100m) / 100m)
+        .Select(weight => Math.Floor(amount * weight / totalWeight * scale) / scale)
         .ToArray();
 
-      var pennyShortfall = (int)Math.Round((amount - flooredAmounts.Sum()) * 100m);
-      var indexesByRemainder = Enumerable.Range(0, weights.Count)
-        .OrderByDescending(weightIndex => amount * weights[weightIndex] / totalWeight - flooredAmounts[weightIndex])
+      var unitShortfall = (int)Math.Round((amount - flooredAmounts.Sum()) * scale);
+      var indexesByRemainder = Enumerable.Range(0, items.Count)
+        .OrderByDescending(itemIndex => amount * weights[itemIndex] / totalWeight - flooredAmounts[itemIndex])
         .ToList();
 
-      for (var pennyIndex = 0; pennyIndex < pennyShortfall; pennyIndex++)
-        flooredAmounts[indexesByRemainder[pennyIndex % weights.Count]] += 0.01m;
+      for (var unitIndex = 0; unitIndex < unitShortfall; unitIndex++)
+        flooredAmounts[indexesByRemainder[unitIndex % items.Count]] += 1m / scale;
 
-      return flooredAmounts;
+      for (var itemIndex = 0; itemIndex < items.Count; itemIndex++)
+        assignAmount(items[itemIndex], flooredAmounts[itemIndex]);
+    }
+
+    public static IReadOnlyList<decimal> Allocate(decimal amount, IReadOnlyList<decimal> weights)
+    {
+      var amounts = new decimal[weights.Count];
+
+      AllocateWithRounding(
+        amount,
+        2,
+        Enumerable.Range(0, weights.Count).ToList(),
+        weightIndex => weights[weightIndex],
+        (weightIndex, allocatedAmount) => amounts[weightIndex] = allocatedAmount,
+        InputValidation.Strict);
+
+      return amounts;
     }
   }
 
