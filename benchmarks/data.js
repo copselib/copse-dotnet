@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783700237696,
+  "lastUpdate": 1783700238033,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -37193,6 +37193,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
             "value": 64249600,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "97a3db0f83c3bab8b809b268a6ef9efdde7a403c",
+          "message": "Dashboard: suite-qualify the row expand key\n\nClicking a row also toggled its time/memory twin: the open-state key\nwas the bare benchmark name, which a suite's runtime and memory\nvariants share. The key (and the row's data attribute the click\nhandler reads back) is now suite-qualified, so each row expands alone.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:04:11Z",
+          "tree_id": "5ec851501b63a559de106a48b85cb47befa53f19",
+          "url": "https://github.com/copselib/copse-dotnet/commit/97a3db0f83c3bab8b809b268a6ef9efdde7a403c"
+        },
+        "date": 1783700237970,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 32161195,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 32160715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 32160715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 64249245,
             "unit": "bytes"
           }
         ]
