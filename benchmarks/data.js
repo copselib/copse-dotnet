@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783706351433,
+  "lastUpdate": 1783706351788,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -49590,6 +49590,150 @@ window.BENCHMARK_DATA = {
             "value": 32120704.7125,
             "unit": "ns",
             "range": "± 166845.66208029885"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a8d905810f234775d6892aa9b5b41cec12e9c79",
+          "message": "Fast-path probe idiom: the serializer's per-token frames\n\nThe scanner's TryScanEvent and both text streams' read loops stay\nnon-async now. The scanner probes each character read; a pending read\nis always a REFILL, so its continuation pushes the refilled character\nback into the block (the scanner's own pushback) and re-enters the\nprobing loop with the carried flags riding as core parameters. The\nquoted scan fuses with its terminator scan for an honest char return;\nthe doubled-quote lookahead consumes through a shared resolve helper.\nThe text streams probe each scan and land events through commit\nhelpers shared by fast path and continuation (the skip's running count\nrides as a core parameter). The write side needs nothing: one block-\nbuffered state machine per serialize, its per-visit awaits complete\ninline.\n\nSame-machine A/B: SerializerRoundTrip 1.86x -> 1.21x, allocations now\nequal (245 KB both colors). Was 5.3x at the start of the rollout.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T17:48:10Z",
+          "tree_id": "e0de3f3816e500f0ac09370b7c7d2dba6ad98148",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3a8d905810f234775d6892aa9b5b41cec12e9c79"
+        },
+        "date": 1783706351724,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12768307.958705356,
+            "unit": "ns",
+            "range": "± 30067.097185121784"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22127460.778846152,
+            "unit": "ns",
+            "range": "± 17701.5827036898"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3872369.9993990385,
+            "unit": "ns",
+            "range": "± 2028.0299240282486"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4747679.000558035,
+            "unit": "ns",
+            "range": "± 18565.451372334508"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 100257571.25581393,
+            "unit": "ns",
+            "range": "± 901690.5728761237"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 158732663.18333334,
+            "unit": "ns",
+            "range": "± 306988.281395649"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 37272493.33163266,
+            "unit": "ns",
+            "range": "± 133723.53345821117"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 53594996.071428575,
+            "unit": "ns",
+            "range": "± 254146.425800873"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12147327.135416666,
+            "unit": "ns",
+            "range": "± 44114.23156520949"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11832956.502403846,
+            "unit": "ns",
+            "range": "± 32013.311164349085"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3261437.500260417,
+            "unit": "ns",
+            "range": "± 14046.44232536312"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3249329.7962740385,
+            "unit": "ns",
+            "range": "± 1121.7157213596977"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 96917090.02564104,
+            "unit": "ns",
+            "range": "± 309212.28238031134"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 82912677.63095237,
+            "unit": "ns",
+            "range": "± 332501.3632809529"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 32345914.7625,
+            "unit": "ns",
+            "range": "± 68422.47313573745"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20879229.26339286,
+            "unit": "ns",
+            "range": "± 44181.68105892152"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 97097643.63095236,
+            "unit": "ns",
+            "range": "± 166920.7603413182"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 153648835.33333334,
+            "unit": "ns",
+            "range": "± 515859.3725568058"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19211952.798076924,
+            "unit": "ns",
+            "range": "± 51460.19630920172"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43376412.442307696,
+            "unit": "ns",
+            "range": "± 102414.63027123135"
           }
         ]
       }
