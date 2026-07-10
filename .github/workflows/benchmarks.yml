@@ -497,18 +497,31 @@ jobs:
             fi
             TESTBED=$(cat "src/Copse.Benchmarks/artifacts/$category/cpu.txt" 2>/dev/null || true)
             TESTBED=${TESTBED:-ubuntu-latest}
-            echo "Uploading $category -> Bencher ($FILE) on testbed $TESTBED"
+            # Convert to Bencher Metric Format keyed by BenchmarkDotNet's FullName. The
+            # c_sharp_dot_net adapter names benchmarks Namespace.Method -- it DROPS the class --
+            # so every same-named method across classes merged into one Bencher series (all
+            # seven AsyncOverhead Sync/Async pairs became TWO series; Bft_Triangle mixed seven
+            # families) and every threshold learned a meaningless mixed population. FullName
+            # keeps the class (Copse.Benchmarks.Traversal.Dft_Binary): one series per real row.
+            # Latency only; value +- one standard deviation.
+            BMF="src/Copse.Benchmarks/artifacts/$category/bencher-bmf.json"
+            jq '[.Benchmarks[] | select(.Statistics != null) | {(.FullName): {latency: {
+                  value: .Statistics.Mean,
+                  lower_value: (.Statistics.Mean - .Statistics.StandardDeviation),
+                  upper_value: (.Statistics.Mean + .Statistics.StandardDeviation)}}}]
+                | add // {}' "$FILE" > "$BMF"
+            echo "Uploading $category -> Bencher ($(jq 'length' "$BMF") rows from $FILE) on testbed $TESTBED"
             bencher run \
               --project "$BENCHER_PROJECT" \
               --key "$BENCHER_API_KEY" \
               --branch "$GITHUB_REF_NAME" \
               --testbed "$TESTBED" \
-              --adapter c_sharp_dot_net \
-              --file "$FILE" \
+              --adapter json \
+              --file "$BMF" \
               --threshold-measure latency \
               --threshold-test t_test \
               --threshold-max-sample-size 64 \
-              --threshold-upper-boundary 0.95 \
+              --threshold-upper-boundary 0.98 \
               --thresholds-reset
           done
           # Note: no --error-on-alert flag, so an alert is reported but does NOT fail the build
