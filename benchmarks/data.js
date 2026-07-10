@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783668978246,
+  "lastUpdate": 1783668978563,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -18766,6 +18766,54 @@ window.BENCHMARK_DATA = {
             "value": 15080849.996279761,
             "unit": "ns",
             "range": "± 550921.3297501283"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "261e7148985695daa5f904e3de55ae748050344d",
+          "message": "Comb: RefSemiDeque access-cost contract; chain seam attributed and accepted\n\nThe fine-toothed-comb pass over the flat primitives, driven by the\nFlatDecode instrument and the decoder profile:\n\n- RefSemiDeque: head/tail O(1), arbitrary-index GetFromBack/GetFromFront\n  O(partitions) via a partition-chain walk. Audited every caller: all\n  index near an end or on cold strategy paths (SkipRemainingSiblings,\n  disposal) -- the stream decoder's window was the library's only hot\n  random-index user and now rides a masked ring. Contract documented on\n  the class so the next random-index workload reaches for the right\n  shape instead of a profiler.\n- RefAppendOnlyList: healthy -- cached read-partition fast path with\n  bounds-check elision; the memo stores ride it at store-decoder speed\n  (Memoize replay rows).\n- Chain lazy seam attributed: bulk capture-then-replay through the\n  fused store measures 94.0ms vs the old eager capture's 90.2 --\n  parity -- so Invert Bft_Chain's remaining ~11% over eager is purely\n  the per-pull grow seam, i.e. the price of laziness itself, and any\n  consumer gets the bulk rate via dispose-completes-capture. Accepted;\n  no SPI change.\n- Accepted-and-documented: BFT store decoders' width-scale frame\n  queues are inherent to breadth-first visit synthesis (the dimension\n  tax the FlatDecode baseline quantified); evicted ring slots are\n  overwritten on wrap, matching the deque's chunk-retention behavior.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T07:13:45Z",
+          "tree_id": "880b459ba42bbdfb1528b65ec8060e238414adaf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/261e7148985695daa5f904e3de55ae748050344d"
+        },
+        "date": 1783668978510,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14603174.283333333,
+            "unit": "ns",
+            "range": "± 87953.11662906435"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 27299629.33705357,
+            "unit": "ns",
+            "range": "± 266869.6409215628"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25211834.26785714,
+            "unit": "ns",
+            "range": "± 281794.8427163841"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15980085.68220339,
+            "unit": "ns",
+            "range": "± 704518.3120705491"
           }
         ]
       }
