@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783706352832,
+  "lastUpdate": 1783706353173,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -56744,6 +56744,114 @@ window.BENCHMARK_DATA = {
             "value": 66102196.35714286,
             "unit": "ns",
             "range": "± 67973.86911406615"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a8d905810f234775d6892aa9b5b41cec12e9c79",
+          "message": "Fast-path probe idiom: the serializer's per-token frames\n\nThe scanner's TryScanEvent and both text streams' read loops stay\nnon-async now. The scanner probes each character read; a pending read\nis always a REFILL, so its continuation pushes the refilled character\nback into the block (the scanner's own pushback) and re-enters the\nprobing loop with the carried flags riding as core parameters. The\nquoted scan fuses with its terminator scan for an honest char return;\nthe doubled-quote lookahead consumes through a shared resolve helper.\nThe text streams probe each scan and land events through commit\nhelpers shared by fast path and continuation (the skip's running count\nrides as a core parameter). The write side needs nothing: one block-\nbuffered state machine per serialize, its per-visit awaits complete\ninline.\n\nSame-machine A/B: SerializerRoundTrip 1.86x -> 1.21x, allocations now\nequal (245 KB both colors). Was 5.3x at the start of the rollout.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T17:48:10Z",
+          "tree_id": "e0de3f3816e500f0ac09370b7c7d2dba6ad98148",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3a8d905810f234775d6892aa9b5b41cec12e9c79"
+        },
+        "date": 1783706353112,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 62600086.746031746,
+            "unit": "ns",
+            "range": "± 238039.94493370687"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 107118731.82666665,
+            "unit": "ns",
+            "range": "± 599673.0018984155"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 42822576.311111115,
+            "unit": "ns",
+            "range": "± 656929.4539752521"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 120638106.421875,
+            "unit": "ns",
+            "range": "± 2140647.2451255717"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 20627236.584134616,
+            "unit": "ns",
+            "range": "± 39119.36903344598"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 77996714.02083333,
+            "unit": "ns",
+            "range": "± 1495749.2120603211"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 89013289.77142859,
+            "unit": "ns",
+            "range": "± 1114581.6120729947"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 52424325.378571436,
+            "unit": "ns",
+            "range": "± 310553.28794949997"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 81511214.23469388,
+            "unit": "ns",
+            "range": "± 499116.2590089872"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 40760137.45604396,
+            "unit": "ns",
+            "range": "± 196866.9500146112"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 88251622.25,
+            "unit": "ns",
+            "range": "± 122067.86716909822"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28293594.895089287,
+            "unit": "ns",
+            "range": "± 206402.52848307518"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 65096985.85714286,
+            "unit": "ns",
+            "range": "± 271283.9566533777"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 57050635.55555555,
+            "unit": "ns",
+            "range": "± 875994.5217246246"
           }
         ]
       }
