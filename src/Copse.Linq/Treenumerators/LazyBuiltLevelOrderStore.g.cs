@@ -34,13 +34,32 @@ namespace Copse.Linq.Treenumerators
       _Build = null; // the build runs once; drop the closure (and whatever source it captured)
     }
 
+    // The grow calls split along the built/unbuilt line: once built (every call after the
+    // first), the answer is a plain read with no state machine; only the one-shot build path is
+    // async. The callers' probes see a completed void and stay on their own fast paths.
     public bool EnsureRootAvailable(int k)
+    {
+      if (_Build != null)
+        return BuildThenEnsureRootAvailable(k);
+
+      return _Store.EnsureRootAvailable(k);
+    }
+
+    private bool BuildThenEnsureRootAvailable(int k)
     {
       EnsureBuilt();
       return _Store.EnsureRootAvailable(k);
     }
 
     public bool EnsureChildAvailable(int parentIndex, int k)
+    {
+      if (_Build != null)
+        return BuildThenEnsureChildAvailable(parentIndex, k);
+
+      return _Store.EnsureChildAvailable(parentIndex, k);
+    }
+
+    private bool BuildThenEnsureChildAvailable(int parentIndex, int k)
     {
       EnsureBuilt();
       return _Store.EnsureChildAvailable(parentIndex, k);

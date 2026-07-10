@@ -80,8 +80,18 @@ namespace Copse.Linq.Treenumerators
     public int GetChildCount(int index) => _ChildCounts[index];
 
     // Pull until root ordinal k exists (roots are buffer indices [0, rootCount)). False iff the
-    // root frontier closed first: k is past the last root.
+    // root frontier closed first: k is past the last root. Split along the buffered/pulling
+    // line: an already-buffered answer is a plain read with no state machine, so replays over
+    // the captured region cost nothing async.
     public bool EnsureRootAvailable(int k)
+    {
+      if (!Complete && _FrontIndex < 0 && _RootCount <= k)
+        return PullThenEnsureRootAvailable(k);
+
+      return k < _RootCount;
+    }
+
+    private bool PullThenEnsureRootAvailable(int k)
     {
       while (!Complete && _FrontIndex < 0 && _RootCount <= k)
         PullOne();
@@ -93,6 +103,14 @@ namespace Copse.Linq.Treenumerators
     // span closed first: k is past its last child. Children are served as they appear -- a span
     // need not close unless the answer is "no more".
     public bool EnsureChildAvailable(int parentIndex, int k)
+    {
+      if (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
+        return PullThenEnsureChildAvailable(parentIndex, k);
+
+      return k < _ChildCounts[parentIndex];
+    }
+
+    private bool PullThenEnsureChildAvailable(int parentIndex, int k)
     {
       while (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
         PullOne();

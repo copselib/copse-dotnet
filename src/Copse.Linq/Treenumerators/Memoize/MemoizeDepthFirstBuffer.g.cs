@@ -59,7 +59,17 @@ namespace Copse.Linq.Treenumerators
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     // Pull until the value at index exists. False iff the stream exhausted first (no such node).
+    // Split along the buffered/pulling line: an already-buffered answer is a plain read with no
+    // state machine, so replays over the captured region cost nothing async.
     public bool EnsureBuffered(int index)
+    {
+      if (!Complete && _Values.Count <= index)
+        return PullThenEnsureBuffered(index);
+
+      return index < _Values.Count;
+    }
+
+    private bool PullThenEnsureBuffered(int index)
     {
       while (!Complete && _Values.Count <= index)
         PullOne();
@@ -72,6 +82,14 @@ namespace Copse.Linq.Treenumerators
     // buffered. This is the price of a replay skip-hop over an untraversed span: eager-skip
     // buffers the skipped subtree, lazily, only when hopped over.
     public int EnsureSubtreeClosed(int index)
+    {
+      if (!Complete && _SubtreeSizes[index] == 0)
+        return PullThenEnsureSubtreeClosed(index);
+
+      return _SubtreeSizes[index];
+    }
+
+    private int PullThenEnsureSubtreeClosed(int index)
     {
       while (!Complete && _SubtreeSizes[index] == 0)
         PullOne();

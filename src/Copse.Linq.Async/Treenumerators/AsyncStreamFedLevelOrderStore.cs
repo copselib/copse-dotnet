@@ -52,8 +52,17 @@ namespace Copse.Linq.Async.Treenumerators
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     // Pull until root ordinal k exists (roots are buffer indices [0, rootCount)). False iff the
-    // root frontier closed first: k is past the last root.
-    public async ValueTask<bool> EnsureRootAvailableAsync(int k)
+    // root frontier closed first: k is past the last root. Split along the buffered/pulling
+    // line: an already-buffered answer is a plain read with no state machine.
+    public ValueTask<bool> EnsureRootAvailableAsync(int k)
+    {
+      if (!Complete && _CurrentGroup == 0 && _RootCount <= k)
+        return PullThenEnsureRootAvailableAsync(k);
+
+      return new ValueTask<bool>(k < _RootCount);
+    }
+
+    private async ValueTask<bool> PullThenEnsureRootAvailableAsync(int k)
     {
       while (!Complete && _CurrentGroup == 0 && _RootCount <= k)
         await PullOneAsync().ConfigureAwait(false);
@@ -64,7 +73,15 @@ namespace Copse.Linq.Async.Treenumerators
     // Pull until child ordinal k of the (already-buffered) parent exists. False iff the parent's
     // span closed first: k is past its last child. Children are served as they appear -- a span
     // need not close unless the answer is "no more".
-    public async ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
+    public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
+    {
+      if (!Complete && _CurrentGroup <= parentIndex + 1 && _ChildCounts[parentIndex] <= k)
+        return PullThenEnsureChildAvailableAsync(parentIndex, k);
+
+      return new ValueTask<bool>(k < _ChildCounts[parentIndex]);
+    }
+
+    private async ValueTask<bool> PullThenEnsureChildAvailableAsync(int parentIndex, int k)
     {
       while (!Complete && _CurrentGroup <= parentIndex + 1 && _ChildCounts[parentIndex] <= k)
         await PullOneAsync().ConfigureAwait(false);

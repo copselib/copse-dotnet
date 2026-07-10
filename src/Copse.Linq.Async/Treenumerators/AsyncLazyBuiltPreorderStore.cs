@@ -36,13 +36,32 @@ namespace Copse.Linq.Async.Treenumerators
       _Build = null; // the build runs once; drop the closure (and whatever source it captured)
     }
 
-    public async ValueTask<bool> EnsureBufferedAsync(int index)
+    // The grow calls split along the built/unbuilt line: once built (every call after the
+    // first), the answer is a plain read with no state machine; only the one-shot build path is
+    // async. The callers' probes see a completed ValueTask and stay on their own fast paths.
+    public ValueTask<bool> EnsureBufferedAsync(int index)
+    {
+      if (_Build != null)
+        return BuildThenEnsureBufferedAsync(index);
+
+      return new ValueTask<bool>(_Store.EnsureBuffered(index));
+    }
+
+    private async ValueTask<bool> BuildThenEnsureBufferedAsync(int index)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
       return _Store.EnsureBuffered(index);
     }
 
-    public async ValueTask<int> EnsureSubtreeClosedAsync(int index)
+    public ValueTask<int> EnsureSubtreeClosedAsync(int index)
+    {
+      if (_Build != null)
+        return BuildThenEnsureSubtreeClosedAsync(index);
+
+      return new ValueTask<int>(_Store.EnsureSubtreeClosed(index));
+    }
+
+    private async ValueTask<int> BuildThenEnsureSubtreeClosedAsync(int index)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
       return _Store.EnsureSubtreeClosed(index);

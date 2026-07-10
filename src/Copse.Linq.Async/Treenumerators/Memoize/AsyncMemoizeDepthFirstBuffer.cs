@@ -57,7 +57,17 @@ namespace Copse.Linq.Async.Treenumerators
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     // Pull until the value at index exists. False iff the stream exhausted first (no such node).
-    public async ValueTask<bool> EnsureBufferedAsync(int index)
+    // Split along the buffered/pulling line: an already-buffered answer is a plain read with no
+    // state machine, so replays over the captured region cost nothing async.
+    public ValueTask<bool> EnsureBufferedAsync(int index)
+    {
+      if (!Complete && _Values.Count <= index)
+        return PullThenEnsureBufferedAsync(index);
+
+      return new ValueTask<bool>(index < _Values.Count);
+    }
+
+    private async ValueTask<bool> PullThenEnsureBufferedAsync(int index)
     {
       while (!Complete && _Values.Count <= index)
         await PullOneAsync().ConfigureAwait(false);
@@ -69,7 +79,15 @@ namespace Copse.Linq.Async.Treenumerators
     // shallower, or the stream ends) and return its size. The node itself must already be
     // buffered. This is the price of a replay skip-hop over an untraversed span: eager-skip
     // buffers the skipped subtree, lazily, only when hopped over.
-    public async ValueTask<int> EnsureSubtreeClosedAsync(int index)
+    public ValueTask<int> EnsureSubtreeClosedAsync(int index)
+    {
+      if (!Complete && _SubtreeSizes[index] == 0)
+        return PullThenEnsureSubtreeClosedAsync(index);
+
+      return new ValueTask<int>(_SubtreeSizes[index]);
+    }
+
+    private async ValueTask<int> PullThenEnsureSubtreeClosedAsync(int index)
     {
       while (!Complete && _SubtreeSizes[index] == 0)
         await PullOneAsync().ConfigureAwait(false);

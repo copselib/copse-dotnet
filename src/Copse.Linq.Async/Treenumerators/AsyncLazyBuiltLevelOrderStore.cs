@@ -32,13 +32,32 @@ namespace Copse.Linq.Async.Treenumerators
       _Build = null; // the build runs once; drop the closure (and whatever source it captured)
     }
 
-    public async ValueTask<bool> EnsureRootAvailableAsync(int k)
+    // The grow calls split along the built/unbuilt line: once built (every call after the
+    // first), the answer is a plain read with no state machine; only the one-shot build path is
+    // async. The callers' probes see a completed ValueTask and stay on their own fast paths.
+    public ValueTask<bool> EnsureRootAvailableAsync(int k)
+    {
+      if (_Build != null)
+        return BuildThenEnsureRootAvailableAsync(k);
+
+      return new ValueTask<bool>(_Store.EnsureRootAvailable(k));
+    }
+
+    private async ValueTask<bool> BuildThenEnsureRootAvailableAsync(int k)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
       return _Store.EnsureRootAvailable(k);
     }
 
-    public async ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
+    public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
+    {
+      if (_Build != null)
+        return BuildThenEnsureChildAvailableAsync(parentIndex, k);
+
+      return new ValueTask<bool>(_Store.EnsureChildAvailable(parentIndex, k));
+    }
+
+    private async ValueTask<bool> BuildThenEnsureChildAvailableAsync(int parentIndex, int k)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
       return _Store.EnsureChildAvailable(parentIndex, k);
