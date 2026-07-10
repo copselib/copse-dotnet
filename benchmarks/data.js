@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783714906592,
+  "lastUpdate": 1783714906943,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -65276,6 +65276,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
             "value": 234288,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994776,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b3629918092be83d27e564368556fcd22b45e1ec",
+          "message": "Bencher: upload class-qualified names via BMF, not the C# adapter\n\nThe c_sharp_dot_net adapter names benchmarks Namespace.Method -- it\ndrops the declaring class -- so the ~151-row suite collapsed into 66\nBencher benchmarks: all seven AsyncOverhead Sync/Async pairs merged\ninto two series, Bft_Triangle mixed seven families, and every\nthreshold learned a meaningless mixed population (51 standing junk\nalerts). Convert each leg's joined full-compressed JSON to Bencher\nMetric Format keyed by BenchmarkDotNet's FullName (class-qualified,\none series per real row) and upload with --adapter json. Latency only,\nvalue plus/minus one standard deviation.\n\nAlso raises the threshold upper boundary 0.95 -> 0.98: at 0.95 every\nseries false-positives ~5% of runs by design, a steady alert drip\nacross ~150 benchmarks x 5 per-CPU testbeds.\n\nThe Bencher project is being wiped in parallel; series restart fresh\nunder the correct names.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T20:08:47Z",
+          "tree_id": "9d4168dc09b53a75fa25e40876d4513b40eaac0a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b3629918092be83d27e564368556fcd22b45e1ec"
+        },
+        "date": 1783714906883,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 54219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234165,
             "unit": "bytes"
           },
           {
