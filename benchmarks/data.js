@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783698635454,
+  "lastUpdate": 1783698635775,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -57302,6 +57302,105 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
             "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597792,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3363871,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f",
+          "message": "Fast-path probe idiom: the level-order stream decoder\n\nThe windowed decoder's full pull chain goes non-async -- MoveNextAsync,\nthe Advance phase loop, both schedulers, the ensure loops, and the\nparser -- with every stream call probed. Two shapes worth recording:\n\n- ParseOneStep and AdvanceGroup were void-shaped (ValueTask), which the\n  probe idiom cannot transcribe (`var x = VoidCall();` is illegal in\n  the twin). Rather than a third transform rule they gained honest bool\n  returns (\"item appended\" / \"group opened vs exhausted\") -- callers\n  re-check their own conditions, and every seam rides the existing\n  generic probe machinery.\n- The ensure-loop continuations RE-ENTER their probing method even\n  though ParseOneStep advances the stream: the parse RESULT lands in\n  fields, so re-entry after the awaited step is exactly the loop's next\n  iteration. The read/skip continuations consume the pending stream\n  result and run the fast path's own tail (AppendOrAdvance /\n  FinishSuppressedGroup); the flush-before-probe in AdvanceGroup is\n  safe because its continuation only opens, never re-flushes.\n\nAsyncOverheadInvertStream: 2.60x -> 2.04x (async 9.33 -> 7.35 ms); the\nremainder is the inner engine driving the mirror (stage 5). Riders:\nnarrow streaming Invert, the fused Invert capture's feed, async\nlevel-order deserialize. Full suite 24,226 green; suspension paths\ncovered by the async mechanics tests.\n\nRemaining: the preorder stream decoder (SerializerRoundTrip pair), then\nthe engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:39:49Z",
+          "tree_id": "6c334bae507c0aacd09499c29d0ac9d8a70db13c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f"
+        },
+        "date": 1783698635718,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 42112917,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 25533442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71350841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 12588667,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16847911,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400272,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21013872,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12586881,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 50014,
             "unit": "bytes"
           },
           {
