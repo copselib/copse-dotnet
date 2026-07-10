@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783661965952,
+  "lastUpdate": 1783661966253,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -44295,6 +44295,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
             "value": 1827,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd0746ccdbb9b55fce53333aab279782dd6cba66",
+          "message": "FlatDecode family: the flat decoders measured bare (11th CI leg)\n\nTwelve rows over canonical Mega encodings built once in setup: the four\nstore decoders (both dimensions each, per the dimension discipline) and\nthe two forward-only stream decoders over array-cursor feeds, so each\nrow IS the decoder. Shapes: Binary (the small-family pole, a million\n2-child groups) and Triangle (the wide-family pole, 1448-child groups).\nThese primitives sit under every memo replay, buffer drain, and\ndeserialize, but their cost only ever appeared blended into operator\nrows -- this family exists because a 6x decoder gap hid inside\nInvert/Memoize for a full release cycle.\n\nBaseline findings (EPYC 7763 container, same run):\n- Store decode is dimension-driven, not layout-driven: DFT synthesis\n  ~23-25ms over ANY store, BFT ~32-39ms over ANY store; native-vs-cross\n  is ~4-7% for BFT and inverted for DFT (level-order cross-DFT 22.2ms\n  is the fastest row). BFT rows allocate 12-14MB of width-scale frame\n  queues -- the real BFT tax, and a comb-pass target.\n- PreorderStream decode is healthy: 25ms, store parity, zero alloc.\n- LevelOrderStream decode is the pathology: 4.2x the store decoder on\n  Triangle (pure machinery tax), 83x on Binary at Mega (3,105ms -- the\n  O(width)=512K window falls out of cache and per-node GetEntry random\n  access ping-pongs across ~20MB between visit front and parse cursor,\n  where the store decoder streams its comparable-width queues at 37ms).\n  Scale-dependent: invisible at depth-14, dramatic at the canonical\n  tier.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:18:11Z",
+          "tree_id": "19a693b9ceec6184e2952c05bc77705f85465e9e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dd0746ccdbb9b55fce53333aab279782dd6cba66"
+        },
+        "date": 1783661966195,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 33681633,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 42145473,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 58742766,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 42318143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 684,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 96516371,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 67133735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 108719,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 141883,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41945754,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 315026,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 895,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 92297629,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1806,
             "unit": "bytes"
           }
         ]
