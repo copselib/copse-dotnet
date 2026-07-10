@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783661961298,
+  "lastUpdate": 1783661961602,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -38984,6 +38984,102 @@ window.BENCHMARK_DATA = {
             "value": 19160772.08125,
             "unit": "ns",
             "range": "± 332165.39758642256"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd0746ccdbb9b55fce53333aab279782dd6cba66",
+          "message": "FlatDecode family: the flat decoders measured bare (11th CI leg)\n\nTwelve rows over canonical Mega encodings built once in setup: the four\nstore decoders (both dimensions each, per the dimension discipline) and\nthe two forward-only stream decoders over array-cursor feeds, so each\nrow IS the decoder. Shapes: Binary (the small-family pole, a million\n2-child groups) and Triangle (the wide-family pole, 1448-child groups).\nThese primitives sit under every memo replay, buffer drain, and\ndeserialize, but their cost only ever appeared blended into operator\nrows -- this family exists because a 6x decoder gap hid inside\nInvert/Memoize for a full release cycle.\n\nBaseline findings (EPYC 7763 container, same run):\n- Store decode is dimension-driven, not layout-driven: DFT synthesis\n  ~23-25ms over ANY store, BFT ~32-39ms over ANY store; native-vs-cross\n  is ~4-7% for BFT and inverted for DFT (level-order cross-DFT 22.2ms\n  is the fastest row). BFT rows allocate 12-14MB of width-scale frame\n  queues -- the real BFT tax, and a comb-pass target.\n- PreorderStream decode is healthy: 25ms, store parity, zero alloc.\n- LevelOrderStream decode is the pathology: 4.2x the store decoder on\n  Triangle (pure machinery tax), 83x on Binary at Mega (3,105ms -- the\n  O(width)=512K window falls out of cache and per-node GetEntry random\n  access ping-pongs across ~20MB between visit front and parse cursor,\n  where the store decoder streams its comparable-width queues at 37ms).\n  Scale-dependent: invisible at depth-14, dramatic at the canonical\n  tier.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:18:11Z",
+          "tree_id": "19a693b9ceec6184e2952c05bc77705f85465e9e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dd0746ccdbb9b55fce53333aab279782dd6cba66"
+        },
+        "date": 1783661961548,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 25941973.960416667,
+            "unit": "ns",
+            "range": "± 71555.52906021196"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8464465.230208334,
+            "unit": "ns",
+            "range": "± 94838.54683167704"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 150167381.375,
+            "unit": "ns",
+            "range": "± 873290.3772576922"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57744577.73333332,
+            "unit": "ns",
+            "range": "± 258493.05460708364"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21886038.32142857,
+            "unit": "ns",
+            "range": "± 75404.33051990125"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12090826.002083333,
+            "unit": "ns",
+            "range": "± 50803.15042104264"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 97285157.54761906,
+            "unit": "ns",
+            "range": "± 159807.0705560132"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30500130.948242188,
+            "unit": "ns",
+            "range": "± 935213.5447896036"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11465746.122916667,
+            "unit": "ns",
+            "range": "± 106963.08653578593"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5896674.030048077,
+            "unit": "ns",
+            "range": "± 8044.559137548654"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 107838741.56923078,
+            "unit": "ns",
+            "range": "± 329908.8740501111"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26044321.917410713,
+            "unit": "ns",
+            "range": "± 77171.66795045545"
           }
         ]
       }
