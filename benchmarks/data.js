@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783694827047,
+  "lastUpdate": 1783694827364,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -50733,6 +50733,90 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/261e7148985695daa5f904e3de55ae748050344d"
         },
         "date": 1783668980366,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 54219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994776,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40bdba8f62946fd9bbfb767afd6ed38afb80dab8",
+          "message": "The ValueTask fast-path idiom: probe grows, suspend only when pending\n\nThe async seam, measured (profile of the FlatDecode async drain): the\nreal work was 0.05% of the time; the rest was five nested per-pull\nstate machines and their builder launches -- paid per CALL, not per\nsuspension, on drains where nothing ever suspends.\n\nThe idiom: hot methods stop being async. Each store grow is PROBED --\n\n  var closed = _Store.EnsureSubtreeClosedAsync(index);\n\n  if (!closed.IsCompletedSuccessfully)\n    return AwaitThenTryPushNextChildAsync(closed);\n\n  var candidate = index + closed.Result;\n\n-- so a buffered answer costs ordinary method calls with zero state\nmachines, and only a genuinely pending grow enters an async\ncontinuation, which awaits and RE-ENTERS the probing method (grows are\nidempotent and the probing methods mutate nothing before their probes;\nre-entering Backtrack is its loop's `continue`). The method\ndecomposition is fully preserved.\n\nTranscription: two new AsyncToSync rules -- the probe guard statement\nvanishes (the twin can never be pending) and `x.Result` collapses to\n`x` -- leaving exactly the hand-written sync shape; the continuations\nlive in async-only regions. `.IsCompletedSuccessfully`/`.Result` are\nRESERVED idiom names in manifest sources (used nowhere else).\n\nApplied to AsyncTreenumeratorBase.MoveNextAsync (hand-written pair;\nremoves a per-pull state machine from EVERY derived treenumerator) and\nAsyncPreorderStoreDepthFirstTreenumerator as the prototype.\n\nAsyncOverheadFlatDecode: 6.9x -> 1.36x (async 28.9 -> 5.1 ms, async\nallocation now equal to sync). Suspension path covered by the async\nmechanics tests (genuinely-suspending sources); full suite 24,226\ngreen. Rollout to the remaining decoders follows.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:22:50Z",
+          "tree_id": "d45718a48306d0a5d0aa4dc9eecf99e097a9cfc5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/40bdba8f62946fd9bbfb767afd6ed38afb80dab8"
+        },
+        "date": 1783694827309,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
