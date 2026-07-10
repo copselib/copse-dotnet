@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783700238374,
+  "lastUpdate": 1783705007910,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -6622,6 +6622,150 @@ window.BENCHMARK_DATA = {
             "value": 201245226.39423078,
             "unit": "ns",
             "range": "± 8232614.760663266"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b892c9db33b80ef98b491654319f4e3cbc839cc5",
+          "message": "Async-suffix the probe-idiom pull helpers\n\nThe first probe-idiom wave (ad231c8) left the store decoders' hot\nhelpers suffix-less (Advance, Backtrack, TryPushNextChild, ...); the\nlater stream-decoder and engine waves suffixed theirs. TAP naming keys\non the return type -- these return awaitables that can genuinely be\npending -- so standardize on the suffix. Pure async-side rename: the\ntransform strips a trailing Async, so every regenerated twin is\nbyte-identical.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:49:14Z",
+          "tree_id": "e308a34648f98eb7c67d74d6d4ea3277e9aa16d9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b892c9db33b80ef98b491654319f4e3cbc839cc5"
+        },
+        "date": 1783705004413,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13656129.826041667,
+            "unit": "ns",
+            "range": "± 83967.61288454146"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22099578.198660713,
+            "unit": "ns",
+            "range": "± 126032.20018726468"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3593752.194110577,
+            "unit": "ns",
+            "range": "± 1254.357591242961"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3597872.4338727677,
+            "unit": "ns",
+            "range": "± 4765.007436542825"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 112390018.76923077,
+            "unit": "ns",
+            "range": "± 432579.9436533153"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 145355714.53846154,
+            "unit": "ns",
+            "range": "± 488786.7682842796"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 50488105.29464286,
+            "unit": "ns",
+            "range": "± 471486.78724396264"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49346628.50666666,
+            "unit": "ns",
+            "range": "± 92374.14632522142"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 45933802.875,
+            "unit": "ns",
+            "range": "± 161726.40800726274"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35319339.49999999,
+            "unit": "ns",
+            "range": "± 132193.33397082894"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26370466.838942308,
+            "unit": "ns",
+            "range": "± 34205.29697282753"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18031452.97767857,
+            "unit": "ns",
+            "range": "± 60858.44691446422"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55175422.35714286,
+            "unit": "ns",
+            "range": "± 391018.3619007032"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88387351.7777778,
+            "unit": "ns",
+            "range": "± 1185152.4132688479"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14387244.43080357,
+            "unit": "ns",
+            "range": "± 21699.97196989705"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14382170.20625,
+            "unit": "ns",
+            "range": "± 15428.624598664945"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 449643024.46666664,
+            "unit": "ns",
+            "range": "± 1972287.3395198807"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 590421855.3846154,
+            "unit": "ns",
+            "range": "± 1102530.8252485534"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 198059361.33333325,
+            "unit": "ns",
+            "range": "± 947564.7157425339"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 198032732.2,
+            "unit": "ns",
+            "range": "± 1657904.924032198"
           }
         ]
       }
