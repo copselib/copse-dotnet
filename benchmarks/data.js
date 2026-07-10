@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783700233260,
+  "lastUpdate": 1783700233601,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -52552,6 +52552,120 @@ window.BENCHMARK_DATA = {
             "value": 19568460.46651786,
             "unit": "ns",
             "range": "± 25859.79974300104"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "97a3db0f83c3bab8b809b268a6ef9efdde7a403c",
+          "message": "Dashboard: suite-qualify the row expand key\n\nClicking a row also toggled its time/memory twin: the open-state key\nwas the bare benchmark name, which a suite's runtime and memory\nvariants share. The key (and the row's data attribute the click\nhandler reads back) is now suite-qualified, so each row expands alone.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:04:11Z",
+          "tree_id": "5ec851501b63a559de106a48b85cb47befa53f19",
+          "url": "https://github.com/copselib/copse-dotnet/commit/97a3db0f83c3bab8b809b268a6ef9efdde7a403c"
+        },
+        "date": 1783700233542,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 107271280.31666668,
+            "unit": "ns",
+            "range": "± 1031178.1943967055"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 136206412.41666666,
+            "unit": "ns",
+            "range": "± 1065992.2446544804"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71740914.6095238,
+            "unit": "ns",
+            "range": "± 950311.0138505915"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 108474668.41428569,
+            "unit": "ns",
+            "range": "± 860675.7922496217"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 48720375.94545455,
+            "unit": "ns",
+            "range": "± 492862.4195239553"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 61686420.66666666,
+            "unit": "ns",
+            "range": "± 211506.52003019868"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 28229966.84598214,
+            "unit": "ns",
+            "range": "± 244944.09104811834"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 32135046.09375,
+            "unit": "ns",
+            "range": "± 140418.99686472712"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 46532241.448051944,
+            "unit": "ns",
+            "range": "± 208804.49591483222"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 60996411.70634919,
+            "unit": "ns",
+            "range": "± 805806.713498117"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 41392171.53296704,
+            "unit": "ns",
+            "range": "± 180388.01738771622"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 29961561.954166666,
+            "unit": "ns",
+            "range": "± 220564.1588025057"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 104906631.8923077,
+            "unit": "ns",
+            "range": "± 1145601.1888212904"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 129319488.23333333,
+            "unit": "ns",
+            "range": "± 781806.3036288855"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 19481747.772916667,
+            "unit": "ns",
+            "range": "± 216805.47194103195"
           }
         ]
       }
