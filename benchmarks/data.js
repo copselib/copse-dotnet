@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783668978563,
+  "lastUpdate": 1783668978870,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -40118,6 +40118,114 @@ window.BENCHMARK_DATA = {
             "value": 2554480.02734375,
             "unit": "ns",
             "range": "± 14430.643541461923"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "261e7148985695daa5f904e3de55ae748050344d",
+          "message": "Comb: RefSemiDeque access-cost contract; chain seam attributed and accepted\n\nThe fine-toothed-comb pass over the flat primitives, driven by the\nFlatDecode instrument and the decoder profile:\n\n- RefSemiDeque: head/tail O(1), arbitrary-index GetFromBack/GetFromFront\n  O(partitions) via a partition-chain walk. Audited every caller: all\n  index near an end or on cold strategy paths (SkipRemainingSiblings,\n  disposal) -- the stream decoder's window was the library's only hot\n  random-index user and now rides a masked ring. Contract documented on\n  the class so the next random-index workload reaches for the right\n  shape instead of a profiler.\n- RefAppendOnlyList: healthy -- cached read-partition fast path with\n  bounds-check elision; the memo stores ride it at store-decoder speed\n  (Memoize replay rows).\n- Chain lazy seam attributed: bulk capture-then-replay through the\n  fused store measures 94.0ms vs the old eager capture's 90.2 --\n  parity -- so Invert Bft_Chain's remaining ~11% over eager is purely\n  the per-pull grow seam, i.e. the price of laziness itself, and any\n  consumer gets the bulk rate via dispose-completes-capture. Accepted;\n  no SPI change.\n- Accepted-and-documented: BFT store decoders' width-scale frame\n  queues are inherent to breadth-first visit synthesis (the dimension\n  tax the FlatDecode baseline quantified); evicted ring slots are\n  overwritten on wrap, matching the deque's chunk-retention behavior.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T07:13:45Z",
+          "tree_id": "880b459ba42bbdfb1528b65ec8060e238414adaf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/261e7148985695daa5f904e3de55ae748050344d"
+        },
+        "date": 1783668978815,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2176440.4625,
+            "unit": "ns",
+            "range": "± 20688.49820184014"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2213165.7346540177,
+            "unit": "ns",
+            "range": "± 17032.43486196316"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4225933.326322115,
+            "unit": "ns",
+            "range": "± 21985.07588590719"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3663247.06484375,
+            "unit": "ns",
+            "range": "± 25732.272109766418"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 704732.263264974,
+            "unit": "ns",
+            "range": "± 1377.172126901464"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 865135.4786658654,
+            "unit": "ns",
+            "range": "± 1884.0930285949269"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 457637.6583007813,
+            "unit": "ns",
+            "range": "± 3134.8893264862963"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 6385901.196875,
+            "unit": "ns",
+            "range": "± 29361.466395406078"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 6313736.486458333,
+            "unit": "ns",
+            "range": "± 21896.4120261291"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 29102091.945833333,
+            "unit": "ns",
+            "range": "± 301300.29882797116"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 14521702.725,
+            "unit": "ns",
+            "range": "± 141027.9975916108"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2834697.65546875,
+            "unit": "ns",
+            "range": "± 15256.12604855169"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2231452.19140625,
+            "unit": "ns",
+            "range": "± 11046.103764236048"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2554529.76328125,
+            "unit": "ns",
+            "range": "± 22210.85323138761"
           }
         ]
       }
