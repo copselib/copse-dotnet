@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783705014565,
+  "lastUpdate": 1783706351088,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -6766,6 +6766,150 @@ window.BENCHMARK_DATA = {
             "value": 198032732.2,
             "unit": "ns",
             "range": "± 1657904.924032198"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a8d905810f234775d6892aa9b5b41cec12e9c79",
+          "message": "Fast-path probe idiom: the serializer's per-token frames\n\nThe scanner's TryScanEvent and both text streams' read loops stay\nnon-async now. The scanner probes each character read; a pending read\nis always a REFILL, so its continuation pushes the refilled character\nback into the block (the scanner's own pushback) and re-enters the\nprobing loop with the carried flags riding as core parameters. The\nquoted scan fuses with its terminator scan for an honest char return;\nthe doubled-quote lookahead consumes through a shared resolve helper.\nThe text streams probe each scan and land events through commit\nhelpers shared by fast path and continuation (the skip's running count\nrides as a core parameter). The write side needs nothing: one block-\nbuffered state machine per serialize, its per-visit awaits complete\ninline.\n\nSame-machine A/B: SerializerRoundTrip 1.86x -> 1.21x, allocations now\nequal (245 KB both colors). Was 5.3x at the start of the rollout.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T17:48:10Z",
+          "tree_id": "e0de3f3816e500f0ac09370b7c7d2dba6ad98148",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3a8d905810f234775d6892aa9b5b41cec12e9c79"
+        },
+        "date": 1783706348162,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 10091733.660714285,
+            "unit": "ns",
+            "range": "± 127555.2849831348"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 14206371.809375,
+            "unit": "ns",
+            "range": "± 220000.9910057856"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 4400654.773925781,
+            "unit": "ns",
+            "range": "± 82478.99697310742"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 4319656.636328125,
+            "unit": "ns",
+            "range": "± 97710.93784822019"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 73493215.16666666,
+            "unit": "ns",
+            "range": "± 252391.26000500846"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 89965375.26041666,
+            "unit": "ns",
+            "range": "± 1728107.7682644236"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 30893560.091666665,
+            "unit": "ns",
+            "range": "± 517921.9827560129"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 36088320.6,
+            "unit": "ns",
+            "range": "± 279875.08362303086"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46973469.57692308,
+            "unit": "ns",
+            "range": "± 553162.049508305"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 25114127.548828125,
+            "unit": "ns",
+            "range": "± 484740.16484119056"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 17496599.432291668,
+            "unit": "ns",
+            "range": "± 85185.8865788691"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 13806031.065104166,
+            "unit": "ns",
+            "range": "± 55810.12636194094"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 40030800.61538462,
+            "unit": "ns",
+            "range": "± 565199.9275237963"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 55819936.9387755,
+            "unit": "ns",
+            "range": "± 629044.0106703026"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 17436040.269230768,
+            "unit": "ns",
+            "range": "± 263238.48936362186"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 9708261.590625,
+            "unit": "ns",
+            "range": "± 164597.29225716207"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 294539477.5714286,
+            "unit": "ns",
+            "range": "± 2237978.060198964"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 377974814,
+            "unit": "ns",
+            "range": "± 5114851.617315111"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 175254446.33333334,
+            "unit": "ns",
+            "range": "± 2299998.098836946"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 143027169.22222218,
+            "unit": "ns",
+            "range": "± 551410.5662531359"
           }
         ]
       }
