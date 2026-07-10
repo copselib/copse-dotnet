@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783655075265,
+  "lastUpdate": 1783655075590,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -39056,6 +39056,162 @@ window.BENCHMARK_DATA = {
             "value": 8084052.208705357,
             "unit": "ns",
             "range": "± 9629.166206478054"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4a8d8a6b7a1f8b10f7116cdee265a8697de1046",
+          "message": "LevelOrderArrayStore: the completed level-order dual (+ lazy-built twin)\n\nPreorderArrayStore's structural dual, long on the dual-symmetry\nbacklog: values[i] in level order, children contiguous, roots the\ndepth-0 prefix, pure-read Ensure* hooks. AsyncLazyBuiltLevelOrderStore\n-> LazyBuiltLevelOrderStore.g.cs is the lazy-built dual (manifest entry\nadded); both array stores gain Count. Direct tests decode hand-laid\ntree/forest/empty stores through LevelOrderTreenumerable in both\ndimensions and pin the lazy dual's build-once semantics.\n\nDecision record -- LeaffixScan layout-by-first-dimension: BUILT AND\nMEASURED OUT. A breadth-first-first pull pinning a level-order layout\n(one transpose pass) was implemented, then rejected on direct\nmeasurement: over raw array stores the breadth-first cross-decode tax\nis only ~1.08x (39.9 vs 36.9ms replaying the Mega triangle) -- the\nMemoize replay rows' 1.53x is memo-store overhead (grow-seam checks,\nchunked indexing), not layout -- so the transpose (+~13ms, +12MB\ntransient) needs ~5 replays to break even and taxes the common\nsingle-drain case ~8% (end-to-end Bft_Triangle 124.6 -> 134.6ms).\nLeaffixScan stays preorder for both dimensions, on the blind Tree.Lazy;\nthe rationale lives in a comment on PreorderScan. LeaffixScan's\npin-order matrix tests and the async breadth-first-first mechanics\ncheck stay: they assert the pin contract, not the layout.\n\nFull solution suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T03:12:47Z",
+          "tree_id": "c6e1ed34b9e32c1caf3ea2896a6ae5b289419eec",
+          "url": "https://github.com/copselib/copse-dotnet/commit/a4a8d8a6b7a1f8b10f7116cdee265a8697de1046"
+        },
+        "date": 1783655075528,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 10694410.49107143,
+            "unit": "ns",
+            "range": "± 40454.920980203235"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 7319160.632161458,
+            "unit": "ns",
+            "range": "± 8149.003868401592"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 10374552.328125,
+            "unit": "ns",
+            "range": "± 22390.50413613106"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 6875882.112165178,
+            "unit": "ns",
+            "range": "± 7921.889829902066"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 15678908.252232144,
+            "unit": "ns",
+            "range": "± 115405.9102584647"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 19109392.51339286,
+            "unit": "ns",
+            "range": "± 66516.46323373038"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 16278432.07142857,
+            "unit": "ns",
+            "range": "± 33835.77491820927"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 22541865.96875,
+            "unit": "ns",
+            "range": "± 79766.78568851715"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 31331513.70625,
+            "unit": "ns",
+            "range": "± 140696.12266653823"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 20437699.613839287,
+            "unit": "ns",
+            "range": "± 57428.216511842074"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 107095619.18333332,
+            "unit": "ns",
+            "range": "± 1374656.3185401063"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 130749086.48333333,
+            "unit": "ns",
+            "range": "± 566577.7118062703"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 51825754.666666664,
+            "unit": "ns",
+            "range": "± 152546.33424544308"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 55315885.11904763,
+            "unit": "ns",
+            "range": "± 104268.29641573981"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 61706013.175,
+            "unit": "ns",
+            "range": "± 426260.2745859152"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 64741355.067307696,
+            "unit": "ns",
+            "range": "± 454144.93897618627"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 13675095.391666668,
+            "unit": "ns",
+            "range": "± 6871.125108605417"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 19670918.54922945,
+            "unit": "ns",
+            "range": "± 979399.1778357277"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 32845684.583333332,
+            "unit": "ns",
+            "range": "± 39813.26973155516"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 32635357.956730768,
+            "unit": "ns",
+            "range": "± 204861.47363379737"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 6967797.885216346,
+            "unit": "ns",
+            "range": "± 19380.14551638377"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 6526710.041466346,
+            "unit": "ns",
+            "range": "± 4035.769754483507"
           }
         ]
       }
