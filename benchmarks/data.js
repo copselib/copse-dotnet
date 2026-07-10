@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783727709293,
+  "lastUpdate": 1783727709638,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -67092,6 +67092,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
             "value": 234165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994776,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6ac4a5a7fc35b0dd65401c1167f1b19648524f0",
+          "message": "Copse.Linq: drop the stale InternalsVisibleTo(Copse.Linq.Async)\n\nThe grant dated from when the async Where consumed WhereDepthFirstPath\nas a Copse.Linq internal; those path structs were since extracted to\nCopse.Linq.Traversal, which grants its own internals to both color\nhalves. Nothing in Copse.Linq.Async touches Copse.Linq internals\nanymore (verified: all four TFMs build without the grant), and the\nfriend declaration read like a dependency edge it isn't -- Copse.Linq's\npackage depends on nothing async, and the IVT line was the misleading\nbreadcrumb suggesting otherwise.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T23:39:13Z",
+          "tree_id": "2b67845a2bdf781d9420529a1efc6d94ec498204",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f6ac4a5a7fc35b0dd65401c1167f1b19648524f0"
+        },
+        "date": 1783727709576,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 54219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234288,
             "unit": "bytes"
           },
           {
