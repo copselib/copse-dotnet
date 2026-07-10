@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783694825485,
+  "lastUpdate": 1783694825797,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -40700,6 +40700,114 @@ window.BENCHMARK_DATA = {
             "value": 2554529.76328125,
             "unit": "ns",
             "range": "± 22210.85323138761"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40bdba8f62946fd9bbfb767afd6ed38afb80dab8",
+          "message": "The ValueTask fast-path idiom: probe grows, suspend only when pending\n\nThe async seam, measured (profile of the FlatDecode async drain): the\nreal work was 0.05% of the time; the rest was five nested per-pull\nstate machines and their builder launches -- paid per CALL, not per\nsuspension, on drains where nothing ever suspends.\n\nThe idiom: hot methods stop being async. Each store grow is PROBED --\n\n  var closed = _Store.EnsureSubtreeClosedAsync(index);\n\n  if (!closed.IsCompletedSuccessfully)\n    return AwaitThenTryPushNextChildAsync(closed);\n\n  var candidate = index + closed.Result;\n\n-- so a buffered answer costs ordinary method calls with zero state\nmachines, and only a genuinely pending grow enters an async\ncontinuation, which awaits and RE-ENTERS the probing method (grows are\nidempotent and the probing methods mutate nothing before their probes;\nre-entering Backtrack is its loop's `continue`). The method\ndecomposition is fully preserved.\n\nTranscription: two new AsyncToSync rules -- the probe guard statement\nvanishes (the twin can never be pending) and `x.Result` collapses to\n`x` -- leaving exactly the hand-written sync shape; the continuations\nlive in async-only regions. `.IsCompletedSuccessfully`/`.Result` are\nRESERVED idiom names in manifest sources (used nowhere else).\n\nApplied to AsyncTreenumeratorBase.MoveNextAsync (hand-written pair;\nremoves a per-pull state machine from EVERY derived treenumerator) and\nAsyncPreorderStoreDepthFirstTreenumerator as the prototype.\n\nAsyncOverheadFlatDecode: 6.9x -> 1.36x (async 28.9 -> 5.1 ms, async\nallocation now equal to sync). Suspension path covered by the async\nmechanics tests (genuinely-suspending sources); full suite 24,226\ngreen. Rollout to the remaining decoders follows.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:22:50Z",
+          "tree_id": "d45718a48306d0a5d0aa4dc9eecf99e097a9cfc5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/40bdba8f62946fd9bbfb767afd6ed38afb80dab8"
+        },
+        "date": 1783694825744,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2122745.7216145834,
+            "unit": "ns",
+            "range": "± 7009.104409340463"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2108291.160714286,
+            "unit": "ns",
+            "range": "± 4051.779821365816"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4135972.150520833,
+            "unit": "ns",
+            "range": "± 3513.2574764136493"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3553462.9573102677,
+            "unit": "ns",
+            "range": "± 6843.189922723277"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 688584.2106119791,
+            "unit": "ns",
+            "range": "± 874.2217460407936"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 848316.8084435096,
+            "unit": "ns",
+            "range": "± 1460.090905044175"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 445518.975,
+            "unit": "ns",
+            "range": "± 797.0810816956077"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 5544841.258333334,
+            "unit": "ns",
+            "range": "± 80113.14591123136"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 5671135.0703125,
+            "unit": "ns",
+            "range": "± 38083.18640470238"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13681060.708333334,
+            "unit": "ns",
+            "range": "± 120647.4912804359"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 14484253.977083333,
+            "unit": "ns",
+            "range": "± 62776.119308595225"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2758538.263346354,
+            "unit": "ns",
+            "range": "± 2285.3783405015615"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1835845.48046875,
+            "unit": "ns",
+            "range": "± 5229.195228568018"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2446265.21484375,
+            "unit": "ns",
+            "range": "± 4527.212031674894"
           }
         ]
       }
