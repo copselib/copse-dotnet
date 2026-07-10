@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783661964082,
+  "lastUpdate": 1783661964388,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -22681,6 +22681,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
             "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd0746ccdbb9b55fce53333aab279782dd6cba66",
+          "message": "FlatDecode family: the flat decoders measured bare (11th CI leg)\n\nTwelve rows over canonical Mega encodings built once in setup: the four\nstore decoders (both dimensions each, per the dimension discipline) and\nthe two forward-only stream decoders over array-cursor feeds, so each\nrow IS the decoder. Shapes: Binary (the small-family pole, a million\n2-child groups) and Triangle (the wide-family pole, 1448-child groups).\nThese primitives sit under every memo replay, buffer drain, and\ndeserialize, but their cost only ever appeared blended into operator\nrows -- this family exists because a 6x decoder gap hid inside\nInvert/Memoize for a full release cycle.\n\nBaseline findings (EPYC 7763 container, same run):\n- Store decode is dimension-driven, not layout-driven: DFT synthesis\n  ~23-25ms over ANY store, BFT ~32-39ms over ANY store; native-vs-cross\n  is ~4-7% for BFT and inverted for DFT (level-order cross-DFT 22.2ms\n  is the fastest row). BFT rows allocate 12-14MB of width-scale frame\n  queues -- the real BFT tax, and a comb-pass target.\n- PreorderStream decode is healthy: 25ms, store parity, zero alloc.\n- LevelOrderStream decode is the pathology: 4.2x the store decoder on\n  Triangle (pure machinery tax), 83x on Binary at Mega (3,105ms -- the\n  O(width)=512K window falls out of cache and per-node GetEntry random\n  access ping-pongs across ~20MB between visit front and parse cursor,\n  where the store decoder streams its comparable-width queues at 37ms).\n  Scale-dependent: invisible at depth-14, dramatic at the canonical\n  tier.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:18:11Z",
+          "tree_id": "19a693b9ceec6184e2952c05bc77705f85465e9e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dd0746ccdbb9b55fce53333aab279782dd6cba66"
+        },
+        "date": 1783661964333,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505935,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636837,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 867,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
             "unit": "bytes"
           },
           {
