@@ -36,8 +36,14 @@ namespace Copse.Linq
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
       => new AsyncCompletedTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(firstDimension => PreorderScan(source, leafNodeSelector, accumulator)));
+        AsyncTree.Lazy(() => PreorderScan(source, leafNodeSelector, accumulator)));
 
+    // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
+    // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
+    // LevelOrderArrayStore) was built and MEASURED OUT -- over raw array stores the
+    // breadth-first cross-decode tax is only ~1.08x (the Memoize replay rows' 1.53x is
+    // memo-store overhead, not layout), so the transpose plus transient double storage
+    // needs ~5 replays to break even and taxes the common single-drain case ~8%.
     private static IAsyncTreenumerable<TAccumulate> PreorderScan<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,

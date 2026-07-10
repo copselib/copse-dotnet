@@ -39,6 +39,26 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task LeaffixScan_BreadthFirstFirst_PinsTheLevelOrderLayout()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).LeaffixScan(
+          nc => nc.Node,
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+
+        var async = Async(tree).LeaffixScan(
+          nc => nc.Node,
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+
+        // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
+        // rides the same capture (the reverse pin order of the test above).
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+      }
+    }
+
+    [TestMethod]
     public async Task Invert_FullSource_MatchesSync_BothDimensions()
     {
       foreach (var tree in Trees)

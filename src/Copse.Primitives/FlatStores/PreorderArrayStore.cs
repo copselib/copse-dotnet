@@ -18,6 +18,8 @@ namespace Copse
     private readonly TValue[] _Values;
     private readonly int[] _SubtreeSizes;
 
+    public int Count => _Values.Length;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureBuffered(int index) => index < _Values.Length;
 

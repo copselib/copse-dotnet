@@ -98,5 +98,41 @@ namespace Copse.Linq.Tests
       // Assert
       CollectionAssert.AreEqual(expected, actual);
     }
+
+    // The scan's LAYOUT is pinned to the FIRST dimension pulled (breadth-first-first lays the
+    // finished scan out in level order, depth-first-first in preorder); whichever wins, both
+    // dimensions must replay the same values from the one capture.
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void ScanServesBothDimensionsWhicheverIsPulledFirst(
+      string treeString,
+      string expectedTreeString)
+    {
+      var expectedTree = TreeSerializer.DeserializeDepthFirstTree(expectedTreeString);
+
+      foreach (var firstStrategy in new[] { TreeTraversalStrategy.BreadthFirst, TreeTraversalStrategy.DepthFirst })
+      {
+        var secondStrategy =
+          firstStrategy == TreeTraversalStrategy.BreadthFirst
+          ? TreeTraversalStrategy.DepthFirst
+          : TreeTraversalStrategy.BreadthFirst;
+
+        var scan = TreeSerializer
+          .DeserializeDepthFirstTree(treeString)
+          .LeaffixScan(
+            nodeContext => nodeContext.Node,
+            (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}");
+
+        CollectionAssert.AreEqual(
+          expectedTree.GetTraversal(firstStrategy).ToArray(),
+          scan.GetTraversal(firstStrategy).ToArray(),
+          $"{firstStrategy}-first: first drain mismatch for {treeString}");
+
+        CollectionAssert.AreEqual(
+          expectedTree.GetTraversal(secondStrategy).ToArray(),
+          scan.GetTraversal(secondStrategy).ToArray(),
+          $"{firstStrategy}-first: cross-dimension replay mismatch for {treeString}");
+      }
+    }
   }
 }

@@ -215,6 +215,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerators/LazyBuiltPreorderStore.g.cs",
         "AsyncLazyBuiltPreorderStore", "LazyBuiltPreorderStore", "Copse.Linq.Treenumerators"),
 
+      new("Copse.Linq.Async/Treenumerators/AsyncLazyBuiltLevelOrderStore.cs",
+        "Copse.Linq/Treenumerators/LazyBuiltLevelOrderStore.g.cs",
+        "AsyncLazyBuiltLevelOrderStore", "LazyBuiltLevelOrderStore", "Copse.Linq.Treenumerators"),
+
       // The fluent-layer construction machinery (Copse.Linq is generated from Copse.Linq.Async).
       new("Copse.Linq.Async/AsyncTreenumerableFactory.cs",
         "Copse.Linq/TreenumerableFactory.g.cs",
