@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783695836535,
+  "lastUpdate": 1783695836910,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -51791,6 +51791,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
             "value": 1457,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 1412,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 1156,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ad231c8ce599bcc781121880181a71f31cbf445c",
+          "message": "Fast-path probe idiom: the remaining three store decoders\n\nSame treatment as the DFT preorder prototype (40bdba8): OnMoveNextAsync\nand the pull helpers stop being async; every store grow is probed and a\nbuffered answer is ordinary method calls with zero state machines. The\nBFT drivers add the phase-loop shape: a pending schedule resumes\nthrough a continuation that performs Advance's between-iteration\nmutation (retire the stack top / finish roots / retire the front) and\nre-enters Advance, which IS the loop's `continue` -- all loop state\nlives in fields. Grow continuations re-enter their probing method\n(grows are idempotent; nothing mutates before the probes).\n\nAffected pairs (same machine, Job.Default, ratios computed per-pair):\nFlatDecode holds 1.35x; MaterializeReplay 4.3x -> 2.65x (replay side\nconverted; the capture side rides the engine + memo buffer, still\nasync); InvertStream 4.0x -> 2.60x (base fast path inherited; its\nstream decoder is the next stage). Full suite 24,226 green; the async\nmechanics tests drive genuinely-suspending sources through all four\ndecoders, covering the continuation paths.\n\nNext: the growing stores' own Ensure*Async methods (async methods that\ncomplete synchronously when buffered -- same idiom, inside the store),\nthe two stream decoders, the wrapper base, then the engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:52:52Z",
+          "tree_id": "4c766968ea8773d9fafe4f04fd22718dbdd4d83c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ad231c8ce599bcc781121880181a71f31cbf445c"
+        },
+        "date": 1783695836851,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 1492,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 1236,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 30855,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 60703,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 116735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 240839,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 849,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 853,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 3928,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 27504088,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 73052,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 478564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 37908170,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 1971,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 1671,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 8391755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 1461,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 1461,
             "unit": "bytes"
           },
           {
