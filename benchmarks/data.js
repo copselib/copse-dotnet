@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783695835521,
+  "lastUpdate": 1783695835867,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -24281,6 +24281,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
             "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ad231c8ce599bcc781121880181a71f31cbf445c",
+          "message": "Fast-path probe idiom: the remaining three store decoders\n\nSame treatment as the DFT preorder prototype (40bdba8): OnMoveNextAsync\nand the pull helpers stop being async; every store grow is probed and a\nbuffered answer is ordinary method calls with zero state machines. The\nBFT drivers add the phase-loop shape: a pending schedule resumes\nthrough a continuation that performs Advance's between-iteration\nmutation (retire the stack top / finish roots / retire the front) and\nre-enters Advance, which IS the loop's `continue` -- all loop state\nlives in fields. Grow continuations re-enter their probing method\n(grows are idempotent; nothing mutates before the probes).\n\nAffected pairs (same machine, Job.Default, ratios computed per-pair):\nFlatDecode holds 1.35x; MaterializeReplay 4.3x -> 2.65x (replay side\nconverted; the capture side rides the engine + memo buffer, still\nasync); InvertStream 4.0x -> 2.60x (base fast path inherited; its\nstream decoder is the next stage). Full suite 24,226 green; the async\nmechanics tests drive genuinely-suspending sources through all four\ndecoders, covering the continuation paths.\n\nNext: the growing stores' own Ensure*Async methods (async methods that\ncomplete synchronously when buffered -- same idiom, inside the store),\nthe two stream decoders, the wrapper base, then the engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:52:52Z",
+          "tree_id": "4c766968ea8773d9fafe4f04fd22718dbdd4d83c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ad231c8ce599bcc781121880181a71f31cbf445c"
+        },
+        "date": 1783695835806,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3731,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27503227,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59410,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231217,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505935,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2247,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 58996,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33637084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 812,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346165,
             "unit": "bytes"
           }
         ]
