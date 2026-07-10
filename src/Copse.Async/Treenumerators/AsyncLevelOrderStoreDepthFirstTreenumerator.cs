@@ -53,16 +53,16 @@ namespace Copse.Async.Treenumerators
     protected override ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Path.Count == 0)
-        return MoveToNextRootNode();
+        return MoveToNextRootNodeAsync();
 
       // The strategy applies to the node just scheduled; visiting nodes ignore it.
       if (Mode == TreenumeratorMode.SchedulingNode)
-        return OnScheduling(nodeTraversalStrategies);
+        return OnSchedulingAsync(nodeTraversalStrategies);
 
-      return OnVisiting();
+      return OnVisitingAsync();
     }
 
-    private ValueTask<bool> MoveToNextRootNode()
+    private ValueTask<bool> MoveToNextRootNodeAsync()
     {
       if (_RootsFinished)
         return new ValueTask<bool>(false);
@@ -83,7 +83,7 @@ namespace Copse.Async.Treenumerators
       return new ValueTask<bool>(true);
     }
 
-    private ValueTask<bool> OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
+    private ValueTask<bool> OnSchedulingAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
         if (SkipRemainingSiblings())
@@ -93,13 +93,13 @@ namespace Copse.Async.Treenumerators
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
-        return Backtrack();
+        return BacktrackAsync();
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         _Path.GetLast().Skipped = true;
 
-        var pushed = TryPushNextChild();
+        var pushed = TryPushNextChildAsync();
 
         if (!pushed.IsCompletedSuccessfully)
           return AwaitPushThenBacktrackAsync(pushed);
@@ -108,7 +108,7 @@ namespace Copse.Async.Treenumerators
           return new ValueTask<bool>(true);
 
         // No children to promote: a childless SkipNode'd node emits nothing.
-        return Backtrack();
+        return BacktrackAsync();
       }
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
@@ -120,9 +120,9 @@ namespace Copse.Async.Treenumerators
       return new ValueTask<bool>(true);
     }
 
-    private ValueTask<bool> OnVisiting()
+    private ValueTask<bool> OnVisitingAsync()
     {
-      var pushed = TryPushNextChild();
+      var pushed = TryPushNextChildAsync();
 
       if (!pushed.IsCompletedSuccessfully)
         return AwaitPushThenBacktrackAsync(pushed);
@@ -130,18 +130,18 @@ namespace Copse.Async.Treenumerators
       if (pushed.Result)
         return new ValueTask<bool>(true);
 
-      return Backtrack();
+      return BacktrackAsync();
     }
 
     // Unwind finished levels and emit the next owed visit; see the sync twin.
-    private ValueTask<bool> Backtrack()
+    private ValueTask<bool> BacktrackAsync()
     {
       while (true)
       {
         _Path.RemoveLast();
 
         if (_Path.Count == 0)
-          return MoveToNextRootNode();
+          return MoveToNextRootNodeAsync();
 
         // A copy (not a ref): a pending push resumes through a continuation that re-enters this
         // method, so nothing here may have mutated the level.
@@ -149,7 +149,7 @@ namespace Copse.Async.Treenumerators
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          var pushed = TryPushNextChild();
+          var pushed = TryPushNextChildAsync();
 
           if (!pushed.IsCompletedSuccessfully)
             return AwaitPushThenBacktrackAsync(pushed);
@@ -175,7 +175,7 @@ namespace Copse.Async.Treenumerators
     // inline the second time), so nothing may mutate before the probe; the mutation re-acquires
     // the top by ref after it.
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private ValueTask<bool> TryPushNextChild()
+    private ValueTask<bool> TryPushNextChildAsync()
     {
       var top = _Path.GetLast();
 
@@ -215,14 +215,14 @@ namespace Copse.Async.Treenumerators
     {
       await pendingGrow.ConfigureAwait(false);
 
-      return await MoveToNextRootNode().ConfigureAwait(false);
+      return await MoveToNextRootNodeAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitThenTryPushNextChildAsync(ValueTask<bool> pendingGrow)
     {
       await pendingGrow.ConfigureAwait(false);
 
-      return await TryPushNextChild().ConfigureAwait(false);
+      return await TryPushNextChildAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitPushThenBacktrackAsync(ValueTask<bool> pendingPush)
@@ -230,7 +230,7 @@ namespace Copse.Async.Treenumerators
       if (await pendingPush.ConfigureAwait(false))
         return true;
 
-      return await Backtrack().ConfigureAwait(false);
+      return await BacktrackAsync().ConfigureAwait(false);
     }
     // codegen: end async-only
 

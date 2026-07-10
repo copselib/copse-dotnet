@@ -57,21 +57,21 @@ namespace Copse.Async.Treenumerators
       if (Mode == TreenumeratorMode.SchedulingNode && _ScheduleStack.Count > 0)
         ApplyStrategy(nodeTraversalStrategies);
 
-      return Advance();
+      return AdvanceAsync();
     }
 
     // Produce the next single visit (or false when the traversal is exhausted). A pending
     // schedule resumes through a continuation that performs this loop's between-iteration
     // mutation and RE-ENTERS Advance -- re-entry IS the `continue` (all loop state lives in
     // fields).
-    private ValueTask<bool> Advance()
+    private ValueTask<bool> AdvanceAsync()
     {
       while (true)
       {
         // 1) Descend: schedule the next child of the node on top of the schedule stack.
         if (_ScheduleStack.Count > 0)
         {
-          var scheduled = TryScheduleNextChildOf(fromVisitQueueFront: false);
+          var scheduled = TryScheduleNextChildOfAsync(fromVisitQueueFront: false);
 
           if (!scheduled.IsCompletedSuccessfully)
             return AwaitScheduleThenRetireStackTopAsync(scheduled);
@@ -86,7 +86,7 @@ namespace Copse.Async.Treenumerators
         // 2) Schedule the next root (the forest's children -- no surrounding visits).
         if (!_RootsScheduled)
         {
-          var scheduled = TryScheduleNextRoot();
+          var scheduled = TryScheduleNextRootAsync();
 
           if (!scheduled.IsCompletedSuccessfully)
             return AwaitScheduleThenFinishRootsAsync(scheduled);
@@ -126,7 +126,7 @@ namespace Copse.Async.Treenumerators
           }
         }
 
-        var frontScheduled = TryScheduleNextChildOf(fromVisitQueueFront: true);
+        var frontScheduled = TryScheduleNextChildOfAsync(fromVisitQueueFront: true);
 
         if (!frontScheduled.IsCompletedSuccessfully)
           return AwaitScheduleThenRetireFrontAsync(frontScheduled);
@@ -179,7 +179,7 @@ namespace Copse.Async.Treenumerators
     // are idempotent, and nothing mutates before the probe); the mutation re-acquires the frame
     // by ref after it.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ValueTask<bool> TryScheduleNextChildOf(bool fromVisitQueueFront)
+    private ValueTask<bool> TryScheduleNextChildOfAsync(bool fromVisitQueueFront)
     {
       var parent = fromVisitQueueFront ? _VisitQueue.GetFirst() : _ScheduleStack.GetLast();
 
@@ -207,7 +207,7 @@ namespace Copse.Async.Treenumerators
       return new ValueTask<bool>(true);
     }
 
-    private ValueTask<bool> TryScheduleNextRoot()
+    private ValueTask<bool> TryScheduleNextRootAsync()
     {
       if (_RootsFinished)
         return new ValueTask<bool>(false);
@@ -238,14 +238,14 @@ namespace Copse.Async.Treenumerators
     {
       await pendingGrow.ConfigureAwait(false);
 
-      return await TryScheduleNextChildOf(fromVisitQueueFront).ConfigureAwait(false);
+      return await TryScheduleNextChildOfAsync(fromVisitQueueFront).ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitThenTryScheduleNextRootAsync(ValueTask<bool> pendingGrow)
     {
       await pendingGrow.ConfigureAwait(false);
 
-      return await TryScheduleNextRoot().ConfigureAwait(false);
+      return await TryScheduleNextRootAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitScheduleThenRetireStackTopAsync(ValueTask<bool> pendingSchedule)
@@ -255,7 +255,7 @@ namespace Copse.Async.Treenumerators
 
       _ScheduleStack.RemoveLast();
 
-      return await Advance().ConfigureAwait(false);
+      return await AdvanceAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitScheduleThenFinishRootsAsync(ValueTask<bool> pendingSchedule)
@@ -266,7 +266,7 @@ namespace Copse.Async.Treenumerators
       _RootsScheduled = true;
       _SlotCarry = false;
 
-      return await Advance().ConfigureAwait(false);
+      return await AdvanceAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitScheduleThenRetireFrontAsync(ValueTask<bool> pendingSchedule)
@@ -276,7 +276,7 @@ namespace Copse.Async.Treenumerators
 
       _VisitQueue.RemoveFirst();
 
-      return await Advance().ConfigureAwait(false);
+      return await AdvanceAsync().ConfigureAwait(false);
     }
     // codegen: end async-only
 

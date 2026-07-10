@@ -484,7 +484,7 @@ namespace Copse.Async.Treenumerators
         if (!skipped.IsCompletedSuccessfully)
           return AwaitSkipThenFinishSuppressedGroupAsync(skipped);
 
-        return FinishSuppressedGroup(skipped.Result);
+        return FinishSuppressedGroupAsync(skipped.Result);
       }
 
       var read = _Stream.TryReadNextInGroupAsync();
@@ -502,7 +502,7 @@ namespace Copse.Async.Treenumerators
       return AdvanceGroupAsync();
     }
 
-    private ValueTask<bool> FinishSuppressedGroup(int discarded)
+    private ValueTask<bool> FinishSuppressedGroupAsync(int discarded)
     {
       for (int i = 0; i < discarded; i++)
         AppendEntry(default, suppressChildren: true);
@@ -696,7 +696,7 @@ namespace Copse.Async.Treenumerators
     {
       var discarded = await pendingSkip.ConfigureAwait(false);
 
-      return await FinishSuppressedGroup(discarded).ConfigureAwait(false);
+      return await FinishSuppressedGroupAsync(discarded).ConfigureAwait(false);
     }
 
     private async ValueTask<bool> AwaitThenOpenNextGroupAsync(ValueTask<bool> pendingAdvance)
