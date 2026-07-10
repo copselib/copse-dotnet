@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783662894386,
+  "lastUpdate": 1783664098170,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -5470,6 +5470,150 @@ window.BENCHMARK_DATA = {
             "value": 200504907,
             "unit": "ns",
             "range": "± 4035508.2504364895"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6695dea5afe71463695c9c3c01d907fef42d5237",
+          "message": "Windowed stream decoder: publish from frames, mirror the owner span\n\nTwo locality moves in AsyncLevelOrderStreamBreadthFirstTreenumerator\n(sync twin regenerated), proven against the FlatDecode rows:\n\n- Value-in-frame: the node value is read out of the window once, at\n  schedule time, and carried in the Frame; visits publish from the\n  frame. Kills the per-visit GetEntry (~2n chunk-resolved window\n  touches per drain).\n- Owner-span mirror: the current group's suppression flag and child\n  span live in fields, flushed to the owner's window entry once per\n  GROUP boundary instead of touched two-three times per item. Live\n  owner-aware reads (GetChildCount/GetFirstChildIndex) serve the\n  still-open group from the fields; the one strategy that can suppress\n  the current group's owner mid-group (SkipSiblings silencing the\n  visit front) updates the mirror, and a just-scheduled node's group\n  is provably ahead of the cursor, so the other suppression sites\n  need no mirror.\n\nLevelOrderStreamDecode (Mega, EPYC 7763 container, Job.Default):\nBinary 3,104.9 -> 1,067.0 ms (83x -> 29x vs the store decoder);\nTriangle 134.8 -> 87.5 ms (4.2x -> 2.7x). Riders: narrow streaming\nInvert, async level-order deserialize. Conformance battery green\n(the strategy matrix exercises the suppression mirror); full suite\n24,226.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:58:30Z",
+          "tree_id": "e7e0bc82b5303119326180765fba546e0ff7b269",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6695dea5afe71463695c9c3c01d907fef42d5237"
+        },
+        "date": 1783664096358,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 15142607.513392856,
+            "unit": "ns",
+            "range": "± 98879.31822847718"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22007963.13125,
+            "unit": "ns",
+            "range": "± 274581.4344628637"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3598294.1043526786,
+            "unit": "ns",
+            "range": "± 3820.728627453055"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3596247.012469952,
+            "unit": "ns",
+            "range": "± 2706.169055266941"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 114805607.18461539,
+            "unit": "ns",
+            "range": "± 302498.3416261398"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 140348798.1,
+            "unit": "ns",
+            "range": "± 847766.3719000422"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 50958016.5234375,
+            "unit": "ns",
+            "range": "± 979328.7819303193"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49208738.25384615,
+            "unit": "ns",
+            "range": "± 106075.93081064358"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 31331637.254807692,
+            "unit": "ns",
+            "range": "± 56823.42119832227"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35165266.17948718,
+            "unit": "ns",
+            "range": "± 56837.644673255854"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26436133.9,
+            "unit": "ns",
+            "range": "± 68311.81391130765"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 17827593.59151786,
+            "unit": "ns",
+            "range": "± 85877.50611712509"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 59209387.608333334,
+            "unit": "ns",
+            "range": "± 417823.3347397651"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 84741068.3095238,
+            "unit": "ns",
+            "range": "± 201580.54304812333"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15700991.99107143,
+            "unit": "ns",
+            "range": "± 17791.85733469621"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 15703542.817708334,
+            "unit": "ns",
+            "range": "± 5716.686989194684"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 446758297.78571427,
+            "unit": "ns",
+            "range": "± 603834.6098682956"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 585149316.3571428,
+            "unit": "ns",
+            "range": "± 2175288.510006983"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 212431603.77419356,
+            "unit": "ns",
+            "range": "± 4889023.874489332"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 203004470.71052632,
+            "unit": "ns",
+            "range": "± 3330661.3475937075"
           }
         ]
       }
