@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783700233601,
+  "lastUpdate": 1783700233944,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -53964,6 +53964,114 @@ window.BENCHMARK_DATA = {
             "value": 64220737.758928575,
             "unit": "ns",
             "range": "± 205234.72937924933"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "97a3db0f83c3bab8b809b268a6ef9efdde7a403c",
+          "message": "Dashboard: suite-qualify the row expand key\n\nClicking a row also toggled its time/memory twin: the open-state key\nwas the bare benchmark name, which a suite's runtime and memory\nvariants share. The key (and the row's data attribute the click\nhandler reads back) is now suite-qualified, so each row expands alone.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:04:11Z",
+          "tree_id": "5ec851501b63a559de106a48b85cb47befa53f19",
+          "url": "https://github.com/copselib/copse-dotnet/commit/97a3db0f83c3bab8b809b268a6ef9efdde7a403c"
+        },
+        "date": 1783700233884,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 71862348.57142857,
+            "unit": "ns",
+            "range": "± 212912.08978814047"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 95519786.72857144,
+            "unit": "ns",
+            "range": "± 214235.84002496852"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 44155003.255555555,
+            "unit": "ns",
+            "range": "± 782967.2917082461"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 128220181.01923077,
+            "unit": "ns",
+            "range": "± 388432.318261207"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 22323502.479166668,
+            "unit": "ns",
+            "range": "± 61394.92797236331"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 79795086.40476191,
+            "unit": "ns",
+            "range": "± 1508243.095279754"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 88797435.60784315,
+            "unit": "ns",
+            "range": "± 1611761.731312641"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 57718952.36752137,
+            "unit": "ns",
+            "range": "± 123650.29656587217"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 92341189.84444444,
+            "unit": "ns",
+            "range": "± 466615.80748671835"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 42214305.51785714,
+            "unit": "ns",
+            "range": "± 124032.30628765395"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 93840624.63095239,
+            "unit": "ns",
+            "range": "± 767787.0084903684"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 30960135.25,
+            "unit": "ns",
+            "range": "± 320832.0899501702"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 67766663.90178572,
+            "unit": "ns",
+            "range": "± 574506.0955205123"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 63678794.807692304,
+            "unit": "ns",
+            "range": "± 92770.82981967603"
           }
         ]
       }
