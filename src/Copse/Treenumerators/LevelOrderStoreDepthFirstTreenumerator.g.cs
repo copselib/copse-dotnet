@@ -50,6 +50,9 @@ namespace Copse.Treenumerators
       public int NextChildOrdinal;
     }
 
+    // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
+    // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
+    // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Path.Count == 0)
@@ -64,7 +67,12 @@ namespace Copse.Treenumerators
 
     private bool MoveToNextRootNode()
     {
-      if (_RootsFinished || !_Store.EnsureRootAvailable(_RootsSeen))
+      if (_RootsFinished)
+        return false;
+
+      var available = _Store.EnsureRootAvailable(_RootsSeen);
+
+      if (!available)
         return false;
 
       // Roots are the depth-0 prefix: ordinal and store index coincide.
@@ -91,7 +99,9 @@ namespace Copse.Treenumerators
       {
         _Path.GetLast().Skipped = true;
 
-        if (TryPushNextChild())
+        var pushed = TryPushNextChild();
+
+        if (pushed)
           return true;
 
         // No children to promote: a childless SkipNode'd node emits nothing.
@@ -109,7 +119,9 @@ namespace Copse.Treenumerators
 
     private bool OnVisiting()
     {
-      if (TryPushNextChild())
+      var pushed = TryPushNextChild();
+
+      if (pushed)
         return true;
 
       return Backtrack();
@@ -125,13 +137,15 @@ namespace Copse.Treenumerators
         if (_Path.Count == 0)
           return MoveToNextRootNode();
 
-        // A copy (not a ref) for the pre-await reads: nothing mutates this level here, and a ref
-        // local may not survive the TryPushNextChild await below.
+        // A copy (not a ref): a pending push resumes through a continuation that re-enters this
+        // method, so nothing here may have mutated the level.
         var top = _Path.GetLast();
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          if (TryPushNextChild())
+          var pushed = TryPushNextChild();
+
+          if (pushed)
             return true;
 
           continue;
@@ -147,9 +161,10 @@ namespace Copse.Treenumerators
     // NextChildOrdinal, at store index firstChildIndex + ordinal once the store has grown far
     // enough to prove it exists.
     //
-    // The pre-await reads use a copy of the top level; the mutation re-acquires it by ref after the
-    // grow await (the deque is stable across it, so the top is the same slot), because a ref local
-    // may not cross an await.
+    // The pre-probe reads use a copy of the top level: a pending grow resumes through a
+    // continuation that RE-ENTERS this method (the re-issued grow is idempotent and answers
+    // inline the second time), so nothing may mutate before the probe; the mutation re-acquires
+    // the top by ref after it.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool TryPushNextChild()
     {
@@ -160,7 +175,9 @@ namespace Copse.Treenumerators
 
       var ordinal = top.NextChildOrdinal;
 
-      if (!_Store.EnsureChildAvailable(top.NodeIndex, ordinal))
+      var available = _Store.EnsureChildAvailable(top.NodeIndex, ordinal);
+
+      if (!available)
         return false;
 
       var childIndex = _Store.GetFirstChildIndex(top.NodeIndex) + ordinal;
@@ -175,6 +192,7 @@ namespace Copse.Treenumerators
 
       return true;
     }
+
 
     // Schedule a node as a new level and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

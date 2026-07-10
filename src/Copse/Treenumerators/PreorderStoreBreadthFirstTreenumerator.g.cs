@@ -52,6 +52,9 @@ namespace Copse.Treenumerators
       public bool ChildrenDisabled; // SkipDescendants/SkipSiblings: yield no more children.
     }
 
+    // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
+    // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
+    // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // A strategy only applies to the node just scheduled (an empty stack means we have not
@@ -63,7 +66,9 @@ namespace Copse.Treenumerators
     }
 
     // Produce the next single visit (or false when the traversal is exhausted). See the sync twin
-    // for the phase structure.
+    // for the phase structure. A pending schedule resumes through a continuation that performs
+    // this loop's between-iteration mutation and RE-ENTERS Advance -- re-entry IS the `continue`
+    // (all loop state lives in fields).
     private bool Advance()
     {
       while (true)
@@ -71,7 +76,9 @@ namespace Copse.Treenumerators
         // 1) Descend: schedule the next child of the node on top of the schedule stack.
         if (_ScheduleStack.Count > 0)
         {
-          if (TryScheduleNextChildOf(fromVisitQueueFront: false))
+          var scheduled = TryScheduleNextChildOf(fromVisitQueueFront: false);
+
+          if (scheduled)
             return true;
 
           _ScheduleStack.RemoveLast();
@@ -81,7 +88,9 @@ namespace Copse.Treenumerators
         // 2) Schedule the next root (the forest's children -- no surrounding visits).
         if (!_RootsScheduled)
         {
-          if (TryScheduleNextRoot())
+          var scheduled = TryScheduleNextRoot();
+
+          if (scheduled)
             return true;
 
           _RootsScheduled = true;
@@ -94,7 +103,7 @@ namespace Copse.Treenumerators
           return false;
 
         // 3) Visit the active parent and drive its children. The two visit-emitting cases mutate
-        // the front and return before any await, so their ref is block-scoped off the await below.
+        // the front and return before any probe, so their ref is block-scoped off the calls below.
         {
           ref var front = ref _VisitQueue.GetFirst();
 
@@ -114,7 +123,9 @@ namespace Copse.Treenumerators
           }
         }
 
-        if (TryScheduleNextChildOf(fromVisitQueueFront: true))
+        var frontScheduled = TryScheduleNextChildOf(fromVisitQueueFront: true);
+
+        if (frontScheduled)
           return true;
 
         // The parent has no more children: retire it. The next turn visits the new front.
@@ -157,9 +168,10 @@ namespace Copse.Treenumerators
     // child) or the previous child's index plus its ensured-closed subtree size (next sibling); it
     // belongs to this parent while the parent's span is still open or contains it.
     //
-    // A ref param can't cross an await, so the parent is named by a discriminator: pre-await reads
-    // use a copy; the mutation re-acquires the frame by ref after the grow awaits (the deque is
-    // stable across them, so the front/top is the same slot).
+    // The parent is named by a discriminator rather than a ref param: pre-probe reads use a
+    // copy (a pending grow resumes through a continuation that RE-ENTERS this method -- grows
+    // are idempotent, and nothing mutates before the probes); the mutation re-acquires the
+    // frame by ref after them.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryScheduleNextChildOf(bool fromVisitQueueFront)
     {
@@ -168,11 +180,22 @@ namespace Copse.Treenumerators
       if (parent.ChildrenDisabled)
         return false;
 
-      var candidate = parent.LastChildIndex < 0
-        ? parent.NodeIndex + 1
-        : parent.LastChildIndex + _Store.EnsureSubtreeClosed(parent.LastChildIndex);
+      int candidate;
 
-      if (!_Store.EnsureBuffered(candidate))
+      if (parent.LastChildIndex < 0)
+      {
+        candidate = parent.NodeIndex + 1;
+      }
+      else
+      {
+        var closed = _Store.EnsureSubtreeClosed(parent.LastChildIndex);
+
+        candidate = parent.LastChildIndex + closed;
+      }
+
+      var buffered = _Store.EnsureBuffered(candidate);
+
+      if (!buffered)
         return false;
 
       var parentSubtreeSize = _Store.GetSubtreeSize(parent.NodeIndex);
@@ -196,11 +219,22 @@ namespace Copse.Treenumerators
       if (_RootsFinished)
         return false;
 
-      var candidate = _LastRootIndex < 0
-        ? 0
-        : _LastRootIndex + _Store.EnsureSubtreeClosed(_LastRootIndex);
+      int candidate;
 
-      if (!_Store.EnsureBuffered(candidate))
+      if (_LastRootIndex < 0)
+      {
+        candidate = 0;
+      }
+      else
+      {
+        var closed = _Store.EnsureSubtreeClosed(_LastRootIndex);
+
+        candidate = _LastRootIndex + closed;
+      }
+
+      var buffered = _Store.EnsureBuffered(candidate);
+
+      if (!buffered)
         return false;
 
       _LastRootIndex = candidate;
@@ -209,6 +243,7 @@ namespace Copse.Treenumerators
 
       return true;
     }
+
 
     // Schedule a node onto the schedule stack and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

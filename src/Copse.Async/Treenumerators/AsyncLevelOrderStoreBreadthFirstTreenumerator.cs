@@ -47,26 +47,37 @@ namespace Copse.Async.Treenumerators
       public bool ChildrenDisabled; // SkipDescendants/SkipSiblings: yield no more children.
     }
 
-    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
+    // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
+    // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
+    protected override ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // A strategy only applies to the node just scheduled (an empty stack means we have not
       // scheduled anything yet -- the very first move). Visiting nodes ignore the strategy.
       if (Mode == TreenumeratorMode.SchedulingNode && _ScheduleStack.Count > 0)
         ApplyStrategy(nodeTraversalStrategies);
 
-      return await Advance().ConfigureAwait(false);
+      return Advance();
     }
 
-    // Produce the next single visit (or false when the traversal is exhausted).
-    private async ValueTask<bool> Advance()
+    // Produce the next single visit (or false when the traversal is exhausted). A pending
+    // schedule resumes through a continuation that performs this loop's between-iteration
+    // mutation and RE-ENTERS Advance -- re-entry IS the `continue` (all loop state lives in
+    // fields).
+    private ValueTask<bool> Advance()
     {
       while (true)
       {
         // 1) Descend: schedule the next child of the node on top of the schedule stack.
         if (_ScheduleStack.Count > 0)
         {
-          if (await TryScheduleNextChildOf(fromVisitQueueFront: false).ConfigureAwait(false))
-            return true;
+          var scheduled = TryScheduleNextChildOf(fromVisitQueueFront: false);
+
+          if (!scheduled.IsCompletedSuccessfully)
+            return AwaitScheduleThenRetireStackTopAsync(scheduled);
+
+          if (scheduled.Result)
+            return new ValueTask<bool>(true);
 
           _ScheduleStack.RemoveLast();
           continue;
@@ -75,8 +86,13 @@ namespace Copse.Async.Treenumerators
         // 2) Schedule the next root (the forest's children -- no surrounding visits).
         if (!_RootsScheduled)
         {
-          if (await TryScheduleNextRoot().ConfigureAwait(false))
-            return true;
+          var scheduled = TryScheduleNextRoot();
+
+          if (!scheduled.IsCompletedSuccessfully)
+            return AwaitScheduleThenFinishRootsAsync(scheduled);
+
+          if (scheduled.Result)
+            return new ValueTask<bool>(true);
 
           _RootsScheduled = true;
           // Enqueues made while scheduling roots have no owing parent; clear the carry.
@@ -85,10 +101,10 @@ namespace Copse.Async.Treenumerators
         }
 
         if (_VisitQueue.Count == 0)
-          return false;
+          return new ValueTask<bool>(false);
 
         // 3) Visit the active parent and drive its children. The two visit-emitting cases mutate
-        // the front and return before any await, so their ref is block-scoped off the await below.
+        // the front and return before any probe, so their ref is block-scoped off the calls below.
         {
           ref var front = ref _VisitQueue.GetFirst();
 
@@ -97,7 +113,7 @@ namespace Copse.Async.Treenumerators
             // Initial visit, before any child is scheduled.
             front.VisitCount = 1;
             PublishVisit(ref front);
-            return true;
+            return new ValueTask<bool>(true);
           }
 
           if (_SlotCarry)
@@ -106,12 +122,17 @@ namespace Copse.Async.Treenumerators
             _SlotCarry = false;
             front.VisitCount++;
             PublishVisit(ref front);
-            return true;
+            return new ValueTask<bool>(true);
           }
         }
 
-        if (await TryScheduleNextChildOf(fromVisitQueueFront: true).ConfigureAwait(false))
-          return true;
+        var frontScheduled = TryScheduleNextChildOf(fromVisitQueueFront: true);
+
+        if (!frontScheduled.IsCompletedSuccessfully)
+          return AwaitScheduleThenRetireFrontAsync(frontScheduled);
+
+        if (frontScheduled.Result)
+          return new ValueTask<bool>(true);
 
         // The parent has no more children: retire it. The next turn visits the new front.
         _VisitQueue.RemoveFirst();
@@ -153,20 +174,27 @@ namespace Copse.Async.Treenumerators
     // NextChildOrdinal, at store index firstChildIndex + ordinal once the store has grown far
     // enough to prove it exists.
     //
-    // A ref param can't cross an await, so the parent is named by a discriminator: pre-await reads
-    // use a copy; the mutation re-acquires the frame by ref after the grow await.
+    // The parent is named by a discriminator rather than a ref param: pre-probe reads use a
+    // copy (a pending grow resumes through a continuation that RE-ENTERS this method -- grows
+    // are idempotent, and nothing mutates before the probe); the mutation re-acquires the frame
+    // by ref after it.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async ValueTask<bool> TryScheduleNextChildOf(bool fromVisitQueueFront)
+    private ValueTask<bool> TryScheduleNextChildOf(bool fromVisitQueueFront)
     {
       var parent = fromVisitQueueFront ? _VisitQueue.GetFirst() : _ScheduleStack.GetLast();
 
       if (parent.ChildrenDisabled)
-        return false;
+        return new ValueTask<bool>(false);
 
       var ordinal = parent.NextChildOrdinal;
 
-      if (!await _Store.EnsureChildAvailableAsync(parent.NodeIndex, ordinal).ConfigureAwait(false))
-        return false;
+      var available = _Store.EnsureChildAvailableAsync(parent.NodeIndex, ordinal);
+
+      if (!available.IsCompletedSuccessfully)
+        return AwaitThenTryScheduleNextChildOfAsync(available, fromVisitQueueFront);
+
+      if (!available.Result)
+        return new ValueTask<bool>(false);
 
       var childIndex = _Store.GetFirstChildIndex(parent.NodeIndex) + ordinal;
 
@@ -176,21 +204,81 @@ namespace Copse.Async.Treenumerators
 
       PushScheduled(childIndex, new NodePosition(ordinal, parentSlot.Position.Depth + 1));
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> TryScheduleNextRoot()
+    private ValueTask<bool> TryScheduleNextRoot()
     {
-      if (_RootsFinished || !await _Store.EnsureRootAvailableAsync(_RootsSeen).ConfigureAwait(false))
-        return false;
+      if (_RootsFinished)
+        return new ValueTask<bool>(false);
+
+      var available = _Store.EnsureRootAvailableAsync(_RootsSeen);
+
+      if (!available.IsCompletedSuccessfully)
+        return AwaitThenTryScheduleNextRootAsync(available);
+
+      if (!available.Result)
+        return new ValueTask<bool>(false);
 
       // Roots are the depth-0 prefix: ordinal and store index coincide.
       PushScheduled(_RootsSeen, new NodePosition(_RootsSeen, 0));
 
       _RootsSeen++;
 
-      return true;
+      return new ValueTask<bool>(true);
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. The grow continuations await the pending grow and RE-ENTER
+    // the probing method (grows are idempotent and answer inline the second time); the schedule
+    // continuations perform Advance's between-iteration mutation and re-enter Advance, which IS
+    // the loop's `continue`.
+    private async ValueTask<bool> AwaitThenTryScheduleNextChildOfAsync(ValueTask<bool> pendingGrow, bool fromVisitQueueFront)
+    {
+      await pendingGrow.ConfigureAwait(false);
+
+      return await TryScheduleNextChildOf(fromVisitQueueFront).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenTryScheduleNextRootAsync(ValueTask<bool> pendingGrow)
+    {
+      await pendingGrow.ConfigureAwait(false);
+
+      return await TryScheduleNextRoot().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenRetireStackTopAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      _ScheduleStack.RemoveLast();
+
+      return await Advance().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenFinishRootsAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      _RootsScheduled = true;
+      _SlotCarry = false;
+
+      return await Advance().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenRetireFrontAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      _VisitQueue.RemoveFirst();
+
+      return await Advance().ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     // Schedule a node onto the schedule stack and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

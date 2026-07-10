@@ -47,32 +47,43 @@ namespace Copse.Async.Treenumerators
       public int NextChildOrdinal;
     }
 
-    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
+    // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
+    // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
+    protected override ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Path.Count == 0)
-        return await MoveToNextRootNode().ConfigureAwait(false);
+        return MoveToNextRootNode();
 
       // The strategy applies to the node just scheduled; visiting nodes ignore it.
       if (Mode == TreenumeratorMode.SchedulingNode)
-        return await OnScheduling(nodeTraversalStrategies).ConfigureAwait(false);
+        return OnScheduling(nodeTraversalStrategies);
 
-      return await OnVisiting().ConfigureAwait(false);
+      return OnVisiting();
     }
 
-    private async ValueTask<bool> MoveToNextRootNode()
+    private ValueTask<bool> MoveToNextRootNode()
     {
-      if (_RootsFinished || !await _Store.EnsureRootAvailableAsync(_RootsSeen).ConfigureAwait(false))
-        return false;
+      if (_RootsFinished)
+        return new ValueTask<bool>(false);
+
+      var available = _Store.EnsureRootAvailableAsync(_RootsSeen);
+
+      if (!available.IsCompletedSuccessfully)
+        return AwaitThenMoveToNextRootNodeAsync(available);
+
+      if (!available.Result)
+        return new ValueTask<bool>(false);
 
       // Roots are the depth-0 prefix: ordinal and store index coincide.
       PushLevel(_RootsSeen, new NodePosition(_RootsSeen, 0));
 
       _RootsSeen++;
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
+    private ValueTask<bool> OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
         if (SkipRemainingSiblings())
@@ -82,17 +93,22 @@ namespace Copse.Async.Treenumerators
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
-        return await Backtrack().ConfigureAwait(false);
+        return Backtrack();
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         _Path.GetLast().Skipped = true;
 
-        if (await TryPushNextChild().ConfigureAwait(false))
-          return true;
+        var pushed = TryPushNextChild();
+
+        if (!pushed.IsCompletedSuccessfully)
+          return AwaitPushThenBacktrackAsync(pushed);
+
+        if (pushed.Result)
+          return new ValueTask<bool>(true);
 
         // No children to promote: a childless SkipNode'd node emits nothing.
-        return await Backtrack().ConfigureAwait(false);
+        return Backtrack();
       }
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
@@ -101,42 +117,52 @@ namespace Copse.Async.Treenumerators
       // Accept (TraverseAll, or the SkipDescendants fall-through): emit the node's first visit.
       TakeNextVisit();
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> OnVisiting()
+    private ValueTask<bool> OnVisiting()
     {
-      if (await TryPushNextChild().ConfigureAwait(false))
-        return true;
+      var pushed = TryPushNextChild();
 
-      return await Backtrack().ConfigureAwait(false);
+      if (!pushed.IsCompletedSuccessfully)
+        return AwaitPushThenBacktrackAsync(pushed);
+
+      if (pushed.Result)
+        return new ValueTask<bool>(true);
+
+      return Backtrack();
     }
 
     // Unwind finished levels and emit the next owed visit; see the sync twin.
-    private async ValueTask<bool> Backtrack()
+    private ValueTask<bool> Backtrack()
     {
       while (true)
       {
         _Path.RemoveLast();
 
         if (_Path.Count == 0)
-          return await MoveToNextRootNode().ConfigureAwait(false);
+          return MoveToNextRootNode();
 
-        // A copy (not a ref) for the pre-await reads: nothing mutates this level here, and a ref
-        // local may not survive the TryPushNextChild await below.
+        // A copy (not a ref): a pending push resumes through a continuation that re-enters this
+        // method, so nothing here may have mutated the level.
         var top = _Path.GetLast();
 
         if (top.Skipped || top.Position.Depth == _DepthOfLastVisitedNode)
         {
-          if (await TryPushNextChild().ConfigureAwait(false))
-            return true;
+          var pushed = TryPushNextChild();
+
+          if (!pushed.IsCompletedSuccessfully)
+            return AwaitPushThenBacktrackAsync(pushed);
+
+          if (pushed.Result)
+            return new ValueTask<bool>(true);
 
           continue;
         }
 
         TakeNextVisit();
 
-        return true;
+        return new ValueTask<bool>(true);
       }
     }
 
@@ -144,21 +170,27 @@ namespace Copse.Async.Treenumerators
     // NextChildOrdinal, at store index firstChildIndex + ordinal once the store has grown far
     // enough to prove it exists.
     //
-    // The pre-await reads use a copy of the top level; the mutation re-acquires it by ref after the
-    // grow await (the deque is stable across it, so the top is the same slot), because a ref local
-    // may not cross an await.
+    // The pre-probe reads use a copy of the top level: a pending grow resumes through a
+    // continuation that RE-ENTERS this method (the re-issued grow is idempotent and answers
+    // inline the second time), so nothing may mutate before the probe; the mutation re-acquires
+    // the top by ref after it.
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private async ValueTask<bool> TryPushNextChild()
+    private ValueTask<bool> TryPushNextChild()
     {
       var top = _Path.GetLast();
 
       if (top.ChildrenDisabled)
-        return false;
+        return new ValueTask<bool>(false);
 
       var ordinal = top.NextChildOrdinal;
 
-      if (!await _Store.EnsureChildAvailableAsync(top.NodeIndex, ordinal).ConfigureAwait(false))
-        return false;
+      var available = _Store.EnsureChildAvailableAsync(top.NodeIndex, ordinal);
+
+      if (!available.IsCompletedSuccessfully)
+        return AwaitThenTryPushNextChildAsync(available);
+
+      if (!available.Result)
+        return new ValueTask<bool>(false);
 
       var childIndex = _Store.GetFirstChildIndex(top.NodeIndex) + ordinal;
 
@@ -170,8 +202,37 @@ namespace Copse.Async.Treenumerators
 
       PushLevel(childIndex, position);
 
-      return true;
+      return new ValueTask<bool>(true);
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. Await the pending grow, then RE-ENTER the probing method:
+    // the re-issued grow is idempotent ("grow until") and now answers inline, and the probing
+    // methods mutate nothing before their probes. Re-entering Backtrack after a failed push IS
+    // its loop's `continue`.
+    private async ValueTask<bool> AwaitThenMoveToNextRootNodeAsync(ValueTask<bool> pendingGrow)
+    {
+      await pendingGrow.ConfigureAwait(false);
+
+      return await MoveToNextRootNode().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenTryPushNextChildAsync(ValueTask<bool> pendingGrow)
+    {
+      await pendingGrow.ConfigureAwait(false);
+
+      return await TryPushNextChild().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitPushThenBacktrackAsync(ValueTask<bool> pendingPush)
+    {
+      if (await pendingPush.ConfigureAwait(false))
+        return true;
+
+      return await Backtrack().ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     // Schedule a node as a new level and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
