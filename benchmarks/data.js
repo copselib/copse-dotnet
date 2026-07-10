@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783694824262,
+  "lastUpdate": 1783694824570,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -46142,6 +46142,120 @@ window.BENCHMARK_DATA = {
             "value": 19210402.94375,
             "unit": "ns",
             "range": "± 85091.22681820004"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40bdba8f62946fd9bbfb767afd6ed38afb80dab8",
+          "message": "The ValueTask fast-path idiom: probe grows, suspend only when pending\n\nThe async seam, measured (profile of the FlatDecode async drain): the\nreal work was 0.05% of the time; the rest was five nested per-pull\nstate machines and their builder launches -- paid per CALL, not per\nsuspension, on drains where nothing ever suspends.\n\nThe idiom: hot methods stop being async. Each store grow is PROBED --\n\n  var closed = _Store.EnsureSubtreeClosedAsync(index);\n\n  if (!closed.IsCompletedSuccessfully)\n    return AwaitThenTryPushNextChildAsync(closed);\n\n  var candidate = index + closed.Result;\n\n-- so a buffered answer costs ordinary method calls with zero state\nmachines, and only a genuinely pending grow enters an async\ncontinuation, which awaits and RE-ENTERS the probing method (grows are\nidempotent and the probing methods mutate nothing before their probes;\nre-entering Backtrack is its loop's `continue`). The method\ndecomposition is fully preserved.\n\nTranscription: two new AsyncToSync rules -- the probe guard statement\nvanishes (the twin can never be pending) and `x.Result` collapses to\n`x` -- leaving exactly the hand-written sync shape; the continuations\nlive in async-only regions. `.IsCompletedSuccessfully`/`.Result` are\nRESERVED idiom names in manifest sources (used nowhere else).\n\nApplied to AsyncTreenumeratorBase.MoveNextAsync (hand-written pair;\nremoves a per-pull state machine from EVERY derived treenumerator) and\nAsyncPreorderStoreDepthFirstTreenumerator as the prototype.\n\nAsyncOverheadFlatDecode: 6.9x -> 1.36x (async 28.9 -> 5.1 ms, async\nallocation now equal to sync). Suspension path covered by the async\nmechanics tests (genuinely-suspending sources); full suite 24,226\ngreen. Rollout to the remaining decoders follows.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:22:50Z",
+          "tree_id": "d45718a48306d0a5d0aa4dc9eecf99e097a9cfc5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/40bdba8f62946fd9bbfb767afd6ed38afb80dab8"
+        },
+        "date": 1783694824513,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 104710394.97142859,
+            "unit": "ns",
+            "range": "± 979481.6116616537"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 133200749.96428572,
+            "unit": "ns",
+            "range": "± 481910.8510885723"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 76574995.25,
+            "unit": "ns",
+            "range": "± 515323.4524297741"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 109908686.46153846,
+            "unit": "ns",
+            "range": "± 356633.709138899"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 49052575.26060605,
+            "unit": "ns",
+            "range": "± 244246.26878045543"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 62197260.438095234,
+            "unit": "ns",
+            "range": "± 944294.7446923953"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 29986017.270636793,
+            "unit": "ns",
+            "range": "± 1237985.0808735087"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 33386870.409523807,
+            "unit": "ns",
+            "range": "± 254128.88057403412"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 47241813.23376624,
+            "unit": "ns",
+            "range": "± 145443.7922127105"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 61695752.99166667,
+            "unit": "ns",
+            "range": "± 141849.63677202686"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 41961650.972222224,
+            "unit": "ns",
+            "range": "± 78871.69945158958"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 30888676.991666667,
+            "unit": "ns",
+            "range": "± 197326.63048112128"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 105231905.94666667,
+            "unit": "ns",
+            "range": "± 329713.83968320483"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 127404463.58333333,
+            "unit": "ns",
+            "range": "± 916598.3004397275"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 19044404.848557692,
+            "unit": "ns",
+            "range": "± 58085.20692528378"
           }
         ]
       }
