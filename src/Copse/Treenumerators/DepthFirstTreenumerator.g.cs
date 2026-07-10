@@ -11,15 +11,15 @@ namespace Copse.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> treenumerator in the <b>direct style</b>: the natural inlined control flow
-  /// (OnScheduling / OnVisiting / Backtrack / TryPushNextChild), with <c>await</c> at the two I/O seams
-  /// (child pull, root pull), over the shared color-agnostic
-  /// <see cref="DepthFirstPathState{TNode, TEnumerator}"/>. No inverted cadence.
+  /// (OnScheduling / OnVisiting / Backtrack / TryPushNextChild) over the shared color-agnostic
+  /// <see cref="DepthFirstPathState{TNode, TEnumerator}"/>, with the two I/O seams (child pull,
+  /// root pull) PROBED so a pull that completes inline costs no state machine at all (the
+  /// fast-path probe idiom -- see AsyncToSync). No inverted cadence.
   ///
-  /// <para><b>This is the single source of truth.</b> Strip the <c>await</c>s and the two async seams
-  /// collapse to synchronous pulls, yielding exactly
-  /// <c>Copse.Treenumerators.DepthFirstDirectTreenumerator</c> -- which benchmarks at parity with the
-  /// hand-tuned engine (1.02x), where the inverted cadence cost 1.61x. A Roslyn async→sync generator
-  /// (Npgsql pattern) would emit that sync twin from this file.</para>
+  /// <para><b>This is the single source of truth.</b> The probe guards vanish in transcription and
+  /// the two seams collapse to synchronous pulls, yielding exactly
+  /// <c>Copse.Treenumerators.DepthFirstTreenumerator</c> -- which benchmarks at parity with the
+  /// hand-tuned original engine (1.02x), where an inverted cadence cost 1.61x.</para>
   /// </summary>
   public sealed class DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
@@ -47,6 +47,11 @@ namespace Copse.Treenumerators
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
+    // NOT async, and neither are the helpers below: both pulls are PROBED, and a pull that
+    // completes inline stays ordinary method calls with no state machine -- the fast-path probe
+    // idiom (see AsyncToSync). Unlike a store grow ("grow until", idempotent), a pull ADVANCES
+    // its cursor, so a pending pull resumes through a continuation that CONSUMES the pulled
+    // result and runs its caller's tail -- never by re-entering the probing method.
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -73,7 +78,12 @@ namespace Copse.Treenumerators
 
     private bool MoveToNextRootNode()
     {
-      if (_RootsEnumeratorFinished || !_RootsEnumerator.MoveNext())
+      if (_RootsEnumeratorFinished)
+        return false;
+
+      var moved = _RootsEnumerator.MoveNext();
+
+      if (!moved)
         return false;
 
       Publish(ref _Path.PushRoot(_RootsEnumerator.Current));
@@ -93,7 +103,9 @@ namespace Copse.Treenumerators
       {
         _Path.SkipCurrentNode();
 
-        if (TryPushNextChild())
+        var pushed = TryPushNextChild();
+
+        if (pushed)
           return true;
 
         return Backtrack();
@@ -108,7 +120,9 @@ namespace Copse.Treenumerators
 
     private bool OnVisiting()
     {
-      if (TryPushNextChild())
+      var pushed = TryPushNextChild();
+
+      if (pushed)
         return true;
 
       return Backtrack();
@@ -124,8 +138,11 @@ namespace Copse.Treenumerators
             return MoveToNextRootNode();
 
           case DepthFirstBacktrackStep.PromoteNextChild:
-            if (TryPushNextChild())
+            var pushed = TryPushNextChild();
+
+            if (pushed)
               return true;
+
             continue;
 
           default: // EmitReturnVisit
@@ -135,16 +152,25 @@ namespace Copse.Treenumerators
       }
     }
 
-    // THE SEAM: the ONLY line that differs from the sync twin -- an awaited pull instead of a sync one.
+    // THE SEAM: the child pull, probed. The pulled result lands through the same consume helper
+    // whether the pull answered inline or through the pending continuation.
     private bool TryPushNextChild()
     {
       var result = _Path.TopEnumerator.MoveNext();
+
+      return TryPushPulledChild(result);
+    }
+
+    // Land a pulled child on the path; false when the enumerator was exhausted.
+    private bool TryPushPulledChild(ChildResult<TNode> result)
+    {
       if (!result.HasChild)
         return false;
 
       Publish(ref _Path.PushChild(result.Child.Node, result.Child.SiblingIndex));
       return true;
     }
+
 
     private void Publish(ref DepthFirstNodeState<TNode> node)
     {

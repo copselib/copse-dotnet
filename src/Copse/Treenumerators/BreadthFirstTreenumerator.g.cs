@@ -10,17 +10,20 @@ using System.Collections.Generic;
 namespace Copse.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> treenumerator: the direct-style async port of
-  /// <c>Copse.Treenumerators.BreadthFirstTreenumerator</c>, over the shared
-  /// <see cref="BreadthFirstPathState{TNode, TEnumerator}"/>, with the child/root pulls awaited.
+  /// Breadth-first <b>async</b> treenumerator: the direct-style async port of the original
+  /// hand-written sync engine, over the shared
+  /// <see cref="BreadthFirstPathState{TNode, TEnumerator}"/>, with the child/root pulls PROBED
+  /// so a pull that completes inline costs no state machine at all (the fast-path probe idiom --
+  /// see AsyncToSync).
   ///
-  /// <para><b>The BFS engine's async wrinkle.</b> The sync driver's seam is
+  /// <para><b>The BFS engine's async wrinkle.</b> The original sync driver's seam was
   /// <c>TryScheduleNextChildOf(ref BreadthFirstFrame parent)</c> -- a <b>ref parameter</b> -- and it
-  /// binds <c>ref var front = ref _Path.Front</c> -- a <b>ref local</b>. Both are illegal in async
-  /// methods. So the single ref-parameter seam splits into two parameterless awaited seams (one over the
-  /// schedule-stack top, one over the queue front) and the ref-local front is inlined as repeated
-  /// <c>_Path.Front</c> access (semantically identical -- Front returns a ref to the same slot). This is
-  /// the one restructuring the async port imposes on the engines; everything else mirrors the sync driver.</para>
+  /// bound <c>ref var front = ref _Path.Front</c> -- a <b>ref local</b>. Both are illegal in the async
+  /// continuations a pending pull resumes through. So the single ref-parameter seam splits into two
+  /// parameterless probed seams (one over the schedule-stack top, one over the queue front) and the
+  /// ref-local front is inlined as repeated <c>_Path.Front</c> access (semantically identical -- Front
+  /// returns a ref to the same slot). This is the one restructuring the async port imposes on the
+  /// engines; everything else mirrors the original sync driver.</para>
   /// </summary>
   public sealed class BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>
@@ -49,6 +52,12 @@ namespace Copse.Treenumerators
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
+    // NOT async, and neither are the helpers below: every pull is PROBED, and a pull that
+    // completes inline stays ordinary method calls with no state machine -- the fast-path probe
+    // idiom (see AsyncToSync). A pull ADVANCES its cursor, so a pending pull resumes through a
+    // continuation that CONSUMES the pulled result; Advance's loop state lives entirely in
+    // fields, so the schedule continuations then perform the loop's between-iteration mutation
+    // and re-enter Advance -- exactly its `continue`.
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -72,7 +81,9 @@ namespace Copse.Treenumerators
         // 1) Descend: schedule the next child of the schedule-stack top.
         if (_Path.HasScheduledNode)
         {
-          if (TryScheduleNextChildOfScheduleTop())
+          var scheduled = TryScheduleNextChildOfScheduleTop();
+
+          if (scheduled)
             return true;
 
           _Path.PopScheduleStack();
@@ -82,7 +93,9 @@ namespace Copse.Treenumerators
         // 2) Schedule the next root.
         if (!_RootsScheduled)
         {
-          if (TryScheduleNextRoot())
+          var scheduled = TryScheduleNextRoot();
+
+          if (scheduled)
             return true;
 
           _RootsScheduled = true;
@@ -109,7 +122,9 @@ namespace Copse.Treenumerators
           return true;
         }
 
-        if (TryScheduleNextChildOfFront())
+        var frontScheduled = TryScheduleNextChildOfFront();
+
+        if (frontScheduled)
           return true;
 
         _Path.RetireFront();
@@ -137,11 +152,41 @@ namespace Copse.Treenumerators
       _Path.AcceptScheduledNode();
     }
 
-    // THE SEAM (schedule-stack top): awaited child pull. Reads the parent (ScheduleTop) inline instead
-    // of via a ref parameter, which async methods forbid.
+    // THE SEAM (schedule-stack top): the child pull, probed. Reads the parent (ScheduleTop) inline
+    // instead of via a ref parameter (see the class doc). The pulled result lands through the same
+    // consume helper whether the pull answered inline or through the pending continuation.
     private bool TryScheduleNextChildOfScheduleTop()
     {
       var result = _Path.ScheduleTop.ChildEnumerator.MoveNext();
+
+      return TrySchedulePulledChildOfScheduleTop(result);
+    }
+
+    // THE SEAM (queue front): the child pull, probed.
+    private bool TryScheduleNextChildOfFront()
+    {
+      var result = _Path.Front.ChildEnumerator.MoveNext();
+
+      return TrySchedulePulledChildOfFront(result);
+    }
+
+    private bool TryScheduleNextRoot()
+    {
+      if (_RootsEnumeratorFinished)
+        return false;
+
+      var moved = _RootsEnumerator.MoveNext();
+
+      if (!moved)
+        return false;
+
+      Publish(ref _Path.PushScheduledRoot(_RootsEnumerator.Current));
+      return true;
+    }
+
+    // Land a pulled child under the schedule-stack top; false when the enumerator was exhausted.
+    private bool TrySchedulePulledChildOfScheduleTop(ChildResult<TNode> result)
+    {
       if (!result.HasChild)
         return false;
 
@@ -149,10 +194,9 @@ namespace Copse.Treenumerators
       return true;
     }
 
-    // THE SEAM (queue front): awaited child pull.
-    private bool TryScheduleNextChildOfFront()
+    // Land a pulled child under the queue front; false when the enumerator was exhausted.
+    private bool TrySchedulePulledChildOfFront(ChildResult<TNode> result)
     {
-      var result = _Path.Front.ChildEnumerator.MoveNext();
       if (!result.HasChild)
         return false;
 
@@ -160,14 +204,6 @@ namespace Copse.Treenumerators
       return true;
     }
 
-    private bool TryScheduleNextRoot()
-    {
-      if (_RootsEnumeratorFinished || !_RootsEnumerator.MoveNext())
-        return false;
-
-      Publish(ref _Path.PushScheduledRoot(_RootsEnumerator.Current));
-      return true;
-    }
 
     private void Publish(ref BreadthFirstFrame<TNode, TChildEnumerator> frame)
     {

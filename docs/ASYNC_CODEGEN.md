@@ -41,6 +41,11 @@ Mechanical, syntax-level, no semantic analysis:
   `await using` → `using`; async local functions lose their color;
 - `ValueTask<X>` → `X`, `ValueTask` → `void`, `Func<ValueTask>` → `Action`,
   `new ValueTask<X>(expr)` → `expr`;
+- **the fast-path probe idiom** (see the note in `AsyncToSync.cs`): a
+  `if (!x.IsCompletedSuccessfully) return AwaitThen…Async(x);` guard statement vanishes and
+  `x.Result` collapses to `x` — `.IsCompletedSuccessfully`/`.Result` are RESERVED spellings in
+  manifest sources (they always mean this idiom); the continuation methods live in async-only
+  marker regions;
 - identifier renames from the manifest plus the standing dictionary
   (`IAsyncTreenumerable` → `ITreenumerable`, `GetAsyncTreenumerator` → `GetTreenumerator`,
   `AsyncDisposable` → `Disposable`, …) and `Async` prefix/suffix strips;
