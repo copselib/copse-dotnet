@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783699477263,
+  "lastUpdate": 1783699477601,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -43028,6 +43028,114 @@ window.BENCHMARK_DATA = {
             "value": 2456854.8551897323,
             "unit": "ns",
             "range": "± 6437.151673400053"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c6d7d6d2aec5ae217442045caa3d8291209a96b",
+          "message": "Fast-path probe idiom: the preorder stream decoder\n\nSame treatment as the level-order twin (2e715c7): the full pull chain\ngoes non-async with every stream seam probed. The lookahead is the\ninteresting shape here: a pending TryReadNext/TrySkipToDepth resumes\nthrough a continuation that lands the read in the lookahead FIELDS\n(via the same ConsumeRead/ConsumeSkip helpers the fast path uses) and\nre-enters the ensure -- the filled lookahead makes re-entry skip\nstraight to the depth check, so no mid-method resume state exists.\n\nAsyncOverheadSerializerRoundTrip: 5.3x (CI) -> 2.45x (async 2.4ms ->\n966us, allocation now equal to sync). The remainder rides the\nserializer's TEXT streams (their TryRead methods are still async over\nthe scanner) and the write side -- next increment, with the engines.\nFull suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:53:54Z",
+          "tree_id": "4c02a67e7a3af01805fe42a34605491f007a748e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9c6d7d6d2aec5ae217442045caa3d8291209a96b"
+        },
+        "date": 1783699477540,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2146647.4783653845,
+            "unit": "ns",
+            "range": "± 5566.8724247535965"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2172137.6783854165,
+            "unit": "ns",
+            "range": "± 10047.849627726227"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4181507.9735576925,
+            "unit": "ns",
+            "range": "± 8856.533615425846"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3793433.5870535714,
+            "unit": "ns",
+            "range": "± 8354.104287614247"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 699186.1249248798,
+            "unit": "ns",
+            "range": "± 890.8936656321458"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 846505.7377232143,
+            "unit": "ns",
+            "range": "± 1877.229160451658"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 452541.3487374442,
+            "unit": "ns",
+            "range": "± 1882.9763811679056"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 5561940.2609375,
+            "unit": "ns",
+            "range": "± 15286.918826070416"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 5708857.452083333,
+            "unit": "ns",
+            "range": "± 14501.630559450985"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13621338.34014423,
+            "unit": "ns",
+            "range": "± 95472.71004754222"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 8825778.56875,
+            "unit": "ns",
+            "range": "± 54702.999839210366"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2252311.982979911,
+            "unit": "ns",
+            "range": "± 2868.912156756545"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1897716.5115885416,
+            "unit": "ns",
+            "range": "± 13537.86092998737"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1403279.958984375,
+            "unit": "ns",
+            "range": "± 928.329678221519"
           }
         ]
       }
