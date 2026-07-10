@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783697092934,
+  "lastUpdate": 1783697093200,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -55387,6 +55387,105 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
             "value": 50017,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597792,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3363871,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cd9486b469040f9807f27b750a335cc9f1dc5459",
+          "message": "Dashboard: archive suites by commit identity, not a wall-clock window\n\nA suite now reads as archived iff it has no data for the newest\nPUBLISHED COMMIT -- the same rule rows already use within a suite.\nThe old 3-day window was doing one real job, absorbing the\nminutes-apart leg timestamps inside a single run, and commit identity\ndoes that exactly. It is also safe to be this tight: publishes are\nall-or-nothing (the publish job needs every leg, so a failed leg skips\nthe whole publish, and manual dispatch publishes only full main runs),\nso every live suite appears in every publish and the only skip-then-\nresume scenario is a deliberate matrix edit -- where flapping to\narchived and back is the truthful display.\n\nPractical effect: the twelve pre-reorg suites read as archived on the\nnext visit instead of on July 12th, and any future retirement shows\nimmediately after its first post-retirement publish.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:11:40Z",
+          "tree_id": "0c5d670673822d39c924081606a49d3356145e5e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cd9486b469040f9807f27b750a335cc9f1dc5459"
+        },
+        "date": 1783697093154,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 42112917,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 25533442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71350817,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 12588704,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16848065,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400272,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21013110,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12586878,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58227,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 49991,
             "unit": "bytes"
           },
           {
