@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783655077579,
+  "lastUpdate": 1783655077905,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -22365,6 +22365,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
             "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4a8d8a6b7a1f8b10f7116cdee265a8697de1046",
+          "message": "LevelOrderArrayStore: the completed level-order dual (+ lazy-built twin)\n\nPreorderArrayStore's structural dual, long on the dual-symmetry\nbacklog: values[i] in level order, children contiguous, roots the\ndepth-0 prefix, pure-read Ensure* hooks. AsyncLazyBuiltLevelOrderStore\n-> LazyBuiltLevelOrderStore.g.cs is the lazy-built dual (manifest entry\nadded); both array stores gain Count. Direct tests decode hand-laid\ntree/forest/empty stores through LevelOrderTreenumerable in both\ndimensions and pin the lazy dual's build-once semantics.\n\nDecision record -- LeaffixScan layout-by-first-dimension: BUILT AND\nMEASURED OUT. A breadth-first-first pull pinning a level-order layout\n(one transpose pass) was implemented, then rejected on direct\nmeasurement: over raw array stores the breadth-first cross-decode tax\nis only ~1.08x (39.9 vs 36.9ms replaying the Mega triangle) -- the\nMemoize replay rows' 1.53x is memo-store overhead (grow-seam checks,\nchunked indexing), not layout -- so the transpose (+~13ms, +12MB\ntransient) needs ~5 replays to break even and taxes the common\nsingle-drain case ~8% (end-to-end Bft_Triangle 124.6 -> 134.6ms).\nLeaffixScan stays preorder for both dimensions, on the blind Tree.Lazy;\nthe rationale lives in a comment on PreorderScan. LeaffixScan's\npin-order matrix tests and the async breadth-first-first mechanics\ncheck stay: they assert the pin contract, not the layout.\n\nFull solution suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T03:12:47Z",
+          "tree_id": "c6e1ed34b9e32c1caf3ea2896a6ae5b289419eec",
+          "url": "https://github.com/copselib/copse-dotnet/commit/a4a8d8a6b7a1f8b10f7116cdee265a8697de1046"
+        },
+        "date": 1783655077847,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505986,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2277,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26166,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33637078,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 284,
             "unit": "bytes"
           },
           {
