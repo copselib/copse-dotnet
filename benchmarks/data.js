@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783727705591,
+  "lastUpdate": 1783727705929,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -54064,6 +54064,162 @@ window.BENCHMARK_DATA = {
             "value": 8407650.24330357,
             "unit": "ns",
             "range": "± 14544.567171892313"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6ac4a5a7fc35b0dd65401c1167f1b19648524f0",
+          "message": "Copse.Linq: drop the stale InternalsVisibleTo(Copse.Linq.Async)\n\nThe grant dated from when the async Where consumed WhereDepthFirstPath\nas a Copse.Linq internal; those path structs were since extracted to\nCopse.Linq.Traversal, which grants its own internals to both color\nhalves. Nothing in Copse.Linq.Async touches Copse.Linq internals\nanymore (verified: all four TFMs build without the grant), and the\nfriend declaration read like a dependency edge it isn't -- Copse.Linq's\npackage depends on nothing async, and the IVT line was the misleading\nbreadcrumb suggesting otherwise.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T23:39:13Z",
+          "tree_id": "2b67845a2bdf781d9420529a1efc6d94ec498204",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f6ac4a5a7fc35b0dd65401c1167f1b19648524f0"
+        },
+        "date": 1783727705869,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 12333982.883333333,
+            "unit": "ns",
+            "range": "± 61270.0723938868"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 9190624.911830356,
+            "unit": "ns",
+            "range": "± 17206.80322575776"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 12873344.245833334,
+            "unit": "ns",
+            "range": "± 69746.96937902296"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 8409978.371651785,
+            "unit": "ns",
+            "range": "± 22625.72816852435"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 23428361.364583332,
+            "unit": "ns",
+            "range": "± 431395.1708590773"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 21933467.86875,
+            "unit": "ns",
+            "range": "± 89146.43497634237"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 21064084.307692308,
+            "unit": "ns",
+            "range": "± 27168.85397741804"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 25228076.29017857,
+            "unit": "ns",
+            "range": "± 67889.98976367681"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 36987215.63186813,
+            "unit": "ns",
+            "range": "± 24674.094831022823"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 51214672.52666667,
+            "unit": "ns",
+            "range": "± 309949.7725999798"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 139740388.78947368,
+            "unit": "ns",
+            "range": "± 1462251.36104958"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 162378657.74603173,
+            "unit": "ns",
+            "range": "± 3683884.823279939"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 58374204.65925925,
+            "unit": "ns",
+            "range": "± 258192.0852027785"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 64226785.615384616,
+            "unit": "ns",
+            "range": "± 61174.03164643317"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 72725376.63809521,
+            "unit": "ns",
+            "range": "± 271601.9092008097"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 72969920.31428571,
+            "unit": "ns",
+            "range": "± 183708.46114947286"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 16745144.314903846,
+            "unit": "ns",
+            "range": "± 30041.7657907495"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 24134735.98182398,
+            "unit": "ns",
+            "range": "± 1403927.6408448203"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 40200574.538461536,
+            "unit": "ns",
+            "range": "± 240702.54512576587"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 37620010.39795919,
+            "unit": "ns",
+            "range": "± 179561.23290769826"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 9171662.304166667,
+            "unit": "ns",
+            "range": "± 19915.872923547187"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 8083860.375600962,
+            "unit": "ns",
+            "range": "± 8322.959546735896"
           }
         ]
       }
