@@ -5,6 +5,13 @@ using System.Runtime.CompilerServices;
 
 namespace Copse
 {
+  // ACCESS-COST CONTRACT: head/tail operations (AddLast/RemoveLast/RemoveFirst/GetFirst/GetLast)
+  // and near-end indexing are O(1); GetFromBack/GetFromFront at an ARBITRARY index resolve their
+  // partition by walking the partition chain -- O(partitions), a pointer chase per hop. Every
+  // caller in the library indexes near an end or on a cold path. A workload that random-indexes
+  // a large live range wants a different shape: the level-order stream decoder's window did
+  // exactly that and profiled at 87% of its whole drain here before moving to a masked ring
+  // (see LevelOrderStreamBreadthFirstTreenumerator).
   [DebuggerDisplay("Count = {Count}")]
   [DebuggerTypeProxy(typeof(RefSemiDeque<>.DebugView))]
   public class RefSemiDeque<T>
