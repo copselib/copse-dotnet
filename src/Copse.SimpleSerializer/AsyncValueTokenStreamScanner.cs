@@ -168,19 +168,26 @@ namespace Copse.SimpleSerializer
     }
 
     // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
-    // text (a drained reader keeps answering 0, so post-end calls stay correct).
-    private async ValueTask<int> ReadCharacterAsync()
+    // text (a drained reader keeps answering 0, so post-end calls stay correct). Split along
+    // the block boundary: a character already in the block is served with no state machine --
+    // the refill (one await per 4096 characters) is the only async path.
+    private ValueTask<int> ReadCharacterAsync()
     {
-      if (_Position == _Length)
-      {
-        _CancellationToken.ThrowIfCancellationRequested();
+      if (_Position < _Length)
+        return new ValueTask<int>(_Block[_Position++]);
 
-        _Length = await _Reader.ReadAsync(_Block, 0, _Block.Length).ConfigureAwait(false);
-        _Position = 0;
+      return RefillThenReadAsync();
+    }
 
-        if (_Length == 0)
-          return -1;
-      }
+    private async ValueTask<int> RefillThenReadAsync()
+    {
+      _CancellationToken.ThrowIfCancellationRequested();
+
+      _Length = await _Reader.ReadAsync(_Block, 0, _Block.Length).ConfigureAwait(false);
+      _Position = 0;
+
+      if (_Length == 0)
+        return -1;
 
       return _Block[_Position++];
     }

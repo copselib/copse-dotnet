@@ -168,18 +168,25 @@ namespace Copse.SimpleSerializer
     }
 
     // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
-    // text (a drained reader keeps answering 0, so post-end calls stay correct).
+    // text (a drained reader keeps answering 0, so post-end calls stay correct). Split along
+    // the block boundary: a character already in the block is served with no state machine --
+    // the refill (one await per 4096 characters) is the only async path.
     private int ReadCharacter()
     {
-      if (_Position == _Length)
-      {
+      if (_Position < _Length)
+        return _Block[_Position++];
 
-        _Length = _Reader.Read(_Block, 0, _Block.Length);
-        _Position = 0;
+      return RefillThenRead();
+    }
 
-        if (_Length == 0)
-          return -1;
-      }
+    private int RefillThenRead()
+    {
+
+      _Length = _Reader.Read(_Block, 0, _Block.Length);
+      _Position = 0;
+
+      if (_Length == 0)
+        return -1;
 
       return _Block[_Position++];
     }
