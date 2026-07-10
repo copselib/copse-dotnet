@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783695838669,
+  "lastUpdate": 1783695839007,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -42441,6 +42441,100 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/40bdba8f62946fd9bbfb767afd6ed38afb80dab8"
         },
         "date": 1783694828863,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 153113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 86489,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840384,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 415379,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 446945,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251211,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ad231c8ce599bcc781121880181a71f31cbf445c",
+          "message": "Fast-path probe idiom: the remaining three store decoders\n\nSame treatment as the DFT preorder prototype (40bdba8): OnMoveNextAsync\nand the pull helpers stop being async; every store grow is probed and a\nbuffered answer is ordinary method calls with zero state machines. The\nBFT drivers add the phase-loop shape: a pending schedule resumes\nthrough a continuation that performs Advance's between-iteration\nmutation (retire the stack top / finish roots / retire the front) and\nre-enters Advance, which IS the loop's `continue` -- all loop state\nlives in fields. Grow continuations re-enter their probing method\n(grows are idempotent; nothing mutates before the probes).\n\nAffected pairs (same machine, Job.Default, ratios computed per-pair):\nFlatDecode holds 1.35x; MaterializeReplay 4.3x -> 2.65x (replay side\nconverted; the capture side rides the engine + memo buffer, still\nasync); InvertStream 4.0x -> 2.60x (base fast path inherited; its\nstream decoder is the next stage). Full suite 24,226 green; the async\nmechanics tests drive genuinely-suspending sources through all four\ndecoders, covering the continuation paths.\n\nNext: the growing stores' own Ensure*Async methods (async methods that\ncomplete synchronously when buffered -- same idiom, inside the store),\nthe two stream decoders, the wrapper base, then the engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:52:52Z",
+          "tree_id": "4c766968ea8773d9fafe4f04fd22718dbdd4d83c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ad231c8ce599bcc781121880181a71f31cbf445c"
+        },
+        "date": 1783695838949,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
