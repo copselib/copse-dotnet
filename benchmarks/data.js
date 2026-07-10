@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783699480616,
+  "lastUpdate": 1783699480952,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -44539,6 +44539,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
             "value": 251211,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c6d7d6d2aec5ae217442045caa3d8291209a96b",
+          "message": "Fast-path probe idiom: the preorder stream decoder\n\nSame treatment as the level-order twin (2e715c7): the full pull chain\ngoes non-async with every stream seam probed. The lookahead is the\ninteresting shape here: a pending TryReadNext/TrySkipToDepth resumes\nthrough a continuation that lands the read in the lookahead FIELDS\n(via the same ConsumeRead/ConsumeSkip helpers the fast path uses) and\nre-enters the ensure -- the filled lookahead makes re-entry skip\nstraight to the depth check, so no mid-method resume state exists.\n\nAsyncOverheadSerializerRoundTrip: 5.3x (CI) -> 2.45x (async 2.4ms ->\n966us, allocation now equal to sync). The remainder rides the\nserializer's TEXT streams (their TryRead methods are still async over\nthe scanner) and the write side -- next increment, with the engines.\nFull suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:53:54Z",
+          "tree_id": "4c02a67e7a3af01805fe42a34605491f007a748e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9c6d7d6d2aec5ae217442045caa3d8291209a96b"
+        },
+        "date": 1783699480893,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 153113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 86489,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840384,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 415379,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 446945,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
             "unit": "bytes"
           }
         ]
