@@ -108,19 +108,27 @@ function buildRows() {
   const rows = [];
   if (!data || !data.entries) return rows;
   // Archived detection: a name absent from its suite's most recent run was renamed or deleted,
-  // and a suite that missed the most recent publish (all suites publish together, minutes apart,
-  // so a generous window suffices) was retired wholesale. Both stay charted as history but read
-  // as "archived" rather than live.
+  // and a suite with no data for the newest PUBLISHED COMMIT was retired wholesale. Publishes
+  // are all-or-nothing (the publish job needs every leg, and manual dispatch publishes only
+  // full main runs), so every live suite appears in every publish -- commit identity is exact,
+  // and it also absorbs the minutes-apart leg timestamps within one run, which is all the old
+  // 3-day wall-clock window was really for. Both stay charted as history but read as
+  // "archived" rather than live.
   const suiteMax = new Map();
+  const suiteNewestCommit = new Map();
   let globalMax = 0;
+  let newestCommitId = "";
   for (const suite of Object.keys(data.entries)) {
-    const max = Math.max(0, ...data.entries[suite].map(c=>c.date));
+    let max = 0, newest = "";
+    for (const c of data.entries[suite]) {
+      if (c.date >= max) { max = c.date; newest = (c.commit && c.commit.id) || ""; }
+    }
     suiteMax.set(suite, max);
-    globalMax = Math.max(globalMax, max);
+    suiteNewestCommit.set(suite, newest);
+    if (max > globalMax) { globalMax = max; newestCommitId = newest; }
   }
-  const PUBLISH_WINDOW = 3*24*3600*1000;
   for (const suite of Object.keys(data.entries)) {
-    const suiteStale = globalMax - suiteMax.get(suite) > PUBLISH_WINDOW;
+    const suiteStale = suiteNewestCommit.get(suite) !== newestCommitId;
     const commits = data.entries[suite].slice().sort((a,b)=>a.date-b.date);
     const series = new Map();
     for (const c of commits) {
