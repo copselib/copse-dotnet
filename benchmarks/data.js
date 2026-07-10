@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783668976362,
+  "lastUpdate": 1783668976683,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -42262,6 +42262,150 @@ window.BENCHMARK_DATA = {
             "value": 43205013.20138889,
             "unit": "ns",
             "range": "± 95154.04122460794"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "261e7148985695daa5f904e3de55ae748050344d",
+          "message": "Comb: RefSemiDeque access-cost contract; chain seam attributed and accepted\n\nThe fine-toothed-comb pass over the flat primitives, driven by the\nFlatDecode instrument and the decoder profile:\n\n- RefSemiDeque: head/tail O(1), arbitrary-index GetFromBack/GetFromFront\n  O(partitions) via a partition-chain walk. Audited every caller: all\n  index near an end or on cold strategy paths (SkipRemainingSiblings,\n  disposal) -- the stream decoder's window was the library's only hot\n  random-index user and now rides a masked ring. Contract documented on\n  the class so the next random-index workload reaches for the right\n  shape instead of a profiler.\n- RefAppendOnlyList: healthy -- cached read-partition fast path with\n  bounds-check elision; the memo stores ride it at store-decoder speed\n  (Memoize replay rows).\n- Chain lazy seam attributed: bulk capture-then-replay through the\n  fused store measures 94.0ms vs the old eager capture's 90.2 --\n  parity -- so Invert Bft_Chain's remaining ~11% over eager is purely\n  the per-pull grow seam, i.e. the price of laziness itself, and any\n  consumer gets the bulk rate via dispose-completes-capture. Accepted;\n  no SPI change.\n- Accepted-and-documented: BFT store decoders' width-scale frame\n  queues are inherent to breadth-first visit synthesis (the dimension\n  tax the FlatDecode baseline quantified); evicted ring slots are\n  overwritten on wrap, matching the deque's chunk-retention behavior.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T07:13:45Z",
+          "tree_id": "880b459ba42bbdfb1528b65ec8060e238414adaf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/261e7148985695daa5f904e3de55ae748050344d"
+        },
+        "date": 1783668976629,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 8874870.65625,
+            "unit": "ns",
+            "range": "± 97138.55119523966"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 15369949.686458332,
+            "unit": "ns",
+            "range": "± 125858.48730620802"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 2704532.235770089,
+            "unit": "ns",
+            "range": "± 16877.74000431531"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4143418.431510417,
+            "unit": "ns",
+            "range": "± 38419.65086870348"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 64650165.27884615,
+            "unit": "ns",
+            "range": "± 453516.04891637416"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 92758685.11904761,
+            "unit": "ns",
+            "range": "± 923519.3850701875"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 20166653.339583334,
+            "unit": "ns",
+            "range": "± 277132.3338743689"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 37853951.54945055,
+            "unit": "ns",
+            "range": "± 559704.0797601296"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 8252981.930803572,
+            "unit": "ns",
+            "range": "± 50857.84915310302"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 7863443.398958334,
+            "unit": "ns",
+            "range": "± 77179.36620363317"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2616697.8697916665,
+            "unit": "ns",
+            "range": "± 13460.894330221903"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2592052.8018973214,
+            "unit": "ns",
+            "range": "± 16450.297797019488"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 63510352.96428572,
+            "unit": "ns",
+            "range": "± 156035.78161384902"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 52807765.02142857,
+            "unit": "ns",
+            "range": "± 306188.1076171957"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 26299015.36875,
+            "unit": "ns",
+            "range": "± 254565.6911763158"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 14375833.119419644,
+            "unit": "ns",
+            "range": "± 73530.3958627992"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 63052041.1875,
+            "unit": "ns",
+            "range": "± 557657.978523527"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 103430448.74666667,
+            "unit": "ns",
+            "range": "± 1771317.6214382383"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 13782776.138541667,
+            "unit": "ns",
+            "range": "± 118804.6120675496"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 32912711.729166668,
+            "unit": "ns",
+            "range": "± 451737.5656373123"
           }
         ]
       }
