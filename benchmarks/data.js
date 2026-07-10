@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783727707623,
+  "lastUpdate": 1783727707964,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -45938,6 +45938,114 @@ window.BENCHMARK_DATA = {
             "value": 1047133.4644252232,
             "unit": "ns",
             "range": "± 10260.401361753344"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6ac4a5a7fc35b0dd65401c1167f1b19648524f0",
+          "message": "Copse.Linq: drop the stale InternalsVisibleTo(Copse.Linq.Async)\n\nThe grant dated from when the async Where consumed WhereDepthFirstPath\nas a Copse.Linq internal; those path structs were since extracted to\nCopse.Linq.Traversal, which grants its own internals to both color\nhalves. Nothing in Copse.Linq.Async touches Copse.Linq internals\nanymore (verified: all four TFMs build without the grant), and the\nfriend declaration read like a dependency edge it isn't -- Copse.Linq's\npackage depends on nothing async, and the IVT line was the misleading\nbreadcrumb suggesting otherwise.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T23:39:13Z",
+          "tree_id": "2b67845a2bdf781d9420529a1efc6d94ec498204",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f6ac4a5a7fc35b0dd65401c1167f1b19648524f0"
+        },
+        "date": 1783727707903,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2265757.1819196427,
+            "unit": "ns",
+            "range": "± 5763.411362137362"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2265010.0580729167,
+            "unit": "ns",
+            "range": "± 4312.61331159413"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4602875.646763393,
+            "unit": "ns",
+            "range": "± 3513.8679837710133"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 4148837.2765625,
+            "unit": "ns",
+            "range": "± 17765.767047511486"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 701688.8271484375,
+            "unit": "ns",
+            "range": "± 418.0515668758837"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 805812.2803431919,
+            "unit": "ns",
+            "range": "± 1751.7308429282918"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 408461.0790666853,
+            "unit": "ns",
+            "range": "± 605.1535807667528"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4251259.816145834,
+            "unit": "ns",
+            "range": "± 29997.49692954044"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 4192906.8442708333,
+            "unit": "ns",
+            "range": "± 15993.23078486485"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14593078.192708334,
+            "unit": "ns",
+            "range": "± 117353.04518124563"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7659265.83984375,
+            "unit": "ns",
+            "range": "± 10301.57660486941"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1677082.3911830357,
+            "unit": "ns",
+            "range": "± 2388.265831959985"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1562289.953876202,
+            "unit": "ns",
+            "range": "± 1875.4823173916425"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1016852.6104910715,
+            "unit": "ns",
+            "range": "± 943.1612582332182"
           }
         ]
       }
