@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783698633476,
+  "lastUpdate": 1783698633806,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -42446,6 +42446,114 @@ window.BENCHMARK_DATA = {
             "value": 2448135.05078125,
             "unit": "ns",
             "range": "± 7985.651764458661"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f",
+          "message": "Fast-path probe idiom: the level-order stream decoder\n\nThe windowed decoder's full pull chain goes non-async -- MoveNextAsync,\nthe Advance phase loop, both schedulers, the ensure loops, and the\nparser -- with every stream call probed. Two shapes worth recording:\n\n- ParseOneStep and AdvanceGroup were void-shaped (ValueTask), which the\n  probe idiom cannot transcribe (`var x = VoidCall();` is illegal in\n  the twin). Rather than a third transform rule they gained honest bool\n  returns (\"item appended\" / \"group opened vs exhausted\") -- callers\n  re-check their own conditions, and every seam rides the existing\n  generic probe machinery.\n- The ensure-loop continuations RE-ENTER their probing method even\n  though ParseOneStep advances the stream: the parse RESULT lands in\n  fields, so re-entry after the awaited step is exactly the loop's next\n  iteration. The read/skip continuations consume the pending stream\n  result and run the fast path's own tail (AppendOrAdvance /\n  FinishSuppressedGroup); the flush-before-probe in AdvanceGroup is\n  safe because its continuation only opens, never re-flushes.\n\nAsyncOverheadInvertStream: 2.60x -> 2.04x (async 9.33 -> 7.35 ms); the\nremainder is the inner engine driving the mirror (stage 5). Riders:\nnarrow streaming Invert, the fused Invert capture's feed, async\nlevel-order deserialize. Full suite 24,226 green; suspension paths\ncovered by the async mechanics tests.\n\nRemaining: the preorder stream decoder (SerializerRoundTrip pair), then\nthe engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:39:49Z",
+          "tree_id": "6c334bae507c0aacd09499c29d0ac9d8a70db13c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f"
+        },
+        "date": 1783698633750,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2183101.916145833,
+            "unit": "ns",
+            "range": "± 19211.917417378816"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2177141.2346540177,
+            "unit": "ns",
+            "range": "± 12839.249273995494"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4150570.4615384615,
+            "unit": "ns",
+            "range": "± 17643.198006227132"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3774176.6453683036,
+            "unit": "ns",
+            "range": "± 12191.716831795113"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 690494.5782063802,
+            "unit": "ns",
+            "range": "± 1544.7119284229818"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 845636.4309244792,
+            "unit": "ns",
+            "range": "± 10252.699430923174"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 460469.36941964284,
+            "unit": "ns",
+            "range": "± 1561.3454799025071"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 5707982.164663462,
+            "unit": "ns",
+            "range": "± 12344.91298812518"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 5682982.877232143,
+            "unit": "ns",
+            "range": "± 24206.82739064878"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13643076.486458333,
+            "unit": "ns",
+            "range": "± 169011.3279876446"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 9070528.955528846,
+            "unit": "ns",
+            "range": "± 35052.67980550061"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2296492.623604911,
+            "unit": "ns",
+            "range": "± 4264.69720675731"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1871413.6831430288,
+            "unit": "ns",
+            "range": "± 4859.470133615777"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2456854.8551897323,
+            "unit": "ns",
+            "range": "± 6437.151673400053"
           }
         ]
       }
