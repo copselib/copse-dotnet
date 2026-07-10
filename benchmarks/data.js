@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783661963777,
+  "lastUpdate": 1783661964082,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -38372,6 +38372,114 @@ window.BENCHMARK_DATA = {
             "value": 2396783.374441964,
             "unit": "ns",
             "range": "± 5717.998588482162"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd0746ccdbb9b55fce53333aab279782dd6cba66",
+          "message": "FlatDecode family: the flat decoders measured bare (11th CI leg)\n\nTwelve rows over canonical Mega encodings built once in setup: the four\nstore decoders (both dimensions each, per the dimension discipline) and\nthe two forward-only stream decoders over array-cursor feeds, so each\nrow IS the decoder. Shapes: Binary (the small-family pole, a million\n2-child groups) and Triangle (the wide-family pole, 1448-child groups).\nThese primitives sit under every memo replay, buffer drain, and\ndeserialize, but their cost only ever appeared blended into operator\nrows -- this family exists because a 6x decoder gap hid inside\nInvert/Memoize for a full release cycle.\n\nBaseline findings (EPYC 7763 container, same run):\n- Store decode is dimension-driven, not layout-driven: DFT synthesis\n  ~23-25ms over ANY store, BFT ~32-39ms over ANY store; native-vs-cross\n  is ~4-7% for BFT and inverted for DFT (level-order cross-DFT 22.2ms\n  is the fastest row). BFT rows allocate 12-14MB of width-scale frame\n  queues -- the real BFT tax, and a comb-pass target.\n- PreorderStream decode is healthy: 25ms, store parity, zero alloc.\n- LevelOrderStream decode is the pathology: 4.2x the store decoder on\n  Triangle (pure machinery tax), 83x on Binary at Mega (3,105ms -- the\n  O(width)=512K window falls out of cache and per-node GetEntry random\n  access ping-pongs across ~20MB between visit front and parse cursor,\n  where the store decoder streams its comparable-width queues at 37ms).\n  Scale-dependent: invisible at depth-14, dramatic at the canonical\n  tier.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:18:11Z",
+          "tree_id": "19a693b9ceec6184e2952c05bc77705f85465e9e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dd0746ccdbb9b55fce53333aab279782dd6cba66"
+        },
+        "date": 1783661964026,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2302526.514423077,
+            "unit": "ns",
+            "range": "± 7873.038781558422"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2290388.326171875,
+            "unit": "ns",
+            "range": "± 6163.471764087097"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4487123.334735577,
+            "unit": "ns",
+            "range": "± 3974.8638944739164"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 6509619.123325893,
+            "unit": "ns",
+            "range": "± 9258.675171668392"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 744040.0397600447,
+            "unit": "ns",
+            "range": "± 1578.2579154568239"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 851070.1393694197,
+            "unit": "ns",
+            "range": "± 2811.6834253459724"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 436485.7869215745,
+            "unit": "ns",
+            "range": "± 640.7067242750027"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 6966776.819196428,
+            "unit": "ns",
+            "range": "± 21760.070293693334"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 6618644.497395833,
+            "unit": "ns",
+            "range": "± 106657.839367867"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 30920621.676339287,
+            "unit": "ns",
+            "range": "± 87470.45090968115"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 17583186.01339286,
+            "unit": "ns",
+            "range": "± 34530.84066338205"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 3122663.6263020835,
+            "unit": "ns",
+            "range": "± 9297.370719013563"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2158091.1877790177,
+            "unit": "ns",
+            "range": "± 8961.1080509985"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2674120.7419084823,
+            "unit": "ns",
+            "range": "± 2812.7550358970416"
           }
         ]
       }
