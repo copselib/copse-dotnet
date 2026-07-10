@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        category: [Traversal, VisitStream, Query, Streaming, Merge, Buffer, Aggregate, Serialization, DataStructures, AsyncOverhead]
+        category: [Traversal, VisitStream, Query, Streaming, Merge, Buffer, Aggregate, Serialization, DataStructures, FlatDecode, AsyncOverhead]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
