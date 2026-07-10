@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783700233944,
+  "lastUpdate": 1783700234276,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -39662,6 +39662,66 @@ window.BENCHMARK_DATA = {
             "value": 152605272.578125,
             "unit": "ns",
             "range": "± 897782.1254544106"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "97a3db0f83c3bab8b809b268a6ef9efdde7a403c",
+          "message": "Dashboard: suite-qualify the row expand key\n\nClicking a row also toggled its time/memory twin: the open-state key\nwas the bare benchmark name, which a suite's runtime and memory\nvariants share. The key (and the row's data attribute the click\nhandler reads back) is now suite-qualified, so each row expands alone.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:04:11Z",
+          "tree_id": "5ec851501b63a559de106a48b85cb47befa53f19",
+          "url": "https://github.com/copselib/copse-dotnet/commit/97a3db0f83c3bab8b809b268a6ef9efdde7a403c"
+        },
+        "date": 1783700234206,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 73879373.04395606,
+            "unit": "ns",
+            "range": "± 250284.3523660571"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10583922.366586538,
+            "unit": "ns",
+            "range": "± 32328.28539782852"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 129479718.33333333,
+            "unit": "ns",
+            "range": "± 1595311.4702571146"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 16900829.239583332,
+            "unit": "ns",
+            "range": "± 76915.90810351854"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 170777365.0606061,
+            "unit": "ns",
+            "range": "± 5305848.988037193"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 155519860.6931818,
+            "unit": "ns",
+            "range": "± 958687.6299336212"
           }
         ]
       }
