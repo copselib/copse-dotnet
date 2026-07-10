@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783699474875,
+  "lastUpdate": 1783699475216,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -46842,6 +46842,150 @@ window.BENCHMARK_DATA = {
             "value": 42842808.09523809,
             "unit": "ns",
             "range": "± 162550.7576605247"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c6d7d6d2aec5ae217442045caa3d8291209a96b",
+          "message": "Fast-path probe idiom: the preorder stream decoder\n\nSame treatment as the level-order twin (2e715c7): the full pull chain\ngoes non-async with every stream seam probed. The lookahead is the\ninteresting shape here: a pending TryReadNext/TrySkipToDepth resumes\nthrough a continuation that lands the read in the lookahead FIELDS\n(via the same ConsumeRead/ConsumeSkip helpers the fast path uses) and\nre-enters the ensure -- the filled lookahead makes re-entry skip\nstraight to the depth check, so no mid-method resume state exists.\n\nAsyncOverheadSerializerRoundTrip: 5.3x (CI) -> 2.45x (async 2.4ms ->\n966us, allocation now equal to sync). The remainder rides the\nserializer's TEXT streams (their TryRead methods are still async over\nthe scanner) and the write side -- next increment, with the engines.\nFull suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:53:54Z",
+          "tree_id": "4c02a67e7a3af01805fe42a34605491f007a748e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9c6d7d6d2aec5ae217442045caa3d8291209a96b"
+        },
+        "date": 1783699475160,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12758636.921875,
+            "unit": "ns",
+            "range": "± 19069.56374341834"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22115994.098214287,
+            "unit": "ns",
+            "range": "± 20161.39180804735"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3872549.1868990385,
+            "unit": "ns",
+            "range": "± 2307.084477801853"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4659133.420200893,
+            "unit": "ns",
+            "range": "± 12147.191901750724"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 99164948.39999999,
+            "unit": "ns",
+            "range": "± 132099.96340794372"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 151074595.68333334,
+            "unit": "ns",
+            "range": "± 260128.35925795618"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 32971511.929166667,
+            "unit": "ns",
+            "range": "± 330964.3814929839"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 52814410.58241759,
+            "unit": "ns",
+            "range": "± 38869.59686376865"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12094979.716517856,
+            "unit": "ns",
+            "range": "± 20780.750792379935"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11742875.513541667,
+            "unit": "ns",
+            "range": "± 28767.735761582095"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3252741.703425481,
+            "unit": "ns",
+            "range": "± 2793.2222296445107"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3250417.923828125,
+            "unit": "ns",
+            "range": "± 1780.7094341461807"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 97867551.46428572,
+            "unit": "ns",
+            "range": "± 194383.5651478914"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 82042156.021978,
+            "unit": "ns",
+            "range": "± 102080.15373294664"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 33538457.533333335,
+            "unit": "ns",
+            "range": "± 82866.83541753453"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20084164.941964287,
+            "unit": "ns",
+            "range": "± 55942.82080258949"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 96842384.07692306,
+            "unit": "ns",
+            "range": "± 179434.3847535306"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 155104327.2142857,
+            "unit": "ns",
+            "range": "± 611228.5880084051"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18880745.770833332,
+            "unit": "ns",
+            "range": "± 53853.916257399724"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43210672.89880951,
+            "unit": "ns",
+            "range": "± 67148.4162165904"
           }
         ]
       }
