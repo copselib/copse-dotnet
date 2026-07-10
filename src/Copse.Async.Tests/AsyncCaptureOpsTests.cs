@@ -52,6 +52,21 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task Invert_FullSource_BreadthFirstFirst_PinsTheStreamedCapture()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).Invert();
+        var async = Async(tree).Invert();
+
+        // Breadth-first pulled FIRST pins the memoized streaming mirror; the depth-first
+        // replay then rides the same capture (the reverse pin order of the test above).
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+      }
+    }
+
+    [TestMethod]
     public async Task Invert_NarrowBreadthFirst_StreamsMirroredLevels()
     {
       foreach (var tree in Trees)

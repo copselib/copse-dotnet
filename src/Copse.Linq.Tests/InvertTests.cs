@@ -152,5 +152,141 @@ namespace Copse.Linq.Tests
         CollectionAssert.AreEqual(expected, actual, $"{strategy} {treeString}");
       }
     }
+
+    // ----- The full-source mirror pins its representation to the FIRST dimension pulled
+    // (breadth-first-first rides the memoized streaming mirror, depth-first-first the preorder
+    // capture); whichever wins, both dimensions must replay from the one capture and the source
+    // must be enumerated at most once.
+
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void FullSourceMirrorServesBothDimensionsWhicheverIsPulledFirst(
+      string treeString,
+      string expectedTreeString)
+    {
+      var expectedTree = TreeSerializer.DeserializeDepthFirstTree(expectedTreeString);
+
+      foreach (var firstStrategy in new[] { TreeTraversalStrategy.BreadthFirst, TreeTraversalStrategy.DepthFirst })
+      {
+        var secondStrategy =
+          firstStrategy == TreeTraversalStrategy.BreadthFirst
+          ? TreeTraversalStrategy.DepthFirst
+          : TreeTraversalStrategy.BreadthFirst;
+
+        var mirror = TreeSerializer.DeserializeDepthFirstTree(treeString).Invert();
+
+        CollectionAssert.AreEqual(
+          expectedTree.GetTraversal(firstStrategy).ToArray(),
+          mirror.GetTraversal(firstStrategy).ToArray(),
+          $"{firstStrategy}-first: first drain mismatch for {treeString}");
+
+        CollectionAssert.AreEqual(
+          expectedTree.GetTraversal(secondStrategy).ToArray(),
+          mirror.GetTraversal(secondStrategy).ToArray(),
+          $"{firstStrategy}-first: cross-dimension replay mismatch for {treeString}");
+      }
+    }
+
+    [TestMethod]
+    public void FullSourceMirrorEnumeratesTheSourceOnceWhicheverDimensionIsPulledFirst()
+    {
+      foreach (var firstStrategy in new[] { TreeTraversalStrategy.BreadthFirst, TreeTraversalStrategy.DepthFirst })
+      {
+        var acquisitions = 0;
+
+        var source = Copse.Treenumerables.Tree.Defer(() =>
+        {
+          acquisitions++;
+          return TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c(f,g))");
+        });
+
+        var mirror = source.Invert();
+
+        mirror.GetTraversal(firstStrategy).ToArray();
+        mirror.GetTraversal(TreeTraversalStrategy.DepthFirst).ToArray();
+        mirror.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray();
+
+        Assert.AreEqual(1, acquisitions, $"{firstStrategy}-first must enumerate the source exactly once");
+      }
+    }
+
+    [TestMethod]
+    public void BreadthFirstFirstMirrorGrowsIncrementallyAndDisposeCompletesTheCapture()
+    {
+      var sourceVisits = 0;
+
+      var mirror = TreeSerializer
+        .DeserializeDepthFirstTree("a(b(d(h,i),e),c(f,g(j)))")
+        .Do(visit => sourceVisits++)
+        .Invert();
+
+      int visitsWhilePartial;
+
+      using (var treenumerator = mirror.GetBreadthFirstTreenumerator())
+      {
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+
+        visitsWhilePartial = sourceVisits;
+      }
+
+      var visitsAfterDispose = sourceVisits;
+
+      Assert.IsTrue(visitsWhilePartial > 0, "the first pulls must reach the source");
+      Assert.IsTrue(
+        visitsWhilePartial < visitsAfterDispose,
+        "a partial breadth-first drain must not consume the whole source; dispose completes the capture");
+
+      // The completed capture replays both dimensions without touching the source again.
+      var expected = TreeSerializer.DeserializeDepthFirstTree("a(c(g(j),f),b(e,d(i,h)))");
+
+      CollectionAssert.AreEqual(
+        expected.GetTraversal(TreeTraversalStrategy.DepthFirst).ToArray(),
+        mirror.GetTraversal(TreeTraversalStrategy.DepthFirst).ToArray());
+      Assert.AreEqual(visitsAfterDispose, sourceVisits, "replays must not re-enumerate the source");
+    }
+
+    [TestMethod]
+    public void AbandonedPartialBreadthFirstDrainReleasesTheSource()
+    {
+      var resources = new List<TestResource>();
+
+      var source = Copse.Treenumerables.Tree.Using(
+        () =>
+        {
+          var resource = new TestResource();
+          resources.Add(resource);
+          return resource;
+        },
+        _ => TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c(f,g))"));
+
+      var mirror = source.Invert();
+
+      var treenumerator = mirror.GetBreadthFirstTreenumerator();
+      treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+
+      Assert.AreEqual(1, resources.Count, "the capture's feed acquires the resource once");
+      Assert.IsFalse(resources[0].Disposed, "the feed is still live mid-capture");
+
+      treenumerator.Dispose();
+
+      Assert.IsTrue(resources[0].Disposed, "abandoning a partial drain must release the source");
+      Assert.AreEqual(1, resources[0].DisposeCount);
+
+      // The buffer remains fully replayable from the completed capture -- no re-acquisition.
+      var expected = TreeSerializer.DeserializeDepthFirstTree("a(c(g,f),b(e,d))");
+
+      CollectionAssert.AreEqual(
+        expected.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray(),
+        mirror.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray());
+      Assert.AreEqual(1, resources.Count);
+    }
+
+    private sealed class TestResource : IDisposable
+    {
+      public int DisposeCount { get; private set; }
+      public bool Disposed => DisposeCount > 0;
+      public void Dispose() => DisposeCount++;
+    }
   }
 }

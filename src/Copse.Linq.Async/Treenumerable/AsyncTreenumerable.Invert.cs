@@ -29,20 +29,29 @@ namespace Copse.Linq
     /// <summary>
     /// The depth-first-only mirror cannot stream (the mirror owes the original's LAST child right
     /// after the root), so it captures: one awaited depth-first walk into mirrored preorder
-    /// arrays, deferred to the first replay pull (async cannot defer inside a sync-signature
-    /// treenumerator factory, so the deferral rides the lazy-built store's grow seam -- one step
-    /// LAZIER than the sync twin, which captures at call time). The O(n) is disclosed by the
-    /// buffer return type.
+    /// arrays. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs once, on the first replay pull, through the
+    /// lazy-built store's grow seam. The O(n) is disclosed by the buffer return type.
     /// </summary>
     public static IAsyncTreenumerableBuffer<TNode> Invert<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
       => DeferredMirror(source);
 
     /// <summary>
-    /// The full-source convenience overload (also the disambiguator for a source that is both
-    /// breadth- and depth-first): capture, then serve the mirror from the capture.
+    /// The full-source overload (also the disambiguator for a source that is both breadth- and
+    /// depth-first): the mirror's representation is pinned to the FIRST dimension pulled
+    /// (Tree.Lazy). Depth-first-first captures into mirrored preorder arrays; breadth-first-first
+    /// pins the streaming mirror into a lazily-growing level-order capture -- native replay for
+    /// the dimension that asked, visits emerging tier by tier rather than after a full build, and
+    /// a partial drain buffering only what it reached. Either way the source is enumerated at
+    /// most once and both dimensions replay from the one capture; the O(n) is disclosed by the
+    /// buffer return type.
     /// </summary>
     public static IAsyncTreenumerableBuffer<TNode> Invert<TNode>(this IAsyncTreenumerable<TNode> source)
-      => DeferredMirror(source);
+      => new AsyncCompletedTreenumerableBuffer<TNode>(
+        AsyncTree.Lazy(firstDimension =>
+          firstDimension == TreeTraversalStrategy.BreadthFirst
+            ? LevelOrderMirror(source)
+            : PreorderMirror(source)));
 
     /// <summary>
     /// The buffer overload: a capture in hand makes the mirror's depth-first dimension affordable,
@@ -54,20 +63,42 @@ namespace Copse.Linq
     public static IAsyncTreenumerableBuffer<TNode> Invert<TNode>(this IAsyncTreenumerableBuffer<TNode> source)
       => DeferredMirror(source);
 
-    // The mirror's construction is pinned to the FIRST dimension pulled (Tree.Lazy): the
-    // capture's layout is a representation choice the first consumer should get to make. Today
-    // both dimensions get the preorder layout (breadth-first rides it cross-order); when a
-    // level-order array store exists, the breadth-first arm becomes a level-order mirror --
-    // native replay for the dimension that asked -- without touching this shape.
+    // The mirror for sources whose breadth-first arrival cannot be streamed (a depth-first-only
+    // source) or whose capture is already paid (a buffer): construction pinned to the first
+    // acquisition (Tree.Lazy), both dimensions served from mirrored preorder arrays. The
+    // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static IAsyncTreenumerableBuffer<TNode> DeferredMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
       => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(firstDimension => PreorderMirror(source)));
+        AsyncTree.Lazy(() => PreorderMirror(source)));
 
     private static IAsyncTreenumerable<TNode> PreorderMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
       var mirror = new AsyncLazyBuiltPreorderStore<TNode>(() => BuildMirrorAsync(source));
 
       return new AsyncPreorderTreenumerable<TNode, AsyncLazyBuiltPreorderStore<TNode>>(mirror);
+    }
+
+    // The breadth-first-first mirror: the streaming mirror pinned into a lazily-growing
+    // level-order capture (the narrow Invert composed with Memoize). The memo is the pin --
+    // the depth-first dimension replays from the same capture, and the source is enumerated
+    // exactly once.
+    //
+    // Treenumerator disposal is the release point (the Using idiom): every replay's dispose
+    // runs the capture-completing Consume (a no-op once complete), so a replay abandoned
+    // mid-drain finishes the capture -- the same O(n) the preorder arm pays up front -- and
+    // the memo retires its feed, releasing the source's treenumerator deterministically
+    // instead of holding it (and a Using source's resource) until GC.
+    private static IAsyncTreenumerable<TNode> LevelOrderMirror<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
+    {
+      var mirror = source.Invert().Memoize();
+
+      return new AsyncDelegatingTreenumerable<TNode>(
+        () => new AsyncDisposeActionTreenumerator<TNode>(
+          mirror.GetAsyncBreadthFirstTreenumerator(),
+          () => mirror.ConsumeAsync()),
+        () => new AsyncDisposeActionTreenumerator<TNode>(
+          mirror.GetAsyncDepthFirstTreenumerator(),
+          () => mirror.ConsumeAsync()));
     }
 
     private static async ValueTask<PreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)

@@ -7,10 +7,12 @@ namespace Copse.Async.Treenumerators
 {
   // Forwards a treenumerator while running an extra action when it is disposed (once).
   // ITreenumerator.Dispose is a traversal's release point, so anything acquired at
-  // treenumerator creation rides this wrapper to its release -- Using's resource today,
-  // Finally-style combinators tomorrow. (Cf. MemoizeTreenumerable.ReplayTreenumerator,
-  // the same shape with a different payload.)
-  internal sealed class AsyncDisposeActionTreenumerator<TNode> : IAsyncTreenumerator<TNode>
+  // treenumerator creation rides this wrapper to its release -- Using's resource and the
+  // mirror memo's capture completion today, Finally-style combinators tomorrow.
+  // (Cf. MemoizeTreenumerable.ReplayTreenumerator, the same shape with a different payload.)
+  // Public for the same reason as AsyncDelegatingTreenumerable: operators outside this
+  // assembly compose it.
+  public sealed class AsyncDisposeActionTreenumerator<TNode> : IAsyncTreenumerator<TNode>
   {
     public AsyncDisposeActionTreenumerator(IAsyncTreenumerator<TNode> inner, Func<ValueTask> onDispose)
     {
