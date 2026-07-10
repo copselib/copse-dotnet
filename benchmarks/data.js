@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783714903572,
+  "lastUpdate": 1783714903909,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -56398,6 +56398,120 @@ window.BENCHMARK_DATA = {
             "value": 21211152.716666665,
             "unit": "ns",
             "range": "± 142539.84581213217"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b3629918092be83d27e564368556fcd22b45e1ec",
+          "message": "Bencher: upload class-qualified names via BMF, not the C# adapter\n\nThe c_sharp_dot_net adapter names benchmarks Namespace.Method -- it\ndrops the declaring class -- so the ~151-row suite collapsed into 66\nBencher benchmarks: all seven AsyncOverhead Sync/Async pairs merged\ninto two series, Bft_Triangle mixed seven families, and every\nthreshold learned a meaningless mixed population (51 standing junk\nalerts). Convert each leg's joined full-compressed JSON to Bencher\nMetric Format keyed by BenchmarkDotNet's FullName (class-qualified,\none series per real row) and upload with --adapter json. Latency only,\nvalue plus/minus one standard deviation.\n\nAlso raises the threshold upper boundary 0.95 -> 0.98: at 0.95 every\nseries false-positives ~5% of runs by design, a steady alert drip\nacross ~150 benchmarks x 5 per-CPU testbeds.\n\nThe Bencher project is being wiped in parallel; series restart fresh\nunder the correct names.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T20:08:47Z",
+          "tree_id": "9d4168dc09b53a75fa25e40876d4513b40eaac0a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b3629918092be83d27e564368556fcd22b45e1ec"
+        },
+        "date": 1783714903846,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 88730774.1,
+            "unit": "ns",
+            "range": "± 1465391.6421501867"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 105285886.89333333,
+            "unit": "ns",
+            "range": "± 969082.3588136752"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 65910437.97142856,
+            "unit": "ns",
+            "range": "± 1118327.8867908278"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 82703779.75555557,
+            "unit": "ns",
+            "range": "± 1497277.4540642533"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 34537224.542222224,
+            "unit": "ns",
+            "range": "± 637304.0213260673"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 49660634.65454545,
+            "unit": "ns",
+            "range": "± 809882.225319067"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 20866557.322916668,
+            "unit": "ns",
+            "range": "± 423733.4046626139"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 23901109.470833335,
+            "unit": "ns",
+            "range": "± 225075.8187697693"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 34362837.23333333,
+            "unit": "ns",
+            "range": "± 348513.3040476004"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 50190325.81212123,
+            "unit": "ns",
+            "range": "± 775716.8201496354"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 33308590.666666664,
+            "unit": "ns",
+            "range": "± 243048.57261598954"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 22843573.883333333,
+            "unit": "ns",
+            "range": "± 180236.1090796996"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 77899315.04444443,
+            "unit": "ns",
+            "range": "± 1253070.016042121"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 92346764.55555555,
+            "unit": "ns",
+            "range": "± 694633.1652385806"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 14046092.370535715,
+            "unit": "ns",
+            "range": "± 114664.91532579485"
           }
         ]
       }
