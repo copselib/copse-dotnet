@@ -78,26 +78,31 @@ namespace Copse.Linq
       return new AsyncPreorderTreenumerable<TNode, AsyncLazyBuiltPreorderStore<TNode>>(mirror);
     }
 
-    // The breadth-first-first mirror: the streaming mirror pinned into a lazily-growing
-    // level-order capture (the narrow Invert composed with Memoize). The memo is the pin --
-    // the depth-first dimension replays from the same capture, and the source is enumerated
-    // exactly once.
+    // The breadth-first-first mirror: the streaming mirror's tier output pinned into a lazily
+    // growing level-order capture (AsyncStreamFedLevelOrderStore over
+    // AsyncInvertedLevelOrderStream), replays served by the store decoders. The stream already
+    // emits the mirror in the store's own encoding, so nothing decodes tiers into a visit
+    // stream just to re-encode them: the first cut here composed the narrow Invert with
+    // Memoize, and that visit-stream round trip benchmarked 2.1-2.7x slower than the preorder
+    // capture it replaced (Invert Bft rows); the fused store keeps the same laziness -- visits
+    // emerge tier by tier, partial drains buffer less -- without the round trip.
     //
     // Treenumerator disposal is the release point (the Using idiom): every replay's dispose
     // runs the capture-completing Consume (a no-op once complete), so a replay abandoned
     // mid-drain finishes the capture -- the same O(n) the preorder arm pays up front -- and
-    // the memo retires its feed, releasing the source's treenumerator deterministically
+    // the store retires its feed, releasing the source's treenumerator deterministically
     // instead of holding it (and a Using source's resource) until GC.
     private static IAsyncTreenumerable<TNode> LevelOrderMirror<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var mirror = source.Invert().Memoize();
+      var mirror = new AsyncStreamFedLevelOrderStore<TNode>(
+        () => new AsyncInvertedLevelOrderStream<TNode>(source.GetAsyncBreadthFirstTreenumerator()));
 
       return new AsyncDelegatingTreenumerable<TNode>(
         () => new AsyncDisposeActionTreenumerator<TNode>(
-          mirror.GetAsyncBreadthFirstTreenumerator(),
+          new AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, AsyncStreamFedLevelOrderStore<TNode>>(mirror),
           () => mirror.ConsumeAsync()),
         () => new AsyncDisposeActionTreenumerator<TNode>(
-          mirror.GetAsyncDepthFirstTreenumerator(),
+          new AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, AsyncStreamFedLevelOrderStore<TNode>>(mirror),
           () => mirror.ConsumeAsync()));
     }
 
