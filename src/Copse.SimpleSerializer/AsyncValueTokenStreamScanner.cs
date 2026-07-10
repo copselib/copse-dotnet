@@ -52,20 +52,34 @@ namespace Copse.SimpleSerializer
     // The value of the last accumulated event with hasValue = true; valid until the next scan.
     public string GetValue() => _ValueBuilder.ToString();
 
-    public async ValueTask<ScanEvent> TryScanEventAsync(bool accumulate)
+    // NOT async, and neither are the scan loops below: every character read is PROBED, and a
+    // character already in the block stays ordinary method calls with no state machine -- the
+    // fast-path probe idiom (see AsyncToSync). A pending read is always a REFILL, so its
+    // continuation pushes the refilled character back into the block (the scanner's own
+    // one-character pushback) and re-enters the probing loop, which re-serves it synchronously
+    // -- re-entry needs no resume state beyond the loop's carried flags, which ride as
+    // parameters of the core.
+    public ValueTask<ScanEvent> TryScanEventAsync(bool accumulate)
     {
       if (_EndDelivered)
         return default;
 
       _ValueBuilder.Clear();
-      var started = false;
-      var survivesTrim = false; // a bare token of nothing but line endings vanishes at end of input
 
+      // a bare token of nothing but line endings vanishes at end of input (survivesTrim)
+      return ScanEventCoreAsync(accumulate, started: false, survivesTrim: false);
+    }
+
+    private ValueTask<ScanEvent> ScanEventCoreAsync(bool accumulate, bool started, bool survivesTrim)
+    {
       while (true)
       {
-        var read = await ReadCharacterAsync().ConfigureAwait(false);
+        var read = ReadCharacterAsync();
 
-        if (read < 0)
+        if (!read.IsCompletedSuccessfully)
+          return AwaitPushbackThenScanEventCoreAsync(read, accumulate, started, survivesTrim);
+
+        if (read.Result < 0)
         {
           _EndDelivered = true;
 
@@ -81,19 +95,22 @@ namespace Copse.SimpleSerializer
             hasValue = true;
           }
 
-          return new ScanEvent(hasValue, '\0');
+          return new ValueTask<ScanEvent>(new ScanEvent(hasValue, '\0'));
         }
 
-        var character = (char)read;
+        var character = (char)read.Result;
 
         if (ValueToken.IsStructural(character))
-          return new ScanEvent(started, character);
+          return new ValueTask<ScanEvent>(new ScanEvent(started, character));
 
         if (!started && character == ValueToken.Quote)
         {
-          await ScanQuotedAsync(accumulate).ConfigureAwait(false);
-          var terminator = await ScanTerminatorAfterQuoteAsync().ConfigureAwait(false);
-          return new ScanEvent(true, terminator);
+          var terminator = ScanQuotedThenTerminatorAsync(accumulate);
+
+          if (!terminator.IsCompletedSuccessfully)
+            return AwaitThenFinishQuotedEventAsync(terminator);
+
+          return new ValueTask<ScanEvent>(new ScanEvent(true, terminator.Result));
         }
 
         started = true;
@@ -106,35 +123,31 @@ namespace Copse.SimpleSerializer
       }
     }
 
-    private async ValueTask ScanQuotedAsync(bool accumulate)
+    private ValueTask<char> ScanQuotedThenTerminatorAsync(bool accumulate)
     {
       while (true)
       {
-        var read = await ReadCharacterAsync().ConfigureAwait(false);
+        var read = ReadCharacterAsync();
 
-        if (read < 0)
+        if (!read.IsCompletedSuccessfully)
+          return AwaitPushbackThenScanQuotedAsync(read, accumulate);
+
+        if (read.Result < 0)
           throw new FormatException("Unterminated quoted value.");
 
-        var character = (char)read;
+        var character = (char)read.Result;
 
         if (character == ValueToken.Quote)
         {
-          var next = await ReadCharacterAsync().ConfigureAwait(false);
+          var next = ReadCharacterAsync();
 
-          if (next == ValueToken.Quote)
-          {
-            if (accumulate)
-              _ValueBuilder.Append(ValueToken.Quote);
+          if (!next.IsCompletedSuccessfully)
+            return AwaitThenResolveQuoteLookaheadAsync(next, accumulate);
 
+          if (ResolveQuoteLookahead(next.Result, accumulate))
             continue;
-          }
 
-          // Push the lookahead character back into the block: it was just served from
-          // [_Position - 1], so stepping back re-serves it (nothing to restore at end of text).
-          if (next >= 0)
-            _Position--;
-
-          return;
+          return ScanTerminatorAfterQuoteAsync();
         }
 
         if (accumulate)
@@ -142,30 +155,100 @@ namespace Copse.SimpleSerializer
       }
     }
 
-    private async ValueTask<char> ScanTerminatorAfterQuoteAsync()
+    // A quote inside a quoted value: doubled = a literal quote (still inside the value, true);
+    // anything else closes it -- push the lookahead character back into the block (it was just
+    // served from [_Position - 1], so stepping back re-serves it; nothing to restore at end of
+    // text) and let the terminator scan re-serve it.
+    private bool ResolveQuoteLookahead(int next, bool accumulate)
+    {
+      if (next == ValueToken.Quote)
+      {
+        if (accumulate)
+          _ValueBuilder.Append(ValueToken.Quote);
+
+        return true;
+      }
+
+      if (next >= 0)
+        _Position--;
+
+      return false;
+    }
+
+    private ValueTask<char> ScanTerminatorAfterQuoteAsync()
     {
       while (true)
       {
-        var read = await ReadCharacterAsync().ConfigureAwait(false);
+        var read = ReadCharacterAsync();
 
-        if (read < 0)
+        if (!read.IsCompletedSuccessfully)
+          return AwaitPushbackThenScanTerminatorAsync(read);
+
+        if (read.Result < 0)
         {
           _EndDelivered = true;
-          return '\0';
+          return new ValueTask<char>('\0');
         }
 
-        var character = (char)read;
+        var character = (char)read.Result;
 
         if (character == '\r' || character == '\n')
           continue;
 
         if (ValueToken.IsStructural(character))
-          return character;
+          return new ValueTask<char>(character);
 
         throw new FormatException(
           $"Unexpected '{character}' after a quoted value: expected a structural character or end of text.");
       }
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. A pending read is always a refill, so the pushback
+    // continuations await it, step _Position back over the refilled character (end of text has
+    // nothing to push back -- the re-issued refill re-answers it), and RE-ENTER the probing
+    // loop, which re-serves the character synchronously with all scan state intact. The
+    // lookahead site cannot re-enter (the closing-quote candidate is already consumed), so it
+    // resolves through the same consume helper as the fast path and continues with whichever
+    // scan comes next.
+    private async ValueTask<ScanEvent> AwaitPushbackThenScanEventCoreAsync(ValueTask<int> pendingRead, bool accumulate, bool started, bool survivesTrim)
+    {
+      if (await pendingRead.ConfigureAwait(false) >= 0)
+        _Position--;
+
+      return await ScanEventCoreAsync(accumulate, started, survivesTrim).ConfigureAwait(false);
+    }
+
+    private async ValueTask<ScanEvent> AwaitThenFinishQuotedEventAsync(ValueTask<char> pendingTerminator)
+    {
+      return new ScanEvent(true, await pendingTerminator.ConfigureAwait(false));
+    }
+
+    private async ValueTask<char> AwaitPushbackThenScanQuotedAsync(ValueTask<int> pendingRead, bool accumulate)
+    {
+      if (await pendingRead.ConfigureAwait(false) >= 0)
+        _Position--;
+
+      return await ScanQuotedThenTerminatorAsync(accumulate).ConfigureAwait(false);
+    }
+
+    private async ValueTask<char> AwaitThenResolveQuoteLookaheadAsync(ValueTask<int> pendingLookahead, bool accumulate)
+    {
+      if (ResolveQuoteLookahead(await pendingLookahead.ConfigureAwait(false), accumulate))
+        return await ScanQuotedThenTerminatorAsync(accumulate).ConfigureAwait(false);
+
+      return await ScanTerminatorAfterQuoteAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<char> AwaitPushbackThenScanTerminatorAsync(ValueTask<int> pendingRead)
+    {
+      if (await pendingRead.ConfigureAwait(false) >= 0)
+        _Position--;
+
+      return await ScanTerminatorAfterQuoteAsync().ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
     // text (a drained reader keeps answering 0, so post-end calls stay correct). Split along

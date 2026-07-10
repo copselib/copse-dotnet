@@ -29,6 +29,9 @@ namespace Copse.SimpleSerializer
     private bool _GroupEnded;
     private bool _Exhausted;
 
+    // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
+    // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
+    // the scan answered inline or through the pending continuation.
     public LevelOrderRead<TValue> TryReadNextInGroup()
     {
       if (_GroupEnded || _Exhausted)
@@ -36,48 +39,59 @@ namespace Copse.SimpleSerializer
 
       while (true)
       {
-        var ev = _Scanner.TryScanEvent(accumulate: true);
+        var scanned = _Scanner.TryScanEvent(accumulate: true);
 
-        if (!ev.Ok)
-        {
+        if (TryCommitRead(scanned, out var read))
+          return read;
+      }
+    }
+
+    // Land one scanned event: yield a value or the group/stream end (true, with the read), or
+    // note an empty slot and keep scanning (false).
+    private bool TryCommitRead(ScanEvent ev, out LevelOrderRead<TValue> read)
+    {
+      if (!ev.Ok)
+      {
+        _Exhausted = true;
+        _GroupEnded = true;
+        read = default;
+        return true;
+      }
+
+      switch (ev.Terminator)
+      {
+        case ',':
+          if (ev.HasValue)
+          {
+            read = new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
+            return true;
+          }
+
+          break;
+
+        case '|':
+        case ';':
+          _GroupEnded = true;
+
+          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          return true;
+
+        case '(':
+        case ')':
+          throw new FormatException(
+            $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
+            "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
+
+        default: // end of text
           _Exhausted = true;
           _GroupEnded = true;
-          return default;
-        }
 
-        switch (ev.Terminator)
-        {
-          case ',':
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            break;
-
-          case '|':
-          case ';':
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            return default;
-
-          case '(':
-          case ')':
-            throw new FormatException(
-              $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
-              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
-
-          default: // end of text
-            _Exhausted = true;
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            return default;
-        }
+          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          return true;
       }
+
+      read = default;
+      return false;
     }
 
     public int SkipGroupRemainder()
@@ -85,56 +99,68 @@ namespace Copse.SimpleSerializer
       if (_GroupEnded || _Exhausted)
         return 0;
 
-      var count = 0;
+      return SkipGroupRemainderCore(0);
+    }
 
+    private int SkipGroupRemainderCore(int count)
+    {
       while (true)
       {
-        var ev = _Scanner.TryScanEvent(accumulate: false);
+        var scanned = _Scanner.TryScanEvent(accumulate: false);
 
-        if (!ev.Ok)
-        {
-          _Exhausted = true;
-          _GroupEnded = true;
+        if (TryCommitSkip(scanned, ref count))
           return count;
-        }
-
-        switch (ev.Terminator)
-        {
-          case ',':
-            if (ev.HasValue)
-              count++;
-
-            break;
-
-          case '|':
-          case ';':
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              count++;
-
-            return count;
-
-          case '(':
-          case ')':
-            throw new FormatException(
-              $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
-              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
-
-          default: // end of text
-            _Exhausted = true;
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              count++;
-
-            return count;
-        }
       }
     }
 
-    // No I/O -- just flips the group flag -- but async to satisfy the seam (returns bool literals,
-    // not new bool(...), so the twin is a plain bool method).
+    // Land one scanned event: count it and note whether the group (or stream) ended (true), or
+    // keep skipping (false).
+    private bool TryCommitSkip(ScanEvent ev, ref int count)
+    {
+      if (!ev.Ok)
+      {
+        _Exhausted = true;
+        _GroupEnded = true;
+        return true;
+      }
+
+      switch (ev.Terminator)
+      {
+        case ',':
+          if (ev.HasValue)
+            count++;
+
+          break;
+
+        case '|':
+        case ';':
+          _GroupEnded = true;
+
+          if (ev.HasValue)
+            count++;
+
+          return true;
+
+        case '(':
+        case ')':
+          throw new FormatException(
+            $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
+            "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
+
+        default: // end of text
+          _Exhausted = true;
+          _GroupEnded = true;
+
+          if (ev.HasValue)
+            count++;
+
+          return true;
+      }
+
+      return false;
+    }
+
+    // No I/O -- just flips the group flag; never pending, so no probe and no continuation.
     public bool TryMoveToNextGroup()
     {
       if (_Exhausted)
@@ -146,6 +172,7 @@ namespace Copse.SimpleSerializer
       _GroupEnded = false;
       return true;
     }
+
 
     // The reader closes synchronously; async only to satisfy the IAsyncDisposable seam (the twin
     // becomes a plain void Dispose).

@@ -28,123 +28,177 @@ namespace Copse.SimpleSerializer
     private bool _GroupEnded;
     private bool _Exhausted;
 
-    public async ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
+    // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
+    // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
+    // the scan answered inline or through the pending continuation.
+    public ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
     {
       if (_GroupEnded || _Exhausted)
         return default;
 
       while (true)
       {
-        var ev = await _Scanner.TryScanEventAsync(accumulate: true).ConfigureAwait(false);
+        var scanned = _Scanner.TryScanEventAsync(accumulate: true);
 
-        if (!ev.Ok)
-        {
-          _Exhausted = true;
-          _GroupEnded = true;
-          return default;
-        }
+        if (!scanned.IsCompletedSuccessfully)
+          return AwaitThenFinishReadAsync(scanned);
 
-        switch (ev.Terminator)
-        {
-          case ',':
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            break;
-
-          case '|':
-          case ';':
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            return default;
-
-          case '(':
-          case ')':
-            throw new FormatException(
-              $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
-              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
-
-          default: // end of text
-            _Exhausted = true;
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              return new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
-
-            return default;
-        }
+        if (TryCommitRead(scanned.Result, out var read))
+          return new ValueTask<LevelOrderRead<TValue>>(read);
       }
     }
 
-    public async ValueTask<int> SkipGroupRemainderAsync()
+    // Land one scanned event: yield a value or the group/stream end (true, with the read), or
+    // note an empty slot and keep scanning (false).
+    private bool TryCommitRead(ScanEvent ev, out LevelOrderRead<TValue> read)
+    {
+      if (!ev.Ok)
+      {
+        _Exhausted = true;
+        _GroupEnded = true;
+        read = default;
+        return true;
+      }
+
+      switch (ev.Terminator)
+      {
+        case ',':
+          if (ev.HasValue)
+          {
+            read = new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
+            return true;
+          }
+
+          break;
+
+        case '|':
+        case ';':
+          _GroupEnded = true;
+
+          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          return true;
+
+        case '(':
+        case ')':
+          throw new FormatException(
+            $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
+            "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
+
+        default: // end of text
+          _Exhausted = true;
+          _GroupEnded = true;
+
+          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          return true;
+      }
+
+      read = default;
+      return false;
+    }
+
+    public ValueTask<int> SkipGroupRemainderAsync()
     {
       if (_GroupEnded || _Exhausted)
-        return 0;
+        return new ValueTask<int>(0);
 
-      var count = 0;
+      return SkipGroupRemainderCoreAsync(0);
+    }
 
+    private ValueTask<int> SkipGroupRemainderCoreAsync(int count)
+    {
       while (true)
       {
-        var ev = await _Scanner.TryScanEventAsync(accumulate: false).ConfigureAwait(false);
+        var scanned = _Scanner.TryScanEventAsync(accumulate: false);
 
-        if (!ev.Ok)
-        {
-          _Exhausted = true;
-          _GroupEnded = true;
-          return count;
-        }
+        if (!scanned.IsCompletedSuccessfully)
+          return AwaitThenFinishSkipAsync(scanned, count);
 
-        switch (ev.Terminator)
-        {
-          case ',':
-            if (ev.HasValue)
-              count++;
-
-            break;
-
-          case '|':
-          case ';':
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              count++;
-
-            return count;
-
-          case '(':
-          case ')':
-            throw new FormatException(
-              $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
-              "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
-
-          default: // end of text
-            _Exhausted = true;
-            _GroupEnded = true;
-
-            if (ev.HasValue)
-              count++;
-
-            return count;
-        }
+        if (TryCommitSkip(scanned.Result, ref count))
+          return new ValueTask<int>(count);
       }
     }
 
-    // No I/O -- just flips the group flag -- but async to satisfy the seam (returns bool literals,
-    // not new ValueTask<bool>(...), so the twin is a plain bool method).
-    public async ValueTask<bool> TryMoveToNextGroupAsync()
+    // Land one scanned event: count it and note whether the group (or stream) ended (true), or
+    // keep skipping (false).
+    private bool TryCommitSkip(ScanEvent ev, ref int count)
+    {
+      if (!ev.Ok)
+      {
+        _Exhausted = true;
+        _GroupEnded = true;
+        return true;
+      }
+
+      switch (ev.Terminator)
+      {
+        case ',':
+          if (ev.HasValue)
+            count++;
+
+          break;
+
+        case '|':
+        case ';':
+          _GroupEnded = true;
+
+          if (ev.HasValue)
+            count++;
+
+          return true;
+
+        case '(':
+        case ')':
+          throw new FormatException(
+            $"Unexpected '{ev.Terminator}': this is a depth-first structural character, so the source " +
+            "is not a breadth-first-serialized tree (use DeserializeDepthFirstTree).");
+
+        default: // end of text
+          _Exhausted = true;
+          _GroupEnded = true;
+
+          if (ev.HasValue)
+            count++;
+
+          return true;
+      }
+
+      return false;
+    }
+
+    // No I/O -- just flips the group flag; never pending, so no probe and no continuation.
+    public ValueTask<bool> TryMoveToNextGroupAsync()
     {
       if (_Exhausted)
-        return false;
+        return new ValueTask<bool>(false);
 
       if (!_GroupEnded)
         throw new InvalidOperationException("The current group must be finished (read or skipped to its end) before advancing.");
 
       _GroupEnded = false;
-      return true;
+      return new ValueTask<bool>(true);
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. A scan ADVANCES the reader, so each consumes the pending
+    // event through the same commit helper as the fast path, then re-enters its probing loop
+    // (the skip's running count rides as the core's parameter).
+    private async ValueTask<LevelOrderRead<TValue>> AwaitThenFinishReadAsync(ValueTask<ScanEvent> pendingScan)
+    {
+      if (TryCommitRead(await pendingScan.ConfigureAwait(false), out var read))
+        return read;
+
+      return await TryReadNextInGroupAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<int> AwaitThenFinishSkipAsync(ValueTask<ScanEvent> pendingScan, int count)
+    {
+      if (TryCommitSkip(await pendingScan.ConfigureAwait(false), ref count))
+        return count;
+
+      return await SkipGroupRemainderCoreAsync(count).ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     // The reader closes synchronously; async only to satisfy the IAsyncDisposable seam (the twin
     // becomes a plain void Dispose).

@@ -34,7 +34,10 @@ namespace Copse.SimpleSerializer
     public PreorderRead<TValue> TrySkipToDepth(int maxDepth) => TryScan(maxDepth);
 
     // Scan to the next value committing at depth <= maxDepth; deeper values are structural
-    // noise for the caller and their characters are discarded unaccumulated.
+    // noise for the caller and their characters are discarded unaccumulated. NOT async: every
+    // scan is PROBED (the fast-path probe idiom -- see AsyncToSync), and each scanned event
+    // lands through the same commit helper whether the scan answered inline or through the
+    // pending continuation.
     private PreorderRead<TValue> TryScan(int maxDepth)
     {
       if (_Exhausted)
@@ -44,62 +47,84 @@ namespace Copse.SimpleSerializer
       {
         var accumulate = _Depth <= maxDepth;
 
-        var ev = _Scanner.TryScanEvent(accumulate);
+        var scanned = _Scanner.TryScanEvent(accumulate);
 
-        if (!ev.Ok)
-        {
-          _Exhausted = true;
-          return default;
-        }
-
-        switch (ev.Terminator)
-        {
-          case '(':
-            if (ev.HasValue && accumulate)
-            {
-              var value = _Map(_Scanner.GetValue());
-              var depth = _Depth;
-              _Depth++;
-              return new PreorderRead<TValue>(value, depth);
-            }
-
-            _Depth++;
-            break;
-
-          case ',':
-            if (ev.HasValue && accumulate)
-              return new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
-
-            break;
-
-          case ')':
-            if (ev.HasValue && accumulate)
-            {
-              var value = _Map(_Scanner.GetValue());
-              var depth = _Depth;
-              _Depth--;
-              return new PreorderRead<TValue>(value, depth);
-            }
-
-            _Depth--;
-            break;
-
-          case '|':
-          case ';':
-            throw new FormatException(
-              $"Unexpected '{ev.Terminator}': this is a level-order structural character, so the source " +
-              "is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
-
-          default: // end of text
-            _Exhausted = true;
-
-            if (ev.HasValue && accumulate)
-              return new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
-
-            return default;
-        }
+        if (TryCommitEvent(scanned, accumulate, out var read))
+          return read;
       }
     }
+
+    // Land one scanned event: commit a value (true, with the read), end the stream (true,
+    // default read), or note the depth movement and keep scanning (false).
+    private bool TryCommitEvent(ScanEvent ev, bool accumulate, out PreorderRead<TValue> read)
+    {
+      if (!ev.Ok)
+      {
+        _Exhausted = true;
+        read = default;
+        return true;
+      }
+
+      switch (ev.Terminator)
+      {
+        case '(':
+          if (ev.HasValue && accumulate)
+          {
+            var value = _Map(_Scanner.GetValue());
+            var depth = _Depth;
+            _Depth++;
+            read = new PreorderRead<TValue>(value, depth);
+            return true;
+          }
+
+          _Depth++;
+          break;
+
+        case ',':
+          if (ev.HasValue && accumulate)
+          {
+            read = new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
+            return true;
+          }
+
+          break;
+
+        case ')':
+          if (ev.HasValue && accumulate)
+          {
+            var value = _Map(_Scanner.GetValue());
+            var depth = _Depth;
+            _Depth--;
+            read = new PreorderRead<TValue>(value, depth);
+            return true;
+          }
+
+          _Depth--;
+          break;
+
+        case '|':
+        case ';':
+          throw new FormatException(
+            $"Unexpected '{ev.Terminator}': this is a level-order structural character, so the source " +
+            "is not a depth-first-serialized tree (use DeserializeBreadthFirstTree).");
+
+        default: // end of text
+          _Exhausted = true;
+
+          if (ev.HasValue && accumulate)
+          {
+            read = new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth);
+            return true;
+          }
+
+          read = default;
+          return true;
+      }
+
+      read = default;
+      return false;
+    }
+
 
     // The reader closes synchronously; async only to satisfy the IAsyncDisposable seam (the twin
     // becomes a plain void Dispose).

@@ -52,15 +52,26 @@ namespace Copse.SimpleSerializer
     // The value of the last accumulated event with hasValue = true; valid until the next scan.
     public string GetValue() => _ValueBuilder.ToString();
 
+    // NOT async, and neither are the scan loops below: every character read is PROBED, and a
+    // character already in the block stays ordinary method calls with no state machine -- the
+    // fast-path probe idiom (see AsyncToSync). A pending read is always a REFILL, so its
+    // continuation pushes the refilled character back into the block (the scanner's own
+    // one-character pushback) and re-enters the probing loop, which re-serves it synchronously
+    // -- re-entry needs no resume state beyond the loop's carried flags, which ride as
+    // parameters of the core.
     public ScanEvent TryScanEvent(bool accumulate)
     {
       if (_EndDelivered)
         return default;
 
       _ValueBuilder.Clear();
-      var started = false;
-      var survivesTrim = false; // a bare token of nothing but line endings vanishes at end of input
 
+      // a bare token of nothing but line endings vanishes at end of input (survivesTrim)
+      return ScanEventCore(accumulate, started: false, survivesTrim: false);
+    }
+
+    private ScanEvent ScanEventCore(bool accumulate, bool started, bool survivesTrim)
+    {
       while (true)
       {
         var read = ReadCharacter();
@@ -91,8 +102,8 @@ namespace Copse.SimpleSerializer
 
         if (!started && character == ValueToken.Quote)
         {
-          ScanQuoted(accumulate);
-          var terminator = ScanTerminatorAfterQuote();
+          var terminator = ScanQuotedThenTerminator(accumulate);
+
           return new ScanEvent(true, terminator);
         }
 
@@ -106,7 +117,7 @@ namespace Copse.SimpleSerializer
       }
     }
 
-    private void ScanQuoted(bool accumulate)
+    private char ScanQuotedThenTerminator(bool accumulate)
     {
       while (true)
       {
@@ -121,25 +132,35 @@ namespace Copse.SimpleSerializer
         {
           var next = ReadCharacter();
 
-          if (next == ValueToken.Quote)
-          {
-            if (accumulate)
-              _ValueBuilder.Append(ValueToken.Quote);
-
+          if (ResolveQuoteLookahead(next, accumulate))
             continue;
-          }
 
-          // Push the lookahead character back into the block: it was just served from
-          // [_Position - 1], so stepping back re-serves it (nothing to restore at end of text).
-          if (next >= 0)
-            _Position--;
-
-          return;
+          return ScanTerminatorAfterQuote();
         }
 
         if (accumulate)
           _ValueBuilder.Append(character);
       }
+    }
+
+    // A quote inside a quoted value: doubled = a literal quote (still inside the value, true);
+    // anything else closes it -- push the lookahead character back into the block (it was just
+    // served from [_Position - 1], so stepping back re-serves it; nothing to restore at end of
+    // text) and let the terminator scan re-serve it.
+    private bool ResolveQuoteLookahead(int next, bool accumulate)
+    {
+      if (next == ValueToken.Quote)
+      {
+        if (accumulate)
+          _ValueBuilder.Append(ValueToken.Quote);
+
+        return true;
+      }
+
+      if (next >= 0)
+        _Position--;
+
+      return false;
     }
 
     private char ScanTerminatorAfterQuote()
@@ -166,6 +187,7 @@ namespace Copse.SimpleSerializer
           $"Unexpected '{character}' after a quoted value: expected a structural character or end of text.");
       }
     }
+
 
     // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
     // text (a drained reader keeps answering 0, so post-end calls stay correct). Split along
