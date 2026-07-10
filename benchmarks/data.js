@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783705009992,
+  "lastUpdate": 1783705010337,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -40082,6 +40082,66 @@ window.BENCHMARK_DATA = {
             "value": 155519860.6931818,
             "unit": "ns",
             "range": "± 958687.6299336212"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b892c9db33b80ef98b491654319f4e3cbc839cc5",
+          "message": "Async-suffix the probe-idiom pull helpers\n\nThe first probe-idiom wave (ad231c8) left the store decoders' hot\nhelpers suffix-less (Advance, Backtrack, TryPushNextChild, ...); the\nlater stream-decoder and engine waves suffixed theirs. TAP naming keys\non the return type -- these return awaitables that can genuinely be\npending -- so standardize on the suffix. Pure async-side rename: the\ntransform strips a trailing Async, so every regenerated twin is\nbyte-identical.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:49:14Z",
+          "tree_id": "e308a34648f98eb7c67d74d6d4ea3277e9aa16d9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b892c9db33b80ef98b491654319f4e3cbc839cc5"
+        },
+        "date": 1783705010276,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 75392775.64835165,
+            "unit": "ns",
+            "range": "± 940579.3491275163"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10580370.052604167,
+            "unit": "ns",
+            "range": "± 193188.17113791834"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 128574621.23214285,
+            "unit": "ns",
+            "range": "± 429749.9948823607"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17012122.328125,
+            "unit": "ns",
+            "range": "± 101946.18349308592"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 170734849.53968254,
+            "unit": "ns",
+            "range": "± 6151636.380927174"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 157413479.90384614,
+            "unit": "ns",
+            "range": "± 461706.2134945606"
           }
         ]
       }
