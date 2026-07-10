@@ -23,6 +23,11 @@ namespace Copse.Linq.Async.Treenumerators
   // Consumer skips on the mirror discard from this buffer, not from the source: the inner
   // treenumerator is driven TraverseAll a tier at a time (the eager-skip price memo replays
   // also accept). Owns the inner treenumerator; disposing the stream disposes it.
+  //
+  // Only tier collection touches the inner treenumerator; serving from an installed tier is
+  // pure cursor arithmetic. The public methods split along that line -- serving inline, with
+  // collection deferred to a Collect* helper -- so the async twin pays its seam once per TIER
+  // (a state machine only when collecting), not once per node.
   internal sealed class AsyncInvertedLevelOrderStream<TValue> : IAsyncLevelOrderStream<TValue>
   {
     public AsyncInvertedLevelOrderStream(IAsyncTreenumerator<TValue> inner)
@@ -48,11 +53,24 @@ namespace Copse.Linq.Async.Treenumerators
     private bool _InnerExhausted;
     private int _CollectorLevelDepth;
 
-    public async ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
+    public ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
     {
-      if (!_TierInstalled && !await TryCollectNextTierAsync().ConfigureAwait(false))
+      if (!_TierInstalled)
+        return CollectThenReadNextInGroupAsync();
+
+      return new ValueTask<LevelOrderRead<TValue>>(ReadNextInGroupFromTier());
+    }
+
+    private async ValueTask<LevelOrderRead<TValue>> CollectThenReadNextInGroupAsync()
+    {
+      if (!await TryCollectNextTierAsync().ConfigureAwait(false))
         return default;
 
+      return ReadNextInGroupFromTier();
+    }
+
+    private LevelOrderRead<TValue> ReadNextInGroupFromTier()
+    {
       if (_Group >= _TierFamilyEnds.Count)
         return default;
 
@@ -84,18 +102,27 @@ namespace Copse.Linq.Async.Treenumerators
       return new ValueTask<int>(remaining);
     }
 
-    public async ValueTask<bool> TryMoveToNextGroupAsync()
+    public ValueTask<bool> TryMoveToNextGroupAsync()
     {
-      if (!_TierInstalled && !await TryCollectNextTierAsync().ConfigureAwait(false))
-        return false;
+      if (!_TierInstalled)
+        return CollectThenMoveToNextGroupAsync();
 
       _Item = 0;
       _Group++;
 
       if (_Group < _TierFamilyEnds.Count)
-        return true;
+        return new ValueTask<bool>(true);
 
-      return await TryCollectNextTierAsync().ConfigureAwait(false);
+      return TryCollectNextTierAsync();
+    }
+
+    private async ValueTask<bool> CollectThenMoveToNextGroupAsync()
+    {
+      if (!await TryCollectNextTierAsync().ConfigureAwait(false))
+        return false;
+
+      // Collection installed the tier, so this re-entry takes the serving path.
+      return await TryMoveToNextGroupAsync().ConfigureAwait(false);
     }
 
     // Pull the next tier of families from the inner stream into the reused buffers (group 0's

@@ -24,6 +24,11 @@ namespace Copse.Linq.Treenumerators
   // Consumer skips on the mirror discard from this buffer, not from the source: the inner
   // treenumerator is driven TraverseAll a tier at a time (the eager-skip price memo replays
   // also accept). Owns the inner treenumerator; disposing the stream disposes it.
+  //
+  // Only tier collection touches the inner treenumerator; serving from an installed tier is
+  // pure cursor arithmetic. The public methods split along that line -- serving inline, with
+  // collection deferred to a Collect* helper -- so the async twin pays its seam once per TIER
+  // (a state machine only when collecting), not once per node.
   internal sealed class InvertedLevelOrderStream<TValue> : ILevelOrderStream<TValue>
   {
     public InvertedLevelOrderStream(ITreenumerator<TValue> inner)
@@ -51,9 +56,22 @@ namespace Copse.Linq.Treenumerators
 
     public LevelOrderRead<TValue> TryReadNextInGroup()
     {
-      if (!_TierInstalled && !TryCollectNextTier())
+      if (!_TierInstalled)
+        return CollectThenReadNextInGroup();
+
+      return ReadNextInGroupFromTier();
+    }
+
+    private LevelOrderRead<TValue> CollectThenReadNextInGroup()
+    {
+      if (!TryCollectNextTier())
         return default;
 
+      return ReadNextInGroupFromTier();
+    }
+
+    private LevelOrderRead<TValue> ReadNextInGroupFromTier()
+    {
       if (_Group >= _TierFamilyEnds.Count)
         return default;
 
@@ -87,8 +105,8 @@ namespace Copse.Linq.Treenumerators
 
     public bool TryMoveToNextGroup()
     {
-      if (!_TierInstalled && !TryCollectNextTier())
-        return false;
+      if (!_TierInstalled)
+        return CollectThenMoveToNextGroup();
 
       _Item = 0;
       _Group++;
@@ -97,6 +115,15 @@ namespace Copse.Linq.Treenumerators
         return true;
 
       return TryCollectNextTier();
+    }
+
+    private bool CollectThenMoveToNextGroup()
+    {
+      if (!TryCollectNextTier())
+        return false;
+
+      // Collection installed the tier, so this re-entry takes the serving path.
+      return TryMoveToNextGroup();
     }
 
     // Pull the next tier of families from the inner stream into the reused buffers (group 0's
