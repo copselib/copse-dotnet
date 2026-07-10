@@ -342,6 +342,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.RootfixAggregate.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.RootfixDispatch.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.RootfixDispatch.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.RootfixScan.cs",
         "Copse.Linq/Treenumerable/Treenumerable.RootfixScan.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),

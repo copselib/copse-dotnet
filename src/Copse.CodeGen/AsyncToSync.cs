@@ -28,15 +28,16 @@ namespace Copse.CodeGen
       var rewritten = (CompilationUnitSyntax)new Rewriter(entry.AsyncClass, entry.SyncClass, entry.SyncNamespace).Visit(root);
 
       // Return-type fixups that aren't identifier renames (they change to keywords). Unwrap
-      // ValueTask<X> -> X (one level of nested generics -- covers ValueTask<PreorderRead<T>>), then
-      // the bare ValueTask -> void. Async seams only surface as awaited expressions, so a literal
+      // ValueTask<X> -> X (two levels of nested generics -- covers ValueTask<PreorderRead<T>> and
+      // ValueTask<PreorderArrayStore<DispatchNode<TSource, TDispatch>>>), then the bare
+      // ValueTask -> void. Async seams only surface as awaited expressions, so a literal
       // ValueTask<X> here is always a method return type that collapses to its synchronous result.
       var text = rewritten.ToFullString();
       // Func<ValueTask> (an awaited action-shaped thunk, e.g. a dispose action) collapses to
       // Action, not the illegal Func<void> the generic replaces below would produce. Exact-match
       // replace: Func<ValueTask<X>> does not contain this substring, so it stays with the regex.
       text = text.Replace("Func<ValueTask>", "Action");
-      text = System.Text.RegularExpressions.Regex.Replace(text, @"ValueTask<((?:[^<>]|<[^<>]*>)*)>", "$1");
+      text = System.Text.RegularExpressions.Regex.Replace(text, @"ValueTask<((?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*)>", "$1");
       text = text.Replace("ValueTask", "void");
       text = ApplyMarkerRegions(text);
 
