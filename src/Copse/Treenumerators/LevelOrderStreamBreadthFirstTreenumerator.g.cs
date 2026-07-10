@@ -24,6 +24,16 @@ namespace Copse.Treenumerators
   /// flushed once per group boundary -- the per-visit and per-item paths touch no window entry.
   /// The window is O(width) (megabytes at the Mega tier), and per-item random access into it was
   /// the dominant cost the FlatDecode family measured before those two moves.</para>
+  ///
+  /// <para><b>The window is a masked ring, not a deque:</b> it is a contiguous ABSOLUTE-index
+  /// range [windowBase, appendedCount), so a power-of-two ring serves GetEntry with one masked
+  /// array index and eviction is a base bump. A chunked deque's random access resolves its
+  /// partition by WALKING the partition chain -- profiled at 87% of the whole Mega-Binary drain
+  /// (RefSemiDeque.GetPartitionAndOffset), the FlatDecode family's 29x -- because only head/tail
+  /// access has an O(1) path there. Ring growth re-lays live entries by their absolute index;
+  /// evicted slots are not cleared (they are overwritten on wrap, so a reference-typed value can
+  /// linger for up to one capacity's worth of appends -- bounded, and the deque kept chunks
+  /// resident the same way).</para>
   /// </summary>
   public sealed class LevelOrderStreamBreadthFirstTreenumerator<TValue, TStream>
     : ITreenumerator<TValue>
@@ -32,7 +42,8 @@ namespace Copse.Treenumerators
     public LevelOrderStreamBreadthFirstTreenumerator(TStream stream)
     {
       _Stream = stream;
-      _Window = new RefSemiDeque<Entry>();
+      _Window = new Entry[InitialWindowCapacity];
+      _WindowMask = InitialWindowCapacity - 1;
       _VisitQueue = new RefSemiDeque<Frame>();
       _ScheduleStack = new RefSemiDeque<Frame>();
       _QueueIndexMins = new RefSemiDeque<int>();
@@ -42,9 +53,13 @@ namespace Copse.Treenumerators
     // defensive copy.
     private TStream _Stream;
 
-    // ----- The window: parsed stream nodes, absolute-indexed, evicted behind the visit front.
+    // ----- The window: parsed stream nodes, absolute-indexed, evicted behind the visit front,
+    // stored in a power-of-two ring keyed by absolute index & mask (see the class comment).
 
-    private readonly RefSemiDeque<Entry> _Window;
+    private const int InitialWindowCapacity = 64;
+
+    private Entry[] _Window;
+    private int _WindowMask;
     private int _WindowBase;      // absolute index of the window's first retained entry
     private int _AppendedCount;   // absolute index the next parsed entry will take
 
@@ -437,14 +452,16 @@ namespace Copse.Treenumerators
 
     private void AppendEntry(TValue value, bool suppressChildren)
     {
+      EnsureWindowSlot();
+
       var index = _AppendedCount++;
 
-      _Window.AddLast(new Entry
+      _Window[index & _WindowMask] = new Entry
       {
         Value = value,
         FirstChildIndex = -1,
         SuppressChildren = suppressChildren,
-      });
+      };
 
       if (_CurrentGroupOwner == -1)
       {
@@ -496,15 +513,32 @@ namespace Copse.Treenumerators
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ref Entry GetEntry(int index)
-      => ref _Window.GetFromBack(_Window.Count - 1 - (index - _WindowBase));
+      => ref _Window[index & _WindowMask];
+
+    // Grow when the live range would overflow the ring: double and re-lay the live entries by
+    // their absolute index (each stays addressable under the new mask). Amortized O(1) per
+    // append; the ring settles at the tree's width rounded up to a power of two.
+    private void EnsureWindowSlot()
+    {
+      var capacity = _WindowMask + 1;
+
+      if (_AppendedCount - _WindowBase < capacity)
+        return;
+
+      var grown = new Entry[capacity * 2];
+      var grownMask = grown.Length - 1;
+
+      for (var index = _WindowBase; index < _AppendedCount; index++)
+        grown[index & grownMask] = _Window[index & _WindowMask];
+
+      _Window = grown;
+      _WindowMask = grownMask;
+    }
 
     private void EvictThrough(int index)
     {
-      while (_WindowBase <= index)
-      {
-        _Window.RemoveFirst();
-        _WindowBase++;
-      }
+      if (index >= _WindowBase)
+        _WindowBase = index + 1;
     }
 
     public void Dispose()
