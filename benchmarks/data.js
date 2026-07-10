@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783662893748,
+  "lastUpdate": 1783662894066,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -34313,6 +34313,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
             "value": 64249336,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2ddbccffe0913c389b6996b7c0bf7aa05b9973da",
+          "message": "Invert: fuse the mirror capture -- tiers feed the store directly\n\nAsyncStreamFedLevelOrderStore (-> StreamFedLevelOrderStore.g.cs): a\nlazily created, incrementally built level-order capture fed by an\nIAsyncLevelOrderStream. The stream already speaks the store's\npositional encoding (group 0 roots, group j+1 node j's children), so\nthe parse is a bare cursor -- append, charge the group's owner, advance\non boundaries. No window, no queues, no visit-stream round trip. Cf.\nAsyncMemoizeBreadthFirstBuffer: the same capture fed by a visit stream,\nwhose front cursor the group cursor replaces.\n\nLevelOrderMirror (Invert's breadth-first-first arm) drops the\nInvert-compose-Memoize pipeline for the fused store; replays ride the\nstore decoders, and consume-on-dispose keeps treenumerator disposal as\nthe release point. The FlatDecode family priced the windowed stream\ndecoder the memo path re-entered at 4-83x the store decoder; fusing it\nout halves the arm (same machine, Job.Default, MegaTriangle/MegaChain):\n\n  Bft_Triangle: 257.6 -> 136.3 ms (memo arm), vs 126.5 ms for the old\n    eager preorder capture -- within 8%, at 24 vs 40 MB and 500 vs\n    2,800 Gen2 collections.\n  Bft_Chain: 242.5 -> 112.7 ms, vs 90.2 ms old -- within 25% (the\n    per-tier stream seam on a million one-node tiers; a decoder-pass\n    target), at 12 vs 40 MB.\n  Dft rows unchanged (99.7/82.2 vs 99.3/81.3 control).\n\nLaziness, partial-drain buffering, and deterministic release all keep\ntheir tests; behavior contracts unchanged (full suite 24,226 green).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:40:02Z",
+          "tree_id": "b28effa1fb3e5e855df96c312c111bdd0c050620",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2ddbccffe0913c389b6996b7c0bf7aa05b9973da"
+        },
+        "date": 1783662894001,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 32161293,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 32160628,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 32160684,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 64250215,
             "unit": "bytes"
           }
         ]
