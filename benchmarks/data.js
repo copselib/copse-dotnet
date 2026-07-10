@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783705011053,
+  "lastUpdate": 1783705011406,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -25841,6 +25841,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
             "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b892c9db33b80ef98b491654319f4e3cbc839cc5",
+          "message": "Async-suffix the probe-idiom pull helpers\n\nThe first probe-idiom wave (ad231c8) left the store decoders' hot\nhelpers suffix-less (Advance, Backtrack, TryPushNextChild, ...); the\nlater stream-decoder and engine waves suffixed theirs. TAP naming keys\non the return type -- these return awaitables that can genuinely be\npending -- so standardize on the suffix. Pure async-side rename: the\ntransform strips a trailing Async, so every regenerated twin is\nbyte-identical.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T16:49:14Z",
+          "tree_id": "e308a34648f98eb7c67d74d6d4ea3277e9aa16d9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/b892c9db33b80ef98b491654319f4e3cbc839cc5"
+        },
+        "date": 1783705011346,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505973,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2277,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636867,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
             "unit": "bytes"
           },
           {
