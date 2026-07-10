@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783697090082,
+  "lastUpdate": 1783697090379,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -49794,6 +49794,114 @@ window.BENCHMARK_DATA = {
             "value": 65503595.3877551,
             "unit": "ns",
             "range": "± 230778.3900380148"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cd9486b469040f9807f27b750a335cc9f1dc5459",
+          "message": "Dashboard: archive suites by commit identity, not a wall-clock window\n\nA suite now reads as archived iff it has no data for the newest\nPUBLISHED COMMIT -- the same rule rows already use within a suite.\nThe old 3-day window was doing one real job, absorbing the\nminutes-apart leg timestamps inside a single run, and commit identity\ndoes that exactly. It is also safe to be this tight: publishes are\nall-or-nothing (the publish job needs every leg, so a failed leg skips\nthe whole publish, and manual dispatch publishes only full main runs),\nso every live suite appears in every publish and the only skip-then-\nresume scenario is a deliberate matrix edit -- where flapping to\narchived and back is the truthful display.\n\nPractical effect: the twelve pre-reorg suites read as archived on the\nnext visit instead of on July 12th, and any future retirement shows\nimmediately after its first post-retirement publish.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:11:40Z",
+          "tree_id": "0c5d670673822d39c924081606a49d3356145e5e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cd9486b469040f9807f27b750a335cc9f1dc5459"
+        },
+        "date": 1783697090335,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 62884317.27678572,
+            "unit": "ns",
+            "range": "± 187338.2569960042"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 108556960.75384617,
+            "unit": "ns",
+            "range": "± 411597.8951047093"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 43443378.71428572,
+            "unit": "ns",
+            "range": "± 556778.1179119842"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 119901694.51785715,
+            "unit": "ns",
+            "range": "± 342130.66623156203"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 20413309.141666666,
+            "unit": "ns",
+            "range": "± 142357.65311824583"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 77175652.73611112,
+            "unit": "ns",
+            "range": "± 715397.1024471465"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 87310126.48,
+            "unit": "ns",
+            "range": "± 693956.2144040617"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 54085533.60666667,
+            "unit": "ns",
+            "range": "± 202171.09636777337"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 82607454.56410256,
+            "unit": "ns",
+            "range": "± 234305.2443581822"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 40204969.98461539,
+            "unit": "ns",
+            "range": "± 445785.3566892042"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 88025842.04761906,
+            "unit": "ns",
+            "range": "± 233535.75352903298"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28271412.077083334,
+            "unit": "ns",
+            "range": "± 183365.9340965503"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 65283997.16071428,
+            "unit": "ns",
+            "range": "± 200275.31497661961"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 55958576.674074076,
+            "unit": "ns",
+            "range": "± 232156.39623556373"
           }
         ]
       }
