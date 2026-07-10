@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783697090921,
+  "lastUpdate": 1783697091179,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -41864,6 +41864,114 @@ window.BENCHMARK_DATA = {
             "value": 2417091.2259615385,
             "unit": "ns",
             "range": "± 6538.61862539078"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cd9486b469040f9807f27b750a335cc9f1dc5459",
+          "message": "Dashboard: archive suites by commit identity, not a wall-clock window\n\nA suite now reads as archived iff it has no data for the newest\nPUBLISHED COMMIT -- the same rule rows already use within a suite.\nThe old 3-day window was doing one real job, absorbing the\nminutes-apart leg timestamps inside a single run, and commit identity\ndoes that exactly. It is also safe to be this tight: publishes are\nall-or-nothing (the publish job needs every leg, so a failed leg skips\nthe whole publish, and manual dispatch publishes only full main runs),\nso every live suite appears in every publish and the only skip-then-\nresume scenario is a deliberate matrix edit -- where flapping to\narchived and back is the truthful display.\n\nPractical effect: the twelve pre-reorg suites read as archived on the\nnext visit instead of on July 12th, and any future retirement shows\nimmediately after its first post-retirement publish.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:11:40Z",
+          "tree_id": "0c5d670673822d39c924081606a49d3356145e5e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cd9486b469040f9807f27b750a335cc9f1dc5459"
+        },
+        "date": 1783697091134,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2207314.8733258927,
+            "unit": "ns",
+            "range": "± 5168.436784174718"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2199820.3816964286,
+            "unit": "ns",
+            "range": "± 7294.04086580591"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4182753.2295673075,
+            "unit": "ns",
+            "range": "± 11130.256800182739"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3668531.9639423075,
+            "unit": "ns",
+            "range": "± 23900.17609817629"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 675706.0129882812,
+            "unit": "ns",
+            "range": "± 1809.9041684058334"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 877320.90546875,
+            "unit": "ns",
+            "range": "± 2657.229691863802"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 448449.36572265625,
+            "unit": "ns",
+            "range": "± 1229.3480729467865"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 5766618.914620535,
+            "unit": "ns",
+            "range": "± 13403.229136374757"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 5621821.663541666,
+            "unit": "ns",
+            "range": "± 15241.890065314867"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13731383.241666667,
+            "unit": "ns",
+            "range": "± 99060.84226097577"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 14565452.374375,
+            "unit": "ns",
+            "range": "± 382575.70389734546"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 2303369.623497596,
+            "unit": "ns",
+            "range": "± 6003.901417769108"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 2185188.245833333,
+            "unit": "ns",
+            "range": "± 13063.221654036175"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 2448135.05078125,
+            "unit": "ns",
+            "range": "± 7985.651764458661"
           }
         ]
       }
