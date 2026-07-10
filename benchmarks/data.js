@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783694823325,
+  "lastUpdate": 1783694823642,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -43178,6 +43178,150 @@ window.BENCHMARK_DATA = {
             "value": 32912711.729166668,
             "unit": "ns",
             "range": "± 451737.5656373123"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40bdba8f62946fd9bbfb767afd6ed38afb80dab8",
+          "message": "The ValueTask fast-path idiom: probe grows, suspend only when pending\n\nThe async seam, measured (profile of the FlatDecode async drain): the\nreal work was 0.05% of the time; the rest was five nested per-pull\nstate machines and their builder launches -- paid per CALL, not per\nsuspension, on drains where nothing ever suspends.\n\nThe idiom: hot methods stop being async. Each store grow is PROBED --\n\n  var closed = _Store.EnsureSubtreeClosedAsync(index);\n\n  if (!closed.IsCompletedSuccessfully)\n    return AwaitThenTryPushNextChildAsync(closed);\n\n  var candidate = index + closed.Result;\n\n-- so a buffered answer costs ordinary method calls with zero state\nmachines, and only a genuinely pending grow enters an async\ncontinuation, which awaits and RE-ENTERS the probing method (grows are\nidempotent and the probing methods mutate nothing before their probes;\nre-entering Backtrack is its loop's `continue`). The method\ndecomposition is fully preserved.\n\nTranscription: two new AsyncToSync rules -- the probe guard statement\nvanishes (the twin can never be pending) and `x.Result` collapses to\n`x` -- leaving exactly the hand-written sync shape; the continuations\nlive in async-only regions. `.IsCompletedSuccessfully`/`.Result` are\nRESERVED idiom names in manifest sources (used nowhere else).\n\nApplied to AsyncTreenumeratorBase.MoveNextAsync (hand-written pair;\nremoves a per-pull state machine from EVERY derived treenumerator) and\nAsyncPreorderStoreDepthFirstTreenumerator as the prototype.\n\nAsyncOverheadFlatDecode: 6.9x -> 1.36x (async 28.9 -> 5.1 ms, async\nallocation now equal to sync). Suspension path covered by the async\nmechanics tests (genuinely-suspending sources); full suite 24,226\ngreen. Rollout to the remaining decoders follows.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T14:22:50Z",
+          "tree_id": "d45718a48306d0a5d0aa4dc9eecf99e097a9cfc5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/40bdba8f62946fd9bbfb767afd6ed38afb80dab8"
+        },
+        "date": 1783694823587,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 11475218.035416666,
+            "unit": "ns",
+            "range": "± 152324.5749904588"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 19921244.120833334,
+            "unit": "ns",
+            "range": "± 279631.9437980243"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3491830.4579427084,
+            "unit": "ns",
+            "range": "± 35433.75588143003"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4329209.432942708,
+            "unit": "ns",
+            "range": "± 55885.377943484185"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 89528440.88000003,
+            "unit": "ns",
+            "range": "± 1311593.3252706416"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 134043931.28333333,
+            "unit": "ns",
+            "range": "± 2273601.1321974816"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 34018062.519375,
+            "unit": "ns",
+            "range": "± 5249285.9005505005"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 49008372.60952381,
+            "unit": "ns",
+            "range": "± 781368.1650082113"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 10681216.048828125,
+            "unit": "ns",
+            "range": "± 197363.26784069202"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 10297345.635416666,
+            "unit": "ns",
+            "range": "± 83098.57046458097"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2863714.7602864583,
+            "unit": "ns",
+            "range": "± 41066.46773828856"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2862951.24453125,
+            "unit": "ns",
+            "range": "± 24773.096428948087"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 85297727.88888888,
+            "unit": "ns",
+            "range": "± 649936.2264165503"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 72926609.20952381,
+            "unit": "ns",
+            "range": "± 1148641.5527596618"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 33201360.918269232,
+            "unit": "ns",
+            "range": "± 429901.075252892"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 18545384.595833335,
+            "unit": "ns",
+            "range": "± 230099.29430820723"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 85390187.24444446,
+            "unit": "ns",
+            "range": "± 767539.4573373308"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 138840914.81666666,
+            "unit": "ns",
+            "range": "± 1566624.6791908075"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 16952149.175,
+            "unit": "ns",
+            "range": "± 171630.1729936296"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 38317596.53333333,
+            "unit": "ns",
+            "range": "± 206431.45765140036"
           }
         ]
       }
