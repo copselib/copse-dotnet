@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783699476941,
+  "lastUpdate": 1783699477263,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -19726,6 +19726,54 @@ window.BENCHMARK_DATA = {
             "value": 15840901.74107143,
             "unit": "ns",
             "range": "± 769622.350996069"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c6d7d6d2aec5ae217442045caa3d8291209a96b",
+          "message": "Fast-path probe idiom: the preorder stream decoder\n\nSame treatment as the level-order twin (2e715c7): the full pull chain\ngoes non-async with every stream seam probed. The lookahead is the\ninteresting shape here: a pending TryReadNext/TrySkipToDepth resumes\nthrough a continuation that lands the read in the lookahead FIELDS\n(via the same ConsumeRead/ConsumeSkip helpers the fast path uses) and\nre-enters the ensure -- the filled lookahead makes re-entry skip\nstraight to the depth check, so no mid-method resume state exists.\n\nAsyncOverheadSerializerRoundTrip: 5.3x (CI) -> 2.45x (async 2.4ms ->\n966us, allocation now equal to sync). The remainder rides the\nserializer's TEXT streams (their TryRead methods are still async over\nthe scanner) and the write side -- next increment, with the engines.\nFull suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:53:54Z",
+          "tree_id": "4c02a67e7a3af01805fe42a34605491f007a748e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9c6d7d6d2aec5ae217442045caa3d8291209a96b"
+        },
+        "date": 1783699477204,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14474342.45625,
+            "unit": "ns",
+            "range": "± 269681.29091669386"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 27420026.591666665,
+            "unit": "ns",
+            "range": "± 216979.27005953452"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 26379975.435416665,
+            "unit": "ns",
+            "range": "± 114513.400216363"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 14640026.27382172,
+            "unit": "ns",
+            "range": "± 657257.411150969"
           }
         ]
       }
