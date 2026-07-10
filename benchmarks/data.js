@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783664100627,
+  "lastUpdate": 1783664100869,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -45098,6 +45098,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PreorderTraversal.Binary",
             "value": 5758,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26207,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6695dea5afe71463695c9c3c01d907fef42d5237",
+          "message": "Windowed stream decoder: publish from frames, mirror the owner span\n\nTwo locality moves in AsyncLevelOrderStreamBreadthFirstTreenumerator\n(sync twin regenerated), proven against the FlatDecode rows:\n\n- Value-in-frame: the node value is read out of the window once, at\n  schedule time, and carried in the Frame; visits publish from the\n  frame. Kills the per-visit GetEntry (~2n chunk-resolved window\n  touches per drain).\n- Owner-span mirror: the current group's suppression flag and child\n  span live in fields, flushed to the owner's window entry once per\n  GROUP boundary instead of touched two-three times per item. Live\n  owner-aware reads (GetChildCount/GetFirstChildIndex) serve the\n  still-open group from the fields; the one strategy that can suppress\n  the current group's owner mid-group (SkipSiblings silencing the\n  visit front) updates the mirror, and a just-scheduled node's group\n  is provably ahead of the cursor, so the other suppression sites\n  need no mirror.\n\nLevelOrderStreamDecode (Mega, EPYC 7763 container, Job.Default):\nBinary 3,104.9 -> 1,067.0 ms (83x -> 29x vs the store decoder);\nTriangle 134.8 -> 87.5 ms (4.2x -> 2.7x). Riders: narrow streaming\nInvert, async level-order deserialize. Conformance battery green\n(the strategy matrix exercises the suppression mirror); full suite\n24,226.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:58:30Z",
+          "tree_id": "e7e0bc82b5303119326180765fba546e0ff7b269",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6695dea5afe71463695c9c3c01d907fef42d5237"
+        },
+        "date": 1783664100827,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 807,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 348,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27504016,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231306,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214095,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 3739,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35174,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 342,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3267,
             "unit": "bytes"
           },
           {
