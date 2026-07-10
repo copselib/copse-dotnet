@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783668978870,
+  "lastUpdate": 1783668979174,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -23614,6 +23614,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
             "value": 33636831,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "261e7148985695daa5f904e3de55ae748050344d",
+          "message": "Comb: RefSemiDeque access-cost contract; chain seam attributed and accepted\n\nThe fine-toothed-comb pass over the flat primitives, driven by the\nFlatDecode instrument and the decoder profile:\n\n- RefSemiDeque: head/tail O(1), arbitrary-index GetFromBack/GetFromFront\n  O(partitions) via a partition-chain walk. Audited every caller: all\n  index near an end or on cold strategy paths (SkipRemainingSiblings,\n  disposal) -- the stream decoder's window was the library's only hot\n  random-index user and now rides a masked ring. Contract documented on\n  the class so the next random-index workload reaches for the right\n  shape instead of a profiler.\n- RefAppendOnlyList: healthy -- cached read-partition fast path with\n  bounds-check elision; the memo stores ride it at store-decoder speed\n  (Memoize replay rows).\n- Chain lazy seam attributed: bulk capture-then-replay through the\n  fused store measures 94.0ms vs the old eager capture's 90.2 --\n  parity -- so Invert Bft_Chain's remaining ~11% over eager is purely\n  the per-pull grow seam, i.e. the price of laziness itself, and any\n  consumer gets the bulk rate via dispose-completes-capture. Accepted;\n  no SPI change.\n- Accepted-and-documented: BFT store decoders' width-scale frame\n  queues are inherent to breadth-first visit synthesis (the dimension\n  tax the FlatDecode baseline quantified); evicted ring slots are\n  overwritten on wrap, matching the deque's chunk-retention behavior.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T07:13:45Z",
+          "tree_id": "880b459ba42bbdfb1528b65ec8060e238414adaf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/261e7148985695daa5f904e3de55ae748050344d"
+        },
+        "date": 1783668979120,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505935,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636837,
             "unit": "bytes"
           },
           {
