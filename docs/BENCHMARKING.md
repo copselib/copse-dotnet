@@ -4,7 +4,7 @@ This document explains the benchmark suite's organization and the continuous ben
 
 ## Suite organization
 
-The suite is ~137 benchmarks in **ten families**, one `[BenchmarkCategory]` family tag per class,
+The suite is ~139 benchmarks in **ten families**, one `[BenchmarkCategory]` family tag per class,
 so the CI legs partition the suite by construction:
 
 | Family | Classes | What it measures |
