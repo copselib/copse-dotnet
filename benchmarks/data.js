@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783662890914,
+  "lastUpdate": 1783662891219,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -38954,6 +38954,114 @@ window.BENCHMARK_DATA = {
             "value": 2674120.7419084823,
             "unit": "ns",
             "range": "± 2812.7550358970416"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2ddbccffe0913c389b6996b7c0bf7aa05b9973da",
+          "message": "Invert: fuse the mirror capture -- tiers feed the store directly\n\nAsyncStreamFedLevelOrderStore (-> StreamFedLevelOrderStore.g.cs): a\nlazily created, incrementally built level-order capture fed by an\nIAsyncLevelOrderStream. The stream already speaks the store's\npositional encoding (group 0 roots, group j+1 node j's children), so\nthe parse is a bare cursor -- append, charge the group's owner, advance\non boundaries. No window, no queues, no visit-stream round trip. Cf.\nAsyncMemoizeBreadthFirstBuffer: the same capture fed by a visit stream,\nwhose front cursor the group cursor replaces.\n\nLevelOrderMirror (Invert's breadth-first-first arm) drops the\nInvert-compose-Memoize pipeline for the fused store; replays ride the\nstore decoders, and consume-on-dispose keeps treenumerator disposal as\nthe release point. The FlatDecode family priced the windowed stream\ndecoder the memo path re-entered at 4-83x the store decoder; fusing it\nout halves the arm (same machine, Job.Default, MegaTriangle/MegaChain):\n\n  Bft_Triangle: 257.6 -> 136.3 ms (memo arm), vs 126.5 ms for the old\n    eager preorder capture -- within 8%, at 24 vs 40 MB and 500 vs\n    2,800 Gen2 collections.\n  Bft_Chain: 242.5 -> 112.7 ms, vs 90.2 ms old -- within 25% (the\n    per-tier stream seam on a million one-node tiers; a decoder-pass\n    target), at 12 vs 40 MB.\n  Dft rows unchanged (99.7/82.2 vs 99.3/81.3 control).\n\nLaziness, partial-drain buffering, and deterministic release all keep\ntheir tests; behavior contracts unchanged (full suite 24,226 green).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:40:02Z",
+          "tree_id": "b28effa1fb3e5e855df96c312c111bdd0c050620",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2ddbccffe0913c389b6996b7c0bf7aa05b9973da"
+        },
+        "date": 1783662891162,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 1352640.8897879464,
+            "unit": "ns",
+            "range": "± 5105.758613765367"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1336779.628125,
+            "unit": "ns",
+            "range": "± 6063.898721511505"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 2765206.163504464,
+            "unit": "ns",
+            "range": "± 4827.774585995187"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 4236545.702604166,
+            "unit": "ns",
+            "range": "± 27188.232270851357"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 470351.5100097656,
+            "unit": "ns",
+            "range": "± 3059.211321469214"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 643604.4122070313,
+            "unit": "ns",
+            "range": "± 1995.2880383338922"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 332787.6287935697,
+            "unit": "ns",
+            "range": "± 3128.259401405297"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4084878.535416667,
+            "unit": "ns",
+            "range": "± 11971.864303552473"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 4059371.0514322915,
+            "unit": "ns",
+            "range": "± 10692.666412044358"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 17375309.53125,
+            "unit": "ns",
+            "range": "± 88066.71559780258"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 10671911.401785715,
+            "unit": "ns",
+            "range": "± 43884.91662366692"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1746660.2127511161,
+            "unit": "ns",
+            "range": "± 14197.612959071328"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1574807.2614182692,
+            "unit": "ns",
+            "range": "± 8087.359634491451"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1605036.3693033855,
+            "unit": "ns",
+            "range": "± 3735.010849812169"
           }
         ]
       }
