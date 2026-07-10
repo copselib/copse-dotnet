@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783706353530,
+  "lastUpdate": 1783706353877,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -20302,6 +20302,54 @@ window.BENCHMARK_DATA = {
             "value": 15450812.683258928,
             "unit": "ns",
             "range": "± 507489.60825305845"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a8d905810f234775d6892aa9b5b41cec12e9c79",
+          "message": "Fast-path probe idiom: the serializer's per-token frames\n\nThe scanner's TryScanEvent and both text streams' read loops stay\nnon-async now. The scanner probes each character read; a pending read\nis always a REFILL, so its continuation pushes the refilled character\nback into the block (the scanner's own pushback) and re-enters the\nprobing loop with the carried flags riding as core parameters. The\nquoted scan fuses with its terminator scan for an honest char return;\nthe doubled-quote lookahead consumes through a shared resolve helper.\nThe text streams probe each scan and land events through commit\nhelpers shared by fast path and continuation (the skip's running count\nrides as a core parameter). The write side needs nothing: one block-\nbuffered state machine per serialize, its per-visit awaits complete\ninline.\n\nSame-machine A/B: SerializerRoundTrip 1.86x -> 1.21x, allocations now\nequal (245 KB both colors). Was 5.3x at the start of the rollout.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T17:48:10Z",
+          "tree_id": "e0de3f3816e500f0ac09370b7c7d2dba6ad98148",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3a8d905810f234775d6892aa9b5b41cec12e9c79"
+        },
+        "date": 1783706353812,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 22928191.420833334,
+            "unit": "ns",
+            "range": "± 105182.07881429227"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 40176200.37435898,
+            "unit": "ns",
+            "range": "± 321402.20397188177"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 42083949.23888889,
+            "unit": "ns",
+            "range": "± 270305.70661376003"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15287459.90242347,
+            "unit": "ns",
+            "range": "± 609808.9639931368"
           }
         ]
       }
