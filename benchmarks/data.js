@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783655075926,
+  "lastUpdate": 1783655076252,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -39732,6 +39732,120 @@ window.BENCHMARK_DATA = {
             "value": 19311387.414583333,
             "unit": "ns",
             "range": "± 80483.80363022383"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4a8d8a6b7a1f8b10f7116cdee265a8697de1046",
+          "message": "LevelOrderArrayStore: the completed level-order dual (+ lazy-built twin)\n\nPreorderArrayStore's structural dual, long on the dual-symmetry\nbacklog: values[i] in level order, children contiguous, roots the\ndepth-0 prefix, pure-read Ensure* hooks. AsyncLazyBuiltLevelOrderStore\n-> LazyBuiltLevelOrderStore.g.cs is the lazy-built dual (manifest entry\nadded); both array stores gain Count. Direct tests decode hand-laid\ntree/forest/empty stores through LevelOrderTreenumerable in both\ndimensions and pin the lazy dual's build-once semantics.\n\nDecision record -- LeaffixScan layout-by-first-dimension: BUILT AND\nMEASURED OUT. A breadth-first-first pull pinning a level-order layout\n(one transpose pass) was implemented, then rejected on direct\nmeasurement: over raw array stores the breadth-first cross-decode tax\nis only ~1.08x (39.9 vs 36.9ms replaying the Mega triangle) -- the\nMemoize replay rows' 1.53x is memo-store overhead (grow-seam checks,\nchunked indexing), not layout -- so the transpose (+~13ms, +12MB\ntransient) needs ~5 replays to break even and taxes the common\nsingle-drain case ~8% (end-to-end Bft_Triangle 124.6 -> 134.6ms).\nLeaffixScan stays preorder for both dimensions, on the blind Tree.Lazy;\nthe rationale lives in a comment on PreorderScan. LeaffixScan's\npin-order matrix tests and the async breadth-first-first mechanics\ncheck stay: they assert the pin contract, not the layout.\n\nFull solution suite 24,226 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T03:12:47Z",
+          "tree_id": "c6e1ed34b9e32c1caf3ea2896a6ae5b289419eec",
+          "url": "https://github.com/copselib/copse-dotnet/commit/a4a8d8a6b7a1f8b10f7116cdee265a8697de1046"
+        },
+        "date": 1783655076195,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 102245114.38571428,
+            "unit": "ns",
+            "range": "± 422923.09077545087"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 262199063.71666667,
+            "unit": "ns",
+            "range": "± 7833329.874223648"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 75222215.35714285,
+            "unit": "ns",
+            "range": "± 221681.01736763283"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 222873646.66666666,
+            "unit": "ns",
+            "range": "± 2816571.8062847364"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 50310956.49333333,
+            "unit": "ns",
+            "range": "± 122118.13858904036"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 61367955.202380955,
+            "unit": "ns",
+            "range": "± 356686.12291169947"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 28574848.829166666,
+            "unit": "ns",
+            "range": "± 138554.1677028999"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 33322395.004166666,
+            "unit": "ns",
+            "range": "± 517481.7803839491"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 47328952.048951045,
+            "unit": "ns",
+            "range": "± 76960.46661382944"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 62821698.833333336,
+            "unit": "ns",
+            "range": "± 691225.1203981547"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 41692557.660256416,
+            "unit": "ns",
+            "range": "± 50964.40441221757"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 30390237.515625,
+            "unit": "ns",
+            "range": "± 125303.94467175563"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 105151946.31428573,
+            "unit": "ns",
+            "range": "± 403000.9451349238"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 128706055.39583333,
+            "unit": "ns",
+            "range": "± 3238911.9070434887"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 19115577.347916666,
+            "unit": "ns",
+            "range": "± 57958.3489178868"
           }
         ]
       }
