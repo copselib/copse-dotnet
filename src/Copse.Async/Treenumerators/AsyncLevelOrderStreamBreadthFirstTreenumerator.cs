@@ -120,17 +120,24 @@ namespace Copse.Async.Treenumerators
       public bool ChildrenDisabled;
     }
 
-    public async ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    // NOT async, and neither are the pull helpers below: every seam is PROBED, and a pull whose
+    // stream answers inline is ordinary method calls with no state machine. Only a genuinely
+    // pending stream call enters an async continuation -- the fast-path probe idiom (see
+    // AsyncToSync).
+    public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
-        return false;
+        return new ValueTask<bool>(false);
 
-      var moved = await OnMoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);
+      var moved = OnMoveNextAsync(nodeTraversalStrategies);
 
-      if (!moved)
+      if (!moved.IsCompletedSuccessfully)
+        return AwaitThenFinishMoveNextAsync(moved);
+
+      if (!moved.Result)
         _Finished = true;
 
-      return moved;
+      return new ValueTask<bool>(moved.Result);
     }
 
     private ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
@@ -144,16 +151,23 @@ namespace Copse.Async.Treenumerators
     }
 
     // Produce the next single visit (or false when the traversal is exhausted). See the store
-    // twin for the phase structure.
-    private async ValueTask<bool> AdvanceAsync()
+    // twin for the phase structure. A pending schedule resumes through a continuation that
+    // performs this loop's between-iteration mutation and RE-ENTERS Advance -- re-entry IS the
+    // `continue` (all loop state lives in fields).
+    private ValueTask<bool> AdvanceAsync()
     {
       while (true)
       {
         // 1) Descend: schedule the next child of the node on top of the schedule stack.
         if (_ScheduleStack.Count > 0)
         {
-          if (await TryScheduleNextChildOfAsync(fromVisitFront: false).ConfigureAwait(false))
-            return true;
+          var scheduled = TryScheduleNextChildOfAsync(fromVisitFront: false);
+
+          if (!scheduled.IsCompletedSuccessfully)
+            return AwaitScheduleThenRetireStackTopAsync(scheduled);
+
+          if (scheduled.Result)
+            return new ValueTask<bool>(true);
 
           _ScheduleStack.RemoveLast();
           continue;
@@ -162,8 +176,13 @@ namespace Copse.Async.Treenumerators
         // 2) Schedule the next root (the forest's children -- no surrounding visits).
         if (!_RootsScheduled)
         {
-          if (await TryScheduleNextRootAsync().ConfigureAwait(false))
-            return true;
+          var scheduled = TryScheduleNextRootAsync();
+
+          if (!scheduled.IsCompletedSuccessfully)
+            return AwaitScheduleThenFinishRootsAsync(scheduled);
+
+          if (scheduled.Result)
+            return new ValueTask<bool>(true);
 
           _RootsScheduled = true;
           // Enqueues made while scheduling roots have no owing parent; clear the carry.
@@ -172,10 +191,10 @@ namespace Copse.Async.Treenumerators
         }
 
         if (_VisitQueue.Count == 0)
-          return false;
+          return new ValueTask<bool>(false);
 
-        // 3) Visit the active parent and drive its children. The visit-front ref is scoped to this
-        // block so it does not cross the TryScheduleNextChildOf await below (a ref local may not).
+        // 3) Visit the active parent and drive its children. The visit-front ref is scoped to
+        // this block so it does not cross the schedule call below.
         {
           ref var front = ref _VisitQueue.GetFirst();
 
@@ -183,7 +202,7 @@ namespace Copse.Async.Treenumerators
           {
             front.VisitCount = 1;
             PublishVisit(ref front);
-            return true;
+            return new ValueTask<bool>(true);
           }
 
           if (_SlotCarry)
@@ -191,31 +210,41 @@ namespace Copse.Async.Treenumerators
             _SlotCarry = false;
             front.VisitCount++;
             PublishVisit(ref front);
-            return true;
+            return new ValueTask<bool>(true);
           }
         }
 
-        if (await TryScheduleNextChildOfAsync(fromVisitFront: true).ConfigureAwait(false))
-          return true;
+        var frontScheduled = TryScheduleNextChildOfAsync(fromVisitFront: true);
 
-        // The parent has no more children: retire it and evict the window behind everything
-        // still live. Eviction is bounded by (a) the smallest node index still on the visit
-        // queue (indices are non-monotonic under SkipNode promotion, so the retired index alone
-        // proves nothing) and (b) the parse cursor -- a front whose children the consumer
-        // disabled retires WITHOUT its group being reached, and its entry's suppress flag must
-        // survive until the parser discards that group.
-        var retired = _VisitQueue.RemoveFirst().NodeIndex;
+        if (!frontScheduled.IsCompletedSuccessfully)
+          return AwaitScheduleThenRetireFrontAsync(frontScheduled);
 
-        if (_QueueIndexMins.Count > 0 && _QueueIndexMins.GetFirst() == retired)
-          _QueueIndexMins.RemoveFirst();
+        if (frontScheduled.Result)
+          return new ValueTask<bool>(true);
 
-        var evictThrough = _VisitQueue.Count == 0 ? retired : _QueueIndexMins.GetFirst() - 1;
-
-        if (!_StreamExhausted)
-          evictThrough = System.Math.Min(evictThrough, _CurrentGroupOwner - 1);
-
-        EvictThrough(evictThrough);
+        RetireFront();
       }
+    }
+
+    // The parent has no more children: retire it and evict the window behind everything still
+    // live. Eviction is bounded by (a) the smallest node index still on the visit queue
+    // (indices are non-monotonic under SkipNode promotion, so the retired index alone proves
+    // nothing) and (b) the parse cursor -- a front whose children the consumer disabled retires
+    // WITHOUT its group being reached, and its entry's suppress flag must survive until the
+    // parser discards that group.
+    private void RetireFront()
+    {
+      var retired = _VisitQueue.RemoveFirst().NodeIndex;
+
+      if (_QueueIndexMins.Count > 0 && _QueueIndexMins.GetFirst() == retired)
+        _QueueIndexMins.RemoveFirst();
+
+      var evictThrough = _VisitQueue.Count == 0 ? retired : _QueueIndexMins.GetFirst() - 1;
+
+      if (!_StreamExhausted)
+        evictThrough = System.Math.Min(evictThrough, _CurrentGroupOwner - 1);
+
+      EvictThrough(evictThrough);
     }
 
     // Classify the node just scheduled (the schedule-stack top) by the consumer's strategy.
@@ -266,22 +295,29 @@ namespace Copse.Async.Treenumerators
 
     // THE SEAM, windowed edition: the parent's next child is child ordinal NextChildOrdinal, once
     // the parser has advanced far enough to prove it exists. fromVisitFront selects the parent
-    // frame (visit-queue front vs schedule-stack top) without a ref parameter (illegal in async):
-    // read a value copy before the await, re-acquire the frame to bump NextChildOrdinal after it.
+    // frame (visit-queue front vs schedule-stack top) without a ref parameter: pre-probe reads
+    // use a value copy (a pending ensure resumes through a continuation that RE-ENTERS this
+    // method -- the ensure is idempotent, its parse lands in fields, and nothing mutates before
+    // it), and the frame is re-acquired to bump NextChildOrdinal after.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async ValueTask<bool> TryScheduleNextChildOfAsync(bool fromVisitFront)
+    private ValueTask<bool> TryScheduleNextChildOfAsync(bool fromVisitFront)
     {
       var parent = fromVisitFront ? _VisitQueue.GetFirst() : _ScheduleStack.GetLast();
 
       if (parent.ChildrenDisabled)
-        return false;
+        return new ValueTask<bool>(false);
 
       var ordinal = parent.NextChildOrdinal;
       var nodeIndex = parent.NodeIndex;
       var depth = parent.Position.Depth;
 
-      if (!await TryEnsureChildAsync(nodeIndex, ordinal).ConfigureAwait(false))
-        return false;
+      var ensured = TryEnsureChildAsync(nodeIndex, ordinal);
+
+      if (!ensured.IsCompletedSuccessfully)
+        return AwaitThenTryScheduleNextChildOfAsync(ensured, fromVisitFront);
+
+      if (!ensured.Result)
+        return new ValueTask<bool>(false);
 
       var childIndex = GetFirstChildIndex(nodeIndex) + ordinal;
 
@@ -293,20 +329,28 @@ namespace Copse.Async.Treenumerators
 
       PushScheduled(childIndex, new NodePosition(ordinal, depth + 1));
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> TryScheduleNextRootAsync()
+    private ValueTask<bool> TryScheduleNextRootAsync()
     {
-      if (_RootsFinished || !await TryEnsureRootAsync(_RootsSeen).ConfigureAwait(false))
-        return false;
+      if (_RootsFinished)
+        return new ValueTask<bool>(false);
+
+      var ensured = TryEnsureRootAsync(_RootsSeen);
+
+      if (!ensured.IsCompletedSuccessfully)
+        return AwaitThenTryScheduleNextRootAsync(ensured);
+
+      if (!ensured.Result)
+        return new ValueTask<bool>(false);
 
       // Roots are the entries of group 0: ordinal and absolute index coincide.
       PushScheduled(_RootsSeen, new NodePosition(_RootsSeen, 0));
 
       _RootsSeen++;
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
     // Schedule a node onto the schedule stack and publish its scheduling visit. The value is
@@ -380,32 +424,38 @@ namespace Copse.Async.Treenumerators
 
     // ----- The parser: one group at a time, positionally.
 
-    private async ValueTask<bool> TryEnsureRootAsync(int k)
+    private ValueTask<bool> TryEnsureRootAsync(int k)
     {
       while (_RootCount <= k)
       {
         if (_StreamExhausted || _CurrentGroupOwner > -1)
-          return false;
+          return new ValueTask<bool>(false);
 
-        await ParseOneStepAsync().ConfigureAwait(false);
+        var step = ParseOneStepAsync();
+
+        if (!step.IsCompletedSuccessfully)
+          return AwaitStepThenEnsureRootAsync(step, k);
       }
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
-    private async ValueTask<bool> TryEnsureChildAsync(int parent, int k)
+    private ValueTask<bool> TryEnsureChildAsync(int parent, int k)
     {
       while (GetChildCount(parent) <= k)
       {
         // The parent's group is fully consumed once the cursor has moved past it (groups arrive
         // in owner order) or the stream ended (all unwritten groups are empty).
         if (_StreamExhausted || _CurrentGroupOwner > parent)
-          return false;
+          return new ValueTask<bool>(false);
 
-        await ParseOneStepAsync().ConfigureAwait(false);
+        var step = ParseOneStepAsync();
+
+        if (!step.IsCompletedSuccessfully)
+          return AwaitStepThenEnsureChildAsync(step, parent, k);
       }
 
-      return true;
+      return new ValueTask<bool>(true);
     }
 
     // Live owner-aware reads: the current group's span lives in the mirror fields until the
@@ -421,31 +471,43 @@ namespace Copse.Async.Treenumerators
 
     // Advance the parse by one item or one group boundary. A suppressed owner's group is
     // discarded UNMAPPED in one step, its count appended as suppressed entries (the cascade
-    // that prunes whole subtrees out of a positional encoding).
-    private async ValueTask ParseOneStepAsync()
+    // that prunes whole subtrees out of a positional encoding). Returns true iff an item was
+    // appended (false at a group boundary or exhaustion) -- the ensure loops re-check their own
+    // conditions rather than reading it, but a bool-shaped step is what lets every seam here
+    // ride the generic probe machinery.
+    private ValueTask<bool> ParseOneStepAsync()
     {
       if (_CurrentGroupSuppressed)
       {
-        var discarded = await _Stream.SkipGroupRemainderAsync().ConfigureAwait(false);
+        var skipped = _Stream.SkipGroupRemainderAsync();
 
-        for (int i = 0; i < discarded; i++)
-          AppendEntry(default, suppressChildren: true);
+        if (!skipped.IsCompletedSuccessfully)
+          return AwaitSkipThenFinishSuppressedGroupAsync(skipped);
 
-        await AdvanceGroupAsync().ConfigureAwait(false);
-
-        return;
+        return FinishSuppressedGroup(skipped.Result);
       }
 
-      var read = await _Stream.TryReadNextInGroupAsync().ConfigureAwait(false);
+      var read = _Stream.TryReadNextInGroupAsync();
 
-      if (read.HasValue)
+      if (!read.IsCompletedSuccessfully)
+        return AwaitReadThenAppendOrAdvanceAsync(read);
+
+      if (read.Result.HasValue)
       {
-        AppendEntry(read.Value, suppressChildren: false);
+        AppendEntry(read.Result.Value, suppressChildren: false);
 
-        return;
+        return new ValueTask<bool>(true);
       }
 
-      await AdvanceGroupAsync().ConfigureAwait(false);
+      return AdvanceGroupAsync();
+    }
+
+    private ValueTask<bool> FinishSuppressedGroup(int discarded)
+    {
+      for (int i = 0; i < discarded; i++)
+        AppendEntry(default, suppressChildren: true);
+
+      return AdvanceGroupAsync();
     }
 
     private void AppendEntry(TValue value, bool suppressChildren)
@@ -475,20 +537,34 @@ namespace Copse.Async.Treenumerators
 
     // Group boundary: flush the mirrored span to the owner's entry (the one window touch the
     // group pays), then advance and open the next group's mirror. Exhaustion still flushes --
-    // the final group's span must land.
-    private async ValueTask AdvanceGroupAsync()
+    // the final group's span must land, and the flush is safe before the probe because a
+    // pending advance resumes through a continuation that only OPENS (never re-flushes).
+    // Returns true iff a new group opened (false = exhausted).
+    private ValueTask<bool> AdvanceGroupAsync()
     {
       FlushCurrentGroup();
 
-      if (await _Stream.TryMoveToNextGroupAsync().ConfigureAwait(false))
+      var advanced = _Stream.TryMoveToNextGroupAsync();
+
+      if (!advanced.IsCompletedSuccessfully)
+        return AwaitThenOpenNextGroupAsync(advanced);
+
+      return new ValueTask<bool>(OpenNextGroup(advanced.Result));
+    }
+
+    private bool OpenNextGroup(bool advanced)
+    {
+      if (advanced)
       {
         _CurrentGroupOwner++;
         OpenCurrentGroup();
+
+        return true;
       }
-      else
-      {
-        _StreamExhausted = true;
-      }
+
+      _StreamExhausted = true;
+
+      return false;
     }
 
     private void FlushCurrentGroup()
@@ -538,6 +614,108 @@ namespace Copse.Async.Treenumerators
       if (index >= _WindowBase)
         _WindowBase = index + 1;
     }
+
+    // codegen: begin async-only
+    //
+    // The suspension continuations. Grow/ensure continuations await the pending step and
+    // RE-ENTER their probing method (ensures are idempotent, the parse lands in fields, and the
+    // probing methods mutate nothing before their probes); the read/skip continuations consume
+    // the pending stream result and run the same tail the fast path would have; the schedule
+    // continuations perform Advance's between-iteration mutation and re-enter Advance, which IS
+    // the loop's `continue`.
+    private async ValueTask<bool> AwaitThenFinishMoveNextAsync(ValueTask<bool> pendingMove)
+    {
+      var moved = await pendingMove.ConfigureAwait(false);
+
+      if (!moved)
+        _Finished = true;
+
+      return moved;
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenRetireStackTopAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      _ScheduleStack.RemoveLast();
+
+      return await AdvanceAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenFinishRootsAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      _RootsScheduled = true;
+      _SlotCarry = false;
+
+      return await AdvanceAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitScheduleThenRetireFrontAsync(ValueTask<bool> pendingSchedule)
+    {
+      if (await pendingSchedule.ConfigureAwait(false))
+        return true;
+
+      RetireFront();
+
+      return await AdvanceAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenTryScheduleNextChildOfAsync(ValueTask<bool> pendingEnsure, bool fromVisitFront)
+    {
+      await pendingEnsure.ConfigureAwait(false);
+
+      return await TryScheduleNextChildOfAsync(fromVisitFront).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenTryScheduleNextRootAsync(ValueTask<bool> pendingEnsure)
+    {
+      await pendingEnsure.ConfigureAwait(false);
+
+      return await TryScheduleNextRootAsync().ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitStepThenEnsureRootAsync(ValueTask<bool> pendingStep, int k)
+    {
+      await pendingStep.ConfigureAwait(false);
+
+      return await TryEnsureRootAsync(k).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitStepThenEnsureChildAsync(ValueTask<bool> pendingStep, int parent, int k)
+    {
+      await pendingStep.ConfigureAwait(false);
+
+      return await TryEnsureChildAsync(parent, k).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitSkipThenFinishSuppressedGroupAsync(ValueTask<int> pendingSkip)
+    {
+      var discarded = await pendingSkip.ConfigureAwait(false);
+
+      return await FinishSuppressedGroup(discarded).ConfigureAwait(false);
+    }
+
+    private async ValueTask<bool> AwaitThenOpenNextGroupAsync(ValueTask<bool> pendingAdvance)
+      => OpenNextGroup(await pendingAdvance.ConfigureAwait(false));
+
+    private async ValueTask<bool> AwaitReadThenAppendOrAdvanceAsync(ValueTask<LevelOrderRead<TValue>> pendingRead)
+    {
+      var read = await pendingRead.ConfigureAwait(false);
+
+      if (read.HasValue)
+      {
+        AppendEntry(read.Value, suppressChildren: false);
+
+        return true;
+      }
+
+      return await AdvanceGroupAsync().ConfigureAwait(false);
+    }
+    // codegen: end async-only
 
     public async ValueTask DisposeAsync()
     {

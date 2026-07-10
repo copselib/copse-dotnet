@@ -122,6 +122,10 @@ namespace Copse.Treenumerators
       public bool ChildrenDisabled;
     }
 
+    // NOT async, and neither are the pull helpers below: every seam is PROBED, and a pull whose
+    // stream answers inline is ordinary method calls with no state machine. Only a genuinely
+    // pending stream call enters an async continuation -- the fast-path probe idiom (see
+    // AsyncToSync).
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -146,7 +150,9 @@ namespace Copse.Treenumerators
     }
 
     // Produce the next single visit (or false when the traversal is exhausted). See the store
-    // twin for the phase structure.
+    // twin for the phase structure. A pending schedule resumes through a continuation that
+    // performs this loop's between-iteration mutation and RE-ENTERS Advance -- re-entry IS the
+    // `continue` (all loop state lives in fields).
     private bool Advance()
     {
       while (true)
@@ -154,7 +160,9 @@ namespace Copse.Treenumerators
         // 1) Descend: schedule the next child of the node on top of the schedule stack.
         if (_ScheduleStack.Count > 0)
         {
-          if (TryScheduleNextChildOf(fromVisitFront: false))
+          var scheduled = TryScheduleNextChildOf(fromVisitFront: false);
+
+          if (scheduled)
             return true;
 
           _ScheduleStack.RemoveLast();
@@ -164,7 +172,9 @@ namespace Copse.Treenumerators
         // 2) Schedule the next root (the forest's children -- no surrounding visits).
         if (!_RootsScheduled)
         {
-          if (TryScheduleNextRoot())
+          var scheduled = TryScheduleNextRoot();
+
+          if (scheduled)
             return true;
 
           _RootsScheduled = true;
@@ -176,8 +186,8 @@ namespace Copse.Treenumerators
         if (_VisitQueue.Count == 0)
           return false;
 
-        // 3) Visit the active parent and drive its children. The visit-front ref is scoped to this
-        // block so it does not cross the TryScheduleNextChildOf await below (a ref local may not).
+        // 3) Visit the active parent and drive its children. The visit-front ref is scoped to
+        // this block so it does not cross the schedule call below.
         {
           ref var front = ref _VisitQueue.GetFirst();
 
@@ -197,27 +207,34 @@ namespace Copse.Treenumerators
           }
         }
 
-        if (TryScheduleNextChildOf(fromVisitFront: true))
+        var frontScheduled = TryScheduleNextChildOf(fromVisitFront: true);
+
+        if (frontScheduled)
           return true;
 
-        // The parent has no more children: retire it and evict the window behind everything
-        // still live. Eviction is bounded by (a) the smallest node index still on the visit
-        // queue (indices are non-monotonic under SkipNode promotion, so the retired index alone
-        // proves nothing) and (b) the parse cursor -- a front whose children the consumer
-        // disabled retires WITHOUT its group being reached, and its entry's suppress flag must
-        // survive until the parser discards that group.
-        var retired = _VisitQueue.RemoveFirst().NodeIndex;
-
-        if (_QueueIndexMins.Count > 0 && _QueueIndexMins.GetFirst() == retired)
-          _QueueIndexMins.RemoveFirst();
-
-        var evictThrough = _VisitQueue.Count == 0 ? retired : _QueueIndexMins.GetFirst() - 1;
-
-        if (!_StreamExhausted)
-          evictThrough = System.Math.Min(evictThrough, _CurrentGroupOwner - 1);
-
-        EvictThrough(evictThrough);
+        RetireFront();
       }
+    }
+
+    // The parent has no more children: retire it and evict the window behind everything still
+    // live. Eviction is bounded by (a) the smallest node index still on the visit queue
+    // (indices are non-monotonic under SkipNode promotion, so the retired index alone proves
+    // nothing) and (b) the parse cursor -- a front whose children the consumer disabled retires
+    // WITHOUT its group being reached, and its entry's suppress flag must survive until the
+    // parser discards that group.
+    private void RetireFront()
+    {
+      var retired = _VisitQueue.RemoveFirst().NodeIndex;
+
+      if (_QueueIndexMins.Count > 0 && _QueueIndexMins.GetFirst() == retired)
+        _QueueIndexMins.RemoveFirst();
+
+      var evictThrough = _VisitQueue.Count == 0 ? retired : _QueueIndexMins.GetFirst() - 1;
+
+      if (!_StreamExhausted)
+        evictThrough = System.Math.Min(evictThrough, _CurrentGroupOwner - 1);
+
+      EvictThrough(evictThrough);
     }
 
     // Classify the node just scheduled (the schedule-stack top) by the consumer's strategy.
@@ -268,8 +285,10 @@ namespace Copse.Treenumerators
 
     // THE SEAM, windowed edition: the parent's next child is child ordinal NextChildOrdinal, once
     // the parser has advanced far enough to prove it exists. fromVisitFront selects the parent
-    // frame (visit-queue front vs schedule-stack top) without a ref parameter (illegal in async):
-    // read a value copy before the await, re-acquire the frame to bump NextChildOrdinal after it.
+    // frame (visit-queue front vs schedule-stack top) without a ref parameter: pre-probe reads
+    // use a value copy (a pending ensure resumes through a continuation that RE-ENTERS this
+    // method -- the ensure is idempotent, its parse lands in fields, and nothing mutates before
+    // it), and the frame is re-acquired to bump NextChildOrdinal after.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryScheduleNextChildOf(bool fromVisitFront)
     {
@@ -282,7 +301,9 @@ namespace Copse.Treenumerators
       var nodeIndex = parent.NodeIndex;
       var depth = parent.Position.Depth;
 
-      if (!TryEnsureChild(nodeIndex, ordinal))
+      var ensured = TryEnsureChild(nodeIndex, ordinal);
+
+      if (!ensured)
         return false;
 
       var childIndex = GetFirstChildIndex(nodeIndex) + ordinal;
@@ -300,7 +321,12 @@ namespace Copse.Treenumerators
 
     private bool TryScheduleNextRoot()
     {
-      if (_RootsFinished || !TryEnsureRoot(_RootsSeen))
+      if (_RootsFinished)
+        return false;
+
+      var ensured = TryEnsureRoot(_RootsSeen);
+
+      if (!ensured)
         return false;
 
       // Roots are the entries of group 0: ordinal and absolute index coincide.
@@ -389,7 +415,7 @@ namespace Copse.Treenumerators
         if (_StreamExhausted || _CurrentGroupOwner > -1)
           return false;
 
-        ParseOneStep();
+        var step = ParseOneStep();
       }
 
       return true;
@@ -404,7 +430,7 @@ namespace Copse.Treenumerators
         if (_StreamExhausted || _CurrentGroupOwner > parent)
           return false;
 
-        ParseOneStep();
+        var step = ParseOneStep();
       }
 
       return true;
@@ -423,19 +449,17 @@ namespace Copse.Treenumerators
 
     // Advance the parse by one item or one group boundary. A suppressed owner's group is
     // discarded UNMAPPED in one step, its count appended as suppressed entries (the cascade
-    // that prunes whole subtrees out of a positional encoding).
-    private void ParseOneStep()
+    // that prunes whole subtrees out of a positional encoding). Returns true iff an item was
+    // appended (false at a group boundary or exhaustion) -- the ensure loops re-check their own
+    // conditions rather than reading it, but a bool-shaped step is what lets every seam here
+    // ride the generic probe machinery.
+    private bool ParseOneStep()
     {
       if (_CurrentGroupSuppressed)
       {
-        var discarded = _Stream.SkipGroupRemainder();
+        var skipped = _Stream.SkipGroupRemainder();
 
-        for (int i = 0; i < discarded; i++)
-          AppendEntry(default, suppressChildren: true);
-
-        AdvanceGroup();
-
-        return;
+        return FinishSuppressedGroup(skipped);
       }
 
       var read = _Stream.TryReadNextInGroup();
@@ -444,10 +468,18 @@ namespace Copse.Treenumerators
       {
         AppendEntry(read.Value, suppressChildren: false);
 
-        return;
+        return true;
       }
 
-      AdvanceGroup();
+      return AdvanceGroup();
+    }
+
+    private bool FinishSuppressedGroup(int discarded)
+    {
+      for (int i = 0; i < discarded; i++)
+        AppendEntry(default, suppressChildren: true);
+
+      return AdvanceGroup();
     }
 
     private void AppendEntry(TValue value, bool suppressChildren)
@@ -477,20 +509,31 @@ namespace Copse.Treenumerators
 
     // Group boundary: flush the mirrored span to the owner's entry (the one window touch the
     // group pays), then advance and open the next group's mirror. Exhaustion still flushes --
-    // the final group's span must land.
-    private void AdvanceGroup()
+    // the final group's span must land, and the flush is safe before the probe because a
+    // pending advance resumes through a continuation that only OPENS (never re-flushes).
+    // Returns true iff a new group opened (false = exhausted).
+    private bool AdvanceGroup()
     {
       FlushCurrentGroup();
 
-      if (_Stream.TryMoveToNextGroup())
+      var advanced = _Stream.TryMoveToNextGroup();
+
+      return OpenNextGroup(advanced);
+    }
+
+    private bool OpenNextGroup(bool advanced)
+    {
+      if (advanced)
       {
         _CurrentGroupOwner++;
         OpenCurrentGroup();
+
+        return true;
       }
-      else
-      {
-        _StreamExhausted = true;
-      }
+
+      _StreamExhausted = true;
+
+      return false;
     }
 
     private void FlushCurrentGroup()
@@ -540,6 +583,7 @@ namespace Copse.Treenumerators
       if (index >= _WindowBase)
         _WindowBase = index + 1;
     }
+
 
     public void Dispose()
     {
