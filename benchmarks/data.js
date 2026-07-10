@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783706351088,
+  "lastUpdate": 1783706351433,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -47476,6 +47476,102 @@ window.BENCHMARK_DATA = {
             "value": 26310026.598214287,
             "unit": "ns",
             "range": "± 121576.78573295986"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a8d905810f234775d6892aa9b5b41cec12e9c79",
+          "message": "Fast-path probe idiom: the serializer's per-token frames\n\nThe scanner's TryScanEvent and both text streams' read loops stay\nnon-async now. The scanner probes each character read; a pending read\nis always a REFILL, so its continuation pushes the refilled character\nback into the block (the scanner's own pushback) and re-enters the\nprobing loop with the carried flags riding as core parameters. The\nquoted scan fuses with its terminator scan for an honest char return;\nthe doubled-quote lookahead consumes through a shared resolve helper.\nThe text streams probe each scan and land events through commit\nhelpers shared by fast path and continuation (the skip's running count\nrides as a core parameter). The write side needs nothing: one block-\nbuffered state machine per serialize, its per-visit awaits complete\ninline.\n\nSame-machine A/B: SerializerRoundTrip 1.86x -> 1.21x, allocations now\nequal (245 KB both colors). Was 5.3x at the start of the rollout.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T17:48:10Z",
+          "tree_id": "e0de3f3816e500f0ac09370b7c7d2dba6ad98148",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3a8d905810f234775d6892aa9b5b41cec12e9c79"
+        },
+        "date": 1783706351373,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26133802.70982143,
+            "unit": "ns",
+            "range": "± 198459.064290962"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8147343.824776785,
+            "unit": "ns",
+            "range": "± 24622.323883349956"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 169062739.78431374,
+            "unit": "ns",
+            "range": "± 3441674.648338676"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57838645.64102563,
+            "unit": "ns",
+            "range": "± 56610.71551966517"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21935235.329326924,
+            "unit": "ns",
+            "range": "± 56343.34913330691"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11874481.985576924,
+            "unit": "ns",
+            "range": "± 32693.542747334744"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 105136293.52857144,
+            "unit": "ns",
+            "range": "± 1075112.156059618"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29897609.60096154,
+            "unit": "ns",
+            "range": "± 41717.30517668825"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11200720.840625,
+            "unit": "ns",
+            "range": "± 32149.893472519794"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6224267.854910715,
+            "unit": "ns",
+            "range": "± 9712.740507659537"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 117750180.3076923,
+            "unit": "ns",
+            "range": "± 645206.163577836"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 25833287.363839287,
+            "unit": "ns",
+            "range": "± 78910.95506648459"
           }
         ]
       }
