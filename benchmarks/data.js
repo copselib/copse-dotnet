@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783662888384,
+  "lastUpdate": 1783662888696,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -39756,6 +39756,102 @@ window.BENCHMARK_DATA = {
             "value": 26044321.917410713,
             "unit": "ns",
             "range": "± 77171.66795045545"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2ddbccffe0913c389b6996b7c0bf7aa05b9973da",
+          "message": "Invert: fuse the mirror capture -- tiers feed the store directly\n\nAsyncStreamFedLevelOrderStore (-> StreamFedLevelOrderStore.g.cs): a\nlazily created, incrementally built level-order capture fed by an\nIAsyncLevelOrderStream. The stream already speaks the store's\npositional encoding (group 0 roots, group j+1 node j's children), so\nthe parse is a bare cursor -- append, charge the group's owner, advance\non boundaries. No window, no queues, no visit-stream round trip. Cf.\nAsyncMemoizeBreadthFirstBuffer: the same capture fed by a visit stream,\nwhose front cursor the group cursor replaces.\n\nLevelOrderMirror (Invert's breadth-first-first arm) drops the\nInvert-compose-Memoize pipeline for the fused store; replays ride the\nstore decoders, and consume-on-dispose keeps treenumerator disposal as\nthe release point. The FlatDecode family priced the windowed stream\ndecoder the memo path re-entered at 4-83x the store decoder; fusing it\nout halves the arm (same machine, Job.Default, MegaTriangle/MegaChain):\n\n  Bft_Triangle: 257.6 -> 136.3 ms (memo arm), vs 126.5 ms for the old\n    eager preorder capture -- within 8%, at 24 vs 40 MB and 500 vs\n    2,800 Gen2 collections.\n  Bft_Chain: 242.5 -> 112.7 ms, vs 90.2 ms old -- within 25% (the\n    per-tier stream seam on a million one-node tiers; a decoder-pass\n    target), at 12 vs 40 MB.\n  Dft rows unchanged (99.7/82.2 vs 99.3/81.3 control).\n\nLaziness, partial-drain buffering, and deterministic release all keep\ntheir tests; behavior contracts unchanged (full suite 24,226 green).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T05:40:02Z",
+          "tree_id": "b28effa1fb3e5e855df96c312c111bdd0c050620",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2ddbccffe0913c389b6996b7c0bf7aa05b9973da"
+        },
+        "date": 1783662888639,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 28549415.63169643,
+            "unit": "ns",
+            "range": "± 134984.0397832867"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8399893.716517856,
+            "unit": "ns",
+            "range": "± 8407.250009410645"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 161177974.875,
+            "unit": "ns",
+            "range": "± 213077.7369721"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 60959859.0625,
+            "unit": "ns",
+            "range": "± 140693.84721442012"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 22932590.526785713,
+            "unit": "ns",
+            "range": "± 59416.798237888295"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12969499.67299107,
+            "unit": "ns",
+            "range": "± 8412.35926779391"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 100708224.17333333,
+            "unit": "ns",
+            "range": "± 820783.7021271972"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 32127082.183035713,
+            "unit": "ns",
+            "range": "± 57795.0016646175"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 12421471.310096154,
+            "unit": "ns",
+            "range": "± 16785.93578890854"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6653477.555288462,
+            "unit": "ns",
+            "range": "± 6730.63441084066"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 100078519.50666666,
+            "unit": "ns",
+            "range": "± 206086.07455365945"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 28804196.185416665,
+            "unit": "ns",
+            "range": "± 134772.72934942998"
           }
         ]
       }
