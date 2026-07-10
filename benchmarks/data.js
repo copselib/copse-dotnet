@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783698632490,
+  "lastUpdate": 1783698632825,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -51184,6 +51184,114 @@ window.BENCHMARK_DATA = {
             "value": 55958576.674074076,
             "unit": "ns",
             "range": "± 232156.39623556373"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f",
+          "message": "Fast-path probe idiom: the level-order stream decoder\n\nThe windowed decoder's full pull chain goes non-async -- MoveNextAsync,\nthe Advance phase loop, both schedulers, the ensure loops, and the\nparser -- with every stream call probed. Two shapes worth recording:\n\n- ParseOneStep and AdvanceGroup were void-shaped (ValueTask), which the\n  probe idiom cannot transcribe (`var x = VoidCall();` is illegal in\n  the twin). Rather than a third transform rule they gained honest bool\n  returns (\"item appended\" / \"group opened vs exhausted\") -- callers\n  re-check their own conditions, and every seam rides the existing\n  generic probe machinery.\n- The ensure-loop continuations RE-ENTER their probing method even\n  though ParseOneStep advances the stream: the parse RESULT lands in\n  fields, so re-entry after the awaited step is exactly the loop's next\n  iteration. The read/skip continuations consume the pending stream\n  result and run the fast path's own tail (AppendOrAdvance /\n  FinishSuppressedGroup); the flush-before-probe in AdvanceGroup is\n  safe because its continuation only opens, never re-flushes.\n\nAsyncOverheadInvertStream: 2.60x -> 2.04x (async 9.33 -> 7.35 ms); the\nremainder is the inner engine driving the mirror (stage 5). Riders:\nnarrow streaming Invert, the fused Invert capture's feed, async\nlevel-order deserialize. Full suite 24,226 green; suspension paths\ncovered by the async mechanics tests.\n\nRemaining: the preorder stream decoder (SerializerRoundTrip pair), then\nthe engines.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-10T15:39:49Z",
+          "tree_id": "6c334bae507c0aacd09499c29d0ac9d8a70db13c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2e715c7e69025b2aa3bfd0a698c20a3f7d5d780f"
+        },
+        "date": 1783698632768,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 71724227.81632653,
+            "unit": "ns",
+            "range": "± 252815.93091409508"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 95789304.08333333,
+            "unit": "ns",
+            "range": "± 260853.78287824415"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 45106751.163636364,
+            "unit": "ns",
+            "range": "± 500965.99066600547"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 131012897.36538461,
+            "unit": "ns",
+            "range": "± 1302571.377093172"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 22361300.216145832,
+            "unit": "ns",
+            "range": "± 52657.731487916964"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 81261101.96078432,
+            "unit": "ns",
+            "range": "± 1653862.5619348548"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 86067258.15555555,
+            "unit": "ns",
+            "range": "± 1569970.9426792432"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 57658235.86507936,
+            "unit": "ns",
+            "range": "± 121816.51280954173"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 93760934.69999999,
+            "unit": "ns",
+            "range": "± 782028.5690030048"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41750085.698717944,
+            "unit": "ns",
+            "range": "± 175476.5059105008"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 91825640.48611112,
+            "unit": "ns",
+            "range": "± 110361.57139043065"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 30542806.127083335,
+            "unit": "ns",
+            "range": "± 55892.51927614629"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 68379855.98333333,
+            "unit": "ns",
+            "range": "± 892272.319930965"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 64400632.366071425,
+            "unit": "ns",
+            "range": "± 161519.76143952008"
           }
         ]
       }
