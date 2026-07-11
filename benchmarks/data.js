@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740862698,
+  "lastUpdate": 1783740863041,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -46520,6 +46520,114 @@ window.BENCHMARK_DATA = {
             "value": 1016852.6104910715,
             "unit": "ns",
             "range": "± 943.1612582332182"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f23e89ea277d9493dc23badf2a100e717298519b",
+          "message": "Reorganized using statements",
+          "timestamp": "2026-07-11T03:22:30Z",
+          "tree_id": "990c2542c36ab33da63d6e092fb804f285ace41f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f23e89ea277d9493dc23badf2a100e717298519b"
+        },
+        "date": 1783740862979,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2256408.8468191964,
+            "unit": "ns",
+            "range": "± 10492.714449630617"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2180218.337760417,
+            "unit": "ns",
+            "range": "± 14985.78163407261"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4225216.023737981,
+            "unit": "ns",
+            "range": "± 4699.554541660439"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3793962.2672991073,
+            "unit": "ns",
+            "range": "± 18056.362611945835"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 693035.6120605469,
+            "unit": "ns",
+            "range": "± 1576.1797979519527"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 805191.3419921875,
+            "unit": "ns",
+            "range": "± 2381.869456865438"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 425415.2745117188,
+            "unit": "ns",
+            "range": "± 1472.1237848014594"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4384238.785416666,
+            "unit": "ns",
+            "range": "± 27450.58617454368"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 4468644.959895833,
+            "unit": "ns",
+            "range": "± 31790.244095886697"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13727123.676041666,
+            "unit": "ns",
+            "range": "± 196179.25472566157"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7903719.510817308,
+            "unit": "ns",
+            "range": "± 33872.27096585184"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1688918.2415364583,
+            "unit": "ns",
+            "range": "± 21897.69110985905"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1708887.134375,
+            "unit": "ns",
+            "range": "± 10301.58686657214"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1043770.5885416666,
+            "unit": "ns",
+            "range": "± 1174.9994551322259"
           }
         ]
       }
