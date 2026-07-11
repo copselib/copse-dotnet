@@ -322,6 +322,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.Memoize.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.OrderChildrenBy.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.OrderChildrenBy.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.PostorderTraversal.cs",
         "Copse.Linq/Treenumerable/Treenumerable.PostorderTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),

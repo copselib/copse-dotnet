@@ -59,6 +59,20 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task OrderChildrenBy_MatchesSync_BothDimensions()
+    {
+      foreach (var tree in Trees)
+      {
+        // Descending so the (already alphabetical) corpus actually reorders.
+        var sync = Sync(tree).OrderChildrenByDescending(nc => nc.Node);
+        var async = Async(tree).OrderChildrenByDescending(nc => nc.Node);
+
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+      }
+    }
+
+    [TestMethod]
     public async Task Invert_FullSource_MatchesSync_BothDimensions()
     {
       foreach (var tree in Trees)
