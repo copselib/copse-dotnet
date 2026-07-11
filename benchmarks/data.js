@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740861644,
+  "lastUpdate": 1783740861993,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -60914,6 +60914,114 @@ window.BENCHMARK_DATA = {
             "value": 59664964.02222221,
             "unit": "ns",
             "range": "± 185144.42496571658"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f23e89ea277d9493dc23badf2a100e717298519b",
+          "message": "Reorganized using statements",
+          "timestamp": "2026-07-11T03:22:30Z",
+          "tree_id": "990c2542c36ab33da63d6e092fb804f285ace41f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f23e89ea277d9493dc23badf2a100e717298519b"
+        },
+        "date": 1783740861932,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 62871956.03125,
+            "unit": "ns",
+            "range": "± 90020.5771821991"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 108642600.50666668,
+            "unit": "ns",
+            "range": "± 1984195.109502037"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 43377487.891025655,
+            "unit": "ns",
+            "range": "± 546230.9301475865"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 121552975.23333333,
+            "unit": "ns",
+            "range": "± 1880912.8218332974"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 20264807.24107143,
+            "unit": "ns",
+            "range": "± 159539.2453631626"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 76196401.13095239,
+            "unit": "ns",
+            "range": "± 962670.5630177569"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 86124889.07142857,
+            "unit": "ns",
+            "range": "± 984344.5836772908"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 53214931.679999985,
+            "unit": "ns",
+            "range": "± 81503.78773049457"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 82008909.42222221,
+            "unit": "ns",
+            "range": "± 256702.23613512563"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41217906.25274725,
+            "unit": "ns",
+            "range": "± 298300.6835987471"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 89144167.63095237,
+            "unit": "ns",
+            "range": "± 357357.51724172506"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28891141.49278846,
+            "unit": "ns",
+            "range": "± 81123.15444356923"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 66257648.6,
+            "unit": "ns",
+            "range": "± 169218.42685844493"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 63205220.615384616,
+            "unit": "ns",
+            "range": "± 199506.87158467455"
           }
         ]
       }
