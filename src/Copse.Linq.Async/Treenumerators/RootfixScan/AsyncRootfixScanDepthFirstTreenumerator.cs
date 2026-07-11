@@ -57,7 +57,12 @@ namespace Copse.Linq.Async
 
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
+      // Strategies on the very first MoveNext apply to no node (the inner is still parked at the
+      // pre-enumeration forest root, whose contractual Mode is SchedulingNode) -- the engine
+      // ignores them, and so must the skip bookkeeping, or a SkipNode-driving consumer (e.g.
+      // PreorderTraversal) pops the seed sentinel as if it were a scheduled node.
       if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
+        && !InnerTreenumerator.Position.IsForestRoot
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         _SkippedStack.Push(_Stack.Pop());
