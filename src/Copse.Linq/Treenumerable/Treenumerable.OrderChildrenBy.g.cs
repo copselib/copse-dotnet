@@ -64,6 +64,66 @@ namespace Copse.Linq
       => new CompletedTreenumerableBuffer<TNode>(
         Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)));
 
+    /// <summary>
+    /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
+    /// here, instead of at every call site: the ordered emission needs random access to whole
+    /// subtrees, which a level-order arrival cannot provide, so the source is captured (the same
+    /// O(n) every OrderChildrenBy pays, disclosed by the buffer return type) and the build runs
+    /// over the capture's depth-first replay.
+    /// </summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector)
+      => source.OrderChildrenBy(keySelector, Comparer<TKey>.Default);
+
+    /// <summary>As the breadth-first <c>OrderChildrenBy(keySelector)</c> with an explicit key comparer.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer)
+      => new CompletedTreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)));
+
+    /// <summary>The descending twin of the breadth-first <c>OrderChildrenBy(keySelector)</c>.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector)
+      => source.OrderChildrenByDescending(keySelector, Comparer<TKey>.Default);
+
+    /// <summary>As the breadth-first <c>OrderChildrenByDescending(keySelector)</c> with an explicit key comparer.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer)
+      => new CompletedTreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)));
+
+    /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
+      this ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector)
+      => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector);
+
+    /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
+      this ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer)
+      => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
+
+    /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
+      this ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector)
+      => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector);
+
+    /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
+    public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
+      this ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer)
+      => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
+
     // Preorder for BOTH dimensions, matching LeaffixScan's measured layout decision.
     private static ITreenumerable<TNode> PreorderOrderChildren<TNode, TKey>(
       IDepthFirstTreenumerable<TNode> source,
@@ -75,6 +135,29 @@ namespace Copse.Linq
         () => BuildOrderedChildren(source, keySelector, comparer, descending));
 
       return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(ordered);
+    }
+
+    private static ITreenumerable<TNode> PreorderOrderChildrenBreadthFirstSource<TNode, TKey>(
+      IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer,
+      bool descending)
+    {
+      var ordered = new LazyBuiltPreorderStore<TNode>(
+        () => BuildOrderedChildrenFromBreadthFirst(source, keySelector, comparer, descending));
+
+      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(ordered);
+    }
+
+    private static PreorderArrayStore<TNode> BuildOrderedChildrenFromBreadthFirst<TNode, TKey>(
+      IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TKey> keySelector,
+      IComparer<TKey> comparer,
+      bool descending)
+    {
+      var capture = source.Materialize();
+
+      return BuildOrderedChildren(capture, keySelector, comparer, descending);
     }
 
     private static PreorderArrayStore<TNode> BuildOrderedChildren<TNode, TKey>(
