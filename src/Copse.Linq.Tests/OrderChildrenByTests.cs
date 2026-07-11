@@ -151,6 +151,31 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, seenSiblingIndexesByNode["a"]);
     }
 
+    // The disclosure rule: a breadth-first-only source is accepted (captured internally, ordered
+    // over the capture's depth-first replay, O(n) disclosed by the buffer return type) and must
+    // equal the explicit escalation.
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void NarrowBreadthFirstSource_EqualsExplicitMaterializeThenOrder(
+      string treeString,
+      string expectedAscending,
+      string expectedDescending)
+    {
+      var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
+
+      var viaDisclosureRule = narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node);
+
+      var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
+        .Materialize()
+        .OrderChildrenBy(nodeContext => nodeContext.Node);
+
+      foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+        CollectionAssert.AreEqual(
+          viaExplicitEscalation.GetTraversal(treeTraversalStrategy).ToArray(),
+          viaDisclosureRule.GetTraversal(treeTraversalStrategy).ToArray(),
+          $"{treeTraversalStrategy} mismatch for {treeString}");
+    }
+
     // The ordering's LAYOUT is pinned to the first dimension pulled; whichever wins, both
     // dimensions must replay the same values from the one capture.
     [TestMethod]
