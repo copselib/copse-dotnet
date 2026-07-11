@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740861288,
+  "lastUpdate": 1783740861644,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -58962,6 +58962,120 @@ window.BENCHMARK_DATA = {
             "value": 20276315.839285713,
             "unit": "ns",
             "range": "± 36428.843244499825"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f23e89ea277d9493dc23badf2a100e717298519b",
+          "message": "Reorganized using statements",
+          "timestamp": "2026-07-11T03:22:30Z",
+          "tree_id": "990c2542c36ab33da63d6e092fb804f285ace41f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f23e89ea277d9493dc23badf2a100e717298519b"
+        },
+        "date": 1783740861578,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 109727380.72857141,
+            "unit": "ns",
+            "range": "± 526112.6650018287"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 135787128.51666668,
+            "unit": "ns",
+            "range": "± 462140.26746233215"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71081727.45918366,
+            "unit": "ns",
+            "range": "± 614160.011577748"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 109827318.04615386,
+            "unit": "ns",
+            "range": "± 285947.4657174085"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 48108167.3896104,
+            "unit": "ns",
+            "range": "± 144844.08630270837"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 62968398.78095238,
+            "unit": "ns",
+            "range": "± 193908.50016158423"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 28422477.53348214,
+            "unit": "ns",
+            "range": "± 200862.6806093936"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 32689647.793269232,
+            "unit": "ns",
+            "range": "± 75501.68939089049"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 47302617.727272734,
+            "unit": "ns",
+            "range": "± 108582.99862565342"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 60658090.34188033,
+            "unit": "ns",
+            "range": "± 96800.7902114047"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 42035188.702564105,
+            "unit": "ns",
+            "range": "± 145236.40641133726"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 29996542.566666666,
+            "unit": "ns",
+            "range": "± 88833.05150941698"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 106833769.38666667,
+            "unit": "ns",
+            "range": "± 1024605.1190764102"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 131104893.71666667,
+            "unit": "ns",
+            "range": "± 751219.3849906207"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 20227563.927556816,
+            "unit": "ns",
+            "range": "± 481494.4876827475"
           }
         ]
       }
