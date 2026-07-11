@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740862338,
+  "lastUpdate": 1783740862698,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -20878,6 +20878,54 @@ window.BENCHMARK_DATA = {
             "value": 16074084.560381357,
             "unit": "ns",
             "range": "± 710740.4794197755"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f23e89ea277d9493dc23badf2a100e717298519b",
+          "message": "Reorganized using statements",
+          "timestamp": "2026-07-11T03:22:30Z",
+          "tree_id": "990c2542c36ab33da63d6e092fb804f285ace41f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f23e89ea277d9493dc23badf2a100e717298519b"
+        },
+        "date": 1783740862631,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14084710.006578946,
+            "unit": "ns",
+            "range": "± 301624.3568958622"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26997568.113839287,
+            "unit": "ns",
+            "range": "± 101788.75570043313"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25118576.8625,
+            "unit": "ns",
+            "range": "± 332608.3189254289"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15649844.44288793,
+            "unit": "ns",
+            "range": "± 685749.1562383777"
           }
         ]
       }
