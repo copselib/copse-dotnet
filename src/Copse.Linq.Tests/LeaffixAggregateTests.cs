@@ -27,8 +27,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .LeaffixAggregate(
-          nodeContext => nodeContext.Node,
-          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}")
+          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+          nodeContext => nodeContext.Node)
         .ToArray();
 
       CollectionAssert.AreEqual(expected, actual);

@@ -69,8 +69,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .RootfixScan(
-          rootContext => rootContext.Node.ToUpperInvariant(),
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
+          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node,
+          rootContext => rootContext.Node.ToUpperInvariant())
         .GetTraversal(treeTraversalStrategy)
         .ToArray();
 
@@ -98,8 +98,8 @@ namespace Copse.Linq.Tests
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .RootfixScan(
-            rootContext => Accumulator(new NodeContext<string>("s", NodePosition.ForestRoot), rootContext),
-            Accumulator)
+            Accumulator,
+            rootContext => Accumulator(new NodeContext<string>("s", NodePosition.ForestRoot), rootContext))
           .PreorderTraversal()
           .ToArray();
 
@@ -115,12 +115,12 @@ namespace Copse.Linq.Tests
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d),e(f)")
         .RootfixScan(
-          rootContext => rootContext.Node,
           (parentAccumulation, nodeContext) =>
           {
             sawForestRootParent |= parentAccumulation.Position.IsForestRoot;
             return parentAccumulation.Node + nodeContext.Node;
-          })
+          },
+          rootContext => rootContext.Node)
         .PreorderTraversal()
         .ToArray();
 
@@ -134,8 +134,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a(b,c),d(e)")
         .RootfixAggregate(
-          rootContext => rootContext.Node.ToUpperInvariant(),
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
+          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node,
+          rootContext => rootContext.Node.ToUpperInvariant())
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "Ab", "Ac", "De" }, leafAccumulations);

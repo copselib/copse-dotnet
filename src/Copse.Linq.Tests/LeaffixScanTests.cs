@@ -83,8 +83,8 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixScan(
-          nodeContext => nodeContext.Node,
-          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}")
+          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+          nodeContext => nodeContext.Node)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -120,8 +120,8 @@ namespace Copse.Linq.Tests
         var scan = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixScan(
-            nodeContext => nodeContext.Node,
-            (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}");
+            (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+            nodeContext => nodeContext.Node);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),

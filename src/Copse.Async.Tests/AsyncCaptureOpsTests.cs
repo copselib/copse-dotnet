@@ -26,12 +26,12 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          nc => nc.Node,
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          nc => nc.Node);
 
         var async = Async(tree).LeaffixScan(
-          nc => nc.Node,
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          nc => nc.Node);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
@@ -44,12 +44,12 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          nc => nc.Node,
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          nc => nc.Node);
 
         var async = Async(tree).LeaffixScan(
-          nc => nc.Node,
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")");
+          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          nc => nc.Node);
 
         // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
         // rides the same capture (the reverse pin order of the test above).

@@ -132,8 +132,8 @@ namespace Copse.Async.Tests
 
       foreach (var tree in Trees)
         CollectionAssert.AreEqual(
-          Sync(tree).LeaffixAggregate(leaf, acc).ToList(),
-          await ToList(Async(tree).LeaffixAggregate(leaf, acc)),
+          Sync(tree).LeaffixAggregate(acc, leaf).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(acc, leaf)),
           $"LeaffixAggregate {tree}");
     }
 

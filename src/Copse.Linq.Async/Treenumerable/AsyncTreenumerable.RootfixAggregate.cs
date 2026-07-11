@@ -47,32 +47,32 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
     {
       return
         source
-        .RootfixScan(rootNodeSelector, accumulator)
+        .RootfixScan(accumulator, rootNodeSelector)
         .GetLeaves();
     }
 
     /// <summary>The breadth-first dual: per-root-seeded leaf accumulations in level order.</summary>
     public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
     {
       return
         source
-        .RootfixScan(rootNodeSelector, accumulator)
+        .RootfixScan(accumulator, rootNodeSelector)
         .GetLeaves();
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
     public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
-      => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, accumulator, rootNodeSelector);
   }
 }

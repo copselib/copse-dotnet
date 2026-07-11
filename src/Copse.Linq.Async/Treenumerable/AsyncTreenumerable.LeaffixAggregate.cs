@@ -21,8 +21,8 @@ namespace Copse.Linq
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafSelector,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var accumulations = new List<TAccumulate>();
@@ -36,7 +36,7 @@ namespace Copse.Linq
         subtreeSizes[index] = accumulations.Count - index;
         accumulations[index] =
           subtreeSizes[index] == 1
-          ? leafSelector(pending.Context)
+          ? leafNodeSelector(pending.Context)
           : accumulator(pending.Context, new ChildAccumulations<TAccumulate>(accumulations, subtreeSizes, index));
       }
 

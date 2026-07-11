@@ -2,9 +2,9 @@
 //   Generated from AsyncLevelOrderStreamTreenumerable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerators;
 using Copse.Core;
 using System;
-using Copse.Treenumerators;
 
 namespace Copse.Treenumerables
 {

@@ -50,32 +50,32 @@ namespace Copse.Linq
     /// </summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
     {
       return
         source
-        .RootfixScan(rootNodeSelector, accumulator)
+        .RootfixScan(accumulator, rootNodeSelector)
         .GetLeaves();
     }
 
     /// <summary>The breadth-first dual: per-root-seeded leaf accumulations in level order.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
     {
       return
         source
-        .RootfixScan(rootNodeSelector, accumulator)
+        .RootfixScan(accumulator, rootNodeSelector)
         .GetLeaves();
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
-      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, accumulator, rootNodeSelector);
   }
 }

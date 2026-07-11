@@ -1,7 +1,7 @@
-using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 using Copse.Async.Treenumerators;
+using Copse.Core.Async;
 
 namespace Copse.Async.Treenumerables
 {

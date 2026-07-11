@@ -34,10 +34,10 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
       => new CompletedTreenumerableBuffer<TAccumulate>(
-        Tree.Lazy(() => PreorderScan(source, leafNodeSelector, accumulator)));
+        Tree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)));
 
     // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
     // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
@@ -47,19 +47,19 @@ namespace Copse.Linq
     // needs ~5 replays to break even and taxes the common single-drain case ~8%.
     private static ITreenumerable<TAccumulate> PreorderScan<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
     {
       var scanned = new LazyBuiltPreorderStore<TAccumulate>(
-        () => BuildLeaffixScan(source, leafNodeSelector, accumulator));
+        () => BuildLeaffixScan(source, accumulator, leafNodeSelector));
 
       return new PreorderTreenumerable<TAccumulate, LazyBuiltPreorderStore<TAccumulate>>(scanned);
     }
 
     private static PreorderArrayStore<TAccumulate> BuildLeaffixScan<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator)
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
     {
       var accumulations = new List<TAccumulate>();
       var subtreeSizes = new List<int>();
