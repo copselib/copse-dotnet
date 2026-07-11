@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740864442,
+  "lastUpdate": 1783740864799,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -68908,6 +68908,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
             "value": 234288,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994776,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f23e89ea277d9493dc23badf2a100e717298519b",
+          "message": "Reorganized using statements",
+          "timestamp": "2026-07-11T03:22:30Z",
+          "tree_id": "990c2542c36ab33da63d6e092fb804f285ace41f",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f23e89ea277d9493dc23badf2a100e717298519b"
+        },
+        "date": 1783740864737,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 54219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234165,
             "unit": "bytes"
           },
           {
