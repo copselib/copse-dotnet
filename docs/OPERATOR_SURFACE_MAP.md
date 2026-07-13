@@ -33,7 +33,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
 | TakeNodesUntil / TakeNodesWhile | F, D, B | same-dim | streams | O(1) |
 | TakeTrees / SkipTrees | F, D, B | same-dim | streams | sugar over take/prune |
-| TakeLastTrees / SkipLastTrees | **F only** | ITreenumerable | **eager count at call time** | `CountTrees()` roots-drain inside the operator call, source enumerated again on traversal — see flags |
+| TakeLastTrees / SkipLastTrees | F, D, B | same-dim | **eager count at call time** | two-pass by design (count the roots, then take/skip; decided 2026-07-13 — a single-pass form must buffer k whole subtrees); B's counting pass drains level 0 only |
 | Union / Intersection / Subtract / SymmetricDifference | F×F, D×D, B×B | merge/narrow | streams | lockstep co-traversal, O(depth) DFT / O(width) BFT |
 | Do / Hide | F, D, B | same-dim | streams | O(1) |
 | RootfixScan (seed / rootNodeSelector) | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
@@ -57,7 +57,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Get\*Traversal (visit streams) | D, B, F (±strategy selector) | IEnumerable\<NodeVisit\> | streams | |
 | RootfixAggregate (seed / selector) | D, B, F(→D) | IEnumerable | streams | RootfixScan + GetLeaves |
 | LeaffixAggregate | **D only** (deliberate carve-out) | IEnumerable | streams per root | peak = **largest root subtree**, not O(depth); buffers reused across roots |
-| AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits |
+| AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
 | Consume | F, D, B; lazy buffer | void | drains | buffer overload finishes the furthest-along dimension |
 | ToFormattedLines / ToFormattedString | D | IEnumerable\<string\> / string | **drains fully before first yield** | re-drains per enumeration — see flags |
 | To\*TreeTokenizer | D / B | tokenizer | streams | ≤ O(width) transient |
@@ -93,10 +93,12 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    O(n) drain per re-enumeration** despite its lazy `IEnumerable<string>` shape. Has a TODO
    admitting one-tree-at-a-time is possible. Policy rule 2 says this should stream per tree
    (or at minimum build once).
-3. **`TakeLastTrees` / `SkipLastTrees` are eager at call time** (`CountTrees()` inside the
-   operator, before any traversal) and enumerate the source twice. Doc-disclosed, but the
-   streaming shape (one-pass O(k) root ring-buffer at traversal time) exists and would honor
-   the promise; also F-only — no narrow overloads.
+3. *(RESOLVED 2026-07-13)* `TakeLastTrees` / `SkipLastTrees`: D and B narrow overloads
+   added (with the `CountTrees` B twin + F disambiguator they require). The two-pass shape
+   was examined and kept deliberately: the sequence-style single-pass trick exists but its
+   queue slots hold k whole *subtrees* (the parked preorder-window at tree granularity), so
+   two passes at O(1) space is the better default; impure-`Defer` callers can `Materialize`
+   first. B's counting pass drains level 0 only.
 4. **BFT-narrow `LeaffixScan` / `OrderChildrenBy` double-capture**: the deferred build
    `Materialize()`s the source into a full memo, then walks that capture into the result
    arrays — two O(n) allocations transiently vs one on the DFT path. Correct under the

@@ -21,5 +21,30 @@ namespace Copse.Linq
 
       return count;
     }
+
+    /// <summary>
+    /// The breadth-first twin. The counting pass is nearly free in this dimension: the roots are
+    /// the whole of level 0, so driving with SkipNodeAndDescendants schedules each root once and
+    /// never pulls anything deeper.
+    /// </summary>
+    public static int CountTrees<TNode>(this IBreadthFirstTreenumerable<TNode> source)
+    {
+      var count = 0;
+
+      var treenumerator = source.GetBreadthFirstTreenumerator();
+      using (treenumerator)
+      {
+        while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNodeAndDescendants))
+        {
+          count++;
+        }
+      }
+
+      return count;
+    }
+
+    /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
+    public static int CountTrees<TNode>(this ITreenumerable<TNode> source)
+      => CountTrees((IDepthFirstTreenumerable<TNode>)source);
   }
 }
