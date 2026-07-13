@@ -56,7 +56,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | GetBranches | D only | IEnumerable\<TNode[]\> | streams per branch | O(depth); array per yield |
 | Get\*Traversal (visit streams) | D, B, F (±strategy selector) | IEnumerable\<NodeVisit\> | streams | |
 | RootfixAggregate (seed / selector) | D, B, F(→D) | IEnumerable | streams | RootfixScan + GetLeaves |
-| LeaffixAggregate | **D only** (deliberate carve-out) | IEnumerable | streams per root | peak = **largest root subtree**, not O(depth); buffers reused across roots |
+| LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then drain (B)** | D peak = **largest root subtree**, buffers reused across roots; B Materializes on first enumeration (BFT arrival interleaves the forest — peak = whole forest, first value after full capture), per the policy's amended carve-out |
 | AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
 | Consume | F, D, B; lazy buffer | void | drains | buffer overload finishes the furthest-along dimension |
 | ToFormattedLines / ToFormattedString | D | IEnumerable\<string\> / string | **drains fully before first yield** | re-drains per enumeration — see flags |

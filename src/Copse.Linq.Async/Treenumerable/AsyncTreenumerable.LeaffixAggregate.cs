@@ -73,5 +73,38 @@ namespace Copse.Linq
       if (accumulations.Count > 0)
         yield return accumulations[0];
     }
+
+    /// <summary>
+    /// The breadth-first-only entry -- a DOCUMENTED capture, the disclosure rule's amended
+    /// carve-out for enumerable returns (LAZINESS_AND_BUFFERING_POLICY.md): leaffix folds
+    /// children before parents, which a level-order arrival cannot afford, so the source is
+    /// captured (Materialize, on first enumeration) and the fold runs over the capture's
+    /// depth-first replay. The cost class changes accordingly: breadth-first arrival
+    /// interleaves every tree in the forest, so no root's subtree closes until the whole
+    /// forest drains -- peak memory is the forest, and the first value arrives only after the
+    /// full capture. Per-root laziness is a depth-first affordance.
+    /// </summary>
+    public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+      var capture = await source.MaterializeAsync().ConfigureAwait(false);
+
+      await foreach (var accumulation in capture.LeaffixAggregate(accumulator, leafNodeSelector, cancellationToken).ConfigureAwait(false))
+        yield return accumulation;
+    }
+
+    /// <summary>
+    /// Disambiguation overload for full trees; keeps the depth-first consumption -- the
+    /// per-root-lazy entry.
+    /// </summary>
+    public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      CancellationToken cancellationToken = default)
+      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, leafNodeSelector, cancellationToken);
   }
 }

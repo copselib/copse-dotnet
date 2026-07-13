@@ -72,5 +72,36 @@ namespace Copse.Linq
       if (accumulations.Count > 0)
         yield return accumulations[0];
     }
+
+    /// <summary>
+    /// The breadth-first-only entry -- a DOCUMENTED capture, the disclosure rule's amended
+    /// carve-out for enumerable returns (LAZINESS_AND_BUFFERING_POLICY.md): leaffix folds
+    /// children before parents, which a level-order arrival cannot afford, so the source is
+    /// captured (Materialize, on first enumeration) and the fold runs over the capture's
+    /// depth-first replay. The cost class changes accordingly: breadth-first arrival
+    /// interleaves every tree in the forest, so no root's subtree closes until the whole
+    /// forest drains -- peak memory is the forest, and the first value arrives only after the
+    /// full capture. Per-root laziness is a depth-first affordance.
+    /// </summary>
+    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+    {
+      var capture = source.Materialize();
+
+      foreach (var accumulation in capture.LeaffixAggregate(accumulator, leafNodeSelector))
+        yield return accumulation;
+    }
+
+    /// <summary>
+    /// Disambiguation overload for full trees; keeps the depth-first consumption -- the
+    /// per-root-lazy entry.
+    /// </summary>
+    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this ITreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      => LeaffixAggregate((IDepthFirstTreenumerable<TSource>)source, accumulator, leafNodeSelector);
   }
 }

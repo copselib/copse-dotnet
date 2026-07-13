@@ -53,8 +53,15 @@ whole tree), never by implementation convenience.
      Wrapper complexity is our burden; a capture shortcut here would break the promise.
    - Gap = O(subtree) / O(tree) → **capture op** under the disclosure rule: buffer return
      type in the signature, materialization stated in the XML docs.
-   - Return types that cannot carry the disclosure (enumerable/scalar) stay dimension-fixed;
-     the caller escalates explicitly (the LeaffixAggregate carve-out).
+   - Return types that cannot carry the disclosure (enumerable/scalar): **amended
+     2026-07-13** — such operators may gain cross-dimension overloads whose internal capture
+     is *documented*: stated in the XML docs and registered in the surface map. The promise's
+     contract is documentation; the buffer return type is the stronger form, used when
+     available. The cost-class change must be part of the docs (first application:
+     LeaffixAggregate's breadth-first entry — peak goes from largest-root-subtree to whole
+     forest, and per-root laziness is lost, because breadth-first arrival interleaves every
+     tree). The explicit hoist (`Materialize().LeaffixAggregate(...)`) remains available and
+     is what the equivalence tests pin the documented entry to.
 
 3. **Capture ops build deferred-once (`Tree.Lazy`-pinned), not eagerly and not
    per-traversal.** Construction is pinned to the first treenumerator acquisition, the build
@@ -98,7 +105,10 @@ whole tree), never by implementation convenience.
    transforms (e.g. OrderChildrenBy as an O(sibling-group), infinite-safe child-enumerator
    wrapper) and the preorder window: keep parked until a consumer demands them, or schedule
    one deliberately as the perf tier for a shipped capture op?
-3. **Store/wrapper cohesion pass.** The preorder/level-order stores, streams, and their
+3. **`Consume`.** Flagged for discussion (2026-07-13, no specifics recorded yet) — likely
+   territory: its overload surface (full/narrow/lazy-buffer entries), its role now that
+   Materialize probes buffers, and how it reads under the promise.
+4. **Store/wrapper cohesion pass.** The preorder/level-order stores, streams, and their
    treenumerable wrappers accreted; the operator-side private builders duplicate machinery
    that belongs on the stores as constructors/factory methods. Concrete first finding:
    `Treenumerable.Invert.g.cs::BuildMirror` and
