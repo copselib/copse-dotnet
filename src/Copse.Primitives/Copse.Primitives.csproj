@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>High-performance building blocks for Copse: chunked ref-access collections, disposable lifecycle utilities, and node context primitives.</Description>
+    <Description>The color-neutral substrate for Copse, shared by the sync and async families: chunked ref-access collections, disposable lifecycle utilities, node context primitives, and the flat store/stream protocols. Speaks tree vocabulary; references neither family's traversal contracts.</Description>
   </PropertyGroup>
 
   <ItemGroup>

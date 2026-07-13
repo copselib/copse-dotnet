@@ -31,7 +31,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 #### Performance Optimizations:
 
 - Custom RefSemiDeque<T> / RefAppendOnlyList<T> with ref semantics for zero-copy state management
-- Lazy evaluation - operations compose without materializing intermediate trees
+- Lazy evaluation - operations compose without materialization when possible; when an
+  operator materializes (or might), its return type and docs say so. The policy is
+  docs/LAZINESS_AND_BUFFERING_POLICY.md; the per-operator register is
+  docs/OPERATOR_SURFACE_MAP.md — a **living inventory**: update its rows in the same commit
+  as any operator/store/decoder change
 - Struct-based nodes to minimize allocations; the flat family decodes via span/index arithmetic
   (no per-node child enumerators), which measured faster than the engine on replay/deserialize
 
@@ -62,12 +66,33 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 ### Project Structure
 
-- **Copse.Core** - The dependency root. Contracts (`ITreenumerable<T>` and its two
-  single-dimension parents, `ITreenumerator<T>`), the enums, and the vocabulary they speak
-  (`NodePosition`, `NodeVisit`, `TreeTraversalStrategy`). References nothing.
-- **Copse.Primitives** - Building blocks with no traversal semantics: the chunked ref-access
-  collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted `Copse.Disposables` algebra, and
-  the node-context value types (`NodeContext`, `NodeAndSiblingIndex`). References Core.
+> **The color rule (stated 2026-07-13):** the sync and async families ("colors") share no
+> contracts — `Copse.Core.Async` does not reference `Copse.Core`, and nothing above them
+> crosses colors (the sole deliberate exception is `Copse.SimpleSerializer`, the one
+> both-colors package). Vocabulary, Primitives, and Traversal are the **color-neutral
+> substrate** underneath both stacks: tree *data* and tree *vocabulary* are neutral;
+> traversal *contracts* are per-color and must never be referenced from the neutral layer
+> (which also keeps async polyfills out of it). This is why the flat store SPIs speak tree
+> words (`EnsureChildAvailable`, `GetSubtreeSize`) while their signatures use only primitive
+> types, why the async store SPIs live in `Copse.Async` rather than beside their sync twins,
+> and why capture machinery belongs in the color layers, not on the neutral stores.
+
+- **Copse.Vocabulary** - The dependency root: the tree vocabulary value types and enums
+  (`NodePosition`, `NodeVisit`, `TreenumeratorMode`, `NodeTraversalStrategies`,
+  `TreeTraversalStrategy`). References nothing. Color-neutral.
+- **Copse.Core** - The sync traversal contracts: `ITreenumerable<T>` and its two
+  single-dimension parents, `ITreenumerator<T>`. References Vocabulary. (`Copse.Core.Async`
+  is its async twin, also over Vocabulary; the async stack mirrors the sync one from there —
+  see docs/ASYNC_CODEGEN.md.)
+- **Copse.Primitives** - The color-neutral substrate both families build on: the chunked
+  ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted `Copse.Disposables`
+  algebra, the node-context value types (`NodeContext`, `NodeAndSiblingIndex`, `ChildResult`),
+  and the flat store/stream SPIs with their completed array stores
+  (`I{Preorder,LevelOrder}Store`, `I{Preorder,LevelOrder}Stream`,
+  `{Preorder,LevelOrder}ArrayStore`). References Vocabulary only.
+- **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
+  engines (`DepthFirstPathState`, `BreadthFirstPathState`, …). References Vocabulary +
+  Primitives.
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
