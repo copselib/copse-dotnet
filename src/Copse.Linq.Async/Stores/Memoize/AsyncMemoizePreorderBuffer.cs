@@ -4,7 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Async.Stores
 {
   // The DFT dimension buffer of a memo: a lazily created, incrementally built preorder capture of the source --
   // values[i] plus subtreeSizes[i], node i's subtree spanning [i, i + subtreeSizes[i]) -- fed by
@@ -24,9 +24,11 @@ namespace Copse.Linq.Async.Treenumerators
   // closed-test without consulting the open stack.
   //
   // Single-threaded by contract, like every treenumerator in the library.
-  internal sealed class AsyncMemoizeDepthFirstBuffer<TValue> : IAsyncDisposable
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x resumable visit-stream feed.
+  internal sealed class AsyncMemoizePreorderBuffer<TValue> : IAsyncDisposable
   {
-    public AsyncMemoizeDepthFirstBuffer(Func<IAsyncTreenumerator<TValue>> feedFactory)
+    public AsyncMemoizePreorderBuffer(Func<IAsyncTreenumerator<TValue>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }

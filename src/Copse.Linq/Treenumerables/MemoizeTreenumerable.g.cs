@@ -5,6 +5,7 @@
 using Copse.Treenumerators;
 using Copse.Core;
 using Copse.Disposables;
+using Copse.Linq.Stores;
 using Copse.Linq.Treenumerators;
 using System;
 
@@ -53,9 +54,9 @@ namespace Copse.Linq.Treenumerables
     // dropping a buffer that lost the completion race is a primary Dispose -- the release
     // fires immediately if no straggler replays remain, otherwise the moment the last
     // straggler's handle is disposed.
-    private MemoizeDepthFirstBuffer<TValue> _DepthFirst;
+    private MemoizePreorderBuffer<TValue> _DepthFirst;
     private RefCountDisposable _DepthFirstRefCount;
-    private MemoizeBreadthFirstBuffer<TValue> _BreadthFirst;
+    private MemoizeLevelOrderBuffer<TValue> _BreadthFirst;
     private RefCountDisposable _BreadthFirstRefCount;
 
     private bool _Disposed;
@@ -110,22 +111,22 @@ namespace Copse.Linq.Treenumerables
       return new ReplayTreenumerator(BreadthFirstPlaybackOverBreadthFirstBuffer(buffer), this, _BreadthFirstRefCount.GetDisposable());
     }
 
-    private MemoizeDepthFirstBuffer<TValue> EnsureDepthFirstBuffer()
+    private MemoizePreorderBuffer<TValue> EnsureDepthFirstBuffer()
     {
       if (_DepthFirst == null)
       {
-        _DepthFirst = new MemoizeDepthFirstBuffer<TValue>(_Source.GetDepthFirstTreenumerator);
+        _DepthFirst = new MemoizePreorderBuffer<TValue>(_Source.GetDepthFirstTreenumerator);
         _DepthFirstRefCount = new RefCountDisposable(Disposable.Create(_DepthFirst.Dispose));
       }
 
       return _DepthFirst;
     }
 
-    private MemoizeBreadthFirstBuffer<TValue> EnsureBreadthFirstBuffer()
+    private MemoizeLevelOrderBuffer<TValue> EnsureBreadthFirstBuffer()
     {
       if (_BreadthFirst == null)
       {
-        _BreadthFirst = new MemoizeBreadthFirstBuffer<TValue>(_Source.GetBreadthFirstTreenumerator);
+        _BreadthFirst = new MemoizeLevelOrderBuffer<TValue>(_Source.GetBreadthFirstTreenumerator);
         _BreadthFirstRefCount = new RefCountDisposable(Disposable.Create(_BreadthFirst.Dispose));
       }
 
@@ -135,21 +136,21 @@ namespace Copse.Linq.Treenumerables
     // The four traversal-over-buffer combinations: the flat family's store treenumerators over
     // the dimension buffers (each buffer IS a store -- no engine, no child enumerators).
     // Cross-order riding is how a completed capture answers the other dimension (case 2).
-    private static ITreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(MemoizeDepthFirstBuffer<TValue> buffer)
-      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizeDepthFirstStore<TValue>>(
-        new MemoizeDepthFirstStore<TValue>(buffer));
+    private static ITreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
+      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
+        new MemoizePreorderStore<TValue>(buffer));
 
-    private static ITreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(MemoizeDepthFirstBuffer<TValue> buffer)
-      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizeDepthFirstStore<TValue>>(
-        new MemoizeDepthFirstStore<TValue>(buffer));
+    private static ITreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
+      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
+        new MemoizePreorderStore<TValue>(buffer));
 
-    private static ITreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(MemoizeBreadthFirstBuffer<TValue> buffer)
-      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeBreadthFirstStore<TValue>>(
-        new MemoizeBreadthFirstStore<TValue>(buffer));
+    private static ITreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
+      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
+        new MemoizeLevelOrderStore<TValue>(buffer));
 
-    private static ITreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(MemoizeBreadthFirstBuffer<TValue> buffer)
-      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeBreadthFirstStore<TValue>>(
-        new MemoizeBreadthFirstStore<TValue>(buffer));
+    private static ITreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
+      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
+        new MemoizeLevelOrderStore<TValue>(buffer));
 
     // Drop a dimension buffer that lost the completion race. Called whenever the state can
     // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never

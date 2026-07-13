@@ -4,13 +4,13 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Async.Stores
 {
   // The BFT dimension buffer of a memo: a lazily created, incrementally built LEVEL-ORDER capture
   // of the source -- values in arrival order (BFT scheduling order IS level order) plus each
   // node's child span (firstChildIndex + childCount, children of one node are contiguous in level
   // order) -- fed by the source's own breadth-first treenumerator and pulled only as far as some
-  // replay's frontier. The structural dual of MemoizeDepthFirstBuffer, LOUDS-adjacent where that
+  // replay's frontier. The structural dual of MemoizePreorderBuffer, LOUDS-adjacent where that
   // one is balanced-parentheses-adjacent.
   //
   // The parse state is a single monotonic cursor. BFT visits nodes in level order -- the same
@@ -38,9 +38,11 @@ namespace Copse.Linq.Async.Treenumerators
   // so this is semantically identical).
   //
   // Single-threaded by contract, like every treenumerator in the library.
-  internal sealed class AsyncMemoizeBreadthFirstBuffer<TValue> : IAsyncDisposable
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
+  internal sealed class AsyncMemoizeLevelOrderBuffer<TValue> : IAsyncDisposable
   {
-    public AsyncMemoizeBreadthFirstBuffer(Func<IAsyncTreenumerator<TValue>> feedFactory)
+    public AsyncMemoizeLevelOrderBuffer(Func<IAsyncTreenumerator<TValue>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }

@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Copse.Linq.Treenumerators
+namespace Copse.Linq.Stores
 {
   // A lazily created, incrementally built level-order capture FED BY AN
   // IAsyncLevelOrderStream: the fusion that lets a group stream become a replayable store
@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerators
   // items arriving in level order -- so the parse is a bare cursor: append each item, charge it
   // to the group's owner, advance on group boundaries. No window, no queues, no per-visit
   // machinery (the FlatDecode family prices the windowed stream decoder this bypasses at 4-83x
-  // the store decoder it enables). Cf. AsyncMemoizeBreadthFirstBuffer, the same capture fed by
+  // the store decoder it enables). Cf. AsyncMemoizeLevelOrderBuffer, the same capture fed by
   // a visit stream, whose front cursor this store's group cursor replaces.
   //
   // The feed is created on the first grow call and disposed the moment it exhausts -- once
@@ -24,6 +24,8 @@ namespace Copse.Linq.Treenumerators
   // releases the source deterministically (the Using idiom, as in the memo cluster).
   //
   // Single-threaded by contract, like every treenumerator in the library.
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x stream feed.
   internal sealed class StreamFedLevelOrderStore<TValue> : ILevelOrderStore<TValue>
   {
     public StreamFedLevelOrderStore(Func<ILevelOrderStream<TValue>> feedFactory)

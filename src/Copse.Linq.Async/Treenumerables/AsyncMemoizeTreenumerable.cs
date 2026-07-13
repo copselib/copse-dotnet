@@ -2,6 +2,7 @@ using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Disposables;
+using Copse.Linq.Async.Stores;
 using Copse.Linq.Async.Treenumerators;
 using System;
 using System.Threading.Tasks;
@@ -51,9 +52,9 @@ namespace Copse.Linq.Async.Treenumerables
     // dropping a buffer that lost the completion race is a primary Dispose -- the release
     // fires immediately if no straggler replays remain, otherwise the moment the last
     // straggler's handle is disposed.
-    private AsyncMemoizeDepthFirstBuffer<TValue> _DepthFirst;
+    private AsyncMemoizePreorderBuffer<TValue> _DepthFirst;
     private AsyncRefCountDisposable _DepthFirstRefCount;
-    private AsyncMemoizeBreadthFirstBuffer<TValue> _BreadthFirst;
+    private AsyncMemoizeLevelOrderBuffer<TValue> _BreadthFirst;
     private AsyncRefCountDisposable _BreadthFirstRefCount;
 
     private bool _Disposed;
@@ -108,22 +109,22 @@ namespace Copse.Linq.Async.Treenumerables
       return new AsyncReplayTreenumerator(BreadthFirstPlaybackOverBreadthFirstBuffer(buffer), this, _BreadthFirstRefCount.GetDisposable());
     }
 
-    private AsyncMemoizeDepthFirstBuffer<TValue> EnsureDepthFirstBuffer()
+    private AsyncMemoizePreorderBuffer<TValue> EnsureDepthFirstBuffer()
     {
       if (_DepthFirst == null)
       {
-        _DepthFirst = new AsyncMemoizeDepthFirstBuffer<TValue>(_Source.GetAsyncDepthFirstTreenumerator);
+        _DepthFirst = new AsyncMemoizePreorderBuffer<TValue>(_Source.GetAsyncDepthFirstTreenumerator);
         _DepthFirstRefCount = new AsyncRefCountDisposable(AsyncDisposable.Create(_DepthFirst.DisposeAsync));
       }
 
       return _DepthFirst;
     }
 
-    private AsyncMemoizeBreadthFirstBuffer<TValue> EnsureBreadthFirstBuffer()
+    private AsyncMemoizeLevelOrderBuffer<TValue> EnsureBreadthFirstBuffer()
     {
       if (_BreadthFirst == null)
       {
-        _BreadthFirst = new AsyncMemoizeBreadthFirstBuffer<TValue>(_Source.GetAsyncBreadthFirstTreenumerator);
+        _BreadthFirst = new AsyncMemoizeLevelOrderBuffer<TValue>(_Source.GetAsyncBreadthFirstTreenumerator);
         _BreadthFirstRefCount = new AsyncRefCountDisposable(AsyncDisposable.Create(_BreadthFirst.DisposeAsync));
       }
 
@@ -133,21 +134,21 @@ namespace Copse.Linq.Async.Treenumerables
     // The four traversal-over-buffer combinations: the flat family's store treenumerators over
     // the dimension buffers (each buffer IS a store -- no engine, no child enumerators).
     // Cross-order riding is how a completed capture answers the other dimension (case 2).
-    private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizeDepthFirstBuffer<TValue> buffer)
-      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeDepthFirstStore<TValue>>(
-        new AsyncMemoizeDepthFirstStore<TValue>(buffer));
+    private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizePreorderBuffer<TValue> buffer)
+      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
+        new AsyncMemoizePreorderStore<TValue>(buffer));
 
-    private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizeDepthFirstBuffer<TValue> buffer)
-      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeDepthFirstStore<TValue>>(
-        new AsyncMemoizeDepthFirstStore<TValue>(buffer));
+    private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizePreorderBuffer<TValue> buffer)
+      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
+        new AsyncMemoizePreorderStore<TValue>(buffer));
 
-    private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeBreadthFirstBuffer<TValue> buffer)
-      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeBreadthFirstStore<TValue>>(
-        new AsyncMemoizeBreadthFirstStore<TValue>(buffer));
+    private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
+      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>>(
+        new AsyncMemoizeLevelOrderStore<TValue>(buffer));
 
-    private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeBreadthFirstBuffer<TValue> buffer)
-      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeBreadthFirstStore<TValue>>(
-        new AsyncMemoizeBreadthFirstStore<TValue>(buffer));
+    private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
+      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>>(
+        new AsyncMemoizeLevelOrderStore<TValue>(buffer));
 
     // Drop a dimension buffer that lost the completion race. Called whenever the state can
     // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never

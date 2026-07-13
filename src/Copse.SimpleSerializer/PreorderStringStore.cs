@@ -26,6 +26,8 @@ namespace Copse.SimpleSerializer
   // states the layout by choosing DeserializeDepthFirstTree, and an UNQUOTED level-order
   // structural character ('|' or ';') proves the string is the wrong layout (or corrupt) -- a
   // FormatException rather than a silently mis-parsed tree.
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x text-parse feed.
   internal sealed class PreorderStringStore<TValue> : IPreorderStore<TValue>
   {
     public PreorderStringStore(string tree, SpanMap<TValue> map)

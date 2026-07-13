@@ -2,7 +2,7 @@ using Copse.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Async.Stores
 {
   // An IAsyncPreorderStore over a preorder capture that does not exist yet: the first grow call
   // awaits the one-shot build (an awaited walk of an async source into flat preorder arrays)
@@ -17,6 +17,8 @@ namespace Copse.Linq.Async.Treenumerators
   // GetValue/GetSubtreeSize are pure reads and stay synchronous: the decoder contract guarantees
   // a grow call precedes every read, so the store is always built by the time they run.
   // Single-threaded by contract, like every treenumerator in the library.
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
   internal sealed class AsyncLazyBuiltPreorderStore<TValue> : IAsyncPreorderStore<TValue>
   {
     public AsyncLazyBuiltPreorderStore(Func<ValueTask<PreorderArrayStore<TValue>>> build)

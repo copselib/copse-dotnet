@@ -4,6 +4,7 @@
 // </auto-generated>
 using Copse.Treenumerators;
 using Copse.Core;
+using Copse.Linq.Stores;
 using Copse.Linq.Treenumerators;
 
 namespace Copse.Linq.Treenumerables
@@ -18,10 +19,10 @@ namespace Copse.Linq.Treenumerables
   {
     public MemoizeDepthFirstSourceTreenumerable(IDepthFirstTreenumerable<TValue> source)
     {
-      _Buffer = new MemoizeDepthFirstBuffer<TValue>(source.GetDepthFirstTreenumerator);
+      _Buffer = new MemoizePreorderBuffer<TValue>(source.GetDepthFirstTreenumerator);
     }
 
-    private readonly MemoizeDepthFirstBuffer<TValue> _Buffer;
+    private readonly MemoizePreorderBuffer<TValue> _Buffer;
 
     public bool IsComplete => _Buffer.Complete;
 
@@ -33,12 +34,12 @@ namespace Copse.Linq.Treenumerables
     public void Consume(TreeTraversalStrategy strategy) => _Buffer.Consume();
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()
-      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizeDepthFirstStore<TValue>>(
-        new MemoizeDepthFirstStore<TValue>(_Buffer));
+      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
+        new MemoizePreorderStore<TValue>(_Buffer));
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
-      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizeDepthFirstStore<TValue>>(
-        new MemoizeDepthFirstStore<TValue>(_Buffer));
+      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
+        new MemoizePreorderStore<TValue>(_Buffer));
 
     public void Dispose() => _Buffer.Dispose();
   }

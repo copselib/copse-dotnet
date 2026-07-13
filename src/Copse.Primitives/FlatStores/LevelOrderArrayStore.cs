@@ -8,6 +8,8 @@ namespace Copse
   // structural dual -- nothing grows, so the Ensure* hooks are pure reads. Wrapped in a
   // LevelOrderTreenumerable{TValue, LevelOrderArrayStore{TValue}} this is a full ITreenumerable
   // (random access affords both dimensions).
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x completed x no feed.
   public readonly struct LevelOrderArrayStore<TValue> : ILevelOrderStore<TValue>
   {
     public LevelOrderArrayStore(TValue[] values, int[] firstChildIndices, int[] childCounts, int rootCount)

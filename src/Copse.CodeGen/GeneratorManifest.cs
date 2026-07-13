@@ -173,21 +173,21 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/ITreenumerableBuffer.g.cs",
         "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstBuffer.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstBuffer.g.cs",
-        "AsyncMemoizeDepthFirstBuffer", "MemoizeDepthFirstBuffer", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderBuffer.cs",
+        "Copse.Linq/Stores/Memoize/MemoizePreorderBuffer.g.cs",
+        "AsyncMemoizePreorderBuffer", "MemoizePreorderBuffer", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstBuffer.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstBuffer.g.cs",
-        "AsyncMemoizeBreadthFirstBuffer", "MemoizeBreadthFirstBuffer", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderBuffer.cs",
+        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderBuffer.g.cs",
+        "AsyncMemoizeLevelOrderBuffer", "MemoizeLevelOrderBuffer", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstStore.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstStore.g.cs",
-        "AsyncMemoizeDepthFirstStore", "MemoizeDepthFirstStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
+        "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",
+        "AsyncMemoizePreorderStore", "MemoizePreorderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstStore.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstStore.g.cs",
-        "AsyncMemoizeBreadthFirstStore", "MemoizeBreadthFirstStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderStore.cs",
+        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderStore.g.cs",
+        "AsyncMemoizeLevelOrderStore", "MemoizeLevelOrderStore", "Copse.Linq.Stores"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncMemoizeTreenumerable.cs",
         "Copse.Linq/Treenumerables/MemoizeTreenumerable.g.cs",
@@ -211,17 +211,17 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerators/Invert/InvertedLevelOrderStream.g.cs",
         "AsyncInvertedLevelOrderStream", "InvertedLevelOrderStream", "Copse.Linq.Treenumerators"),
 
-      new("Copse.Linq.Async/Treenumerators/AsyncLazyBuiltPreorderStore.cs",
-        "Copse.Linq/Treenumerators/LazyBuiltPreorderStore.g.cs",
-        "AsyncLazyBuiltPreorderStore", "LazyBuiltPreorderStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/AsyncLazyBuiltPreorderStore.cs",
+        "Copse.Linq/Stores/LazyBuiltPreorderStore.g.cs",
+        "AsyncLazyBuiltPreorderStore", "LazyBuiltPreorderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/AsyncLazyBuiltLevelOrderStore.cs",
-        "Copse.Linq/Treenumerators/LazyBuiltLevelOrderStore.g.cs",
-        "AsyncLazyBuiltLevelOrderStore", "LazyBuiltLevelOrderStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/AsyncLazyBuiltLevelOrderStore.cs",
+        "Copse.Linq/Stores/LazyBuiltLevelOrderStore.g.cs",
+        "AsyncLazyBuiltLevelOrderStore", "LazyBuiltLevelOrderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/AsyncStreamFedLevelOrderStore.cs",
-        "Copse.Linq/Treenumerators/StreamFedLevelOrderStore.g.cs",
-        "AsyncStreamFedLevelOrderStore", "StreamFedLevelOrderStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/AsyncStreamFedLevelOrderStore.cs",
+        "Copse.Linq/Stores/StreamFedLevelOrderStore.g.cs",
+        "AsyncStreamFedLevelOrderStore", "StreamFedLevelOrderStore", "Copse.Linq.Stores"),
 
       // The fluent-layer construction machinery (Copse.Linq is generated from Copse.Linq.Async).
       new("Copse.Linq.Async/AsyncTreenumerableFactory.cs",

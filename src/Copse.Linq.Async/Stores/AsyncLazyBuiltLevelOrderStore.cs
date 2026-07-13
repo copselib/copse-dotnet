@@ -2,7 +2,7 @@ using Copse.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Async.Stores
 {
   // An IAsyncLevelOrderStore over a level-order capture that does not exist yet: the first grow
   // call awaits the one-shot build and every call after that answers from the completed
@@ -13,6 +13,8 @@ namespace Copse.Linq.Async.Treenumerators
   // GetFirstChildIndex/GetValue are pure reads and stay synchronous: the decoder contract
   // guarantees a grow call precedes every read, so the store is always built by the time they
   // run. Single-threaded by contract, like every treenumerator in the library.
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x one-shot-build feed.
   internal sealed class AsyncLazyBuiltLevelOrderStore<TValue> : IAsyncLevelOrderStore<TValue>
   {
     public AsyncLazyBuiltLevelOrderStore(Func<ValueTask<LevelOrderArrayStore<TValue>>> build)

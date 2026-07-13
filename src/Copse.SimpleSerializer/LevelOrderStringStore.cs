@@ -20,6 +20,8 @@ namespace Copse.SimpleSerializer
   // playback, depth-first rides the child spans cross-order). One store is shared by every
   // treenumerator of the same Deserialize result: parse once, replay many. Single-threaded by
   // contract.
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x text-parse feed.
   internal sealed class LevelOrderStringStore<TValue> : ILevelOrderStore<TValue>
   {
     public LevelOrderStringStore(string tree, SpanMap<TValue> map)

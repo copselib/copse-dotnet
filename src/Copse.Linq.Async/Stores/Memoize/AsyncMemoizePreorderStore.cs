@@ -2,19 +2,21 @@ using Copse.Async;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Async.Stores
 {
   // Presents a memo's DFT dimension buffer as an IPreorderStore for the native playback
   // treenumerator (PreorderStoreDepthFirstTreenumerator). A struct so the playback's store calls
   // specialize and inline -- the same unboxed pattern as the engine's TChildEnumerator.
-  internal readonly struct AsyncMemoizeDepthFirstStore<TValue> : IAsyncPreorderStore<TValue>
+  //
+  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): SPI handle over AsyncMemoizePreorderBuffer (unboxing adapter, not a store of its own).
+  internal readonly struct AsyncMemoizePreorderStore<TValue> : IAsyncPreorderStore<TValue>
   {
-    public AsyncMemoizeDepthFirstStore(AsyncMemoizeDepthFirstBuffer<TValue> buffer)
+    public AsyncMemoizePreorderStore(AsyncMemoizePreorderBuffer<TValue> buffer)
     {
       _Buffer = buffer;
     }
 
-    private readonly AsyncMemoizeDepthFirstBuffer<TValue> _Buffer;
+    private readonly AsyncMemoizePreorderBuffer<TValue> _Buffer;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask<bool> EnsureBufferedAsync(int index) => _Buffer.EnsureBufferedAsync(index);

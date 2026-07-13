@@ -1,6 +1,6 @@
 using Copse;
 using Copse.Core;
-using Copse.Linq.Treenumerators;
+using Copse.Linq.Stores;
 using Copse.SimpleSerializer;
 using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

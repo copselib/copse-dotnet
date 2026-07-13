@@ -1,6 +1,7 @@
 using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async.Stores;
 using Copse.Linq.Async.Treenumerators;
 using System.Threading.Tasks;
 
@@ -16,10 +17,10 @@ namespace Copse.Linq.Async.Treenumerables
   {
     public AsyncMemoizeDepthFirstSourceTreenumerable(IAsyncDepthFirstTreenumerable<TValue> source)
     {
-      _Buffer = new AsyncMemoizeDepthFirstBuffer<TValue>(source.GetAsyncDepthFirstTreenumerator);
+      _Buffer = new AsyncMemoizePreorderBuffer<TValue>(source.GetAsyncDepthFirstTreenumerator);
     }
 
-    private readonly AsyncMemoizeDepthFirstBuffer<TValue> _Buffer;
+    private readonly AsyncMemoizePreorderBuffer<TValue> _Buffer;
 
     public bool IsComplete => _Buffer.Complete;
 
@@ -31,12 +32,12 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask ConsumeAsync(TreeTraversalStrategy strategy) => _Buffer.ConsumeAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
-      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeDepthFirstStore<TValue>>(
-        new AsyncMemoizeDepthFirstStore<TValue>(_Buffer));
+      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
+        new AsyncMemoizePreorderStore<TValue>(_Buffer));
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeDepthFirstStore<TValue>>(
-        new AsyncMemoizeDepthFirstStore<TValue>(_Buffer));
+      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
+        new AsyncMemoizePreorderStore<TValue>(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
   }
