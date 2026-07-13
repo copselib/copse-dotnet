@@ -43,7 +43,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
 | OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; **B overloads Materialize first** (see flags) |
 | Memoize | F, D, B | **ILazyTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
-| Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | `Memoize()+Consume()` at call time; on a live memo consumes that shared instance in place (aliasing, by design) |
+| Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place and returned (same instance — aliasing by design); a completed buffer is returned as-is, never re-captured; otherwise `Memoize()+Consume()` at call time |
 
 ### Enumerable / scalar consumers (Copse.Linq)
 
@@ -105,8 +105,9 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    drain pays the entire remaining O(n) at Dispose. Deliberate (deterministic release of a
    `Using` source's resource) but a surprising cost placement; worth a doc-comment
    cross-reference at minimum.
-6. **`Materialize` aliasing**: called on a live memo it consumes and returns *that shared
-   instance* typed as the non-disposable base. By design; document prominently.
+6. *(FIXED 2026-07-13)* `Materialize` now probes before memoizing: a live memo is consumed
+   in place (the aliasing is by design and documented in the XML docs); a completed buffer
+   is returned as-is instead of being wrapped in a fresh memo and copied node-by-node.
 
 ## 2. Flat-family dependency map
 

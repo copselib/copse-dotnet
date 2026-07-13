@@ -141,6 +141,39 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
     }
 
+    // The buffer probes: Materialize never re-captures a capture. Probe order matters -- the
+    // lazy buffer interface derives from the completed one, so it is tested first (a live memo
+    // must be consumed, not returned raw).
+    [TestMethod]
+    public void Materialize_consumes_a_live_memo_in_place()
+    {
+      using var memo = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Memoize();
+
+      var materialized = memo.Materialize();
+
+      Assert.AreSame(memo, materialized);
+      Assert.IsTrue(memo.IsComplete);
+    }
+
+    [TestMethod]
+    public void Materialize_returns_a_completed_buffer_as_is()
+    {
+      var buffer = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize();
+
+      Assert.AreSame(buffer, buffer.Materialize());
+    }
+
+    // Invert's result is a deferred capture (a pinned lazy build behind the buffer type);
+    // Materialize hands it back untouched -- the build is pinned either way, so eagerness
+    // gains nothing and re-capturing would copy every node.
+    [TestMethod]
+    public void Materialize_returns_a_deferred_capture_as_is()
+    {
+      var mirror = TreeSerializer.DeserializeDepthFirstTree("a(b,c)").Invert();
+
+      Assert.AreSame(mirror, mirror.Materialize());
+    }
+
     private sealed class CountingSource : ITreenumerable<string>
     {
       public CountingSource(ITreenumerable<string> inner) => _Inner = inner;
