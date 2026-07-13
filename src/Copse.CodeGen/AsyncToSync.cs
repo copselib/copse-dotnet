@@ -193,6 +193,7 @@ namespace Copse.CodeGen
         ["Copse.Core.Async"] = "Copse.Core",
         ["Copse.Async.Treenumerators"] = "Copse.Treenumerators",
         ["Copse.Async.Treenumerables"] = "Copse.Treenumerables",
+        ["Copse.Async.Stores"] = "Copse.Stores",
         ["Copse.Linq.Async"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerators"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerables"] = "Copse.Linq.Treenumerables",

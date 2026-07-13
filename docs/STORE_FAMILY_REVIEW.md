@@ -135,10 +135,17 @@ pick one shape-A arrival-selector for the factory (B) and document the equivalen
 
 ## Decisions needed
 
-1. ~~Adopt the taxonomy + factory placement (A, B)?~~ **DECIDED 2026-07-13: both adopted**
-   (taxonomy with renames, executed; factories in the `Copse`/`Copse.Async` layer — build
-   pending, sequenced after the operator-flag #4 spike since what the factory absorbs
-   depends on whether OrderChildrenBy-B goes streaming).
+1. ~~Adopt the taxonomy + factory placement (A, B)?~~ **DECIDED and BUILT 2026-07-13.**
+   Taxonomy with renames executed; `PreorderCapture` (plain + side-channel) and
+   `LevelOrderCapture` (plain) live in `Copse/Stores` (async sources in
+   `Copse.Async/Stores`, namespace `Copse(.Async).Stores`). As-built notes: **public**, not
+   internal+IVT — no product-to-product IVT precedent exists and the array stores they
+   return are already public; Invert's build is the first consumer (its zero-key LIFO emit
+   stays specialized — benchmark rows); **LeaffixScan stays bespoke** — its close-hook needs
+   `ChildAccumulations`, a Copse.Linq type this layer cannot reference, exactly the boundary
+   proposal B predicted; OrderChildrenBy adopts the side-channel form at its rebase;
+   shape-A's selector standardized on `Mode == SchedulingNode` with the VisitCount-1
+   equivalence documented in the factory header.
 2. Build the public completed-store async adapter now (C), or defer until the sync→async
    bridge story is taken up?
 3. Which way does operator flag #5 (Invert-F BFT-first arm) go? It determines D4a — orphan

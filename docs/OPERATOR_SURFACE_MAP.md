@@ -139,6 +139,16 @@ Wrappers (Copse/Treenumerables)
 ├─ PreorderStreamTreenumerable<TStream>   D-narrow → stream DFT decoder (owns stream)
 └─ LevelOrderStreamTreenumerable<TStream> B-narrow → stream BFT decoder (owns stream)
 
+Capture factories (Copse/Stores ← Copse.Async/Stores; public statics; ADDED 2026-07-13)
+├─ PreorderCapture.CaptureFrom(source[, sideChannelSelector])  the ENCODE direction, written
+│    once: shape A hoisted from the operator builds → PreorderArrayStore (+ preorder-parallel
+│    side array — OrderChildrenBy's keys hook). Consumers: Invert's build; OrderChildrenBy
+│    adopts at its rebase. LeaffixScan stays bespoke (its close-hook needs ChildAccumulations,
+│    a Copse.Linq type this layer cannot see).
+└─ LevelOrderCapture.CaptureFrom(source)      shape B in one-shot form (the memo's front-cursor
+     parse) → LevelOrderArrayStore. No consumer yet; first candidates are the LeaffixScan-B /
+     LeaffixAggregate-B fusions. No side-channel overload until a consumer exists.
+
 Concrete stores/streams                       consumers
 ├─ PreorderArrayStore (readonly struct)       Invert-D/F, OrderChildrenBy, LeaffixScan
 │    (Copse.Primitives, completed arrays)     builds all terminate here; benchmarks; tests
@@ -174,7 +184,7 @@ Two canonical loops are re-implemented across the codebase:
 
 | # | Site | Shape | Builds | Variation |
 |---|---|---|---|---|
-| 1 | `Treenumerable.Invert.g.cs` `BuildMirror` | A + span-hop emit | `PreorderArrayStore` | none — the baseline |
+| 1 | `Treenumerable.Invert.g.cs` `BuildMirror` | ~~A~~ **factory** + span-hop emit | `PreorderArrayStore` | *(2026-07-13)* phase 1 now rides `PreorderCapture.CaptureFrom`; the zero-key LIFO emit stays specialized (CI benchmark rows) |
 | 2 | `Treenumerable.OrderChildrenBy.g.cs` `BuildOrderedChildren` | A + span-hop emit | `PreorderArrayStore` | shape A **character-identical** to #1 plus one `keys.Add` line; emit sorts each sibling group instead of reversing |
 | 3 | `Treenumerable.LeaffixScan.g.cs` `BuildLeaffixScan` | A | `PreorderArrayStore` | richer close: pending-node stack carries NodeContext, close computes the accumulation |
 | 4 | `Treenumerable.LeaffixAggregate.g.cs` | A | **no store** | same loop, per-root reused buffers, lazy yield — bounds what a store factory can absorb |

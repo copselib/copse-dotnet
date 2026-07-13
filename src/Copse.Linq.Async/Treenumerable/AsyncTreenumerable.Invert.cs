@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Async.Stores;
 using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
 using Copse.Core;
@@ -110,46 +111,19 @@ namespace Copse.Linq
     private static async ValueTask<PreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
       // 1. Capture flat preorder arrays (value + subtree size per node) from one awaited
-      //    depth-first walk of the source.
-      var values = new List<TNode>();
-      var subtreeSizes = new List<int>();
-      var open = new Stack<int>();
-
-      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
-      await using (treenumerator.ConfigureAwait(false))
-      {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          while (open.Count > treenumerator.Position.Depth)
-          {
-            var closed = open.Pop();
-            subtreeSizes[closed] = values.Count - closed;
-          }
-
-          open.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (open.Count > 0)
-      {
-        var closed = open.Pop();
-        subtreeSizes[closed] = values.Count - closed;
-      }
+      //    depth-first walk of the source -- the flat family's shared encode.
+      var capture = await AsyncPreorderCapture.CaptureFromAsync(source).ConfigureAwait(false);
 
       // 2. Emit the mirror. Pushing roots/children in forward order makes them pop in reverse,
       //    which is exactly the mirror's preorder. Each subtree keeps its size; only ordering
-      //    changes.
-      var count = values.Count;
+      //    changes. This zero-key LIFO emit stays specialized to Invert (it has CI benchmark
+      //    rows); the generalized sort-each-group emission belongs to OrderChildrenBy.
+      var count = capture.Count;
       var mirroredValues = new TNode[count];
       var mirroredSubtreeSizes = new int[count];
       var stack = new Stack<int>();
 
-      for (var root = 0; root < count; root += subtreeSizes[root])
+      for (var root = 0; root < count; root += capture.GetSubtreeSize(root))
         stack.Push(root);
 
       var output = 0;
@@ -158,13 +132,13 @@ namespace Copse.Linq
       {
         var index = stack.Pop();
 
-        mirroredValues[output] = values[index];
-        mirroredSubtreeSizes[output] = subtreeSizes[index];
+        mirroredValues[output] = capture.GetValue(index);
+        mirroredSubtreeSizes[output] = capture.GetSubtreeSize(index);
         output++;
 
-        var end = index + subtreeSizes[index];
+        var end = index + capture.GetSubtreeSize(index);
 
-        for (var child = index + 1; child < end; child += subtreeSizes[child])
+        for (var child = index + 1; child < end; child += capture.GetSubtreeSize(child))
           stack.Push(child);
       }
 
