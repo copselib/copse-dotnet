@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783991794686,
+  "lastUpdate": 1783991794958,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -27722,6 +27722,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
             "value": 33636837,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2",
+          "message": "Invert's BFT-first arm goes eager; StreamFedLevelOrderStore retires\n\nPolicy-audit flag 5 + store review D4a, decided after discussion: the\nfull-source mirror's breadth-first-first arm now drains the streaming\nmirror ONCE into a completed level-order capture on the first replay\npull -- the same cost shape as the preorder arm -- via a new\nstream-shaped LevelOrderCapture.CaptureFrom(ILevelOrderStream): the\nstream-fed store's drain in one-shot form, still never synthesizing a\nvisit stream between the encodings (the 2.1-2.7x round trip stays\navoided).\n\nWhy: the tier-by-tier laziness this replaces was only ever real for a\nreplay abandoned WITHOUT disposal -- a contract violation -- because\nDispose completed the remaining capture anyway (the dispose-time O(n)\nsurprise the surface map flagged). One cost shape for both arms, no\nsurprise, and the source is released deterministically INSIDE the\nbuild (earlier than before).\n\nConsequences:\n- StreamFedLevelOrderStore DELETED (this arm was its only consumer);\n  its incremental machinery -- pull-one state, dispose-action\n  composition -- goes with it.\n- LazyBuiltLevelOrderStore's orphanhood ends exactly as the store\n  review predicted: it is the arm's deferral seam now.\n- Behavior pins updated: the two InvertTests that pinned incremental\n  growth + dispose-completes-capture now pin build-on-first-pull +\n  dispose-owes-nothing + source-released-inside-the-first-pull.\n\nBenchmark gate (Invert family, ShortRun A/B, same machine): Bft rows\nFASTER (Triangle 157.8->145.5ms, Chain 124.0->94.9ms; Dft controls\nbyte-identical alloc, time within cross-run noise). Allocation shows\nthe step change the benchmark header predicted: one-shot List+ToArray\nbuild churn ~2.5-3x the old incremental chunked store (Triangle\n24.4->60.4MB, Chain 12.0->36.0MB) -- transient, one-time, and still at\nor below the preorder arm's profile. Follow-up if CI rows object: swap\nthe factory drain onto RefAppendOnlyList.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T01:01:36Z",
+          "tree_id": "ccb573ea55f29f90df6bdbb88fd58f1b643ff09d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2"
+        },
+        "date": 1783991794912,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505973,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636849,
             "unit": "bytes"
           },
           {
