@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784047733678,
+  "lastUpdate": 1784047733978,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -51284,6 +51284,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
             "value": 2840384,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 415377,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 446945,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e69e7d44fca49c27a46f5c608ad9e038d66417c0",
+          "message": "Docs: the de-share recorded (CLAUDE.md color rule, store review, map)\n\n- CLAUDE.md: the color rule sharpened -- each neutral layer holds\n  exactly what its name promises (Vocabulary: what the Core contracts\n  speak; Primitives: tree-free mechanics; Traversal: shared path-state\n  machinery and the value types it consumes); everything color-flavored\n  lives per-color, single-sourced through codegen. Project entries\n  updated (Primitives slimmed, Traversal gains the node-context types,\n  Copse's flat-family entry points at Copse/Stores, Linq.Traversal\n  noted as Traversal's Linq-level analog).\n- STORE_FAMILY_REVIEW.md: superseding update at top -- the de-share\n  replaces the shared-store design the review documented; the opening\n  question's answer is historical; F4's missing-dual and sync->async\n  adapter gaps dissolved.\n- OPERATOR_SURFACE_MAP.md: SPI and array-store inventory rewritten\n  per-color.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T16:34:52Z",
+          "tree_id": "9b75b7baef6d000c032907e65307d7ac6eca6971",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e69e7d44fca49c27a46f5c608ad9e038d66417c0"
+        },
+        "date": 1784047733926,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 642332,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693442,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 153113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 86489,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1789282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840378,
             "unit": "bytes"
           },
           {
