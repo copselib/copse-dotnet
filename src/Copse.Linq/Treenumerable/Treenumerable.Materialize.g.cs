@@ -2,6 +2,8 @@
 //   Generated from AsyncTreenumerable.Materialize.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 
@@ -43,26 +45,60 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Materialize with a declared capture layout: on a fresh memo the dimension named is the one
-    /// captured, and therefore the one whose replays are native (the other rides the same capture
-    /// cross-order). The strategy is a PIN REQUEST: once anything has pulled, the existing capture
-    /// completes whatever was asked -- the at-most-once invariant outranks the argument (a source
-    /// is never enumerated twice; a completed buffer is returned as-is, its layout already fixed).
+    /// Materialize with a GUARANTEED capture layout: the returned buffer's native-replay
+    /// dimension is <paramref name="strategy"/>, whatever the input -- the argument is never
+    /// ignored. A plain tree captures in that layout; a fresh memo pins it; a buffer already
+    /// in that layout is returned as-is (a capture is never re-captured); a buffer in the
+    /// OTHER layout is TRANSPOSED -- from the buffer, never from the source (buffer traversal
+    /// is effect-free by contract, so at-most-once holds; the transpose is O(n) work, which
+    /// this operator's name and return type already disclose -- and note a transposed result
+    /// is a NEW instance). A partially-pinned memo completes its pinned capture first (the one
+    /// source enumeration), then transposes. This is also the both-layouts recipe for
+    /// speed-over-space callers: materialize once, then materialize THAT in the other
+    /// dimension. Contrast Consume(strategy), where the strategy is only a suggestion --
+    /// Materialize returns the buffer, so the layout IS the deliverable.
     /// </summary>
     public static ITreenumerableBuffer<TValue> Materialize<TValue>(this ITreenumerable<TValue> source, TreeTraversalStrategy strategy)
     {
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
         lazyBuffer.Consume(strategy);
-        return lazyBuffer;
+        return WithNativeLayout(lazyBuffer, strategy);
       }
 
       if (source is ITreenumerableBuffer<TValue> completedBuffer)
-        return completedBuffer;
+        return WithNativeLayout(completedBuffer, strategy);
 
       var buffer = source.Memoize();
       buffer.Consume(strategy);
       return buffer;
+    }
+
+    // The layout guarantee's back half: reuse a buffer that already complies (recognized via
+    // the internal layout tag); otherwise TRANSPOSE from the buffer -- one cross-order walk of
+    // the completed capture into the requested layout's arrays, the source untouched.
+    // Implementations the library does not recognize transpose conservatively.
+    private static ITreenumerableBuffer<TValue> WithNativeLayout<TValue>(
+      ITreenumerableBuffer<TValue> buffer,
+      TreeTraversalStrategy strategy)
+    {
+      if (buffer is IAsyncLayoutTaggedBuffer tagged && tagged.NativeLayout == strategy)
+        return buffer;
+
+      if (strategy == TreeTraversalStrategy.DepthFirst)
+      {
+        var preorderStore = PreorderCapture.CaptureFrom(buffer);
+
+        return new CompletedTreenumerableBuffer<TValue>(
+          new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(preorderStore),
+          TreeTraversalStrategy.DepthFirst);
+      }
+
+      var levelOrderStore = LevelOrderCapture.CaptureFrom(buffer);
+
+      return new CompletedTreenumerableBuffer<TValue>(
+        new LevelOrderTreenumerable<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore),
+        TreeTraversalStrategy.BreadthFirst);
     }
 
     /// <summary>

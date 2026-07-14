@@ -28,8 +28,14 @@ namespace Copse.Linq.Async.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class AsyncMemoizeTreenumerable<TValue> : IAsyncLazyTreenumerableBuffer<TValue>
+  internal sealed class AsyncMemoizeTreenumerable<TValue> : IAsyncLazyTreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
   {
+    // The pinned layout, null while fresh (nothing has pulled or consumed yet).
+    public TreeTraversalStrategy? NativeLayout
+      => _DepthFirstCapture != null ? TreeTraversalStrategy.DepthFirst
+        : _BreadthFirstCapture != null ? TreeTraversalStrategy.BreadthFirst
+        : (TreeTraversalStrategy?)null;
+
     public AsyncMemoizeTreenumerable(IAsyncTreenumerable<TValue> source)
     {
       _Source = source;

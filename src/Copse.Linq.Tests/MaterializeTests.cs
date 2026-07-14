@@ -120,7 +120,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Materialize_with_declared_strategy_defers_to_an_existing_pin()
+    public void Materialize_with_declared_strategy_transposes_a_mismatched_pin_from_the_buffer()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -131,16 +131,56 @@ namespace Copse.Linq.Tests
 
       var materialized = memo.Materialize(TreeTraversalStrategy.DepthFirst);
 
-      Assert.AreSame(memo, materialized);
+      // The layout guarantee: the strategy is never ignored. The pinned level-order capture
+      // completes (the one source enumeration -- at-most-once holds), then TRANSPOSES from the
+      // buffer into a new preorder-native capture; the source is untouched by the transpose.
+      Assert.AreNotSame(memo, materialized);
       Assert.IsTrue(memo.IsComplete);
       Assert.AreEqual(9, memo.GetBufferedCount());
-
-      // The at-most-once invariant outranks the argument: the first pull pinned the
-      // level-order layout, so the declared strategy completes THAT capture -- no second
-      // source enumeration. (The superseded dual-buffer memo re-enumerated here and dropped
-      // the partial capture.) A fresh memo would have taken the declared layout as its pin.
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+
+      // The transposed buffer replays the same tree in both dimensions.
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.DepthFirst),
+        Collect(materialized, TreeTraversalStrategy.DepthFirst));
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.BreadthFirst),
+        Collect(materialized, TreeTraversalStrategy.BreadthFirst));
+    }
+
+    [TestMethod]
+    public void Materialize_with_matching_strategy_reuses_the_buffer()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+      using var memo = counting.Memoize();
+
+      var first = memo.Materialize(TreeTraversalStrategy.BreadthFirst);
+      var again = first.Materialize(TreeTraversalStrategy.BreadthFirst);
+
+      Assert.AreSame(memo, first, "a fresh memo takes the declared layout as its pin");
+      Assert.AreSame(first, again, "a compliant buffer is never re-captured");
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+    }
+
+    // The both-layouts recipe for speed-over-space callers: materialize once, then materialize
+    // THAT in the other dimension -- two native-layout buffers, ONE source enumeration.
+    [TestMethod]
+    public void Both_layouts_cost_one_source_enumeration()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+
+      var levelOrder = counting.Materialize(TreeTraversalStrategy.BreadthFirst);
+      var preorder = levelOrder.Materialize(TreeTraversalStrategy.DepthFirst);
+
+      Assert.AreNotSame(levelOrder, preorder);
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the transpose walks the buffer, never the source");
+
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.DepthFirst),
+        Collect(preorder, TreeTraversalStrategy.DepthFirst));
     }
 
     [TestMethod]

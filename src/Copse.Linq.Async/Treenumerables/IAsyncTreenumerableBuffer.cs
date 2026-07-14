@@ -25,6 +25,16 @@ namespace Copse.Linq.Async.Treenumerables
   {
   }
 
+  // INTERNAL layout tag: which encoding a capture holds natively (null = not yet determined --
+  // a deferred dimension-dispatched build). Materialize's layout guarantee probes this to
+  // reuse a compliant buffer instead of transposing; implementations the library does not
+  // recognize are transposed conservatively. Deliberately not on the public buffer interface
+  // until an external implementor needs it.
+  internal interface IAsyncLayoutTaggedBuffer
+  {
+    TreeTraversalStrategy? NativeLayout { get; }
+  }
+
   // A buffer still backed by a LIVE source feed: the lazily-growing capture Memoize returns.
   // It holds inner treenumerators paused mid-traversal over the source (the captured data
   // itself is just managed memory), so it is disposable -- disposing stops all future source
@@ -45,10 +55,12 @@ namespace Copse.Linq.Async.Treenumerables
     // until the capture completes.
     int GetBufferedCount();
 
-    // Drive the capture to completion. The strategy is a PIN REQUEST, honored only while the
-    // buffer is fresh (nothing captured yet): it names the layout the capture takes. Once a
-    // capture exists the invariant outranks the argument -- a source is never enumerated
-    // twice, so the existing capture completes whatever layout was asked for. A no-op iff
+    // Drive the capture to completion. The strategy is a SUGGESTION (a pin request), honored
+    // only while the buffer is fresh (nothing captured yet): it names the layout the capture
+    // takes. Once a capture exists the invariant outranks the argument -- a source is never
+    // enumerated twice, so the existing capture completes whatever layout was asked for; the
+    // argument is then deliberately IGNORED. Callers who need a specific layout GUARANTEED
+    // use Materialize(strategy), whose deliverable is the buffer itself. A no-op iff
     // IsComplete.
     ValueTask ConsumeAsync(TreeTraversalStrategy strategy);
   }

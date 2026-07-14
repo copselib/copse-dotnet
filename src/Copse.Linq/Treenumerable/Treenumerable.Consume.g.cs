@@ -41,10 +41,12 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Consume with a declared capture layout. On a lazy buffer the strategy is a PIN REQUEST:
-    /// a fresh buffer's capture takes this layout; once anything has pulled, the existing
-    /// capture completes whatever was asked -- the at-most-once invariant outranks the
-    /// argument. A completed buffer is a no-op. A plain tree is drained in the named dimension.
+    /// Consume with a declared capture layout. On a lazy buffer the strategy is a SUGGESTION
+    /// (a pin request): a fresh buffer's capture takes this layout; once anything has pulled,
+    /// the existing capture completes and the argument is deliberately IGNORED -- the
+    /// at-most-once invariant outranks it. Callers who need the layout GUARANTEED use
+    /// Materialize(strategy). A completed buffer is a no-op. A plain tree is drained in the
+    /// named dimension.
     /// </summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source,

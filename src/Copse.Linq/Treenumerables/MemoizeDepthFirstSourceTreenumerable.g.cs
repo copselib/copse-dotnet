@@ -15,8 +15,11 @@ namespace Copse.Linq.Treenumerables
   // breadth-first replays ride the SAME capture cross-order (growing it as far as their
   // frontier demands) -- buying the other dimension is exactly what the memo's O(n) space
   // purchases. No completion race, no dropped buffers: the single capture is the memo.
-  internal sealed class MemoizeDepthFirstSourceTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
+  internal sealed class MemoizeDepthFirstSourceTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
   {
+    // The capture layout is fixed by the source's single dimension.
+    public TreeTraversalStrategy? NativeLayout => TreeTraversalStrategy.DepthFirst;
+
     public MemoizeDepthFirstSourceTreenumerable(IDepthFirstTreenumerable<TValue> source)
     {
       _Buffer = new MemoizePreorderBuffer<TValue>(source.GetDepthFirstTreenumerator);

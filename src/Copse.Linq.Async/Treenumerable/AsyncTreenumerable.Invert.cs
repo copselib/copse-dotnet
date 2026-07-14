@@ -53,7 +53,8 @@ namespace Copse.Linq
         AsyncTree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? LevelOrderMirror(source)
-            : PreorderMirror(source)));
+            : PreorderMirror(source)),
+        nativeLayout: null); // decided by the first pull (the dimension dispatch above)
 
     /// <summary>
     /// The buffer overload: a capture in hand makes the mirror's depth-first dimension affordable,
@@ -71,7 +72,7 @@ namespace Copse.Linq
     // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static IAsyncTreenumerableBuffer<TNode> DeferredMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
       => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderMirror(source)));
+        AsyncTree.Lazy(() => PreorderMirror(source)), TreeTraversalStrategy.DepthFirst);
 
     private static IAsyncTreenumerable<TNode> PreorderMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {

@@ -38,7 +38,7 @@ namespace Copse.Linq
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
       => new AsyncCompletedTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)));
+        AsyncTree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)), TreeTraversalStrategy.DepthFirst);
 
     // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
     // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
