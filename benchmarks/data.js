@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783740866535,
+  "lastUpdate": 1783990221701,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -7342,6 +7342,150 @@ window.BENCHMARK_DATA = {
             "value": 201825419.16666666,
             "unit": "ns",
             "range": "± 6661456.099064662"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2a6779681bf33b8de5c38944b491aa603452d4ca",
+          "message": "Capture factories: the flat family's encode direction, written once\n\nThe store cohesion pass's centerpiece (STORE_FAMILY_REVIEW.md decision\n1, placement option 3): Copse/Copse.Async gain a Stores/ layer --\nnamespace Copse(.Async).Stores -- holding the capture loops that\nInvert, OrderChildrenBy, benchmarks, and tests each re-derived\n(OPERATOR_SURFACE_MAP.md section 3).\n\n- PreorderCapture.CaptureFrom(source): shape A -- one depth-first walk\n  into a completed PreorderArrayStore (append on scheduling; open-node\n  stack backfills subtree sizes). The side-channel overload evaluates a\n  selector once per node against the SOURCE context into a\n  preorder-parallel array -- OrderChildrenBy's keys hook, which it\n  adopts at its rebase.\n- LevelOrderCapture.CaptureFrom(source): shape B in one-shot form (the\n  memo buffer's monotonic front-cursor parse) into a completed\n  LevelOrderArrayStore. Plain only -- the side-channel dual waits for a\n  consumer.\n- Placement is forced, not chosen: Copse.Primitives cannot see\n  treenumerators (color rule), and this layer already owns the\n  decoders -- encode + decode now live together. Public rather than\n  internal+IVT: no product-to-product IVT precedent exists, and the\n  stores they return are already public.\n- Invert's build is the first consumer: phase 1 rides the factory;\n  the zero-key LIFO mirror emit stays specialized (CI benchmark rows;\n  the generalized sort-each-group emission belongs to OrderChildrenBy).\n  LeaffixScan stays bespoke: its close-hook needs ChildAccumulations,\n  a Copse.Linq type this layer cannot reference -- the predicted\n  boundary of what one factory can absorb.\n- Shape A's arrival selector standardized on Mode == SchedulingNode,\n  with the VisitCount-1 equivalence documented once in the factory\n  header. CodeGen: manifest pair entries + the Copse.Async.Stores\n  using mapping (note: codegen does not create output directories).\n\nRound-trip tests pin both factories across the corpus (empty forest\nincluded); the side channel pinned preorder-parallel.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-13T23:11:52Z",
+          "tree_id": "fc9174c3030d91664e547c3e172fe780d4305e77",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2a6779681bf33b8de5c38944b491aa603452d4ca"
+        },
+        "date": 1783990218130,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14883659.608333332,
+            "unit": "ns",
+            "range": "± 48464.127074418975"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21967696.170833334,
+            "unit": "ns",
+            "range": "± 141659.30728277736"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3596802.911783854,
+            "unit": "ns",
+            "range": "± 4316.663292970764"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3603852.3854166665,
+            "unit": "ns",
+            "range": "± 9743.6064433204"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 114579549.62666668,
+            "unit": "ns",
+            "range": "± 648358.0722403437"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 140813880.56666666,
+            "unit": "ns",
+            "range": "± 1080729.579200371"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 49100123.75833333,
+            "unit": "ns",
+            "range": "± 445924.23782163335"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49546411.13076922,
+            "unit": "ns",
+            "range": "± 125266.07869245278"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46048759.70238095,
+            "unit": "ns",
+            "range": "± 211279.07329330588"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 36009580.03333333,
+            "unit": "ns",
+            "range": "± 439752.91350288544"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26165399.36830357,
+            "unit": "ns",
+            "range": "± 54788.431648333404"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18330707.28125,
+            "unit": "ns",
+            "range": "± 126946.89964758135"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55282361.508928575,
+            "unit": "ns",
+            "range": "± 196309.73769030094"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 83605954.78205127,
+            "unit": "ns",
+            "range": "± 92359.92985713258"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15754080.933333334,
+            "unit": "ns",
+            "range": "± 65145.30715447229"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 15867920.170833332,
+            "unit": "ns",
+            "range": "± 148593.49713647363"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 454284907.35714287,
+            "unit": "ns",
+            "range": "± 654366.4309778649"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 585319962.1428572,
+            "unit": "ns",
+            "range": "± 883669.0222065707"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 201715876.80645165,
+            "unit": "ns",
+            "range": "± 3164540.4223979264"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 199155594.96,
+            "unit": "ns",
+            "range": "± 690846.087859676"
           }
         ]
       }
