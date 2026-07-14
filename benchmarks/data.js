@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783991796343,
+  "lastUpdate": 1783991796627,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -76439,6 +76439,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
             "value": 1827,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2",
+          "message": "Invert's BFT-first arm goes eager; StreamFedLevelOrderStore retires\n\nPolicy-audit flag 5 + store review D4a, decided after discussion: the\nfull-source mirror's breadth-first-first arm now drains the streaming\nmirror ONCE into a completed level-order capture on the first replay\npull -- the same cost shape as the preorder arm -- via a new\nstream-shaped LevelOrderCapture.CaptureFrom(ILevelOrderStream): the\nstream-fed store's drain in one-shot form, still never synthesizing a\nvisit stream between the encodings (the 2.1-2.7x round trip stays\navoided).\n\nWhy: the tier-by-tier laziness this replaces was only ever real for a\nreplay abandoned WITHOUT disposal -- a contract violation -- because\nDispose completed the remaining capture anyway (the dispose-time O(n)\nsurprise the surface map flagged). One cost shape for both arms, no\nsurprise, and the source is released deterministically INSIDE the\nbuild (earlier than before).\n\nConsequences:\n- StreamFedLevelOrderStore DELETED (this arm was its only consumer);\n  its incremental machinery -- pull-one state, dispose-action\n  composition -- goes with it.\n- LazyBuiltLevelOrderStore's orphanhood ends exactly as the store\n  review predicted: it is the arm's deferral seam now.\n- Behavior pins updated: the two InvertTests that pinned incremental\n  growth + dispose-completes-capture now pin build-on-first-pull +\n  dispose-owes-nothing + source-released-inside-the-first-pull.\n\nBenchmark gate (Invert family, ShortRun A/B, same machine): Bft rows\nFASTER (Triangle 157.8->145.5ms, Chain 124.0->94.9ms; Dft controls\nbyte-identical alloc, time within cross-run noise). Allocation shows\nthe step change the benchmark header predicted: one-shot List+ToArray\nbuild churn ~2.5-3x the old incremental chunked store (Triangle\n24.4->60.4MB, Chain 12.0->36.0MB) -- transient, one-time, and still at\nor below the preorder arm's profile. Follow-up if CI rows object: swap\nthe factory drain onto RefAppendOnlyList.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T01:01:36Z",
+          "tree_id": "ccb573ea55f29f90df6bdbb88fd58f1b643ff09d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2"
+        },
+        "date": 1783991796575,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 33681638,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 42145477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 58742209,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 42318206,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 695,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 96515267,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 67137053,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 108770,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 141921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41945757,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 315075,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 895,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 92301028,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1852,
             "unit": "bytes"
           }
         ]
