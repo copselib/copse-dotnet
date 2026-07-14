@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784047732797,
+  "lastUpdate": 1784047733091,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -80457,6 +80457,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
             "value": 1834,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e69e7d44fca49c27a46f5c608ad9e038d66417c0",
+          "message": "Docs: the de-share recorded (CLAUDE.md color rule, store review, map)\n\n- CLAUDE.md: the color rule sharpened -- each neutral layer holds\n  exactly what its name promises (Vocabulary: what the Core contracts\n  speak; Primitives: tree-free mechanics; Traversal: shared path-state\n  machinery and the value types it consumes); everything color-flavored\n  lives per-color, single-sourced through codegen. Project entries\n  updated (Primitives slimmed, Traversal gains the node-context types,\n  Copse's flat-family entry points at Copse/Stores, Linq.Traversal\n  noted as Traversal's Linq-level analog).\n- STORE_FAMILY_REVIEW.md: superseding update at top -- the de-share\n  replaces the shared-store design the review documented; the opening\n  question's answer is historical; F4's missing-dual and sync->async\n  adapter gaps dissolved.\n- OPERATOR_SURFACE_MAP.md: SPI and array-store inventory rewritten\n  per-color.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T16:34:52Z",
+          "tree_id": "9b75b7baef6d000c032907e65307d7ac6eca6971",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e69e7d44fca49c27a46f5c608ad9e038d66417c0"
+        },
+        "date": 1784047733037,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 33681638,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 42145477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 58742124,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 42318168,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 695,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 96513907,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 67132667,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 108770,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 141921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41945757,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 315075,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 895,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 92298990,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1842,
             "unit": "bytes"
           }
         ]
