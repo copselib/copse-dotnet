@@ -174,6 +174,49 @@ namespace Copse.Linq.Tests
       Assert.AreSame(mirror, mirror.Materialize());
     }
 
+    // Consume's buffer probes (the Materialize probes' terminal twin): a completed capture is
+    // already settled -- no replay work, no forced build -- and a lazy buffer typed as a plain
+    // tree still finishes its capture instead of being drained through a replay.
+    [TestMethod]
+    public void Consume_is_a_no_op_on_a_completed_buffer()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
+
+      var buffer = counting.Materialize();
+
+      buffer.Consume();
+      buffer.Consume(TreeTraversalStrategy.BreadthFirst);
+
+      Assert.AreEqual(1, counting.DepthFirstEnumerations);
+      Assert.AreEqual(0, counting.BreadthFirstEnumerations, "a settled capture is never re-consumed, whatever the declared layout");
+    }
+
+    [TestMethod]
+    public void Consume_does_not_force_a_deferred_capture()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b,c)"));
+
+      var mirror = counting.Invert();
+      mirror.Consume();
+
+      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
+        "a buffer is settled by contract; its pinned build runs at most once, on first use");
+    }
+
+    [TestMethod]
+    public void Consume_finishes_a_lazy_buffer_through_the_plain_tree_type()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
+
+      using var memo = counting.Memoize();
+
+      ITreenumerable<string> plain = memo;
+      plain.Consume();
+
+      Assert.IsTrue(memo.IsComplete, "Consume through the plain type must complete the capture, not drain a replay");
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
+    }
+
     private sealed class CountingSource : ITreenumerable<string>
     {
       public CountingSource(ITreenumerable<string> inner) => _Inner = inner;

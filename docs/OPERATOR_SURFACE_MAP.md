@@ -58,7 +58,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | RootfixAggregate (seed / selector) | D, B, F(→D) | IEnumerable | streams | RootfixScan + GetLeaves |
 | LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then drain (B)** | D peak = **largest root subtree**, buffers reused across roots; B Materializes on first enumeration (BFT arrival interleaves the forest — peak = whole forest, first value after full capture), per the policy's amended carve-out |
 | AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
-| Consume | F, D, B; lazy buffer | void | drains | buffer overload finishes the furthest-along dimension |
+| Consume | F(±strategy), D, B | void | drains / settles | probes (2026-07-14, mirroring Materialize): lazy buffer → finish furthest-along capture (or the declared dimension — the strategy became a required overload param, no longer a silent `default`); completed buffer → no-op (inertness is now an `ITreenumerableBuffer` contract obligation; deferred captures stay deferred); plain tree → drain. The dedicated lazy-buffer extension retired — probes subsume it |
 | ToFormattedLines / ToFormattedString | D | IEnumerable\<string\> / string | **drains fully before first yield** | re-drains per enumeration — see flags |
 | To\*TreeTokenizer | D / B | tokenizer | streams | ≤ O(width) transient |
 | ToDegenerateTree / ToTrivialForest | IEnumerable | ITreenumerable | streams | fresh enumerator per acquisition |
