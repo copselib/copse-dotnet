@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784042229018,
+  "lastUpdate": 1784042229379,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -21454,6 +21454,54 @@ window.BENCHMARK_DATA = {
             "value": 15890244.698069854,
             "unit": "ns",
             "range": "± 755204.3432210371"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "73ac946d4463dd36ae8a18c9dfd18db4772c8895",
+          "message": "Capture factories grow chunked: RefAppendOnlyList inside CaptureFrom\n\nFollow-up to the two anticipated allocation step changes on the Invert\nfamily (factory ToArray hand-off +8.4MB on Dft rows; eager BFT arm\n+2.5-3x on Bft rows): the factories' internal growth moves from\nList<T> (cumulative doubling churn) to RefAppendOnlyList<T> (chunked,\nslots never move), which gains a public ToArray -- one Array.Copy\nblock per partition -- as the hand-off to the completed store's flat\narrays. (Snapshot now delegates to it.)\n\nLocal ShortRun A/B vs the List version (alloc is the reliable axis;\nCI baselines in parens):\n- Dft_Triangle 48.2 -> 32.2MB, Dft_Chain 76.1 -> 68.1MB -- now BELOW\n  the pre-cleanup originals (42.1 / 71.4MB), which carried List\n  doubling churn of their own.\n- Bft_Triangle 60.4 -> 36.4MB, Bft_Chain 36.0 -> 24.0MB -- the gap to\n  the old incremental store (25.5 / 12.6MB) roughly halves; what\n  remains is the final ToArray arrays themselves. Closing that needs\n  a chunked COMPLETED store (no flat-array hand-off at all; the\n  Memoize*Store adapters are already that shape) -- noted in\n  STORE_FAMILY_REVIEW.md as the deeper follow-up, benchmark-gated.\n- Times flat-to-better on every row.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T15:01:33Z",
+          "tree_id": "dcaf465e45adccd0c627b5c1877a3b2fee14cee5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/73ac946d4463dd36ae8a18c9dfd18db4772c8895"
+        },
+        "date": 1784042229314,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14243719.265625,
+            "unit": "ns",
+            "range": "± 323694.51031724905"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26894868.897916667,
+            "unit": "ns",
+            "range": "± 73645.52990590046"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25086997.3625,
+            "unit": "ns",
+            "range": "± 236578.5253396124"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15312928.20234375,
+            "unit": "ns",
+            "range": "± 536002.5921573896"
           }
         ]
       }
