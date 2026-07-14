@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784042233413,
+  "lastUpdate": 1784047728294,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -7774,6 +7774,150 @@ window.BENCHMARK_DATA = {
             "value": 183815399.63636363,
             "unit": "ns",
             "range": "± 1436462.849510612"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e69e7d44fca49c27a46f5c608ad9e038d66417c0",
+          "message": "Docs: the de-share recorded (CLAUDE.md color rule, store review, map)\n\n- CLAUDE.md: the color rule sharpened -- each neutral layer holds\n  exactly what its name promises (Vocabulary: what the Core contracts\n  speak; Primitives: tree-free mechanics; Traversal: shared path-state\n  machinery and the value types it consumes); everything color-flavored\n  lives per-color, single-sourced through codegen. Project entries\n  updated (Primitives slimmed, Traversal gains the node-context types,\n  Copse's flat-family entry points at Copse/Stores, Linq.Traversal\n  noted as Traversal's Linq-level analog).\n- STORE_FAMILY_REVIEW.md: superseding update at top -- the de-share\n  replaces the shared-store design the review documented; the opening\n  question's answer is historical; F4's missing-dual and sync->async\n  adapter gaps dissolved.\n- OPERATOR_SURFACE_MAP.md: SPI and array-store inventory rewritten\n  per-color.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T16:34:52Z",
+          "tree_id": "9b75b7baef6d000c032907e65307d7ac6eca6971",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e69e7d44fca49c27a46f5c608ad9e038d66417c0"
+        },
+        "date": 1784047724697,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13927037.28125,
+            "unit": "ns",
+            "range": "± 27403.227220344754"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 20854507.4375,
+            "unit": "ns",
+            "range": "± 57969.6239585918"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3607156.576622596,
+            "unit": "ns",
+            "range": "± 11179.817701358586"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3598204.382254464,
+            "unit": "ns",
+            "range": "± 5885.346460983863"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 109591988.54285716,
+            "unit": "ns",
+            "range": "± 253855.5505038539"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 144502942.69642857,
+            "unit": "ns",
+            "range": "± 668128.8846802744"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 49766772.9375,
+            "unit": "ns",
+            "range": "± 60885.78790466054"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49117187.55244755,
+            "unit": "ns",
+            "range": "± 104367.41000270545"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46148800.375,
+            "unit": "ns",
+            "range": "± 88583.32934602136"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35254999.18666667,
+            "unit": "ns",
+            "range": "± 125104.81469356822"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26286402.979910713,
+            "unit": "ns",
+            "range": "± 107965.84069465508"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 17981191.4921875,
+            "unit": "ns",
+            "range": "± 59965.11956435941"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 59172106.21666667,
+            "unit": "ns",
+            "range": "± 369537.1726315243"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88395365.8095238,
+            "unit": "ns",
+            "range": "± 592979.725796897"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15690931.94951923,
+            "unit": "ns",
+            "range": "± 18073.87950703953"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14444299.39955357,
+            "unit": "ns",
+            "range": "± 100223.80890299016"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 463606147.15384614,
+            "unit": "ns",
+            "range": "± 819657.9420112643"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 577766378,
+            "unit": "ns",
+            "range": "± 1252790.265104996"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 211974081.10752684,
+            "unit": "ns",
+            "range": "± 4405174.056354685"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 198551515.03125,
+            "unit": "ns",
+            "range": "± 2234574.234997736"
           }
         ]
       }
