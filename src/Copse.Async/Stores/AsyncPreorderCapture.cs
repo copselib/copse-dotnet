@@ -40,7 +40,7 @@ namespace Copse.Async.Stores
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector)
     {
-      var sideChannel = new List<TSide>();
+      var sideChannel = new RefAppendOnlyList<TSide>();
       var store = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
 
       return (store, sideChannel.ToArray());
@@ -49,10 +49,10 @@ namespace Copse.Async.Stores
     private static async ValueTask<PreorderArrayStore<TValue>> CaptureCoreAsync<TValue, TSide>(
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,
-      List<TSide> sideChannel)
+      RefAppendOnlyList<TSide> sideChannel)
     {
-      var values = new List<TValue>();
-      var subtreeSizes = new List<int>();
+      var values = new RefAppendOnlyList<TValue>();
+      var subtreeSizes = new RefAppendOnlyList<int>();
       var openNodes = new Stack<int>();
 
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
@@ -70,9 +70,9 @@ namespace Copse.Async.Stores
           }
 
           openNodes.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-          sideChannel?.Add(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
+          values.AddLast(treenumerator.Node);
+          subtreeSizes.AddLast(0);
+          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

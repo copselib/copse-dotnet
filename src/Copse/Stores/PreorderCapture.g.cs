@@ -42,7 +42,7 @@ namespace Copse.Stores
       IDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector)
     {
-      var sideChannel = new List<TSide>();
+      var sideChannel = new RefAppendOnlyList<TSide>();
       var store = CaptureCore(source, sideChannelSelector, sideChannel);
 
       return (store, sideChannel.ToArray());
@@ -51,10 +51,10 @@ namespace Copse.Stores
     private static PreorderArrayStore<TValue> CaptureCore<TValue, TSide>(
       IDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,
-      List<TSide> sideChannel)
+      RefAppendOnlyList<TSide> sideChannel)
     {
-      var values = new List<TValue>();
-      var subtreeSizes = new List<int>();
+      var values = new RefAppendOnlyList<TValue>();
+      var subtreeSizes = new RefAppendOnlyList<int>();
       var openNodes = new Stack<int>();
 
       var treenumerator = source.GetDepthFirstTreenumerator();
@@ -72,9 +72,9 @@ namespace Copse.Stores
           }
 
           openNodes.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-          sideChannel?.Add(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
+          values.AddLast(treenumerator.Node);
+          subtreeSizes.AddLast(0);
+          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

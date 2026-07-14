@@ -27,9 +27,9 @@ namespace Copse.Stores
     public static LevelOrderArrayStore<TValue> CaptureFrom<TValue>(
       IBreadthFirstTreenumerable<TValue> source)
     {
-      var values = new List<TValue>();
-      var firstChildIndices = new List<int>();
-      var childCounts = new List<int>();
+      var values = new RefAppendOnlyList<TValue>();
+      var firstChildIndices = new RefAppendOnlyList<int>();
+      var childCounts = new RefAppendOnlyList<int>();
       var rootCount = 0;
       var frontIndex = -1;
 
@@ -42,9 +42,9 @@ namespace Copse.Stores
           {
             var index = values.Count;
 
-            values.Add(treenumerator.Node);
-            firstChildIndices.Add(-1); // set when this node's first child arrives
-            childCounts.Add(0);
+            values.AddLast(treenumerator.Node);
+            firstChildIndices.AddLast(-1); // set when this node's first child arrives
+            childCounts.AddLast(0);
 
             if (treenumerator.Position.Depth == 0)
             {
@@ -80,9 +80,9 @@ namespace Copse.Stores
     public static LevelOrderArrayStore<TValue> CaptureFrom<TValue>(
       ILevelOrderStream<TValue> stream)
     {
-      var values = new List<TValue>();
-      var firstChildIndices = new List<int>();
-      var childCounts = new List<int>();
+      var values = new RefAppendOnlyList<TValue>();
+      var firstChildIndices = new RefAppendOnlyList<int>();
+      var childCounts = new RefAppendOnlyList<int>();
       var rootCount = 0;
       var currentGroup = 0;
 
@@ -96,9 +96,9 @@ namespace Copse.Stores
           {
             var index = values.Count;
 
-            values.Add(read.Value);
-            firstChildIndices.Add(-1); // set when this node's first child arrives
-            childCounts.Add(0);
+            values.AddLast(read.Value);
+            firstChildIndices.AddLast(-1); // set when this node's first child arrives
+            childCounts.AddLast(0);
 
             if (currentGroup == 0)
             {

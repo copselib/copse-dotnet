@@ -122,6 +122,14 @@ not a one-off.
   and `StreamFedLevelOrderStore` was deleted — its incremental drain preserved one-shot as
   the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`.
 - **D4b. `StreamFedPreorderStore`**: don't build it; note it as the named gap.
+- **D4c (added 2026-07-14). Chunked COMPLETED stores** — the deeper allocation follow-up:
+  the capture factories now grow chunked (`RefAppendOnlyList`, commit 601784e) which put the
+  Dft Invert rows *below* their pre-cleanup allocations, but the final `ToArray` hand-off to
+  the flat-array stores remains (the whole residual Bft-row gap). Eliminating it means a
+  completed store *backed by the chunked lists directly* — no flat arrays at all; the
+  `Memoize*Store` SPI adapters are already exactly that shape. Benchmark-gated: flat-array
+  decode is the family's measured fast path, so the chunked store must prove its replay cost
+  before any capture op switches.
 - **D4c. Transpose stays benchmark-only** (the measured decision stands), but if factories
   land (B), it becomes a natural named factory if ever needed.
 
