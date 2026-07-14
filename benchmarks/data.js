@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784042229379,
+  "lastUpdate": 1784042229744,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -48266,6 +48266,114 @@ window.BENCHMARK_DATA = {
             "value": 807908.7918526785,
             "unit": "ns",
             "range": "± 1720.2087927853445"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "73ac946d4463dd36ae8a18c9dfd18db4772c8895",
+          "message": "Capture factories grow chunked: RefAppendOnlyList inside CaptureFrom\n\nFollow-up to the two anticipated allocation step changes on the Invert\nfamily (factory ToArray hand-off +8.4MB on Dft rows; eager BFT arm\n+2.5-3x on Bft rows): the factories' internal growth moves from\nList<T> (cumulative doubling churn) to RefAppendOnlyList<T> (chunked,\nslots never move), which gains a public ToArray -- one Array.Copy\nblock per partition -- as the hand-off to the completed store's flat\narrays. (Snapshot now delegates to it.)\n\nLocal ShortRun A/B vs the List version (alloc is the reliable axis;\nCI baselines in parens):\n- Dft_Triangle 48.2 -> 32.2MB, Dft_Chain 76.1 -> 68.1MB -- now BELOW\n  the pre-cleanup originals (42.1 / 71.4MB), which carried List\n  doubling churn of their own.\n- Bft_Triangle 60.4 -> 36.4MB, Bft_Chain 36.0 -> 24.0MB -- the gap to\n  the old incremental store (25.5 / 12.6MB) roughly halves; what\n  remains is the final ToArray arrays themselves. Closing that needs\n  a chunked COMPLETED store (no flat-array hand-off at all; the\n  Memoize*Store adapters are already that shape) -- noted in\n  STORE_FAMILY_REVIEW.md as the deeper follow-up, benchmark-gated.\n- Times flat-to-better on every row.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T15:01:33Z",
+          "tree_id": "dcaf465e45adccd0c627b5c1877a3b2fee14cee5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/73ac946d4463dd36ae8a18c9dfd18db4772c8895"
+        },
+        "date": 1784042229677,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2251501.331730769,
+            "unit": "ns",
+            "range": "± 10347.969083961929"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2242231.3463541665,
+            "unit": "ns",
+            "range": "± 18901.226219829878"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4160446.0060096155,
+            "unit": "ns",
+            "range": "± 2005.5519384070953"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3832208.060416667,
+            "unit": "ns",
+            "range": "± 20746.405113168046"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 711217.8799579327,
+            "unit": "ns",
+            "range": "± 2521.752079336229"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 870445.8115234375,
+            "unit": "ns",
+            "range": "± 4635.644597156558"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 443358.9159179687,
+            "unit": "ns",
+            "range": "± 6040.311979114819"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4308324.955729167,
+            "unit": "ns",
+            "range": "± 24998.36669480959"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 4301018.132291666,
+            "unit": "ns",
+            "range": "± 41136.00817462512"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13655392.242708333,
+            "unit": "ns",
+            "range": "± 148126.84385400207"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7945058.273958334,
+            "unit": "ns",
+            "range": "± 107504.24245970674"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1437392.2983072917,
+            "unit": "ns",
+            "range": "± 6365.682149408277"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1728611.5696614583,
+            "unit": "ns",
+            "range": "± 6373.5173277556005"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1048097.8822544643,
+            "unit": "ns",
+            "range": "± 1628.0876489631376"
           }
         ]
       }
