@@ -31,12 +31,12 @@ namespace Copse.Linq.Treenumerables
     public void Consume(TreeTraversalStrategy strategy) => _Buffer.Consume();
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
-      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
-        new MemoizeLevelOrderStore<TValue>(_Buffer));
+      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+        new MemoizeLevelOrderBuffer<TValue>.Handle(_Buffer));
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()
-      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
-        new MemoizeLevelOrderStore<TValue>(_Buffer));
+      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+        new MemoizeLevelOrderBuffer<TValue>.Handle(_Buffer));
 
     public void Dispose() => _Buffer.Dispose();
   }

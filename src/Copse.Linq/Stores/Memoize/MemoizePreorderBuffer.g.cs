@@ -2,6 +2,7 @@
 //   Generated from AsyncMemoizePreorderBuffer.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
 using Copse.Core;
 using System;
 using System.Runtime.CompilerServices;
@@ -195,6 +196,32 @@ namespace Copse.Linq.Stores
         _Feed.Dispose();
         _Feed = null;
       }
+    }
+
+    // Presents the buffer as the preorder store SPI for the native playback treenumerators. A
+    // nested readonly struct so the playback's store calls specialize and inline -- the same
+    // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
+    // the serializer's string stores: an adapter is meaningless without its owner.
+    public readonly struct Handle : IPreorderStore<TValue>
+    {
+      public Handle(MemoizePreorderBuffer<TValue> buffer)
+      {
+        _Buffer = buffer;
+      }
+
+      private readonly MemoizePreorderBuffer<TValue> _Buffer;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public bool EnsureBuffered(int index) => _Buffer.EnsureBuffered(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public int EnsureSubtreeClosed(int index) => _Buffer.EnsureSubtreeClosed(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public int GetSubtreeSize(int index) => _Buffer.GetSubtreeSize(index);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public TValue GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

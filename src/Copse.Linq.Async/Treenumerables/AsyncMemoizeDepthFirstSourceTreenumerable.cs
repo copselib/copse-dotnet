@@ -32,12 +32,12 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask ConsumeAsync(TreeTraversalStrategy strategy) => _Buffer.ConsumeAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
-      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
-        new AsyncMemoizePreorderStore<TValue>(_Buffer));
+      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
+        new AsyncMemoizePreorderBuffer<TValue>.Handle(_Buffer));
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
-        new AsyncMemoizePreorderStore<TValue>(_Buffer));
+      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
+        new AsyncMemoizePreorderBuffer<TValue>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
   }

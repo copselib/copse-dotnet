@@ -2,6 +2,7 @@
 //   Generated from AsyncMemoizeLevelOrderBuffer.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
 using Copse.Core;
 using System;
 using System.Runtime.CompilerServices;
@@ -230,6 +231,32 @@ namespace Copse.Linq.Stores
         _Feed.Dispose();
         _Feed = null;
       }
+    }
+
+    // Presents the buffer as the level-order store SPI for the native playback treenumerators.
+    // A nested readonly struct so the playback's store calls specialize and inline -- the same
+    // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
+    // the serializer's string stores: an adapter is meaningless without its owner.
+    public readonly struct Handle : ILevelOrderStore<TValue>
+    {
+      public Handle(MemoizeLevelOrderBuffer<TValue> buffer)
+      {
+        _Buffer = buffer;
+      }
+
+      private readonly MemoizeLevelOrderBuffer<TValue> _Buffer;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public bool EnsureRootAvailable(int k) => _Buffer.EnsureRootAvailable(k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public bool EnsureChildAvailable(int parentIndex, int k) => _Buffer.EnsureChildAvailable(parentIndex, k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public TValue GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

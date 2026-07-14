@@ -220,14 +220,6 @@ namespace Copse.CodeGen
         "Copse.Linq/Stores/Memoize/MemoizeLevelOrderBuffer.g.cs",
         "AsyncMemoizeLevelOrderBuffer", "MemoizeLevelOrderBuffer", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
-        "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",
-        "AsyncMemoizePreorderStore", "MemoizePreorderStore", "Copse.Linq.Stores"),
-
-      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderStore.cs",
-        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderStore.g.cs",
-        "AsyncMemoizeLevelOrderStore", "MemoizeLevelOrderStore", "Copse.Linq.Stores"),
-
       new("Copse.Linq.Async/Treenumerables/AsyncMemoizeTreenumerable.cs",
         "Copse.Linq/Treenumerables/MemoizeTreenumerable.g.cs",
         "AsyncMemoizeTreenumerable", "MemoizeTreenumerable", "Copse.Linq.Treenumerables"),

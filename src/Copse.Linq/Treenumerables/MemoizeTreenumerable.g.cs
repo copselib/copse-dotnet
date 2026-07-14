@@ -137,20 +137,20 @@ namespace Copse.Linq.Treenumerables
     // the dimension buffers (each buffer IS a store -- no engine, no child enumerators).
     // Cross-order riding is how a completed capture answers the other dimension (case 2).
     private static ITreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
-      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
-        new MemoizePreorderStore<TValue>(buffer));
+      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
+        new MemoizePreorderBuffer<TValue>.Handle(buffer));
 
     private static ITreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
-      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>>(
-        new MemoizePreorderStore<TValue>(buffer));
+      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
+        new MemoizePreorderBuffer<TValue>.Handle(buffer));
 
     private static ITreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
-      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
-        new MemoizeLevelOrderStore<TValue>(buffer));
+      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+        new MemoizeLevelOrderBuffer<TValue>.Handle(buffer));
 
     private static ITreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
-      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>>(
-        new MemoizeLevelOrderStore<TValue>(buffer));
+      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+        new MemoizeLevelOrderBuffer<TValue>.Handle(buffer));
 
     // Drop a dimension buffer that lost the completion race. Called whenever the state can
     // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never

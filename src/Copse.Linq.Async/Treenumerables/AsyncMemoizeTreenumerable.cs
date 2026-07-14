@@ -135,20 +135,20 @@ namespace Copse.Linq.Async.Treenumerables
     // the dimension buffers (each buffer IS a store -- no engine, no child enumerators).
     // Cross-order riding is how a completed capture answers the other dimension (case 2).
     private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizePreorderBuffer<TValue> buffer)
-      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
-        new AsyncMemoizePreorderStore<TValue>(buffer));
+      => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
+        new AsyncMemoizePreorderBuffer<TValue>.Handle(buffer));
 
     private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(AsyncMemoizePreorderBuffer<TValue> buffer)
-      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>>(
-        new AsyncMemoizePreorderStore<TValue>(buffer));
+      => new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
+        new AsyncMemoizePreorderBuffer<TValue>.Handle(buffer));
 
     private static IAsyncTreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
-      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>>(
-        new AsyncMemoizeLevelOrderStore<TValue>(buffer));
+      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
+        new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(buffer));
 
     private static IAsyncTreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
-      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>>(
-        new AsyncMemoizeLevelOrderStore<TValue>(buffer));
+      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
+        new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(buffer));
 
     // Drop a dimension buffer that lost the completion race. Called whenever the state can
     // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never

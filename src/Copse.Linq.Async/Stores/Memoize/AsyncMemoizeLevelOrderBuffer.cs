@@ -1,3 +1,4 @@
+using Copse.Async.Stores;
 using Copse.Core;
 using Copse.Core.Async;
 using System;
@@ -228,6 +229,32 @@ namespace Copse.Linq.Async.Stores
         await _Feed.DisposeAsync().ConfigureAwait(false);
         _Feed = null;
       }
+    }
+
+    // Presents the buffer as the level-order store SPI for the native playback treenumerators.
+    // A nested readonly struct so the playback's store calls specialize and inline -- the same
+    // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
+    // the serializer's string stores: an adapter is meaningless without its owner.
+    public readonly struct Handle : IAsyncLevelOrderStore<TValue>
+    {
+      public Handle(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
+      {
+        _Buffer = buffer;
+      }
+
+      private readonly AsyncMemoizeLevelOrderBuffer<TValue> _Buffer;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public ValueTask<bool> EnsureRootAvailableAsync(int k) => _Buffer.EnsureRootAvailableAsync(k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k) => _Buffer.EnsureChildAvailableAsync(parentIndex, k);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public TValue GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

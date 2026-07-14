@@ -15,51 +15,13 @@ namespace Copse.Linq.Tests
   [TestClass]
   public class FlatFamilyConformanceTests
   {
-    // ---------------------------------------------------------------------------------------
-    // Array-backed stores, built by draining the engine's streams for the same shape.
-    // ---------------------------------------------------------------------------------------
-
-    private sealed class ArrayPreorderStore : IPreorderStore<string>
-    {
-      public ArrayPreorderStore(string[] values, int[] subtreeSizes)
-      {
-        _Values = values;
-        _SubtreeSizes = subtreeSizes;
-      }
-
-      private readonly string[] _Values;
-      private readonly int[] _SubtreeSizes;
-
-      public bool EnsureBuffered(int index) => index < _Values.Length;
-      public int EnsureSubtreeClosed(int index) => _SubtreeSizes[index];
-      public int GetSubtreeSize(int index) => _SubtreeSizes[index];
-      public string GetValue(int index) => _Values[index];
-    }
-
-    private sealed class ArrayLevelOrderStore : ILevelOrderStore<string>
-    {
-      public ArrayLevelOrderStore(string[] values, int[] firstChildIndices, int[] childCounts, int rootCount)
-      {
-        _Values = values;
-        _FirstChildIndices = firstChildIndices;
-        _ChildCounts = childCounts;
-        _RootCount = rootCount;
-      }
-
-      private readonly string[] _Values;
-      private readonly int[] _FirstChildIndices;
-      private readonly int[] _ChildCounts;
-      private readonly int _RootCount;
-
-      public bool EnsureRootAvailable(int k) => k < _RootCount;
-      public bool EnsureChildAvailable(int parentIndex, int k) => k < _ChildCounts[parentIndex];
-      public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
-      public string GetValue(int index) => _Values[index];
-    }
+    // The stores under test are the PUBLIC completed array stores (Copse.Stores): feeding the
+    // decoders the real product types tests more product code than the private
+    // re-implementations they replaced (hygiene item E, STORE_FAMILY_REVIEW.md).
 
     // Preorder arrays: values in first-visit order; a parent's subtree size backfills when the
     // next visit lands at its depth or shallower (the serializer/memo open-stack construction).
-    private static ArrayPreorderStore BuildPreorderStore(string tree)
+    private static PreorderArrayStore<string> BuildPreorderStore(string tree)
     {
       var values = new List<string>();
       var subtreeSizes = new List<int>();
@@ -92,12 +54,12 @@ namespace Copse.Linq.Tests
         subtreeSizes[closed] = values.Count - closed;
       }
 
-      return new ArrayPreorderStore(values.ToArray(), subtreeSizes.ToArray());
+      return new PreorderArrayStore<string>(values.ToArray(), subtreeSizes.ToArray());
     }
 
     // Level-order arrays: values in scheduling order; every scheduled non-root's parent is the
     // node the feed is currently visiting (the memo level-order-buffer construction).
-    private static ArrayLevelOrderStore BuildLevelOrderStore(string tree)
+    private static LevelOrderArrayStore<string> BuildLevelOrderStore(string tree)
     {
       var values = new List<string>();
       var firstChildIndices = new List<int>();
@@ -136,14 +98,14 @@ namespace Copse.Linq.Tests
         }
       }
 
-      return new ArrayLevelOrderStore(values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
+      return new LevelOrderArrayStore<string>(values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
 
     private static ITreenumerable<string> Preorder(string tree)
-      => new PreorderTreenumerable<string, ArrayPreorderStore>(BuildPreorderStore(tree));
+      => new PreorderTreenumerable<string, PreorderArrayStore<string>>(BuildPreorderStore(tree));
 
     private static ITreenumerable<string> LevelOrder(string tree)
-      => new LevelOrderTreenumerable<string, ArrayLevelOrderStore>(BuildLevelOrderStore(tree));
+      => new LevelOrderTreenumerable<string, LevelOrderArrayStore<string>>(BuildLevelOrderStore(tree));
 
     // ---------------------------------------------------------------------------------------
     // Conformance: both dimensions of both wrappers, TraverseAll and the full strategy matrix.
