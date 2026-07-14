@@ -69,7 +69,6 @@ namespace Copse.Treenumerators
     private int _CurrentGroupOwner = -1;
     private int _RootCount;
     private bool _StreamExhausted;
-    private bool _SuppressFutureRoots; // SkipSiblings on an effective root: discard the rest of group 0
 
     // The CURRENT group's owner state, mirrored into fields so the per-item parse path touches
     // no window entry: the suppression flag loads when the group opens, the child span
@@ -388,10 +387,12 @@ namespace Copse.Treenumerators
       // accepted ancestor is the queue front, whose remaining children we silence.
       if (_ScheduleStack.GetLast().Position.Depth == _ScheduleStack.Count - 1)
       {
-        _SuppressFutureRoots = true;
-
+        // Suppressing the roots group needs no state beyond the group cursor: group 0 is the
+        // ONLY roots group, so if the cursor is still inside it the remaining reads are
+        // discarded here, and once the cursor is past it every root is already in the window
+        // (there are no future roots to suppress).
         if (_CurrentGroupOwner == -1)
-          _CurrentGroupSuppressed = true; // the cursor may still be inside the roots group
+          _CurrentGroupSuppressed = true;
 
         return true;
       }
