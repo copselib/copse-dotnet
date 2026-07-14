@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783990222754,
+  "lastUpdate": 1783990223104,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -58094,6 +58094,102 @@ window.BENCHMARK_DATA = {
             "value": 78303277.62857142,
             "unit": "ns",
             "range": "± 392239.6926160464"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2a6779681bf33b8de5c38944b491aa603452d4ca",
+          "message": "Capture factories: the flat family's encode direction, written once\n\nThe store cohesion pass's centerpiece (STORE_FAMILY_REVIEW.md decision\n1, placement option 3): Copse/Copse.Async gain a Stores/ layer --\nnamespace Copse(.Async).Stores -- holding the capture loops that\nInvert, OrderChildrenBy, benchmarks, and tests each re-derived\n(OPERATOR_SURFACE_MAP.md section 3).\n\n- PreorderCapture.CaptureFrom(source): shape A -- one depth-first walk\n  into a completed PreorderArrayStore (append on scheduling; open-node\n  stack backfills subtree sizes). The side-channel overload evaluates a\n  selector once per node against the SOURCE context into a\n  preorder-parallel array -- OrderChildrenBy's keys hook, which it\n  adopts at its rebase.\n- LevelOrderCapture.CaptureFrom(source): shape B in one-shot form (the\n  memo buffer's monotonic front-cursor parse) into a completed\n  LevelOrderArrayStore. Plain only -- the side-channel dual waits for a\n  consumer.\n- Placement is forced, not chosen: Copse.Primitives cannot see\n  treenumerators (color rule), and this layer already owns the\n  decoders -- encode + decode now live together. Public rather than\n  internal+IVT: no product-to-product IVT precedent exists, and the\n  stores they return are already public.\n- Invert's build is the first consumer: phase 1 rides the factory;\n  the zero-key LIFO mirror emit stays specialized (CI benchmark rows;\n  the generalized sort-each-group emission belongs to OrderChildrenBy).\n  LeaffixScan stays bespoke: its close-hook needs ChildAccumulations,\n  a Copse.Linq type this layer cannot reference -- the predicted\n  boundary of what one factory can absorb.\n- Shape A's arrival selector standardized on Mode == SchedulingNode,\n  with the VisitCount-1 equivalence documented once in the factory\n  header. CodeGen: manifest pair entries + the Copse.Async.Stores\n  using mapping (note: codegen does not create output directories).\n\nRound-trip tests pin both factories across the corpus (empty forest\nincluded); the side channel pinned preorder-parallel.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-13T23:11:52Z",
+          "tree_id": "fc9174c3030d91664e547c3e172fe780d4305e77",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2a6779681bf33b8de5c38944b491aa603452d4ca"
+        },
+        "date": 1783990223039,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 105714560.04,
+            "unit": "ns",
+            "range": "± 1315243.8389223858"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 98600140.9,
+            "unit": "ns",
+            "range": "± 328292.46939953713"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 251094734.13333333,
+            "unit": "ns",
+            "range": "± 914338.4591663111"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 270615104.1785714,
+            "unit": "ns",
+            "range": "± 1088082.6544146468"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 194229669.8333333,
+            "unit": "ns",
+            "range": "± 5417234.83342971"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 194619911.80555558,
+            "unit": "ns",
+            "range": "± 678730.5599073867"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 109520910.43333332,
+            "unit": "ns",
+            "range": "± 753722.8278908636"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 87739165.71929824,
+            "unit": "ns",
+            "range": "± 1922850.363053988"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 497137761,
+            "unit": "ns",
+            "range": "± 1867200.695080052"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 487457964.6,
+            "unit": "ns",
+            "range": "± 930160.8008282223"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 103369689.03076921,
+            "unit": "ns",
+            "range": "± 240334.08051393673"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 78799132.43956044,
+            "unit": "ns",
+            "range": "± 277504.36237515113"
           }
         ]
       }
