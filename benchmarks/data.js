@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784066534743,
+  "lastUpdate": 1784066535116,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -69254,6 +69254,114 @@ window.BENCHMARK_DATA = {
             "value": 62687944.46666667,
             "unit": "ns",
             "range": "± 439964.5574019705"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b743bf6f8cb40497adb79dc982dec733de3580f",
+          "message": "The buffer knows its shape: public NativeLayout, parameterless Consume\n\nThree refinements from review (Jason), landing together because they\nare one thought -- the buffer surface should say exactly what it is:\n\n- ILazyTreenumerableBuffer.ConsumeAsync() takes NO strategy: there is\n  only ever one capture, and completing it is the only thing consume\n  can mean. The parameter was the last piece of dual-buffer API shape\n  still standing (\"why does this take a strategy?\" had no good\n  answer). Pinning a layout is expressed the organic way -- ACQUIRING\n  a treenumerator in a dimension IS the pin (no nodes pulled) -- via\n  the new PinAsync helper, which Materialize(strategy) and the Consume\n  extension's suggestion path both use; it works for any\n  implementation, no internal seam required.\n- BufferLayout { Preorder, LevelOrder }: a dedicated enum for capture\n  encodings -- STORAGE vocabulary, deliberately distinct from\n  TreeTraversalStrategy (the TRAVERSAL vocabulary) even though they\n  split the same two ways, per the naming rule: a strategy is how you\n  WALK, a layout is how a capture is SHAPED.\n- NativeLayout goes PUBLIC on ITreenumerableBuffer (a capture knows\n  its shape; null only while a deferred dimension-dispatched build is\n  undecided). The internal tag interface deletes; foreign\n  implementations now self-report instead of being conservatively\n  transposed; the empty marker interface isn't empty anymore, and the\n  disclosure story gains an inspectable property.\n- The buffer types split one-type-per-file (BufferLayout,\n  ITreenumerableBuffer, ILazyTreenumerableBuffer), matching the\n  repo-wide convention; manifest entries follow.\n\nBREAKING (alpha, release-notes flag): ConsumeAsync(strategy) ->\nConsumeAsync(); ITreenumerableBuffer gains a required member;\nBufferLayout is new public surface.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T21:26:39Z",
+          "tree_id": "98ece8e118bf748f4193fbb7a1d607e27aa6f6a9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6b743bf6f8cb40497adb79dc982dec733de3580f"
+        },
+        "date": 1784066535049,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 62358860.04464286,
+            "unit": "ns",
+            "range": "± 130718.83921494783"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 108720208.3076923,
+            "unit": "ns",
+            "range": "± 516026.19845422945"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 42400857.125,
+            "unit": "ns",
+            "range": "± 291855.0412106494"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 119374897.25,
+            "unit": "ns",
+            "range": "± 953506.1088984453"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 20690251.591666665,
+            "unit": "ns",
+            "range": "± 182910.35152264516"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 77207439.65384614,
+            "unit": "ns",
+            "range": "± 498088.8547092767"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 85847562.275,
+            "unit": "ns",
+            "range": "± 1357586.2698186068"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 53452582.65,
+            "unit": "ns",
+            "range": "± 119190.92566729523"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 82490544.80952382,
+            "unit": "ns",
+            "range": "± 403761.15232408437"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41041010.41208792,
+            "unit": "ns",
+            "range": "± 182589.26722936612"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 89847963.12222221,
+            "unit": "ns",
+            "range": "± 124121.81265222303"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28861276.3828125,
+            "unit": "ns",
+            "range": "± 48786.62515631126"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 66836122.803571425,
+            "unit": "ns",
+            "range": "± 296664.7434157446"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 62454700.02884615,
+            "unit": "ns",
+            "range": "± 118790.74393221532"
           }
         ]
       }
