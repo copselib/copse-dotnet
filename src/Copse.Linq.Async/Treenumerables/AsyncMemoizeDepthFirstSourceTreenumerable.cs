@@ -24,8 +24,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public bool IsComplete => _Buffer.Complete;
 
-    public int GetBufferedCount(TreeTraversalStrategy strategy)
-      => strategy == TreeTraversalStrategy.DepthFirst ? _Buffer.BufferedCount : 0;
+    public int GetBufferedCount() => _Buffer.BufferedCount;
 
     // Both strategies drive the one capture: the capture's layout is fixed by the source's
     // dimension, and a completed capture serves both replays regardless.

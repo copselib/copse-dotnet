@@ -41,11 +41,11 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Materialize with a declared capture layout: the dimension named is the one captured, and
-    /// therefore the one whose replays are native (the other dimension rides the same capture
-    /// cross-order). Declared intent outranks sunk partial work in the other dimension; only an
-    /// already-complete capture outranks the argument (a retired source is never re-enumerated,
-    /// and a completed buffer is returned as-is -- its layout is already fixed).
+    /// Materialize with a declared capture layout: on a fresh memo the dimension named is the one
+    /// captured, and therefore the one whose replays are native (the other rides the same capture
+    /// cross-order). The strategy is a PIN REQUEST: once anything has pulled, the existing capture
+    /// completes whatever was asked -- the at-most-once invariant outranks the argument (a source
+    /// is never enumerated twice; a completed buffer is returned as-is, its layout already fixed).
     /// </summary>
     public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncTreenumerable<TValue> source, TreeTraversalStrategy strategy)
     {

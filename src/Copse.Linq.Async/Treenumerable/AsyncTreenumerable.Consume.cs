@@ -11,15 +11,14 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: fully settle the tree with the minimum work. A plain tree is driven to
     /// exhaustion (depth-first) for its side effects, discarding the visit stream. A lazy buffer
-    /// finishes whichever dimension's capture is furthest along -- both count toward the same
-    /// total, so the larger buffered count is the cheaper capture to complete, depth-first
-    /// winning ties (and hence the fresh, nothing-buffered case); each node is fed exactly once,
-    /// so side effects upstream of Memoize fire at most once per node, at whatever moment the
-    /// capture reaches it -- for a single-moment capture of an impure source, Materialize. A
-    /// completed buffer is already settled: a no-op (buffers are inert captures by contract --
-    /// see <see cref="IAsyncTreenumerableBuffer{TValue}"/>; a deferred capture stays deferred,
-    /// its build pinned either way). Callers with a layout preference use the strategy overload:
-    /// declared intent outranks sunk cost. Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// completes its one capture (pinning the depth-first layout if nothing has pulled yet);
+    /// each node is fed exactly once, so side effects upstream of Memoize fire at most once per
+    /// node, at whatever moment the capture reaches it -- for a single-moment capture of an
+    /// impure source, Materialize. A completed buffer is already settled: a no-op (buffers are
+    /// inert captures by contract -- see <see cref="IAsyncTreenumerableBuffer{TValue}"/>; a
+    /// deferred capture stays deferred, its build pinned either way). Callers with a layout
+    /// preference use the strategy overload: the strategy pins a FRESH buffer's layout.
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static async ValueTask ConsumeAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -27,10 +26,7 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(
-          lazyBuffer.GetBufferedCount(TreeTraversalStrategy.DepthFirst) >= lazyBuffer.GetBufferedCount(TreeTraversalStrategy.BreadthFirst)
-            ? TreeTraversalStrategy.DepthFirst
-            : TreeTraversalStrategy.BreadthFirst).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync(TreeTraversalStrategy.DepthFirst).ConfigureAwait(false);
         return;
       }
 
@@ -46,10 +42,10 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Consume with a declared capture layout. A lazy buffer completes THAT dimension's capture
-    /// -- declared intent outranks sunk partial work in the other dimension (the Materialize
-    /// precedent), so this may enumerate the source again through the named dimension's feed. A
-    /// completed buffer is a no-op. A plain tree is drained in the named dimension.
+    /// Consume with a declared capture layout. On a lazy buffer the strategy is a PIN REQUEST:
+    /// a fresh buffer's capture takes this layout; once anything has pulled, the existing
+    /// capture completes whatever was asked -- the at-most-once invariant outranks the
+    /// argument. A completed buffer is a no-op. A plain tree is drained in the named dimension.
     /// </summary>
     public static async ValueTask ConsumeAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,

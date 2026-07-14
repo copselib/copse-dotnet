@@ -42,8 +42,8 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → mirrored preorder arrays; BFT-first → the streaming mirror drained once into level-order arrays (2026-07-13; both arms now share the build-on-first-pull cost shape) |
 | LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
 | OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; **B overloads Materialize first** (see flags) |
-| Memoize | F, D, B | **ILazyTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
-| Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place and returned (same instance — aliasing by design); a completed buffer is returned as-is, never re-captured; otherwise `Memoize()+Consume()` at call time |
+| Memoize | F, D, B | **ILazyTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | ONE capture (2026-07-15): the first pull pins the layout; off-pin replays ride it cross-order; **source enumerated at most once** — upstream side effects fire at most once per node; pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
+| Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place and returned (same instance — aliasing by design); a completed buffer is returned as-is, never re-captured; otherwise `Memoize()+Consume()` at call time. The strategy is a fresh-memo PIN request (2026-07-15) — an existing pin outranks it |
 
 ### Enumerable / scalar consumers (Copse.Linq)
 

@@ -23,8 +23,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public bool IsComplete => _Buffer.Complete;
 
-    public int GetBufferedCount(TreeTraversalStrategy strategy)
-      => strategy == TreeTraversalStrategy.BreadthFirst ? _Buffer.BufferedCount : 0;
+    public int GetBufferedCount() => _Buffer.BufferedCount;
 
     public ValueTask ConsumeAsync(TreeTraversalStrategy strategy) => _Buffer.ConsumeAsync();
 

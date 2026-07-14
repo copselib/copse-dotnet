@@ -4,42 +4,32 @@
 // </auto-generated>
 using Copse.Treenumerators;
 using Copse.Core;
-using Copse.Disposables;
 using Copse.Linq.Stores;
 using Copse.Linq.Treenumerators;
-using System;
 
 namespace Copse.Linq.Treenumerables
 {
   // The memo behind Memoize(): a re-traversable, shared, lazily-growing capture of the source's
-  // current shape. Each traversal dimension gets its own capture -- a dimension buffer holding
-  // that dimension's feed and native-layout arrays, created on the first replay request in that
-  // dimension -- because a linear buffer is only as lazy as the order of the stream that fills it
-  // (see MEMOIZE_DESIGN.md, "the governing principle").
+  // current shape. ONE capture: the first acquisition (or consume) pins the layout to its
+  // dimension -- preorder for depth-first-first, level-order for breadth-first-first -- and
+  // every replay in either dimension rides that one capture through the flat family's store
+  // treenumerators (native combinations read sequentially; cross-order ones pay the accepted
+  // locality tax, and over a still-growing capture an off-pin partial drain may over-pull --
+  // the documented cost of the single feed; a caller who cares pins deliberately via
+  // Consume/Materialize with a declared strategy). The source is enumerated AT MOST ONCE,
+  // full stop: side effects upstream of the memo fire at most once per node, whichever
+  // dimensions replay.
   //
-  // A replay is one of the flat family's four store treenumerators (DFT/BFT x
-  // preorder/level-order store) decoding a dimension buffer directly -- native combinations read
-  // sequentially, cross-order ones pay the accepted locality tax -- so every
-  // NodeTraversalStrategies flag and all position bookkeeping come from machinery shared with
-  // every other flat-stored tree; the only memoize-specific moving part is which buffer serves
-  // the request:
+  // This SUPERSEDES the dual-buffer design (one capture per dimension, the four-case serving
+  // rule, completion races, ref-counted straggler replays -- see MEMOIZE_DESIGN.md's
+  // superseding note, 2026-07-15): that design bought native-layout laziness in both
+  // dimensions at the price of a second source enumeration, which broke at-most-once for
+  // side-effecting sources and carried a page of drop/race machinery. The single capture is
+  // the same model every capture operator (Invert-F's first-dimension pin, the narrow-source
+  // memos) had already converged on.
   //
-  //   1. the native dimension's buffer is complete  -> ride it natively;
-  //   2. the OTHER dimension's buffer is complete   -> ride it cross-order (correct, O(N); the
-  //      locality tax is accepted) -- the source is never touched once either capture completes;
-  //   3. the native buffer exists but is partial    -> ride it, extending its feed lazily;
-  //   4. no native buffer, other absent or partial  -> create the native buffer (the only path
-  //      that opens a second source enumeration, and it requires partial work in BOTH dimensions).
-  //
-  // Once either dimension completes, the other (incomplete) buffer is DROPPED, not completed: it
-  // takes no new replays (cases 1-2 win first) and is released once its ref-count of outstanding
-  // replay enumerators drains to zero -- in-flight stragglers keep their own buffer and feed, so
-  // no mid-enumeration cut-over is ever attempted. Replay Dispose is therefore semantically
-  // load-bearing (it is what releases a dropped buffer), consistent with child-enumerator
-  // Dispose signaling skips to the engine.
-  //
-  // Single-threaded by contract: the buffers are append-only, but the shared feeds are live
-  // treenumerators and concurrent fills would corrupt them.
+  // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
+  // treenumerator and concurrent fills would corrupt it.
   internal sealed class MemoizeTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
   {
     public MemoizeTreenumerable(ITreenumerable<TValue> source)
@@ -49,139 +39,81 @@ namespace Copse.Linq.Treenumerables
 
     private readonly ITreenumerable<TValue> _Source;
 
-    // Each dimension buffer is paired with a ref-count disposable whose underlying disposable
-    // releases the buffer. Replays over an incomplete buffer hold a handle (GetDisposable);
-    // dropping a buffer that lost the completion race is a primary Dispose -- the release
-    // fires immediately if no straggler replays remain, otherwise the moment the last
-    // straggler's handle is disposed.
-    private MemoizePreorderBuffer<TValue> _DepthFirst;
-    private RefCountDisposable _DepthFirstRefCount;
-    private MemoizeLevelOrderBuffer<TValue> _BreadthFirst;
-    private RefCountDisposable _BreadthFirstRefCount;
+    // Exactly ONE of these two is ever created -- whichever dimension pulls (or consumes)
+    // first pins the capture's layout for the memo's whole life.
+    private MemoizePreorderBuffer<TValue> _DepthFirstCapture;
+    private MemoizeLevelOrderBuffer<TValue> _BreadthFirstCapture;
 
     private bool _Disposed;
 
-    public bool IsComplete => _DepthFirst?.Complete == true || _BreadthFirst?.Complete == true;
+    public bool IsComplete => _DepthFirstCapture?.Complete == true || _BreadthFirstCapture?.Complete == true;
 
-    public int GetBufferedCount(TreeTraversalStrategy strategy)
-      => strategy == TreeTraversalStrategy.DepthFirst
-        ? _DepthFirst?.BufferedCount ?? 0
-        : _BreadthFirst?.BufferedCount ?? 0;
+    public int GetBufferedCount()
+      => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
     public void Consume(TreeTraversalStrategy strategy)
     {
-      // The invariant outranks the argument: a retired source is never re-enumerated (a second
-      // pass over an impure source could capture a DIFFERENT tree, and the memo's dimensions
-      // must never disagree about the shape).
-      if (IsComplete)
+      // The strategy is a PIN REQUEST, honored only while the memo is fresh: once a capture
+      // exists, the invariant outranks the argument -- a source is never enumerated twice (a
+      // second pass over an impure source could capture a DIFFERENT tree), so the existing
+      // capture is completed whatever layout was asked for.
+      if (_DepthFirstCapture != null)
+      {
+        _DepthFirstCapture.Consume();
         return;
+      }
+
+      if (_BreadthFirstCapture != null)
+      {
+        _BreadthFirstCapture.Consume();
+        return;
+      }
 
       if (strategy == TreeTraversalStrategy.DepthFirst)
-        EnsureDepthFirstBuffer().Consume();
+        EnsureDepthFirstCapture().Consume();
       else
-        EnsureBreadthFirstBuffer().Consume();
-
-      ReleaseDroppedBuffers();
+        EnsureBreadthFirstCapture().Consume();
     }
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()
     {
-      // Cases 1-2: a completed capture serves without touching the source, so no feed exists to
-      // guard and the replay needs no ref-count.
-      if (_DepthFirst?.Complete == true)
-        return DepthFirstPlaybackOverDepthFirstBuffer(_DepthFirst);
+      if (_BreadthFirstCapture != null)
+        return new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+          new MemoizeLevelOrderBuffer<TValue>.Handle(_BreadthFirstCapture));
 
-      if (_BreadthFirst?.Complete == true)
-        return DepthFirstPlaybackOverBreadthFirstBuffer(_BreadthFirst);
-
-      // Cases 3-4: ride (creating if absent) the native buffer, extending its feed lazily.
-      var buffer = EnsureDepthFirstBuffer();
-      return new ReplayTreenumerator(DepthFirstPlaybackOverDepthFirstBuffer(buffer), this, _DepthFirstRefCount.GetDisposable());
+      return new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
+        new MemoizePreorderBuffer<TValue>.Handle(EnsureDepthFirstCapture()));
     }
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
     {
-      if (_BreadthFirst?.Complete == true)
-        return BreadthFirstPlaybackOverBreadthFirstBuffer(_BreadthFirst);
+      if (_DepthFirstCapture != null)
+        return new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
+          new MemoizePreorderBuffer<TValue>.Handle(_DepthFirstCapture));
 
-      if (_DepthFirst?.Complete == true)
-        return BreadthFirstPlaybackOverDepthFirstBuffer(_DepthFirst);
-
-      var buffer = EnsureBreadthFirstBuffer();
-      return new ReplayTreenumerator(BreadthFirstPlaybackOverBreadthFirstBuffer(buffer), this, _BreadthFirstRefCount.GetDisposable());
+      return new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
+        new MemoizeLevelOrderBuffer<TValue>.Handle(EnsureBreadthFirstCapture()));
     }
 
-    private MemoizePreorderBuffer<TValue> EnsureDepthFirstBuffer()
+    private MemoizePreorderBuffer<TValue> EnsureDepthFirstCapture()
     {
-      if (_DepthFirst == null)
-      {
-        _DepthFirst = new MemoizePreorderBuffer<TValue>(_Source.GetDepthFirstTreenumerator);
-        _DepthFirstRefCount = new RefCountDisposable(Disposable.Create(_DepthFirst.Dispose));
-      }
+      if (_DepthFirstCapture == null)
+        _DepthFirstCapture = new MemoizePreorderBuffer<TValue>(_Source.GetDepthFirstTreenumerator);
 
-      return _DepthFirst;
+      return _DepthFirstCapture;
     }
 
-    private MemoizeLevelOrderBuffer<TValue> EnsureBreadthFirstBuffer()
+    private MemoizeLevelOrderBuffer<TValue> EnsureBreadthFirstCapture()
     {
-      if (_BreadthFirst == null)
-      {
-        _BreadthFirst = new MemoizeLevelOrderBuffer<TValue>(_Source.GetBreadthFirstTreenumerator);
-        _BreadthFirstRefCount = new RefCountDisposable(Disposable.Create(_BreadthFirst.Dispose));
-      }
+      if (_BreadthFirstCapture == null)
+        _BreadthFirstCapture = new MemoizeLevelOrderBuffer<TValue>(_Source.GetBreadthFirstTreenumerator);
 
-      return _BreadthFirst;
+      return _BreadthFirstCapture;
     }
 
-    // The four traversal-over-buffer combinations: the flat family's store treenumerators over
-    // the dimension buffers (each buffer IS a store -- no engine, no child enumerators).
-    // Cross-order riding is how a completed capture answers the other dimension (case 2).
-    private static ITreenumerator<TValue> DepthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
-      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
-        new MemoizePreorderBuffer<TValue>.Handle(buffer));
-
-    private static ITreenumerator<TValue> BreadthFirstPlaybackOverDepthFirstBuffer(MemoizePreorderBuffer<TValue> buffer)
-      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(
-        new MemoizePreorderBuffer<TValue>.Handle(buffer));
-
-    private static ITreenumerator<TValue> BreadthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
-      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
-        new MemoizeLevelOrderBuffer<TValue>.Handle(buffer));
-
-    private static ITreenumerator<TValue> DepthFirstPlaybackOverBreadthFirstBuffer(MemoizeLevelOrderBuffer<TValue> buffer)
-      => new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(
-        new MemoizeLevelOrderBuffer<TValue>.Handle(buffer));
-
-    // Drop a dimension buffer that lost the completion race. Called whenever the state can
-    // have changed (a dimension completing, a straggler disposing). A COMPLETE buffer is never
-    // dropped: it IS the capture. Dropping is a primary Dispose on the loser's ref count: the
-    // buffer is released now if no straggler replays remain, otherwise the moment the last
-    // straggler's handle is disposed -- stragglers hold the buffer directly, so nulling the
-    // memo's fields immediately is safe (and no new replay can route here; cases 1-2 win first).
-    private void ReleaseDroppedBuffers()
-    {
-      if (_DepthFirst?.Complete == true
-        && _BreadthFirst != null && !_BreadthFirst.Complete)
-      {
-        var refCount = _BreadthFirstRefCount;
-        _BreadthFirst = null;
-        _BreadthFirstRefCount = null;
-        refCount.Dispose();
-      }
-
-      if (_BreadthFirst?.Complete == true
-        && _DepthFirst != null && !_DepthFirst.Complete)
-      {
-        var refCount = _DepthFirstRefCount;
-        _DepthFirst = null;
-        _DepthFirstRefCount = null;
-        refCount.Dispose();
-      }
-    }
-
-    // Stops all future source consumption (kills both feeds). Existing and even new replays keep
-    // working over the already-captured regions; any replay that needs to pull past a frontier
-    // gets ObjectDisposedException (see IAsyncTreenumerableBuffer).
+    // Stops all future source consumption (retires the one feed). Existing and even new replays
+    // keep working over the already-captured region; any replay that needs to pull past the
+    // frontier gets ObjectDisposedException (see IAsyncTreenumerableBuffer).
     public void Dispose()
     {
       if (_Disposed)
@@ -189,49 +121,11 @@ namespace Copse.Linq.Treenumerables
 
       _Disposed = true;
 
-      if (_DepthFirst != null)
-        _DepthFirst.Dispose();
+      if (_DepthFirstCapture != null)
+        _DepthFirstCapture.Dispose();
 
-      if (_BreadthFirst != null)
-        _BreadthFirst.Dispose();
-    }
-
-    // Forwards a replay engine while making its disposal observable: releases its handle on
-    // the owning dimension buffer's ref count and pokes the memo, so a dropped buffer whose
-    // stragglers have all finished is released.
-    private sealed class ReplayTreenumerator : ITreenumerator<TValue>
-    {
-      public ReplayTreenumerator(ITreenumerator<TValue> inner, MemoizeTreenumerable<TValue> owner, IDisposable bufferHandle)
-      {
-        _Inner = inner;
-        _Owner = owner;
-        _BufferHandle = bufferHandle;
-      }
-
-      private readonly ITreenumerator<TValue> _Inner;
-      private readonly MemoizeTreenumerable<TValue> _Owner;
-      private readonly IDisposable _BufferHandle;
-      private bool _Disposed;
-
-      public TValue Node => _Inner.Node;
-      public int VisitCount => _Inner.VisitCount;
-      public TreenumeratorMode Mode => _Inner.Mode;
-      public NodePosition Position => _Inner.Position;
-
-      public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
-        => _Inner.MoveNext(nodeTraversalStrategies);
-
-      public void Dispose()
-      {
-        if (_Disposed)
-          return;
-
-        _Disposed = true;
-
-        _Inner.Dispose();
-        _BufferHandle.Dispose();
-        _Owner.ReleaseDroppedBuffers();
-      }
+      if (_BreadthFirstCapture != null)
+        _BreadthFirstCapture.Dispose();
     }
   }
 }

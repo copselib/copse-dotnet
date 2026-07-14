@@ -99,7 +99,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Materialize_finishes_the_most_buffered_dimension()
+    public void Materialize_completes_the_pinned_capture()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -116,11 +116,11 @@ namespace Copse.Linq.Tests
       // The sunk BFT work was finished; the DFT dimension was never opened.
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(9, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount());
     }
 
     [TestMethod]
-    public void Materialize_with_declared_strategy_outranks_sunk_cost()
+    public void Materialize_with_declared_strategy_defers_to_an_existing_pin()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -133,12 +133,27 @@ namespace Copse.Linq.Tests
 
       Assert.AreSame(memo, materialized);
       Assert.IsTrue(memo.IsComplete);
-      Assert.AreEqual(9, memo.GetBufferedCount(TreeTraversalStrategy.DepthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount());
 
-      // Declared intent paid for a second enumeration, and the partial BFT capture was dropped.
-      Assert.AreEqual(1, counting.DepthFirstEnumerations);
+      // The at-most-once invariant outranks the argument: the first pull pinned the
+      // level-order layout, so the declared strategy completes THAT capture -- no second
+      // source enumeration. (The superseded dual-buffer memo re-enumerated here and dropped
+      // the partial capture.) A fresh memo would have taken the declared layout as its pin.
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+    }
+
+    [TestMethod]
+    public void Materialize_with_declared_strategy_pins_a_fresh_memo()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+
+      using var memo = counting.Memoize();
+      memo.Materialize(TreeTraversalStrategy.BreadthFirst);
+
+      Assert.IsTrue(memo.IsComplete);
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "a fresh memo takes the declared layout as its pin");
     }
 
     // The buffer probes: Materialize never re-captures a capture. Probe order matters -- the

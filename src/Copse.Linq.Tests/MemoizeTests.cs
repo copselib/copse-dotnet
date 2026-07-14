@@ -53,7 +53,7 @@ namespace Copse.Linq.Tests
           Collect(memoized, strategy),
           $"{strategy} traversal mismatch for {tree}");
 
-        // A second replay serves from the now-complete capture (case 1) -- same stream.
+        // A second replay serves from the now-complete capture -- same stream.
         CollectionAssert.AreEqual(
           Collect(source, strategy),
           Collect(memoized, strategy),
@@ -82,7 +82,7 @@ namespace Copse.Linq.Tests
     }
 
     // ---------------------------------------------------------------------------------------
-    // The four-case serving rule, observed through source enumeration counts.
+    // The single pinned capture, observed through source enumeration counts.
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
@@ -98,12 +98,12 @@ namespace Copse.Linq.Tests
 
       Assert.IsTrue(memo.IsComplete);
 
-      // Cross-order serving (case 2): the BFS engine rides the completed preorder capture.
+      // Cross-order serving: the BFS decoder rides the completed preorder capture.
       CollectionAssert.AreEqual(directBfs, Collect(memo, TreeTraversalStrategy.BreadthFirst));
 
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount(), "the one pinned capture holds the whole tree");
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.DepthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount(), "the one pinned capture holds the whole tree");
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ namespace Copse.Linq.Tests
         for (var i = 0; i < 4; i++)
           Assert.IsTrue(replay.MoveNext(NodeTraversalStrategies.TraverseAll));
 
-      var buffered = memo.GetBufferedCount(TreeTraversalStrategy.DepthFirst);
+      var buffered = memo.GetBufferedCount();
       Assert.IsTrue(buffered > 0 && buffered < 9, $"expected a strict prefix, buffered {buffered} of 9");
       Assert.IsFalse(memo.IsComplete);
 
@@ -148,7 +148,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Both_dimensions_partial_run_independent_feeds_and_stay_correct()
+    public void Both_dimensions_partial_share_the_one_pinned_capture()
     {
       var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
@@ -161,9 +161,11 @@ namespace Copse.Linq.Tests
         for (var i = 0; i < 3; i++)
           Assert.IsTrue(bfs.MoveNext(NodeTraversalStrategies.TraverseAll));
 
-      // Case 4: partial work in BOTH dimensions is the one road to a second source enumeration.
+      // The first pull pinned the depth-first layout; the breadth-first partial rides the SAME
+      // capture cross-order (over-pulling as it must). At most one source enumeration, ever --
+      // the invariant the single-capture memo exists for.
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+      Assert.AreEqual(0, counting.BreadthFirstEnumerations);
 
       CollectionAssert.AreEqual(
         Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.DepthFirst),
@@ -172,9 +174,8 @@ namespace Copse.Linq.Tests
         Collect(TreeSerializer.DeserializeDepthFirstTree(RichTree), TreeTraversalStrategy.BreadthFirst),
         Collect(memo, TreeTraversalStrategy.BreadthFirst));
 
-      // Still one enumeration per dimension: the partial feeds were resumed, not restarted.
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+      Assert.AreEqual(0, counting.BreadthFirstEnumerations);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -233,7 +234,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Consume_is_a_noop_once_any_dimension_is_complete()
+    public void Consume_is_a_noop_once_the_capture_is_complete()
     {
       var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
@@ -246,7 +247,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount(), "the one pinned capture holds the whole tree");
     }
 
     // ---------------------------------------------------------------------------------------
@@ -266,7 +267,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     public void Interleaved_DFS_and_BFS_replays_both_match()
-      => AssertInterleavedPair(TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst, expectedDepthFirstEnumerations: 1, expectedBreadthFirstEnumerations: 1);
+      => AssertInterleavedPair(TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst, expectedDepthFirstEnumerations: 1, expectedBreadthFirstEnumerations: 0);
 
     private static void AssertInterleavedPair(
       TreeTraversalStrategy strategyA,
@@ -305,7 +306,8 @@ namespace Copse.Linq.Tests
         collectedB,
         $"replay B ({strategyB}) mismatch");
 
-      // Same-dimension pairs share one feed; a mixed pair runs one feed per dimension.
+      // Every pair shares the one pinned capture -- a mixed pair's off-pin replay rides it
+      // cross-order; the source is enumerated at most once regardless.
       Assert.AreEqual(expectedDepthFirstEnumerations, counting.DepthFirstEnumerations);
       Assert.AreEqual(expectedBreadthFirstEnumerations, counting.BreadthFirstEnumerations);
     }
@@ -322,11 +324,11 @@ namespace Copse.Linq.Tests
     }
 
     // ---------------------------------------------------------------------------------------
-    // Drop-on-completion and disposal.
+    // Mid-flight consumes and disposal.
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void Straggler_replay_finishes_on_its_own_feed_after_the_other_dimension_completes()
+    public void Straggler_replay_survives_a_mid_flight_consume()
     {
       var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
@@ -368,7 +370,7 @@ namespace Copse.Linq.Tests
         for (var i = 0; i < 5; i++)
           Assert.IsTrue(replay.MoveNext(NodeTraversalStrategies.TraverseAll));
 
-      var buffered = memo.GetBufferedCount(TreeTraversalStrategy.DepthFirst);
+      var buffered = memo.GetBufferedCount();
       Assert.IsTrue(buffered > 0 && buffered < 9);
 
       memo.Dispose();
