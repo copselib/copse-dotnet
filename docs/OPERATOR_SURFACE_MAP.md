@@ -121,11 +121,15 @@ Async twins are the codegen **sources** (in `Copse.Async` / `Copse.Linq.Async`);
 (which has no async layer — a fact the cohesion pass must reckon with).
 
 ```
-SPIs (Copse.Primitives/FlatStores; async twins in Copse.Async)
-├─ IPreorderStore          random-access preorder; growable (Ensure* may pull a feed)
-├─ ILevelOrderStore        random-access level-order dual
-├─ IPreorderStream         forward-only preorder; TrySkipToDepth skip seam; IDisposable
-└─ ILevelOrderStream       forward-only level-order groups; IDisposable
+SPIs — per-color since the de-share (2026-07-14): async sources in Copse.Async/Stores
+(namespace Copse.Async.Stores), sync twins GENERATED into Copse/Stores (Copse.Stores);
+the read structs (PreorderRead/LevelOrderRead) and completed array stores
+(Preorder/LevelOrderArrayStore + their new Async* twins) follow the same pattern.
+Copse.Primitives/FlatStores is retired.
+├─ I(Async)PreorderStore   random-access preorder; growable (Ensure* may pull a feed)
+├─ I(Async)LevelOrderStore random-access level-order dual
+├─ I(Async)PreorderStream  forward-only preorder; TrySkipToDepth skip seam; disposable
+└─ I(Async)LevelOrderStream forward-only level-order groups; disposable
 
 Decoders (Copse/Treenumerators ← Copse.Async/Treenumerators)
 ├─ PreorderStoreDepthFirstTreenumerator      NATIVE   (span arithmetic)
@@ -153,9 +157,10 @@ Capture factories (Copse/Stores ← Copse.Async/Stores; public statics; ADDED 20
      LeaffixAggregate-B fusions. No side-channel overload until a consumer exists.
 
 Concrete stores/streams                       consumers
-├─ PreorderArrayStore (readonly struct)       Invert-D/F, OrderChildrenBy, LeaffixScan
-│    (Copse.Primitives, completed arrays)     builds all terminate here; benchmarks; tests
-├─ LevelOrderArrayStore (readonly struct)     benchmarks/tests only in product paths
+├─ (Async)PreorderArrayStore (readonly structs)  Invert-D/F, OrderChildrenBy, LeaffixScan
+│    (per-color since the de-share: Copse/Stores builds all terminate here; benchmarks; tests
+│     ← Copse.Async/Stores, completed arrays)
+├─ (Async)LevelOrderArrayStore (readonly structs)  Invert-F BFT arm; benchmarks/tests
 ├─ LazyBuiltPreorderStore (internal, Linq)    THE deferral seam: Invert-D, OrderChildrenBy,
 │    runs a Func<PreorderArrayStore> once     LeaffixScan all ride it
 ├─ LazyBuiltLevelOrderStore                   Invert-F BFT-first arm's deferral seam (orphan
@@ -227,9 +232,10 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    orphan~~ *(adopted 2026-07-13 — it is now Invert-F's BFT-first deferral seam; the
    stream-fed store it displaced was deleted, its drain preserved as the stream-shaped
    `LevelOrderCapture.CaptureFrom`)*; no stream-shaped `PreorderCapture.CaptureFrom`
-   (`IPreorderStream`) dual yet — nothing needs it; no public sync→async completed-store
-   adapter (the only one is benchmark-private, preorder-only); the preorder→level-order
-   transpose lives only in benchmarks (deliberately).
+   (`IPreorderStream`) dual yet — nothing needs it; ~~no public sync→async completed-store
+   adapter~~ *(dissolved by the de-share 2026-07-14: `Async{Preorder,LevelOrder}ArrayStore`
+   are real types now, and the benchmark-private hack is deleted)*; the
+   preorder→level-order transpose lives only in benchmarks (deliberately).
 5. **Selector inconsistency inside shape A**: operator builds filter on
    `Mode == SchedulingNode`, memo/tests on `VisitCount == 1`. Equivalent in DFT, but a
    hoisted factory should pick one and document why.

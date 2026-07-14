@@ -66,37 +66,38 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 ### Project Structure
 
-> **The color rule (stated 2026-07-13):** the sync and async families ("colors") share no
-> contracts — `Copse.Core.Async` does not reference `Copse.Core`, and nothing above them
-> crosses colors (the sole deliberate exception is `Copse.SimpleSerializer`, the one
-> both-colors package). Vocabulary, Primitives, and Traversal are the **color-neutral
-> substrate** underneath both stacks: tree *data* and tree *vocabulary* are neutral;
-> traversal *contracts* are per-color and must never be referenced from the neutral layer
-> (which also keeps async polyfills out of it). This is why the flat store SPIs speak tree
-> words (`EnsureChildAvailable`, `GetSubtreeSize`) while their signatures use only primitive
-> types, why the async store SPIs live in `Copse.Async` rather than beside their sync twins,
-> and why capture machinery belongs in the color layers, not on the neutral stores.
+> **The color rule (stated 2026-07-13; sharpened by the de-share 2026-07-14):** the sync and
+> async families ("colors") share no contracts — `Copse.Core.Async` does not reference
+> `Copse.Core`, and nothing above them crosses colors (the sole deliberate exception is
+> `Copse.SimpleSerializer`, the one both-colors package). Vocabulary, Primitives, and
+> Traversal are the **color-neutral substrate** underneath both stacks, and each holds
+> exactly what its name promises: Vocabulary holds *what the Core contracts speak*,
+> Primitives holds *tree-free mechanics*, Traversal holds *the shared sans-I/O machinery and
+> the value types it consumes*. Everything color-flavored — including the flat store SPIs,
+> read structs, and completed array stores — lives per-color, single-sourced through codegen
+> (async sources → generated sync twins), which also keeps async polyfills out of the
+> neutral layer and the sync family's dependency list empty.
 
-- **Copse.Vocabulary** - The dependency root: the tree vocabulary value types and enums
-  (`NodePosition`, `NodeVisit`, `TreenumeratorMode`, `NodeTraversalStrategies`,
+- **Copse.Vocabulary** - The dependency root: the value types and enums the Core contracts
+  speak (`NodePosition`, `NodeVisit`, `TreenumeratorMode`, `NodeTraversalStrategies`,
   `TreeTraversalStrategy`). References nothing. Color-neutral.
 - **Copse.Core** - The sync traversal contracts: `ITreenumerable<T>` and its two
   single-dimension parents, `ITreenumerator<T>`. References Vocabulary. (`Copse.Core.Async`
   is its async twin, also over Vocabulary; the async stack mirrors the sync one from there —
   see docs/ASYNC_CODEGEN.md.)
-- **Copse.Primitives** - The color-neutral substrate both families build on: the chunked
-  ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted `Copse.Disposables`
-  algebra, the node-context value types (`NodeContext`, `NodeAndSiblingIndex`, `ChildResult`),
-  and the flat store/stream SPIs with their completed array stores
-  (`I{Preorder,LevelOrder}Store`, `I{Preorder,LevelOrder}Stream`,
-  `{Preorder,LevelOrder}ArrayStore`). References Vocabulary only.
+- **Copse.Primitives** - Tree-free, color-neutral mechanics both families build on: the
+  chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted
+  `Copse.Disposables` algebra. References Vocabulary only.
 - **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
-  engines (`DepthFirstPathState`, `BreadthFirstPathState`, …). References Vocabulary +
-  Primitives.
+  engines (`DepthFirstPathState`, `BreadthFirstPathState`, …) plus the value types it
+  consumes (`NodeContext`, `NodeAndSiblingIndex`). References Vocabulary + Primitives.
+  (`Copse.Linq.Traversal` is its Linq-level analog, referencing it.)
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
-  treenumerators, over flat preorder/level-order encodings). Also the tree-source factories
+  treenumerators, over flat preorder/level-order encodings — the store SPIs, read structs,
+  completed array stores, and capture factories live in `Copse/Stores`, generated from their
+  `Copse.Async/Stores` sources). Also the tree-source factories
   (`Tree.Defer`/`Lazy`/`Using`/`Empty` — Defer builds fresh per acquisition, Lazy pins the first
   construction) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
 - **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the

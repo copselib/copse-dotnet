@@ -1,5 +1,22 @@
 # Store Family Review (flat stores, streams, and their builders)
 
+> **SUPERSEDING UPDATE — THE DE-SHARE (2026-07-14, commits 7328c77 + 4c08091):** the flat
+> family no longer lives in the neutral layer at all. Each color owns its SPIs, read
+> structs, and completed array stores, single-sourced through codegen: hand-written async
+> sources in `Copse.Async/Stores` (namespace `Copse.Async.Stores`), generated sync twins in
+> `Copse/Stores` (namespace `Copse.Stores`). `Copse.Primitives/FlatStores` is retired;
+> Primitives is now tree-free (collections + disposables only). The async completed array
+> stores exist as real types now, which closes F4's missing-dual gap and makes this doc's
+> opening question ("why is there no async LevelOrderArrayStore?") historical — the answer
+> below describes the shared-store design this update replaced. The alternative (async SPIs
+> into Primitives via Microsoft.Bcl.AsyncInterfaces) was weighed and rejected: it hands
+> legacy-TFM consumers of the sync family dependencies they never use and reverses the
+> lockstep+zero-deps packaging decision. `ChildResult` got the same per-color treatment
+> (it is the child-enumerator protocol's read struct); `NodeContext`/`NodeAndSiblingIndex`
+> moved to `Copse.Traversal`, whose path states consume them. Placement rule as sharpened:
+> *Vocabulary holds what the Core contracts speak; nothing sits lower than its first
+> consumer requires.*
+>
 > **Status: REVIEW 2026-07-13; decisions 1–2 of the decision list DECIDED 2026-07-13**
 > (taxonomy adopted with renames — executed same day; factory placement = option 3, the
 > `Copse`/`Copse.Async` layer — factories not yet built, pending the operator-flag #4 spike).
