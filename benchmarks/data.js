@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784070028557,
+  "lastUpdate": 1784070028972,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -55968,6 +55968,102 @@ window.BENCHMARK_DATA = {
             "value": 23611402.0625,
             "unit": "ns",
             "range": "± 47701.96936467591"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cab189780b077809ebafde3a34ee0d41be68f92f",
+          "message": "Consume is mechanical again: the probes optimized for nobody\n\nJason's verdict, and the evidence was already in: Consume exists FOR\nunit testing -- \"walk this, really\" -- and the buffer probes gave it a\nconditional identity (\"walk, unless buffer, then settle\") that served\nan empty constituency. No product path calls the extension to settle a\nbuffer (Materialize and the Complete() member do that directly); every\nactual Consume-on-buffer caller wanted the walk, which is exactly why\nthe probes' only measurable effect was silently no-op'ing benchmark\nrows.\n\nReverted: all four Consume overloads walk a treenumerator to\nexhaustion unconditionally. A completed buffer replays (inert, source\nuntouched); a DEFERRED capture is forced by the walk -- what a test\nreaching for Consume wants; a fresh lazy buffer's capture completes as\na side effect. The suggestedStrategy naming dies with the probes (the\nstrategy is always honored again); the parameterless/strategy overload\nsplit stays (the silent-default wart was real independently).\n\nDrainExtensions DELETES -- it was Consume's true meaning wearing a\ndisguise; the benchmarks return to their historical Consume source\nshape, row meanings intact either way.\n\nWhat survives of the probe episode is everything that was actually\nright: the inertness contract, Complete()'s existence and name,\nMaterialize's probes and layout guarantee, the single-capture memo.\nThe surface ends at one word one meaning: Consume walks, Complete\nfinishes, Materialize delivers.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T22:50:29Z",
+          "tree_id": "35234f35f35a409893c3e67c5d0e8465b2946d2c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cab189780b077809ebafde3a34ee0d41be68f92f"
+        },
+        "date": 1784070028895,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 25977602.2875,
+            "unit": "ns",
+            "range": "± 223529.28315479608"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8017513.326041667,
+            "unit": "ns",
+            "range": "± 120851.55761158727"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 154478096.23076922,
+            "unit": "ns",
+            "range": "± 538967.9726837078"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57945814.253968254,
+            "unit": "ns",
+            "range": "± 169560.74728768767"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 22204500.285416666,
+            "unit": "ns",
+            "range": "± 156003.45592522743"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12721511.076041667,
+            "unit": "ns",
+            "range": "± 224202.99165112764"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 98255664.12820514,
+            "unit": "ns",
+            "range": "± 272384.75494112907"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29698933.84151786,
+            "unit": "ns",
+            "range": "± 138739.81506000063"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11517286.478125,
+            "unit": "ns",
+            "range": "± 133382.86118991897"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6073928.539583334,
+            "unit": "ns",
+            "range": "± 95546.80271937493"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 114464942.41428569,
+            "unit": "ns",
+            "range": "± 468061.45950613974"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26139260.546875,
+            "unit": "ns",
+            "range": "± 83669.71148389026"
           }
         ]
       }
