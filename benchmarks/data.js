@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784066536244,
+  "lastUpdate": 1784066536615,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -29021,6 +29021,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
             "value": 346165,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b743bf6f8cb40497adb79dc982dec733de3580f",
+          "message": "The buffer knows its shape: public NativeLayout, parameterless Consume\n\nThree refinements from review (Jason), landing together because they\nare one thought -- the buffer surface should say exactly what it is:\n\n- ILazyTreenumerableBuffer.ConsumeAsync() takes NO strategy: there is\n  only ever one capture, and completing it is the only thing consume\n  can mean. The parameter was the last piece of dual-buffer API shape\n  still standing (\"why does this take a strategy?\" had no good\n  answer). Pinning a layout is expressed the organic way -- ACQUIRING\n  a treenumerator in a dimension IS the pin (no nodes pulled) -- via\n  the new PinAsync helper, which Materialize(strategy) and the Consume\n  extension's suggestion path both use; it works for any\n  implementation, no internal seam required.\n- BufferLayout { Preorder, LevelOrder }: a dedicated enum for capture\n  encodings -- STORAGE vocabulary, deliberately distinct from\n  TreeTraversalStrategy (the TRAVERSAL vocabulary) even though they\n  split the same two ways, per the naming rule: a strategy is how you\n  WALK, a layout is how a capture is SHAPED.\n- NativeLayout goes PUBLIC on ITreenumerableBuffer (a capture knows\n  its shape; null only while a deferred dimension-dispatched build is\n  undecided). The internal tag interface deletes; foreign\n  implementations now self-report instead of being conservatively\n  transposed; the empty marker interface isn't empty anymore, and the\n  disclosure story gains an inspectable property.\n- The buffer types split one-type-per-file (BufferLayout,\n  ITreenumerableBuffer, ILazyTreenumerableBuffer), matching the\n  repo-wide convention; manifest entries follow.\n\nBREAKING (alpha, release-notes flag): ConsumeAsync(strategy) ->\nConsumeAsync(); ITreenumerableBuffer gains a required member;\nBufferLayout is new public surface.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T21:26:39Z",
+          "tree_id": "98ece8e118bf748f4193fbb7a1d607e27aa6f6a9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6b743bf6f8cb40497adb79dc982dec733de3580f"
+        },
+        "date": 1784066536549,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59403,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231265,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505979,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636730,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
             "unit": "bytes"
           }
         ]
