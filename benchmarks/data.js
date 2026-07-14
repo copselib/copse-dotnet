@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783991793295,
+  "lastUpdate": 1783991793586,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -61526,6 +61526,120 @@ window.BENCHMARK_DATA = {
             "value": 20291646.066666666,
             "unit": "ns",
             "range": "± 121992.41359139876"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2",
+          "message": "Invert's BFT-first arm goes eager; StreamFedLevelOrderStore retires\n\nPolicy-audit flag 5 + store review D4a, decided after discussion: the\nfull-source mirror's breadth-first-first arm now drains the streaming\nmirror ONCE into a completed level-order capture on the first replay\npull -- the same cost shape as the preorder arm -- via a new\nstream-shaped LevelOrderCapture.CaptureFrom(ILevelOrderStream): the\nstream-fed store's drain in one-shot form, still never synthesizing a\nvisit stream between the encodings (the 2.1-2.7x round trip stays\navoided).\n\nWhy: the tier-by-tier laziness this replaces was only ever real for a\nreplay abandoned WITHOUT disposal -- a contract violation -- because\nDispose completed the remaining capture anyway (the dispose-time O(n)\nsurprise the surface map flagged). One cost shape for both arms, no\nsurprise, and the source is released deterministically INSIDE the\nbuild (earlier than before).\n\nConsequences:\n- StreamFedLevelOrderStore DELETED (this arm was its only consumer);\n  its incremental machinery -- pull-one state, dispose-action\n  composition -- goes with it.\n- LazyBuiltLevelOrderStore's orphanhood ends exactly as the store\n  review predicted: it is the arm's deferral seam now.\n- Behavior pins updated: the two InvertTests that pinned incremental\n  growth + dispose-completes-capture now pin build-on-first-pull +\n  dispose-owes-nothing + source-released-inside-the-first-pull.\n\nBenchmark gate (Invert family, ShortRun A/B, same machine): Bft rows\nFASTER (Triangle 157.8->145.5ms, Chain 124.0->94.9ms; Dft controls\nbyte-identical alloc, time within cross-run noise). Allocation shows\nthe step change the benchmark header predicted: one-shot List+ToArray\nbuild churn ~2.5-3x the old incremental chunked store (Triangle\n24.4->60.4MB, Chain 12.0->36.0MB) -- transient, one-time, and still at\nor below the preorder arm's profile. Follow-up if CI rows object: swap\nthe factory drain onto RefAppendOnlyList.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T01:01:36Z",
+          "tree_id": "ccb573ea55f29f90df6bdbb88fd58f1b643ff09d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2"
+        },
+        "date": 1783991793536,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 107645167,
+            "unit": "ns",
+            "range": "± 458772.80596783455"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 134107572.23333333,
+            "unit": "ns",
+            "range": "± 1423748.9346240072"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 74917313.63809523,
+            "unit": "ns",
+            "range": "± 719947.6000362149"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 99244446.10000001,
+            "unit": "ns",
+            "range": "± 689603.5902146229"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 48449929.07142856,
+            "unit": "ns",
+            "range": "± 75699.22266786499"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 61961719.591836736,
+            "unit": "ns",
+            "range": "± 302102.9788418105"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 29296532.66875,
+            "unit": "ns",
+            "range": "± 309939.26678056014"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 32436254.65333333,
+            "unit": "ns",
+            "range": "± 138564.37128854558"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 46918763.05194805,
+            "unit": "ns",
+            "range": "± 153364.94213939016"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 61503416.491071425,
+            "unit": "ns",
+            "range": "± 185184.6984916308"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 41537045.58791208,
+            "unit": "ns",
+            "range": "± 100831.21377816855"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 30283086.816666666,
+            "unit": "ns",
+            "range": "± 89772.49748938771"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 105132213.96000001,
+            "unit": "ns",
+            "range": "± 347848.54176735773"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 136503561.11666667,
+            "unit": "ns",
+            "range": "± 1019103.3306436326"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 19732348.685416665,
+            "unit": "ns",
+            "range": "± 101331.12615347977"
           }
         ]
       }
