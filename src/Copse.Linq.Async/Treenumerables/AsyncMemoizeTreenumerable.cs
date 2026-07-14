@@ -50,22 +50,22 @@ namespace Copse.Linq.Async.Treenumerables
 
     private bool _Disposed;
 
-    public bool IsComplete => _DepthFirstCapture?.Complete == true || _BreadthFirstCapture?.Complete == true;
+    public bool IsComplete => _DepthFirstCapture?.IsComplete == true || _BreadthFirstCapture?.IsComplete == true;
 
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public async ValueTask ConsumeAsync()
+    public async ValueTask CompleteAsync()
     {
       // Complete the one capture; a fresh memo pins the depth-first layout (callers wanting a
       // different pin acquire a treenumerator in that dimension first -- acquisition IS the pin).
       if (_BreadthFirstCapture != null)
       {
-        await _BreadthFirstCapture.ConsumeAsync().ConfigureAwait(false);
+        await _BreadthFirstCapture.CompleteAsync().ConfigureAwait(false);
         return;
       }
 
-      await EnsureDepthFirstCapture().ConsumeAsync().ConfigureAwait(false);
+      await EnsureDepthFirstCapture().CompleteAsync().ConfigureAwait(false);
     }
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()

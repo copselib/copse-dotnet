@@ -30,7 +30,7 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
+        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;
       }
 
@@ -38,7 +38,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      await buffer.ConsumeAsync().ConfigureAwait(false);
+      await buffer.CompleteAsync().ConfigureAwait(false);
       return buffer;
     }
 
@@ -61,7 +61,7 @@ namespace Copse.Linq
       if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
       {
         await PinAsync(lazyBuffer, strategy).ConfigureAwait(false);
-        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
+        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return await WithNativeLayoutAsync(lazyBuffer, strategy).ConfigureAwait(false);
       }
 
@@ -70,7 +70,7 @@ namespace Copse.Linq
 
       var buffer = source.Memoize();
       await PinAsync(buffer, strategy).ConfigureAwait(false);
-      await buffer.ConsumeAsync().ConfigureAwait(false);
+      await buffer.CompleteAsync().ConfigureAwait(false);
       return buffer;
     }
 
@@ -122,7 +122,7 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
+        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;
       }
 
@@ -130,7 +130,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      await buffer.ConsumeAsync().ConfigureAwait(false);
+      await buffer.CompleteAsync().ConfigureAwait(false);
       return buffer;
     }
 
@@ -138,7 +138,7 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
+        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;
       }
 
@@ -146,7 +146,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      await buffer.ConsumeAsync().ConfigureAwait(false);
+      await buffer.CompleteAsync().ConfigureAwait(false);
       return buffer;
     }
   }

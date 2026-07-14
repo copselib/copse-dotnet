@@ -26,12 +26,12 @@ namespace Copse.Linq.Treenumerables
     // until the capture completes.
     int GetBufferedCount();
 
-    // Drive the capture to completion; a no-op iff IsComplete. Takes no strategy: there is
-    // only ever ONE capture, and completing it is the only thing consume can mean (a fresh
+    // Drive the capture to COMPLETION -- the transition IsComplete reports; a no-op iff already
+    // complete. Takes no strategy: there is only ever ONE capture (a fresh
     // buffer pins the depth-first layout). Pinning a specific layout is expressed the organic
     // way -- acquire a treenumerator in that dimension before consuming (acquisition is the
     // pin) -- or, for a guaranteed layout with the buffer as the deliverable,
     // Materialize(strategy).
-    void Consume();
+    void Complete();
   }
 }

@@ -26,11 +26,11 @@ namespace Copse.Linq.Treenumerables
 
     private readonly MemoizeLevelOrderBuffer<TValue> _Buffer;
 
-    public bool IsComplete => _Buffer.Complete;
+    public bool IsComplete => _Buffer.IsComplete;
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
-    public void Consume() => _Buffer.Consume();
+    public void Complete() => _Buffer.Complete();
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
       => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(

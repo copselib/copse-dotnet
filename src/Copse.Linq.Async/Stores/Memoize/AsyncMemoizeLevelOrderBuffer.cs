@@ -69,7 +69,7 @@ namespace Copse.Linq.Async.Stores
     public int BufferedCount => _Values.Count;
 
     // True once the feed has exhausted: the buffer is the whole tree and every span is closed.
-    public bool Complete { get; private set; }
+    public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
@@ -86,7 +86,7 @@ namespace Copse.Linq.Async.Stores
     // the captured region cost nothing async.
     public ValueTask<bool> EnsureRootAvailableAsync(int k)
     {
-      if (!Complete && _FrontIndex < 0 && _RootCount <= k)
+      if (!IsComplete && _FrontIndex < 0 && _RootCount <= k)
         return PullThenEnsureRootAvailableAsync(k);
 
       return new ValueTask<bool>(k < _RootCount);
@@ -94,7 +94,7 @@ namespace Copse.Linq.Async.Stores
 
     private async ValueTask<bool> PullThenEnsureRootAvailableAsync(int k)
     {
-      while (!Complete && _FrontIndex < 0 && _RootCount <= k)
+      while (!IsComplete && _FrontIndex < 0 && _RootCount <= k)
         await PullOneAsync().ConfigureAwait(false);
 
       return k < _RootCount;
@@ -105,7 +105,7 @@ namespace Copse.Linq.Async.Stores
     // need not close unless the answer is "no more".
     public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
     {
-      if (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
+      if (!IsComplete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
         return PullThenEnsureChildAvailableAsync(parentIndex, k);
 
       return new ValueTask<bool>(k < _ChildCounts[parentIndex]);
@@ -113,7 +113,7 @@ namespace Copse.Linq.Async.Stores
 
     private async ValueTask<bool> PullThenEnsureChildAvailableAsync(int parentIndex, int k)
     {
-      while (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
+      while (!IsComplete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
         await PullOneAsync().ConfigureAwait(false);
 
       return k < _ChildCounts[parentIndex];
@@ -123,9 +123,9 @@ namespace Copse.Linq.Async.Stores
     // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
     // the method call are hoisted out of the per-visit loop -- this is Materialize's hot path,
     // where per-visit overhead is the whole cost.
-    public async ValueTask ConsumeAsync()
+    public async ValueTask CompleteAsync()
     {
-      if (Complete)
+      if (IsComplete)
         return;
 
       if (_Disposed)
@@ -164,14 +164,14 @@ namespace Copse.Linq.Async.Stores
         }
       }
 
-      Complete = true;
+      IsComplete = true;
       await feed.DisposeAsync().ConfigureAwait(false);
       _Feed = null;
     }
 
     // Process one feed visit. Scheduling visits append (wiring the child into _FrontIndex's
     // span); each node's first visiting visit advances the front; revisits are structural
-    // no-ops. On exhaustion latch Complete and drop the feed. Per-visit granularity keeps the
+    // no-ops. On exhaustion latch IsComplete and drop the feed. Per-visit granularity keeps the
     // Ensure loops from over-pulling the source past their own condition.
     private async ValueTask PullOneAsync()
     {
@@ -183,7 +183,7 @@ namespace Copse.Linq.Async.Stores
 
       if (!await _Feed.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
       {
-        Complete = true;
+        IsComplete = true;
         await _Feed.DisposeAsync().ConfigureAwait(false);
         _Feed = null;
         return;

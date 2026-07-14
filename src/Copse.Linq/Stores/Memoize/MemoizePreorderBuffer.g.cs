@@ -52,7 +52,7 @@ namespace Copse.Linq.Stores
     public int BufferedCount => _Values.Count;
 
     // True once the feed has exhausted: the buffer is the whole tree and every subtree is closed.
-    public bool Complete { get; private set; }
+    public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
@@ -66,7 +66,7 @@ namespace Copse.Linq.Stores
     // state machine, so replays over the captured region cost nothing async.
     public bool EnsureBuffered(int index)
     {
-      if (!Complete && _Values.Count <= index)
+      if (!IsComplete && _Values.Count <= index)
         return PullThenEnsureBuffered(index);
 
       return index < _Values.Count;
@@ -74,7 +74,7 @@ namespace Copse.Linq.Stores
 
     private bool PullThenEnsureBuffered(int index)
     {
-      while (!Complete && _Values.Count <= index)
+      while (!IsComplete && _Values.Count <= index)
         PullOne();
 
       return index < _Values.Count;
@@ -86,7 +86,7 @@ namespace Copse.Linq.Stores
     // buffers the skipped subtree, lazily, only when hopped over.
     public int EnsureSubtreeClosed(int index)
     {
-      if (!Complete && _SubtreeSizes[index] == 0)
+      if (!IsComplete && _SubtreeSizes[index] == 0)
         return PullThenEnsureSubtreeClosed(index);
 
       return _SubtreeSizes[index];
@@ -94,7 +94,7 @@ namespace Copse.Linq.Stores
 
     private int PullThenEnsureSubtreeClosed(int index)
     {
-      while (!Complete && _SubtreeSizes[index] == 0)
+      while (!IsComplete && _SubtreeSizes[index] == 0)
         PullOne();
 
       return _SubtreeSizes[index];
@@ -104,9 +104,9 @@ namespace Copse.Linq.Stores
     // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
     // the method call are hoisted out of the per-node loop -- this is Materialize's hot path,
     // where per-node overhead is the whole cost.
-    public void Consume()
+    public void Complete()
     {
-      if (Complete)
+      if (IsComplete)
         return;
 
       if (_Disposed)
@@ -135,13 +135,13 @@ namespace Copse.Linq.Stores
       while (_OpenParents.Count > 0)
         CloseOne();
 
-      Complete = true;
+      IsComplete = true;
       feed.Dispose();
       _Feed = null;
     }
 
     // Advance the feed to the next appended node, closing subtrees the depth deltas prove
-    // finished; on exhaustion close everything, latch Complete, and drop the feed.
+    // finished; on exhaustion close everything, latch IsComplete, and drop the feed.
     private void PullOne()
     {
       if (_Disposed)
@@ -171,7 +171,7 @@ namespace Copse.Linq.Stores
       while (_OpenParents.Count > 0)
         CloseOne();
 
-      Complete = true;
+      IsComplete = true;
       _Feed.Dispose();
       _Feed = null;
     }

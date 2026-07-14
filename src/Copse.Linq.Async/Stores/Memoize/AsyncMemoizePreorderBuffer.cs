@@ -50,7 +50,7 @@ namespace Copse.Linq.Async.Stores
     public int BufferedCount => _Values.Count;
 
     // True once the feed has exhausted: the buffer is the whole tree and every subtree is closed.
-    public bool Complete { get; private set; }
+    public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
@@ -64,7 +64,7 @@ namespace Copse.Linq.Async.Stores
     // state machine, so replays over the captured region cost nothing async.
     public ValueTask<bool> EnsureBufferedAsync(int index)
     {
-      if (!Complete && _Values.Count <= index)
+      if (!IsComplete && _Values.Count <= index)
         return PullThenEnsureBufferedAsync(index);
 
       return new ValueTask<bool>(index < _Values.Count);
@@ -72,7 +72,7 @@ namespace Copse.Linq.Async.Stores
 
     private async ValueTask<bool> PullThenEnsureBufferedAsync(int index)
     {
-      while (!Complete && _Values.Count <= index)
+      while (!IsComplete && _Values.Count <= index)
         await PullOneAsync().ConfigureAwait(false);
 
       return index < _Values.Count;
@@ -84,7 +84,7 @@ namespace Copse.Linq.Async.Stores
     // buffers the skipped subtree, lazily, only when hopped over.
     public ValueTask<int> EnsureSubtreeClosedAsync(int index)
     {
-      if (!Complete && _SubtreeSizes[index] == 0)
+      if (!IsComplete && _SubtreeSizes[index] == 0)
         return PullThenEnsureSubtreeClosedAsync(index);
 
       return new ValueTask<int>(_SubtreeSizes[index]);
@@ -92,7 +92,7 @@ namespace Copse.Linq.Async.Stores
 
     private async ValueTask<int> PullThenEnsureSubtreeClosedAsync(int index)
     {
-      while (!Complete && _SubtreeSizes[index] == 0)
+      while (!IsComplete && _SubtreeSizes[index] == 0)
         await PullOneAsync().ConfigureAwait(false);
 
       return _SubtreeSizes[index];
@@ -102,9 +102,9 @@ namespace Copse.Linq.Async.Stores
     // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
     // the method call are hoisted out of the per-node loop -- this is Materialize's hot path,
     // where per-node overhead is the whole cost.
-    public async ValueTask ConsumeAsync()
+    public async ValueTask CompleteAsync()
     {
-      if (Complete)
+      if (IsComplete)
         return;
 
       if (_Disposed)
@@ -133,13 +133,13 @@ namespace Copse.Linq.Async.Stores
       while (_OpenParents.Count > 0)
         CloseOne();
 
-      Complete = true;
+      IsComplete = true;
       await feed.DisposeAsync().ConfigureAwait(false);
       _Feed = null;
     }
 
     // Advance the feed to the next appended node, closing subtrees the depth deltas prove
-    // finished; on exhaustion close everything, latch Complete, and drop the feed.
+    // finished; on exhaustion close everything, latch IsComplete, and drop the feed.
     private async ValueTask PullOneAsync()
     {
       if (_Disposed)
@@ -169,7 +169,7 @@ namespace Copse.Linq.Async.Stores
       while (_OpenParents.Count > 0)
         CloseOne();
 
-      Complete = true;
+      IsComplete = true;
       await _Feed.DisposeAsync().ConfigureAwait(false);
       _Feed = null;
     }

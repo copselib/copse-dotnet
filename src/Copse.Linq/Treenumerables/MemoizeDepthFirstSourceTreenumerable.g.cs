@@ -27,13 +27,13 @@ namespace Copse.Linq.Treenumerables
 
     private readonly MemoizePreorderBuffer<TValue> _Buffer;
 
-    public bool IsComplete => _Buffer.Complete;
+    public bool IsComplete => _Buffer.IsComplete;
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
     // Both strategies drive the one capture: the capture's layout is fixed by the source's
     // dimension, and a completed capture serves both replays regardless.
-    public void Consume() => _Buffer.Consume();
+    public void Complete() => _Buffer.Complete();
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()
       => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(

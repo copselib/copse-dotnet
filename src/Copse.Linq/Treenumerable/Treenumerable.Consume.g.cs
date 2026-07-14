@@ -26,7 +26,7 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return;
       }
 
@@ -55,7 +55,7 @@ namespace Copse.Linq
       if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
       {
         Pin(lazyBuffer, suggestedStrategy);
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return;
       }
 
@@ -78,7 +78,7 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        lazyBuffer.Consume(TreeTraversalStrategy.DepthFirst);
+        lazyBuffer.Complete();
         return;
       }
 
@@ -98,7 +98,7 @@ namespace Copse.Linq
       if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
       {
         Pin(lazyBuffer, TreeTraversalStrategy.BreadthFirst);
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return;
       }
 

@@ -32,7 +32,7 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return lazyBuffer;
       }
 
@@ -40,7 +40,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      buffer.Consume();
+      buffer.Complete();
       return buffer;
     }
 
@@ -63,7 +63,7 @@ namespace Copse.Linq
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
         Pin(lazyBuffer, strategy);
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return WithNativeLayout(lazyBuffer, strategy);
       }
 
@@ -72,7 +72,7 @@ namespace Copse.Linq
 
       var buffer = source.Memoize();
       Pin(buffer, strategy);
-      buffer.Consume();
+      buffer.Complete();
       return buffer;
     }
 
@@ -124,7 +124,7 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return lazyBuffer;
       }
 
@@ -132,7 +132,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      buffer.Consume();
+      buffer.Complete();
       return buffer;
     }
 
@@ -140,7 +140,7 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        lazyBuffer.Consume();
+        lazyBuffer.Complete();
         return lazyBuffer;
       }
 
@@ -148,7 +148,7 @@ namespace Copse.Linq
         return completedBuffer;
 
       var buffer = source.Memoize();
-      buffer.Consume();
+      buffer.Complete();
       return buffer;
     }
   }

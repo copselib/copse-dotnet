@@ -52,22 +52,22 @@ namespace Copse.Linq.Treenumerables
 
     private bool _Disposed;
 
-    public bool IsComplete => _DepthFirstCapture?.Complete == true || _BreadthFirstCapture?.Complete == true;
+    public bool IsComplete => _DepthFirstCapture?.IsComplete == true || _BreadthFirstCapture?.IsComplete == true;
 
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public void Consume()
+    public void Complete()
     {
       // Complete the one capture; a fresh memo pins the depth-first layout (callers wanting a
       // different pin acquire a treenumerator in that dimension first -- acquisition IS the pin).
       if (_BreadthFirstCapture != null)
       {
-        _BreadthFirstCapture.Consume();
+        _BreadthFirstCapture.Complete();
         return;
       }
 
-      EnsureDepthFirstCapture().Consume();
+      EnsureDepthFirstCapture().Complete();
     }
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()

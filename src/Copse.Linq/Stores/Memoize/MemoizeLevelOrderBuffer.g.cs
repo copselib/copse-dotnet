@@ -71,7 +71,7 @@ namespace Copse.Linq.Stores
     public int BufferedCount => _Values.Count;
 
     // True once the feed has exhausted: the buffer is the whole tree and every span is closed.
-    public bool Complete { get; private set; }
+    public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TValue GetValue(int index) => _Values[index];
@@ -88,7 +88,7 @@ namespace Copse.Linq.Stores
     // the captured region cost nothing async.
     public bool EnsureRootAvailable(int k)
     {
-      if (!Complete && _FrontIndex < 0 && _RootCount <= k)
+      if (!IsComplete && _FrontIndex < 0 && _RootCount <= k)
         return PullThenEnsureRootAvailable(k);
 
       return k < _RootCount;
@@ -96,7 +96,7 @@ namespace Copse.Linq.Stores
 
     private bool PullThenEnsureRootAvailable(int k)
     {
-      while (!Complete && _FrontIndex < 0 && _RootCount <= k)
+      while (!IsComplete && _FrontIndex < 0 && _RootCount <= k)
         PullOne();
 
       return k < _RootCount;
@@ -107,7 +107,7 @@ namespace Copse.Linq.Stores
     // need not close unless the answer is "no more".
     public bool EnsureChildAvailable(int parentIndex, int k)
     {
-      if (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
+      if (!IsComplete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
         return PullThenEnsureChildAvailable(parentIndex, k);
 
       return k < _ChildCounts[parentIndex];
@@ -115,7 +115,7 @@ namespace Copse.Linq.Stores
 
     private bool PullThenEnsureChildAvailable(int parentIndex, int k)
     {
-      while (!Complete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
+      while (!IsComplete && _FrontIndex <= parentIndex && _ChildCounts[parentIndex] <= k)
         PullOne();
 
       return k < _ChildCounts[parentIndex];
@@ -125,9 +125,9 @@ namespace Copse.Linq.Stores
     // the source is retired. The bulk twin of PullOne: same per-visit logic, but the guards and
     // the method call are hoisted out of the per-visit loop -- this is Materialize's hot path,
     // where per-visit overhead is the whole cost.
-    public void Consume()
+    public void Complete()
     {
-      if (Complete)
+      if (IsComplete)
         return;
 
       if (_Disposed)
@@ -166,14 +166,14 @@ namespace Copse.Linq.Stores
         }
       }
 
-      Complete = true;
+      IsComplete = true;
       feed.Dispose();
       _Feed = null;
     }
 
     // Process one feed visit. Scheduling visits append (wiring the child into _FrontIndex's
     // span); each node's first visiting visit advances the front; revisits are structural
-    // no-ops. On exhaustion latch Complete and drop the feed. Per-visit granularity keeps the
+    // no-ops. On exhaustion latch IsComplete and drop the feed. Per-visit granularity keeps the
     // Ensure loops from over-pulling the source past their own condition.
     private void PullOne()
     {
@@ -185,7 +185,7 @@ namespace Copse.Linq.Stores
 
       if (!_Feed.MoveNext(NodeTraversalStrategies.TraverseAll))
       {
-        Complete = true;
+        IsComplete = true;
         _Feed.Dispose();
         _Feed = null;
         return;

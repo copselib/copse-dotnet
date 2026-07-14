@@ -25,13 +25,13 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly AsyncMemoizePreorderBuffer<TValue> _Buffer;
 
-    public bool IsComplete => _Buffer.Complete;
+    public bool IsComplete => _Buffer.IsComplete;
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
     // Both strategies drive the one capture: the capture's layout is fixed by the source's
     // dimension, and a completed capture serves both replays regardless.
-    public ValueTask ConsumeAsync() => _Buffer.ConsumeAsync();
+    public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
       => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(

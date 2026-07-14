@@ -24,11 +24,11 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly AsyncMemoizeLevelOrderBuffer<TValue> _Buffer;
 
-    public bool IsComplete => _Buffer.Complete;
+    public bool IsComplete => _Buffer.IsComplete;
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
-    public ValueTask ConsumeAsync() => _Buffer.ConsumeAsync();
+    public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
       => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
