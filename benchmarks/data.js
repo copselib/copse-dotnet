@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784050950672,
+  "lastUpdate": 1784050951036,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -56918,6 +56918,150 @@ window.BENCHMARK_DATA = {
             "value": 42826234.81250001,
             "unit": "ns",
             "range": "± 29691.499584980425"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a",
+          "message": "Docs: README carries the ratified promise; stale package docs flagged\n\n- README: \"all operations are lazy and compose without materializing\n  intermediate trees\" -- the claim the laziness policy superseded --\n  becomes the ratified wording: compose without materialization when\n  possible; capture is disclosed by return type and docs. The last\n  place the old promise survived, and the public-facing one.\n- PACKAGE_ARCHITECTURE.md: historical banner -- the doc records the\n  2026-07-04 package-split deliberation faithfully, but the neutral\n  layer has since been re-cut (Vocabulary/Traversal split out, the\n  store de-share, the node-context moves); pointers to the current\n  map.\n- ASYNC_CODEGEN.md: the not-generated list notes that the store SPIs,\n  reads, array stores, and ChildResult joined the generated set.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T17:32:24Z",
+          "tree_id": "5c0ca6476c50740b4d544f27f066b55d7c71a05d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a"
+        },
+        "date": 1784050950970,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 10921604.269791666,
+            "unit": "ns",
+            "range": "± 128842.8204812138"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 18883098.683333334,
+            "unit": "ns",
+            "range": "± 117638.19060276468"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3267526.593449519,
+            "unit": "ns",
+            "range": "± 21365.448826596617"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6909827.64453125,
+            "unit": "ns",
+            "range": "± 108778.22558741966"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 85595501.04444443,
+            "unit": "ns",
+            "range": "± 1095692.2998338055"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 130353225.94642857,
+            "unit": "ns",
+            "range": "± 872367.2449146752"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 30487241.464583334,
+            "unit": "ns",
+            "range": "± 320682.8702839017"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 45474804.84666667,
+            "unit": "ns",
+            "range": "± 563288.2334044541"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 10240655.378125,
+            "unit": "ns",
+            "range": "± 158099.9335100168"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 9775714.438541668,
+            "unit": "ns",
+            "range": "± 94199.49744777432"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2779497.554817708,
+            "unit": "ns",
+            "range": "± 21208.13818784947"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2726391.783203125,
+            "unit": "ns",
+            "range": "± 25244.404608556488"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 81449288.49999999,
+            "unit": "ns",
+            "range": "± 619934.4655942335"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 70542042.86666666,
+            "unit": "ns",
+            "range": "± 817298.992384917"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 27595380.858333334,
+            "unit": "ns",
+            "range": "± 239451.8542982017"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 17797277.695833333,
+            "unit": "ns",
+            "range": "± 206984.4133931341"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 85351056.9142857,
+            "unit": "ns",
+            "range": "± 1304610.7295323329"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 133217381.16666667,
+            "unit": "ns",
+            "range": "± 1380501.7265318849"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 16239822.0125,
+            "unit": "ns",
+            "range": "± 120986.88705308121"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 37778122.809523806,
+            "unit": "ns",
+            "range": "± 248644.59442797367"
           }
         ]
       }
