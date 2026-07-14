@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784070032174,
+  "lastUpdate": 1784070032567,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -29633,6 +29633,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
             "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cab189780b077809ebafde3a34ee0d41be68f92f",
+          "message": "Consume is mechanical again: the probes optimized for nobody\n\nJason's verdict, and the evidence was already in: Consume exists FOR\nunit testing -- \"walk this, really\" -- and the buffer probes gave it a\nconditional identity (\"walk, unless buffer, then settle\") that served\nan empty constituency. No product path calls the extension to settle a\nbuffer (Materialize and the Complete() member do that directly); every\nactual Consume-on-buffer caller wanted the walk, which is exactly why\nthe probes' only measurable effect was silently no-op'ing benchmark\nrows.\n\nReverted: all four Consume overloads walk a treenumerator to\nexhaustion unconditionally. A completed buffer replays (inert, source\nuntouched); a DEFERRED capture is forced by the walk -- what a test\nreaching for Consume wants; a fresh lazy buffer's capture completes as\na side effect. The suggestedStrategy naming dies with the probes (the\nstrategy is always honored again); the parameterless/strategy overload\nsplit stays (the silent-default wart was real independently).\n\nDrainExtensions DELETES -- it was Consume's true meaning wearing a\ndisguise; the benchmarks return to their historical Consume source\nshape, row meanings intact either way.\n\nWhat survives of the probe episode is everything that was actually\nright: the inertness contract, Complete()'s existence and name,\nMaterialize's probes and layout guarantee, the single-capture memo.\nThe surface ends at one word one meaning: Consume walks, Complete\nfinishes, Materialize delivers.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T22:50:29Z",
+          "tree_id": "35234f35f35a409893c3e67c5d0e8465b2946d2c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/cab189780b077809ebafde3a34ee0d41be68f92f"
+        },
+        "date": 1784070032495,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3792,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505986,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2277,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 284,
             "unit": "bytes"
           },
           {
