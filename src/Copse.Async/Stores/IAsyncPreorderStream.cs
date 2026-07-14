@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Stores
 {
-  // Async, struct-return twin of IPreorderStream (Copse.Primitives): the forward-only preorder
+  // Async, struct-return source of IPreorderStream (the generated sync twin): the forward-only preorder
   // protocol, read asynchronously. Reads return ValueTask<PreorderRead<TValue>> -- the struct-return
   // shape is mandatory (out params can't cross an await) and is the single codegen source the
   // generator transcribes into the sync IPreorderStream twin. IAsyncDisposable: the treenumerator

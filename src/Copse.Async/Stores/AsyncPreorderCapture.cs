@@ -21,11 +21,11 @@ namespace Copse.Async.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
-    /// <see cref="PreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncPreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyBuiltPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>
-    public static ValueTask<PreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
+    public static ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
       IAsyncDepthFirstTreenumerable<TValue> source)
       => CaptureCoreAsync<TValue, bool>(source, sideChannelSelector: null, sideChannel: null);
 
@@ -36,7 +36,7 @@ namespace Copse.Async.Stores
     /// node i). The hook for capture operators that need a per-node companion value
     /// (OrderChildrenBy's sort keys).
     /// </summary>
-    public static async ValueTask<(PreorderArrayStore<TValue> Store, TSide[] SideChannel)> CaptureFromAsync<TValue, TSide>(
+    public static async ValueTask<(AsyncPreorderArrayStore<TValue> Store, TSide[] SideChannel)> CaptureFromAsync<TValue, TSide>(
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector)
     {
@@ -46,7 +46,7 @@ namespace Copse.Async.Stores
       return (store, sideChannel.ToArray());
     }
 
-    private static async ValueTask<PreorderArrayStore<TValue>> CaptureCoreAsync<TValue, TSide>(
+    private static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureCoreAsync<TValue, TSide>(
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
@@ -82,7 +82,7 @@ namespace Copse.Async.Stores
         subtreeSizes[closedNode] = values.Count - closedNode;
       }
 
-      return new PreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray());
+      return new AsyncPreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray());
     }
   }
 }

@@ -18,11 +18,11 @@ namespace Copse.Async.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited breadth-first walk, TraverseAll -- into a completed
-    /// <see cref="LevelOrderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncLevelOrderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyBuiltLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
     /// to first use. Finite sources only, like every capture.
     /// </summary>
-    public static async ValueTask<LevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
+    public static async ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
       IAsyncBreadthFirstTreenumerable<TValue> source)
     {
       var values = new RefAppendOnlyList<TValue>();
@@ -63,7 +63,7 @@ namespace Copse.Async.Stores
         }
       }
 
-      return new LevelOrderArrayStore<TValue>(
+      return new AsyncLevelOrderArrayStore<TValue>(
         values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
 
@@ -75,7 +75,7 @@ namespace Copse.Async.Stores
     /// this is the one-shot form of the drain the stream-fed store used to do incrementally).
     /// Takes ownership: the stream (and whatever it owns) is disposed on return.
     /// </summary>
-    public static async ValueTask<LevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
+    public static async ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
       IAsyncLevelOrderStream<TValue> stream)
     {
       var values = new RefAppendOnlyList<TValue>();
@@ -125,7 +125,7 @@ namespace Copse.Async.Stores
         }
       }
 
-      return new LevelOrderArrayStore<TValue>(
+      return new AsyncLevelOrderArrayStore<TValue>(
         values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
   }

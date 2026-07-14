@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Stores
 {
-  // Async analog of Copse.ILevelOrderStore: the flat family's level-order store protocol for a
+  // Async source of ILevelOrderStore (its sync twin is generated from this file): the flat family's level-order store protocol for a
   // store that may still be GROWING from an ASYNC feed. The grow operations await; GetFirstChildIndex
   // and GetValue are pure reads of already-buffered data and stay synchronous. See ILevelOrderStore
   // for the full contract (the sync twin the codegen produces).

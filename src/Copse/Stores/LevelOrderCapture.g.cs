@@ -20,7 +20,7 @@ namespace Copse.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited breadth-first walk, TraverseAll -- into a completed
-    /// <see cref="LevelOrderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncLevelOrderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyBuiltLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
     /// to first use. Finite sources only, like every capture.
     /// </summary>

@@ -102,7 +102,7 @@ namespace Copse.Linq
       return new AsyncLevelOrderTreenumerable<TNode, AsyncLazyBuiltLevelOrderStore<TNode>>(mirror);
     }
 
-    private static async ValueTask<PreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
+    private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
       // 1. Capture flat preorder arrays (value + subtree size per node) from one awaited
       //    depth-first walk of the source -- the flat family's shared encode.
@@ -136,7 +136,7 @@ namespace Copse.Linq
           stack.Push(child);
       }
 
-      return new PreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);
+      return new AsyncPreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);
     }
   }
 }

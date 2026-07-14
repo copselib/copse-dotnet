@@ -1,0 +1,22 @@
+namespace Copse.Async.Stores
+{
+  // The struct-return result of one forward-only preorder read: HasValue == false means the
+  // stream is exhausted. The struct-return shape is mandatory on the async side (out params
+  // cannot cross an await -- the same constraint that made ChildResult replace
+  // IChildEnumerator's out-style child pull), and the sync twin is generated from this file so
+  // both colors read identically. Small and transient (returned and immediately consumed, never
+  // stored per-frame), so it carries no allocation cost.
+  public readonly struct PreorderRead<TValue>
+  {
+    public PreorderRead(TValue value, int depth)
+    {
+      HasValue = true;
+      Value = value;
+      Depth = depth;
+    }
+
+    public readonly bool HasValue;
+    public readonly TValue Value;
+    public readonly int Depth;
+  }
+}

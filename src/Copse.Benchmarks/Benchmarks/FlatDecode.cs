@@ -1,3 +1,4 @@
+using Copse.Stores;
 using BenchmarkDotNet.Attributes;
 using Copse;
 using Copse.Core;

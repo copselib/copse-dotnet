@@ -1,3 +1,4 @@
+using Copse.Async.Stores;
 using Copse.Async;
 using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
@@ -56,7 +57,7 @@ namespace Copse.Linq
       return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyBuiltPreorderStore<TAccumulate>>(scanned);
     }
 
-    private static async ValueTask<PreorderArrayStore<TAccumulate>> BuildLeaffixScanAsync<TSource, TAccumulate>(
+    private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixScanAsync<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
@@ -98,7 +99,7 @@ namespace Copse.Linq
       while (path.Count > 0)
         Close();
 
-      return new PreorderArrayStore<TAccumulate>(accumulations.ToArray(), subtreeSizes.ToArray());
+      return new AsyncPreorderArrayStore<TAccumulate>(accumulations.ToArray(), subtreeSizes.ToArray());
     }
   }
 }

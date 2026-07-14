@@ -1,3 +1,4 @@
+using Copse.Async.Stores;
 using Copse;
 using Copse.Async;
 using Copse.Async.Treenumerables;
@@ -446,20 +447,20 @@ namespace Copse.Async.Tests
 
     // Preorder-stream doubles: a sync one for the generated twin, and a genuinely-suspending async
     // one (Task.Yield on every read) for the driver. Both replay the same (value, depth) list.
-    private struct SyncPreorderStream : IPreorderStream<int>
+    private struct SyncPreorderStream : Copse.Stores.IPreorderStream<int>
     {
       private readonly (int Value, int Depth)[] _nodes;
       private int _i;
       public SyncPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; _i = 0; }
 
-      public PreorderRead<int> TryReadNext()
+      public Copse.Stores.PreorderRead<int> TryReadNext()
       {
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new PreorderRead<int>(v, d);
+        return new Copse.Stores.PreorderRead<int>(v, d);
       }
 
-      public PreorderRead<int> TrySkipToDepth(int maxDepth)
+      public Copse.Stores.PreorderRead<int> TrySkipToDepth(int maxDepth)
       {
         while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
         return TryReadNext();
@@ -496,16 +497,16 @@ namespace Copse.Async.Tests
 
     // Level-order-stream doubles: replay int[][] groups (group 0 roots, group k+1 = children of
     // node k). Sync for the generated twin, genuinely-suspending async for the driver.
-    private struct SyncLevelOrderStream : ILevelOrderStream<int>
+    private struct SyncLevelOrderStream : Copse.Stores.ILevelOrderStream<int>
     {
       private readonly int[][] _groups;
       private int _g, _i;
       public SyncLevelOrderStream(int[][] groups) { _groups = groups; _g = 0; _i = 0; }
 
-      public LevelOrderRead<int> TryReadNextInGroup()
+      public Copse.Stores.LevelOrderRead<int> TryReadNextInGroup()
       {
         if (_g >= _groups.Length || _i >= _groups[_g].Length) return default;
-        return new LevelOrderRead<int>(_groups[_g][_i++]);
+        return new Copse.Stores.LevelOrderRead<int>(_groups[_g][_i++]);
       }
 
       public int SkipGroupRemainder()

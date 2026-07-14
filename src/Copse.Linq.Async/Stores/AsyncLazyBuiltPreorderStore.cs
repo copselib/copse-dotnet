@@ -1,3 +1,4 @@
+using Copse.Async.Stores;
 using Copse.Async;
 using System;
 using System.Threading.Tasks;
@@ -21,13 +22,13 @@ namespace Copse.Linq.Async.Stores
   // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
   internal sealed class AsyncLazyBuiltPreorderStore<TValue> : IAsyncPreorderStore<TValue>
   {
-    public AsyncLazyBuiltPreorderStore(Func<ValueTask<PreorderArrayStore<TValue>>> build)
+    public AsyncLazyBuiltPreorderStore(Func<ValueTask<AsyncPreorderArrayStore<TValue>>> build)
     {
       _Build = build;
     }
 
-    private Func<ValueTask<PreorderArrayStore<TValue>>> _Build;
-    private PreorderArrayStore<TValue> _Store;
+    private Func<ValueTask<AsyncPreorderArrayStore<TValue>>> _Build;
+    private AsyncPreorderArrayStore<TValue> _Store;
 
     private async ValueTask EnsureBuiltAsync()
     {
@@ -46,13 +47,13 @@ namespace Copse.Linq.Async.Stores
       if (_Build != null)
         return BuildThenEnsureBufferedAsync(index);
 
-      return new ValueTask<bool>(_Store.EnsureBuffered(index));
+      return _Store.EnsureBufferedAsync(index);
     }
 
     private async ValueTask<bool> BuildThenEnsureBufferedAsync(int index)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
-      return _Store.EnsureBuffered(index);
+      return await _Store.EnsureBufferedAsync(index).ConfigureAwait(false);
     }
 
     public ValueTask<int> EnsureSubtreeClosedAsync(int index)
@@ -60,13 +61,13 @@ namespace Copse.Linq.Async.Stores
       if (_Build != null)
         return BuildThenEnsureSubtreeClosedAsync(index);
 
-      return new ValueTask<int>(_Store.EnsureSubtreeClosed(index));
+      return _Store.EnsureSubtreeClosedAsync(index);
     }
 
     private async ValueTask<int> BuildThenEnsureSubtreeClosedAsync(int index)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
-      return _Store.EnsureSubtreeClosed(index);
+      return await _Store.EnsureSubtreeClosedAsync(index).ConfigureAwait(false);
     }
 
     public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);

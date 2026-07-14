@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Stores
 {
-  // Async, struct-return twin of ILevelOrderStream (Copse.Primitives): the forward-only level-order
+  // Async, struct-return source of ILevelOrderStream (the generated sync twin): the forward-only level-order
   // protocol read asynchronously. The value read returns ValueTask<LevelOrderRead<TValue>> -- the
   // struct-return shape is mandatory (out params can't cross an await) and is the single codegen
   // source the generator transcribes into the sync ILevelOrderStream twin. The skip-count and

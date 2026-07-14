@@ -1,3 +1,4 @@
+using Copse.Async.Stores;
 using Copse.Async;
 using System;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ namespace Copse.Linq.Async.Stores
   // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x one-shot-build feed.
   internal sealed class AsyncLazyBuiltLevelOrderStore<TValue> : IAsyncLevelOrderStore<TValue>
   {
-    public AsyncLazyBuiltLevelOrderStore(Func<ValueTask<LevelOrderArrayStore<TValue>>> build)
+    public AsyncLazyBuiltLevelOrderStore(Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> build)
     {
       _Build = build;
     }
 
-    private Func<ValueTask<LevelOrderArrayStore<TValue>>> _Build;
-    private LevelOrderArrayStore<TValue> _Store;
+    private Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> _Build;
+    private AsyncLevelOrderArrayStore<TValue> _Store;
 
     private async ValueTask EnsureBuiltAsync()
     {
@@ -42,13 +43,13 @@ namespace Copse.Linq.Async.Stores
       if (_Build != null)
         return BuildThenEnsureRootAvailableAsync(k);
 
-      return new ValueTask<bool>(_Store.EnsureRootAvailable(k));
+      return _Store.EnsureRootAvailableAsync(k);
     }
 
     private async ValueTask<bool> BuildThenEnsureRootAvailableAsync(int k)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
-      return _Store.EnsureRootAvailable(k);
+      return await _Store.EnsureRootAvailableAsync(k).ConfigureAwait(false);
     }
 
     public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k)
@@ -56,13 +57,13 @@ namespace Copse.Linq.Async.Stores
       if (_Build != null)
         return BuildThenEnsureChildAvailableAsync(parentIndex, k);
 
-      return new ValueTask<bool>(_Store.EnsureChildAvailable(parentIndex, k));
+      return _Store.EnsureChildAvailableAsync(parentIndex, k);
     }
 
     private async ValueTask<bool> BuildThenEnsureChildAvailableAsync(int parentIndex, int k)
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
-      return _Store.EnsureChildAvailable(parentIndex, k);
+      return await _Store.EnsureChildAvailableAsync(parentIndex, k).ConfigureAwait(false);
     }
 
     public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);

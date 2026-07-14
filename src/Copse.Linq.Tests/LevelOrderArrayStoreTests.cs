@@ -1,3 +1,4 @@
+using Copse.Stores;
 using Copse;
 using Copse.Core;
 using Copse.Linq.Stores;

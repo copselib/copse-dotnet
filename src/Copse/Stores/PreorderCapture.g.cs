@@ -23,7 +23,7 @@ namespace Copse.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
-    /// <see cref="PreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncPreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyBuiltPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>

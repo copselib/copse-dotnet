@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Async.Stores
 {
-  // Async analog of Copse.IPreorderStore: the flat family's preorder store protocol for a store
+  // Async source of IPreorderStore (its sync twin is generated from this file): the flat family's preorder store protocol for a store
   // that may still be GROWING from an ASYNC feed (a lazy async memo suspended mid-capture). The
   // grow operations await -- they pull the underlying async stream just far enough to answer; a
   // completed capture satisfies them with a completed ValueTask. GetValue/GetSubtreeSize are pure
