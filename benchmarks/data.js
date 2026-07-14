@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784066536990,
+  "lastUpdate": 1784066537359,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -74573,6 +74573,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
             "value": 2341,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b743bf6f8cb40497adb79dc982dec733de3580f",
+          "message": "The buffer knows its shape: public NativeLayout, parameterless Consume\n\nThree refinements from review (Jason), landing together because they\nare one thought -- the buffer surface should say exactly what it is:\n\n- ILazyTreenumerableBuffer.ConsumeAsync() takes NO strategy: there is\n  only ever one capture, and completing it is the only thing consume\n  can mean. The parameter was the last piece of dual-buffer API shape\n  still standing (\"why does this take a strategy?\" had no good\n  answer). Pinning a layout is expressed the organic way -- ACQUIRING\n  a treenumerator in a dimension IS the pin (no nodes pulled) -- via\n  the new PinAsync helper, which Materialize(strategy) and the Consume\n  extension's suggestion path both use; it works for any\n  implementation, no internal seam required.\n- BufferLayout { Preorder, LevelOrder }: a dedicated enum for capture\n  encodings -- STORAGE vocabulary, deliberately distinct from\n  TreeTraversalStrategy (the TRAVERSAL vocabulary) even though they\n  split the same two ways, per the naming rule: a strategy is how you\n  WALK, a layout is how a capture is SHAPED.\n- NativeLayout goes PUBLIC on ITreenumerableBuffer (a capture knows\n  its shape; null only while a deferred dimension-dispatched build is\n  undecided). The internal tag interface deletes; foreign\n  implementations now self-report instead of being conservatively\n  transposed; the empty marker interface isn't empty anymore, and the\n  disclosure story gains an inspectable property.\n- The buffer types split one-type-per-file (BufferLayout,\n  ITreenumerableBuffer, ILazyTreenumerableBuffer), matching the\n  repo-wide convention; manifest entries follow.\n\nBREAKING (alpha, release-notes flag): ConsumeAsync(strategy) ->\nConsumeAsync(); ITreenumerableBuffer gains a required member;\nBufferLayout is new public surface.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T21:26:39Z",
+          "tree_id": "98ece8e118bf748f4193fbb7a1d607e27aa6f6a9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6b743bf6f8cb40497adb79dc982dec733de3580f"
+        },
+        "date": 1784066537293,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 620,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 831,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 3273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 27502412,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 26231,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 231315,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 532,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 564,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 3185,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 3308,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 3249,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 27503291,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 2107716,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 2337,
             "unit": "bytes"
           }
         ]
