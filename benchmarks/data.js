@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783990225880,
+  "lastUpdate": 1783990226223,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -69111,6 +69111,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
             "value": 1461,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 1412,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 1156,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2a6779681bf33b8de5c38944b491aa603452d4ca",
+          "message": "Capture factories: the flat family's encode direction, written once\n\nThe store cohesion pass's centerpiece (STORE_FAMILY_REVIEW.md decision\n1, placement option 3): Copse/Copse.Async gain a Stores/ layer --\nnamespace Copse(.Async).Stores -- holding the capture loops that\nInvert, OrderChildrenBy, benchmarks, and tests each re-derived\n(OPERATOR_SURFACE_MAP.md section 3).\n\n- PreorderCapture.CaptureFrom(source): shape A -- one depth-first walk\n  into a completed PreorderArrayStore (append on scheduling; open-node\n  stack backfills subtree sizes). The side-channel overload evaluates a\n  selector once per node against the SOURCE context into a\n  preorder-parallel array -- OrderChildrenBy's keys hook, which it\n  adopts at its rebase.\n- LevelOrderCapture.CaptureFrom(source): shape B in one-shot form (the\n  memo buffer's monotonic front-cursor parse) into a completed\n  LevelOrderArrayStore. Plain only -- the side-channel dual waits for a\n  consumer.\n- Placement is forced, not chosen: Copse.Primitives cannot see\n  treenumerators (color rule), and this layer already owns the\n  decoders -- encode + decode now live together. Public rather than\n  internal+IVT: no product-to-product IVT precedent exists, and the\n  stores they return are already public.\n- Invert's build is the first consumer: phase 1 rides the factory;\n  the zero-key LIFO mirror emit stays specialized (CI benchmark rows;\n  the generalized sort-each-group emission belongs to OrderChildrenBy).\n  LeaffixScan stays bespoke: its close-hook needs ChildAccumulations,\n  a Copse.Linq type this layer cannot reference -- the predicted\n  boundary of what one factory can absorb.\n- Shape A's arrival selector standardized on Mode == SchedulingNode,\n  with the VisitCount-1 equivalence documented once in the factory\n  header. CodeGen: manifest pair entries + the Copse.Async.Stores\n  using mapping (note: codegen does not create output directories).\n\nRound-trip tests pin both factories across the corpus (empty forest\nincluded); the side channel pinned preorder-parallel.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-13T23:11:52Z",
+          "tree_id": "fc9174c3030d91664e547c3e172fe780d4305e77",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2a6779681bf33b8de5c38944b491aa603452d4ca"
+        },
+        "date": 1783990226156,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 1492,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 1236,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 30855,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 60703,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 116735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 240839,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 845,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 845,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 3928,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 27502460,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 73034,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 478554,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 37908686,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 1940,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 1660,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 8391755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 1453,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 1446,
             "unit": "bytes"
           },
           {
