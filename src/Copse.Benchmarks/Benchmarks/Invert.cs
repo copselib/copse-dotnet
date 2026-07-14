@@ -17,28 +17,28 @@ namespace Copse.Benchmarks
     public void Dft_Triangle()
     {
       ITreenumerable<int> mirror = CanonicalTrees.MegaTriangleTree().Invert();
-      mirror.Consume(TreeTraversalStrategy.DepthFirst);
+      mirror.Drain(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
       ITreenumerable<int> mirror = CanonicalTrees.MegaTriangleTree().Invert();
-      mirror.Consume(TreeTraversalStrategy.BreadthFirst);
+      mirror.Drain(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
       ITreenumerable<int> mirror = CanonicalTrees.MegaChainTree().Invert();
-      mirror.Consume(TreeTraversalStrategy.DepthFirst);
+      mirror.Drain(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
       ITreenumerable<int> mirror = CanonicalTrees.MegaChainTree().Invert();
-      mirror.Consume(TreeTraversalStrategy.BreadthFirst);
+      mirror.Drain(TreeTraversalStrategy.BreadthFirst);
     }
   }
 }

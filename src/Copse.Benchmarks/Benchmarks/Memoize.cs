@@ -12,9 +12,10 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Buffer", "Memoize")]
   public class Memoize
   {
-    // Typed as plain trees ON PURPOSE: on ITreenumerableBuffer, Consume(strategy) resolves to
-    // the interface member -- a no-op on a completed capture. The plain-tree type resolves to
-    // the drain extension, which is the replay traversal being measured.
+    // Typed as plain trees ON PURPOSE, and drained through DrainExtensions.Drain: since the
+    // Consume probes (2026-07-14), Consume on a buffer settles the capture -- a no-op once
+    // complete -- so the REPLAY traversal these rows measure must drive a treenumerator
+    // explicitly.
     private ITreenumerable<int> _DftCapture;
     private ITreenumerable<int> _BftCapture;
 
@@ -31,19 +32,19 @@ namespace Copse.Benchmarks
 
     [Benchmark]
     public void Replay_Dft_over_DftCapture()
-      => _DftCapture.Consume(TreeTraversalStrategy.DepthFirst);
+      => _DftCapture.Drain(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Replay_Bft_over_DftCapture()
-      => _DftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
+      => _DftCapture.Drain(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public void Replay_Bft_over_BftCapture()
-      => _BftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
+      => _BftCapture.Drain(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public void Replay_Dft_over_BftCapture()
-      => _BftCapture.Consume(TreeTraversalStrategy.DepthFirst);
+      => _BftCapture.Drain(TreeTraversalStrategy.DepthFirst);
 
     // --- First pass THROUGH a replay: capture interleaved with the replay machinery (case 3)
     // -- distinct from Materialize, which drives the feed directly with no replay in the loop.
@@ -54,14 +55,14 @@ namespace Copse.Benchmarks
     public void FirstPass_Dft_Triangle()
     {
       ITreenumerable<int> memo = CanonicalTrees.MegaTriangleTree().Memoize();
-      memo.Consume(TreeTraversalStrategy.DepthFirst);
+      memo.Drain(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void FirstPass_Bft_Triangle()
     {
       ITreenumerable<int> memo = CanonicalTrees.MegaTriangleTree().Memoize();
-      memo.Consume(TreeTraversalStrategy.BreadthFirst);
+      memo.Drain(TreeTraversalStrategy.BreadthFirst);
     }
 
     // --- Laziness: a bounded prefix over an UNBOUNDED source captures only what the replay
