@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784042227567,
+  "lastUpdate": 1784042227938,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -60430,6 +60430,102 @@ window.BENCHMARK_DATA = {
             "value": 78242451.21428572,
             "unit": "ns",
             "range": "± 266293.8468927824"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "73ac946d4463dd36ae8a18c9dfd18db4772c8895",
+          "message": "Capture factories grow chunked: RefAppendOnlyList inside CaptureFrom\n\nFollow-up to the two anticipated allocation step changes on the Invert\nfamily (factory ToArray hand-off +8.4MB on Dft rows; eager BFT arm\n+2.5-3x on Bft rows): the factories' internal growth moves from\nList<T> (cumulative doubling churn) to RefAppendOnlyList<T> (chunked,\nslots never move), which gains a public ToArray -- one Array.Copy\nblock per partition -- as the hand-off to the completed store's flat\narrays. (Snapshot now delegates to it.)\n\nLocal ShortRun A/B vs the List version (alloc is the reliable axis;\nCI baselines in parens):\n- Dft_Triangle 48.2 -> 32.2MB, Dft_Chain 76.1 -> 68.1MB -- now BELOW\n  the pre-cleanup originals (42.1 / 71.4MB), which carried List\n  doubling churn of their own.\n- Bft_Triangle 60.4 -> 36.4MB, Bft_Chain 36.0 -> 24.0MB -- the gap to\n  the old incremental store (25.5 / 12.6MB) roughly halves; what\n  remains is the final ToArray arrays themselves. Closing that needs\n  a chunked COMPLETED store (no flat-array hand-off at all; the\n  Memoize*Store adapters are already that shape) -- noted in\n  STORE_FAMILY_REVIEW.md as the deeper follow-up, benchmark-gated.\n- Times flat-to-better on every row.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T15:01:33Z",
+          "tree_id": "dcaf465e45adccd0c627b5c1877a3b2fee14cee5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/73ac946d4463dd36ae8a18c9dfd18db4772c8895"
+        },
+        "date": 1784042227870,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106794385.81333333,
+            "unit": "ns",
+            "range": "± 773878.8025783343"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 87682536.73076923,
+            "unit": "ns",
+            "range": "± 288532.6610852541"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 299657164.9,
+            "unit": "ns",
+            "range": "± 3376455.7263641763"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 270545824.88461536,
+            "unit": "ns",
+            "range": "± 729450.9534615787"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 191384261.33333334,
+            "unit": "ns",
+            "range": "± 1584464.294624578"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 199079626.8666667,
+            "unit": "ns",
+            "range": "± 1787200.3641326167"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 111588789.9142857,
+            "unit": "ns",
+            "range": "± 75377.34995067073"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 88313279.71794873,
+            "unit": "ns",
+            "range": "± 335241.8319563321"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 496629423.26666665,
+            "unit": "ns",
+            "range": "± 2221186.9621231304"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 498149560.4166667,
+            "unit": "ns",
+            "range": "± 530958.9673232692"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 105072886.21538462,
+            "unit": "ns",
+            "range": "± 492418.1524648335"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 81191362.77142857,
+            "unit": "ns",
+            "range": "± 349344.4298383776"
           }
         ]
       }
