@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784050954003,
+  "lastUpdate": 1784050954367,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -70101,6 +70101,90 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/e69e7d44fca49c27a46f5c608ad9e038d66417c0"
         },
         "date": 1784047731426,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 807,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 348,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27502406,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231306,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214095,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 3715,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35151,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 342,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3291,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26207,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a",
+          "message": "Docs: README carries the ratified promise; stale package docs flagged\n\n- README: \"all operations are lazy and compose without materializing\n  intermediate trees\" -- the claim the laziness policy superseded --\n  becomes the ratified wording: compose without materialization when\n  possible; capture is disclosed by return type and docs. The last\n  place the old promise survived, and the public-facing one.\n- PACKAGE_ARCHITECTURE.md: historical banner -- the doc records the\n  2026-07-04 package-split deliberation faithfully, but the neutral\n  layer has since been re-cut (Vocabulary/Traversal split out, the\n  store de-share, the node-context moves); pointers to the current\n  map.\n- ASYNC_CODEGEN.md: the not-generated list notes that the store SPIs,\n  reads, array stores, and ChildResult joined the generated set.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T17:32:24Z",
+          "tree_id": "5c0ca6476c50740b4d544f27f066b55d7c71a05d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a"
+        },
+        "date": 1784050954297,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
