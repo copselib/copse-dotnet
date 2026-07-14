@@ -113,6 +113,8 @@ that using (so no orphaned using leaks into the twin).
 - **Hand-written sync that remains:** `TreenumeratorBase`/`Wrapper`, `EmptyTreenumerator`,
   `IChildEnumerator`, the `Copse.Linq.Traversal` shared structs, and `Copse.Primitives`
   (including the `Copse.Disposables` Rx lift — its async counterpart was written independently).
+  (Since the 2026-07-14 de-share, the store SPIs, read structs, completed array stores, and
+  `ChildResult` are all generated — their async sources are the single source of truth.)
 - **Async-only surface (no sync twin by design):** `ToListAsync`, the serializer's
   `TreeSerializer.StreamAsync` deserialize overloads (the sync deserializers predate them and
   have a different shape), `IAsyncCancelable`.

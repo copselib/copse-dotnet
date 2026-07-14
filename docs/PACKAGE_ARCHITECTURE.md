@@ -1,5 +1,16 @@
 # Package architecture (target state & migration ledger)
 
+> **HISTORICAL NOTE (2026-07-14): several statements below are superseded.** Since this was
+> written, the neutral layer was re-cut: `Copse.Vocabulary` and `Copse.Traversal` split out
+> as their own color-neutral projects (the vocabulary types left Core); the flat store
+> family was **de-shared** out of Primitives into per-color `Stores` layers (async sources →
+> generated sync twins); and the node-context types moved (`NodeContext`/
+> `NodeAndSiblingIndex` → `Copse.Traversal`, `ChildResult` → per-color beside its
+> contract). `Copse.Primitives` is now tree-free: collections + disposables only. Current
+> map: CLAUDE.md "Project Structure" (the color rule); store family:
+> [STORE_FAMILY_REVIEW.md](STORE_FAMILY_REVIEW.md). The deliberation below stands as the
+> decision record it was.
+>
 > **Status: DIRECTION DECIDED 2026-07-04; partially executed.** Records the package
 > layering worked out during the dependency-cleanup discussion, what has already moved,
 > and what remains. Companion to [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md)
