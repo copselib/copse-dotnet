@@ -31,7 +31,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // Both strategies drive the one capture: the capture's layout is fixed by the source's
     // dimension, and a completed capture serves both replays regardless.
-    public ValueTask ConsumeAsync(TreeTraversalStrategy strategy) => _Buffer.ConsumeAsync();
+    public ValueTask ConsumeAsync(TreeTraversalStrategy suggestedStrategy) => _Buffer.ConsumeAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
       => new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(

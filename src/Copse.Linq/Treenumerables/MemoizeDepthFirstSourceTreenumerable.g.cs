@@ -33,7 +33,7 @@ namespace Copse.Linq.Treenumerables
 
     // Both strategies drive the one capture: the capture's layout is fixed by the source's
     // dimension, and a completed capture serves both replays regardless.
-    public void Consume(TreeTraversalStrategy strategy) => _Buffer.Consume();
+    public void Consume(TreeTraversalStrategy suggestedStrategy) => _Buffer.Consume();
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()
       => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderBuffer<TValue>.Handle>(

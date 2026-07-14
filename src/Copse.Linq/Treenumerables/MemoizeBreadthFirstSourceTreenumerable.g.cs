@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerables
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
-    public void Consume(TreeTraversalStrategy strategy) => _Buffer.Consume();
+    public void Consume(TreeTraversalStrategy suggestedStrategy) => _Buffer.Consume();
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
       => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(

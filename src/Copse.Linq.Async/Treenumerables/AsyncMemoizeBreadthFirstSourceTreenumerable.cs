@@ -28,7 +28,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
-    public ValueTask ConsumeAsync(TreeTraversalStrategy strategy) => _Buffer.ConsumeAsync();
+    public ValueTask ConsumeAsync(TreeTraversalStrategy suggestedStrategy) => _Buffer.ConsumeAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
       => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(

@@ -46,22 +46,22 @@ namespace Copse.Linq
     /// the existing capture completes and the argument is deliberately IGNORED -- the
     /// at-most-once invariant outranks it. Callers who need the layout GUARANTEED use
     /// Materialize(strategy). A completed buffer is a no-op. A plain tree is drained in the
-    /// named dimension.
+    /// suggested dimension -- the one receiver where the suggestion is simply honored.
     /// </summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source,
-      TreeTraversalStrategy treeTraversalStrategy)
+      TreeTraversalStrategy suggestedStrategy)
     {
       if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        lazyBuffer.Consume(treeTraversalStrategy);
+        lazyBuffer.Consume(suggestedStrategy);
         return;
       }
 
       if (source is ITreenumerableBuffer<TNode>)
         return;
 
-      var treenumerator = source.GetTreenumerator(treeTraversalStrategy);
+      var treenumerator = source.GetTreenumerator(suggestedStrategy);
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {

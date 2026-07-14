@@ -47,23 +47,23 @@ namespace Copse.Linq
     /// the existing capture completes and the argument is deliberately IGNORED -- the
     /// at-most-once invariant outranks it. Callers who need the layout GUARANTEED use
     /// Materialize(strategy). A completed buffer is a no-op. A plain tree is drained in the
-    /// named dimension.
+    /// suggested dimension -- the one receiver where the suggestion is simply honored.
     /// </summary>
     public static async ValueTask ConsumeAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
-      TreeTraversalStrategy treeTraversalStrategy,
+      TreeTraversalStrategy suggestedStrategy,
       CancellationToken cancellationToken = default)
     {
       if (source is IAsyncLazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(treeTraversalStrategy).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync(suggestedStrategy).ConfigureAwait(false);
         return;
       }
 
       if (source is IAsyncTreenumerableBuffer<TNode>)
         return;
 
-      var treenumerator = source.GetAsyncTreenumerator(treeTraversalStrategy);
+      var treenumerator = source.GetAsyncTreenumerator(suggestedStrategy);
       await using (treenumerator.ConfigureAwait(false))
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {

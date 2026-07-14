@@ -64,6 +64,6 @@ namespace Copse.Linq.Treenumerables
     // argument is then deliberately IGNORED. Callers who need a specific layout GUARANTEED
     // use Materialize(strategy), whose deliverable is the buffer itself. A no-op iff
     // IsComplete.
-    void Consume(TreeTraversalStrategy strategy);
+    void Consume(TreeTraversalStrategy suggestedStrategy);
   }
 }

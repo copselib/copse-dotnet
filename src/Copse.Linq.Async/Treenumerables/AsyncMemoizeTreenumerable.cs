@@ -55,7 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public async ValueTask ConsumeAsync(TreeTraversalStrategy strategy)
+    public async ValueTask ConsumeAsync(TreeTraversalStrategy suggestedStrategy)
     {
       // The strategy is a PIN REQUEST, honored only while the memo is fresh: once a capture
       // exists, the invariant outranks the argument -- a source is never enumerated twice (a
@@ -73,7 +73,7 @@ namespace Copse.Linq.Async.Treenumerables
         return;
       }
 
-      if (strategy == TreeTraversalStrategy.DepthFirst)
+      if (suggestedStrategy == TreeTraversalStrategy.DepthFirst)
         await EnsureDepthFirstCapture().ConsumeAsync().ConfigureAwait(false);
       else
         await EnsureBreadthFirstCapture().ConsumeAsync().ConfigureAwait(false);

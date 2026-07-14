@@ -57,7 +57,7 @@ namespace Copse.Linq.Treenumerables
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public void Consume(TreeTraversalStrategy strategy)
+    public void Consume(TreeTraversalStrategy suggestedStrategy)
     {
       // The strategy is a PIN REQUEST, honored only while the memo is fresh: once a capture
       // exists, the invariant outranks the argument -- a source is never enumerated twice (a
@@ -75,7 +75,7 @@ namespace Copse.Linq.Treenumerables
         return;
       }
 
-      if (strategy == TreeTraversalStrategy.DepthFirst)
+      if (suggestedStrategy == TreeTraversalStrategy.DepthFirst)
         EnsureDepthFirstCapture().Consume();
       else
         EnsureBreadthFirstCapture().Consume();

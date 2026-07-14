@@ -62,6 +62,6 @@ namespace Copse.Linq.Async.Treenumerables
     // argument is then deliberately IGNORED. Callers who need a specific layout GUARANTEED
     // use Materialize(strategy), whose deliverable is the buffer itself. A no-op iff
     // IsComplete.
-    ValueTask ConsumeAsync(TreeTraversalStrategy strategy);
+    ValueTask ConsumeAsync(TreeTraversalStrategy suggestedStrategy);
   }
 }
