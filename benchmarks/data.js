@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784068471869,
+  "lastUpdate": 1784068472256,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -58750,6 +58750,150 @@ window.BENCHMARK_DATA = {
             "value": 34401817.45333333,
             "unit": "ns",
             "range": "± 442066.57763503713"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f4e80e13569bdaa0842719c42cfd9bd7ccef9c8",
+          "message": "The lazy buffer's completion method says what it does: Complete\n\nJason's observation: the member was named Consume because it was built\nalongside the Consume extension, but the two have opposite\ndispositions -- the extension DRAINS and discards (the MoreLINQ\nsense); the member FINISHES BUILDING. Post-single-capture it does\nexactly one thing, and the interface already names the state:\nIsComplete is the state, Complete() is the transition, and the doc\nline writes itself (\"drives the capture to completion; a no-op iff\nalready complete\"). Semantically it is Materialize's engine -- but it\ncannot literally be named Materialize: instance members shadow\nextension methods, so a void Materialize() member would silently\ncapture every fluent memo.Materialize() call.\n\n- ILazyTreenumerableBuffer.Consume()/ConsumeAsync() ->\n  Complete()/CompleteAsync(); the three memos follow.\n- The internal memo buffers' bulk-drive method renames too (one word,\n  one meaning: Consume now belongs solely to the drain extension) --\n  which collided with their bool Complete property in the sync twin,\n  resolved by renaming the property to IsComplete, matching the public\n  interface's shape exactly.\n- Also fixes a leftover: the D-narrow Consume extension was still\n  reaching the member through a roundabout extension re-resolution\n  (correct behavior, wrong path) -- now calls CompleteAsync() direct.\n\nBREAKING (alpha, release-notes flag): the interface member renamed.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T22:24:42Z",
+          "tree_id": "f1a4ae6de5444d412fa33d083519881538ca1518",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9f4e80e13569bdaa0842719c42cfd9bd7ccef9c8"
+        },
+        "date": 1784068472186,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12270650.703125,
+            "unit": "ns",
+            "range": "± 167198.3541228857"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22990932.22767857,
+            "unit": "ns",
+            "range": "± 33410.98712901657"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3787951.4779146635,
+            "unit": "ns",
+            "range": "± 6622.435125312677"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6781784.256266276,
+            "unit": "ns",
+            "range": "± 481527.7607695692"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 111172254.70666666,
+            "unit": "ns",
+            "range": "± 899461.0797729831"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 150395820.9642857,
+            "unit": "ns",
+            "range": "± 567292.7398945588"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 35319222.83111111,
+            "unit": "ns",
+            "range": "± 333159.6131559752"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 53328378.12087913,
+            "unit": "ns",
+            "range": "± 191097.87831685558"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11777523.808035715,
+            "unit": "ns",
+            "range": "± 21878.73881800903"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11054624.621875,
+            "unit": "ns",
+            "range": "± 83709.01932532135"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3076824.113839286,
+            "unit": "ns",
+            "range": "± 6912.555056027138"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3098049.507552083,
+            "unit": "ns",
+            "range": "± 18315.96955787895"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 103334993.96923076,
+            "unit": "ns",
+            "range": "± 300439.0350071791"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 80894384.91836736,
+            "unit": "ns",
+            "range": "± 252465.8295931149"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 33099375.206730768,
+            "unit": "ns",
+            "range": "± 25455.734542097278"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20736544.514583334,
+            "unit": "ns",
+            "range": "± 166703.93584458108"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 103599651.97142859,
+            "unit": "ns",
+            "range": "± 943460.0749388686"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 153434726.92857143,
+            "unit": "ns",
+            "range": "± 652934.4046367597"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19125793.254464287,
+            "unit": "ns",
+            "range": "± 22031.378078272202"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42699718.83928571,
+            "unit": "ns",
+            "range": "± 126652.75647496404"
           }
         ]
       }
