@@ -214,9 +214,6 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/IAsyncLazyTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/ILazyTreenumerableBuffer.g.cs",
         "IAsyncLazyTreenumerableBuffer", "ILazyTreenumerableBuffer", "Copse.Linq.Treenumerables"),
-      new("Copse.Linq.Async/Treenumerables/BufferLayout.cs",
-        "Copse.Linq/Treenumerables/BufferLayout.g.cs",
-        "BufferLayout", "BufferLayout", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderBuffer.cs",
         "Copse.Linq/Stores/Memoize/MemoizePreorderBuffer.g.cs",
