@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783991793586,
+  "lastUpdate": 1783991793876,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -63694,6 +63694,114 @@ window.BENCHMARK_DATA = {
             "value": 48289794.727272734,
             "unit": "ns",
             "range": "± 369604.97072656156"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2",
+          "message": "Invert's BFT-first arm goes eager; StreamFedLevelOrderStore retires\n\nPolicy-audit flag 5 + store review D4a, decided after discussion: the\nfull-source mirror's breadth-first-first arm now drains the streaming\nmirror ONCE into a completed level-order capture on the first replay\npull -- the same cost shape as the preorder arm -- via a new\nstream-shaped LevelOrderCapture.CaptureFrom(ILevelOrderStream): the\nstream-fed store's drain in one-shot form, still never synthesizing a\nvisit stream between the encodings (the 2.1-2.7x round trip stays\navoided).\n\nWhy: the tier-by-tier laziness this replaces was only ever real for a\nreplay abandoned WITHOUT disposal -- a contract violation -- because\nDispose completed the remaining capture anyway (the dispose-time O(n)\nsurprise the surface map flagged). One cost shape for both arms, no\nsurprise, and the source is released deterministically INSIDE the\nbuild (earlier than before).\n\nConsequences:\n- StreamFedLevelOrderStore DELETED (this arm was its only consumer);\n  its incremental machinery -- pull-one state, dispose-action\n  composition -- goes with it.\n- LazyBuiltLevelOrderStore's orphanhood ends exactly as the store\n  review predicted: it is the arm's deferral seam now.\n- Behavior pins updated: the two InvertTests that pinned incremental\n  growth + dispose-completes-capture now pin build-on-first-pull +\n  dispose-owes-nothing + source-released-inside-the-first-pull.\n\nBenchmark gate (Invert family, ShortRun A/B, same machine): Bft rows\nFASTER (Triangle 157.8->145.5ms, Chain 124.0->94.9ms; Dft controls\nbyte-identical alloc, time within cross-run noise). Allocation shows\nthe step change the benchmark header predicted: one-shot List+ToArray\nbuild churn ~2.5-3x the old incremental chunked store (Triangle\n24.4->60.4MB, Chain 12.0->36.0MB) -- transient, one-time, and still at\nor below the preorder arm's profile. Follow-up if CI rows object: swap\nthe factory drain onto RefAppendOnlyList.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T01:01:36Z",
+          "tree_id": "ccb573ea55f29f90df6bdbb88fd58f1b643ff09d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2"
+        },
+        "date": 1783991793824,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 63987217.04464286,
+            "unit": "ns",
+            "range": "± 139156.6000994802"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 108954940.5,
+            "unit": "ns",
+            "range": "± 952104.0078868337"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 43508235.93333333,
+            "unit": "ns",
+            "range": "± 464212.36645408534"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 121660911.6923077,
+            "unit": "ns",
+            "range": "± 533293.6835865136"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 20605115.165865384,
+            "unit": "ns",
+            "range": "± 20514.395618115588"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 77990511.35555555,
+            "unit": "ns",
+            "range": "± 1269230.437736767"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 88542645.32,
+            "unit": "ns",
+            "range": "± 1601380.1367154967"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 53826495.214285694,
+            "unit": "ns",
+            "range": "± 103559.89147681172"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 82363255.22857141,
+            "unit": "ns",
+            "range": "± 275418.2776971761"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41653876.22435897,
+            "unit": "ns",
+            "range": "± 248818.15932397364"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 89653220.23333333,
+            "unit": "ns",
+            "range": "± 243502.5523934212"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28679364.379166666,
+            "unit": "ns",
+            "range": "± 171782.20474212154"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 68604044.71428572,
+            "unit": "ns",
+            "range": "± 659517.6564110903"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 62297709.791666664,
+            "unit": "ns",
+            "range": "± 223974.42275390314"
           }
         ]
       }
