@@ -234,7 +234,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Consume_is_a_noop_once_the_capture_is_complete()
+    public void Consume_never_reenumerates_a_completed_capture()
     {
       var counting = new CountingTreenumerable<string>(TreeSerializer.DeserializeDepthFirstTree(RichTree));
       var memo = counting.Memoize();
@@ -242,7 +242,7 @@ namespace Copse.Linq.Tests
       memo.Consume(TreeTraversalStrategy.DepthFirst);
       Assert.IsTrue(memo.IsComplete);
 
-      // The invariant outranks the argument: a retired source is never re-enumerated.
+      // Both walks are replays over the one capture; the retired source is never re-enumerated.
       memo.Consume(TreeTraversalStrategy.BreadthFirst);
 
       Assert.AreEqual(1, counting.DepthFirstEnumerations);

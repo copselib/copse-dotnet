@@ -229,11 +229,12 @@ namespace Copse.Linq.Tests
       Assert.AreSame(mirror, mirror.Materialize());
     }
 
-    // Consume's buffer probes (the Materialize probes' terminal twin): a completed capture is
-    // already settled -- no replay work, no forced build -- and a lazy buffer typed as a plain
-    // tree still finishes its capture instead of being drained through a replay.
+    // Consume is MECHANICAL -- it walks anything, buffers included. The pins below say what
+    // that means for captures: a completed buffer replays without touching the source (inert),
+    // a deferred capture is FORCED by the walk, and a fresh memo's capture completes as a side
+    // effect of being walked. Minimum-work settling is Complete()/Materialize's job.
     [TestMethod]
-    public void Consume_is_a_no_op_on_a_completed_buffer()
+    public void Consume_walks_a_completed_buffer_without_touching_the_source()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
 
@@ -243,23 +244,28 @@ namespace Copse.Linq.Tests
       buffer.Consume(TreeTraversalStrategy.BreadthFirst);
 
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
-      Assert.AreEqual(0, counting.BreadthFirstEnumerations, "a settled capture is never re-consumed, whatever the declared layout");
+      Assert.AreEqual(0, counting.BreadthFirstEnumerations, "the walks replay the inert capture; the source is retired");
     }
 
     [TestMethod]
-    public void Consume_does_not_force_a_deferred_capture()
+    public void Consume_forces_a_deferred_capture_by_walking_it()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b,c)"));
 
       var mirror = counting.Invert();
       mirror.Consume();
 
-      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
-        "a buffer is settled by contract; its pinned build runs at most once, on first use");
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
+        "the walk runs the pinned build -- exactly what a test reaching for Consume wants");
+
+      mirror.Consume();
+
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
+        "the build ran at most once; further walks replay the inert capture");
     }
 
     [TestMethod]
-    public void Consume_finishes_a_lazy_buffer_through_the_plain_tree_type()
+    public void Consume_completes_a_lazy_buffer_as_a_side_effect_of_the_walk()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
 
@@ -268,7 +274,7 @@ namespace Copse.Linq.Tests
       ITreenumerable<string> plain = memo;
       plain.Consume();
 
-      Assert.IsTrue(memo.IsComplete, "Consume through the plain type must complete the capture, not drain a replay");
+      Assert.IsTrue(memo.IsComplete, "walking a fresh memo to exhaustion completes its capture");
       Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
     }
 

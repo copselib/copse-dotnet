@@ -228,14 +228,14 @@ namespace Copse.Benchmarks
     public void Sync()
     {
       var buffer = AsyncOverheadSources.GetSyncBinaryTree(Depth).Materialize();
-      buffer.Drain(TreeTraversalStrategy.DepthFirst);
+      buffer.Consume();
     }
 
     [Benchmark]
     public async ValueTask Async()
     {
       var buffer = await AsyncOverheadSources.GetAsyncBinaryTree(Depth).MaterializeAsync();
-      await buffer.DrainAsync(TreeTraversalStrategy.DepthFirst);
+      await buffer.ConsumeAsync();
     }
   }
 }

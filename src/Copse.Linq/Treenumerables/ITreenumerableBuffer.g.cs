@@ -19,9 +19,9 @@ namespace Copse.Linq.Treenumerables
   // CONTRACT -- a buffer is a capture, not a computation: traversing it is effect-free and
   // idempotent. A deferred capture may run its pinned build on first use, but that build runs
   // at most once and is itself a capture (anything effectful lives upstream of it and fires at
-  // most once, at capture time). The library optimizes on this everywhere -- Materialize
-  // returns a buffer as-is, Consume no-ops on one -- so an implementation whose traversal has
-  // observable effects is out of contract, not merely exotic.
+  // most once, at capture time). The library optimizes on this -- Materialize
+  // returns a compliant buffer as-is instead of re-capturing -- so an implementation whose
+  // traversal has observable effects is out of contract, not merely exotic.
   public interface ITreenumerableBuffer<TValue> : ITreenumerable<TValue>
   {
     // The storage encoding this capture holds natively -- a capture knows its shape. Null

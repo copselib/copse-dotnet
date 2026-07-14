@@ -3,36 +3,23 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerables;
 
 namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Terminal: fully settle the tree with the minimum work. A plain tree is driven to
-    /// exhaustion (depth-first) for its side effects, discarding the visit stream. A lazy buffer
-    /// completes its one capture (pinning the depth-first layout if nothing has pulled yet);
-    /// each node is fed exactly once, so side effects upstream of Memoize fire at most once per
-    /// node, at whatever moment the capture reaches it -- for a single-moment capture of an
-    /// impure source, Materialize. A completed buffer is already settled: a no-op (buffers are
-    /// inert captures by contract -- see <see cref="IAsyncTreenumerableBuffer{TValue}"/>; a
-    /// deferred capture stays deferred, its build pinned either way). Callers with a layout
-    /// preference use the strategy overload: the strategy pins a FRESH buffer's layout.
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Terminal: drives the tree to exhaustion (depth-first) for its side effects, discarding
+    /// the visit stream. MECHANICAL, unconditionally -- this is the hammer unit tests and
+    /// benchmarks rely on: a buffer is walked like anything else (its inert replay touches no
+    /// source), a deferred capture is forced by the walk, and a lazy buffer's capture completes
+    /// as a side effect of being walked. For settling a capture with the MINIMUM work instead,
+    /// use the lazy buffer's <c>Complete()</c> or <c>Materialize</c>. Awaitable -&gt; carries
+    /// the <c>Async</c> suffix.
     /// </summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source)
     {
-      if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
-      {
-        lazyBuffer.Complete();
-        return;
-      }
-
-      if (source is ITreenumerableBuffer<TNode>)
-        return;
-
       var treenumerator = source.GetTreenumerator(TreeTraversalStrategy.DepthFirst);
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
@@ -40,51 +27,21 @@ namespace Copse.Linq
         }
     }
 
-    /// <summary>
-    /// Consume with a declared capture layout. On a lazy buffer the strategy is a SUGGESTION
-    /// (a pin request): a fresh buffer's capture takes this layout; once anything has pulled,
-    /// the existing capture completes and the argument is deliberately IGNORED -- the
-    /// at-most-once invariant outranks it. Callers who need the layout GUARANTEED use
-    /// Materialize(strategy). A completed buffer is a no-op. A plain tree is drained in the
-    /// suggested dimension -- the one receiver where the suggestion is simply honored.
-    /// </summary>
+    /// <summary>As <c>ConsumeAsync(source)</c>, walking the named dimension.</summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source,
-      TreeTraversalStrategy suggestedStrategy)
+      TreeTraversalStrategy treeTraversalStrategy)
     {
-      if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
-      {
-        Pin(lazyBuffer, suggestedStrategy);
-        lazyBuffer.Complete();
-        return;
-      }
-
-      if (source is ITreenumerableBuffer<TNode>)
-        return;
-
-      var treenumerator = source.GetTreenumerator(suggestedStrategy);
+      var treenumerator = source.GetTreenumerator(treeTraversalStrategy);
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
         }
     }
 
-    /// <summary>
-    /// The depth-first-narrow entry, with the same buffer probes: in the caller's declared
-    /// depth-first world, a lazy buffer completes its depth-first capture, a completed buffer
-    /// no-ops, and a plain narrow source is drained.
-    /// </summary>
+    /// <summary>The depth-first-narrow entry: the same unconditional walk.</summary>
     public static void Consume<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
-      if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
-      {
-        lazyBuffer.Complete();
-        return;
-      }
-
-      if (source is ITreenumerableBuffer<TNode>)
-        return;
-
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
@@ -92,19 +49,9 @@ namespace Copse.Linq
         }
     }
 
-    /// <summary>The breadth-first-narrow twin of the entry above.</summary>
+    /// <summary>The breadth-first-narrow twin.</summary>
     public static void Consume<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
-      if (source is ILazyTreenumerableBuffer<TNode> lazyBuffer)
-      {
-        Pin(lazyBuffer, TreeTraversalStrategy.BreadthFirst);
-        lazyBuffer.Complete();
-        return;
-      }
-
-      if (source is ITreenumerableBuffer<TNode>)
-        return;
-
       var treenumerator = source.GetBreadthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
