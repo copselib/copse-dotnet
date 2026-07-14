@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784050952897,
+  "lastUpdate": 1784050953274,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -21838,6 +21838,54 @@ window.BENCHMARK_DATA = {
             "value": 19372852.3740625,
             "unit": "ns",
             "range": "± 6007998.59344969"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a",
+          "message": "Docs: README carries the ratified promise; stale package docs flagged\n\n- README: \"all operations are lazy and compose without materializing\n  intermediate trees\" -- the claim the laziness policy superseded --\n  becomes the ratified wording: compose without materialization when\n  possible; capture is disclosed by return type and docs. The last\n  place the old promise survived, and the public-facing one.\n- PACKAGE_ARCHITECTURE.md: historical banner -- the doc records the\n  2026-07-04 package-split deliberation faithfully, but the neutral\n  layer has since been re-cut (Vocabulary/Traversal split out, the\n  store de-share, the node-context moves); pointers to the current\n  map.\n- ASYNC_CODEGEN.md: the not-generated list notes that the store SPIs,\n  reads, array stores, and ChildResult joined the generated set.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T17:32:24Z",
+          "tree_id": "5c0ca6476c50740b4d544f27f066b55d7c71a05d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a"
+        },
+        "date": 1784050953207,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 7701093.110576923,
+            "unit": "ns",
+            "range": "± 69144.37251756058"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 13720153.369791666,
+            "unit": "ns",
+            "range": "± 65377.592721818546"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 12753405.44,
+            "unit": "ns",
+            "range": "± 212946.86453420602"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 11611308.87375992,
+            "unit": "ns",
+            "range": "± 529467.4907463935"
           }
         ]
       }
