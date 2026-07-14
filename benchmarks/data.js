@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783990228298,
+  "lastUpdate": 1783991792163,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -7486,6 +7486,150 @@ window.BENCHMARK_DATA = {
             "value": 199155594.96,
             "unit": "ns",
             "range": "± 690846.087859676"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2",
+          "message": "Invert's BFT-first arm goes eager; StreamFedLevelOrderStore retires\n\nPolicy-audit flag 5 + store review D4a, decided after discussion: the\nfull-source mirror's breadth-first-first arm now drains the streaming\nmirror ONCE into a completed level-order capture on the first replay\npull -- the same cost shape as the preorder arm -- via a new\nstream-shaped LevelOrderCapture.CaptureFrom(ILevelOrderStream): the\nstream-fed store's drain in one-shot form, still never synthesizing a\nvisit stream between the encodings (the 2.1-2.7x round trip stays\navoided).\n\nWhy: the tier-by-tier laziness this replaces was only ever real for a\nreplay abandoned WITHOUT disposal -- a contract violation -- because\nDispose completed the remaining capture anyway (the dispose-time O(n)\nsurprise the surface map flagged). One cost shape for both arms, no\nsurprise, and the source is released deterministically INSIDE the\nbuild (earlier than before).\n\nConsequences:\n- StreamFedLevelOrderStore DELETED (this arm was its only consumer);\n  its incremental machinery -- pull-one state, dispose-action\n  composition -- goes with it.\n- LazyBuiltLevelOrderStore's orphanhood ends exactly as the store\n  review predicted: it is the arm's deferral seam now.\n- Behavior pins updated: the two InvertTests that pinned incremental\n  growth + dispose-completes-capture now pin build-on-first-pull +\n  dispose-owes-nothing + source-released-inside-the-first-pull.\n\nBenchmark gate (Invert family, ShortRun A/B, same machine): Bft rows\nFASTER (Triangle 157.8->145.5ms, Chain 124.0->94.9ms; Dft controls\nbyte-identical alloc, time within cross-run noise). Allocation shows\nthe step change the benchmark header predicted: one-shot List+ToArray\nbuild churn ~2.5-3x the old incremental chunked store (Triangle\n24.4->60.4MB, Chain 12.0->36.0MB) -- transient, one-time, and still at\nor below the preorder arm's profile. Follow-up if CI rows object: swap\nthe factory drain onto RefAppendOnlyList.\n\nSuites: Linq 23,750 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T01:01:36Z",
+          "tree_id": "ccb573ea55f29f90df6bdbb88fd58f1b643ff09d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/edc687ff7a0f2ffdb1fe3775d5ae71cc69cd42c2"
+        },
+        "date": 1783991788698,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13637799.59375,
+            "unit": "ns",
+            "range": "± 43822.599839742994"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 20948877.41517857,
+            "unit": "ns",
+            "range": "± 109358.88874778312"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3597446.9993990385,
+            "unit": "ns",
+            "range": "± 4652.150024890367"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3594952.083658854,
+            "unit": "ns",
+            "range": "± 1910.4046717254043"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 116340102.25333333,
+            "unit": "ns",
+            "range": "± 520471.4712633942"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 148710671.81666666,
+            "unit": "ns",
+            "range": "± 760566.7532304942"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 50391491.491071425,
+            "unit": "ns",
+            "range": "± 207615.41423359135"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 51126047.37187501,
+            "unit": "ns",
+            "range": "± 1548097.2675930376"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46093490.48333333,
+            "unit": "ns",
+            "range": "± 157025.09517502002"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35575266.317948714,
+            "unit": "ns",
+            "range": "± 104323.69591793814"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26067599.941666666,
+            "unit": "ns",
+            "range": "± 27693.91702737333"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 17802108.329166666,
+            "unit": "ns",
+            "range": "± 71497.82230045786"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55106154.178571425,
+            "unit": "ns",
+            "range": "± 167260.3224976304"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 87682760.28205127,
+            "unit": "ns",
+            "range": "± 716198.1242590771"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15693793.76201923,
+            "unit": "ns",
+            "range": "± 24500.456566063476"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 13077569.80580357,
+            "unit": "ns",
+            "range": "± 15257.537955691861"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 460976161.3333333,
+            "unit": "ns",
+            "range": "± 586492.7672703057"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 578578921.2666667,
+            "unit": "ns",
+            "range": "± 1086678.7399449537"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 203709089.65040648,
+            "unit": "ns",
+            "range": "± 7184286.145416172"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 201416854.66666666,
+            "unit": "ns",
+            "range": "± 6021990.276766984"
           }
         ]
       }
