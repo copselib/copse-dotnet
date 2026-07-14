@@ -1,4 +1,4 @@
-namespace Copse
+namespace Copse.Async
 {
   /// <summary>
   /// The result of a child pull: whether a child was yielded and, if so, which one. A named result

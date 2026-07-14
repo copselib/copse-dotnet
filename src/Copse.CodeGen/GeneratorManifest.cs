@@ -62,6 +62,12 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
+      // ChildResult: the child-enumerator protocol's read struct, per-color beside its
+      // contract (IChildEnumerator / IAsyncChildEnumerator), identity-named like the reads.
+      new("Copse.Async/ChildResult.cs",
+        "Copse/ChildResult.g.cs",
+        "ChildResult", "ChildResult", "Copse"),
+
       // The store SPIs, reads, and completed array stores: each color owns its own (decided
       // 2026-07-14 -- the de-share; Primitives/FlatStores retired). Async is the source.
       new("Copse.Async/Stores/IAsyncPreorderStore.cs",

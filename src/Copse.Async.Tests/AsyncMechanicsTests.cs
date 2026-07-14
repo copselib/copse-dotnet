@@ -419,9 +419,9 @@ namespace Copse.Async.Tests
       private int _i;
       public SyncChildEnumerator(int[] children) { _children = children; _i = 0; }
 
-      public ChildResult<int> MoveNext()
+      public Copse.ChildResult<int> MoveNext()
       {
-        if (_i < _children.Length) { var child = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return new ChildResult<int>(child); }
+        if (_i < _children.Length) { var child = new NodeAndSiblingIndex<int>(_children[_i], _i); _i++; return new Copse.ChildResult<int>(child); }
         return default;
       }
 
@@ -434,10 +434,10 @@ namespace Copse.Async.Tests
       private int _i;
       public AsyncChildEnumerator(int[] children) { _children = children; }
 
-      public async ValueTask<ChildResult<int>> MoveNextAsync()
+      public async ValueTask<Copse.Async.ChildResult<int>> MoveNextAsync()
       {
         await Task.Yield(); // force real asynchrony on the child seam
-        if (_i < _children.Length) { var r = new ChildResult<int>(new NodeAndSiblingIndex<int>(_children[_i], _i)); _i++; return r; }
+        if (_i < _children.Length) { var r = new Copse.Async.ChildResult<int>(new NodeAndSiblingIndex<int>(_children[_i], _i)); _i++; return r; }
         return default;
       }
 
