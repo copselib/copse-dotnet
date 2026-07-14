@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784066535116,
+  "lastUpdate": 1784066535484,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -44282,6 +44282,66 @@ window.BENCHMARK_DATA = {
             "value": 92325116.46666665,
             "unit": "ns",
             "range": "± 1494152.641245776"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b743bf6f8cb40497adb79dc982dec733de3580f",
+          "message": "The buffer knows its shape: public NativeLayout, parameterless Consume\n\nThree refinements from review (Jason), landing together because they\nare one thought -- the buffer surface should say exactly what it is:\n\n- ILazyTreenumerableBuffer.ConsumeAsync() takes NO strategy: there is\n  only ever one capture, and completing it is the only thing consume\n  can mean. The parameter was the last piece of dual-buffer API shape\n  still standing (\"why does this take a strategy?\" had no good\n  answer). Pinning a layout is expressed the organic way -- ACQUIRING\n  a treenumerator in a dimension IS the pin (no nodes pulled) -- via\n  the new PinAsync helper, which Materialize(strategy) and the Consume\n  extension's suggestion path both use; it works for any\n  implementation, no internal seam required.\n- BufferLayout { Preorder, LevelOrder }: a dedicated enum for capture\n  encodings -- STORAGE vocabulary, deliberately distinct from\n  TreeTraversalStrategy (the TRAVERSAL vocabulary) even though they\n  split the same two ways, per the naming rule: a strategy is how you\n  WALK, a layout is how a capture is SHAPED.\n- NativeLayout goes PUBLIC on ITreenumerableBuffer (a capture knows\n  its shape; null only while a deferred dimension-dispatched build is\n  undecided). The internal tag interface deletes; foreign\n  implementations now self-report instead of being conservatively\n  transposed; the empty marker interface isn't empty anymore, and the\n  disclosure story gains an inspectable property.\n- The buffer types split one-type-per-file (BufferLayout,\n  ITreenumerableBuffer, ILazyTreenumerableBuffer), matching the\n  repo-wide convention; manifest entries follow.\n\nBREAKING (alpha, release-notes flag): ConsumeAsync(strategy) ->\nConsumeAsync(); ITreenumerableBuffer gains a required member;\nBufferLayout is new public surface.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T21:26:39Z",
+          "tree_id": "98ece8e118bf748f4193fbb7a1d607e27aa6f6a9",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6b743bf6f8cb40497adb79dc982dec733de3580f"
+        },
+        "date": 1784066535416,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 74468523.08571428,
+            "unit": "ns",
+            "range": "± 603070.5517441982"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10795066.358333332,
+            "unit": "ns",
+            "range": "± 172734.4122763879"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 130624547.48333333,
+            "unit": "ns",
+            "range": "± 456677.0062901157"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17024984.964583334,
+            "unit": "ns",
+            "range": "± 155931.95673116625"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 172438526.4,
+            "unit": "ns",
+            "range": "± 1230019.1470575365"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 149215085.58333334,
+            "unit": "ns",
+            "range": "± 1551818.9812068436"
           }
         ]
       }
