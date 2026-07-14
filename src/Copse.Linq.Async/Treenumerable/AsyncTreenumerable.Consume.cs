@@ -26,7 +26,7 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(TreeTraversalStrategy.DepthFirst).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
         return;
       }
 
@@ -56,7 +56,8 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(suggestedStrategy).ConfigureAwait(false);
+        await PinAsync(lazyBuffer, suggestedStrategy).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
         return;
       }
 
@@ -100,7 +101,8 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TNode> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(TreeTraversalStrategy.BreadthFirst).ConfigureAwait(false);
+        await PinAsync(lazyBuffer, TreeTraversalStrategy.BreadthFirst).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
         return;
       }
 

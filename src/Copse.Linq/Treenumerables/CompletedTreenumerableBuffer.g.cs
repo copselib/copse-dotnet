@@ -15,9 +15,9 @@ namespace Copse.Linq.Treenumerables
   // The inner may build lazily on first acquisition; "completed" is about there being no live
   // feed to retire, not about eagerness. (The flat-store treenumerable is in Copse and cannot
   // implement this Copse.Linq interface directly, hence the wrapper.)
-  internal sealed class CompletedTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
+  internal sealed class CompletedTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>
   {
-    public CompletedTreenumerableBuffer(ITreenumerable<TValue> capture, TreeTraversalStrategy? nativeLayout)
+    public CompletedTreenumerableBuffer(ITreenumerable<TValue> capture, BufferLayout? nativeLayout)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
-    public TreeTraversalStrategy? NativeLayout { get; }
+    public BufferLayout? NativeLayout { get; }
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _Capture.GetDepthFirstTreenumerator();
 

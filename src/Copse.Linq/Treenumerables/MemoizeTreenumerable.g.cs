@@ -30,13 +30,13 @@ namespace Copse.Linq.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class MemoizeTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
+  internal sealed class MemoizeTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
   {
     // The pinned layout, null while fresh (nothing has pulled or consumed yet).
-    public TreeTraversalStrategy? NativeLayout
-      => _DepthFirstCapture != null ? TreeTraversalStrategy.DepthFirst
-        : _BreadthFirstCapture != null ? TreeTraversalStrategy.BreadthFirst
-        : (TreeTraversalStrategy?)null;
+    public BufferLayout? NativeLayout
+      => _DepthFirstCapture != null ? BufferLayout.Preorder
+        : _BreadthFirstCapture != null ? BufferLayout.LevelOrder
+        : (BufferLayout?)null;
 
     public MemoizeTreenumerable(ITreenumerable<TValue> source)
     {
@@ -57,28 +57,17 @@ namespace Copse.Linq.Treenumerables
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public void Consume(TreeTraversalStrategy suggestedStrategy)
+    public void Consume()
     {
-      // The strategy is a PIN REQUEST, honored only while the memo is fresh: once a capture
-      // exists, the invariant outranks the argument -- a source is never enumerated twice (a
-      // second pass over an impure source could capture a DIFFERENT tree), so the existing
-      // capture is completed whatever layout was asked for.
-      if (_DepthFirstCapture != null)
-      {
-        _DepthFirstCapture.Consume();
-        return;
-      }
-
+      // Complete the one capture; a fresh memo pins the depth-first layout (callers wanting a
+      // different pin acquire a treenumerator in that dimension first -- acquisition IS the pin).
       if (_BreadthFirstCapture != null)
       {
         _BreadthFirstCapture.Consume();
         return;
       }
 
-      if (suggestedStrategy == TreeTraversalStrategy.DepthFirst)
-        EnsureDepthFirstCapture().Consume();
-      else
-        EnsureBreadthFirstCapture().Consume();
+      EnsureDepthFirstCapture().Consume();
     }
 
     public ITreenumerator<TValue> GetDepthFirstTreenumerator()

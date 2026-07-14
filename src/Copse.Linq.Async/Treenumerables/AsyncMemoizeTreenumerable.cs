@@ -28,13 +28,13 @@ namespace Copse.Linq.Async.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class AsyncMemoizeTreenumerable<TValue> : IAsyncLazyTreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
+  internal sealed class AsyncMemoizeTreenumerable<TValue> : IAsyncLazyTreenumerableBuffer<TValue>
   {
     // The pinned layout, null while fresh (nothing has pulled or consumed yet).
-    public TreeTraversalStrategy? NativeLayout
-      => _DepthFirstCapture != null ? TreeTraversalStrategy.DepthFirst
-        : _BreadthFirstCapture != null ? TreeTraversalStrategy.BreadthFirst
-        : (TreeTraversalStrategy?)null;
+    public BufferLayout? NativeLayout
+      => _DepthFirstCapture != null ? BufferLayout.Preorder
+        : _BreadthFirstCapture != null ? BufferLayout.LevelOrder
+        : (BufferLayout?)null;
 
     public AsyncMemoizeTreenumerable(IAsyncTreenumerable<TValue> source)
     {
@@ -55,28 +55,17 @@ namespace Copse.Linq.Async.Treenumerables
     public int GetBufferedCount()
       => _DepthFirstCapture?.BufferedCount ?? _BreadthFirstCapture?.BufferedCount ?? 0;
 
-    public async ValueTask ConsumeAsync(TreeTraversalStrategy suggestedStrategy)
+    public async ValueTask ConsumeAsync()
     {
-      // The strategy is a PIN REQUEST, honored only while the memo is fresh: once a capture
-      // exists, the invariant outranks the argument -- a source is never enumerated twice (a
-      // second pass over an impure source could capture a DIFFERENT tree), so the existing
-      // capture is completed whatever layout was asked for.
-      if (_DepthFirstCapture != null)
-      {
-        await _DepthFirstCapture.ConsumeAsync().ConfigureAwait(false);
-        return;
-      }
-
+      // Complete the one capture; a fresh memo pins the depth-first layout (callers wanting a
+      // different pin acquire a treenumerator in that dimension first -- acquisition IS the pin).
       if (_BreadthFirstCapture != null)
       {
         await _BreadthFirstCapture.ConsumeAsync().ConfigureAwait(false);
         return;
       }
 
-      if (suggestedStrategy == TreeTraversalStrategy.DepthFirst)
-        await EnsureDepthFirstCapture().ConsumeAsync().ConfigureAwait(false);
-      else
-        await EnsureBreadthFirstCapture().ConsumeAsync().ConfigureAwait(false);
+      await EnsureDepthFirstCapture().ConsumeAsync().ConfigureAwait(false);
     }
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()

@@ -60,7 +60,8 @@ namespace Copse.Linq
     {
       if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        await lazyBuffer.ConsumeAsync(strategy).ConfigureAwait(false);
+        await PinAsync(lazyBuffer, strategy).ConfigureAwait(false);
+        await lazyBuffer.ConsumeAsync().ConfigureAwait(false);
         return await WithNativeLayoutAsync(lazyBuffer, strategy).ConfigureAwait(false);
       }
 
@@ -68,8 +69,19 @@ namespace Copse.Linq
         return await WithNativeLayoutAsync(completedBuffer, strategy).ConfigureAwait(false);
 
       var buffer = source.Memoize();
-      await buffer.ConsumeAsync(strategy).ConfigureAwait(false);
+      await PinAsync(buffer, strategy).ConfigureAwait(false);
+      await buffer.ConsumeAsync().ConfigureAwait(false);
       return buffer;
+    }
+
+    // Pin a fresh lazy buffer's capture layout: ACQUIRING a treenumerator in the requested
+    // dimension is the pin (the capture is created for that dimension); no nodes are pulled,
+    // and it is harmless when a pin already exists. The organic pin, used wherever a strategy
+    // names the layout a fresh capture should take.
+    private static async ValueTask PinAsync<TValue>(IAsyncLazyTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
+    {
+      var treenumerator = buffer.GetAsyncTreenumerator(strategy);
+      await treenumerator.DisposeAsync().ConfigureAwait(false);
     }
 
     // The layout guarantee's back half: reuse a buffer that already complies (recognized via
@@ -80,7 +92,9 @@ namespace Copse.Linq
       IAsyncTreenumerableBuffer<TValue> buffer,
       TreeTraversalStrategy strategy)
     {
-      if (buffer is IAsyncLayoutTaggedBuffer tagged && tagged.NativeLayout == strategy)
+      var requestedLayout = strategy == TreeTraversalStrategy.DepthFirst ? BufferLayout.Preorder : BufferLayout.LevelOrder;
+
+      if (buffer.NativeLayout == requestedLayout)
         return buffer;
 
       if (strategy == TreeTraversalStrategy.DepthFirst)
@@ -89,14 +103,14 @@ namespace Copse.Linq
 
         return new AsyncCompletedTreenumerableBuffer<TValue>(
           new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
-          TreeTraversalStrategy.DepthFirst);
+          BufferLayout.Preorder);
       }
 
       var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(buffer).ConfigureAwait(false);
 
       return new AsyncCompletedTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
-        TreeTraversalStrategy.BreadthFirst);
+        BufferLayout.LevelOrder);
     }
 
     /// <summary>

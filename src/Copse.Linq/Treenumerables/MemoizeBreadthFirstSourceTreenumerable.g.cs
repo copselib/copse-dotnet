@@ -14,10 +14,10 @@ namespace Copse.Linq.Treenumerables
   // playback, depth-first replays ride the same capture cross-order. Notably this is the ONLY
   // road to the depth-first dimension of a breadth-first-only source (there is no bounded
   // re-scan strategy for that direction) -- the escalation the split makes explicit.
-  internal sealed class MemoizeBreadthFirstSourceTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>, IAsyncLayoutTaggedBuffer
+  internal sealed class MemoizeBreadthFirstSourceTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
   {
     // The capture layout is fixed by the source's single dimension.
-    public TreeTraversalStrategy? NativeLayout => TreeTraversalStrategy.BreadthFirst;
+    public BufferLayout? NativeLayout => BufferLayout.LevelOrder;
 
     public MemoizeBreadthFirstSourceTreenumerable(IBreadthFirstTreenumerable<TValue> source)
     {
@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerables
 
     public int GetBufferedCount() => _Buffer.BufferedCount;
 
-    public void Consume(TreeTraversalStrategy suggestedStrategy) => _Buffer.Consume();
+    public void Consume() => _Buffer.Consume();
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
       => new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderBuffer<TValue>.Handle>(

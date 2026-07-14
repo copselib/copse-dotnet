@@ -62,7 +62,8 @@ namespace Copse.Linq
     {
       if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
       {
-        lazyBuffer.Consume(strategy);
+        Pin(lazyBuffer, strategy);
+        lazyBuffer.Consume();
         return WithNativeLayout(lazyBuffer, strategy);
       }
 
@@ -70,8 +71,19 @@ namespace Copse.Linq
         return WithNativeLayout(completedBuffer, strategy);
 
       var buffer = source.Memoize();
-      buffer.Consume(strategy);
+      Pin(buffer, strategy);
+      buffer.Consume();
       return buffer;
+    }
+
+    // Pin a fresh lazy buffer's capture layout: ACQUIRING a treenumerator in the requested
+    // dimension is the pin (the capture is created for that dimension); no nodes are pulled,
+    // and it is harmless when a pin already exists. The organic pin, used wherever a strategy
+    // names the layout a fresh capture should take.
+    private static void Pin<TValue>(ILazyTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
+    {
+      var treenumerator = buffer.GetTreenumerator(strategy);
+      treenumerator.Dispose();
     }
 
     // The layout guarantee's back half: reuse a buffer that already complies (recognized via
@@ -82,7 +94,9 @@ namespace Copse.Linq
       ITreenumerableBuffer<TValue> buffer,
       TreeTraversalStrategy strategy)
     {
-      if (buffer is IAsyncLayoutTaggedBuffer tagged && tagged.NativeLayout == strategy)
+      var requestedLayout = strategy == TreeTraversalStrategy.DepthFirst ? BufferLayout.Preorder : BufferLayout.LevelOrder;
+
+      if (buffer.NativeLayout == requestedLayout)
         return buffer;
 
       if (strategy == TreeTraversalStrategy.DepthFirst)
@@ -91,14 +105,14 @@ namespace Copse.Linq
 
         return new CompletedTreenumerableBuffer<TValue>(
           new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(preorderStore),
-          TreeTraversalStrategy.DepthFirst);
+          BufferLayout.Preorder);
       }
 
       var levelOrderStore = LevelOrderCapture.CaptureFrom(buffer);
 
       return new CompletedTreenumerableBuffer<TValue>(
         new LevelOrderTreenumerable<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore),
-        TreeTraversalStrategy.BreadthFirst);
+        BufferLayout.LevelOrder);
     }
 
     /// <summary>

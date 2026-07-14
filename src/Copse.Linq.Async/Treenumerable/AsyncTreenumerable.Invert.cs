@@ -72,7 +72,7 @@ namespace Copse.Linq
     // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static IAsyncTreenumerableBuffer<TNode> DeferredMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
       => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderMirror(source)), TreeTraversalStrategy.DepthFirst);
+        AsyncTree.Lazy(() => PreorderMirror(source)), BufferLayout.Preorder);
 
     private static IAsyncTreenumerable<TNode> PreorderMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {

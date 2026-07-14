@@ -3,7 +3,6 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using System;
 
 namespace Copse.Linq.Treenumerables
 {
@@ -15,7 +14,7 @@ namespace Copse.Linq.Treenumerables
   // Deliberately NOT disposable: a completed capture holds only managed arrays, with no live
   // source feed to retire, so there is nothing to dispose and it chains freely through the
   // fluent surface. The still-growing case -- which DOES hold a live feed -- is
-  // the lazy buffer below.
+  // IAsyncLazyTreenumerableBuffer.
   //
   // CONTRACT -- a buffer is a capture, not a computation: traversing it is effect-free and
   // idempotent. A deferred capture may run its pinned build on first use, but that build runs
@@ -25,45 +24,10 @@ namespace Copse.Linq.Treenumerables
   // observable effects is out of contract, not merely exotic.
   public interface ITreenumerableBuffer<TValue> : ITreenumerable<TValue>
   {
-  }
-
-  // INTERNAL layout tag: which encoding a capture holds natively (null = not yet determined --
-  // a deferred dimension-dispatched build). Materialize's layout guarantee probes this to
-  // reuse a compliant buffer instead of transposing; implementations the library does not
-  // recognize are transposed conservatively. Deliberately not on the public buffer interface
-  // until an external implementor needs it.
-  internal interface IAsyncLayoutTaggedBuffer
-  {
-    TreeTraversalStrategy? NativeLayout { get; }
-  }
-
-  // A buffer still backed by a LIVE source feed: the lazily-growing capture Memoize returns.
-  // It holds inner treenumerators paused mid-traversal over the source (the captured data
-  // itself is just managed memory), so it is disposable -- disposing stops all future source
-  // consumption: enumerators already replaying keep working over the captured region, but one
-  // that needs data beyond it throws ObjectDisposedException.
-  //
-  // Because it IS a treenumerable buffer it composes anywhere a capture is expected; but the
-  // fluent surface sees only the non-disposable base, so the caller keeps this reference to
-  // dispose it (a chain typed as the base will not).
-  public interface ILazyTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>, IDisposable
-  {
-    // True once the capture is complete: the whole tree is held and the source is permanently
-    // retired -- no future enumeration, in either dimension, touches it again.
-    bool IsComplete { get; }
-
-    // Nodes captured so far -- there is only ever ONE capture, whose layout the first
-    // acquisition (or consume) pinned. Not a progress fraction: the tree's size is unknown
-    // until the capture completes.
-    int GetBufferedCount();
-
-    // Drive the capture to completion. The strategy is a SUGGESTION (a pin request), honored
-    // only while the buffer is fresh (nothing captured yet): it names the layout the capture
-    // takes. Once a capture exists the invariant outranks the argument -- a source is never
-    // enumerated twice, so the existing capture completes whatever layout was asked for; the
-    // argument is then deliberately IGNORED. Callers who need a specific layout GUARANTEED
-    // use Materialize(strategy), whose deliverable is the buffer itself. A no-op iff
-    // IsComplete.
-    void Consume(TreeTraversalStrategy suggestedStrategy);
+    // The storage encoding this capture holds natively -- a capture knows its shape. Null
+    // only while a deferred, dimension-dispatched build has not yet decided (the layout is
+    // then pinned by the first pull). Materialize's layout guarantee reuses a compliant
+    // buffer and transposes a mismatched (or undecided) one.
+    BufferLayout? NativeLayout { get; }
   }
 }
