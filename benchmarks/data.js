@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784068473805,
+  "lastUpdate": 1784068474201,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -44702,6 +44702,66 @@ window.BENCHMARK_DATA = {
             "value": 149215085.58333334,
             "unit": "ns",
             "range": "± 1551818.9812068436"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f4e80e13569bdaa0842719c42cfd9bd7ccef9c8",
+          "message": "The lazy buffer's completion method says what it does: Complete\n\nJason's observation: the member was named Consume because it was built\nalongside the Consume extension, but the two have opposite\ndispositions -- the extension DRAINS and discards (the MoreLINQ\nsense); the member FINISHES BUILDING. Post-single-capture it does\nexactly one thing, and the interface already names the state:\nIsComplete is the state, Complete() is the transition, and the doc\nline writes itself (\"drives the capture to completion; a no-op iff\nalready complete\"). Semantically it is Materialize's engine -- but it\ncannot literally be named Materialize: instance members shadow\nextension methods, so a void Materialize() member would silently\ncapture every fluent memo.Materialize() call.\n\n- ILazyTreenumerableBuffer.Consume()/ConsumeAsync() ->\n  Complete()/CompleteAsync(); the three memos follow.\n- The internal memo buffers' bulk-drive method renames too (one word,\n  one meaning: Consume now belongs solely to the drain extension) --\n  which collided with their bool Complete property in the sync twin,\n  resolved by renaming the property to IsComplete, matching the public\n  interface's shape exactly.\n- Also fixes a leftover: the D-narrow Consume extension was still\n  reaching the member through a roundabout extension re-resolution\n  (correct behavior, wrong path) -- now calls CompleteAsync() direct.\n\nBREAKING (alpha, release-notes flag): the interface member renamed.\n\nSuites: Linq 23,756 / engine 459 / async 54 -- full run green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T22:24:42Z",
+          "tree_id": "f1a4ae6de5444d412fa33d083519881538ca1518",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9f4e80e13569bdaa0842719c42cfd9bd7ccef9c8"
+        },
+        "date": 1784068474122,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 78634416.1098901,
+            "unit": "ns",
+            "range": "± 236680.59099236247"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10489331.404017856,
+            "unit": "ns",
+            "range": "± 48485.580919992935"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 130399890.10714285,
+            "unit": "ns",
+            "range": "± 1707163.301085762"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17007992.177083332,
+            "unit": "ns",
+            "range": "± 113104.90588390589"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 169981889.02222222,
+            "unit": "ns",
+            "range": "± 1589491.2058516063"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 147625615.66666666,
+            "unit": "ns",
+            "range": "± 821896.4375562572"
           }
         ]
       }
