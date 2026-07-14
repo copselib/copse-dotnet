@@ -94,7 +94,9 @@ only inside `MemoizeDepthFirstBuffer`).
 level-order) × (completion: completed | growing) × (feed: none | one-shot build | stream |
 visit-stream, resumable). Concretes today, sorted by that grid: completed+none =
 `*ArrayStore`, `*StringStore`; growing+build = `LazyBuilt*Store`; growing+stream =
-`StreamFedLevelOrderStore`; growing+visit-stream = `Memoize*Buffer` (+ SPI adapter structs).
+~~`StreamFedLevelOrderStore`~~ (deleted 2026-07-13; the stream-drain capability lives on as
+the one-shot `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`); growing+visit-stream =
+`Memoize*Buffer` (+ SPI adapter structs).
 The grid makes gaps and orphans visible and is the doc header each store should carry.
 
 **B. Capture factories live in `Copse`/`Copse.Async` as codegen-paired statics** (per F2 —
@@ -115,11 +117,10 @@ bottom tier of the known missing sync→async bridge, so build it as that story'
 not a one-off.
 
 **D. Resolve the duals deliberately (cross-links to the pending operator flags):**
-- **D4a. `LazyBuiltLevelOrderStore` orphan**: if Invert-F's BFT-first arm goes
-  eager-on-first-pull (operator flag #5), this store is exactly its vehicle — orphan
-  resolved, and `StreamFedLevelOrderStore` (its only consumer being that arm) likely
-  *deletes*. If flag #5 resolves "keep the lazy arm," the orphan stays as a documented
-  dual-symmetry artifact.
+- **D4a. `LazyBuiltLevelOrderStore` orphan — RESOLVED 2026-07-13 exactly as predicted**:
+  flag #5 went eager-on-first-pull; the orphan is now Invert-F's BFT-first deferral seam,
+  and `StreamFedLevelOrderStore` was deleted — its incremental drain preserved one-shot as
+  the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`.
 - **D4b. `StreamFedPreorderStore`**: don't build it; note it as the named gap.
 - **D4c. Transpose stays benchmark-only** (the measured decision stands), but if factories
   land (B), it becomes a natural named factory if ever needed.
@@ -148,6 +149,7 @@ pick one shape-A arrival-selector for the factory (B) and document the equivalen
    equivalence documented in the factory header.
 2. Build the public completed-store async adapter now (C), or defer until the sync→async
    bridge story is taken up?
-3. Which way does operator flag #5 (Invert-F BFT-first arm) go? It determines D4a — orphan
-   adopted vs. documented, and whether `StreamFedLevelOrderStore` lives or dies.
+3. ~~Which way does operator flag #5 (Invert-F BFT-first arm) go?~~ **DECIDED 2026-07-13:
+   eager-on-first-pull** (see D4a — orphan adopted, `StreamFedLevelOrderStore` deleted,
+   dispose-time cost surprise gone; benchmark A/B on the Invert family gated the change).
 4. Hygiene items (E): fold into the cohesion pass or leave as notes?

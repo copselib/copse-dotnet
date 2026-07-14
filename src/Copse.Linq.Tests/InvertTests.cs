@@ -210,8 +210,13 @@ namespace Copse.Linq.Tests
       }
     }
 
+    // The breadth-first-first arm shares the preorder arm's cost shape (decided 2026-07-13,
+    // policy-audit flag 5): the whole capture builds on the FIRST replay pull -- one drain of
+    // the streaming mirror straight into the level-order arrays. (It previously grew
+    // tier-by-tier with Dispose completing the remainder; that laziness was only ever real for
+    // a replay abandoned without disposal, and it cost a dispose-time O(n) surprise.)
     [TestMethod]
-    public void BreadthFirstFirstMirrorGrowsIncrementallyAndDisposeCompletesTheCapture()
+    public void BreadthFirstFirstMirrorBuildsTheWholeCaptureOnTheFirstPull()
     {
       var sourceVisits = 0;
 
@@ -220,22 +225,23 @@ namespace Copse.Linq.Tests
         .Do(visit => sourceVisits++)
         .Invert();
 
-      int visitsWhilePartial;
+      int visitsAfterFirstPull;
+      int visitsAfterPartialDrain;
 
       using (var treenumerator = mirror.GetBreadthFirstTreenumerator())
       {
         treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
-        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        visitsAfterFirstPull = sourceVisits;
 
-        visitsWhilePartial = sourceVisits;
+        treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
+        visitsAfterPartialDrain = sourceVisits;
       }
 
       var visitsAfterDispose = sourceVisits;
 
-      Assert.IsTrue(visitsWhilePartial > 0, "the first pulls must reach the source");
-      Assert.IsTrue(
-        visitsWhilePartial < visitsAfterDispose,
-        "a partial breadth-first drain must not consume the whole source; dispose completes the capture");
+      Assert.IsTrue(visitsAfterFirstPull > 0, "the first pull must reach the source");
+      Assert.AreEqual(visitsAfterFirstPull, visitsAfterPartialDrain, "the capture is complete after the first pull");
+      Assert.AreEqual(visitsAfterPartialDrain, visitsAfterDispose, "dispose owes nothing");
 
       // The completed capture replays both dimensions without touching the source again.
       var expected = TreeSerializer.DeserializeDepthFirstTree("a(c(g(j),f),b(e,d(i,h)))");
@@ -247,7 +253,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void AbandonedPartialBreadthFirstDrainReleasesTheSource()
+    public void BreadthFirstFirstMirrorReleasesTheSourceInsideTheFirstPull()
     {
       var resources = new List<TestResource>();
 
@@ -266,12 +272,14 @@ namespace Copse.Linq.Tests
       treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll);
 
       Assert.AreEqual(1, resources.Count, "the capture's feed acquires the resource once");
-      Assert.IsFalse(resources[0].Disposed, "the feed is still live mid-capture");
+      Assert.IsTrue(
+        resources[0].Disposed,
+        "the build runs to completion inside the first pull and releases the source immediately");
+      Assert.AreEqual(1, resources[0].DisposeCount);
 
       treenumerator.Dispose();
 
-      Assert.IsTrue(resources[0].Disposed, "abandoning a partial drain must release the source");
-      Assert.AreEqual(1, resources[0].DisposeCount);
+      Assert.AreEqual(1, resources[0].DisposeCount, "dispose owes nothing; the source was already released");
 
       // The buffer remains fully replayable from the completed capture -- no re-acquisition.
       var expected = TreeSerializer.DeserializeDepthFirstTree("a(c(g,f),b(e,d))");

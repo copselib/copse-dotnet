@@ -39,7 +39,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | RootfixScan (seed / rootNodeSelector) | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
 | Invert | **B-narrow** | IBreadthFirstTreenumerable | **streams** | O(width) — the one genuinely streaming mirror (`InvertedLevelOrderStream`) |
 | Invert | D-narrow; buffer | ITreenumerableBuffer | capture(deferred-once) | mirrored preorder arrays |
-| Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → preorder arrays; BFT-first → `StreamFedLevelOrderStore` growing tier-by-tier (replay Dispose completes the capture — see flags) |
+| Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → mirrored preorder arrays; BFT-first → the streaming mirror drained once into level-order arrays (2026-07-13; both arms now share the build-on-first-pull cost shape) |
 | LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
 | OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; **B overloads Materialize first** (see flags) |
 | Memoize | F, D, B | **ILazyTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
@@ -103,10 +103,13 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    `Materialize()`s the source into a full memo, then walks that capture into the result
    arrays — two O(n) allocations transiently vs one on the DFT path. Correct under the
    disclosure rule, but a candidate for a fused single capture.
-5. **`Invert(F)` BFT-first arm: replay Dispose runs `Consume()`** — abandoning a partial
-   drain pays the entire remaining O(n) at Dispose. Deliberate (deterministic release of a
-   `Using` source's resource) but a surprising cost placement; worth a doc-comment
-   cross-reference at minimum.
+5. *(RESOLVED 2026-07-13)* `Invert(F)`'s BFT-first arm now builds its whole capture on the
+   first replay pull (a one-shot drain of the streaming mirror via the stream-shaped
+   `LevelOrderCapture.CaptureFrom`), matching the preorder arm's cost shape. The
+   dispose-completes-capture surprise is gone (dispose owes nothing; the source is released
+   inside the build), `StreamFedLevelOrderStore` was **deleted**, and the orphaned
+   `LazyBuiltLevelOrderStore` became the arm's deferral seam. The tier-by-tier laziness this
+   traded away was only ever real for a replay abandoned *without* disposal.
 6. *(FIXED 2026-07-13)* `Materialize` now probes before memoizing: a live memo is consumed
    in place (the aliasing is by design and documented in the XML docs); a completed buffer
    is returned as-is instead of being wrapped in a fresh memo and copied node-by-node.
@@ -155,10 +158,10 @@ Concrete stores/streams                       consumers
 ├─ LevelOrderArrayStore (readonly struct)     benchmarks/tests only in product paths
 ├─ LazyBuiltPreorderStore (internal, Linq)    THE deferral seam: Invert-D, OrderChildrenBy,
 │    runs a Func<PreorderArrayStore> once     LeaffixScan all ride it
-├─ LazyBuiltLevelOrderStore                   ORPHAN: generated + tested, zero product
-│                                             consumers (dual-symmetry policy artifact)
-├─ StreamFedLevelOrderStore (internal, Linq)  Invert-F BFT-first arm only; NO preorder dual
-│    grows from an ILevelOrderStream
+├─ LazyBuiltLevelOrderStore                   Invert-F BFT-first arm's deferral seam (orphan
+│                                             ADOPTED 2026-07-13, flag 5)
+│  (StreamFedLevelOrderStore DELETED 2026-07-13 — its incremental drain became the
+│   stream-shaped LevelOrderCapture.CaptureFrom, one-shot; no preorder dual, still)
 ├─ Memoize{Preorder,LevelOrder}Buffer     the memo's resumable captures (preorder /
 │    + …Store readonly-struct SPI adapters    level-order encodings, PullOne/Consume)
 ├─ InvertedLevelOrderStream                   the streaming mirror (O(width) tier transform)
@@ -189,7 +192,7 @@ Two canonical loops are re-implemented across the codebase:
 | 3 | `Treenumerable.LeaffixScan.g.cs` `BuildLeaffixScan` | A | `PreorderArrayStore` | richer close: pending-node stack carries NodeContext, close computes the accumulation |
 | 4 | `Treenumerable.LeaffixAggregate.g.cs` | A | **no store** | same loop, per-root reused buffers, lazy yield — bounds what a store factory can absorb |
 | 5 | `Memoize{Preorder,LevelOrder}Buffer.g.cs` | A / B, resumable | memo buffers | `PullOne` = one loop iteration suspended; `Consume` = the loop with guards hoisted; selector `VisitCount==1` instead of `SchedulingNode` (equivalent in DFT — documented there) |
-| 6 | `StreamFedLevelOrderStore.g.cs` | B (append wiring) | itself | fed by a stream group cursor, not a visit stream |
+| 6 | ~~`StreamFedLevelOrderStore.g.cs`~~ | B (append wiring) | — | *(2026-07-13)* deleted; its drain lives on as the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)` |
 | 7 | `PreorderStringStore` / `LevelOrderStringStore` (serializer) | A / B arrays from **text** | themselves | open stack driven by `(`/`)` or group terminators; leaves committed `subtreeSizes=1` immediately (vs backfill) |
 | 8 | `TestUtils EngineTree.ParseArrays` | A from text | raw arrays for `PreorderTree` | intentionally independent (oracle) |
 | 9 | `Benchmarks FlatDecode.FlatEncodings` | A verbatim; plus a preorder→level-order **transpose** that exists nowhere in product | both array stores | transpose was measured out of product (~1.08x cross-decode tax vs ~5-replay break-even) |
@@ -220,12 +223,13 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    one-line taxonomy header; (b) the unboxing-adapter idiom still has two conventions
    (`Memoize*Store` types vs the serializer's nested `.Handle` structs); (c) tests still
    re-implement public stores under word-order-swapped names.
-4. **Missing duals** (cross-check [dual-symmetry backlog]): no `StreamFedPreorderStore`;
-   `LazyBuiltLevelOrderStore` is an orphan (generated + tested, zero product consumers —
-   Invert's BFT-first arm went to `StreamFedLevelOrderStore` after the visit-stream round
-   trip benchmarked 2.1–2.7x slower); no public sync→async completed-store adapter (the only
-   one is benchmark-private, preorder-only); the preorder→level-order transpose lives only in
-   benchmarks (deliberately).
+4. **Missing duals** (cross-check [dual-symmetry backlog]): ~~`LazyBuiltLevelOrderStore`
+   orphan~~ *(adopted 2026-07-13 — it is now Invert-F's BFT-first deferral seam; the
+   stream-fed store it displaced was deleted, its drain preserved as the stream-shaped
+   `LevelOrderCapture.CaptureFrom`)*; no stream-shaped `PreorderCapture.CaptureFrom`
+   (`IPreorderStream`) dual yet — nothing needs it; no public sync→async completed-store
+   adapter (the only one is benchmark-private, preorder-only); the preorder→level-order
+   transpose lives only in benchmarks (deliberately).
 5. **Selector inconsistency inside shape A**: operator builds filter on
    `Mode == SchedulingNode`, memo/tests on `VisitCount == 1`. Equivalent in DFT, but a
    hoisted factory should pick one and document why.
