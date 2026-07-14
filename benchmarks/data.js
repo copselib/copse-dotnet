@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784047733978,
+  "lastUpdate": 1784050950287,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -7918,6 +7918,150 @@ window.BENCHMARK_DATA = {
             "value": 198551515.03125,
             "unit": "ns",
             "range": "± 2234574.234997736"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a",
+          "message": "Docs: README carries the ratified promise; stale package docs flagged\n\n- README: \"all operations are lazy and compose without materializing\n  intermediate trees\" -- the claim the laziness policy superseded --\n  becomes the ratified wording: compose without materialization when\n  possible; capture is disclosed by return type and docs. The last\n  place the old promise survived, and the public-facing one.\n- PACKAGE_ARCHITECTURE.md: historical banner -- the doc records the\n  2026-07-04 package-split deliberation faithfully, but the neutral\n  layer has since been re-cut (Vocabulary/Traversal split out, the\n  store de-share, the node-context moves); pointers to the current\n  map.\n- ASYNC_CODEGEN.md: the not-generated list notes that the store SPIs,\n  reads, array stores, and ChildResult joined the generated set.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-14T17:32:24Z",
+          "tree_id": "5c0ca6476c50740b4d544f27f066b55d7c71a05d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/7ccbbf499a8b4d533de83c7fa234ecd8b2bd045a"
+        },
+        "date": 1784050945842,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8320749.2578125,
+            "unit": "ns",
+            "range": "± 189234.0582834186"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 12339393.513221154,
+            "unit": "ns",
+            "range": "± 20638.27876662015"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 2030809.4456380208,
+            "unit": "ns",
+            "range": "± 28376.170667540388"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 2025645.0787760417,
+            "unit": "ns",
+            "range": "± 7852.655725696735"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 64720168.42307692,
+            "unit": "ns",
+            "range": "± 263310.1354542466"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 79562572.32142858,
+            "unit": "ns",
+            "range": "± 635227.9936373287"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 27013909.486979168,
+            "unit": "ns",
+            "range": "± 414225.0523441986"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 29733695.24609375,
+            "unit": "ns",
+            "range": "± 441159.38515339006"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 26384195.589583334,
+            "unit": "ns",
+            "range": "± 198927.38821463977"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 20879702.808333334,
+            "unit": "ns",
+            "range": "± 84877.20049480273"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 14683849.747916667,
+            "unit": "ns",
+            "range": "± 137570.80354538967"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 12282718.75,
+            "unit": "ns",
+            "range": "± 21998.063419420647"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 36547455.93461539,
+            "unit": "ns",
+            "range": "± 803632.3708683782"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 49199672.75974027,
+            "unit": "ns",
+            "range": "± 154079.2499654373"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 8072774.807291667,
+            "unit": "ns",
+            "range": "± 3008.896319152182"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 8078065.934895833,
+            "unit": "ns",
+            "range": "± 7469.238951942202"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 258831631.025,
+            "unit": "ns",
+            "range": "± 5832570.415292804"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 337747861.5714286,
+            "unit": "ns",
+            "range": "± 756825.2527471598"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 106903004.859375,
+            "unit": "ns",
+            "range": "± 494933.4853239959"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 116387559.68544601,
+            "unit": "ns",
+            "range": "± 3413935.3601150247"
           }
         ]
       }
