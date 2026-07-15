@@ -25,12 +25,12 @@ namespace Copse.Linq.Async.Treenumerables
       new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncDepthFirstTreenumerator, _Selector);
 
     public IAsyncSelectTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, TOuterResult> _outerSelector)
+      Func<NodeContext<TResult>, TOuterResult> outerSelector)
     {
       return
         new AsyncSelectTreenumerable<TSource, TOuterResult>(
           _Source,
-          nodeContext => _outerSelector(new NodeContext<TResult>(_Selector(nodeContext), nodeContext.Position)));
+          nodeContext => outerSelector(new NodeContext<TResult>(_Selector(nodeContext), nodeContext.Position)));
     }
   }
 }

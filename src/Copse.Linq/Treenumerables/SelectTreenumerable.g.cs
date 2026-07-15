@@ -28,12 +28,12 @@ namespace Copse.Linq.Treenumerables
       new SelectTreenumerator<TSource, TResult>(_Source.GetDepthFirstTreenumerator, _Selector);
 
     public ISelectTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, TOuterResult> _outerSelector)
+      Func<NodeContext<TResult>, TOuterResult> outerSelector)
     {
       return
         new SelectTreenumerable<TSource, TOuterResult>(
           _Source,
-          nodeContext => _outerSelector(new NodeContext<TResult>(_Selector(nodeContext), nodeContext.Position)));
+          nodeContext => outerSelector(new NodeContext<TResult>(_Selector(nodeContext), nodeContext.Position)));
     }
   }
 }

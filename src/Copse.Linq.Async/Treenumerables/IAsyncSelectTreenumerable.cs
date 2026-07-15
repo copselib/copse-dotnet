@@ -4,8 +4,8 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  public interface IAsyncSelectTreenumerable<TResult> : IAsyncTreenumerable<TResult>
+  internal interface IAsyncSelectTreenumerable<TResult> : IAsyncTreenumerable<TResult>
   {
-    IAsyncSelectTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> _outerSelector);
+    IAsyncSelectTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> outerSelector);
   }
 }
