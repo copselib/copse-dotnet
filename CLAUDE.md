@@ -102,7 +102,9 @@ The library **never performs node equality comparisons**. This is a deliberate d
   construction) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
 - **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the
   memoize machinery rides the flat family, not a private engine).
-- **Copse.Linq.Experimental** - In-progress operators (`ExpandNodes`, `Graft`).
+- **Copse.Linq.Experimental** - Unpackaged, untested parking lot for half-baked ideas and
+  possible future surface (`ExpandNodes`, `Graft`, the tree tokenizers — demoted 2026-07-15,
+  sync-only, so the token shape isn't locked in by shipping).
 - **Copse.Trees** - Sample trees (Collatz, Triangle, etc.).
 - **Copse.SimpleSerializer** - Header-free text serialization: layout-named methods over the flat
   family (lazy string deserialize → full tree; forward-only reader deserialize → narrow tree).

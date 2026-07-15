@@ -1,4 +1,4 @@
-﻿namespace Copse.Linq.TreeTokenizer.DepthFirstTree
+﻿namespace Copse.Linq.Experimental.TreeTokenizer.DepthFirstTree
 {
   public class DepthFirstTreeToken<TNode> : ITreeToken<TNode, DepthFirstTreeTokenType>
   {

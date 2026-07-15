@@ -1,4 +1,4 @@
-﻿namespace Copse.Linq.TreeTokenizer
+﻿namespace Copse.Linq.Experimental.TreeTokenizer
 {
   public interface ITreeToken<TNode, TTokenType>
   {

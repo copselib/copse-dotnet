@@ -168,8 +168,6 @@ namespace Copse.CodeGen
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",
         ["IAsyncSelectTreenumerable"] = "ISelectTreenumerable",
-        ["IAsyncDepthFirstTreeTokenizer"] = "IDepthFirstTreeTokenizer",
-        ["IAsyncBreadthFirstTreeTokenizer"] = "IBreadthFirstTreeTokenizer",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()
@@ -198,8 +196,6 @@ namespace Copse.CodeGen
         ["Copse.Linq.Async.Treenumerators"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerables"] = "Copse.Linq.Treenumerables",
         ["Copse.Linq.Async.Stores"] = "Copse.Linq.Stores",
-        ["Copse.Linq.Async.TreeTokenizer.DepthFirstTree"] = "Copse.Linq.TreeTokenizer.DepthFirstTree",
-        ["Copse.Linq.Async.TreeTokenizer.BreadthFirstTree"] = "Copse.Linq.TreeTokenizer.BreadthFirstTree",
       };
 
       private readonly string _asyncClass;

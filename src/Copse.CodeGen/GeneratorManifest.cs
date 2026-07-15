@@ -412,13 +412,7 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.TakeTrees.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/Treenumerable/Treenumerable.ToBreadthFirstTreeTokenizer.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/Treenumerable/Treenumerable.ToDepthFirstTreeTokenizer.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToFormattedLines.cs",
         "Copse.Linq/Treenumerable/Treenumerable.ToFormattedLines.g.cs",
@@ -437,32 +431,6 @@ namespace Copse.CodeGen
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       // The tree-tokenizer machinery (the last hand-written Copse.Linq cluster): the async
-      // tokenizer objects are the sources; their twins take over the canonical names. The
-      // sync-only interface members (non-generic GetEnumerator/Current, Reset) ride the
-      // `// codegen: begin/end sync-only` markers in the async sources.
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/IAsyncDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/IDepthFirstTreeTokenizer.g.cs",
-        "IAsyncDepthFirstTreeTokenizer", "IDepthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/AsyncDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/DepthFirstTreeTokenizer.g.cs",
-        "AsyncDepthFirstTreeTokenizer", "DepthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/AsyncDepthFirstTreeTokenEnumerator.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/DepthFirstTreeTokenEnumerator.g.cs",
-        "AsyncDepthFirstTreeTokenEnumerator", "DepthFirstTreeTokenEnumerator", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/IAsyncBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/IBreadthFirstTreeTokenizer.g.cs",
-        "IAsyncBreadthFirstTreeTokenizer", "IBreadthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/AsyncBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/BreadthFirstTreeTokenizer.g.cs",
-        "AsyncBreadthFirstTreeTokenizer", "BreadthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/AsyncBreadthFirstTreeTokenEnumerator.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/BreadthFirstTreeTokenEnumerator.g.cs",
-        "AsyncBreadthFirstTreeTokenEnumerator", "BreadthFirstTreeTokenEnumerator", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
 
     };
   }

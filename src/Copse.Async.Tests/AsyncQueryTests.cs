@@ -168,22 +168,12 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
-    public async Task Tokenizers_And_Formatting_MatchSync()
+    public async Task Formatting_MatchesSync()
     {
       var trees = new[] { "a", "a(b,c,d)", "a(b(e),c)", "a,b,c", "a(b(d,e),c)", "a(b(d,e,f),c(g,h,i))" };
 
       foreach (var tree in trees)
       {
-        CollectionAssert.AreEqual(
-          Sync(tree).ToDepthFirstTreeTokenizer().Select(x => x.ToString()).ToList(),
-          (await ToList(Async(tree).ToDepthFirstTreeTokenizer())).Select(x => x.ToString()).ToList(),
-          $"DepthFirstTokenizer {tree}");
-
-        CollectionAssert.AreEqual(
-          Sync(tree).ToBreadthFirstTreeTokenizer().Select(x => x.ToString()).ToList(),
-          (await ToList(Async(tree).ToBreadthFirstTreeTokenizer())).Select(x => x.ToString()).ToList(),
-          $"BreadthFirstTokenizer {tree}");
-
         CollectionAssert.AreEqual(
           Sync(tree).ToFormattedLines(2).ToList(),
           (await Async(tree).ToFormattedLinesAsync(2)).ToList(),

@@ -1,4 +1,4 @@
-﻿namespace Copse.Linq.TreeTokenizer.BreadthFirstTree
+﻿namespace Copse.Linq.Experimental.TreeTokenizer.BreadthFirstTree
 {
   public enum BreadthFirstTreeTokenType
   {
