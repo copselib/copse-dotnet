@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784132868281,
+  "lastUpdate": 1784132868668,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -92506,6 +92506,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
             "value": 92301028,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1852,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "402c786dd6da323a958c79c8cbe1f81997b86c1c",
+          "message": "Collapse the stream conformance tests' leftover shape-B loop copy\n\nFlatFamilyStreamConformanceTests.BuildLevelOrderGroups still carried the\nlevel-order capture loop verbatim; it now reads its child groups back\nout of a LevelOrderCapture.CaptureFrom-built store instead. The\nArray*Stream fakes stay -- the product deliberately has no in-memory\nstream type, so they are fixtures, not duplicates -- and\nBuildPreorderNodes stays (plain (value, depth) collection, no loop copy).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T15:18:46Z",
+          "tree_id": "c72205c73ffe3e1e32bb9e9749bd1fa71647276c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/402c786dd6da323a958c79c8cbe1f81997b86c1c"
+        },
+        "date": 1784132868592,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 33681638,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 42145485,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 58744399,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 42318214,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 695,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 96516149,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 67132559,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 108770,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 141921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41945757,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 315075,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 895,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 92302570,
             "unit": "bytes"
           },
           {
