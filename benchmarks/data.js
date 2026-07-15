@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784151285406,
+  "lastUpdate": 1784151285800,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -30892,6 +30892,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
             "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4344,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352472,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 117069,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346288,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03b4f98e0307567630ef62f4e3f13f300d1f8f5d",
+          "message": "Merge feature/order-children-by: sibling ordering, with a streaming BFT arm\n\nOrderChildrenBy / OrderChildrenByDescending (±comparer; D-narrow,\nB-narrow, and full-tree entries, both colors): stable per-sibling-group\nordering, keys evaluated once per node against the SOURCE context,\nsubtrees traveling whole. Invert's generalization -- the subsumption law\n(Invert ≡ OrderChildrenByDescending by source sibling index) is pinned\nby test, and Invert's specialization is kept on measured grounds (~1.15x\ntime, 2.4x alloc, and a capture-free O(width) B arm).\n\nThe depth-first entry rides the keyed capture factory into preorder\narrays; the breadth-first entry STREAMS -- the level-permutation build\nwalks the source once into the ordered level-order encoding with one\nbuffered level (O(width) auxiliary), refuting the original \"cannot\ngeneralize\" claim and resolving surface-map flag 4 for this operator.\nEach entry's result replays its own arrival dimension natively.\n\nAlso: LeaffixScan gains its B-narrow + F entries (disclosure rule),\nthe OrderChildrenBy benchmark family (8 rows, Buffer leg, mirroring\nInvert so the sort premium reads directly), and the measured\ntrivial-group guards + level-list pooling that keep both build paths\nfree of per-node sort machinery.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T21:20:42Z",
+          "tree_id": "35d50b3631bf52291eb00446408b8115895d11d1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/03b4f98e0307567630ef62f4e3f13f300d1f8f5d"
+        },
+        "date": 1784151285725,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505973,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26143,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 59007,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636831,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
             "unit": "bytes"
           },
           {
