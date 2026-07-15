@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784132862833,
+  "lastUpdate": 1784132863217,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -61498,6 +61498,150 @@ window.BENCHMARK_DATA = {
             "value": 43505501.86111112,
             "unit": "ns",
             "range": "± 464896.03406495467"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "402c786dd6da323a958c79c8cbe1f81997b86c1c",
+          "message": "Collapse the stream conformance tests' leftover shape-B loop copy\n\nFlatFamilyStreamConformanceTests.BuildLevelOrderGroups still carried the\nlevel-order capture loop verbatim; it now reads its child groups back\nout of a LevelOrderCapture.CaptureFrom-built store instead. The\nArray*Stream fakes stay -- the product deliberately has no in-memory\nstream type, so they are fixtures, not duplicates -- and\nBuildPreorderNodes stays (plain (value, depth) collection, no loop copy).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T15:18:46Z",
+          "tree_id": "c72205c73ffe3e1e32bb9e9749bd1fa71647276c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/402c786dd6da323a958c79c8cbe1f81997b86c1c"
+        },
+        "date": 1784132863150,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12778879.0625,
+            "unit": "ns",
+            "range": "± 45065.699924630244"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22117330.93028846,
+            "unit": "ns",
+            "range": "± 22615.370594310993"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3873718.987980769,
+            "unit": "ns",
+            "range": "± 4721.829582852476"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4673055.590104166,
+            "unit": "ns",
+            "range": "± 12014.955733345305"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 100577082.86153844,
+            "unit": "ns",
+            "range": "± 210248.60187984316"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 159208342.90384614,
+            "unit": "ns",
+            "range": "± 667181.9995981976"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 36779698.51530612,
+            "unit": "ns",
+            "range": "± 258195.18327371695"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54396246.61224489,
+            "unit": "ns",
+            "range": "± 308530.5486511012"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12230884.0625,
+            "unit": "ns",
+            "range": "± 75386.00554217568"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11815748.90513393,
+            "unit": "ns",
+            "range": "± 48431.05611793801"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3248213.485877404,
+            "unit": "ns",
+            "range": "± 1433.506865379995"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3248769.899639423,
+            "unit": "ns",
+            "range": "± 1762.009889810445"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 96938311.5595238,
+            "unit": "ns",
+            "range": "± 241054.85710358433"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 83752697.14102563,
+            "unit": "ns",
+            "range": "± 274818.94650390756"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 32539272.954166666,
+            "unit": "ns",
+            "range": "± 98643.54955629664"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 30694793.252403848,
+            "unit": "ns",
+            "range": "± 89190.05942880707"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 95072454.76388888,
+            "unit": "ns",
+            "range": "± 262756.2390275079"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 153890558.72916666,
+            "unit": "ns",
+            "range": "± 200325.2541620938"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19285176.3125,
+            "unit": "ns",
+            "range": "± 63213.68539821614"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42992955.27777778,
+            "unit": "ns",
+            "range": "± 240157.1195882998"
           }
         ]
       }
