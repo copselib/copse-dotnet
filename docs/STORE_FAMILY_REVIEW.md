@@ -145,16 +145,25 @@ not a one-off.
   and `StreamFedLevelOrderStore` was deleted — its incremental drain preserved one-shot as
   the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`.
 - **D4b. `StreamFedPreorderStore`**: don't build it; note it as the named gap.
-- **D4c (added 2026-07-14). Chunked COMPLETED stores** — the deeper allocation follow-up:
-  the capture factories now grow chunked (`RefAppendOnlyList`, commit 601784e) which put the
-  Dft Invert rows *below* their pre-cleanup allocations, but the final `ToArray` hand-off to
-  the flat-array stores remains (the whole residual Bft-row gap). Eliminating it means a
-  completed store *backed by the chunked lists directly* — no flat arrays at all; the
-  `Memoize*Store` SPI adapters are already exactly that shape. Benchmark-gated: flat-array
-  decode is the family's measured fast path, so the chunked store must prove its replay cost
-  before any capture op switches.
-- **D4c. Transpose stays benchmark-only** (the measured decision stands), but if factories
-  land (B), it becomes a natural named factory if ever needed.
+- ~~**D4c (added 2026-07-14). Chunked COMPLETED stores**~~ — **CLOSED 2026-07-15, gate
+  failed on the numbers.** The missing chunked-vs-flat replay A/B was added to the
+  FlatDecode family (8 permanent rows, `Preorder/LevelOrderChunkedStoreDecode`, c99b02a)
+  and the verdict is decisive: chunked replay pays 1.0–1.3x on monotone (BFT-native)
+  access and 1.2–2.0x on subtree-hopping (DFT/cross-order) access, while the `ToArray`
+  flattening fee it would eliminate measures ~1–2 ms per 1M-node capture — 3–7% of a
+  *single* decode pass, so flat wins before the first replay finishes (break-even 0.05–1.1
+  replays across all eight rows). The copy is not waste; it is the one-time purchase of
+  raw-array replay speed. The consume-once shape where chunked genuinely wins already
+  ships (LeaffixAggregate-B folds the memo's chunked capture once and discards it).
+  Complementary measurement: as a *growth* buffer the chunked list beats `List<T>` 1.8x
+  time / −34% alloc, so the factories' grow-chunked-then-flatten pipeline uses each
+  structure exactly in its winning regime. REVISIT TRIGGER: a consumer whose peak
+  *footprint* at the hand-off (both representations transiently alive) is itself the
+  constraint — an extreme-scale, capture-once caller — reopens this as a footprint
+  argument; the time argument is settled.
+- **D4d. Transpose stays benchmark-only** (the measured decision stands), but if factories
+  land (B), it becomes a natural named factory if ever needed. *(Renumbered from a
+  duplicate "D4c" label 2026-07-15.)*
 
 ~~**E. Small hygiene, low priority**~~ **CLOSED 2026-07-15, every part landed:** the nested
 `.Handle` adapter convention is universal (de-share 2026-07-14); ~~document (not rename) the
