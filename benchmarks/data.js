@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784132869820,
+  "lastUpdate": 1784140472164,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -8782,6 +8782,150 @@ window.BENCHMARK_DATA = {
             "value": 202724691.6029412,
             "unit": "ns",
             "range": "± 6545705.276089806"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c224fb1f947973a8d602bc9c259e39eb9742b120",
+          "message": "Close D4c: the flattening fee buys replay speed, keep the flat hand-off\n\nThe chunked-vs-flat decode rows (c99b02a) plus two scratch measurements\nsettle the gate: chunked replay pays 1.0-2.0x per traversal while the\nToArray copy it would eliminate costs 3-7% of a single decode pass, so\nflat arrays win before the first replay finishes. The consume-once shape\nwhere chunked wins already ships (LeaffixAggregate-B). Revisit trigger\nnarrowed to peak-footprint-at-hand-off consumers only.\n\nAlso renumbers the duplicate D4c label (transpose note -> D4d).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T18:14:14Z",
+          "tree_id": "07432dabe068f50c68ae298ba92fc571557a2320",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c224fb1f947973a8d602bc9c259e39eb9742b120"
+        },
+        "date": 1784140466545,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14104950.113839285,
+            "unit": "ns",
+            "range": "± 89768.09898824335"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21692761.15625,
+            "unit": "ns",
+            "range": "± 18629.00421871737"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3712887.1026041666,
+            "unit": "ns",
+            "range": "± 24783.091229071993"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 4061928.260216346,
+            "unit": "ns",
+            "range": "± 3096.535154265591"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 119932519.61538464,
+            "unit": "ns",
+            "range": "± 192729.69951804486"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 153431536.375,
+            "unit": "ns",
+            "range": "± 917956.8246406178"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 53581730.364583336,
+            "unit": "ns",
+            "range": "± 165061.4816167808"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49661997.275,
+            "unit": "ns",
+            "range": "± 43638.13406604055"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 67839425.7,
+            "unit": "ns",
+            "range": "± 108806.33715935038"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 36129139.25238096,
+            "unit": "ns",
+            "range": "± 270464.82907086244"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 27965044.95982143,
+            "unit": "ns",
+            "range": "± 34524.50422276747"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 19821447.979910713,
+            "unit": "ns",
+            "range": "± 70676.91463073176"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55236642.628571436,
+            "unit": "ns",
+            "range": "± 853223.0940085136"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88493191.0888889,
+            "unit": "ns",
+            "range": "± 107150.7079781812"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14526100.135416666,
+            "unit": "ns",
+            "range": "± 431500.5086037009"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 16246827.963942308,
+            "unit": "ns",
+            "range": "± 11690.932988631359"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 463655798.2307692,
+            "unit": "ns",
+            "range": "± 950654.3467357237"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 628870010,
+            "unit": "ns",
+            "range": "± 1074474.4469391678"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 211273795.94017094,
+            "unit": "ns",
+            "range": "± 7246989.4132491425"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 202327960.69,
+            "unit": "ns",
+            "range": "± 8097681.515373418"
           }
         ]
       }
