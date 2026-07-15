@@ -105,10 +105,10 @@ whole tree), never by implementation convenience.
    transforms (e.g. OrderChildrenBy as an O(sibling-group), infinite-safe child-enumerator
    wrapper) and the preorder window: keep parked until a consumer demands them, or schedule
    one deliberately as the perf tier for a shipped capture op?
-3. **`Consume`.** Flagged for discussion (2026-07-13, no specifics recorded yet) — likely
-   territory: its overload surface (full/narrow/lazy-buffer entries), its role now that
-   Materialize probes buffers, and how it reads under the promise.
-4. **Store/wrapper cohesion pass.** The preorder/level-order stores, streams, and their
+3. ~~**`Consume`.**~~ RESOLVED (2026-07-14→15, the full arc): probes added, then REVERTED once the real constituency spoke — Consume is the mechanical walk (unit tests, benchmarks), Complete() finishes a lazy capture, Materialize delivers a settled buffer. One word, one meaning.
+4. **Store-family naming conventions revisit** (queued 2026-07-15). Two items: (a) READY TO EXECUTE on approval: Memoize{Preorder,LevelOrder}Buffer -> Memoize*Store -- they are growing STORES (grid, folder, Handle-to-SPI all agree); "Buffer" the noun now means only the fluent-surface disclosure marker, while "buffered" the verb stays store-family vocabulary (EnsureBuffered precedent). Names freed by the Handle nesting. (b) DISCUSS: the feed-column names do not telegraph their granularity -- Jason's formulation: LazyBuilt = DEFERRED construction of the entire store (one-shot build, all-or-nothing); Memoize = LAZY construction of the store (resumable visit-stream feed, pays per node). "LazyBuilt" arguably describes the memoize one better than the one it names; candidates worth weighing when revisited: Deferred*Store / Incremental*Store, or grid-derived names.
+
+5. **Store/wrapper cohesion pass.** The preorder/level-order stores, streams, and their
    treenumerable wrappers accreted; the operator-side private builders duplicate machinery
    that belongs on the stores as constructors/factory methods. Concrete first finding:
    `Treenumerable.Invert.g.cs::BuildMirror` and
