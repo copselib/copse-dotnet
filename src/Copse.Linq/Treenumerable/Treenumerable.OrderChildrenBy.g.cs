@@ -180,6 +180,12 @@ namespace Copse.Linq
       var pendingGroups = new List<(int ParentLevelPosition, int SourceLevelStart, List<TNode> Nodes, List<TKey> Keys)>();
       var pendingLevelArrivals = 0;
 
+      // Group lists are pooled across flushes: live lists are bounded by one level's group
+      // count (the O(width) claim), and a chain-shaped tree would otherwise allocate a fresh
+      // pair per single-node level -- a million of them.
+      var spareNodeLists = new Stack<List<TNode>>();
+      var spareKeyLists = new Stack<List<TKey>>();
+
       // The most recently flushed level: where it landed in the store, its source-to-ordered
       // permutation, and its source size (which is how far the front travels before crossing).
       var flushedLevelStoreStart = 0;
@@ -198,8 +204,9 @@ namespace Copse.Linq
         var levelPermutation = new int[pendingLevelArrivals];
 
         // Roots arrive as one parentless group and stay first; deeper levels emit their groups
-        // in the ORDERED order of their parents, which the previous flush settled.
-        var groupsInOrderedParentOrder = flushedLevelPermutation == null
+        // in the ORDERED order of their parents, which the previous flush settled. A single
+        // group needs no ordering -- on a chain-shaped tree that is every level.
+        var groupsInOrderedParentOrder = flushedLevelPermutation == null || pendingGroups.Count == 1
           ? (IEnumerable<(int ParentLevelPosition, int SourceLevelStart, List<TNode> Nodes, List<TKey> Keys)>)pendingGroups
           : pendingGroups.OrderBy(group => flushedLevelPermutation[group.ParentLevelPosition]);
 
@@ -216,20 +223,39 @@ namespace Copse.Linq
             childCounts[parentStoreIndex] = group.Nodes.Count;
           }
 
-          var memberIndices = Enumerable.Range(0, group.Nodes.Count);
-          var orderedMemberIndices = descending
-            ? memberIndices.OrderByDescending(memberIndex => group.Keys[memberIndex], comparer)
-            : memberIndices.OrderBy(memberIndex => group.Keys[memberIndex], comparer);
-
-          foreach (var memberIndex in orderedMemberIndices)
+          // A single member has nothing to sort -- and on a chain-shaped tree that is every
+          // group, so the guard keeps the degenerate pole free of per-group LINQ machinery.
+          if (group.Nodes.Count == 1)
           {
-            levelPermutation[group.SourceLevelStart + memberIndex] = orderedPositionInLevel;
+            levelPermutation[group.SourceLevelStart] = orderedPositionInLevel;
             orderedPositionInLevel++;
 
-            values.AddLast(group.Nodes[memberIndex]);
+            values.AddLast(group.Nodes[0]);
             firstChildIndices.AddLast(-1); // backfilled when this node's children flush
             childCounts.AddLast(0);
           }
+          else
+          {
+            var memberIndices = Enumerable.Range(0, group.Nodes.Count);
+            var orderedMemberIndices = descending
+              ? memberIndices.OrderByDescending(memberIndex => group.Keys[memberIndex], comparer)
+              : memberIndices.OrderBy(memberIndex => group.Keys[memberIndex], comparer);
+
+            foreach (var memberIndex in orderedMemberIndices)
+            {
+              levelPermutation[group.SourceLevelStart + memberIndex] = orderedPositionInLevel;
+              orderedPositionInLevel++;
+
+              values.AddLast(group.Nodes[memberIndex]);
+              firstChildIndices.AddLast(-1); // backfilled when this node's children flush
+              childCounts.AddLast(0);
+            }
+          }
+
+          group.Nodes.Clear();
+          group.Keys.Clear();
+          spareNodeLists.Push(group.Nodes);
+          spareKeyLists.Push(group.Keys);
         }
 
         flushedLevelStoreStart = levelStoreStart;
@@ -250,7 +276,11 @@ namespace Copse.Linq
             var parentLevelPosition = treenumerator.Position.Depth == 0 ? -1 : frontPositionInLevel;
 
             if (pendingGroups.Count == 0 || pendingGroups[pendingGroups.Count - 1].ParentLevelPosition != parentLevelPosition)
-              pendingGroups.Add((parentLevelPosition, pendingLevelArrivals, new List<TNode>(), new List<TKey>()));
+              pendingGroups.Add((
+                parentLevelPosition,
+                pendingLevelArrivals,
+                spareNodeLists.Count > 0 ? spareNodeLists.Pop() : new List<TNode>(),
+                spareKeyLists.Count > 0 ? spareKeyLists.Pop() : new List<TKey>()));
 
             var currentGroup = pendingGroups[pendingGroups.Count - 1];
             currentGroup.Nodes.Add(treenumerator.Node);
@@ -304,6 +334,18 @@ namespace Copse.Linq
 
       void PushSiblingGroupInOrder()
       {
+        // Empty and single-member groups have nothing to sort; this runs once per node (every
+        // leaf's empty child group included), so the guard keeps the per-node cost LINQ-free.
+        if (siblingGroup.Count == 0)
+          return;
+
+        if (siblingGroup.Count == 1)
+        {
+          stack.Push(siblingGroup[0]);
+          siblingGroup.Clear();
+          return;
+        }
+
         var orderedGroup =
           (descending
             ? siblingGroup.OrderByDescending(nodeIndex => keys[nodeIndex], comparer)
