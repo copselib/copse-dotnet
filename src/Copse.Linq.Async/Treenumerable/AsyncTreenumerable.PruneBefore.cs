@@ -22,12 +22,14 @@ namespace Copse.Linq
         AsyncTreenumerableFactory.Create(
           // PruneBefore's predicate means "prune when true"; the Where machinery keeps when
           // true (the LINQ convention), so removal semantics invert here, at the operator.
-          () => new AsyncWhereBreadthFirstTreenumerator<T>(
+          () => new AsyncWhereBreadthFirstTreenumerator<T, T>(
             source.GetAsyncBreadthFirstTreenumerator,
+            AsyncIdentitySelector<T>.Instance,
             nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants),
-          () => new AsyncWhereDepthFirstTreenumerator<T>(
+          () => new AsyncWhereDepthFirstTreenumerator<T, T>(
             source.GetAsyncDepthFirstTreenumerator,
+            AsyncIdentitySelector<T>.Instance,
             nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants));
     }
@@ -41,8 +43,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<T>(
+          () => new AsyncWhereDepthFirstTreenumerator<T, T>(
             source.GetAsyncDepthFirstTreenumerator,
+            AsyncIdentitySelector<T>.Instance,
             nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants));
     }
@@ -56,8 +59,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<T>(
+          () => new AsyncWhereBreadthFirstTreenumerator<T, T>(
             source.GetAsyncBreadthFirstTreenumerator,
+            AsyncIdentitySelector<T>.Instance,
             nodeContext => !predicate(nodeContext),
             NodeTraversalStrategies.SkipNodeAndDescendants));
     }

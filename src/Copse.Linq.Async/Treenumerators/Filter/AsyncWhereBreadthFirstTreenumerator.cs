@@ -21,22 +21,26 @@ namespace Copse.Linq.Async
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  internal sealed class AsyncWhereBreadthFirstTreenumerator<TNode>
-    : AsyncTreenumeratorWrapper<TNode>
+  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode>
+    : AsyncTreenumeratorWrapper<TInner, TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(
-      Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
+      Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
+      Func<NodeContext<TInner>, TNode> selector,
       Func<NodeContext<TNode>, bool> predicate,
       NodeTraversalStrategies nodeTraversalStrategy)
       : base(innerTreenumeratorFactory)
     {
+      _Selector = selector;
       _Predicate = predicate;
       _NodeTraversalStrategy = nodeTraversalStrategy;
 
-      // Seed the path with a sentinel root taken from the inner treenumerator's initial position.
-      _Path = new WhereBreadthFirstPath<TNode>(InnerTreenumerator.Node, InnerTreenumerator.Position);
+      // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
+      // sentinel value is never published, so no projection is owed).
+      _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
     }
 
+    private readonly Func<NodeContext<TInner>, TNode> _Selector;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
     private readonly NodeTraversalStrategies _NodeTraversalStrategy;
 
@@ -142,7 +146,11 @@ namespace Copse.Linq.Async
         if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
           var innerDepth = InnerTreenumerator.Position.Depth;
-          var skipped = !_Predicate(InnerTreenumerator.ToNodeContext());
+
+          // Project once, against the SOURCE context; the predicate sees the projected value at
+          // the source position (a projection never moves anything), as in the unfused pipeline.
+          var projectedNode = _Selector(InnerTreenumerator.ToNodeContext());
+          var skipped = !_Predicate(new NodeContext<TNode>(projectedNode, InnerTreenumerator.Position));
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
@@ -196,7 +204,7 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(projectedNode, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
@@ -208,7 +216,7 @@ namespace Copse.Linq.Async
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(projectedNode, effectivePosition, innerDepth);
         }
         else // VisitingNode
         {

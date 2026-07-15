@@ -20,12 +20,14 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.Create(
-          () => new WhereBreadthFirstTreenumerator<TNode>(
+          () => new WhereBreadthFirstTreenumerator<TNode, TNode>(
             source.GetBreadthFirstTreenumerator,
+            IdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode),
-          () => new WhereDepthFirstTreenumerator<TNode>(
+          () => new WhereDepthFirstTreenumerator<TNode, TNode>(
             source.GetDepthFirstTreenumerator,
+            IdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
@@ -39,8 +41,9 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<TNode>(
+          () => new WhereDepthFirstTreenumerator<TNode, TNode>(
             source.GetDepthFirstTreenumerator,
+            IdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
@@ -54,8 +57,9 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<TNode>(
+          () => new WhereBreadthFirstTreenumerator<TNode, TNode>(
             source.GetBreadthFirstTreenumerator,
+            IdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }

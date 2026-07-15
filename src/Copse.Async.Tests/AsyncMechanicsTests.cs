@@ -68,15 +68,15 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncWhereDepthFirst_OverSuspendingInner_MatchesGeneratedSyncWhere()
     {
-      var sync = Collect(new WhereDepthFirstTreenumerator<int>(
+      var sync = Collect(new WhereDepthFirstTreenumerator<int, int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        KeepNot3, NodeTraversalStrategies.SkipNode));
+        IdentitySelector<int>.Instance, KeepNot3, NodeTraversalStrategies.SkipNode));
 
-      var async = await CollectAsync(new AsyncWhereDepthFirstTreenumerator<int>(
+      var async = await CollectAsync(new AsyncWhereDepthFirstTreenumerator<int, int>(
         () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
           AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        KeepNot3, NodeTraversalStrategies.SkipNode));
+        AsyncIdentitySelector<int>.Instance, KeepNot3, NodeTraversalStrategies.SkipNode));
 
       CollectionAssert.AreEqual(sync, async);
     }
@@ -84,15 +84,15 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncWhereBreadthFirst_OverSuspendingBfsInner_MatchesGeneratedSyncWhere()
     {
-      var sync = Collect(new WhereBreadthFirstTreenumerator<int>(
+      var sync = Collect(new WhereBreadthFirstTreenumerator<int, int>(
         () => new BreadthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        KeepNot3, NodeTraversalStrategies.SkipNode));
+        IdentitySelector<int>.Instance, KeepNot3, NodeTraversalStrategies.SkipNode));
 
-      var async = await CollectAsync(new AsyncWhereBreadthFirstTreenumerator<int>(
+      var async = await CollectAsync(new AsyncWhereBreadthFirstTreenumerator<int, int>(
         () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
           AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        KeepNot3, NodeTraversalStrategies.SkipNode));
+        AsyncIdentitySelector<int>.Instance, KeepNot3, NodeTraversalStrategies.SkipNode));
 
       CollectionAssert.AreEqual(sync, async);
     }
@@ -231,10 +231,10 @@ namespace Copse.Async.Tests
       var composed = await CollectAsync(source.Where(KeepNot3).Select(nc => nc.Node * 10).GetAsyncDepthFirstTreenumerator());
 
       // Expected: the generated sync Where's first-visit nodes, mapped.
-      var syncWhere = Collect(new WhereDepthFirstTreenumerator<int>(
+      var syncWhere = Collect(new WhereDepthFirstTreenumerator<int, int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        KeepNot3, NodeTraversalStrategies.SkipNode));
+        IdentitySelector<int>.Instance, KeepNot3, NodeTraversalStrategies.SkipNode));
 
       var expected = FirstVisitNodes(syncWhere).Select(n => n * 10).ToList();
       var actual = FirstVisitNodes(composed);

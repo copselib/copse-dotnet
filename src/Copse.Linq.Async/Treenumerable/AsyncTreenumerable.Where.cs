@@ -17,12 +17,14 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.Create(
-          () => new AsyncWhereBreadthFirstTreenumerator<TNode>(
+          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode>(
             source.GetAsyncBreadthFirstTreenumerator,
+            AsyncIdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode),
-          () => new AsyncWhereDepthFirstTreenumerator<TNode>(
+          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode>(
             source.GetAsyncDepthFirstTreenumerator,
+            AsyncIdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
@@ -36,8 +38,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<TNode>(
+          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode>(
             source.GetAsyncDepthFirstTreenumerator,
+            AsyncIdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
@@ -51,8 +54,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<TNode>(
+          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode>(
             source.GetAsyncBreadthFirstTreenumerator,
+            AsyncIdentitySelector<TNode>.Instance,
             predicate,
             NodeTraversalStrategies.SkipNode));
     }
