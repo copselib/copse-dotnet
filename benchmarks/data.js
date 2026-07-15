@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784140472164,
+  "lastUpdate": 1784140472575,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -58284,6 +58284,102 @@ window.BENCHMARK_DATA = {
             "value": 28428370.014583334,
             "unit": "ns",
             "range": "± 53295.94526545525"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c224fb1f947973a8d602bc9c259e39eb9742b120",
+          "message": "Close D4c: the flattening fee buys replay speed, keep the flat hand-off\n\nThe chunked-vs-flat decode rows (c99b02a) plus two scratch measurements\nsettle the gate: chunked replay pays 1.0-2.0x per traversal while the\nToArray copy it would eliminate costs 3-7% of a single decode pass, so\nflat arrays win before the first replay finishes. The consume-once shape\nwhere chunked wins already ships (LeaffixAggregate-B). Revisit trigger\nnarrowed to peak-footprint-at-hand-off consumers only.\n\nAlso renumbers the duplicate D4c label (transpose note -> D4d).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T18:14:14Z",
+          "tree_id": "07432dabe068f50c68ae298ba92fc571557a2320",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c224fb1f947973a8d602bc9c259e39eb9742b120"
+        },
+        "date": 1784140472500,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26484111.30357143,
+            "unit": "ns",
+            "range": "± 285025.111354289"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8204527.566964285,
+            "unit": "ns",
+            "range": "± 19822.89773306202"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 148018558.11666667,
+            "unit": "ns",
+            "range": "± 729821.0251401287"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57228911.11111111,
+            "unit": "ns",
+            "range": "± 145191.38703751095"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21669340.58482143,
+            "unit": "ns",
+            "range": "± 67828.19907356279"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11951620.116666667,
+            "unit": "ns",
+            "range": "± 31273.274238077374"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 100468159.95238094,
+            "unit": "ns",
+            "range": "± 929687.1033697638"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29912208.99107143,
+            "unit": "ns",
+            "range": "± 132576.41510791844"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11384576.49639423,
+            "unit": "ns",
+            "range": "± 5798.166960410475"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6274635.411458333,
+            "unit": "ns",
+            "range": "± 66602.35375620019"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 116208462.05333334,
+            "unit": "ns",
+            "range": "± 960885.9147987812"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26087486.1875,
+            "unit": "ns",
+            "range": "± 68729.21557305241"
           }
         ]
       }
