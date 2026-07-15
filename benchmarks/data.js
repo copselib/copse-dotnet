@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784140474198,
+  "lastUpdate": 1784140474593,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -76204,6 +76204,114 @@ window.BENCHMARK_DATA = {
             "value": 64633122.25833333,
             "unit": "ns",
             "range": "± 407910.3412740355"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c224fb1f947973a8d602bc9c259e39eb9742b120",
+          "message": "Close D4c: the flattening fee buys replay speed, keep the flat hand-off\n\nThe chunked-vs-flat decode rows (c99b02a) plus two scratch measurements\nsettle the gate: chunked replay pays 1.0-2.0x per traversal while the\nToArray copy it would eliminate costs 3-7% of a single decode pass, so\nflat arrays win before the first replay finishes. The consume-once shape\nwhere chunked wins already ships (LeaffixAggregate-B). Revisit trigger\nnarrowed to peak-footprint-at-hand-off consumers only.\n\nAlso renumbers the duplicate D4c label (transpose note -> D4d).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T18:14:14Z",
+          "tree_id": "07432dabe068f50c68ae298ba92fc571557a2320",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c224fb1f947973a8d602bc9c259e39eb9742b120"
+        },
+        "date": 1784140474519,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 47615700.55244756,
+            "unit": "ns",
+            "range": "± 270286.2571358512"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 62268813.14285713,
+            "unit": "ns",
+            "range": "± 634684.1987839198"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 34868783.03333334,
+            "unit": "ns",
+            "range": "± 403381.44388627197"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 75948260.50769232,
+            "unit": "ns",
+            "range": "± 594102.2331708901"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 15774096.103125,
+            "unit": "ns",
+            "range": "± 173526.5294547311"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 66718741.0612245,
+            "unit": "ns",
+            "range": "± 1052537.2043906406"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 68011514.98979591,
+            "unit": "ns",
+            "range": "± 818659.6665049138"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 36728917.39795919,
+            "unit": "ns",
+            "range": "± 371363.3250249143"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 58068466.96296295,
+            "unit": "ns",
+            "range": "± 608455.8649054342"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 30528122.42410714,
+            "unit": "ns",
+            "range": "± 278183.8041988595"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 62014455.64957265,
+            "unit": "ns",
+            "range": "± 456243.2170300772"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 19058293.214285713,
+            "unit": "ns",
+            "range": "± 183828.66936907446"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 49413581.66883116,
+            "unit": "ns",
+            "range": "± 861921.7618947155"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 43177777.36805555,
+            "unit": "ns",
+            "range": "± 219226.22107314345"
           }
         ]
       }
