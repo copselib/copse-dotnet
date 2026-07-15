@@ -52,8 +52,8 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => new CompletedTreenumerableBuffer<TAccumulate>(
-        Tree.Lazy(() => PreorderScanBreadthFirstSource(source, accumulator, leafNodeSelector)));
+      => new TreenumerableBuffer<TAccumulate>(
+        Tree.Lazy(() => PreorderScanBreadthFirstSource(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first consumption.</summary>
     public static ITreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
@@ -84,10 +84,10 @@ namespace Copse.Linq
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
     {
-      var scanned = new LazyBuiltPreorderStore<TAccumulate>(
+      var scanned = new LazyPreorderStore<TAccumulate>(
         () => BuildLeaffixScanFromBreadthFirst(source, accumulator, leafNodeSelector));
 
-      return new PreorderTreenumerable<TAccumulate, LazyBuiltPreorderStore<TAccumulate>>(scanned);
+      return new PreorderTreenumerable<TAccumulate, LazyPreorderStore<TAccumulate>>(scanned);
     }
 
     private static PreorderArrayStore<TAccumulate> BuildLeaffixScanFromBreadthFirst<TSource, TAccumulate>(

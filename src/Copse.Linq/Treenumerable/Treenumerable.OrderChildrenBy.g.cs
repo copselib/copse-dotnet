@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.OrderChildrenBy.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
 using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
@@ -44,8 +45,8 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new CompletedTreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: false)));
+      => new TreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: false)), BufferLayout.Preorder);
 
     /// <summary>
     /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
@@ -61,8 +62,8 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new CompletedTreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)));
+      => new TreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
 
     /// <summary>
     /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
@@ -81,8 +82,8 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new CompletedTreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)));
+      => new TreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)), BufferLayout.Preorder);
 
     /// <summary>The descending twin of the breadth-first <c>OrderChildrenBy(keySelector)</c>.</summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
@@ -95,8 +96,8 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new CompletedTreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)));
+      => new TreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -131,10 +132,10 @@ namespace Copse.Linq
       IComparer<TKey> comparer,
       bool descending)
     {
-      var ordered = new LazyBuiltPreorderStore<TNode>(
+      var ordered = new LazyPreorderStore<TNode>(
         () => BuildOrderedChildren(source, keySelector, comparer, descending));
 
-      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(ordered);
+      return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(ordered);
     }
 
     private static ITreenumerable<TNode> PreorderOrderChildrenBreadthFirstSource<TNode, TKey>(
@@ -143,10 +144,10 @@ namespace Copse.Linq
       IComparer<TKey> comparer,
       bool descending)
     {
-      var ordered = new LazyBuiltPreorderStore<TNode>(
+      var ordered = new LazyPreorderStore<TNode>(
         () => BuildOrderedChildrenFromBreadthFirst(source, keySelector, comparer, descending));
 
-      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(ordered);
+      return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(ordered);
     }
 
     private static PreorderArrayStore<TNode> BuildOrderedChildrenFromBreadthFirst<TNode, TKey>(

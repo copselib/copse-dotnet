@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Async.Stores;
 using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
 using Copse.Core;
@@ -43,8 +44,8 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: false)));
+      => new AsyncTreenumerableBuffer<TNode>(
+        AsyncTree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: false)), BufferLayout.Preorder);
 
     /// <summary>
     /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
@@ -60,8 +61,8 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)));
+      => new AsyncTreenumerableBuffer<TNode>(
+        AsyncTree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
 
     /// <summary>
     /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
@@ -80,8 +81,8 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)));
+      => new AsyncTreenumerableBuffer<TNode>(
+        AsyncTree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)), BufferLayout.Preorder);
 
     /// <summary>The descending twin of the breadth-first <c>OrderChildrenBy(keySelector)</c>.</summary>
     public static IAsyncTreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
@@ -94,8 +95,8 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)));
+      => new AsyncTreenumerableBuffer<TNode>(
+        AsyncTree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -130,10 +131,10 @@ namespace Copse.Linq
       IComparer<TKey> comparer,
       bool descending)
     {
-      var ordered = new AsyncLazyBuiltPreorderStore<TNode>(
+      var ordered = new AsyncLazyPreorderStore<TNode>(
         () => BuildOrderedChildrenAsync(source, keySelector, comparer, descending));
 
-      return new AsyncPreorderTreenumerable<TNode, AsyncLazyBuiltPreorderStore<TNode>>(ordered);
+      return new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(ordered);
     }
 
     private static IAsyncTreenumerable<TNode> PreorderOrderChildrenBreadthFirstSource<TNode, TKey>(
@@ -142,13 +143,13 @@ namespace Copse.Linq
       IComparer<TKey> comparer,
       bool descending)
     {
-      var ordered = new AsyncLazyBuiltPreorderStore<TNode>(
+      var ordered = new AsyncLazyPreorderStore<TNode>(
         () => BuildOrderedChildrenFromBreadthFirstAsync(source, keySelector, comparer, descending));
 
-      return new AsyncPreorderTreenumerable<TNode, AsyncLazyBuiltPreorderStore<TNode>>(ordered);
+      return new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(ordered);
     }
 
-    private static async ValueTask<PreorderArrayStore<TNode>> BuildOrderedChildrenFromBreadthFirstAsync<TNode, TKey>(
+    private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildOrderedChildrenFromBreadthFirstAsync<TNode, TKey>(
       IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer,
@@ -159,7 +160,7 @@ namespace Copse.Linq
       return await BuildOrderedChildrenAsync(capture, keySelector, comparer, descending).ConfigureAwait(false);
     }
 
-    private static async ValueTask<PreorderArrayStore<TNode>> BuildOrderedChildrenAsync<TNode, TKey>(
+    private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildOrderedChildrenAsync<TNode, TKey>(
       IAsyncDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer,
@@ -246,7 +247,7 @@ namespace Copse.Linq
         PushSiblingGroupInOrder();
       }
 
-      return new PreorderArrayStore<TNode>(orderedValues, orderedSubtreeSizes);
+      return new AsyncPreorderArrayStore<TNode>(orderedValues, orderedSubtreeSizes);
     }
   }
 }
