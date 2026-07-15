@@ -167,7 +167,7 @@ Concrete stores/streams                       consumers
 │                                             ADOPTED 2026-07-13, flag 5)
 │  (StreamFedLevelOrderStore DELETED 2026-07-13 — its incremental drain became the
 │   stream-shaped LevelOrderCapture.CaptureFrom, one-shot; no preorder dual, still)
-├─ Memoize{Preorder,LevelOrder}Buffer     the memo's resumable captures (preorder /
+├─ Memoize{Preorder,LevelOrder}Store     the memo's resumable captures (preorder /
 │    + …Store readonly-struct SPI adapters    level-order encodings, PullOne/Consume)
 ├─ InvertedLevelOrderStream                   the streaming mirror (O(width) tier transform)
 ├─ PreorderStringStore / LevelOrderStringStore   serializer string tier (hand-written sync-
@@ -196,7 +196,7 @@ Two canonical loops are re-implemented across the codebase:
 | 2 | `Treenumerable.OrderChildrenBy.g.cs` `BuildOrderedChildren` | A + span-hop emit | `PreorderArrayStore` | shape A **character-identical** to #1 plus one `keys.Add` line; emit sorts each sibling group instead of reversing |
 | 3 | `Treenumerable.LeaffixScan.g.cs` `BuildLeaffixScan` | A | `PreorderArrayStore` | richer close: pending-node stack carries NodeContext, close computes the accumulation |
 | 4 | `Treenumerable.LeaffixAggregate.g.cs` | A | **no store** | same loop, per-root reused buffers, lazy yield — bounds what a store factory can absorb |
-| 5 | `Memoize{Preorder,LevelOrder}Buffer.g.cs` | A / B, resumable | memo buffers | `PullOne` = one loop iteration suspended; `Consume` = the loop with guards hoisted; selector `VisitCount==1` instead of `SchedulingNode` (equivalent in DFT — documented there) |
+| 5 | `Memoize{Preorder,LevelOrder}Store.g.cs` | A / B, resumable | memo buffers | `PullOne` = one loop iteration suspended; `Consume` = the loop with guards hoisted; selector `VisitCount==1` instead of `SchedulingNode` (equivalent in DFT — documented there) |
 | 6 | ~~`StreamFedLevelOrderStore.g.cs`~~ | B (append wiring) | — | *(2026-07-13)* deleted; its drain lives on as the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)` |
 | 7 | `PreorderStringStore` / `LevelOrderStringStore` (serializer) | A / B arrays from **text** | themselves | open stack driven by `(`/`)` or group terminators; leaves committed `subtreeSizes=1` immediately (vs backfill) |
 | 8 | `TestUtils EngineTree.ParseArrays` | A from text | raw arrays for `PreorderTree` | intentionally independent (oracle) |
@@ -222,7 +222,7 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    `Copse`/`Copse.Async` codegen pair (the layer that already owns the decoders). Not yet
    built — sequenced after the OrderChildrenBy-B streaming spike (flag #4).
 3. **Naming seams**: (a) *(RESOLVED 2026-07-13)* the memo cluster's storage types were
-   renamed to encoding names (`MemoizePreorderBuffer`/`MemoizeLevelOrderBuffer` +
+   renamed to encoding names (`MemoizePreorderStore`/`MemoizeLevelOrderStore` +
    `MemoizePreorderStore`/`MemoizeLevelOrderStore`) under the adopted rule — traversal
    things carry dimension names, storage things carry encoding names; every store now has a
    one-line taxonomy header; (b) the unboxing-adapter idiom still has two conventions

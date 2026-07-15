@@ -187,8 +187,8 @@ demand arriving.
 ## Serialization redesign
 
 Framing: **serialization = persisting a memo capture; deserialization = rehydrating
-one.** The dft layout ≡ `MemoizePreorderBuffer`'s representation (pre-order values +
-subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeLevelOrderBuffer`'s
+one.** The dft layout ≡ `MemoizePreorderStore`'s representation (pre-order values +
+subtreeSizes; balanced-parens-adjacent). The bft layout ≡ `MemoizeLevelOrderStore`'s
 (level-order values + child spans; LOUDS-adjacent).
 
 ### Deserialize

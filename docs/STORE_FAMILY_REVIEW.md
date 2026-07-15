@@ -28,9 +28,9 @@
 > (`DepthFirst`/`BreadthFirst`); storage things carry encoding names
 > (`Preorder`/`LevelOrder`).* Hence `MemoizeDepthFirstSourceTreenumerable` (about the
 > source's traversal affordance) kept its name, while the memo's storage types were renamed:
-> `MemoizeDepthFirstBuffer` → `MemoizePreorderBuffer`, `MemoizeBreadthFirstBuffer` →
-> `MemoizeLevelOrderBuffer`, and their SPI adapter structs likewise (`MemoizePreorderStore`,
-> `MemoizeLevelOrderStore`). Every store now carries a one-line taxonomy header stating its
+> `MemoizeDepthFirstBuffer` → `MemoizePreorderBuffer` (2026-07-13; the Buffer suffix itself
+> fell 2026-07-15 — they are stores: now `MemoizePreorderStore`/`MemoizeLevelOrderStore`,
+> their SPI adapters nested as `.Handle`). Every store now carries a one-line taxonomy header stating its
 > grid position.
 
 ## The question that prompted this: why is there no async `LevelOrderArrayStore`?
@@ -93,9 +93,9 @@ preference, orphans are acceptable — but each should be a *decision*, and the
 **F5 — Naming crosses its axes.** The family's own convention is encoding names
 (`Preorder`/`LevelOrder`) for layout and dimension names (`DepthFirst`/`BreadthFirst`) for
 traversal — held everywhere except the memo cluster, which named its *preorder* capture
-`MemoizeDepthFirstBuffer` (by feed dimension). *(RESOLVED 2026-07-13: renamed to
-`MemoizePreorderBuffer`/`MemoizeLevelOrderBuffer` + `MemoizePreorderStore`/
-`MemoizeLevelOrderStore` per the adopted naming rule above.)* Second seam: the
+`MemoizeDepthFirstBuffer` (by feed dimension). *(RESOLVED 2026-07-13: renamed to encoding names; the Buffer suffix itself fell 2026-07-15
+— today they are `MemoizePreorderStore`/`MemoizeLevelOrderStore` with nested `.Handle`
+adapters.)* Second seam: the
 unboxing-adapter idiom has two conventions — standalone `Memoize*Store` structs vs the
 serializer's nested `*StringStore<T>.Handle` structs (still open, hygiene item E). Third:
 tests re-implement the public array stores under word-order-swapped names

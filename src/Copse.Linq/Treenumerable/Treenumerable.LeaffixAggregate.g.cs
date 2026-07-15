@@ -95,7 +95,7 @@ namespace Copse.Linq
       // growth with NO flat-array hand-off (the factory's ToArray tripled transient allocation
       // here when measured; the buffer IS already a completed store). The feed retires inside
       // CompleteAsync; disposal after the fold is vacuous but tidy.
-      var capture = new MemoizeLevelOrderBuffer<TSource>(source.GetBreadthFirstTreenumerator);
+      var capture = new MemoizeLevelOrderStore<TSource>(source.GetBreadthFirstTreenumerator);
       using (capture)
       {
         capture.Complete();

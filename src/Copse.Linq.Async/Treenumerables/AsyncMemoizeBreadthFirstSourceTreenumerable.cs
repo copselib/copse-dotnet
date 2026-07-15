@@ -19,10 +19,10 @@ namespace Copse.Linq.Async.Treenumerables
 
     public AsyncMemoizeBreadthFirstSourceTreenumerable(IAsyncBreadthFirstTreenumerable<TValue> source)
     {
-      _Buffer = new AsyncMemoizeLevelOrderBuffer<TValue>(source.GetAsyncBreadthFirstTreenumerator);
+      _Buffer = new AsyncMemoizeLevelOrderStore<TValue>(source.GetAsyncBreadthFirstTreenumerator);
     }
 
-    private readonly AsyncMemoizeLevelOrderBuffer<TValue> _Buffer;
+    private readonly AsyncMemoizeLevelOrderStore<TValue> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -31,12 +31,12 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(_Buffer));
+      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TValue>.Handle(_Buffer));
 
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
-      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(_Buffer));
+      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TValue>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
   }

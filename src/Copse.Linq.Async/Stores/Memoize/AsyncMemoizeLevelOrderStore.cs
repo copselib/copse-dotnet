@@ -11,7 +11,7 @@ namespace Copse.Linq.Async.Stores
   // of the source -- values in arrival order (BFT scheduling order IS level order) plus each
   // node's child span (firstChildIndex + childCount, children of one node are contiguous in level
   // order) -- fed by the source's own breadth-first treenumerator and pulled only as far as some
-  // replay's frontier. The structural dual of MemoizePreorderBuffer, LOUDS-adjacent where that
+  // replay's frontier. The structural dual of MemoizePreorderStore, LOUDS-adjacent where that
   // one is balanced-parentheses-adjacent.
   //
   // The parse state is a single monotonic cursor. BFT visits nodes in level order -- the same
@@ -41,9 +41,9 @@ namespace Copse.Linq.Async.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
-  internal sealed class AsyncMemoizeLevelOrderBuffer<TValue> : IAsyncDisposable
+  internal sealed class AsyncMemoizeLevelOrderStore<TValue> : IAsyncDisposable
   {
-    public AsyncMemoizeLevelOrderBuffer(Func<IAsyncTreenumerator<TValue>> feedFactory)
+    public AsyncMemoizeLevelOrderStore(Func<IAsyncTreenumerator<TValue>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
@@ -242,12 +242,12 @@ namespace Copse.Linq.Async.Stores
     // the serializer's string stores: an adapter is meaningless without its owner.
     public readonly struct Handle : IAsyncLevelOrderStore<TValue>
     {
-      public Handle(AsyncMemoizeLevelOrderBuffer<TValue> buffer)
+      public Handle(AsyncMemoizeLevelOrderStore<TValue> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly AsyncMemoizeLevelOrderBuffer<TValue> _Buffer;
+      private readonly AsyncMemoizeLevelOrderStore<TValue> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public ValueTask<bool> EnsureRootAvailableAsync(int k) => _Buffer.EnsureRootAvailableAsync(k);

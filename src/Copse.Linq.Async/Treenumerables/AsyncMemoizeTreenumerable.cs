@@ -45,8 +45,8 @@ namespace Copse.Linq.Async.Treenumerables
 
     // Exactly ONE of these two is ever created -- whichever dimension pulls (or consumes)
     // first pins the capture's layout for the memo's whole life.
-    private AsyncMemoizePreorderBuffer<TValue> _DepthFirstCapture;
-    private AsyncMemoizeLevelOrderBuffer<TValue> _BreadthFirstCapture;
+    private AsyncMemoizePreorderStore<TValue> _DepthFirstCapture;
+    private AsyncMemoizeLevelOrderStore<TValue> _BreadthFirstCapture;
 
     private bool _Disposed;
 
@@ -71,35 +71,35 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
     {
       if (_BreadthFirstCapture != null)
-        return new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
-          new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(_BreadthFirstCapture));
+        return new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
+          new AsyncMemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
 
-      return new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
-        new AsyncMemoizePreorderBuffer<TValue>.Handle(EnsureDepthFirstCapture()));
+      return new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
+        new AsyncMemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
     }
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
     {
       if (_DepthFirstCapture != null)
-        return new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderBuffer<TValue>.Handle>(
-          new AsyncMemoizePreorderBuffer<TValue>.Handle(_DepthFirstCapture));
+        return new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
+          new AsyncMemoizePreorderStore<TValue>.Handle(_DepthFirstCapture));
 
-      return new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderBuffer<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderBuffer<TValue>.Handle(EnsureBreadthFirstCapture()));
+      return new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TValue>.Handle(EnsureBreadthFirstCapture()));
     }
 
-    private AsyncMemoizePreorderBuffer<TValue> EnsureDepthFirstCapture()
+    private AsyncMemoizePreorderStore<TValue> EnsureDepthFirstCapture()
     {
       if (_DepthFirstCapture == null)
-        _DepthFirstCapture = new AsyncMemoizePreorderBuffer<TValue>(_Source.GetAsyncDepthFirstTreenumerator);
+        _DepthFirstCapture = new AsyncMemoizePreorderStore<TValue>(_Source.GetAsyncDepthFirstTreenumerator);
 
       return _DepthFirstCapture;
     }
 
-    private AsyncMemoizeLevelOrderBuffer<TValue> EnsureBreadthFirstCapture()
+    private AsyncMemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
     {
       if (_BreadthFirstCapture == null)
-        _BreadthFirstCapture = new AsyncMemoizeLevelOrderBuffer<TValue>(_Source.GetAsyncBreadthFirstTreenumerator);
+        _BreadthFirstCapture = new AsyncMemoizeLevelOrderStore<TValue>(_Source.GetAsyncBreadthFirstTreenumerator);
 
       return _BreadthFirstCapture;
     }
