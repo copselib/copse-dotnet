@@ -31,12 +31,7 @@ namespace Copse.Linq
       int paddingSize,
       CancellationToken cancellationToken = default)
     {
-      var lines = new List<string>();
-      await foreach (var line in source.ToFormattedLines(stringFormatter, paddingSize).ConfigureAwait(false))
-      {
-        cancellationToken.ThrowIfCancellationRequested();
-        lines.Add(line);
-      }
+      var lines = await source.ToFormattedLinesAsync(stringFormatter, paddingSize, cancellationToken).ConfigureAwait(false);
 
       return string.Join(Environment.NewLine, lines);
     }

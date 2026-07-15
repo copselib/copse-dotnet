@@ -59,7 +59,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then fold (B)** | D peak = **largest root subtree**, buffers reused across roots; B (FUSED 2026-07-15) captures once into the memo's chunked level-order buffer, then an index-chasing DFS fold over the child spans — no visit stream decoded between the encodings; measured −39% time at near-baseline allocation (the factory-array variant was equally fast but 3x alloc — D4c evidence); cost class unchanged (peak = whole capture, first value after it) |
 | AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
 | Consume | F(±strategy), D, B | void | **drains, unconditionally** | MECHANICAL again (2026-07-15, probes REVERTED): walks a treenumerator to exhaustion whatever the receiver — buffers replay inertly, deferred captures are FORCED, a lazy capture completes as a side effect. The probe episode (2026-07-14→15) optimized for a caller that does not exist and silently broke the benchmarks; minimum-work settling lives on the lazy buffer's Complete() member and in Materialize. One word one meaning: Consume walks, Complete finishes, Materialize delivers |
-| ToFormattedLines / ToFormattedString | D | IEnumerable\<string\> / string | **drains fully before first yield** | re-drains per enumeration — see flags |
+| ToFormattedLines / ToFormattedString | D | IReadOnlyList\<string\> / string | **eager terminal** | honest since 2026-07-15 (flag 2): walks the source ONCE at the call — `To*` name, return shape, and cost now agree; one `(text, depth)` record buffer, reverse-rendered into the pre-sized result (formatter once per node, preorder); glyph contract pinned by `FormattedLinesTests` |
 | To\*TreeTokenizer | D / B | tokenizer | streams | ≤ O(width) transient |
 | ToDegenerateTree / ToTrivialForest | IEnumerable | ITreenumerable | streams | fresh enumerator per acquisition |
 
@@ -89,10 +89,18 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    `ITreenumerable` return type, `NotImplementedException` on any BFT acquisition. Under the
    split's own rules these should be D-narrow until their BFT arms exist. (Experimental, but
    the type is still lying.)
-2. **`ToFormattedLines` fully drains and renders before the first yield, and re-does the full
-   O(n) drain per re-enumeration** despite its lazy `IEnumerable<string>` shape. Has a TODO
-   admitting one-tree-at-a-time is possible. Policy rule 2 says this should stream per tree
-   (or at minimum build once).
+2. *(RESOLVED 2026-07-15)* `ToFormattedLines` was `To`-named but lazy-shaped and lazy-shaped
+   but eager-costed (full forest drain before the first yield, re-drained per enumeration,
+   forest buffered twice: token list + rendered-line stack). Fixed by making the shape honest
+   rather than the implementation lazy: returns `IReadOnlyList<string>`
+   (`ValueTask<IReadOnlyList<string>>` async, now `ToFormattedLinesAsync`) — eager like every
+   `To*` terminal, work exactly once. The per-node glyph gap is O(subtree) (a node's ├/└
+   needs "does a later sibling follow"), so a streaming shape was never owed under rule 2;
+   the per-tree-streaming TODO was deliberately dropped (no consumer). The rewrite also
+   halved the buffering: one `(text, depth)` record list (depth deltas carry the full tree
+   shape — the tokenizer emits group tokens only on depth changes, so records reconstruct
+   it), reverse-rendered bottom-up into the pre-sized result array. Output pinned by
+   `FormattedLinesTests` goldens captured from the old renderer.
 3. *(RESOLVED 2026-07-13)* `TakeLastTrees` / `SkipLastTrees`: D and B narrow overloads
    added (with the `CountTrees` B twin + F disambiguator they require). The two-pass shape
    was examined and kept deliberately: the sequence-style single-pass trick exists but its

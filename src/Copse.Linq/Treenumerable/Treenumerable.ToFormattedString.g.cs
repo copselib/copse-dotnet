@@ -30,11 +30,7 @@ namespace Copse.Linq
       Func<TNode, string> stringFormatter,
       int paddingSize)
     {
-      var lines = new List<string>();
-      foreach (var line in source.ToFormattedLines(stringFormatter, paddingSize))
-      {
-        lines.Add(line);
-      }
+      var lines = source.ToFormattedLines(stringFormatter, paddingSize);
 
       return string.Join(Environment.NewLine, lines);
     }

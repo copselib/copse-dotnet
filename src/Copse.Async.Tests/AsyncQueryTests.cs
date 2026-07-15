@@ -186,7 +186,7 @@ namespace Copse.Async.Tests
 
         CollectionAssert.AreEqual(
           Sync(tree).ToFormattedLines(2).ToList(),
-          await ToList(Async(tree).ToFormattedLines(2)),
+          (await Async(tree).ToFormattedLinesAsync(2)).ToList(),
           $"ToFormattedLines {tree}");
 
         Assert.AreEqual(
