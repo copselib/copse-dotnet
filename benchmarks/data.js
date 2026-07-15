@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784151284969,
+  "lastUpdate": 1784151285406,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -53504,6 +53504,114 @@ window.BENCHMARK_DATA = {
             "value": 1049954.9235026042,
             "unit": "ns",
             "range": "± 1920.482996629173"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03b4f98e0307567630ef62f4e3f13f300d1f8f5d",
+          "message": "Merge feature/order-children-by: sibling ordering, with a streaming BFT arm\n\nOrderChildrenBy / OrderChildrenByDescending (±comparer; D-narrow,\nB-narrow, and full-tree entries, both colors): stable per-sibling-group\nordering, keys evaluated once per node against the SOURCE context,\nsubtrees traveling whole. Invert's generalization -- the subsumption law\n(Invert ≡ OrderChildrenByDescending by source sibling index) is pinned\nby test, and Invert's specialization is kept on measured grounds (~1.15x\ntime, 2.4x alloc, and a capture-free O(width) B arm).\n\nThe depth-first entry rides the keyed capture factory into preorder\narrays; the breadth-first entry STREAMS -- the level-permutation build\nwalks the source once into the ordered level-order encoding with one\nbuffered level (O(width) auxiliary), refuting the original \"cannot\ngeneralize\" claim and resolving surface-map flag 4 for this operator.\nEach entry's result replays its own arrival dimension natively.\n\nAlso: LeaffixScan gains its B-narrow + F entries (disclosure rule),\nthe OrderChildrenBy benchmark family (8 rows, Buffer leg, mirroring\nInvert so the sort premium reads directly), and the measured\ntrivial-group guards + level-list pooling that keep both build paths\nfree of per-node sort machinery.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T21:20:42Z",
+          "tree_id": "35d50b3631bf52291eb00446408b8115895d11d1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/03b4f98e0307567630ef62f4e3f13f300d1f8f5d"
+        },
+        "date": 1784151285334,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2335256.846875,
+            "unit": "ns",
+            "range": "± 14260.595596329973"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1798394.7426060268,
+            "unit": "ns",
+            "range": "± 1488.8810318232595"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4514984.6328125,
+            "unit": "ns",
+            "range": "± 3850.2358308571897"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3853004.300520833,
+            "unit": "ns",
+            "range": "± 10516.71491134818"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 646918.3454241072,
+            "unit": "ns",
+            "range": "± 492.77984701405495"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 818115.5813476562,
+            "unit": "ns",
+            "range": "± 6415.1854020339015"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 420421.08999023435,
+            "unit": "ns",
+            "range": "± 1943.9025271799399"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4241857.995793269,
+            "unit": "ns",
+            "range": "± 18938.730018751812"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3489831.77265625,
+            "unit": "ns",
+            "range": "± 23518.093680365437"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14336980.847098215,
+            "unit": "ns",
+            "range": "± 78821.29283702497"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7630002.385044643,
+            "unit": "ns",
+            "range": "± 30868.039979223486"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1986862.1556919643,
+            "unit": "ns",
+            "range": "± 5551.73813082311"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1597650.3363882212,
+            "unit": "ns",
+            "range": "± 900.0591302277663"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1012015.6805245535,
+            "unit": "ns",
+            "range": "± 1805.7338855120079"
           }
         ]
       }
