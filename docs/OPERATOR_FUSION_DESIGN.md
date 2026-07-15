@@ -58,8 +58,20 @@ the common case entirely. Therefore:
   `Select(Func<TSource, TResult>)` (and the prune twins). Position-blind by type ⇒
   compound ≡ stacked ⇒ adjacent same-kind fusion is delegate composition, trivially
   correct. LINQ-parity API; likely the majority of real predicates.
-- The `NodeContext` overloads keep today's exact semantics and never fuse with their own
-  kind (they may still fuse with position-invariant partners — see matrix).
+- **Signature ruling (Jason, 2026-07-15): the positional overload is `(TNode, NodePosition)`,
+  not `NodeContext`** — verified by compiler experiment: `Func<TNode,bool>` beside
+  `Func<NodeContext<TNode>,bool>` is CS0121-ambiguous for any lambda whose body binds under
+  both (`x => true`, parameter-ignoring closures, node types with a `Node`/`Depth` member),
+  while the arity split (`x => …` vs `(x, p) => …`) resolves always — LINQ's `(x, i)` shape
+  for the same reason. Consequence: `NodeContext` exits the public operator-lambda surface
+  entirely (it remains treenumerator-level vocabulary); migrating every
+  `Func<NodeContext<T>, …>` operator signature is a full-surface break — legal in alpha,
+  sized as its own workstream, best landed before beta/consumers.
+- The positional overloads keep today's exact semantics. Positional **Select**s still
+  self-fuse (Select never relabels, so chained selectors see identical positions:
+  `(n, p) => outer(inner(n, p), p)`); positional **Where** never fuses with its own kind.
+  The general law: a pair is fusable iff no lambda observes a coordinate that a fused-away
+  emission boundary would have relabeled.
 
 ## Pair matrix
 
