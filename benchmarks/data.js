@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784128199536,
+  "lastUpdate": 1784128199938,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -85237,6 +85237,90 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/cab189780b077809ebafde3a34ee0d41be68f92f"
         },
         "date": 1784070034091,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 54219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994776,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90bffeb7809596891a07449c9773200925b83781",
+          "message": "Demote the tree tokenizers to Copse.Linq.Experimental\n\nThe ToFormattedLines rewrite removed their last product consumer, and the\nserializer never used them (its writer describes the tokenization concept\nbut is deliberately fused). Internal code never wants the token altitude:\nthe serializer needs more than tokens carry, rendering needed less. Their\naudience is external consumers wanting a flat grammar -- and shipping the\ncurrent shape would lock it in before any such consumer exists. Tokens\ncarry less context than a treenumerator (no positions, no visit counts);\na real consumer may well want richer tokens.\n\nSo: sync implementation moves to the Experimental parking lot (de-\ngenerated, .g.cs -> .cs, Copse.Linq.Experimental namespaces), the async\nside and its codegen manifest/rename/using rows are deleted, the token\nvalue types move out of Copse.Linq.Traversal, and the tokenizer tests\nretire with them. 24,245 tests green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T14:59:51Z",
+          "tree_id": "3b2521ebfab86e2674a4e0cf7fa10c92019b8c45",
+          "url": "https://github.com/copselib/copse-dotnet/commit/90bffeb7809596891a07449c9773200925b83781"
+        },
+        "date": 1784128199856,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
