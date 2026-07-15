@@ -68,6 +68,11 @@ namespace Copse.Linq.Async.Stores
     // Nodes buffered so far; a contiguous prefix of the full level-order stream.
     public int BufferedCount => _Values.Count;
 
+    // Roots buffered so far -- BufferedCount's convention: a running tally while growing (the
+    // root frontier may still be open), THE root count once complete. Array-level walkers over
+    // a completed buffer (the LeaffixAggregate fold) read it directly instead of probing.
+    public int BufferedRootCount => _RootCount;
+
     // True once the feed has exhausted: the buffer is the whole tree and every span is closed.
     public bool IsComplete { get; private set; }
 

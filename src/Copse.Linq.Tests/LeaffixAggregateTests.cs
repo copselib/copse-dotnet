@@ -48,8 +48,10 @@ namespace Copse.Linq.Tests
     [DataRow("a(d),b,c(e)")]
     public void BreadthFirstEntryMatchesTheExplicitHoist(string treeString)
     {
+      // Position included so the oracle also pins the CONTEXTS the fused fold reconstructs
+      // from the capture's child spans, not just the values.
       string Accumulate(NodeContext<string> nodeContext, ChildAccumulations<string> children)
-        => $"{nodeContext.Node}{string.Join("", children)}";
+        => $"{nodeContext.Node}@{nodeContext.Position.SiblingIndex}.{nodeContext.Position.Depth}({string.Join(",", children)})";
 
       var tree = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
