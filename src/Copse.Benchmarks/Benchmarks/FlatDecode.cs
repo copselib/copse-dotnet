@@ -8,10 +8,11 @@ using System.Collections.Generic;
 namespace Copse.Benchmarks
 {
   // The flat family's DECODERS, measured bare: the same canonical encodings (built once in
-  // setup) synthesized back into visit streams by the four store decoders and the two
-  // forward-only stream decoders. These primitives sit under every memo replay, buffer drain,
-  // and deserialize, but until this family their cost only appeared blended into operator rows
-  // -- a 6x stream-vs-store decoder gap hid inside Invert/Memoize for a full release cycle.
+  // setup) synthesized back into visit streams by the four store decoders (each over flat
+  // arrays AND the chunked D4c candidate backing) and the two forward-only stream decoders.
+  // These primitives sit under every memo replay, buffer drain, and deserialize, but until this
+  // family their cost only appeared blended into operator rows -- a 6x stream-vs-store decoder
+  // gap hid inside Invert/Memoize for a full release cycle.
   //
   // Two shapes on purpose: Binary is the small-family pole (a million 2-child groups -- any
   // per-group and per-node bookkeeping dominates), Triangle the wide-family pole (1448-child
@@ -124,6 +125,69 @@ namespace Copse.Benchmarks
       }
 
       return groups;
+    }
+
+    public static RefAppendOnlyList<int> ToChunked(int[] array)
+    {
+      var chunked = new RefAppendOnlyList<int>();
+
+      for (var index = 0; index < array.Length; index++)
+        chunked.AddLast(array[index]);
+
+      return chunked;
+    }
+
+    // The D4c candidate read path (STORE_FAMILY_REVIEW.md): the completed stores' contract
+    // answered straight from the chunked RefAppendOnlyList partitions the capture factories
+    // build into, skipping the factories' final ToArray flattening. The same-run ratio against
+    // the *ArrayStore classes is the replay price of that skipped copy -- the number that
+    // decides whether D4c ships. Kept benchmark-private until it does.
+    public readonly struct PreorderChunkedStore : IPreorderStore<int>
+    {
+      public PreorderChunkedStore(RefAppendOnlyList<int> values, RefAppendOnlyList<int> subtreeSizes)
+      {
+        _Values = values;
+        _SubtreeSizes = subtreeSizes;
+      }
+
+      private readonly RefAppendOnlyList<int> _Values;
+      private readonly RefAppendOnlyList<int> _SubtreeSizes;
+
+      public bool EnsureBuffered(int index) => index < _Values.Count;
+
+      public int EnsureSubtreeClosed(int index) => _SubtreeSizes[index];
+
+      public int GetSubtreeSize(int index) => _SubtreeSizes[index];
+
+      public int GetValue(int index) => _Values[index];
+    }
+
+    public readonly struct LevelOrderChunkedStore : ILevelOrderStore<int>
+    {
+      public LevelOrderChunkedStore(
+        RefAppendOnlyList<int> values,
+        RefAppendOnlyList<int> firstChildIndices,
+        RefAppendOnlyList<int> childCounts,
+        int rootCount)
+      {
+        _Values = values;
+        _FirstChildIndices = firstChildIndices;
+        _ChildCounts = childCounts;
+        _RootCount = rootCount;
+      }
+
+      private readonly RefAppendOnlyList<int> _Values;
+      private readonly RefAppendOnlyList<int> _FirstChildIndices;
+      private readonly RefAppendOnlyList<int> _ChildCounts;
+      private readonly int _RootCount;
+
+      public bool EnsureRootAvailable(int k) => k < _RootCount;
+
+      public bool EnsureChildAvailable(int parentIndex, int k) => k < _ChildCounts[parentIndex];
+
+      public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
+
+      public int GetValue(int index) => _Values[index];
     }
 
     // The cheapest possible IPreorderStream: a cursor over prebuilt (value, depth) arrays, so
@@ -300,6 +364,105 @@ namespace Copse.Benchmarks
     public void Dft_Triangle()
     {
       using (var treenumerator = new LevelOrderStoreDepthFirstTreenumerator<int, LevelOrderArrayStore<int>>(_Triangle))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+  }
+
+  // The chunked twins of the two store classes above: identical decode work over
+  // RefAppendOnlyList-backed stores. Chunked-vs-flat replay had no direct A/B anywhere in the
+  // suite before these rows -- the memo rows blend it with growth guards and async ratios.
+  [MemoryDiagnoser]
+  [BenchmarkCategory("FlatDecode")]
+  public class PreorderChunkedStoreDecode
+  {
+    private FlatEncodings.PreorderChunkedStore _Binary;
+    private FlatEncodings.PreorderChunkedStore _Triangle;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+      var (binaryValues, binarySizes, _) = FlatEncodings.BuildPreorder(CanonicalTrees.MegaBinaryTree());
+      _Binary = new FlatEncodings.PreorderChunkedStore(FlatEncodings.ToChunked(binaryValues), FlatEncodings.ToChunked(binarySizes));
+
+      var (triangleValues, triangleSizes, _) = FlatEncodings.BuildPreorder(CanonicalTrees.MegaTriangleTree());
+      _Triangle = new FlatEncodings.PreorderChunkedStore(FlatEncodings.ToChunked(triangleValues), FlatEncodings.ToChunked(triangleSizes));
+    }
+
+    [Benchmark]
+    public void Dft_Binary()
+    {
+      using (var treenumerator = new PreorderStoreDepthFirstTreenumerator<int, FlatEncodings.PreorderChunkedStore>(_Binary))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Bft_Binary()
+    {
+      using (var treenumerator = new PreorderStoreBreadthFirstTreenumerator<int, FlatEncodings.PreorderChunkedStore>(_Binary))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Dft_Triangle()
+    {
+      using (var treenumerator = new PreorderStoreDepthFirstTreenumerator<int, FlatEncodings.PreorderChunkedStore>(_Triangle))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Bft_Triangle()
+    {
+      using (var treenumerator = new PreorderStoreBreadthFirstTreenumerator<int, FlatEncodings.PreorderChunkedStore>(_Triangle))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+  }
+
+  [MemoryDiagnoser]
+  [BenchmarkCategory("FlatDecode")]
+  public class LevelOrderChunkedStoreDecode
+  {
+    private FlatEncodings.LevelOrderChunkedStore _Binary;
+    private FlatEncodings.LevelOrderChunkedStore _Triangle;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+      var (binaryValues, binarySizes, _) = FlatEncodings.BuildPreorder(CanonicalTrees.MegaBinaryTree());
+      var binary = FlatEncodings.BuildLevelOrder(binaryValues, binarySizes);
+      _Binary = new FlatEncodings.LevelOrderChunkedStore(
+        FlatEncodings.ToChunked(binary.Values), FlatEncodings.ToChunked(binary.FirstChildIndices), FlatEncodings.ToChunked(binary.ChildCounts), binary.RootCount);
+
+      var (triangleValues, triangleSizes, _) = FlatEncodings.BuildPreorder(CanonicalTrees.MegaTriangleTree());
+      var triangle = FlatEncodings.BuildLevelOrder(triangleValues, triangleSizes);
+      _Triangle = new FlatEncodings.LevelOrderChunkedStore(
+        FlatEncodings.ToChunked(triangle.Values), FlatEncodings.ToChunked(triangle.FirstChildIndices), FlatEncodings.ToChunked(triangle.ChildCounts), triangle.RootCount);
+    }
+
+    [Benchmark]
+    public void Bft_Binary()
+    {
+      using (var treenumerator = new LevelOrderStoreBreadthFirstTreenumerator<int, FlatEncodings.LevelOrderChunkedStore>(_Binary))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Dft_Binary()
+    {
+      using (var treenumerator = new LevelOrderStoreDepthFirstTreenumerator<int, FlatEncodings.LevelOrderChunkedStore>(_Binary))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Bft_Triangle()
+    {
+      using (var treenumerator = new LevelOrderStoreBreadthFirstTreenumerator<int, FlatEncodings.LevelOrderChunkedStore>(_Triangle))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
+    }
+
+    [Benchmark]
+    public void Dft_Triangle()
+    {
+      using (var treenumerator = new LevelOrderStoreDepthFirstTreenumerator<int, FlatEncodings.LevelOrderChunkedStore>(_Triangle))
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll)) { }
     }
   }
