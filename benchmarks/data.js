@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784151284103,
+  "lastUpdate": 1784151284495,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -46802,6 +46802,66 @@ window.BENCHMARK_DATA = {
             "value": 152745853.9107143,
             "unit": "ns",
             "range": "± 1911929.5293047912"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03b4f98e0307567630ef62f4e3f13f300d1f8f5d",
+          "message": "Merge feature/order-children-by: sibling ordering, with a streaming BFT arm\n\nOrderChildrenBy / OrderChildrenByDescending (±comparer; D-narrow,\nB-narrow, and full-tree entries, both colors): stable per-sibling-group\nordering, keys evaluated once per node against the SOURCE context,\nsubtrees traveling whole. Invert's generalization -- the subsumption law\n(Invert ≡ OrderChildrenByDescending by source sibling index) is pinned\nby test, and Invert's specialization is kept on measured grounds (~1.15x\ntime, 2.4x alloc, and a capture-free O(width) B arm).\n\nThe depth-first entry rides the keyed capture factory into preorder\narrays; the breadth-first entry STREAMS -- the level-permutation build\nwalks the source once into the ordered level-order encoding with one\nbuffered level (O(width) auxiliary), refuting the original \"cannot\ngeneralize\" claim and resolving surface-map flag 4 for this operator.\nEach entry's result replays its own arrival dimension natively.\n\nAlso: LeaffixScan gains its B-narrow + F entries (disclosure rule),\nthe OrderChildrenBy benchmark family (8 rows, Buffer leg, mirroring\nInvert so the sort premium reads directly), and the measured\ntrivial-group guards + level-list pooling that keep both build paths\nfree of per-node sort machinery.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T21:20:42Z",
+          "tree_id": "35d50b3631bf52291eb00446408b8115895d11d1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/03b4f98e0307567630ef62f4e3f13f300d1f8f5d"
+        },
+        "date": 1784151284423,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 77736357.41836736,
+            "unit": "ns",
+            "range": "± 113429.52510259152"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10467172.96514423,
+            "unit": "ns",
+            "range": "± 58335.99105843407"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 133337243.21666667,
+            "unit": "ns",
+            "range": "± 1383354.9960957395"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17171694.75892857,
+            "unit": "ns",
+            "range": "± 168181.10656832068"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 174632948.15476188,
+            "unit": "ns",
+            "range": "± 4894638.827155646"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 150520089.265625,
+            "unit": "ns",
+            "range": "± 501421.18410422903"
           }
         ]
       }
