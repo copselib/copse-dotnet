@@ -5,7 +5,6 @@ using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Copse.Linq.Tests
 {
@@ -110,58 +109,45 @@ namespace Copse.Linq.Tests
       return nodes.ToArray();
     }
 
-    // Level-order child groups (group 0 = roots, group k+1 = children of node k) via the
-    // engine's BFT stream, trailing empty groups elided to exercise that encoding freedom.
+    // Level-order child groups (group 0 = roots, group k+1 = children of node k), read back out
+    // of a factory-built completed store (roots are the store's leading run; each child group is
+    // its parent's contiguous span), trailing empty groups elided to exercise that encoding
+    // freedom.
     private static string[][] BuildLevelOrderGroups(string tree)
     {
-      var values = new List<string>();
-      var firstChildIndices = new List<int>();
-      var childCounts = new List<int>();
+      var store = LevelOrderCapture.CaptureFrom(TreeSerializer.DeserializeDepthFirstTree(tree));
+
       var rootCount = 0;
-      var front = -1;
+      while (store.EnsureRootAvailable(rootCount))
+        rootCount++;
 
-      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetBreadthFirstTreenumerator())
+      var groups = new List<string[]> { ReadSpan(store, 0, rootCount) };
+
+      for (var parentIndex = 0; parentIndex < store.Count; parentIndex++)
       {
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
-        {
-          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
-          {
-            var index = values.Count;
+        var childCount = 0;
+        while (store.EnsureChildAvailable(parentIndex, childCount))
+          childCount++;
 
-            values.Add(treenumerator.Node);
-            firstChildIndices.Add(-1);
-            childCounts.Add(0);
-
-            if (treenumerator.Position.Depth == 0)
-            {
-              rootCount++;
-            }
-            else
-            {
-              if (childCounts[front] == 0)
-                firstChildIndices[front] = index;
-
-              childCounts[front]++;
-            }
-          }
-          else if (treenumerator.VisitCount == 1)
-          {
-            front++;
-          }
-        }
-      }
-
-      var groups = new List<string[]> { values.Take(rootCount).ToArray() };
-
-      for (int i = 0; i < values.Count; i++)
-        groups.Add(childCounts[i] == 0
+        groups.Add(childCount == 0
           ? Array.Empty<string>()
-          : values.Skip(firstChildIndices[i]).Take(childCounts[i]).ToArray());
+          : ReadSpan(store, store.GetFirstChildIndex(parentIndex), childCount));
+      }
 
       while (groups.Count > 0 && groups[groups.Count - 1].Length == 0)
         groups.RemoveAt(groups.Count - 1);
 
       return groups.ToArray();
+    }
+
+    private static string[] ReadSpan(LevelOrderArrayStore<string> store, int startIndex, int count)
+    {
+      var values = new string[count];
+
+      for (var offset = 0; offset < count; offset++)
+        values[offset] = store.GetValue(startIndex + offset);
+
+      return values;
     }
 
     private static IDepthFirstTreenumerable<string> PreorderStream(string tree)
