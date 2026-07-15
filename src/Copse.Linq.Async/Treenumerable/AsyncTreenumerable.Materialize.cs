@@ -28,7 +28,7 @@ namespace Copse.Linq
     /// </summary>
     public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncTreenumerable<TValue> source)
     {
-      if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;
@@ -58,7 +58,7 @@ namespace Copse.Linq
     /// </summary>
     public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncTreenumerable<TValue> source, TreeTraversalStrategy strategy)
     {
-      if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         await PinAsync(lazyBuffer, strategy).ConfigureAwait(false);
         await lazyBuffer.CompleteAsync().ConfigureAwait(false);
@@ -78,7 +78,7 @@ namespace Copse.Linq
     // dimension is the pin (the capture is created for that dimension); no nodes are pulled,
     // and it is harmless when a pin already exists. The organic pin, used wherever a strategy
     // names the layout a fresh capture should take.
-    private static async ValueTask PinAsync<TValue>(IAsyncLazyTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
+    private static async ValueTask PinAsync<TValue>(IAsyncMemoizeTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
     {
       var treenumerator = buffer.GetAsyncTreenumerator(strategy);
       await treenumerator.DisposeAsync().ConfigureAwait(false);
@@ -101,14 +101,14 @@ namespace Copse.Linq
       {
         var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(buffer).ConfigureAwait(false);
 
-        return new AsyncCompletedTreenumerableBuffer<TValue>(
+        return new AsyncTreenumerableBuffer<TValue>(
           new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
           BufferLayout.Preorder);
       }
 
       var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(buffer).ConfigureAwait(false);
 
-      return new AsyncCompletedTreenumerableBuffer<TValue>(
+      return new AsyncTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
         BufferLayout.LevelOrder);
     }
@@ -120,7 +120,7 @@ namespace Copse.Linq
     /// </summary>
     public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
     {
-      if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;
@@ -136,7 +136,7 @@ namespace Copse.Linq
 
     public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
     {
-      if (source is IAsyncLazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         await lazyBuffer.CompleteAsync().ConfigureAwait(false);
         return lazyBuffer;

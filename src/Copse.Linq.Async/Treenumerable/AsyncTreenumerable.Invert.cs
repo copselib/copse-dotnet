@@ -49,7 +49,7 @@ namespace Copse.Linq
     /// return type.
     /// </summary>
     public static IAsyncTreenumerableBuffer<TNode> Invert<TNode>(this IAsyncTreenumerable<TNode> source)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
+      => new AsyncTreenumerableBuffer<TNode>(
         AsyncTree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? LevelOrderMirror(source)
@@ -71,14 +71,14 @@ namespace Copse.Linq
     // acquisition (Tree.Lazy), both dimensions served from mirrored preorder arrays. The
     // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static IAsyncTreenumerableBuffer<TNode> DeferredMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
-      => new AsyncCompletedTreenumerableBuffer<TNode>(
+      => new AsyncTreenumerableBuffer<TNode>(
         AsyncTree.Lazy(() => PreorderMirror(source)), BufferLayout.Preorder);
 
     private static IAsyncTreenumerable<TNode> PreorderMirror<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var mirror = new AsyncLazyBuiltPreorderStore<TNode>(() => BuildMirrorAsync(source));
+      var mirror = new AsyncLazyPreorderStore<TNode>(() => BuildMirrorAsync(source));
 
-      return new AsyncPreorderTreenumerable<TNode, AsyncLazyBuiltPreorderStore<TNode>>(mirror);
+      return new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(mirror);
     }
 
     // The breadth-first-first mirror: the streaming mirror drained ONCE into a completed
@@ -96,11 +96,11 @@ namespace Copse.Linq
     // treenumerator (and a Using source's resource) deterministically inside the build.
     private static IAsyncTreenumerable<TNode> LevelOrderMirror<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var mirror = new AsyncLazyBuiltLevelOrderStore<TNode>(
+      var mirror = new AsyncLazyLevelOrderStore<TNode>(
         () => AsyncLevelOrderCapture.CaptureFromAsync(
           new AsyncInvertedLevelOrderStream<TNode>(source.GetAsyncBreadthFirstTreenumerator())));
 
-      return new AsyncLevelOrderTreenumerable<TNode, AsyncLazyBuiltLevelOrderStore<TNode>>(mirror);
+      return new AsyncLevelOrderTreenumerable<TNode, AsyncLazyLevelOrderStore<TNode>>(mirror);
     }
 
     private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)

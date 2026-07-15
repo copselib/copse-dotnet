@@ -68,17 +68,17 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void LazyBuiltDualBuildsOnceAcrossDimensions()
+    public void LazyDualBuildsOnceAcrossDimensions()
     {
       var builds = 0;
 
-      var store = new LazyBuiltLevelOrderStore<string>(() =>
+      var store = new LazyLevelOrderStore<string>(() =>
       {
         builds++;
         return BranchingStore();
       });
 
-      var tree = new LevelOrderTreenumerable<string, LazyBuiltLevelOrderStore<string>>(store);
+      var tree = new LevelOrderTreenumerable<string, LazyLevelOrderStore<string>>(store);
 
       Assert.AreEqual(0, builds, "the build must wait for the first pull");
 

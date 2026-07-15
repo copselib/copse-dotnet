@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class MemoizeTreenumerable<TValue> : ILazyTreenumerableBuffer<TValue>
+  internal sealed class MemoizeTreenumerable<TValue> : IMemoizeTreenumerableBuffer<TValue>
   {
     // The pinned layout, null while fresh (nothing has pulled or consumed yet).
     public BufferLayout? NativeLayout

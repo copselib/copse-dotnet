@@ -13,7 +13,7 @@ namespace Copse.Linq
     /// the sync name. See MEMOIZE_DESIGN.md for the full contract (per-dimension buffers, the
     /// four-case serving rule, disposal semantics).
     ///
-    /// <para>Idempotent on a live memo: memoizing an <see cref="IAsyncLazyTreenumerableBuffer{TValue}"/>
+    /// <para>Idempotent on a live memo: memoizing an <see cref="IAsyncMemoizeTreenumerableBuffer{TValue}"/>
     /// returns it unchanged -- wrapping would chain a second capture whose feed is the first's
     /// replay, copying every node twice for nothing. The instance (hence its disposal) is
     /// therefore shared with the original holder, as any memo is. A completed capture (a non-lazy
@@ -21,8 +21,8 @@ namespace Copse.Linq
     /// short-circuited: it has no live feed to share, and re-memoizing it (a degenerate call --
     /// you already hold the ideal buffer) simply wraps it.</para>
     /// </summary>
-    public static IAsyncLazyTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncTreenumerable<TValue> source)
-      => source as IAsyncLazyTreenumerableBuffer<TValue> ?? new AsyncMemoizeTreenumerable<TValue>(source);
+    public static IAsyncMemoizeTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncTreenumerable<TValue> source)
+      => source as IAsyncMemoizeTreenumerableBuffer<TValue> ?? new AsyncMemoizeTreenumerable<TValue>(source);
 
     /// <summary>
     /// The typed upgrade op on a depth-first-only source: the returned buffer is a full
@@ -32,7 +32,7 @@ namespace Copse.Linq
     /// citizen routes to the richer two-buffer memo (cheaper when rich), which also preserves
     /// buffer idempotency.
     /// </summary>
-    public static IAsyncLazyTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
+    public static IAsyncMemoizeTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
       => source is IAsyncTreenumerable<TValue> fullCitizen
         ? fullCitizen.Memoize()
         : new AsyncMemoizeDepthFirstSourceTreenumerable<TValue>(source);
@@ -42,7 +42,7 @@ namespace Copse.Linq
     /// source's depth-first dimension (no bounded streaming strategy exists for that
     /// direction) -- the escalation the split makes explicit.
     /// </summary>
-    public static IAsyncLazyTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
+    public static IAsyncMemoizeTreenumerableBuffer<TValue> Memoize<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
       => source is IAsyncTreenumerable<TValue> fullCitizen
         ? fullCitizen.Memoize()
         : new AsyncMemoizeBreadthFirstSourceTreenumerable<TValue>(source);

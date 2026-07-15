@@ -12,9 +12,9 @@ namespace Copse.Linq.Async.Treenumerables
   // The inner may build lazily on first acquisition; "completed" is about there being no live
   // feed to retire, not about eagerness. (The flat-store treenumerable is in Copse and cannot
   // implement this Copse.Linq interface directly, hence the wrapper.)
-  internal sealed class AsyncCompletedTreenumerableBuffer<TValue> : IAsyncTreenumerableBuffer<TValue>
+  internal sealed class AsyncTreenumerableBuffer<TValue> : IAsyncTreenumerableBuffer<TValue>
   {
-    public AsyncCompletedTreenumerableBuffer(IAsyncTreenumerable<TValue> capture, BufferLayout? nativeLayout)
+    public AsyncTreenumerableBuffer(IAsyncTreenumerable<TValue> capture, BufferLayout? nativeLayout)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;

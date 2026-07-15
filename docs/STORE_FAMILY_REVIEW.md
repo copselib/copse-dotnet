@@ -36,7 +36,7 @@
 ## The question that prompted this: why is there no async `LevelOrderArrayStore`?
 
 Because **the async layer reuses the sync array stores internally, behind the grow seam.**
-`AsyncLazyBuiltPreorderStore` awaits its one-shot build into a plain `PreorderArrayStore`,
+`AsyncLazyPreorderStore` awaits its one-shot build into a plain `PreorderArrayStore`,
 then answers every subsequent `Ensure*Async` with a completed `ValueTask` over it (its own
 comment: "every call after that answers from the completed PreorderArrayStore"). The async
 SPI's design supports this exactly — `Ensure*` await, `Get*` stay synchronous pure reads.
@@ -83,12 +83,12 @@ Primitives) — the same pair that already hosts the decoders.
 LeaffixAggregate (no-store, per-root reuse), the memo buffers (resumable `PullOne`/`Consume`
 forms), serializer (text-driven), benchmarks, and tests.
 
-**F4 — Duals are inconsistent.** `LazyBuiltLevelOrderStore`: generated + tested, **zero
+**F4 — Duals are inconsistent.** `LazyLevelOrderStore`: generated + tested, **zero
 product consumers** (orphan). `StreamFedPreorderStore`: doesn't exist (nothing needs it).
 Completed-store async adapters: benchmark-private, preorder-only. The preorder↔level-order
 transpose: benchmarks only (deliberately measured out of product). Per the dual-symmetry
 preference, orphans are acceptable — but each should be a *decision*, and the
-`LazyBuiltLevelOrderStore` orphan may be about to get its consumer (see D4).
+`LazyLevelOrderStore` orphan may be about to get its consumer (see D4).
 
 **F5 — Naming crosses its axes.** The family's own convention is encoding names
 (`Preorder`/`LevelOrder`) for layout and dimension names (`DepthFirst`/`BreadthFirst`) for
@@ -110,7 +110,7 @@ only inside `MemoizeDepthFirstBuffer`).
 **A. Name the taxonomy, then let names follow it.** Every member is (encoding: preorder |
 level-order) × (completion: completed | growing) × (feed: none | one-shot build | stream |
 visit-stream, resumable). Concretes today, sorted by that grid: completed+none =
-`*ArrayStore`, `*StringStore`; growing+build = `LazyBuilt*Store`; growing+stream =
+`*ArrayStore`, `*StringStore`; growing+build = `Lazy*Store`; growing+stream =
 ~~`StreamFedLevelOrderStore`~~ (deleted 2026-07-13; the stream-drain capability lives on as
 the one-shot `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`); growing+visit-stream =
 `Memoize*Buffer` (+ SPI adapter structs).
@@ -121,7 +121,7 @@ they *cannot* go on the stores in Primitives). Shape: a `PreorderCapture` /
 `LevelOrderCapture` static class (names bikesheddable) exposing
 `CaptureFrom(source)` → `PreorderArrayStore`, plus the two hooks the variants need: a
 per-node selector (OrderChildrenBy's keys) and a close-hook (LeaffixScan's accumulator).
-`LazyBuiltPreorderStore(() => PreorderCapture.From(...))` becomes the one written-once
+`LazyPreorderStore(() => PreorderCapture.From(...))` becomes the one written-once
 composition every capture op rides. Out of scope for the factory: LeaffixAggregate's
 per-root reusable-buffer form (different lifetime), the memo's resumable forms (different
 protocol), serializer text parsing (different feed). Those keep their loops; the factory
@@ -134,7 +134,7 @@ bottom tier of the known missing sync→async bridge, so build it as that story'
 not a one-off.
 
 **D. Resolve the duals deliberately (cross-links to the pending operator flags):**
-- **D4a. `LazyBuiltLevelOrderStore` orphan — RESOLVED 2026-07-13 exactly as predicted**:
+- **D4a. `LazyLevelOrderStore` orphan — RESOLVED 2026-07-13 exactly as predicted**:
   flag #5 went eager-on-first-pull; the orphan is now Invert-F's BFT-first deferral seam,
   and `StreamFedLevelOrderStore` was deleted — its incremental drain preserved one-shot as
   the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)`.

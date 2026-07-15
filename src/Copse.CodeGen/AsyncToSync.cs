@@ -163,7 +163,7 @@ namespace Copse.CodeGen
         ["TAsyncChildEnumerator"] = "TChildEnumerator",
         ["GetAsyncEnumerator"] = "GetEnumerator",
         ["IAsyncTreenumerableBuffer"] = "ITreenumerableBuffer",
-        ["IAsyncLazyTreenumerableBuffer"] = "ILazyTreenumerableBuffer",
+        ["IAsyncMemoizeTreenumerableBuffer"] = "IMemoizeTreenumerableBuffer",
         ["AsyncRefCountDisposable"] = "RefCountDisposable",
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",

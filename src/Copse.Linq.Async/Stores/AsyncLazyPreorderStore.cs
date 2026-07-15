@@ -12,7 +12,7 @@ namespace Copse.Linq.Async.Stores
   // This replaced the Lazy&lt;PreorderTreenumerable&gt; shape the hand-written sync
   // LeaffixScan/Invert used: a sync-signature treenumerator factory cannot await, so the deferral
   // moves from the treenumerable (Lazy.Value inside the factory) to the store's grow seam --
-  // which the store decoders already own. The sync twin (LazyBuiltPreorderStore) is generated
+  // which the store decoders already own. The sync twin (LazyPreorderStore) is generated
   // from this and is what the generated sync LeaffixScan/Invert defer through.
   //
   // GetValue/GetSubtreeSize are pure reads and stay synchronous: the decoder contract guarantees
@@ -20,9 +20,9 @@ namespace Copse.Linq.Async.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
-  internal sealed class AsyncLazyBuiltPreorderStore<TValue> : IAsyncPreorderStore<TValue>
+  internal sealed class AsyncLazyPreorderStore<TValue> : IAsyncPreorderStore<TValue>
   {
-    public AsyncLazyBuiltPreorderStore(Func<ValueTask<AsyncPreorderArrayStore<TValue>>> build)
+    public AsyncLazyPreorderStore(Func<ValueTask<AsyncPreorderArrayStore<TValue>>> build)
     {
       _Build = build;
     }

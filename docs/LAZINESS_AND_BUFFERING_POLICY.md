@@ -38,13 +38,14 @@ whole tree), never by implementation convenience.
   freely, nothing is held.
 - Returns `ITreenumerableBuffer` → **it captured the tree**; it is just data — no disposal,
   re-traverse at will.
-- **`Memoize`** → the one power tool: a live, lazily-growing, *disposable* capture
-  (`ILazyTreenumerableBuffer`) for expensive or huge sources — you asked for it, you own it.
+- **`Memoize`** → the one power tool: a live, incrementally-growing, *disposable* capture
+  (`IMemoizeTreenumerableBuffer`) for expensive or huge sources — you asked for it, you own
+  it.
 
 ## The rules
 
 1. **`Memoize` is the only public operator that returns the disposable
-   `ILazyTreenumerableBuffer`.** Every other buffering operator returns the non-disposable
+   `IMemoizeTreenumerableBuffer`.** Every other buffering operator returns the non-disposable
    `ITreenumerableBuffer`. No new disposable returns, ever, without revisiting this record.
 
 2. **Classification is by the emission-vs-arrival gap, per dimension** (the
@@ -106,7 +107,41 @@ whole tree), never by implementation convenience.
    wrapper) and the preorder window: keep parked until a consumer demands them, or schedule
    one deliberately as the perf tier for a shipped capture op?
 3. ~~**`Consume`.**~~ RESOLVED (2026-07-14→15, the full arc): probes added, then REVERTED once the real constituency spoke — Consume is the mechanical walk (unit tests, benchmarks), Complete() finishes a lazy capture, Materialize delivers a settled buffer. One word, one meaning.
-4. **THE NAMING SESSION** (queued 2026-07-15; scope grew across the chimera discussion). ~~(a) Memoize*Buffer -> Memoize*Store~~ EXECUTED 2026-07-15 (54d9dbf). Remaining scope -- likely wants its own grid over "WHEN does work happen" and "WHAT is deferred": (b) the feed-column names do not telegraph their granularity -- Jason's formulation: LazyBuilt = DEFERRED construction of the entire store (one-shot build, all-or-nothing); Memoize = LAZY construction of the store (resumable visit-stream feed, pays per node). "LazyBuilt" arguably describes the memoize one better than the one it names; candidates worth weighing when revisited: Deferred*Store / Incremental*Store, or grid-derived names. (c) Tree.Defer / Tree.Lazy themselves (Jason, 2026-07-15) -- VERIFIED against the archived Rx docs (an AI search summary claiming Rx Defer "reuses the sequence across subscriptions" was a hallucination; the real doc: the factory is invoked "whenever a new observer subscribes", and its example exists to show re-subscription yielding FRESH data): Tree.Defer matches Rx Defer's call-by-name exactly, Tree.Lazy matches System.Lazy<T>'s pinned-once exactly -- these two are the best-precedented names on the surface and likely SURVIVE the session. The genuine defendant: "lazy" spread across THREE granularities -- Tree.Lazy (call-by-need, pinned once), LazyBuilt*Store (deferred one-shot build), ILazyTreenumerableBuffer (incremental capture) -- while Defer (call-by-name, per acquisition) borrows Rx vocabulary. A session with a deferral-semantics grid (per-acquisition / pinned-once / incremental x what-is-deferred: tree construction / store build / capture growth) should settle the whole "when does work happen" vocabulary in one sitting: Defer, Lazy, LazyBuilt, Memoize, deferred-once capture ops, Complete, Materialize.
+4. ~~**THE NAMING SESSION**~~ **RESOLVED 2026-07-15** (queued the same day; scope grew across
+   the chimera discussion; (a) Memoize*Buffer → Memoize*Store executed first, 54d9dbf). The
+   session produced three ratified rules and one rename commit:
+
+   **4.1 The deferral triad** — the "when does work happen" vocabulary, one word per schedule:
+   - **Defer** = per-acquisition (call-by-name; matches Rx `Defer` — VERIFIED against the
+     archived Rx docs after an AI search summary claiming Rx Defer "reuses the sequence
+     across subscriptions" proved a hallucination; the real doc: the factory is invoked
+     "whenever a new observer subscribes", its example showing re-subscription yields FRESH
+     data).
+   - **Lazy** = pinned-once, whole (call-by-need; matches `System.Lazy<T>` exactly).
+   - **Memoize** = incremental, pays per node reached.
+   `Tree.Defer`/`Tree.Lazy` survive unchanged — the best-precedented names on the surface.
+
+   **4.2 Essence-vs-state** — type names come from type-stable essence (mechanism,
+   provenance, attachment); mutable conditions (completeness, growth, layout) are
+   properties, never names.
+
+   **4.3 The machinery naming grammar** — **[Mechanism] + [Axis] + [Tier]**: *Mechanism*
+   cites the fluent-surface operation the type implements, verbatim in its **bare** form
+   (`Where`, `Select`, `Memoize`, `Lazy` — one greppable word across all tiers; a participle
+   is reserved for describing the *data's* state, e.g. `InvertedLevelOrderStream` carries
+   inverted order); *Axis* follows the existing rule (encoding names for storage, dimension
+   names for traversal); *Tier* is the machinery kind (`Treenumerable`, `Treenumerator`,
+   `Store`, `Stream`, `Buffer`, `Capture`, `Handle`). Mechanism-less vanilla types get the
+   vanilla name (`PreorderArrayStore`, `TreenumerableBuffer`).
+
+   **Renames executed** (one commit; the interface pair is the one public break):
+   - `ILazyTreenumerableBuffer` → `IMemoizeTreenumerableBuffer` (+ async twin) — mechanism
+     word corrected; "lazy" no longer names the incremental schedule.
+   - `CompletedTreenumerableBuffer` → `TreenumerableBuffer` (+ async twin) — state word
+     deleted; the vanilla marker implementation gets the vanilla name.
+   - `LazyBuilt{Preorder,LevelOrder}Store` → `Lazy{Preorder,LevelOrder}Store` (+ async
+     twins) — "Built" was tier-noise; these ARE `Tree.Lazy` at the store tier, and beside
+     `Memoize*Store` the store folder now reads as the triad on sight.
 
 5. **Store/wrapper cohesion pass.** The preorder/level-order stores, streams, and their
    treenumerable wrappers accreted; the operator-side private builders duplicate machinery
@@ -117,6 +152,6 @@ whole tree), never by implementation convenience.
    parallel `keys[]`) and (b) an identical stack-driven span-hop emission skeleton differing
    only in how each sibling group is ordered (reverse vs. sort). Candidate shape: a
    `PreorderArrayStore.CaptureFrom(source[, selector])` factory plus a sibling-group-reorder
-   emission, with `LazyBuiltPreorderStore` composing them. Inventory of all ad-hoc
+   emission, with `LazyPreorderStore` composing them. Inventory of all ad-hoc
    construction sites: see [OPERATOR_SURFACE_MAP.md](OPERATOR_SURFACE_MAP.md). Remember:
    edits go in the async sources (`Copse.Async`), the sync `.g.cs` is generated.

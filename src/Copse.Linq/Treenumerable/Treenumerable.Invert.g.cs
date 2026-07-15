@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// return type.
     /// </summary>
     public static ITreenumerableBuffer<TNode> Invert<TNode>(this ITreenumerable<TNode> source)
-      => new CompletedTreenumerableBuffer<TNode>(
+      => new TreenumerableBuffer<TNode>(
         Tree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? LevelOrderMirror(source)
@@ -72,14 +72,14 @@ namespace Copse.Linq
     // acquisition (Tree.Lazy), both dimensions served from mirrored preorder arrays. The
     // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static ITreenumerableBuffer<TNode> DeferredMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
-      => new CompletedTreenumerableBuffer<TNode>(
+      => new TreenumerableBuffer<TNode>(
         Tree.Lazy(() => PreorderMirror(source)), BufferLayout.Preorder);
 
     private static ITreenumerable<TNode> PreorderMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
-      var mirror = new LazyBuiltPreorderStore<TNode>(() => BuildMirror(source));
+      var mirror = new LazyPreorderStore<TNode>(() => BuildMirror(source));
 
-      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(mirror);
+      return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(mirror);
     }
 
     // The breadth-first-first mirror: the streaming mirror drained ONCE into a completed
@@ -97,11 +97,11 @@ namespace Copse.Linq
     // treenumerator (and a Using source's resource) deterministically inside the build.
     private static ITreenumerable<TNode> LevelOrderMirror<TNode>(IBreadthFirstTreenumerable<TNode> source)
     {
-      var mirror = new LazyBuiltLevelOrderStore<TNode>(
+      var mirror = new LazyLevelOrderStore<TNode>(
         () => LevelOrderCapture.CaptureFrom(
           new InvertedLevelOrderStream<TNode>(source.GetBreadthFirstTreenumerator())));
 
-      return new LevelOrderTreenumerable<TNode, LazyBuiltLevelOrderStore<TNode>>(mirror);
+      return new LevelOrderTreenumerable<TNode, LazyLevelOrderStore<TNode>>(mirror);
     }
 
     private static PreorderArrayStore<TNode> BuildMirror<TNode>(IDepthFirstTreenumerable<TNode> source)

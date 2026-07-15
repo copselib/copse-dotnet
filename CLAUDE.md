@@ -128,11 +128,13 @@ The library **never performs node equality comparisons**. This is a deliberate d
   "upgrade" from a narrow source back to the composite. Deliberately **not** `IDisposable` — a
   completed capture holds only managed arrays, so it chains freely through the fluent surface.
   What `Materialize`/`LeaffixScan`/`Invert` return.
-- **ILazyTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live source
-  feed**: the lazily-growing capture `Memoize` returns. Adds `IsComplete`/`GetBufferedCount`/
-  `Consume` and `IDisposable` (disposing retires the feed). Because it *is* an
-  `ITreenumerableBuffer` it composes anywhere a capture is expected, but the fluent surface sees
-  only the non-disposable base, so the caller keeps this reference to dispose it.
+- **IMemoizeTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live
+  source feed**: the incrementally-growing capture `Memoize` returns (the type cites its
+  operator — the machinery naming grammar, see docs/LAZINESS_AND_BUFFERING_POLICY.md). Adds
+  `IsComplete`/`GetBufferedCount()`/`Complete()` and `IDisposable` (disposing retires the
+  feed). Because it *is* an `ITreenumerableBuffer` it composes anywhere a capture is
+  expected, but the fluent surface sees only the non-disposable base, so the caller keeps
+  this reference to dispose it.
 
 ### The traversal-dimension split
 

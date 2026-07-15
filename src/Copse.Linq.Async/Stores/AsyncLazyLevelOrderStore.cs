@@ -7,18 +7,18 @@ namespace Copse.Linq.Async.Stores
 {
   // An IAsyncLevelOrderStore over a level-order capture that does not exist yet: the first grow
   // call awaits the one-shot build and every call after that answers from the completed
-  // LevelOrderArrayStore. AsyncLazyBuiltPreorderStore's structural dual -- see that store for
+  // LevelOrderArrayStore. AsyncLazyPreorderStore's structural dual -- see that store for
   // why the deferral rides the grow seam rather than the treenumerator factory. The sync twin
-  // (LazyBuiltLevelOrderStore) is generated from this.
+  // (LazyLevelOrderStore) is generated from this.
   //
   // GetFirstChildIndex/GetValue are pure reads and stay synchronous: the decoder contract
   // guarantees a grow call precedes every read, so the store is always built by the time they
   // run. Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x one-shot-build feed.
-  internal sealed class AsyncLazyBuiltLevelOrderStore<TValue> : IAsyncLevelOrderStore<TValue>
+  internal sealed class AsyncLazyLevelOrderStore<TValue> : IAsyncLevelOrderStore<TValue>
   {
-    public AsyncLazyBuiltLevelOrderStore(Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> build)
+    public AsyncLazyLevelOrderStore(Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> build)
     {
       _Build = build;
     }

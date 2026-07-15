@@ -30,7 +30,7 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TValue> Materialize<TValue>(this ITreenumerable<TValue> source)
     {
-      if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         lazyBuffer.Complete();
         return lazyBuffer;
@@ -60,7 +60,7 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TValue> Materialize<TValue>(this ITreenumerable<TValue> source, TreeTraversalStrategy strategy)
     {
-      if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         Pin(lazyBuffer, strategy);
         lazyBuffer.Complete();
@@ -80,7 +80,7 @@ namespace Copse.Linq
     // dimension is the pin (the capture is created for that dimension); no nodes are pulled,
     // and it is harmless when a pin already exists. The organic pin, used wherever a strategy
     // names the layout a fresh capture should take.
-    private static void Pin<TValue>(ILazyTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
+    private static void Pin<TValue>(IMemoizeTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
     {
       var treenumerator = buffer.GetTreenumerator(strategy);
       treenumerator.Dispose();
@@ -103,14 +103,14 @@ namespace Copse.Linq
       {
         var preorderStore = PreorderCapture.CaptureFrom(buffer);
 
-        return new CompletedTreenumerableBuffer<TValue>(
+        return new TreenumerableBuffer<TValue>(
           new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(preorderStore),
           BufferLayout.Preorder);
       }
 
       var levelOrderStore = LevelOrderCapture.CaptureFrom(buffer);
 
-      return new CompletedTreenumerableBuffer<TValue>(
+      return new TreenumerableBuffer<TValue>(
         new LevelOrderTreenumerable<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore),
         BufferLayout.LevelOrder);
     }
@@ -122,7 +122,7 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IDepthFirstTreenumerable<TValue> source)
     {
-      if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         lazyBuffer.Complete();
         return lazyBuffer;
@@ -138,7 +138,7 @@ namespace Copse.Linq
 
     public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IBreadthFirstTreenumerable<TValue> source)
     {
-      if (source is ILazyTreenumerableBuffer<TValue> lazyBuffer)
+      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
       {
         lazyBuffer.Complete();
         return lazyBuffer;

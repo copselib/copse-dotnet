@@ -10,7 +10,7 @@ namespace Copse.Linq.Async.Treenumerables
   // Deliberately NOT disposable: a completed capture holds only managed arrays, with no live
   // source feed to retire, so there is nothing to dispose and it chains freely through the
   // fluent surface. The still-growing case -- which DOES hold a live feed -- is
-  // IAsyncLazyTreenumerableBuffer.
+  // IAsyncMemoizeTreenumerableBuffer.
   //
   // CONTRACT -- a buffer is a capture, not a computation: traversing it is effect-free and
   // idempotent. A deferred capture may run its pinned build on first use, but that build runs

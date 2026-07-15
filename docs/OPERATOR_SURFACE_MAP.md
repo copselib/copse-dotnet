@@ -42,7 +42,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → mirrored preorder arrays; BFT-first → the streaming mirror drained once into level-order arrays (2026-07-13; both arms now share the build-on-first-pull cost shape) |
 | LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
 | OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; **B overloads Materialize first** (see flags) |
-| Memoize | F, D, B | **ILazyTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | ONE capture (2026-07-15): the first pull pins the layout; off-pin replays ride it cross-order; **source enumerated at most once** — upstream side effects fire at most once per node; pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
+| Memoize | F, D, B | **IMemoizeTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | ONE capture (2026-07-15): the first pull pins the layout; off-pin replays ride it cross-order; **source enumerated at most once** — upstream side effects fire at most once per node; pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
 | Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place; a compliant buffer returned as-is; otherwise `Memoize()+Consume()`. The strategy overload is a layout GUARANTEE (2026-07-15): never ignored — fresh memo pins it, mismatched buffer is TRANSPOSED from the buffer (new instance, source untouched); the both-layouts recipe = materialize twice, one source pass |
 
 ### Enumerable / scalar consumers (Copse.Linq)
@@ -108,7 +108,7 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    `LevelOrderCapture.CaptureFrom`), matching the preorder arm's cost shape. The
    dispose-completes-capture surprise is gone (dispose owes nothing; the source is released
    inside the build), `StreamFedLevelOrderStore` was **deleted**, and the orphaned
-   `LazyBuiltLevelOrderStore` became the arm's deferral seam. The tier-by-tier laziness this
+   `LazyLevelOrderStore` became the arm's deferral seam. The tier-by-tier laziness this
    traded away was only ever real for a replay abandoned *without* disposal.
 6. *(FIXED 2026-07-13)* `Materialize` now probes before memoizing: a live memo is consumed
    in place (the aliasing is by design and documented in the XML docs); a completed buffer
@@ -161,9 +161,9 @@ Concrete stores/streams                       consumers
 │    (per-color since the de-share: Copse/Stores builds all terminate here; benchmarks; tests
 │     ← Copse.Async/Stores, completed arrays)
 ├─ (Async)LevelOrderArrayStore (readonly structs)  Invert-F BFT arm; benchmarks/tests
-├─ LazyBuiltPreorderStore (internal, Linq)    THE deferral seam: Invert-D, OrderChildrenBy,
+├─ LazyPreorderStore (internal, Linq)    THE deferral seam: Invert-D, OrderChildrenBy,
 │    runs a Func<PreorderArrayStore> once     LeaffixScan all ride it
-├─ LazyBuiltLevelOrderStore                   Invert-F BFT-first arm's deferral seam (orphan
+├─ LazyLevelOrderStore                   Invert-F BFT-first arm's deferral seam (orphan
 │                                             ADOPTED 2026-07-13, flag 5)
 │  (StreamFedLevelOrderStore DELETED 2026-07-13 — its incremental drain became the
 │   stream-shaped LevelOrderCapture.CaptureFrom, one-shot; no preorder dual, still)
@@ -212,7 +212,7 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    `new PreorderArrayStore<T>(values, subtreeSizes)` after restating the store's own
    documented invariant. A `PreorderArrayStore.CaptureFrom(source[, per-node selector])`
    factory plus a sibling-group-reorder emission would collapse sites 1, 2, and the
-   benchmark/test copies; `LazyBuiltPreorderStore(() => PreorderArrayStore.CaptureFrom(...))`
+   benchmark/test copies; `LazyPreorderStore(() => PreorderArrayStore.CaptureFrom(...))`
    is exactly today's call pattern with the loop named and moved. LeaffixScan needs a
    close-hook (accumulator) and LeaffixAggregate needs the no-store reusable-buffer form —
    they mark the boundary of what one factory can absorb.
@@ -228,7 +228,7 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    one-line taxonomy header; (b) the unboxing-adapter idiom still has two conventions
    (`Memoize*Store` types vs the serializer's nested `.Handle` structs); (c) tests still
    re-implement public stores under word-order-swapped names.
-4. **Missing duals** (cross-check [dual-symmetry backlog]): ~~`LazyBuiltLevelOrderStore`
+4. **Missing duals** (cross-check [dual-symmetry backlog]): ~~`LazyLevelOrderStore`
    orphan~~ *(adopted 2026-07-13 — it is now Invert-F's BFT-first deferral seam; the
    stream-fed store it displaced was deleted, its drain preserved as the stream-shaped
    `LevelOrderCapture.CaptureFrom`)*; no stream-shaped `PreorderCapture.CaptureFrom`

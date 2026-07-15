@@ -38,7 +38,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => new CompletedTreenumerableBuffer<TAccumulate>(
+      => new TreenumerableBuffer<TAccumulate>(
         Tree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
 
     // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
@@ -52,10 +52,10 @@ namespace Copse.Linq
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
     {
-      var scanned = new LazyBuiltPreorderStore<TAccumulate>(
+      var scanned = new LazyPreorderStore<TAccumulate>(
         () => BuildLeaffixScan(source, accumulator, leafNodeSelector));
 
-      return new PreorderTreenumerable<TAccumulate, LazyBuiltPreorderStore<TAccumulate>>(scanned);
+      return new PreorderTreenumerable<TAccumulate, LazyPreorderStore<TAccumulate>>(scanned);
     }
 
     private static PreorderArrayStore<TAccumulate> BuildLeaffixScan<TSource, TAccumulate>(

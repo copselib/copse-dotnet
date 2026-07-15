@@ -211,9 +211,9 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/IAsyncTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/ITreenumerableBuffer.g.cs",
         "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
-      new("Copse.Linq.Async/Treenumerables/IAsyncLazyTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/ILazyTreenumerableBuffer.g.cs",
-        "IAsyncLazyTreenumerableBuffer", "ILazyTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncMemoizeTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/IMemoizeTreenumerableBuffer.g.cs",
+        "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
         "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",
@@ -237,21 +237,21 @@ namespace Copse.CodeGen
 
       // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
       // memoize cluster.
-      new("Copse.Linq.Async/Treenumerables/AsyncCompletedTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/CompletedTreenumerableBuffer.g.cs",
-        "AsyncCompletedTreenumerableBuffer", "CompletedTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/AsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/TreenumerableBuffer.g.cs",
+        "AsyncTreenumerableBuffer", "TreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerators/Invert/AsyncInvertedLevelOrderStream.cs",
         "Copse.Linq/Treenumerators/Invert/InvertedLevelOrderStream.g.cs",
         "AsyncInvertedLevelOrderStream", "InvertedLevelOrderStream", "Copse.Linq.Treenumerators"),
 
-      new("Copse.Linq.Async/Stores/AsyncLazyBuiltPreorderStore.cs",
-        "Copse.Linq/Stores/LazyBuiltPreorderStore.g.cs",
-        "AsyncLazyBuiltPreorderStore", "LazyBuiltPreorderStore", "Copse.Linq.Stores"),
+      new("Copse.Linq.Async/Stores/AsyncLazyPreorderStore.cs",
+        "Copse.Linq/Stores/LazyPreorderStore.g.cs",
+        "AsyncLazyPreorderStore", "LazyPreorderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Stores/AsyncLazyBuiltLevelOrderStore.cs",
-        "Copse.Linq/Stores/LazyBuiltLevelOrderStore.g.cs",
-        "AsyncLazyBuiltLevelOrderStore", "LazyBuiltLevelOrderStore", "Copse.Linq.Stores"),
+      new("Copse.Linq.Async/Stores/AsyncLazyLevelOrderStore.cs",
+        "Copse.Linq/Stores/LazyLevelOrderStore.g.cs",
+        "AsyncLazyLevelOrderStore", "LazyLevelOrderStore", "Copse.Linq.Stores"),
 
       // The fluent-layer construction machinery (Copse.Linq is generated from Copse.Linq.Async).
       new("Copse.Linq.Async/AsyncTreenumerableFactory.cs",

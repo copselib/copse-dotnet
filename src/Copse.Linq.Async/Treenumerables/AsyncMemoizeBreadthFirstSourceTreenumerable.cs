@@ -12,7 +12,7 @@ namespace Copse.Linq.Async.Treenumerables
   // playback, depth-first replays ride the same capture cross-order. Notably this is the ONLY
   // road to the depth-first dimension of a breadth-first-only source (there is no bounded
   // re-scan strategy for that direction) -- the escalation the split makes explicit.
-  internal sealed class AsyncMemoizeBreadthFirstSourceTreenumerable<TValue> : IAsyncLazyTreenumerableBuffer<TValue>
+  internal sealed class AsyncMemoizeBreadthFirstSourceTreenumerable<TValue> : IAsyncMemoizeTreenumerableBuffer<TValue>
   {
     // The capture layout is fixed by the source's single dimension.
     public BufferLayout? NativeLayout => BufferLayout.LevelOrder;
