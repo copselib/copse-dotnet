@@ -40,6 +40,27 @@ namespace Copse.Linq
       => new AsyncTreenumerableBuffer<TAccumulate>(
         AsyncTree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
 
+    /// <summary>
+    /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
+    /// here, instead of at every call site: a leaffix fold runs in depth-first subtree-close
+    /// order, which a level-order arrival cannot provide, so the source is captured (the same
+    /// O(n) every LeaffixScan pays, disclosed by the buffer return type) and the fold runs over
+    /// the capture's depth-first replay.
+    /// </summary>
+    public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      => new AsyncTreenumerableBuffer<TAccumulate>(
+        AsyncTree.Lazy(() => PreorderScanBreadthFirstSource(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
+
+    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first consumption.</summary>
+    public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
+      this IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, leafNodeSelector);
+
     // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
     // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
     // LevelOrderArrayStore) was built and MEASURED OUT -- over raw array stores the
@@ -55,6 +76,27 @@ namespace Copse.Linq
         () => BuildLeaffixScanAsync(source, accumulator, leafNodeSelector));
 
       return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(scanned);
+    }
+
+    private static IAsyncTreenumerable<TAccumulate> PreorderScanBreadthFirstSource<TSource, TAccumulate>(
+      IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+    {
+      var scanned = new AsyncLazyPreorderStore<TAccumulate>(
+        () => BuildLeaffixScanFromBreadthFirstAsync(source, accumulator, leafNodeSelector));
+
+      return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(scanned);
+    }
+
+    private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixScanFromBreadthFirstAsync<TSource, TAccumulate>(
+      IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+    {
+      var capture = await source.MaterializeAsync().ConfigureAwait(false);
+
+      return await BuildLeaffixScanAsync(capture, accumulator, leafNodeSelector).ConfigureAwait(false);
     }
 
     private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixScanAsync<TSource, TAccumulate>(
