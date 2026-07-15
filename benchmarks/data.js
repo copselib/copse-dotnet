@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784151282940,
+  "lastUpdate": 1784151283316,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -70942,6 +70942,102 @@ window.BENCHMARK_DATA = {
             "value": 68810247.90384616,
             "unit": "ns",
             "range": "± 554145.0849788215"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "03b4f98e0307567630ef62f4e3f13f300d1f8f5d",
+          "message": "Merge feature/order-children-by: sibling ordering, with a streaming BFT arm\n\nOrderChildrenBy / OrderChildrenByDescending (±comparer; D-narrow,\nB-narrow, and full-tree entries, both colors): stable per-sibling-group\nordering, keys evaluated once per node against the SOURCE context,\nsubtrees traveling whole. Invert's generalization -- the subsumption law\n(Invert ≡ OrderChildrenByDescending by source sibling index) is pinned\nby test, and Invert's specialization is kept on measured grounds (~1.15x\ntime, 2.4x alloc, and a capture-free O(width) B arm).\n\nThe depth-first entry rides the keyed capture factory into preorder\narrays; the breadth-first entry STREAMS -- the level-permutation build\nwalks the source once into the ordered level-order encoding with one\nbuffered level (O(width) auxiliary), refuting the original \"cannot\ngeneralize\" claim and resolving surface-map flag 4 for this operator.\nEach entry's result replays its own arrival dimension natively.\n\nAlso: LeaffixScan gains its B-narrow + F entries (disclosure rule),\nthe OrderChildrenBy benchmark family (8 rows, Buffer leg, mirroring\nInvert so the sort premium reads directly), and the measured\ntrivial-group guards + level-list pooling that keep both build paths\nfree of per-node sort machinery.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T21:20:42Z",
+          "tree_id": "35d50b3631bf52291eb00446408b8115895d11d1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/03b4f98e0307567630ef62f4e3f13f300d1f8f5d"
+        },
+        "date": 1784151283240,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 103547852.53333332,
+            "unit": "ns",
+            "range": "± 540813.9423485531"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 91494904.50000001,
+            "unit": "ns",
+            "range": "± 732406.8561002107"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 266667200.53333333,
+            "unit": "ns",
+            "range": "± 1779871.908869954"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 273313093.73333335,
+            "unit": "ns",
+            "range": "± 1126442.9181330346"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 192711985.3333333,
+            "unit": "ns",
+            "range": "± 1672466.654721187"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 226172181.17948717,
+            "unit": "ns",
+            "range": "± 529501.4101618129"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 105799519.2923077,
+            "unit": "ns",
+            "range": "± 163640.74041290593"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 86327672.40476191,
+            "unit": "ns",
+            "range": "± 769188.2901584208"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 484176438.84615386,
+            "unit": "ns",
+            "range": "± 1994749.6088177268"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 492446411.73333335,
+            "unit": "ns",
+            "range": "± 2905054.082476864"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 98774517.48333333,
+            "unit": "ns",
+            "range": "± 153581.81579630479"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79851353.29761904,
+            "unit": "ns",
+            "range": "± 616774.1510760225"
           }
         ]
       }
