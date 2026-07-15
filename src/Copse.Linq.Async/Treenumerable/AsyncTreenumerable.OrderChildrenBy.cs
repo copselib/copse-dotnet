@@ -166,45 +166,16 @@ namespace Copse.Linq
       IComparer<TKey> comparer,
       bool descending)
     {
-      // 1. Capture flat preorder arrays (value + subtree size per node -- Invert's capture) from
-      //    one awaited depth-first walk of the source, evaluating the KEY once per node here.
-      var values = new List<TNode>();
-      var keys = new List<TKey>();
-      var subtreeSizes = new List<int>();
-      var open = new Stack<int>();
-
-      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
-      await using (treenumerator.ConfigureAwait(false))
-      {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          while (open.Count > treenumerator.Position.Depth)
-          {
-            var closed = open.Pop();
-            subtreeSizes[closed] = values.Count - closed;
-          }
-
-          open.Push(values.Count);
-          values.Add(treenumerator.Node);
-          keys.Add(keySelector(treenumerator.ToNodeContext()));
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (open.Count > 0)
-      {
-        var closed = open.Pop();
-        subtreeSizes[closed] = values.Count - closed;
-      }
+      // 1. Capture flat preorder arrays plus the keys as a preorder-parallel side channel --
+      //    the capture factory's keyed overload exists for exactly this hook, and it evaluates
+      //    the key once per node, during the walk, against the SOURCE context.
+      var (capture, keys) = await AsyncPreorderCapture.CaptureFromAsync(source, keySelector).ConfigureAwait(false);
 
       // 2. Emit the ordered layout. Every sibling group (the roots, then each emitted node's
       //    children) is sorted by its cached keys -- OrderBy/OrderByDescending for guaranteed
       //    stability -- and pushed in REVERSE so the group pops in order. Each subtree keeps its
       //    size; only ordering changes.
-      var count = values.Count;
+      var count = capture.Count;
       var orderedValues = new TNode[count];
       var orderedSubtreeSizes = new int[count];
       var stack = new Stack<int>();
@@ -224,7 +195,7 @@ namespace Copse.Linq
         siblingGroup.Clear();
       }
 
-      for (var root = 0; root < count; root += subtreeSizes[root])
+      for (var root = 0; root < count; root += capture.GetSubtreeSize(root))
         siblingGroup.Add(root);
 
       PushSiblingGroupInOrder();
@@ -235,13 +206,13 @@ namespace Copse.Linq
       {
         var index = stack.Pop();
 
-        orderedValues[output] = values[index];
-        orderedSubtreeSizes[output] = subtreeSizes[index];
+        orderedValues[output] = capture.GetValue(index);
+        orderedSubtreeSizes[output] = capture.GetSubtreeSize(index);
         output++;
 
-        var end = index + subtreeSizes[index];
+        var end = index + capture.GetSubtreeSize(index);
 
-        for (var child = index + 1; child < end; child += subtreeSizes[child])
+        for (var child = index + 1; child < end; child += capture.GetSubtreeSize(child))
           siblingGroup.Add(child);
 
         PushSiblingGroupInOrder();
