@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784132865569,
+  "lastUpdate": 1784132865967,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -52340,6 +52340,114 @@ window.BENCHMARK_DATA = {
             "value": 1021643.2172475961,
             "unit": "ns",
             "range": "± 2071.674181276507"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "402c786dd6da323a958c79c8cbe1f81997b86c1c",
+          "message": "Collapse the stream conformance tests' leftover shape-B loop copy\n\nFlatFamilyStreamConformanceTests.BuildLevelOrderGroups still carried the\nlevel-order capture loop verbatim; it now reads its child groups back\nout of a LevelOrderCapture.CaptureFrom-built store instead. The\nArray*Stream fakes stay -- the product deliberately has no in-memory\nstream type, so they are fixtures, not duplicates -- and\nBuildPreorderNodes stays (plain (value, depth) collection, no loop copy).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T15:18:46Z",
+          "tree_id": "c72205c73ffe3e1e32bb9e9749bd1fa71647276c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/402c786dd6da323a958c79c8cbe1f81997b86c1c"
+        },
+        "date": 1784132865895,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2339323.515364583,
+            "unit": "ns",
+            "range": "± 15295.647122176793"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1880464.1059895833,
+            "unit": "ns",
+            "range": "± 2873.7374709889027"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4663829.549107143,
+            "unit": "ns",
+            "range": "± 2949.26190500047"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3841167.96484375,
+            "unit": "ns",
+            "range": "± 9073.497327496258"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 644486.2195012019,
+            "unit": "ns",
+            "range": "± 455.0115441269422"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 822904.8342447917,
+            "unit": "ns",
+            "range": "± 3904.9673234703573"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 410664.58056640625,
+            "unit": "ns",
+            "range": "± 675.9960009754451"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4229882.488839285,
+            "unit": "ns",
+            "range": "± 37520.50939274707"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3390838.2044270835,
+            "unit": "ns",
+            "range": "± 11323.701762808776"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14352573.93125,
+            "unit": "ns",
+            "range": "± 73739.7668705619"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7621321.920200893,
+            "unit": "ns",
+            "range": "± 32481.147404523817"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1626095.24140625,
+            "unit": "ns",
+            "range": "± 36395.82521663936"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1633269.1792367788,
+            "unit": "ns",
+            "range": "± 1881.0984900092656"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1028711.7450420673,
+            "unit": "ns",
+            "range": "± 1491.8661137445777"
           }
         ]
       }
