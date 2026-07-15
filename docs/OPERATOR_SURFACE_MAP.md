@@ -41,7 +41,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Invert | D-narrow; buffer | ITreenumerableBuffer | capture(deferred-once) | mirrored preorder arrays |
 | Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → mirrored preorder arrays; BFT-first → the streaming mirror drained once into level-order arrays (2026-07-13; both arms now share the build-on-first-pull cost shape) |
 | LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
-| OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; **B overloads Materialize first** (see flags) |
+| OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; D rides the keyed `PreorderCapture.CaptureFrom` → preorder layout; **B STREAMS (2026-07-15): one source walk, one buffered level (O(width) aux), level-order layout** — flag 4 |
 | Memoize | F, D, B | **IMemoizeTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | ONE capture (2026-07-15): the first pull pins the layout; off-pin replays ride it cross-order; **source enumerated at most once** — upstream side effects fire at most once per node; pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
 | Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place; a compliant buffer returned as-is; otherwise `Memoize()+Consume()`. The strategy overload is a layout GUARANTEE (2026-07-15): never ignored — fresh memo pins it, mismatched buffer is TRANSPOSED from the buffer (new instance, source untouched); the both-layouts recipe = materialize twice, one source pass |
 
@@ -111,6 +111,15 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    `Materialize()`s the source into a full memo, then walks that capture into the result
    arrays — two O(n) allocations transiently vs one on the DFT path. Correct under the
    disclosure rule, but a candidate for a fused single capture.
+   *(RESOLVED for `OrderChildrenBy` 2026-07-15, and better than fused — STREAMING: the
+   level-permutation build walks the BFT source ONCE straight into the ordered level-order
+   encoding. Sibling groups are contiguous in level-order arrival and no level-d node is
+   visited before level d finishes scheduling, so each level's permutation settles before its
+   children arrive — one buffered level (O(width) auxiliary) suffices, refuting the original
+   commit's "cannot generalize." The result's native layout is level-order; both entries now
+   replay their own arrival dimension natively. `LeaffixScan`-B still hoists — its fold needs
+   depth-first close order; the fused-fold candidate is the LeaffixAggregate-B index-chasing
+   pattern.)*
 5. *(RESOLVED 2026-07-13)* `Invert(F)`'s BFT-first arm now builds its whole capture on the
    first replay pull (a one-shot drain of the streaming mirror via the stream-shaped
    `LevelOrderCapture.CaptureFrom`), matching the preorder arm's cost shape. The

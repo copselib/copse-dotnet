@@ -1,5 +1,6 @@
 using Copse.Core;
 using Copse.SimpleSerializer;
+using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -151,9 +152,9 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, seenSiblingIndexesByNode["a"]);
     }
 
-    // The disclosure rule: a breadth-first-only source is accepted (captured internally, ordered
-    // over the capture's depth-first replay, O(n) disclosed by the buffer return type) and must
-    // equal the explicit escalation.
+    // The disclosure rule: a breadth-first-only source is accepted (streamed straight into the
+    // ordered level-order encoding, one level buffered in flight, O(n) result disclosed by the
+    // buffer return type) and must equal the explicit escalation.
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
     public void NarrowBreadthFirstSource_EqualsExplicitMaterializeThenOrder(
@@ -176,8 +177,51 @@ namespace Copse.Linq.Tests
           $"{treeTraversalStrategy} mismatch for {treeString}");
     }
 
-    // The ordering's LAYOUT is pinned to the first dimension pulled; whichever wins, both
-    // dimensions must replay the same values from the one capture.
+    // Layout follows arrival: the depth-first build emits preorder arrays, the breadth-first
+    // build emits level-order arrays directly -- each result replays its source's dimension
+    // natively, and the tag is fixed at construction, before any pull.
+    [TestMethod]
+    public void NativeLayoutFollowsTheSourceDimension()
+    {
+      var tree = "a(c,b(e,d))";
+
+      Assert.AreEqual(
+        BufferLayout.Preorder,
+        TreeSerializer.DeserializeDepthFirstTree(tree).OrderChildrenBy(nodeContext => nodeContext.Node).NativeLayout,
+        "depth-first entry");
+
+      Assert.AreEqual(
+        BufferLayout.LevelOrder,
+        ((IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(tree))
+          .OrderChildrenBy(nodeContext => nodeContext.Node).NativeLayout,
+        "breadth-first entry");
+    }
+
+    // The breadth-first build walks the source EXACTLY once, pinned to the first pull
+    // (Tree.Lazy): replays in either dimension ride the one capture.
+    [TestMethod]
+    public void NarrowBreadthFirstSource_IsWalkedExactlyOnce()
+    {
+      var sourceBuilds = 0;
+
+      var countingSource = (IBreadthFirstTreenumerable<string>)Tree.Defer(() =>
+      {
+        sourceBuilds++;
+        return TreeSerializer.DeserializeDepthFirstTree("a(c,b(e,d))");
+      });
+
+      var ordered = countingSource.OrderChildrenBy(nodeContext => nodeContext.Node);
+      Assert.AreEqual(0, sourceBuilds, "composition must not walk the source");
+
+      ordered.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray();
+      ordered.GetTraversal(TreeTraversalStrategy.DepthFirst).ToArray();
+      ordered.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray();
+
+      Assert.AreEqual(1, sourceBuilds, "every replay must ride the one capture");
+    }
+
+    // The ordering's layout is fixed by the entry dimension; whichever dimension is pulled
+    // first, both must replay the same values from the one capture.
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
     public void ServesBothDimensionsWhicheverIsPulledFirst(string treeString, string expectedAscending, string expectedDescending)

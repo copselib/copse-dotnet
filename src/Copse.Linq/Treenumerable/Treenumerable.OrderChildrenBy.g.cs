@@ -66,11 +66,12 @@ namespace Copse.Linq
         Tree.Lazy(() => PreorderOrderChildren(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
 
     /// <summary>
-    /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
-    /// here, instead of at every call site: the ordered emission needs random access to whole
-    /// subtrees, which a level-order arrival cannot provide, so the source is captured (the same
-    /// O(n) every OrderChildrenBy pays, disclosed by the buffer return type) and the build runs
-    /// over the capture's depth-first replay.
+    /// The breadth-first-only source overload: ONE walk of the source, no intermediate capture.
+    /// Sibling groups are contiguous in a level-order arrival and each level's ordering settles
+    /// before the next level arrives, so the build streams the source straight into the ordered
+    /// level-order encoding, buffering only the level in flight (O(width) beyond the O(n) result
+    /// every OrderChildrenBy pays, disclosed by the buffer return type). The result's native
+    /// layout is level-order -- breadth-first replays decode it directly.
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this IBreadthFirstTreenumerable<TNode> source,
@@ -83,7 +84,7 @@ namespace Copse.Linq
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
       => new TreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)), BufferLayout.Preorder);
+        Tree.Lazy(() => LevelOrderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: false)), BufferLayout.LevelOrder);
 
     /// <summary>The descending twin of the breadth-first <c>OrderChildrenBy(keySelector)</c>.</summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
@@ -97,7 +98,7 @@ namespace Copse.Linq
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer)
       => new TreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)), BufferLayout.Preorder);
+        Tree.Lazy(() => LevelOrderOrderChildrenBreadthFirstSource(source, keySelector, comparer, descending: true)), BufferLayout.LevelOrder);
 
     /// <summary>Disambiguation overload for full trees; keeps the depth-first consumption.</summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -125,7 +126,10 @@ namespace Copse.Linq
       IComparer<TKey> comparer)
       => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
 
-    // Preorder for BOTH dimensions, matching LeaffixScan's measured layout decision.
+    // Layout follows the source's arrival: depth-first sources build preorder arrays (matching
+    // LeaffixScan's measured layout decision), the breadth-first-narrow arm builds level-order
+    // arrays directly -- the layout its arrival order IS, and the one its consumer (necessarily
+    // breadth-first-inclined) replays natively.
     private static ITreenumerable<TNode> PreorderOrderChildren<TNode, TKey>(
       IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
@@ -138,27 +142,143 @@ namespace Copse.Linq
       return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(ordered);
     }
 
-    private static ITreenumerable<TNode> PreorderOrderChildrenBreadthFirstSource<TNode, TKey>(
+    private static ITreenumerable<TNode> LevelOrderOrderChildrenBreadthFirstSource<TNode, TKey>(
       IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer,
       bool descending)
     {
-      var ordered = new LazyPreorderStore<TNode>(
-        () => BuildOrderedChildrenFromBreadthFirst(source, keySelector, comparer, descending));
+      var ordered = new LazyLevelOrderStore<TNode>(
+        () => BuildOrderedChildrenLevelOrder(source, keySelector, comparer, descending));
 
-      return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(ordered);
+      return new LevelOrderTreenumerable<TNode, LazyLevelOrderStore<TNode>>(ordered);
     }
 
-    private static PreorderArrayStore<TNode> BuildOrderedChildrenFromBreadthFirst<TNode, TKey>(
+    // The breadth-first-narrow build: ONE walk of the source, no intermediate capture. In a
+    // level-order arrival every sibling group is contiguous, and no level-d node is visited
+    // until level d has been fully scheduled -- so by the time level d+1 starts arriving, level
+    // d's permutation is already settled. Buffering just the level currently being scheduled
+    // (O(width) auxiliary) is therefore enough to emit the ordered LEVEL-ORDER encoding
+    // directly: flush a level when the front cursor crosses into it, ordering its sibling
+    // groups by their parents' ordered positions and stable-sorting each group by key, and
+    // backfill each parent's child span through the chunked lists' ref indexer (the same
+    // backfill idiom as the memo builders and capture factories).
+    private static LevelOrderArrayStore<TNode> BuildOrderedChildrenLevelOrder<TNode, TKey>(
       IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, TKey> keySelector,
       IComparer<TKey> comparer,
       bool descending)
     {
-      var capture = source.Materialize();
+      var values = new RefAppendOnlyList<TNode>();
+      var firstChildIndices = new RefAppendOnlyList<int>();
+      var childCounts = new RefAppendOnlyList<int>();
+      var rootCount = 0;
 
-      return BuildOrderedChildren(capture, keySelector, comparer, descending);
+      // The level currently being scheduled: sibling groups in arrival (source-parent) order.
+      // ParentLevelPosition is the parent's source position within ITS level (-1 for the root
+      // group); SourceLevelStart is the group's first member's source position within THIS level.
+      var pendingGroups = new List<(int ParentLevelPosition, int SourceLevelStart, List<TNode> Nodes, List<TKey> Keys)>();
+      var pendingLevelArrivals = 0;
+
+      // The most recently flushed level: where it landed in the store, its source-to-ordered
+      // permutation, and its source size (which is how far the front travels before crossing).
+      var flushedLevelStoreStart = 0;
+      var flushedLevelPermutation = default(int[]);
+      var flushedLevelSourceSize = 0;
+
+      // The front: the node whose children are currently arriving, tracked as its source
+      // position within its own level.
+      var frontPositionInLevel = 0;
+      var frontLevelRemaining = 0;
+
+      void FlushPendingLevel()
+      {
+        var levelStoreStart = values.Count;
+        var orderedPositionInLevel = 0;
+        var levelPermutation = new int[pendingLevelArrivals];
+
+        // Roots arrive as one parentless group and stay first; deeper levels emit their groups
+        // in the ORDERED order of their parents, which the previous flush settled.
+        var groupsInOrderedParentOrder = flushedLevelPermutation == null
+          ? (IEnumerable<(int ParentLevelPosition, int SourceLevelStart, List<TNode> Nodes, List<TKey> Keys)>)pendingGroups
+          : pendingGroups.OrderBy(group => flushedLevelPermutation[group.ParentLevelPosition]);
+
+        foreach (var group in groupsInOrderedParentOrder)
+        {
+          if (group.ParentLevelPosition < 0)
+          {
+            rootCount = group.Nodes.Count;
+          }
+          else
+          {
+            var parentStoreIndex = flushedLevelStoreStart + flushedLevelPermutation[group.ParentLevelPosition];
+            firstChildIndices[parentStoreIndex] = values.Count;
+            childCounts[parentStoreIndex] = group.Nodes.Count;
+          }
+
+          var memberIndices = Enumerable.Range(0, group.Nodes.Count);
+          var orderedMemberIndices = descending
+            ? memberIndices.OrderByDescending(memberIndex => group.Keys[memberIndex], comparer)
+            : memberIndices.OrderBy(memberIndex => group.Keys[memberIndex], comparer);
+
+          foreach (var memberIndex in orderedMemberIndices)
+          {
+            levelPermutation[group.SourceLevelStart + memberIndex] = orderedPositionInLevel;
+            orderedPositionInLevel++;
+
+            values.AddLast(group.Nodes[memberIndex]);
+            firstChildIndices.AddLast(-1); // backfilled when this node's children flush
+            childCounts.AddLast(0);
+          }
+        }
+
+        flushedLevelStoreStart = levelStoreStart;
+        flushedLevelPermutation = levelPermutation;
+        flushedLevelSourceSize = pendingLevelArrivals;
+
+        pendingGroups.Clear();
+        pendingLevelArrivals = 0;
+      }
+
+      var treenumerator = source.GetBreadthFirstTreenumerator();
+      using (treenumerator)
+      {
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
+          {
+            var parentLevelPosition = treenumerator.Position.Depth == 0 ? -1 : frontPositionInLevel;
+
+            if (pendingGroups.Count == 0 || pendingGroups[pendingGroups.Count - 1].ParentLevelPosition != parentLevelPosition)
+              pendingGroups.Add((parentLevelPosition, pendingLevelArrivals, new List<TNode>(), new List<TKey>()));
+
+            var currentGroup = pendingGroups[pendingGroups.Count - 1];
+            currentGroup.Nodes.Add(treenumerator.Node);
+            currentGroup.Keys.Add(keySelector(treenumerator.ToNodeContext()));
+            pendingLevelArrivals++;
+          }
+          else if (treenumerator.VisitCount == 1)
+          {
+            // The front crosses into a level exactly when that level has fully arrived (no
+            // level-d node is visited before level d finishes scheduling) -- flush it then.
+            if (frontLevelRemaining == 0)
+            {
+              FlushPendingLevel();
+              frontLevelRemaining = flushedLevelSourceSize;
+              frontPositionInLevel = 0;
+            }
+            else
+            {
+              frontPositionInLevel++;
+            }
+
+            frontLevelRemaining--;
+          }
+        }
+      }
+
+      return new LevelOrderArrayStore<TNode>(
+        values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
 
     private static PreorderArrayStore<TNode> BuildOrderedChildren<TNode, TKey>(
