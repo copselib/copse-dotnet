@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784140473811,
+  "lastUpdate": 1784140474198,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -73064,6 +73064,120 @@ window.BENCHMARK_DATA = {
             "value": 19510580.68526786,
             "unit": "ns",
             "range": "± 43256.92444494947"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c224fb1f947973a8d602bc9c259e39eb9742b120",
+          "message": "Close D4c: the flattening fee buys replay speed, keep the flat hand-off\n\nThe chunked-vs-flat decode rows (c99b02a) plus two scratch measurements\nsettle the gate: chunked replay pays 1.0-2.0x per traversal while the\nToArray copy it would eliminate costs 3-7% of a single decode pass, so\nflat arrays win before the first replay finishes. The consume-once shape\nwhere chunked wins already ships (LeaffixAggregate-B). Revisit trigger\nnarrowed to peak-footprint-at-hand-off consumers only.\n\nAlso renumbers the duplicate D4c label (transpose note -> D4d).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T18:14:14Z",
+          "tree_id": "07432dabe068f50c68ae298ba92fc571557a2320",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c224fb1f947973a8d602bc9c259e39eb9742b120"
+        },
+        "date": 1784140474126,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 111360120.72,
+            "unit": "ns",
+            "range": "± 1533452.5262785882"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 125740418.36666666,
+            "unit": "ns",
+            "range": "± 1182269.509498427"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71075284.37815127,
+            "unit": "ns",
+            "range": "± 1392338.683047935"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 100544087.54285714,
+            "unit": "ns",
+            "range": "± 1723035.6645903082"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 47939667.37012987,
+            "unit": "ns",
+            "range": "± 127810.67528781193"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 61930952.73626374,
+            "unit": "ns",
+            "range": "± 143240.23114991325"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 28272402.49107143,
+            "unit": "ns",
+            "range": "± 75362.20721839322"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 35068520.13333333,
+            "unit": "ns",
+            "range": "± 463367.34935319034"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 47230830.41212121,
+            "unit": "ns",
+            "range": "± 160384.10257456018"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 68286811.83035715,
+            "unit": "ns",
+            "range": "± 126954.0263907229"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 43038387.9047619,
+            "unit": "ns",
+            "range": "± 173052.36929747218"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 33003145.945833333,
+            "unit": "ns",
+            "range": "± 261904.3828298867"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 101856882.73333332,
+            "unit": "ns",
+            "range": "± 420982.19262594235"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 129863701.78333333,
+            "unit": "ns",
+            "range": "± 1203268.6003811988"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 19460296.307291668,
+            "unit": "ns",
+            "range": "± 19522.776002329967"
           }
         ]
       }
