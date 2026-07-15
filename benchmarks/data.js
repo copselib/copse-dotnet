@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784070036190,
+  "lastUpdate": 1784128194368,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -8494,6 +8494,150 @@ window.BENCHMARK_DATA = {
             "value": 210459619,
             "unit": "ns",
             "range": "± 3674238.6356646125"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90bffeb7809596891a07449c9773200925b83781",
+          "message": "Demote the tree tokenizers to Copse.Linq.Experimental\n\nThe ToFormattedLines rewrite removed their last product consumer, and the\nserializer never used them (its writer describes the tokenization concept\nbut is deliberately fused). Internal code never wants the token altitude:\nthe serializer needs more than tokens carry, rendering needed less. Their\naudience is external consumers wanting a flat grammar -- and shipping the\ncurrent shape would lock it in before any such consumer exists. Tokens\ncarry less context than a treenumerator (no positions, no visit counts);\na real consumer may well want richer tokens.\n\nSo: sync implementation moves to the Experimental parking lot (de-\ngenerated, .g.cs -> .cs, Copse.Linq.Experimental namespaces), the async\nside and its codegen manifest/rename/using rows are deleted, the token\nvalue types move out of Copse.Linq.Traversal, and the tokenizer tests\nretire with them. 24,245 tests green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T14:59:51Z",
+          "tree_id": "3b2521ebfab86e2674a4e0cf7fa10c92019b8c45",
+          "url": "https://github.com/copselib/copse-dotnet/commit/90bffeb7809596891a07449c9773200925b83781"
+        },
+        "date": 1784128188236,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14679311.101041667,
+            "unit": "ns",
+            "range": "± 100552.32364794967"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 23223375.322916668,
+            "unit": "ns",
+            "range": "± 82338.49384152284"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3598897.9869791665,
+            "unit": "ns",
+            "range": "± 2014.6519675848845"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3595823.0911959135,
+            "unit": "ns",
+            "range": "± 3013.9593015211913"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 120065113.6,
+            "unit": "ns",
+            "range": "± 359903.40956933674"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 139307513.35,
+            "unit": "ns",
+            "range": "± 664534.4089248407"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 50381463.125,
+            "unit": "ns",
+            "range": "± 271008.81047424173"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 49559958.38461539,
+            "unit": "ns",
+            "range": "± 67687.86496200574"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 45840585.684523806,
+            "unit": "ns",
+            "range": "± 125442.29957091024"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35382020.77142857,
+            "unit": "ns",
+            "range": "± 162241.48577726155"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 30825630.88392857,
+            "unit": "ns",
+            "range": "± 67006.55397733107"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 17865252.676339287,
+            "unit": "ns",
+            "range": "± 53224.5611026084"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 56158188.425,
+            "unit": "ns",
+            "range": "± 193401.56030925747"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 89366068.45555557,
+            "unit": "ns",
+            "range": "± 1353045.200796765"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15696939.021634616,
+            "unit": "ns",
+            "range": "± 18011.730531878173"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 15679399.2890625,
+            "unit": "ns",
+            "range": "± 8318.773704760608"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 444377821.4285714,
+            "unit": "ns",
+            "range": "± 708530.8487913796"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 599947402.1428572,
+            "unit": "ns",
+            "range": "± 800007.4387623249"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 199213328.45161292,
+            "unit": "ns",
+            "range": "± 5079701.518415232"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 199884727.76,
+            "unit": "ns",
+            "range": "± 993984.6564599971"
           }
         ]
       }
