@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784128194368,
+  "lastUpdate": 1784128194774,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -56740,6 +56740,102 @@ window.BENCHMARK_DATA = {
             "value": 26139260.546875,
             "unit": "ns",
             "range": "± 83669.71148389026"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90bffeb7809596891a07449c9773200925b83781",
+          "message": "Demote the tree tokenizers to Copse.Linq.Experimental\n\nThe ToFormattedLines rewrite removed their last product consumer, and the\nserializer never used them (its writer describes the tokenization concept\nbut is deliberately fused). Internal code never wants the token altitude:\nthe serializer needs more than tokens carry, rendering needed less. Their\naudience is external consumers wanting a flat grammar -- and shipping the\ncurrent shape would lock it in before any such consumer exists. Tokens\ncarry less context than a treenumerator (no positions, no visit counts);\na real consumer may well want richer tokens.\n\nSo: sync implementation moves to the Experimental parking lot (de-\ngenerated, .g.cs -> .cs, Copse.Linq.Experimental namespaces), the async\nside and its codegen manifest/rename/using rows are deleted, the token\nvalue types move out of Copse.Linq.Traversal, and the tokenizer tests\nretire with them. 24,245 tests green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-07-15T14:59:51Z",
+          "tree_id": "3b2521ebfab86e2674a4e0cf7fa10c92019b8c45",
+          "url": "https://github.com/copselib/copse-dotnet/commit/90bffeb7809596891a07449c9773200925b83781"
+        },
+        "date": 1784128194702,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 25908790.125,
+            "unit": "ns",
+            "range": "± 142228.8269361708"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8559401.142708333,
+            "unit": "ns",
+            "range": "± 19588.594461258934"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 147817190.83333334,
+            "unit": "ns",
+            "range": "± 728357.7288673354"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 62372413.02884615,
+            "unit": "ns",
+            "range": "± 56053.05673241447"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21938966.50669643,
+            "unit": "ns",
+            "range": "± 85196.48159153346"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12115648.301041666,
+            "unit": "ns",
+            "range": "± 73678.39854238078"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 99626890.02666667,
+            "unit": "ns",
+            "range": "± 1181271.9209783277"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29867946.54910714,
+            "unit": "ns",
+            "range": "± 45299.04353699804"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11277550.434151785,
+            "unit": "ns",
+            "range": "± 35940.2487584636"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5938815.763392857,
+            "unit": "ns",
+            "range": "± 19396.207724022843"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 113022066.50666669,
+            "unit": "ns",
+            "range": "± 268316.4313118158"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26269841.6875,
+            "unit": "ns",
+            "range": "± 52814.056215769604"
           }
         ]
       }
