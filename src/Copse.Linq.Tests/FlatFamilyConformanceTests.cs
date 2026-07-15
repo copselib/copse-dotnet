@@ -3,8 +3,6 @@ using Copse.Core;
 using Copse.SimpleSerializer;
 using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Copse.Linq.Tests
 {
@@ -15,97 +13,19 @@ namespace Copse.Linq.Tests
   [TestClass]
   public class FlatFamilyConformanceTests
   {
-    // The stores under test are the PUBLIC completed array stores (Copse.Stores): feeding the
-    // decoders the real product types tests more product code than the private
-    // re-implementations they replaced (hygiene item E, STORE_FAMILY_REVIEW.md).
-
-    // Preorder arrays: values in first-visit order; a parent's subtree size backfills when the
-    // next visit lands at its depth or shallower (the serializer/memo open-stack construction).
-    private static PreorderArrayStore<string> BuildPreorderStore(string tree)
-    {
-      var values = new List<string>();
-      var subtreeSizes = new List<int>();
-      var open = new Stack<int>();
-
-      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetDepthFirstTreenumerator())
-      {
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.VisitingNode || treenumerator.VisitCount != 1)
-            continue;
-
-          var depth = treenumerator.Position.Depth;
-
-          while (open.Count > depth)
-          {
-            var closed = open.Pop();
-            subtreeSizes[closed] = values.Count - closed;
-          }
-
-          open.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (open.Count > 0)
-      {
-        var closed = open.Pop();
-        subtreeSizes[closed] = values.Count - closed;
-      }
-
-      return new PreorderArrayStore<string>(values.ToArray(), subtreeSizes.ToArray());
-    }
-
-    // Level-order arrays: values in scheduling order; every scheduled non-root's parent is the
-    // node the feed is currently visiting (the memo level-order-buffer construction).
-    private static LevelOrderArrayStore<string> BuildLevelOrderStore(string tree)
-    {
-      var values = new List<string>();
-      var firstChildIndices = new List<int>();
-      var childCounts = new List<int>();
-      var rootCount = 0;
-      var front = -1;
-
-      using (var treenumerator = TreeSerializer.DeserializeDepthFirstTree(tree).GetBreadthFirstTreenumerator())
-      {
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
-        {
-          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
-          {
-            var index = values.Count;
-
-            values.Add(treenumerator.Node);
-            firstChildIndices.Add(-1);
-            childCounts.Add(0);
-
-            if (treenumerator.Position.Depth == 0)
-            {
-              rootCount++;
-            }
-            else
-            {
-              if (childCounts[front] == 0)
-                firstChildIndices[front] = index;
-
-              childCounts[front]++;
-            }
-          }
-          else if (treenumerator.VisitCount == 1)
-          {
-            front++;
-          }
-        }
-      }
-
-      return new LevelOrderArrayStore<string>(values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
-    }
+    // The stores under test are the PUBLIC completed array stores (Copse.Stores), built by the
+    // PUBLIC capture factories: the whole chain under conformance -- capture loop, store,
+    // decoder -- is product code (the hand-rolled build loops these replaced were line-for-line
+    // copies of the factories; hygiene item E, STORE_FAMILY_REVIEW.md). Any bug anywhere in the
+    // chain diffs against the engine oracle, which is built independently.
 
     private static ITreenumerable<string> Preorder(string tree)
-      => new PreorderTreenumerable<string, PreorderArrayStore<string>>(BuildPreorderStore(tree));
+      => new PreorderTreenumerable<string, PreorderArrayStore<string>>(
+           PreorderCapture.CaptureFrom(TreeSerializer.DeserializeDepthFirstTree(tree)));
 
     private static ITreenumerable<string> LevelOrder(string tree)
-      => new LevelOrderTreenumerable<string, LevelOrderArrayStore<string>>(BuildLevelOrderStore(tree));
+      => new LevelOrderTreenumerable<string, LevelOrderArrayStore<string>>(
+           LevelOrderCapture.CaptureFrom(TreeSerializer.DeserializeDepthFirstTree(tree)));
 
     // ---------------------------------------------------------------------------------------
     // Conformance: both dimensions of both wrappers, TraverseAll and the full strategy matrix.

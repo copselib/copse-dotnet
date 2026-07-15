@@ -97,13 +97,19 @@ traversal — held everywhere except the memo cluster, which named its *preorder
 — today they are `MemoizePreorderStore`/`MemoizeLevelOrderStore` with nested `.Handle`
 adapters.)* Second seam: the
 unboxing-adapter idiom has two conventions — standalone `Memoize*Store` structs vs the
-serializer's nested `*StringStore<T>.Handle` structs (still open, hygiene item E). Third:
-tests re-implement the public array stores under word-order-swapped names
-(`ArrayPreorderStore`) (still open, hygiene item E).
+serializer's nested `*StringStore<T>.Handle` structs *(RESOLVED by the de-share 2026-07-14:
+the memoize stores gained nested `.Handle` structs; the nested convention is now universal)*.
+Third: tests re-implement the public array stores under word-order-swapped names
+(`ArrayPreorderStore`) *(RESOLVED in two steps: the duplicate store types fell to the public
+stores earlier; the hand-rolled build loops fell to the public capture factories 2026-07-15 —
+`FlatFamilyConformanceTests` now runs capture loop, store, and decoder as one product chain
+against the independent engine oracle)*.
 
-**F6 — Shape-A's arrival-selector varies without a stated reason**: operator builds filter
-`Mode == SchedulingNode`; memo/tests use `VisitCount == 1`. Equivalent in DFT (documented
-only inside `MemoizeDepthFirstBuffer`).
+**F6 — Shape-A's arrival-selector varies without a stated reason** *(RESOLVED)*: operator
+builds filter `Mode == SchedulingNode`; the memo uses `VisitCount == 1`. Equivalent in DFT.
+The capture factories standardized on `SchedulingNode` and their header
+(`AsyncPreorderCapture`) documents the equivalence and points at the memo's form; the
+test-side copy of the loop is gone (2026-07-15, see F5's third seam).
 
 ## Proposed target state
 
@@ -150,14 +156,12 @@ not a one-off.
 - **D4c. Transpose stays benchmark-only** (the measured decision stands), but if factories
   land (B), it becomes a natural named factory if ever needed.
 
-**E. Small hygiene, low priority:** pick one adapter-idiom convention (nested `.Handle`
-reads better — the adapter is meaningless without its owner; renaming `Memoize*Store` is
-cheap since they're internal); ~~document (not rename) the memo cluster's
-feed-dimension naming~~ *(overtaken: Jason chose to rename — done 2026-07-13)*; switch
-`FlatFamilyConformanceTests` to the public array stores unless their independence was
-deliberate (unlike `EngineTree`, no oracle argument applies — the tests exercise the
-*decoders*, and feeding them the public stores tests more product code, not less);
-pick one shape-A arrival-selector for the factory (B) and document the equivalence once.
+~~**E. Small hygiene, low priority**~~ **CLOSED 2026-07-15, every part landed:** the nested
+`.Handle` adapter convention is universal (de-share 2026-07-14); ~~document (not rename) the
+memo cluster's feed-dimension naming~~ *(overtaken: Jason chose to rename — done
+2026-07-13)*; `FlatFamilyConformanceTests` rides the public stores AND the public capture
+factories (2026-07-15); the factories standardized the shape-A arrival-selector
+(`SchedulingNode`) with the equivalence documented once, in their header (F6).
 
 ## Decisions needed
 

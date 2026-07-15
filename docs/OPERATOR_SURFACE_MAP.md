@@ -209,7 +209,7 @@ Two canonical loops are re-implemented across the codebase:
 | 7 | `PreorderStringStore` / `LevelOrderStringStore` (serializer) | A / B arrays from **text** | themselves | open stack driven by `(`/`)` or group terminators; leaves committed `subtreeSizes=1` immediately (vs backfill) |
 | 8 | `TestUtils EngineTree.ParseArrays` | A from text | raw arrays for `PreorderTree` | intentionally independent (oracle) |
 | 9 | `Benchmarks FlatDecode.FlatEncodings` | A verbatim; plus a preorder→level-order **transpose** that exists nowhere in product | both array stores | transpose was measured out of product (~1.08x cross-decode tax vs ~5-replay break-even) |
-| 10 | `Copse.Linq.Tests FlatFamilyConformanceTests` | A / B verbatim | **private duplicate array stores** (`ArrayPreorderStore` — also word-order-swapped names) | test-side re-implementation of public types |
+| 10 | ~~`Copse.Linq.Tests FlatFamilyConformanceTests`~~ | ~~A / B verbatim~~ | — | *(RESOLVED 2026-07-15)* the duplicate stores fell to the public types, then the hand-rolled A/B build loops fell to `PreorderCapture`/`LevelOrderCapture.CaptureFrom` — conformance now runs the product chain (factory → store → decoder) against the engine oracle |
 
 Each product site (1–6) exists twice on disk, once in source — the async file in
 `Copse.Linq.Async` is the edit surface; the sync `.g.cs` is generated.
@@ -233,9 +233,10 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    renamed to encoding names (`MemoizePreorderStore`/`MemoizeLevelOrderStore` +
    `MemoizePreorderStore`/`MemoizeLevelOrderStore`) under the adopted rule — traversal
    things carry dimension names, storage things carry encoding names; every store now has a
-   one-line taxonomy header; (b) the unboxing-adapter idiom still has two conventions
-   (`Memoize*Store` types vs the serializer's nested `.Handle` structs); (c) tests still
-   re-implement public stores under word-order-swapped names.
+   one-line taxonomy header; (b) *(RESOLVED by the de-share 2026-07-14)* the nested
+   `.Handle` adapter convention is now universal (memoize stores and serializer alike);
+   (c) *(RESOLVED 2026-07-15)* the test-side store re-implementations are gone —
+   `FlatFamilyConformanceTests` rides the public stores and the public capture factories.
 4. **Missing duals** (cross-check [dual-symmetry backlog]): ~~`LazyLevelOrderStore`
    orphan~~ *(adopted 2026-07-13 — it is now Invert-F's BFT-first deferral seam; the
    stream-fed store it displaced was deleted, its drain preserved as the stream-shaped
