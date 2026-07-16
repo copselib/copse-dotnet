@@ -4,24 +4,40 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The fusion recipe surface (docs/OPERATOR_FUSION_DESIGN.md): a fusable wrapper is offered an
-  // appended operator and either FUSES it (collapsing the layer) or DECLINES by returning null,
-  // in which case the operator falls back to its plain wrap -- declining is always safe, so
-  // every hook is an optimization with a mandatory correct fallback. Hooks are split by lambda
-  // FLAVOR, not just operator: value lambdas may join any chain, positional lambdas only a
-  // label-preserving prefix, and only the wrapper knows which prefix it is (the join rule).
-  // Double dispatch because the appending operator cannot name the wrapper's erased source
-  // type. Deliberately INTERNAL: a public recipe would make these operators' correctness
-  // depend on foreign implementations, and the older TFMs' lack of default interface members
-  // would make every added hook a breaking change.
+  // The fusion recipe surface (docs/OPERATOR_FUSION_DESIGN.md). Two kinds of dispatch, split
+  // deliberately (Jason's original Compose model):
+  //
+  //   DECISION dispatch lives with the OPERATOR -- it knows its own lambda's flavor, so it
+  //   applies the join rule itself: value lambdas splice unconditionally; positional lambdas
+  //   check ContainsRelabelingStage and fall back to a real stacked layer when the chain has
+  //   relabeled (their append point must be a genuine emission boundary).
+  //
+  //   CONSTRUCTION dispatch lives with the WRAPPER -- the operator cannot name the wrapper's
+  //   erased source type, so the wrapper splices the offered stage onto its internal mapping
+  //   and builds the successor. Both methods are TOTAL: every legality question was already
+  //   answered outer-side, so there is no decline path.
+  //
+  // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
+  // foreign implementations, and the older TFMs' lack of default interface members would make
+  // every evolution a breaking change.
   internal interface IAsyncFusableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
-    IAsyncTreenumerable<TNode> FuseWhere(Func<TNode, bool> predicate);
+    // True once any relabeling stage (a filter or prune that moves surviving nodes' labels) is
+    // aboard; the operators' positional flavors read this to apply the join rule.
+    bool ContainsRelabelingStage { get; }
 
-    IAsyncTreenumerable<TNode> FusePositionalWhere(Func<TNode, NodePosition, bool> predicate);
+    // Splice a verdict stage (any filter-family operator: where, prunes, future filters) onto
+    // the internal mapping. stageRelabels: whether THIS stage moves surviving labels (Where and
+    // PruneBefore do -- promotion / sibling renumbering; PruneAfter does not -- survivors keep
+    // their coordinates).
+    IAsyncTreenumerable<TOuterResult> FuseStage<TOuterResult>(
+      Func<NodeContext<TNode>, FusionVerdict<TOuterResult>> stage,
+      bool stageRelabels);
 
-    IAsyncTreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<TNode, TOuterResult> selector);
-
-    IAsyncTreenumerable<TOuterResult> FusePositionalSelect<TOuterResult>(Func<TNode, NodePosition, TOuterResult> selector);
+    // Splice a pure projection, preserving the wrapper's representation (a projections-only
+    // chain stays on the light Select treenumerator instead of converting to the filter
+    // driver).
+    IAsyncTreenumerable<TOuterResult> FuseProjection<TOuterResult>(
+      Func<NodeContext<TNode>, TOuterResult> selector);
   }
 }

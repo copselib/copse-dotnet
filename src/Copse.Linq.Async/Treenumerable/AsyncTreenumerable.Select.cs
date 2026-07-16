@@ -18,13 +18,9 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
     {
+      // A value selector observes no coordinates, so it splices unconditionally.
       if (source is IAsyncFusableTreenumerable<TSource> fusableSource)
-      {
-        var fused = fusableSource.FuseSelect(selector);
-
-        if (fused != null)
-          return fused;
-      }
+        return fusableSource.FuseProjection(nodeContext => selector(nodeContext.Node));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -38,13 +34,10 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
     {
-      if (source is IAsyncFusableTreenumerable<TSource> fusableSource)
-      {
-        var fused = fusableSource.FusePositionalSelect(selector);
-
-        if (fused != null)
-          return fused;
-      }
+      // The join rule (see Where's positional overload): splice only over a label-preserving
+      // chain; otherwise stack, so the selector reads genuinely emitted labels.
+      if (source is IAsyncFusableTreenumerable<TSource> fusableSource && !fusableSource.ContainsRelabelingStage)
+        return fusableSource.FuseProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }

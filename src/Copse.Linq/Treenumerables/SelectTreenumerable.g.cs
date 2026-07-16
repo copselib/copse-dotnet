@@ -11,8 +11,7 @@ namespace Copse.Linq.Treenumerables
   // The pure-projection wrapper. Kept distinct from FusedTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
-  // when a filter joins. Because this wrapper contains only projections, every hook fuses:
-  // its emission boundary is the identity on positions.
+  // when a filter joins (FuseStage converts, FuseProjection preserves the representation).
   internal sealed class SelectTreenumerable<TSource, TResult> : IFusableTreenumerable<TResult>
   {
     public SelectTreenumerable(
@@ -26,62 +25,35 @@ namespace Copse.Linq.Treenumerables
     private readonly ITreenumerable<TSource> _Source;
     private readonly Func<NodeContext<TSource>, TResult> _Selector;
 
+    // Projections never relabel.
+    public bool ContainsRelabelingStage => false;
+
     public ITreenumerator<TResult> GetBreadthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetBreadthFirstTreenumerator, _Selector);
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetDepthFirstTreenumerator, _Selector);
 
-    public ITreenumerable<TResult> FuseWhere(Func<TResult, bool> predicate)
+    public ITreenumerable<TOuterResult> FuseStage<TOuterResult>(
+      Func<NodeContext<TResult>, FusionVerdict<TOuterResult>> stage,
+      bool stageRelabels)
     {
       var innerSelector = _Selector;
 
-      return FusedTreenumerable.Create<TSource, TResult, FuncVerdictSelector<TSource, TResult>>(
+      return FusedTreenumerable.Create<TSource, TOuterResult, FuncVerdictSelector<TSource, TOuterResult>>(
         _Source,
-        new FuncVerdictSelector<TSource, TResult>(nodeContext =>
-        {
-          var projectedNode = innerSelector(nodeContext);
-
-          return predicate(projectedNode)
-            ? FusionVerdict<TResult>.Accept(projectedNode)
-            : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
-        }),
-        containsRelabelingStage: true);
+        new FuncVerdictSelector<TSource, TOuterResult>(nodeContext =>
+          stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
+        stageRelabels);
     }
 
-    public ITreenumerable<TResult> FusePositionalWhere(Func<TResult, NodePosition, bool> predicate)
-    {
-      var innerSelector = _Selector;
-
-      return FusedTreenumerable.Create<TSource, TResult, FuncVerdictSelector<TSource, TResult>>(
-        _Source,
-        new FuncVerdictSelector<TSource, TResult>(nodeContext =>
-        {
-          var projectedNode = innerSelector(nodeContext);
-
-          return predicate(projectedNode, nodeContext.Position)
-            ? FusionVerdict<TResult>.Accept(projectedNode)
-            : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
-        }),
-        containsRelabelingStage: true);
-    }
-
-    public ITreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
+    public ITreenumerable<TOuterResult> FuseProjection<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
       var innerSelector = _Selector;
 
       return new SelectTreenumerable<TSource, TOuterResult>(
         _Source,
-        nodeContext => selector(innerSelector(nodeContext)));
-    }
-
-    public ITreenumerable<TOuterResult> FusePositionalSelect<TOuterResult>(Func<TResult, NodePosition, TOuterResult> selector)
-    {
-      var innerSelector = _Selector;
-
-      return new SelectTreenumerable<TSource, TOuterResult>(
-        _Source,
-        nodeContext => selector(innerSelector(nodeContext), nodeContext.Position));
+        nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
     }
   }
 }

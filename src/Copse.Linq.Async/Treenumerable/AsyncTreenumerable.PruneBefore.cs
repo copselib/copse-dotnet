@@ -22,6 +22,15 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
+      // Prune when true; a whole-subtree removal is just another verdict stage, so it splices
+      // onto any fused chain (the .Where(...).PruneBefore(...) direction included).
+      if (source is IAsyncFusableTreenumerable<T> fusableSource)
+        return fusableSource.FuseStage(
+          nodeContext => predicate(nodeContext)
+            ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
+            : FusionVerdict<T>.Accept(nodeContext.Node),
+          stageRelabels: true);
+
       return FusedTreenumerable.Create<T, T, PruneBeforeVerdictSelector<T>>(
         source, new PruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
     }

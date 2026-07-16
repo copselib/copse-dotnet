@@ -140,6 +140,30 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(6, selectorCalls);
     }
 
+    // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
+    // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
+    // verdict stage, offered through the same FuseStage hook.
+    [TestMethod]
+    public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
+    {
+      var whereThenPrune = Tree("a(b(d,e),c)")
+        .Where(n => n != "z")
+        .PruneBefore(nodeContext => nodeContext.Node == "b");
+
+      var pruneThenWhere = Tree("a(b(d,e),c)")
+        .PruneBefore(nodeContext => nodeContext.Node == "b")
+        .Where(n => n != "z");
+
+      Assert.IsInstanceOfType(whereThenPrune, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(pruneThenWhere, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+
+      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+        CollectionAssert.AreEqual(
+          pruneThenWhere.GetTraversal(strategy).ToArray(),
+          whereThenPrune.GetTraversal(strategy).ToArray(),
+          $"{strategy}: same stages, same tree, order-independent here (neither filters what the other sees)");
+    }
+
     // PruneBefore is a verdict stage now (Rejected(SkipNodeAndDescendants)), so it joins the
     // fused chain; a following value-Where fuses onto it.
     [TestMethod]

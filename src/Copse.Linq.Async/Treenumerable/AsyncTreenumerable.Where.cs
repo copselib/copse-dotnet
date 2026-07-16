@@ -21,13 +21,13 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
+      // A value predicate observes no coordinates, so it splices unconditionally.
       if (source is IAsyncFusableTreenumerable<TNode> fusableSource)
-      {
-        var fused = fusableSource.FuseWhere(predicate);
-
-        if (fused != null)
-          return fused;
-      }
+        return fusableSource.FuseStage(
+          nodeContext => predicate(nodeContext.Node)
+            ? FusionVerdict<TNode>.Accept(nodeContext.Node)
+            : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode),
+          stageRelabels: true);
 
       return FusedTreenumerable.Create<TNode, TNode, WhereVerdictSelector<TNode>>(
         source, new WhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
@@ -45,13 +45,15 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      if (source is IAsyncFusableTreenumerable<TNode> fusableSource)
-      {
-        var fused = fusableSource.FusePositionalWhere(predicate);
-
-        if (fused != null)
-          return fused;
-      }
+      // The join rule, applied here because only the operator knows its lambda's flavor: a
+      // positional predicate is entitled to its input tree's emitted labels, so it splices
+      // only while the chain is label-preserving and otherwise stacks a real layer.
+      if (source is IAsyncFusableTreenumerable<TNode> fusableSource && !fusableSource.ContainsRelabelingStage)
+        return fusableSource.FuseStage(
+          nodeContext => predicate(nodeContext.Node, nodeContext.Position)
+            ? FusionVerdict<TNode>.Accept(nodeContext.Node)
+            : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode),
+          stageRelabels: true);
 
       return FusedTreenumerable.Create<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
         source, new PositionalWhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
