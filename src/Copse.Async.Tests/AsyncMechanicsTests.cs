@@ -40,6 +40,7 @@ namespace Copse.Async.Tests
     private static int[] ChildrenOf(int node) => Tree.TryGetValue(node, out var c) ? c : Array.Empty<int>();
 
     private static readonly Func<NodeContext<int>, bool> KeepNot3 = nc => nc.Node != 3;
+    private static readonly Func<int, bool> KeepNot3Value = n => n != 3;
 
     [TestMethod]
     public async Task AsyncDepthFirstEngine_MatchesSyncEngine()
@@ -228,7 +229,7 @@ namespace Copse.Async.Tests
       IAsyncTreenumerable<int> source = new AsyncTreenumerable<int, int, AsyncChildEnumerator>(
         nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n, AsyncRoots());
 
-      var composed = await CollectAsync(source.Where(KeepNot3).Select(nc => nc.Node * 10).GetAsyncDepthFirstTreenumerator());
+      var composed = await CollectAsync(source.Where(KeepNot3Value).Select(n => n * 10).GetAsyncDepthFirstTreenumerator());
 
       // Expected: the generated sync Where's first-visit nodes, mapped.
       var syncWhere = Collect(new WhereDepthFirstTreenumerator<int, int>(
@@ -253,8 +254,8 @@ namespace Copse.Async.Tests
       CollectionAssert.AreEqual(new[] { 1, 2, 3, 5, 4, 6, 7 }, await source.ToListAsync());
 
       // Where(drop 3) promotes child 5, leaving 6 nodes.
-      Assert.AreEqual(6, await source.Where(KeepNot3).CountNodesAsync());
-      CollectionAssert.AreEqual(new[] { 1, 2, 5, 4, 6, 7 }, await source.Where(KeepNot3).ToListAsync());
+      Assert.AreEqual(6, await source.Where(KeepNot3Value).CountNodesAsync());
+      CollectionAssert.AreEqual(new[] { 1, 2, 5, 4, 6, 7 }, await source.Where(KeepNot3Value).ToListAsync());
     }
 
     [TestMethod]

@@ -29,8 +29,8 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 
 | Operator | Source dims | Returns | Behavior | State bound |
 |---|---|---|---|---|
-| Select | F, D, B | same-dim | streams | O(1); consecutive Selects fuse |
-| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
+| Select | F, D, B | same-dim | streams | O(1); lambdas take (node) or (node, position) — NodeContext left the operator surface 2026-07-16 (fusion design); consecutive Selects fuse, either flavor (projection never moves positions) |
+| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres FUSE (predicate combination) and fuse over Selects into the projection-carrying driver; positional Wheres never fuse with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes still NodeContext, migrating with the signature workstream |
 | TakeNodesUntil / TakeNodesWhile | F, D, B | same-dim | streams | O(1) |
 | TakeTrees / SkipTrees | F, D, B | same-dim | streams | sugar over take/prune |
 | TakeLastTrees / SkipLastTrees | F, D, B | same-dim | **eager count at call time** | two-pass by design (count the roots, then take/skip; decided 2026-07-13 — a single-pass form must buffer k whole subtrees); B's counting pass drains level 0 only |

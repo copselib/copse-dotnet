@@ -8,7 +8,7 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  internal sealed class SelectTreenumerable<TSource, TResult> : ISelectTreenumerable<TResult>
+  internal sealed class SelectTreenumerable<TSource, TResult> : IFusableTreenumerable<TResult>
   {
     public SelectTreenumerable(
       ITreenumerable<TSource> source,
@@ -27,13 +27,31 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetDepthFirstTreenumerator, _Selector);
 
-    public ISelectTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, TOuterResult> outerSelector)
+    // Select's emission boundary is the identity on positions, so every appended operator may
+    // cross it: both Where flavors fuse into the projection-carrying Where drivers (the fused
+    // SelectWhere is an INSTANTIATION of the plain Where machinery, not a new driver), and an
+    // appended Select composes selectors.
+    public ITreenumerable<TResult> FuseWhere(Func<TResult, bool> predicate) =>
+      FuseContextWhere(nodeContext => predicate(nodeContext.Node));
+
+    public ITreenumerable<TResult> FusePositionalWhere(Func<TResult, NodePosition, bool> predicate) =>
+      FuseContextWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+
+    public ITreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> outerSelector)
     {
+      var innerSelector = _Selector;
+
       return
         new SelectTreenumerable<TSource, TOuterResult>(
           _Source,
-          nodeContext => outerSelector(new NodeContext<TResult>(_Selector(nodeContext), nodeContext.Position)));
+          nodeContext => outerSelector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
     }
+
+    private ITreenumerable<TResult> FuseContextWhere(Func<NodeContext<TResult>, bool> contextPredicate) =>
+      TreenumerableFactory.Create(
+        () => new WhereBreadthFirstTreenumerator<TSource, TResult>(
+          _Source.GetBreadthFirstTreenumerator, _Selector, contextPredicate, NodeTraversalStrategies.SkipNode),
+        () => new WhereDepthFirstTreenumerator<TSource, TResult>(
+          _Source.GetDepthFirstTreenumerator, _Selector, contextPredicate, NodeTraversalStrategies.SkipNode));
   }
 }

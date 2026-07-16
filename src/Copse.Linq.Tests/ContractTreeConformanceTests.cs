@@ -65,18 +65,18 @@ namespace Copse.Linq.Tests
 
     private static readonly (string Name, Func<ITreenumerable<string>, ITreenumerable<string>> Op)[] TreeOperators =
     {
-      ("Where(!= b)", t => t.Where(nodeContext => nodeContext.Node != "b")),
-      ("Where(depth != 0)", t => t.Where(nodeContext => nodeContext.Position.Depth != 0)),
-      ("Select(upper)", t => t.Select(nodeContext => nodeContext.Node.ToUpperInvariant())),
+      ("Where(!= b)", t => t.Where(n => n != "b")),
+      ("Where(depth != 0)", t => t.Where((n, position) => position.Depth != 0)),
+      ("Select(upper)", t => t.Select(n => n.ToUpperInvariant())),
       ("PruneBefore(== b)", t => t.PruneBefore(nodeContext => nodeContext.Node == "b")),
       ("PruneAfter(== b)", t => t.PruneAfter(nodeContext => nodeContext.Node == "b")),
       ("TakeNodesWhile(!= e)", t => t.TakeNodesWhile(nodeContext => nodeContext.Node != "e", false)),
-      ("Union", t => t.Union(EngineTree.Parse("a(x,b(y))")).Select(nodeContext => nodeContext.Node.ToString())),
+      ("Union", t => t.Union(EngineTree.Parse("a(x,b(y))")).Select(n => n.ToString())),
       ("RootfixScan(concat)", t => t.RootfixScan((accumulate, nodeContext) => accumulate.Node + nodeContext.Node, "*")),
       ("Invert+Memoize", t => t.Invert().Memoize()),
       ("Memoize", t => t.Memoize()),
       ("Materialize", t => t.Materialize()),
-      ("Where+Select+Memoize chain", t => t.Where(nodeContext => nodeContext.Node != "c").Select(nodeContext => nodeContext.Node + "!").Memoize()),
+      ("Where+Select+Memoize chain", t => t.Where(n => n != "c").Select(n => n + "!").Memoize()),
     };
 
     [TestMethod]

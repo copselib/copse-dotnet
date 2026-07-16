@@ -74,7 +74,7 @@ namespace Copse.Linq.Tests
       var sut =
         leftTreenumerable
         .Intersection(rightTreenumerable)
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Left);
 
       Func<NodeContext<string>, NodeTraversalStrategies> traverseAll =
         _ => NodeTraversalStrategies.TraverseAll;
@@ -138,12 +138,12 @@ namespace Copse.Linq.Tests
       IDepthFirstTreenumerable<string> narrow =
         StreamDepthFirst(left)
         .Intersection(StreamDepthFirst(right))
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Left);
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .Intersection(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Left);
 
       VisitStreamConformance.AssertSameStream(
         full.GetDepthFirstTreenumerator(),
@@ -161,12 +161,12 @@ namespace Copse.Linq.Tests
       IBreadthFirstTreenumerable<string> narrow =
         StreamBreadthFirst(left)
         .Intersection(StreamBreadthFirst(right))
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Left);
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .Intersection(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Select(mergeNodeContext => mergeNodeContext.Left);
 
       VisitStreamConformance.AssertSameStream(
         full.GetBreadthFirstTreenumerator(),

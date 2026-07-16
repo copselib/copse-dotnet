@@ -103,7 +103,7 @@ namespace Copse.Linq.Tests
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c,d),e)");
 
       // Remove b; c and d are promoted under a.
-      var pruned = tree.Where(ctx => ctx.Node != "b");
+      var pruned = tree.Where(ctx => ctx != "b");
 
       Assert.IsTrue(pruned.AnyNodes(ctx => ctx.Node == "c", TreeTraversalStrategy.DepthFirst));
       Assert.IsTrue(pruned.AnyNodes(ctx => ctx.Node == "d", TreeTraversalStrategy.DepthFirst));

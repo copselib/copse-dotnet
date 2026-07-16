@@ -266,9 +266,13 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",
         "AsyncHideTreenumerable", "HideTreenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
-        "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
-        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncFusableTreenumerable.cs",
+        "Copse.Linq/Treenumerables/IFusableTreenumerable.g.cs",
+        "IAsyncFusableTreenumerable", "IFusableTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/WhereTreenumerable.g.cs",
+        "AsyncWhereTreenumerable", "WhereTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",

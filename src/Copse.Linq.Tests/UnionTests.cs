@@ -230,7 +230,7 @@ namespace Copse.Linq.Tests
       Debug.WriteLine($"{Environment.NewLine}-----Actual Values-----");
       var actual =
         sut
-        .Select(nodeContext => $"{nodeContext.Node.Left}{nodeContext.Node.Right}")
+        .Select(n => $"{n.Left}{n.Right}")
         .GetTraversal(
           treeTraversalStrategy,
           nodeTraversalStrategiesSelector)
