@@ -252,8 +252,18 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
    Select legality, and once-per-node selector evaluation on the fused path (the
    invocation-count ruling, now pinned rather than open).
-2. The verdict monad: `FusedTreenumerable` + the four-hook recipe split (FuseSelect /
-   FusePositionalSelect required correction) + per-node strategy honoring in the drivers;
-   prune signature migration and prune stages ride it; then Select-into-captures and
-   narrow-receiver (D/B) fusion as template instantiations.
+2. ✅ SHIPPED (branch, 2026-07-16): `FusionVerdict<T>` + verdict-shaped filter drivers (one
+   composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
+   strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
+   `FusedTreenumerable` (the reified Kleisli arrow — value chains of any length/order
+   collapse to one wrapper, pinned) with the four-hook flavor split and the relabeling bit;
+   PruneBefore is a verdict stage and joins chains (removal polarity explicit in the
+   verdict); the pure-Select wrapper stays distinct so projection-only chains keep the light
+   Select treenumerator. NOTE: the verdict closure did NOT dissolve the delegate-layer
+   question — plain Where now pays library-closure + user-predicate (2 calls/node), same
+   magnitude as the phase-0.5 identity pair; the struct ruling transposes to
+   `TVerdictSelector : struct, IVerdictSelector<TInner,TNode>` if taken.
+2.5 Remaining phase-2 items: the BFT accept-strategy seam + the PruneAfter stage + prune
+   signature migration; Select-into-captures; narrow-receiver (D/B) fusion as template
+   instantiations.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
