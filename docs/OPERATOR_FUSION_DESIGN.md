@@ -1,9 +1,8 @@
 # Operator Fusion (design record)
 
-> **Status: DESIGNED 2026-07-15; deliberately not yet built.** Phase 0 (internal recipe
-> surface) is on main; the genericized-Where substrate lives on `feature/operator-fusion`
-> (a7318b5) with one measurement-gated ruling pending. Everything else here is decided
-> design awaiting a build session. Companion decisions in
+> **Status: DESIGNED 2026-07-15; phase 1 SHIPPED 2026-07-16 (see Phases).** The API/UX
+> design and the verdict monad (phase 2's composition model) are ratified; the
+> struct-selector gate ruling is the one open measurement question. Companion decisions in
 > [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md);
 > capability probing (the orthogonal "cheaper when rich" axis) in
 > [TREE_CAPABILITY_INTERFACES.md](TREE_CAPABILITY_INTERFACES.md) — its takeaway after
@@ -72,6 +71,48 @@ the common case entirely. Therefore:
   `(n, p) => outer(inner(n, p), p)`); positional **Where** never fuses with its own kind.
   The general law: a pair is fusable iff no lambda observes a coordinate that a fused-away
   emission boundary would have relabeled.
+
+## The API & UX design (ratified 2026-07-16)
+
+**The context gradient — the one idea that explains the whole surface:** the richer the
+context a lambda observes, the more real the machinery around it must be.
+
+1. **Value lambdas** (`n => …`) — see nothing but the node; fuse anywhere, unconditionally.
+   The simple tier is the fast tier, by design.
+2. **Positional lambdas** (`(n, position) => …`) — see coordinates; fuse only across
+   label-preserving prefixes, and otherwise their append point IS an emission boundary (a
+   real layer stacks so the labels they read are genuinely emitted).
+3. **`NodeVisit` / the treenumerator protocol** (`Do`, visit-stream consumers) — see the
+   full traversal state; never fused, because the protocol they observe must physically
+   exist where they watch it.
+
+Users choose a tier by what they need to see; each tier carries the strongest guarantees
+and best performance it can honestly offer.
+
+**Ratified decisions:**
+
+- **Fusion is completely invisible — never exposed.** No public docs mention it, no
+  type surfaces it, no behavior reveals it (to pure lambdas). It is an implementation
+  property, not a feature of the surface.
+- **The purity contract** (the invisibility clause's fine print): computation lambdas
+  (predicates, selectors, keys) must be pure — the library guarantees what each lambda
+  observes and in what order, never how many times it runs. Concretely: over `a(b,c)`
+  (7 visits, 3 nodes), an unfused Select evaluates its selector 7 times, the fused
+  Select∘Where evaluates it 3 times; identical trees out, only an impure counter can tell.
+- **`Do` is the sanctioned effect point, with a SPECIFIED cadence**: its action runs on
+  every emitted visit and receives the full `NodeVisit` — deliberately permissive, because
+  every narrower cadence is a one-line filter inside the caller's action
+  (`Mode == SchedulingNode` = once per node; `VisitCount == 1` = first visits). `Do`
+  therefore keeps `NodeVisit` through the signature migration (the deliberate survivor),
+  never fuses, and inserting one between operators prevents their fusion by definition —
+  the window materializes the pane. (It also serves as the honest force-unfused control in
+  tests.) No value-flavored `Do` overload: it would be a lossy special case.
+- **Node/position decoupling proceeds across the whole operator surface** (consistency
+  over per-case NodeContext survivals), with survivals decided case by case where the full
+  context IS the point (`Do`). Which operators get a positional flavor at all is decided
+  during the migration; the default posture is LINQ's — filter/map family yes, key
+  selectors/accumulators value-only, with the tuple escape hatch
+  (`.Select((n, p) => (n, p))`) covering the rare positional key.
 
 ## Pair matrix
 
@@ -145,17 +186,57 @@ parameter on two internal drivers). The null-selector variant is disqualified
 - Benchmarks consult-first; after phase 1, re-run the async `OperatorStack` pair — fusion
   removes wrapper layers, which directly informs the tabled async operator-wrapper wave.
 
-## The stage algebra (phase-2 direction, Jason 2026-07-16)
+## The verdict monad (phase 2's composition model — Jason's original design, formalized)
 
-The prune family folds into the fused chain via OPERATOR-side strategy verdicts: a fused
-stage is TNodeIn → (TNodeOut, NodeTraversalStrategies) — value-Where = reject-with-SkipNode,
-PruneBefore = reject-with-SkipNodeAndDescendants, PruneAfter = ACCEPT-with-SkipDescendants
-(the case a bool cannot express), Select = project. Composition: fold stages in order,
-union the strategies, first REJECTING stage ends evaluation (later stages never saw that
-node in the stacked pipeline); short-circuit when the union reaches skip-everything. The
-drivers already parameterize on exactly this (Where and PruneBefore differ by one
-constructor argument). Not to be conflated with CONSUMER-side strategies flowing into
-MoveNext — a separate channel, handled once at the final layer.
+This was the shape of the original `Compose` vision: the fused chain internally keeps a
+mapping from the source node to `<TResult, TreeTraversalStrategy>`, and composing wrappers
+unwrap the map and rebuild it. Formalized, the carrier is a Writer monad over the
+strategy monoid, stacked with short-circuit:
+
+```
+Verdict<T> = Accepted(T value, NodeTraversalStrategies strategies)
+           | Rejected(NodeTraversalStrategies strategies)
+```
+
+Each fused stage is a Kleisli arrow `NodeContext<TSource> → Verdict<TStage>`; the fused
+wrapper (`FusedTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
+the anonymous SelectWhere result) is the reified composite arrow, and appending an
+operator Kleisli-composes and returns a new wrapper — closed under composition: one
+wrapper, any order, any length.
+
+**Composition law** (what keeps fused ≡ stacked):
+- `Accepted(v, s₁)` → next stage `Accepted(v₂, s₂)` ⇒ `Accepted(v₂, s₁ ∪ s₂)`.
+- `Accepted(v, s₁)` → next stage `Rejected(s₂)` ⇒ `Rejected(s₁ ∪ s₂)`.
+- `Rejected(s)` composes with nothing — the first rejecting stage ends evaluation (in the
+  stacked pipeline, later layers never saw that node). Short-circuit early whenever the
+  union reaches skip-everything.
+
+**Stage vocabulary**: value-Where = `Accepted(v, ∅) | Rejected(SkipNode)`;
+PruneBefore = `Rejected(SkipNodeAndDescendants)`; PruneAfter =
+`Accepted(v, SkipDescendants)` — the accept-with-strategy case a bool cannot express, and
+the reason the carrier is a verdict rather than a predicate; Select = `Accepted(f(v), ∅)`.
+Because the composite computes the FINAL value regardless of where filters sit among
+projections, the Where-then-Select seam needs no emission-side driver surgery — it
+dissolves into closure composition.
+
+**The join rule, per lambda FLAVOR** (not per operator): value lambdas join any chain;
+positional lambdas join only a label-preserving prefix — the wrapper carries one bit,
+"contains a relabeling stage" (any filter/prune sets it; projections do not) — and
+otherwise their append point IS an emission boundary (the chain terminates, a layer
+stacks, the positional lambda reads genuinely emitted labels). This applies to positional
+Select exactly as to positional Where, and to any future positional flavor.
+
+**Required interface correction (phase 1 is correct only by topology luck):** the single
+`FuseSelect` hook erases the appended Select's flavor — safe today only because the sole
+accepting wrapper is the pure-Select wrapper. `FusedTreenumerable` needs the flavor, so
+the recipe surface splits like Where's pair: `FuseSelect(value)` /
+`FusePositionalSelect(positional)` — four hooks, each wrapper answering per flavor.
+
+**Driver contract**: per node, run the composite once against the SOURCE context; on
+`Accepted`, publish the value and apply its strategies to the inner pull (the frames
+already carry per-node strategies); on `Rejected`, skip with its strategies (`SkipNode` →
+promotion machinery, `SkipNodeAndDescendants` → subtree drop). CONSUMER-side strategies
+flowing into MoveNext are a separate channel, handled once, at the final (real) layer.
 
 ## Phases
 
@@ -171,6 +252,8 @@ MoveNext — a separate channel, handled once at the final layer.
    equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
    Select legality, and once-per-node selector evaluation on the fused path (the
    invocation-count ruling, now pinned rather than open).
-2. Prune signature migration + prune pairs via the stage algebra; Select-into-captures;
-   narrow-receiver (D/B) fusion.
+2. The verdict monad: `FusedTreenumerable` + the four-hook recipe split (FuseSelect /
+   FusePositionalSelect required correction) + per-node strategy honoring in the drivers;
+   prune signature migration and prune stages ride it; then Select-into-captures and
+   narrow-receiver (D/B) fusion as template instantiations.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
