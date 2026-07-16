@@ -10,9 +10,9 @@ namespace Copse.Linq
   {
     /// <summary>
     /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
-    /// unchanged (positions never move under a projection). Deferred. Consecutive selects fuse
-    /// by selector composition, and a following Where (either flavor) fuses into the
-    /// projection-carrying filter driver (docs/OPERATOR_FUSION_DESIGN.md).
+    /// unchanged (positions never move under a projection). Deferred. Consecutive selects
+    /// collapse by selector composition, and a following Where (either flavor) composes into
+    /// the projection-carrying filter driver (docs/OPERATOR_FUSION_DESIGN.md).
     /// </summary>
     public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(
       this IAsyncTreenumerable<TSource> source,
@@ -27,8 +27,8 @@ namespace Copse.Linq
 
     /// <summary>
     /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
-    /// Select. Positions never move under a projection, so this flavor fuses exactly like the
-    /// value-only one.
+    /// Select. Positions never move under a projection, so this flavor composes exactly like
+    /// the value-only one.
     /// </summary>
     public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(
       this IAsyncTreenumerable<TSource> source,

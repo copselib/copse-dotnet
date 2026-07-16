@@ -11,38 +11,38 @@ namespace Copse.Linq.Async
 {
   /// <summary>
   /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
-  /// strip the <c>await</c>s and it becomes the sync driver. Runs the composed VERDICT of a
-  /// fused stage chain (docs/OPERATOR_FUSION_DESIGN.md) once per scheduled node, against the
-  /// SOURCE context: an accepted verdict's value is published (the path stores projected
+  /// strip the <c>await</c>s and it becomes the sync driver. Evaluates the COMPOSED stage
+  /// chain (docs/OPERATOR_FUSION_DESIGN.md) once per scheduled node, against the
+  /// SOURCE context: an accepted result's value is published (the path stores projected
   /// values -- opaque cargo; the library never compares nodes) and its strategies apply to the
-  /// node's own traversal (PruneAfter's SkipDescendants); a rejected verdict's strategies
+  /// node's own traversal (PruneAfter's SkipDescendants); a rejected result's strategies
   /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
   /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
   /// single-stage instantiations. All structural state lives in the shared, color-agnostic
   /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
-  internal sealed class AsyncWhereDepthFirstTreenumerator<TInner, TNode, TVerdictSelector>
+  internal sealed class AsyncWhereDepthFirstTreenumerator<TInner, TNode, TResultSelector>
     : AsyncTreenumeratorWrapper<TInner, TNode>
-    where TVerdictSelector : struct, IVerdictSelector<TInner, TNode>
+    where TResultSelector : struct, IResultSelector<TInner, TNode>
   {
     public AsyncWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
-      TVerdictSelector verdictSelector)
+      TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
-      _VerdictSelector = verdictSelector;
+      _ResultSelector = resultSelector;
 
       // Seed the path with a sentinel root: the virtual forest root by definition (its value is
-      // never published, so no verdict is owed).
+      // never published, so no result is owed).
       _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
     }
 
-    private readonly TVerdictSelector _VerdictSelector;
+    private readonly TResultSelector _ResultSelector;
 
     private WhereDepthFirstPath<TNode> _Path;
     private bool _HasCachedChild = false;
 
-    // Accept-side strategies from the last published scheduling visit's verdict, applied on the
+    // Accept-side strategies from the last published scheduling visit's result, applied on the
     // pull that follows it -- the same protocol moment a consumer's own strategies for that
     // visit arrive, so the two simply union.
     private NodeTraversalStrategies _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
@@ -103,22 +103,22 @@ namespace Copse.Linq.Async
       _Path.PopDeeperThanForScheduling(InnerTreenumerator.Position.Depth);
 
       // ONE evaluation of the composed stage chain, against the SOURCE context; every user
-      // lambda inside sees exactly what the unfused pipeline would have shown it.
-      var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
+      // lambda inside sees exactly what the stacked pipeline would have shown it.
+      var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
 
-      if (verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
+      if (result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
-        rejectedStrategies = verdict.Strategies;
+        rejectedStrategies = result.Strategies;
         return false;
       }
 
       rejectedStrategies = NodeTraversalStrategies.TraverseAll;
-      _PendingStageStrategies = verdict.Strategies;
+      _PendingStageStrategies = result.Strategies;
 
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(verdict.Value, InnerTreenumerator.Position);
+      _Path.PushAcceptedChild(result.Value, InnerTreenumerator.Position);
 
       if (cacheChild)
       {

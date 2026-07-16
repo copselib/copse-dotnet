@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void ValueChains_CollapseToOneWrapper_AnyOrder()
     {
-      // The verdict monad's closure property: any order, any length, one wrapper.
+      // The result monad's closure property: any order, any length, one wrapper.
       var fused = Tree("a(b,c)")
         .Where(n => n != "b")
         .Select(n => n + "!")
@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
 
     // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
     // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
-    // verdict stage, offered through the same FuseStage hook.
+    // result stage, offered through the same FuseStage hook.
     [TestMethod]
     public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
     {
@@ -154,8 +154,8 @@ namespace Copse.Linq.Tests
         .PruneBefore(n => n == "b")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(whereThenPrune, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
-      Assert.IsInstanceOfType(pruneThenWhere, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(whereThenPrune, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.IsInstanceOfType(pruneThenWhere, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -164,7 +164,7 @@ namespace Copse.Linq.Tests
           $"{strategy}: same stages, same tree, order-independent here (neither filters what the other sees)");
     }
 
-    // PruneBefore is a verdict stage now (Rejected(SkipNodeAndDescendants)), so it joins the
+    // PruneBefore is a result stage now ((node, SkipNodeAndDescendants)), so it joins the
     // fused chain; a following value-Where fuses onto it.
     [TestMethod]
     public void PruneBefore_JoinsTheFusedChain()
@@ -175,7 +175,7 @@ namespace Copse.Linq.Tests
           .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>), "prune chain must stay fused");
+        Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay fused");
 
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
@@ -204,17 +204,17 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
-    // The PruneAfter-stage rehearsal: nothing on the surface produces accept-side verdict
+    // The PruneAfter-stage rehearsal: nothing on the surface produces accept-side result
     // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
     // and must not sit untested until the prune migration. (node, SkipDescendants) = keep
     // the node, drop its subtree.
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
     {
-      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
-        new FuncVerdictSelector<string, string>(nodeContext =>
-          new CompositionVerdict<string>(
+        new FuncResultSelector<string, string>(nodeContext =>
+          new CompositionResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -234,10 +234,10 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredBreadthFirst()
     {
-      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
-        new FuncVerdictSelector<string, string>(nodeContext =>
-          new CompositionVerdict<string>(
+        new FuncResultSelector<string, string>(nodeContext =>
+          new CompositionResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -285,10 +285,10 @@ namespace Copse.Linq.Tests
 
           var target = pruneTarget;
 
-          var rehearsed = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+          var rehearsed = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
             Tree(treeString),
-            new FuncVerdictSelector<string, string>(nodeContext =>
-              new CompositionVerdict<string>(
+            new FuncResultSelector<string, string>(nodeContext =>
+              new CompositionResult<string>(
                 nodeContext.Node,
                 nodeContext.Node == target
                   ? NodeTraversalStrategies.SkipDescendants
@@ -322,7 +322,7 @@ namespace Copse.Linq.Tests
 
       Assert.IsInstanceOfType(
         composed,
-        typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>),
+        typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>),
         "positional Select must compose across the label-preserving prune");
 
       var labeled = composed

@@ -22,23 +22,23 @@ namespace Copse.Linq.Async
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode, TVerdictSelector>
+  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode, TResultSelector>
     : AsyncTreenumeratorWrapper<TInner, TNode>
-    where TVerdictSelector : struct, IVerdictSelector<TInner, TNode>
+    where TResultSelector : struct, IResultSelector<TInner, TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
-      TVerdictSelector verdictSelector)
+      TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
-      _VerdictSelector = verdictSelector;
+      _ResultSelector = resultSelector;
 
       // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
       // sentinel value is never published, so no projection is owed).
       _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
     }
 
-    private readonly TVerdictSelector _VerdictSelector;
+    private readonly TResultSelector _ResultSelector;
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
@@ -65,7 +65,7 @@ namespace Copse.Linq.Async
     // child's own visiting turn that follows it.
     private NodeTraversalStrategies? _DeferredStrategy = null;
 
-    // Accept-side verdict strategies (PruneAfter's SkipDescendants) from the last published
+    // Accept-side result strategies (PruneAfter's SkipDescendants) from the last published
     // SCHEDULING visit, merged into the consumer's strategies on the pull that follows it --
     // the same protocol moment the consumer's own strategies for that visit arrive. The
     // deferred slot carries them while a consumer-skip transition holds the schedule publish
@@ -157,16 +157,16 @@ namespace Copse.Linq.Async
           var innerDepth = InnerTreenumerator.Position.Depth;
 
           // ONE evaluation of the composed stage chain, against the SOURCE context; every user
-          // lambda inside sees exactly what the unfused pipeline would have shown it. Accept-side
+          // lambda inside sees exactly what the stacked pipeline would have shown it. Accept-side
           // strategies ride the pending/deferred slots so they apply on the pull following the
           // node's scheduling publish.
-          var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
-          var skipped = verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
+          var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
+          var skipped = result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
           {
-            nodeTraversalStrategies = verdict.Strategies;
+            nodeTraversalStrategies = result.Strategies;
             continue;
           }
 
@@ -216,10 +216,10 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               // The schedule publishes on a later entry; its accept-side strategies wait with it.
-              _DeferredStageStrategies = verdict.Strategies;
+              _DeferredStageStrategies = result.Strategies;
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
@@ -230,10 +230,10 @@ namespace Copse.Linq.Async
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
           // The scheduling publish below is this node's; its accept-side strategies apply on
           // the pull that follows it.
-          _PendingStageStrategies = verdict.Strategies;
+          _PendingStageStrategies = result.Strategies;
         }
         else // VisitingNode
         {

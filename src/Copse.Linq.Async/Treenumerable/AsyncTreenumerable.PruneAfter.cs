@@ -23,7 +23,7 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IAsyncComposableTreenumerable<T> composableSource)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<T>(
+          nodeContext => new CompositionResult<T>(
             nodeContext.Node,
             predicate(nodeContext.Node)
               ? NodeTraversalStrategies.SkipDescendants
@@ -47,7 +47,7 @@ namespace Copse.Linq
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IAsyncComposableTreenumerable<T> composableSource && !composableSource.Map.ContainsRelabelingStage)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<T>(
+          nodeContext => new CompositionResult<T>(
             nodeContext.Node,
             predicate(nodeContext.Node, nodeContext.Position)
               ? NodeTraversalStrategies.SkipDescendants

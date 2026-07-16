@@ -7,32 +7,32 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The accumulated Kleisli arrow of a fused chain, reified with its combinators: the source,
+  // The accumulated Kleisli arrow of a composed chain, reified with its combinators: the source,
   // the composed mapping (kept in its RAWEST form -- a projection-only chain retains the bare
   // composed selector so reification can stay on the light Select treenumerator; the first
-  // filter converts the representation to verdict shape), and the relabeling bit. All fusion
-  // algebra lives here: the composition law (first reject stops, accept-side strategies
+  // filter converts the representation to result shape), and the relabeling bit. All
+  // composition algebra lives here: the composition law (first reject stops, accept-side strategies
   // union), the purity tracking, and the representation choice.
   internal sealed class CompositionMap<TSource, TNode> : ICompositionMap<TNode>
   {
     private CompositionMap(
       ITreenumerable<TSource> source,
       Func<NodeContext<TSource>, TNode> projection,
-      Func<NodeContext<TSource>, CompositionVerdict<TNode>> verdict,
+      Func<NodeContext<TSource>, CompositionResult<TNode>> result,
       bool containsRelabelingStage)
     {
       _Source = source;
       _Projection = projection;
-      _Verdict = verdict;
+      _Result = result;
       ContainsRelabelingStage = containsRelabelingStage;
     }
 
     private readonly ITreenumerable<TSource> _Source;
 
     // Exactly one is set: the map's representation. Projection-only chains cannot reject and
-    // never relabel; verdict-backed chains run the full monad.
+    // never relabel; result-backed chains run the full monad.
     private readonly Func<NodeContext<TSource>, TNode> _Projection;
-    private readonly Func<NodeContext<TSource>, CompositionVerdict<TNode>> _Verdict;
+    private readonly Func<NodeContext<TSource>, CompositionResult<TNode>> _Result;
 
     public bool ContainsRelabelingStage { get; }
 
@@ -41,11 +41,11 @@ namespace Copse.Linq.Treenumerables
       Func<NodeContext<TSource>, TNode> projection)
       => new CompositionMap<TSource, TNode>(source, projection, null, containsRelabelingStage: false);
 
-    public static CompositionMap<TSource, TNode> OfVerdict(
+    public static CompositionMap<TSource, TNode> OfResult(
       ITreenumerable<TSource> source,
-      Func<NodeContext<TSource>, CompositionVerdict<TNode>> verdict,
+      Func<NodeContext<TSource>, CompositionResult<TNode>> result,
       bool containsRelabelingStage)
-      => new CompositionMap<TSource, TNode>(source, null, verdict, containsRelabelingStage);
+      => new CompositionMap<TSource, TNode>(source, null, result, containsRelabelingStage);
 
     public ICompositionMap<TOuterResult> Select<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
     {
@@ -58,51 +58,51 @@ namespace Copse.Linq.Treenumerables
           nodeContext => selector(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)));
       }
 
-      var innerVerdict = _Verdict;
+      var innerResult = _Result;
 
-      return CompositionMap<TSource, TOuterResult>.OfVerdict(
+      return CompositionMap<TSource, TOuterResult>.OfResult(
         _Source,
         nodeContext =>
         {
-          var verdict = innerVerdict(nodeContext);
+          var result = innerResult(nodeContext);
 
           // A rejected node has no outer value -- the selector never sees it (the stacked
           // pipeline's Select layer never received the node).
-          return verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
-            ? new CompositionVerdict<TOuterResult>(default, verdict.Strategies)
-            : new CompositionVerdict<TOuterResult>(
-                selector(new NodeContext<TNode>(verdict.Value, nodeContext.Position)),
-                verdict.Strategies);
+          return result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
+            ? new CompositionResult<TOuterResult>(default, result.Strategies)
+            : new CompositionResult<TOuterResult>(
+                selector(new NodeContext<TNode>(result.Value, nodeContext.Position)),
+                result.Strategies);
         },
         ContainsRelabelingStage);
     }
 
-    public ICompositionMap<TNode> Filter(Func<NodeContext<TNode>, CompositionVerdict<TNode>> stage, bool relabels)
+    public ICompositionMap<TNode> Filter(Func<NodeContext<TNode>, CompositionResult<TNode>> stage, bool relabels)
     {
       if (_Projection != null)
       {
         var innerProjection = _Projection;
 
-        return CompositionMap<TSource, TNode>.OfVerdict(
+        return CompositionMap<TSource, TNode>.OfResult(
           _Source,
           nodeContext => stage(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)),
           relabels);
       }
 
-      var innerVerdict = _Verdict;
+      var innerResult = _Result;
 
-      return CompositionMap<TSource, TNode>.OfVerdict(
+      return CompositionMap<TSource, TNode>.OfResult(
         _Source,
         nodeContext =>
         {
-          var verdict = innerVerdict(nodeContext);
+          var result = innerResult(nodeContext);
 
           // The composition law: the fold stops once SkipNode is aboard (the node left the
           // logical tree, so later stages never saw it in the stacked pipeline); accept-side
           // strategies union.
-          return verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
-            ? verdict
-            : stage(new NodeContext<TNode>(verdict.Value, nodeContext.Position)).WithEarlierStrategies(verdict.Strategies);
+          return result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
+            ? result
+            : stage(new NodeContext<TNode>(result.Value, nodeContext.Position)).WithEarlierStrategies(result.Strategies);
         },
         ContainsRelabelingStage | relabels);
     }
@@ -110,7 +110,7 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerable<TNode> ToTreenumerable()
       => _Projection != null
         ? (ITreenumerable<TNode>)new SelectTreenumerable<TSource, TNode>(_Source, _Projection)
-        : new ComposableTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
-            _Source, new FuncVerdictSelector<TSource, TNode>(_Verdict), ContainsRelabelingStage);
+        : new ComposableTreenumerable<TSource, TNode, FuncResultSelector<TSource, TNode>>(
+            _Source, new FuncResultSelector<TSource, TNode>(_Result), ContainsRelabelingStage);
   }
 }

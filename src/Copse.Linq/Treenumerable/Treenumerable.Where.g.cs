@@ -26,15 +26,15 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IComposableTreenumerable<TNode> composableSource)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<TNode>(
+          nodeContext => new CompositionResult<TNode>(
             nodeContext.Node,
             predicate(nodeContext.Node)
               ? NodeTraversalStrategies.TraverseAll
               : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
-      return new ComposableTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
-        source, new WhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
+      return new ComposableTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+        source, new WhereResultSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
     /// <summary>
@@ -54,15 +54,15 @@ namespace Copse.Linq
       // only while the chain is label-preserving and otherwise stacks a real layer.
       if (source is IComposableTreenumerable<TNode> composableSource && !composableSource.Map.ContainsRelabelingStage)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<TNode>(
+          nodeContext => new CompositionResult<TNode>(
             nodeContext.Node,
             predicate(nodeContext.Node, nodeContext.Position)
               ? NodeTraversalStrategies.TraverseAll
               : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
-      return new ComposableTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
-        source, new PositionalWhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
+      return new ComposableTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+        source, new PositionalWhereResultSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -74,8 +74,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<TNode, TNode, WhereVerdictSelector<TNode>>(
-            source.GetDepthFirstTreenumerator, new WhereVerdictSelector<TNode>(predicate)));
+          () => new WhereDepthFirstTreenumerator<TNode, TNode, WhereResultSelector<TNode>>(
+            source.GetDepthFirstTreenumerator, new WhereResultSelector<TNode>(predicate)));
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -87,8 +87,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
-            source.GetDepthFirstTreenumerator, new PositionalWhereVerdictSelector<TNode>(predicate)));
+          () => new WhereDepthFirstTreenumerator<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+            source.GetDepthFirstTreenumerator, new PositionalWhereResultSelector<TNode>(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -100,8 +100,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<TNode, TNode, WhereVerdictSelector<TNode>>(
-            source.GetBreadthFirstTreenumerator, new WhereVerdictSelector<TNode>(predicate)));
+          () => new WhereBreadthFirstTreenumerator<TNode, TNode, WhereResultSelector<TNode>>(
+            source.GetBreadthFirstTreenumerator, new WhereResultSelector<TNode>(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -113,8 +113,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
-            source.GetBreadthFirstTreenumerator, new PositionalWhereVerdictSelector<TNode>(predicate)));
+          () => new WhereBreadthFirstTreenumerator<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+            source.GetBreadthFirstTreenumerator, new PositionalWhereResultSelector<TNode>(predicate)));
     }
 
   }

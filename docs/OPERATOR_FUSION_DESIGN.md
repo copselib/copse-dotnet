@@ -11,7 +11,7 @@
 > demoted while fusion (which does compound) proceeds.
 
 > **Vocabulary (renamed 2026-07-16):** the API spells the capability *composition* —
-> `IComposableTreenumerable` / `CompositionMap` / `CompositionVerdict` (formerly
+> `IComposableTreenumerable` / `CompositionMap` / `CompositionResult` (formerly
 > Fusable/Fusion): composable names what the algebra does. "Fusion" in this document names
 > the *technique* — collapsing stacked layers into one wrapper — by its literature name
 > (LINQ's fused iterators, stream fusion).
@@ -161,9 +161,9 @@ make this cell permanently moot.
   reification stays on the light Select treenumerator; the first Filter converts the
   representation), the relabeling bit the positional join rule reads, and the
   representation choice at reification. The first Select over a plain source is the monadic
-  RETURN (lifting into the verdict carrier with identity strategies). Erasure is why the
+  RETURN (lifting into the result carrier with identity strategies). Erasure is why the
   map exists: the operator cannot name the source type, so the typed map composes and
-  constructs behind the erased combinator surface. `CompositionVerdict` is a BARE PAIR
+  constructs behind the erased combinator surface. `CompositionResult` is a BARE PAIR
   `(value, strategies)` with one constructor — rejection IS SkipNode membership, a derived
   view inherited from the consumer protocol, so every pair is coherent by definition. (An
   earlier Accept/Reject factory vocabulary was dropped in review 2026-07-16: once PruneAfter
@@ -210,7 +210,7 @@ parameter on two internal drivers). The null-selector variant is disqualified
 - Benchmarks consult-first; after phase 1, re-run the async `OperatorStack` pair — fusion
   removes wrapper layers, which directly informs the tabled async operator-wrapper wave.
 
-## The verdict monad (phase 2's composition model — Jason's original design, formalized)
+## The result monad (phase 2's composition model — Jason's original design, formalized)
 
 This was the shape of the original `Compose` vision: the fused chain internally keeps a
 mapping from the source node to `<TResult, TreeTraversalStrategy>`, and composing wrappers
@@ -218,7 +218,7 @@ unwrap the map and rebuild it. Formalized, the carrier is a Writer monad over th
 strategy monoid, stacked with short-circuit:
 
 ```
-Verdict<T> = (T value, NodeTraversalStrategies strategies)   -- a bare pair, one constructor
+Result<T> = (T value, NodeTraversalStrategies strategies)   -- a bare pair, one constructor
 Rejected   ⇔ SkipNode ∈ strategies                           -- a derived view, not a case
 ```
 
@@ -228,7 +228,7 @@ below are the derived views, not constructors. (The review that settled this: on
 PruneAfter is an accept carrying skip instructions and PruneBefore a reject whose payload
 is the whole message, case names stop carrying the semantics — the strategies value does.)
 
-Each fused stage is a Kleisli arrow `NodeContext<TSource> → Verdict<TStage>`; the fused
+Each fused stage is a Kleisli arrow `NodeContext<TSource> → Result<TStage>`; the fused
 wrapper (`ComposableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
 the anonymous SelectWhere result) is the reified composite arrow, and appending an
 operator Kleisli-composes and returns a new wrapper — closed under composition: one
@@ -244,7 +244,7 @@ wrapper, any order, any length.
 **Stage vocabulary**: value-Where = `(v, pred ? ∅ : SkipNode)`;
 PruneBefore = `(v, pred ? SkipNodeAndDescendants : ∅)`; PruneAfter =
 `(v, pred ? SkipDescendants : ∅)` — the accept-with-strategy pair a bool cannot express, and
-the reason the carrier is a verdict rather than a predicate; Select = `(f(v), ∅)`.
+the reason the carrier is a result rather than a bool; Select = `(f(v), ∅)`.
 Because the composite computes the FINAL value regardless of where filters sit among
 projections, the Where-then-Select seam needs no emission-side driver surgery — it
 dissolves into closure composition.
@@ -272,12 +272,12 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
 
 0. ✅ Recipe surface internal + param hygiene (main 09a760f).
 0.5 ✅ Genericized Where substrate; ✅ struct ruling TAKEN and MEASURED 2026-07-16: the
-   verdict seam is struct-generic (TVerdictSelector : struct, IVerdictSelector<TInner,TNode>
+   result seam is struct-generic (TResultSelector : struct, IResultSelector<TInner,TNode>
    — the engines' TChildEnumerator idiom). Plain operators carry bespoke readonly selector
-   structs (JIT inlines GetVerdict; per-node cost = one indirect call, the user's own
-   lambda); fused chains carry FuncVerdictSelector over the composed closure. Gate verified:
+   structs (JIT inlines GetResult; per-node cost = one indirect call, the user's own
+   lambda); fused chains carry FuncResultSelector over the composed closure. Gate verified:
    the degenerate-row regression is GONE (Dft_Forest_DropAll 7.99 -> 6.90 ms vs main -- the
-   inlined verdict slightly beats main's shape). Selector structs must stay
+   inlined result slightly beats main's shape). Selector structs must stay
    stateless/readonly (defensive-copy trap, documented on the interface).
 1. ✅ SHIPPED (branch, 2026-07-16): Where/Select signatures migrated to the arity split —
    (node) / (node, position), NodeContext removed from these operators (~150 call sites
@@ -288,17 +288,17 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
    Select legality, and once-per-node selector evaluation on the fused path (the
    invocation-count ruling, now pinned rather than open).
-2. ✅ SHIPPED (branch, 2026-07-16): `CompositionVerdict<T>` + verdict-shaped filter drivers (one
+2. ✅ SHIPPED (branch, 2026-07-16): `CompositionResult<T>` + result-shaped filter drivers (one
    composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
    strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
    `ComposableTreenumerable` (the reified Kleisli arrow — value chains of any length/order
    collapse to one wrapper, pinned) with the four-hook flavor split and the relabeling bit;
-   PruneBefore is a verdict stage and joins chains (removal polarity explicit in the
-   verdict); the pure-Select wrapper stays distinct so projection-only chains keep the light
-   Select treenumerator. NOTE: the verdict closure did NOT dissolve the delegate-layer
+   PruneBefore is a result stage and joins chains (removal polarity explicit in the
+   result); the pure-Select wrapper stays distinct so projection-only chains keep the light
+   Select treenumerator. NOTE: the result closure did NOT dissolve the delegate-layer
    question — plain Where now pays library-closure + user-predicate (2 calls/node), same
    magnitude as the phase-0.5 identity pair; the struct ruling transposes to
-   `TVerdictSelector : struct, IVerdictSelector<TInner,TNode>` if taken.
+   `TResultSelector : struct, IResultSelector<TInner,TNode>` if taken.
 2.5 ✅ SHIPPED (branch, 2026-07-16): the BFT accept-strategy seam (pending/deferred slots,
    verified against the bespoke PruneAfter oracle across ~4,600 interference sub-cases);
    the prune signature migration ((node)/(node, position) pairs; SkipTrees and Intersection

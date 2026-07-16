@@ -28,9 +28,9 @@ namespace Copse.Linq.Async.Treenumerables
       {
         var predicate = _Predicate;
 
-        return CompositionMap<TNode, TNode>.OfVerdict(
+        return CompositionMap<TNode, TNode>.OfResult(
           _Source,
-          nodeContext => new CompositionVerdict<TNode>(
+          nodeContext => new CompositionResult<TNode>(
             nodeContext.Node,
             predicate(nodeContext)
               ? NodeTraversalStrategies.SkipDescendants

@@ -25,15 +25,15 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IComposableTreenumerable<T> composableSource)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<T>(
+          nodeContext => new CompositionResult<T>(
             nodeContext.Node,
             predicate(nodeContext.Node)
               ? NodeTraversalStrategies.SkipNodeAndDescendants
               : NodeTraversalStrategies.TraverseAll),
           relabels: true).ToTreenumerable();
 
-      return new ComposableTreenumerable<T, T, PruneBeforeVerdictSelector<T>>(
-        source, new PruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
+      return new ComposableTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+        source, new PruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
     }
 
     /// <summary>
@@ -50,15 +50,15 @@ namespace Copse.Linq
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IComposableTreenumerable<T> composableSource && !composableSource.Map.ContainsRelabelingStage)
         return composableSource.Map.Filter(
-          nodeContext => new CompositionVerdict<T>(
+          nodeContext => new CompositionResult<T>(
             nodeContext.Node,
             predicate(nodeContext.Node, nodeContext.Position)
               ? NodeTraversalStrategies.SkipNodeAndDescendants
               : NodeTraversalStrategies.TraverseAll),
           relabels: true).ToTreenumerable();
 
-      return new ComposableTreenumerable<T, T, PositionalPruneBeforeVerdictSelector<T>>(
-        source, new PositionalPruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
+      return new ComposableTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
     }
 
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -70,8 +70,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<T, T, PruneBeforeVerdictSelector<T>>(
-            source.GetDepthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
+          () => new WhereDepthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetDepthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
     }
 
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -83,8 +83,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeVerdictSelector<T>>(
-            source.GetDepthFirstTreenumerator, new PositionalPruneBeforeVerdictSelector<T>(predicate)));
+          () => new WhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetDepthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -96,8 +96,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<T, T, PruneBeforeVerdictSelector<T>>(
-            source.GetBreadthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
+          () => new WhereBreadthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetBreadthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -109,8 +109,8 @@ namespace Copse.Linq
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeVerdictSelector<T>>(
-            source.GetBreadthFirstTreenumerator, new PositionalPruneBeforeVerdictSelector<T>(predicate)));
+          () => new WhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetBreadthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
   }
 }
