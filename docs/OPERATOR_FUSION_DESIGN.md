@@ -145,11 +145,16 @@ make this cell permanently moot.
   correctness depend on foreign `Compose` implementations, and net48/netstandard2.0 rule
   out default interface members, so public interface evolution is breaking. LINQ's
   hidden-iterator precedent is the considered one. Internal→public later is free.
-- **Double dispatch is forced by generics**: the outer operator cannot name the inner's
-  erased `TSource`, so fusion hooks live on the inner wrapper (`Compose`, `FuseWhere`, …) —
-  tell, don't ask. Candidate shape: an internal base class for wrapper treenumerables with
-  virtual hooks defaulting to plain wrapping (LINQ's `Iterator<T>` shape), since interfaces
-  can't carry defaults on the older TFMs.
+- **Dispatch splits in two (Jason's Compose model, adopted 2026-07-16)**: DECISION dispatch
+  lives with the operator — it knows its own lambda's flavor and applies the join rule by
+  reading the wrapper's `ContainsRelabelingStage`; CONSTRUCTION dispatch lives with the
+  wrapper — the operator cannot name the erased source type, so the wrapper splices the
+  offered stage and builds the successor. The recipe surface is therefore one property and
+  two TOTAL methods, fixed forever: `FuseStage<TOut>(stage, stageRelabels)` (any
+  filter-family verdict stage) and `FuseProjection<TOut>(selector)` (representation-
+  preserving — projection-only chains stay on the light Select treenumerator). The flavor
+  never crosses the interface, so per-operator hooks and the null-decline protocol were
+  deleted with it.
 - **Fused machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library
