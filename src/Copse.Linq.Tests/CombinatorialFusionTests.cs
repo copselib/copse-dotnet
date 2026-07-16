@@ -47,11 +47,17 @@ namespace Copse.Linq.Tests
       ('S', (source, targetNode) => source.Select((node, position) => node + "^")),
     };
 
+    // All seven non-trivial flag combinations (CombinatorialWhereTests' 7^k convention) --
+    // SkipSiblings especially, the strategy with a bug-class history under promotion.
     private static readonly NodeTraversalStrategies[] ConsumerStrategies =
     {
       NodeTraversalStrategies.SkipNode,
       NodeTraversalStrategies.SkipDescendants,
-      NodeTraversalStrategies.SkipNodeAndDescendants,
+      NodeTraversalStrategies.SkipSiblings,
+      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipDescendants,
+      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipSiblings,
+      NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
+      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
     };
 
     private void RunScan(TreeTraversalStrategy treeTraversalStrategy)
