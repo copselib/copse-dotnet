@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
           StreamDepthFirst(tree)
           .Where(n => n != "b")
           .Select(n => n.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
           TreeSerializer.DeserializeDepthFirstTree(tree)
           .Where(n => n != "b")
           .Select(n => n.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
@@ -70,7 +70,7 @@ namespace Copse.Linq.Tests
           StreamBreadthFirst(tree)
           .Where(n => n != "b")
           .Select(n => n.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
@@ -78,7 +78,7 @@ namespace Copse.Linq.Tests
           TreeSerializer.DeserializeDepthFirstTree(tree)
           .Where(n => n != "b")
           .Select(n => n.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 

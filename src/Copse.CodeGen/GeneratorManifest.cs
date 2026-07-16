@@ -286,6 +286,14 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/FuncVerdictSelector.g.cs",
         "FuncVerdictSelector", "FuncVerdictSelector", "Copse.Linq.Treenumerables"),
 
+      new("Copse.Linq.Async/Treenumerables/AsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/PruneAfterTreenumerable.g.cs",
+        "AsyncPruneAfterTreenumerable", "PruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/PositionalPruneBeforeVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/PositionalPruneBeforeVerdictSelector.g.cs",
+        "PositionalPruneBeforeVerdictSelector", "PositionalPruneBeforeVerdictSelector", "Copse.Linq.Treenumerables"),
+
       new("Copse.Linq.Async/Treenumerables/IFusionMap.cs",
         "Copse.Linq/Treenumerables/IFusionMap.g.cs",
         "IFusionMap", "IFusionMap", "Copse.Linq.Treenumerables"),

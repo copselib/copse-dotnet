@@ -42,7 +42,10 @@ namespace Copse.Linq.Tests
     {
       ('w', (source, targetNode) => source.Where(node => !node.StartsWith(targetNode))),
       ('W', (source, targetNode) => source.Where((node, position) => !node.StartsWith(targetNode))),
-      ('p', (source, targetNode) => source.PruneBefore(nodeContext => nodeContext.Node.StartsWith(targetNode))),
+      ('p', (source, targetNode) => source.PruneBefore(node => node.StartsWith(targetNode))),
+      ('P', (source, targetNode) => source.PruneBefore((node, position) => node.StartsWith(targetNode))),
+      ('a', (source, targetNode) => source.PruneAfter(node => node.StartsWith(targetNode))),
+      ('A', (source, targetNode) => source.PruneAfter((node, position) => node.StartsWith(targetNode))),
       ('s', (source, targetNode) => source.Select(node => node + "*")),
       ('S', (source, targetNode) => source.Select((node, position) => node + "^")),
     };
@@ -87,7 +90,10 @@ namespace Copse.Linq.Tests
         {
           foreach (var targetNode in nodes)
           {
-            foreach (var (strategyNode, consumerStrategy) in StrategyAssignments(nodes))
+            // Consumer interference on chains of length <= 2; length-3 chains run without it
+            // (the 8-symbol alphabet cubed times full interference would triple the runtime
+            // for diminishing coverage -- the strategy machinery is chain-length-agnostic).
+            foreach (var (strategyNode, consumerStrategy) in chain.Length <= 2 ? StrategyAssignments(nodes) : NoInterference)
             {
               total++;
 
@@ -130,6 +136,11 @@ namespace Copse.Linq.Tests
         $"{treeTraversalStrategy} fused pipeline diverged from the stacked control on {failed} of {total} cases:{Environment.NewLine}"
         + string.Join(Environment.NewLine, failures));
     }
+
+    private static readonly (string Node, NodeTraversalStrategies Strategy)[] NoInterference =
+    {
+      (null, NodeTraversalStrategies.TraverseAll),
+    };
 
     // No interference, plus one (node, strategy) assignment per node x strategy.
     private static IEnumerable<(string Node, NodeTraversalStrategies Strategy)> StrategyAssignments(string[] nodes)

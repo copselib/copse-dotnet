@@ -62,11 +62,11 @@ namespace Copse.Benchmarks
           nodeContext => new AsyncBinaryChildEnumerator(nodeContext.Node),
           node => node,
           RootAsync())
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == depth);
+        .PruneBefore((n, position) => position.Depth == depth);
 
     public static ITreenumerable<int> GetSyncBinaryTree(int depth)
       => new CompleteBinaryTree()
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == depth);
+        .PruneBefore((n, position) => position.Depth == depth);
 
     private static async IAsyncEnumerable<int> RootAsync()
     {

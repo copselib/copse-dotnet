@@ -148,10 +148,10 @@ namespace Copse.Linq.Tests
     {
       var whereThenPrune = Tree("a(b(d,e),c)")
         .Where(n => n != "z")
-        .PruneBefore(nodeContext => nodeContext.Node == "b");
+        .PruneBefore(n => n == "b");
 
       var pruneThenWhere = Tree("a(b(d,e),c)")
-        .PruneBefore(nodeContext => nodeContext.Node == "b")
+        .PruneBefore(n => n == "b")
         .Where(n => n != "z");
 
       Assert.IsInstanceOfType(whereThenPrune, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>));
@@ -172,12 +172,12 @@ namespace Copse.Linq.Tests
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
         var fused = Tree("a(b(d,e),c)")
-          .PruneBefore(nodeContext => nodeContext.Node == "b")
+          .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
         Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>), "prune chain must stay fused");
 
-        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(nodeContext => nodeContext.Node == "b"))
+        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
           .GetTraversal(strategy).ToArray();
 
@@ -289,7 +289,7 @@ namespace Copse.Linq.Tests
                 : FusionVerdict<string>.Accept(nodeContext.Node)),
             containsRelabelingStage: true);
 
-          var expected = Tree(treeString).PruneAfter(nodeContext => nodeContext.Node == target)
+          var expected = Tree(treeString).PruneAfter(n => n == target)
             .GetTraversal(strategy, Selector)
             .Select(visit => (visit.Mode, visit.Position.Depth, visit.Position.SiblingIndex, visit.VisitCount, visit.Node));
 
@@ -302,6 +302,29 @@ namespace Copse.Linq.Tests
             $"{treeString} {strategy} prune={pruneTarget} consumer={strategyNode}:{consumerStrategy}");
         }
       }
+    }
+
+    // PruneAfter is the one filter that does NOT relabel (survivors keep their coordinates:
+    // no promotion, no sibling renumbering -- only whole subtrees below kept nodes vanish),
+    // so even POSITIONAL lambdas compose across it. The distinctive property of the stage.
+    [TestMethod]
+    public void PruneAfter_IsLabelPreserving_SoPositionalLambdasComposeAcrossIt()
+    {
+      var composed = Tree("a(b(c),d)")
+        .PruneAfter(n => n == "b")
+        .Select((n, position) => $"{n}@{position.Depth}.{position.SiblingIndex}");
+
+      Assert.IsInstanceOfType(
+        composed,
+        typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>),
+        "positional Select must compose across the label-preserving prune");
+
+      var labeled = composed
+        .GetTraversal(TreeTraversalStrategy.DepthFirst)
+        .Select(visit => visit.Node).Distinct().ToArray();
+
+      // b kept (subtree shed), d keeps its ORIGINAL sibling index 1 -- nothing relabeled.
+      CollectionAssert.AreEqual(new[] { "a@0.0", "b@1.0", "d@1.1" }, labeled);
     }
 
     [TestMethod]

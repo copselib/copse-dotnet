@@ -24,7 +24,7 @@ namespace Copse.Linq.Tests
 
       var result =
         tree
-          .PruneBefore(ctx => ctx.Position.Depth == 2)
+          .PruneBefore((n, position) => position.Depth == 2)
           .AnyNodes(_ => false, TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);
@@ -38,7 +38,7 @@ namespace Copse.Linq.Tests
 
       var result =
         tree
-          .PruneBefore(ctx => ctx.Position.Depth == 2)
+          .PruneBefore((n, position) => position.Depth == 2)
           .AnyNodes(_ => false, TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);
@@ -53,7 +53,7 @@ namespace Copse.Linq.Tests
 
       var result =
         tree
-          .PruneBefore(ctx => ctx.Position.Depth == 2)
+          .PruneBefore((n, position) => position.Depth == 2)
           .AnyNodes(ctx => ctx.Node == "d", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsTrue(result);
@@ -67,7 +67,7 @@ namespace Copse.Linq.Tests
 
       var result =
         tree
-          .PruneBefore(ctx => ctx.Position.Depth == 2)
+          .PruneBefore((n, position) => position.Depth == 2)
           .AnyNodes(ctx => ctx.Node == "c", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);

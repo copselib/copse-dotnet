@@ -12,23 +12,20 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>PruneBefore</c>: removes each matching node AND its whole subtree (prune
-    /// polarity: true = prune). Deferred. Signature still context-shaped; migrates to the
-    /// (node) / (node, position) pair with the prune signature workstream
-    /// (docs/OPERATOR_FUSION_DESIGN.md).
+    /// Async <c>PruneBefore</c> over node VALUES (prune polarity: true = prune): removes each
+    /// matching node AND its whole subtree. Deferred.
     /// </summary>
     public static ITreenumerable<T> PruneBefore<T>(
       this ITreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      // Prune when true; a whole-subtree removal is just another verdict stage, so it splices
-      // onto any fused chain (the .Where(...).PruneBefore(...) direction included).
+      // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IFusableTreenumerable<T> fusableSource)
         return fusableSource.Map.Filter(
-          nodeContext => predicate(nodeContext)
+          nodeContext => predicate(nodeContext.Node)
             ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
             : FusionVerdict<T>.Accept(nodeContext.Node),
           relabels: true).ToTreenumerable();
@@ -37,9 +34,32 @@ namespace Copse.Linq
         source, new PruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
     }
 
+    /// <summary>
+    /// Async <c>PruneBefore</c> over (node, position) (prune polarity: true = prune). Deferred.
+    /// Each positional predicate sees ITS input tree's labels.
+    /// </summary>
+    public static ITreenumerable<T> PruneBefore<T>(
+      this ITreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule: a positional predicate composes only over a label-preserving chain.
+      if (source is IFusableTreenumerable<T> fusableSource && !fusableSource.Map.ContainsRelabelingStage)
+        return fusableSource.Map.Filter(
+          nodeContext => predicate(nodeContext.Node, nodeContext.Position)
+            ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
+            : FusionVerdict<T>.Accept(nodeContext.Node),
+          relabels: true).ToTreenumerable();
+
+      return FusedTreenumerable.Create<T, T, PositionalPruneBeforeVerdictSelector<T>>(
+        source, new PositionalPruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
+    }
+
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
       this IDepthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -50,9 +70,22 @@ namespace Copse.Linq
             source.GetDepthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
     }
 
+    public static IDepthFirstTreenumerable<T> PruneBefore<T>(
+      this IDepthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateDepthFirst(
+          () => new WhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeVerdictSelector<T>>(
+            source.GetDepthFirstTreenumerator, new PositionalPruneBeforeVerdictSelector<T>(predicate)));
+    }
+
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
       this IBreadthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -63,5 +96,17 @@ namespace Copse.Linq
             source.GetBreadthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
     }
 
+    public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
+      this IBreadthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateBreadthFirst(
+          () => new WhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeVerdictSelector<T>>(
+            source.GetBreadthFirstTreenumerator, new PositionalPruneBeforeVerdictSelector<T>(predicate)));
+    }
   }
 }

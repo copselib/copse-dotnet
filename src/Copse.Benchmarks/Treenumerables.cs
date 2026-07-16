@@ -11,7 +11,7 @@ namespace Copse.Benchmarks
 
     public static ITreenumerable<int> GetWideTree(int depth) =>
       new CompleteBinaryTree()
-      .PruneBefore(nodeContext => nodeContext.Position.Depth == depth);
+      .PruneBefore((n, position) => position.Depth == depth);
 
     public static ITreenumerable<int> GetTree(int cutoff, TreeShape treeShape)
     {
