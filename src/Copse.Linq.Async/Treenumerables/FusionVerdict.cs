@@ -28,7 +28,7 @@ namespace Copse.Linq.Async.Treenumerables
     public readonly TNode Value;
     public readonly NodeTraversalStrategies Strategies;
 
-    public bool Rejected => (Strategies & NodeTraversalStrategies.SkipNode) != 0;
+    public bool Rejected => Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
 
     public static FusionVerdict<TNode> Accept(TNode value)
       => new FusionVerdict<TNode>(value, NodeTraversalStrategies.TraverseAll);
@@ -36,7 +36,7 @@ namespace Copse.Linq.Async.Treenumerables
     public static FusionVerdict<TNode> Accept(TNode value, NodeTraversalStrategies strategies)
     {
       Debug.Assert(
-        (strategies & NodeTraversalStrategies.SkipNode) == 0,
+        !strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode),
         "Accept-but-skip-self is incoherent; SkipNode means removal.");
 
       return new FusionVerdict<TNode>(value, strategies);
