@@ -1,8 +1,9 @@
 # Operator Fusion (design record)
 
-> **Status: DESIGNED 2026-07-15; phase 1 SHIPPED 2026-07-16 (see Phases).** The API/UX
-> design and the verdict monad (phase 2's composition model) are ratified; the
-> struct-selector gate ruling is the one open measurement question. Companion decisions in
+> **Status: DESIGNED 2026-07-15; phases 1-2 SHIPPED 2026-07-16 (see Phases), all rulings
+> taken and measured.** The recipe surface is the consolidated one-property/two-method
+> shape; the prune package is in progress (BFT accept seam done; signature migration and
+> the PruneAfter wrapper remain). Companion decisions in
 > [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md);
 > capability probing (the orthogonal "cheaper when rich" axis) in
 > [TREE_CAPABILITY_INTERFACES.md](TREE_CAPABILITY_INTERFACES.md) — its takeaway after
