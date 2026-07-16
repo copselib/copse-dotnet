@@ -146,20 +146,24 @@ make this cell permanently moot.
   correctness depend on foreign `Compose` implementations, and net48/netstandard2.0 rule
   out default interface members, so public interface evolution is breaking. LINQ's
   hidden-iterator precedent is the considered one. Internal→public later is free.
-- **Dispatch splits in two (Jason's Compose model, adopted 2026-07-16)**: DECISION dispatch
-  lives with the operator — it knows its own lambda's flavor and applies the join rule by
-  reading the wrapper's `ContainsRelabelingStage`; CONSTRUCTION dispatch lives with the
-  wrapper — the operator cannot name the erased source type, so the wrapper splices the
-  offered stage and builds the successor. The recipe surface is at its floor: ONE property
-  and ONE total method — `Fuse<TOut>(FusionStage<TNode, TOut> stage)`, the monadic bind.
-  `FusionStage` is the Kleisli arrow carrying its own metadata (`Projection` XOR `Verdict` —
-  the purity fact as a type-level promise, so projection-only chains keep the light Select
-  representation by reading the raw selector out of the stage; `Relabels`; and the
-  composition law itself, `ApplyAfter`, written once). `FusionVerdict's` `Rejected` is a
-  DERIVED view — rejection IS SkipNode membership, inherited from the consumer protocol;
-  `Reject()` establishes the invariant by construction and incoherent verdicts are
-  unconstructible. The flavor never crosses the interface; per-operator hooks and the
-  null-decline protocol were deleted with it.
+- **Map-centric fusion (Jason's original model, fully adopted 2026-07-16)**: the fusable
+  wrapper offers up its internal mapping — the interface is ONE property,
+  `IFusionMap<TNode> Map` — and operators compose onto it with bare lambdas: `Select` is
+  fmap, `Filter` is the filter-bind, `ToTreenumerable` reifies. `FusionMap<TSource, TNode>`
+  owns ALL the algebra: the composition law (first reject stops; accept-side strategies
+  union), purity tracking (a projection-only map keeps the raw composed selector so
+  reification stays on the light Select treenumerator; the first Filter converts the
+  representation), the relabeling bit the positional join rule reads, and the
+  representation choice at reification. The first Select over a plain source is the monadic
+  RETURN (lifting into the verdict carrier with identity strategies). Erasure is why the
+  map exists: the operator cannot name the source type, so the typed map composes and
+  constructs behind the erased combinator surface. `FusionVerdict's` `Rejected` is a DERIVED
+  view — rejection IS SkipNode membership, inherited from the consumer protocol; `Reject()`
+  establishes the invariant by construction and incoherent verdicts are unconstructible.
+  Wrappers keep their acquisition paths (struct seam, light Select); `Map` materializes on
+  demand so only composition pays the delegate hop. Design lineage, each step Jason's: four
+  flavor-hooks → two methods + property → one method + self-describing stage → one property
+  + the map with combinators.
 - **Fused machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library
