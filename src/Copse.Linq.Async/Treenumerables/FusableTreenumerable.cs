@@ -12,10 +12,10 @@ namespace Copse.Linq.Async.Treenumerables
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
   // spliced chains carry the composed closure in a FuncVerdictSelector (fusion inherently
   // holds user delegates). Splicing is total: every legality decision was made outer-side.
-  internal sealed class FusedTreenumerable<TSource, TResult, TVerdictSelector> : IAsyncFusableTreenumerable<TResult>
+  internal sealed class FusableTreenumerable<TSource, TResult, TVerdictSelector> : IAsyncFusableTreenumerable<TResult>
     where TVerdictSelector : struct, IVerdictSelector<TSource, TResult>
   {
-    public FusedTreenumerable(
+    public FusableTreenumerable(
       IAsyncTreenumerable<TSource> source,
       TVerdictSelector verdictSelector,
       bool containsRelabelingStage)

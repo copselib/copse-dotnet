@@ -107,7 +107,7 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerable<TNode> ToTreenumerable()
       => _Projection != null
         ? (ITreenumerable<TNode>)new SelectTreenumerable<TSource, TNode>(_Source, _Projection)
-        : new FusedTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
+        : new FusableTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
             _Source, new FuncVerdictSelector<TSource, TNode>(_Verdict), ContainsRelabelingStage);
   }
 }

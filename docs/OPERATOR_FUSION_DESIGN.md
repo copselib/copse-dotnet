@@ -213,7 +213,7 @@ Verdict<T> = Accepted(T value, NodeTraversalStrategies strategies)
 ```
 
 Each fused stage is a Kleisli arrow `NodeContext<TSource> → Verdict<TStage>`; the fused
-wrapper (`FusedTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
+wrapper (`FusableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
 the anonymous SelectWhere result) is the reified composite arrow, and appending an
 operator Kleisli-composes and returns a new wrapper — closed under composition: one
 wrapper, any order, any length.
@@ -242,7 +242,7 @@ Select exactly as to positional Where, and to any future positional flavor.
 
 **Required interface correction (phase 1 is correct only by topology luck):** the single
 `FuseSelect` hook erases the appended Select's flavor — safe today only because the sole
-accepting wrapper is the pure-Select wrapper. `FusedTreenumerable` needs the flavor, so
+accepting wrapper is the pure-Select wrapper. `FusableTreenumerable` needs the flavor, so
 the recipe surface splits like Where's pair: `FuseSelect(value)` /
 `FusePositionalSelect(positional)` — four hooks, each wrapper answering per flavor.
 
@@ -275,7 +275,7 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
 2. ✅ SHIPPED (branch, 2026-07-16): `FusionVerdict<T>` + verdict-shaped filter drivers (one
    composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
    strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
-   `FusedTreenumerable` (the reified Kleisli arrow — value chains of any length/order
+   `FusableTreenumerable` (the reified Kleisli arrow — value chains of any length/order
    collapse to one wrapper, pinned) with the four-hook flavor split and the relabeling bit;
    PruneBefore is a verdict stage and joins chains (removal polarity explicit in the
    verdict); the pure-Select wrapper stays distinct so projection-only chains keep the light

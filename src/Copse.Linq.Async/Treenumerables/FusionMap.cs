@@ -104,7 +104,7 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TNode> ToTreenumerable()
       => _Projection != null
         ? (IAsyncTreenumerable<TNode>)new AsyncSelectTreenumerable<TSource, TNode>(_Source, _Projection)
-        : new FusedTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
+        : new FusableTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
             _Source, new FuncVerdictSelector<TSource, TNode>(_Verdict), ContainsRelabelingStage);
   }
 }

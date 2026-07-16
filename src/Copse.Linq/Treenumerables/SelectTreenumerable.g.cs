@@ -8,7 +8,7 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The pure-projection wrapper. Kept distinct from FusedTreenumerable deliberately: a chain of
+  // The pure-projection wrapper. Kept distinct from FusableTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
   // when a filter joins (the map makes that representation choice at reification).

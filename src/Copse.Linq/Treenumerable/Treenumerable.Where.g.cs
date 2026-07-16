@@ -31,7 +31,7 @@ namespace Copse.Linq
             : FusionVerdict<TNode>.Reject(),
           relabels: true).ToTreenumerable();
 
-      return new FusedTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
+      return new FusableTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
         source, new WhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
@@ -57,7 +57,7 @@ namespace Copse.Linq
             : FusionVerdict<TNode>.Reject(),
           relabels: true).ToTreenumerable();
 
-      return new FusedTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
+      return new FusableTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
         source, new PositionalWhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 

@@ -306,9 +306,9 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/FusionVerdict.g.cs",
         "FusionVerdict", "FusionVerdict", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/FusedTreenumerable.cs",
-        "Copse.Linq/Treenumerables/FusedTreenumerable.g.cs",
-        "FusedTreenumerable", "FusedTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/FusableTreenumerable.cs",
+        "Copse.Linq/Treenumerables/FusableTreenumerable.g.cs",
+        "FusableTreenumerable", "FusableTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",
