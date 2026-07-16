@@ -150,12 +150,16 @@ make this cell permanently moot.
   lives with the operator — it knows its own lambda's flavor and applies the join rule by
   reading the wrapper's `ContainsRelabelingStage`; CONSTRUCTION dispatch lives with the
   wrapper — the operator cannot name the erased source type, so the wrapper splices the
-  offered stage and builds the successor. The recipe surface is therefore one property and
-  two TOTAL methods, fixed forever: `FuseStage<TOut>(stage, stageRelabels)` (any
-  filter-family verdict stage) and `FuseProjection<TOut>(selector)` (representation-
-  preserving — projection-only chains stay on the light Select treenumerator). The flavor
-  never crosses the interface, so per-operator hooks and the null-decline protocol were
-  deleted with it.
+  offered stage and builds the successor. The recipe surface is at its floor: ONE property
+  and ONE total method — `Fuse<TOut>(FusionStage<TNode, TOut> stage)`, the monadic bind.
+  `FusionStage` is the Kleisli arrow carrying its own metadata (`Projection` XOR `Verdict` —
+  the purity fact as a type-level promise, so projection-only chains keep the light Select
+  representation by reading the raw selector out of the stage; `Relabels`; and the
+  composition law itself, `ApplyAfter`, written once). `FusionVerdict's` `Rejected` is a
+  DERIVED view — rejection IS SkipNode membership, inherited from the consumer protocol;
+  `Reject()` establishes the invariant by construction and incoherent verdicts are
+  unconstructible. The flavor never crosses the interface; per-operator hooks and the
+  null-decline protocol were deleted with it.
 - **Fused machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library
