@@ -145,12 +145,32 @@ parameter on two internal drivers). The null-selector variant is disqualified
 - Benchmarks consult-first; after phase 1, re-run the async `OperatorStack` pair — fusion
   removes wrapper layers, which directly informs the tabled async operator-wrapper wave.
 
+## The stage algebra (phase-2 direction, Jason 2026-07-16)
+
+The prune family folds into the fused chain via OPERATOR-side strategy verdicts: a fused
+stage is TNodeIn → (TNodeOut, NodeTraversalStrategies) — value-Where = reject-with-SkipNode,
+PruneBefore = reject-with-SkipNodeAndDescendants, PruneAfter = ACCEPT-with-SkipDescendants
+(the case a bool cannot express), Select = project. Composition: fold stages in order,
+union the strategies, first REJECTING stage ends evaluation (later stages never saw that
+node in the stacked pipeline); short-circuit when the union reaches skip-everything. The
+drivers already parameterize on exactly this (Where and PruneBefore differ by one
+constructor argument). Not to be conflated with CONSUMER-side strategies flowing into
+MoveNext — a separate channel, handled once at the final layer.
+
 ## Phases
 
 0. ✅ Recipe surface internal + param hygiene (main 09a760f).
-0.5 ✅ Genericized Where substrate (branch a7318b5); ⏳ struct-selector ruling.
-1. Value-only `Where`/`Select` overloads; `WhereTreenumerable` + probes; `FuseWhere` on
-   `SelectTreenumerable`; value-only Where∘Where by predicate combination; the test
-   battery.
-2. Prune pairs; Select-into-captures.
+0.5 ✅ Genericized Where substrate; ⏳ struct-selector ruling still open (the ~1.2 ns
+   identity tax on degenerate rows).
+1. ✅ SHIPPED (branch, 2026-07-16): Where/Select signatures migrated to the arity split —
+   (node) / (node, position), NodeContext removed from these operators (~150 call sites
+   swept); unified internal `IFusableTreenumerable` (FuseWhere / FusePositionalWhere /
+   FuseSelect; hooks return null to DECLINE, the operator falls back to its plain wrap);
+   named `WhereTreenumerable`; value Where∘Where by predicate combination; Select↔Where
+   (both Where flavors) into the projection-carrying driver. FusionTests pin
+   equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
+   Select legality, and once-per-node selector evaluation on the fused path (the
+   invocation-count ruling, now pinned rather than open).
+2. Prune signature migration + prune pairs via the stage algebra; Select-into-captures;
+   narrow-receiver (D/B) fusion.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
