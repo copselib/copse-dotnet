@@ -51,49 +51,17 @@ namespace Copse.Linq.Treenumerables
       new WhereDepthFirstTreenumerator<TSource, TResult, TVerdictSelector>(
         _Source.GetDepthFirstTreenumerator, _VerdictSelector);
 
-    public ITreenumerable<TOuterResult> FuseStage<TOuterResult>(
-      Func<NodeContext<TResult>, FusionVerdict<TOuterResult>> stage,
-      bool stageRelabels)
+    // The bind: the stage carries the composition law, so splicing is one line plus the
+    // relabeling fold.
+    public ITreenumerable<TOuterResult> Fuse<TOuterResult>(FusionStage<TResult, TOuterResult> stage)
     {
       var innerVerdictSelector = _VerdictSelector;
 
       return FusedTreenumerable.Create<TSource, TOuterResult, FuncVerdictSelector<TSource, TOuterResult>>(
         _Source,
         new FuncVerdictSelector<TSource, TOuterResult>(nodeContext =>
-        {
-          var innerVerdict = innerVerdictSelector.GetVerdict(nodeContext);
-
-          if (innerVerdict.Rejected)
-            return FusionVerdict<TOuterResult>.Reject(innerVerdict.Strategies);
-
-          // The composition law: the first rejecting stage ends evaluation; accept-side
-          // strategies gathered so far union with the appended stage's own.
-          var stageVerdict = stage(new NodeContext<TResult>(innerVerdict.Value, nodeContext.Position));
-
-          return stageVerdict.Rejected
-            ? FusionVerdict<TOuterResult>.Reject(innerVerdict.Strategies | stageVerdict.Strategies)
-            : FusionVerdict<TOuterResult>.Accept(stageVerdict.Value, innerVerdict.Strategies | stageVerdict.Strategies);
-        }),
-        ContainsRelabelingStage | stageRelabels);
-    }
-
-    public ITreenumerable<TOuterResult> FuseProjection<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-    {
-      var innerVerdictSelector = _VerdictSelector;
-
-      return FusedTreenumerable.Create<TSource, TOuterResult, FuncVerdictSelector<TSource, TOuterResult>>(
-        _Source,
-        new FuncVerdictSelector<TSource, TOuterResult>(nodeContext =>
-        {
-          var innerVerdict = innerVerdictSelector.GetVerdict(nodeContext);
-
-          return innerVerdict.Rejected
-            ? FusionVerdict<TOuterResult>.Reject(innerVerdict.Strategies)
-            : FusionVerdict<TOuterResult>.Accept(
-                selector(new NodeContext<TResult>(innerVerdict.Value, nodeContext.Position)),
-                innerVerdict.Strategies);
-        }),
-        ContainsRelabelingStage);
+          stage.ApplyAfter(innerVerdictSelector.GetVerdict(nodeContext), nodeContext.Position)),
+        ContainsRelabelingStage | stage.Relabels);
     }
   }
 }

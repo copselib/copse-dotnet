@@ -1,43 +1,33 @@
 using Copse.Core;
 using Copse.Core.Async;
-using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The fusion recipe surface (docs/OPERATOR_FUSION_DESIGN.md). Two kinds of dispatch, split
-  // deliberately (Jason's original Compose model):
+  // The fusion recipe surface (docs/OPERATOR_FUSION_DESIGN.md), at its floor: one property and
+  // one total method. Two kinds of dispatch, split deliberately (Jason's Compose model):
   //
   //   DECISION dispatch lives with the OPERATOR -- it knows its own lambda's flavor, so it
   //   applies the join rule itself: value lambdas splice unconditionally; positional lambdas
-  //   check ContainsRelabelingStage and fall back to a real stacked layer when the chain has
-  //   relabeled (their append point must be a genuine emission boundary).
+  //   read ContainsRelabelingStage and stack a real layer when the chain has relabeled (their
+  //   append point must be a genuine emission boundary).
   //
   //   CONSTRUCTION dispatch lives with the WRAPPER -- the operator cannot name the wrapper's
   //   erased source type, so the wrapper splices the offered stage onto its internal mapping
-  //   and builds the successor. Both methods are TOTAL: every legality question was already
-  //   answered outer-side, so there is no decline path.
+  //   and builds the successor. The stage carries everything the wrapper needs -- behavior,
+  //   purity (IsProjection: the light-representation choice), relabeling, and the composition
+  //   law itself (ApplyAfter) -- so Fuse is total: every legality question was answered before
+  //   the call.
   //
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
   internal interface IAsyncFusableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
-    // True once any relabeling stage (a filter or prune that moves surviving nodes' labels) is
-    // aboard; the operators' positional flavors read this to apply the join rule.
+    // True once any relabeling stage is aboard; the operators' positional flavors read this to
+    // apply the join rule.
     bool ContainsRelabelingStage { get; }
 
-    // Splice a verdict stage (any filter-family operator: where, prunes, future filters) onto
-    // the internal mapping. stageRelabels: whether THIS stage moves surviving labels (Where and
-    // PruneBefore do -- promotion / sibling renumbering; PruneAfter does not -- survivors keep
-    // their coordinates).
-    IAsyncTreenumerable<TOuterResult> FuseStage<TOuterResult>(
-      Func<NodeContext<TNode>, FusionVerdict<TOuterResult>> stage,
-      bool stageRelabels);
-
-    // Splice a pure projection, preserving the wrapper's representation (a projections-only
-    // chain stays on the light Select treenumerator instead of converting to the filter
-    // driver).
-    IAsyncTreenumerable<TOuterResult> FuseProjection<TOuterResult>(
-      Func<NodeContext<TNode>, TOuterResult> selector);
+    // The monadic bind: splice the stage onto my internal mapping and return the successor.
+    IAsyncTreenumerable<TOuterResult> Fuse<TOuterResult>(FusionStage<TNode, TOuterResult> stage);
   }
 }

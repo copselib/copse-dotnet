@@ -34,26 +34,29 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetDepthFirstTreenumerator, _Selector);
 
-    public ITreenumerable<TOuterResult> FuseStage<TOuterResult>(
-      Func<NodeContext<TResult>, FusionVerdict<TOuterResult>> stage,
-      bool stageRelabels)
+    // The bind, with the representation choice the stage's purity makes possible: a projection
+    // composes selectors and stays on the light Select treenumerator; a filter converts the
+    // chain to the verdict driver.
+    public ITreenumerable<TOuterResult> Fuse<TOuterResult>(FusionStage<TResult, TOuterResult> stage)
     {
       var innerSelector = _Selector;
+
+      if (stage.IsProjection)
+      {
+        var projection = stage.Projection;
+
+        return new SelectTreenumerable<TSource, TOuterResult>(
+          _Source,
+          nodeContext => projection(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
+      }
+
+      var verdict = stage.Verdict;
 
       return FusedTreenumerable.Create<TSource, TOuterResult, FuncVerdictSelector<TSource, TOuterResult>>(
         _Source,
         new FuncVerdictSelector<TSource, TOuterResult>(nodeContext =>
-          stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
-        stageRelabels);
-    }
-
-    public ITreenumerable<TOuterResult> FuseProjection<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-    {
-      var innerSelector = _Selector;
-
-      return new SelectTreenumerable<TSource, TOuterResult>(
-        _Source,
-        nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
+          verdict(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
+        stage.Relabels);
     }
   }
 }

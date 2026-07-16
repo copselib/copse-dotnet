@@ -1,34 +1,57 @@
 using Copse.Core;
+using System.Diagnostics;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The fused pipeline's carrier (docs/OPERATOR_FUSION_DESIGN.md, "the verdict monad"): one
-  // evaluation of the composed stage chain against a source node yields either the node's
-  // final projected value plus any operator-side strategies the accepting stages contributed
-  // (PruneAfter's SkipDescendants), or a rejection carrying the strategies that remove it
-  // (Where's SkipNode -> promotion; PruneBefore's SkipNodeAndDescendants -> subtree drop).
-  // Strategies union under composition; the first rejecting stage ends evaluation.
+  // The fused pipeline's carrier: one evaluation of the composed stage chain against a source
+  // node answers the driver's whole per-node question -- is the node in the output tree, and
+  // how should the inner treenumerator be pulled past this point?
+  //
+  //   Accept(value)                       in the tree; traverse normally
+  //   Accept(value, SkipDescendants)      in the tree; don't descend below it (PruneAfter)
+  //   Reject(SkipNode)                    filtered; children promote (Where)
+  //   Reject(SkipNodeAndDescendants)      pruned with its whole subtree (PruneBefore)
+  //
+  // REJECTION IS SkipNode-MEMBERSHIP: the consumer protocol already defines SkipNode as
+  // "remove this node (children promote)", so the verdict inherits it rather than tracking a
+  // second flag -- Reject establishes the invariant by construction, and incoherent verdicts
+  // (Reject-but-traverse, Accept-but-skip-self) are unconstructible.
   internal readonly struct FusionVerdict<TNode>
   {
-    private FusionVerdict(TNode value, NodeTraversalStrategies strategies, bool rejected)
+    private FusionVerdict(TNode value, NodeTraversalStrategies strategies)
     {
       Value = value;
       Strategies = strategies;
-      Rejected = rejected;
     }
 
+    // Meaningful only when not Rejected (the empty side of the union carries default).
     public readonly TNode Value;
     public readonly NodeTraversalStrategies Strategies;
-    public readonly bool Rejected;
+
+    public bool Rejected => (Strategies & NodeTraversalStrategies.SkipNode) != 0;
 
     public static FusionVerdict<TNode> Accept(TNode value)
-      => new FusionVerdict<TNode>(value, NodeTraversalStrategies.TraverseAll, rejected: false);
+      => new FusionVerdict<TNode>(value, NodeTraversalStrategies.TraverseAll);
 
     public static FusionVerdict<TNode> Accept(TNode value, NodeTraversalStrategies strategies)
-      => new FusionVerdict<TNode>(value, strategies, rejected: false);
+    {
+      Debug.Assert(
+        (strategies & NodeTraversalStrategies.SkipNode) == 0,
+        "Accept-but-skip-self is incoherent; SkipNode means removal.");
+
+      return new FusionVerdict<TNode>(value, strategies);
+    }
+
+    public static FusionVerdict<TNode> Reject()
+      => new FusionVerdict<TNode>(default, NodeTraversalStrategies.SkipNode);
 
     public static FusionVerdict<TNode> Reject(NodeTraversalStrategies strategies)
-      => new FusionVerdict<TNode>(default, strategies, rejected: true);
+      => new FusionVerdict<TNode>(default, strategies | NodeTraversalStrategies.SkipNode);
 
+    // The composition law's accept-side union: strategies gathered by earlier accepting stages
+    // ride along. Uniform over both cases -- a rejected verdict stays rejected (SkipNode is
+    // already aboard) and its instruction gains the earlier stages' contributions.
+    public FusionVerdict<TNode> WithEarlierStrategies(NodeTraversalStrategies earlierStrategies)
+      => new FusionVerdict<TNode>(Value, Strategies | earlierStrategies);
   }
 }

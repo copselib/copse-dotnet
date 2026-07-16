@@ -23,7 +23,7 @@ namespace Copse.Linq
     {
       // A value selector observes no coordinates, so it splices unconditionally.
       if (source is IFusableTreenumerable<TSource> fusableSource)
-        return fusableSource.FuseProjection(nodeContext => selector(nodeContext.Node));
+        return fusableSource.Fuse(FusionStage<TSource, TResult>.OfProjection(nodeContext => selector(nodeContext.Node)));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -40,7 +40,7 @@ namespace Copse.Linq
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
       if (source is IFusableTreenumerable<TSource> fusableSource && !fusableSource.ContainsRelabelingStage)
-        return fusableSource.FuseProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return fusableSource.Fuse(FusionStage<TSource, TResult>.OfProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position)));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }
