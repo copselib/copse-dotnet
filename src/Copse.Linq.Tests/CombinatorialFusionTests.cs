@@ -54,10 +54,10 @@ namespace Copse.Linq.Tests
       NodeTraversalStrategies.SkipNode,
       NodeTraversalStrategies.SkipDescendants,
       NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipDescendants,
-      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipNode | NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
+      NodeTraversalStrategies.SkipNodeAndDescendants,
+      NodeTraversalStrategies.SkipNodeAndSiblings,
+      NodeTraversalStrategies.SkipDescendantsAndSiblings,
+      NodeTraversalStrategies.SkipAll,
     };
 
     private void RunScan(TreeTraversalStrategy treeTraversalStrategy)
