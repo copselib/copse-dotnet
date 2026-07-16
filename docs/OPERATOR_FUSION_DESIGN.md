@@ -241,8 +241,14 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
 ## Phases
 
 0. ✅ Recipe surface internal + param hygiene (main 09a760f).
-0.5 ✅ Genericized Where substrate; ⏳ struct-selector ruling still open (the ~1.2 ns
-   identity tax on degenerate rows).
+0.5 ✅ Genericized Where substrate; ✅ struct ruling TAKEN and MEASURED 2026-07-16: the
+   verdict seam is struct-generic (TVerdictSelector : struct, IVerdictSelector<TInner,TNode>
+   — the engines' TChildEnumerator idiom). Plain operators carry bespoke readonly selector
+   structs (JIT inlines GetVerdict; per-node cost = one indirect call, the user's own
+   lambda); fused chains carry FuncVerdictSelector over the composed closure. Gate verified:
+   the degenerate-row regression is GONE (Dft_Forest_DropAll 7.99 -> 6.90 ms vs main -- the
+   inlined verdict slightly beats main's shape). Selector structs must stay
+   stateless/readonly (defensive-copy trap, documented on the interface).
 1. ✅ SHIPPED (branch, 2026-07-16): Where/Select signatures migrated to the arity split —
    (node) / (node, position), NodeContext removed from these operators (~150 call sites
    swept); unified internal `IFusableTreenumerable` (FuseWhere / FusePositionalWhere /
