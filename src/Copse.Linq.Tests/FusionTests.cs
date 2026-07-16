@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string>));
+      Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>));
     }
 
     [TestMethod]
@@ -151,7 +151,7 @@ namespace Copse.Linq.Tests
           .PruneBefore(nodeContext => nodeContext.Node == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string>), "prune chain must stay fused");
+        Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>), "prune chain must stay fused");
 
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(nodeContext => nodeContext.Node == "b"))
           .Where(n => n != "z")

@@ -266,6 +266,26 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/IFusableTreenumerable.g.cs",
         "IAsyncFusableTreenumerable", "IFusableTreenumerable", "Copse.Linq.Treenumerables"),
 
+      new("Copse.Linq.Async/Treenumerables/IVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/IVerdictSelector.g.cs",
+        "IVerdictSelector", "IVerdictSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/WhereVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/WhereVerdictSelector.g.cs",
+        "WhereVerdictSelector", "WhereVerdictSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/PositionalWhereVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/PositionalWhereVerdictSelector.g.cs",
+        "PositionalWhereVerdictSelector", "PositionalWhereVerdictSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/PruneBeforeVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/PruneBeforeVerdictSelector.g.cs",
+        "PruneBeforeVerdictSelector", "PruneBeforeVerdictSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/FuncVerdictSelector.cs",
+        "Copse.Linq/Treenumerables/FuncVerdictSelector.g.cs",
+        "FuncVerdictSelector", "FuncVerdictSelector", "Copse.Linq.Treenumerables"),
+
       new("Copse.Linq.Async/Treenumerables/FusionVerdict.cs",
         "Copse.Linq/Treenumerables/FusionVerdict.g.cs",
         "FusionVerdict", "FusionVerdict", "Copse.Linq.Treenumerables"),

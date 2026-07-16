@@ -22,12 +22,13 @@ namespace Copse.Linq.Treenumerators
   /// single-stage instantiations. All structural state lives in the shared, color-agnostic
   /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
-  internal sealed class WhereDepthFirstTreenumerator<TInner, TNode>
+  internal sealed class WhereDepthFirstTreenumerator<TInner, TNode, TVerdictSelector>
     : TreenumeratorWrapper<TInner, TNode>
+    where TVerdictSelector : struct, IVerdictSelector<TInner, TNode>
   {
     public WhereDepthFirstTreenumerator(
       Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TInner>, FusionVerdict<TNode>> verdictSelector)
+      TVerdictSelector verdictSelector)
       : base(innerTreenumeratorFactory)
     {
       _VerdictSelector = verdictSelector;
@@ -37,7 +38,7 @@ namespace Copse.Linq.Treenumerators
       _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
     }
 
-    private readonly Func<NodeContext<TInner>, FusionVerdict<TNode>> _VerdictSelector;
+    private readonly TVerdictSelector _VerdictSelector;
 
     private WhereDepthFirstPath<TNode> _Path;
     private bool _HasCachedChild = false;
@@ -104,7 +105,7 @@ namespace Copse.Linq.Treenumerators
 
       // ONE evaluation of the composed stage chain, against the SOURCE context; every user
       // lambda inside sees exactly what the unfused pipeline would have shown it.
-      var verdict = _VerdictSelector(InnerTreenumerator.ToNodeContext());
+      var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
 
       if (verdict.Rejected)
       {

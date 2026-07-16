@@ -22,7 +22,8 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return new FusedTreenumerable<T, T>(source, PruneBeforeVerdict(predicate), containsRelabelingStage: true);
+      return FusedTreenumerable.Create<T, T, PruneBeforeVerdictSelector<T>>(
+        source, new PruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -34,8 +35,8 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<T, T>(
-            source.GetAsyncDepthFirstTreenumerator, PruneBeforeVerdict(predicate)));
+          () => new AsyncWhereDepthFirstTreenumerator<T, T, PruneBeforeVerdictSelector<T>>(
+            source.GetAsyncDepthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -47,16 +48,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<T, T>(
-            source.GetAsyncBreadthFirstTreenumerator, PruneBeforeVerdict(predicate)));
+          () => new AsyncWhereBreadthFirstTreenumerator<T, T, PruneBeforeVerdictSelector<T>>(
+            source.GetAsyncBreadthFirstTreenumerator, new PruneBeforeVerdictSelector<T>(predicate)));
     }
 
-    // PruneBefore's predicate means "prune when true"; the verdict vocabulary makes the removal
-    // semantics explicit where the old Where-with-inverted-predicate hid them.
-    private static Func<NodeContext<T>, FusionVerdict<T>> PruneBeforeVerdict<T>(Func<NodeContext<T>, bool> predicate)
-      => nodeContext =>
-        predicate(nodeContext)
-          ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
-          : FusionVerdict<T>.Accept(nodeContext.Node);
   }
 }

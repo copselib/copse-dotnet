@@ -29,7 +29,8 @@ namespace Copse.Linq
           return fused;
       }
 
-      return new FusedTreenumerable<TNode, TNode>(source, WhereVerdict(predicate), containsRelabelingStage: true);
+      return FusedTreenumerable.Create<TNode, TNode, WhereVerdictSelector<TNode>>(
+        source, new WhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
     /// <summary>
@@ -52,7 +53,8 @@ namespace Copse.Linq
           return fused;
       }
 
-      return new FusedTreenumerable<TNode, TNode>(source, PositionalWhereVerdict(predicate), containsRelabelingStage: true);
+      return FusedTreenumerable.Create<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
+        source, new PositionalWhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -64,8 +66,8 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode>(
-            source.GetAsyncDepthFirstTreenumerator, WhereVerdict(predicate)));
+          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode, WhereVerdictSelector<TNode>>(
+            source.GetAsyncDepthFirstTreenumerator, new WhereVerdictSelector<TNode>(predicate)));
     }
 
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -77,8 +79,8 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode>(
-            source.GetAsyncDepthFirstTreenumerator, PositionalWhereVerdict(predicate)));
+          () => new AsyncWhereDepthFirstTreenumerator<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
+            source.GetAsyncDepthFirstTreenumerator, new PositionalWhereVerdictSelector<TNode>(predicate)));
     }
 
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -90,8 +92,8 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode>(
-            source.GetAsyncBreadthFirstTreenumerator, WhereVerdict(predicate)));
+          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, WhereVerdictSelector<TNode>>(
+            source.GetAsyncBreadthFirstTreenumerator, new WhereVerdictSelector<TNode>(predicate)));
     }
 
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -103,20 +105,9 @@ namespace Copse.Linq
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode>(
-            source.GetAsyncBreadthFirstTreenumerator, PositionalWhereVerdict(predicate)));
+          () => new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
+            source.GetAsyncBreadthFirstTreenumerator, new PositionalWhereVerdictSelector<TNode>(predicate)));
     }
 
-    private static Func<NodeContext<TNode>, FusionVerdict<TNode>> WhereVerdict<TNode>(Func<TNode, bool> predicate)
-      => nodeContext =>
-        predicate(nodeContext.Node)
-          ? FusionVerdict<TNode>.Accept(nodeContext.Node)
-          : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode);
-
-    private static Func<NodeContext<TNode>, FusionVerdict<TNode>> PositionalWhereVerdict<TNode>(Func<TNode, NodePosition, bool> predicate)
-      => nodeContext =>
-        predicate(nodeContext.Node, nodeContext.Position)
-          ? FusionVerdict<TNode>.Accept(nodeContext.Node)
-          : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode);
   }
 }

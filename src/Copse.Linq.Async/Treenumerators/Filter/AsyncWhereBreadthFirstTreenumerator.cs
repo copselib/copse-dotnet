@@ -22,12 +22,13 @@ namespace Copse.Linq.Async
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode>
+  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode, TVerdictSelector>
     : AsyncTreenumeratorWrapper<TInner, TNode>
+    where TVerdictSelector : struct, IVerdictSelector<TInner, TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TInner>, FusionVerdict<TNode>> verdictSelector)
+      TVerdictSelector verdictSelector)
       : base(innerTreenumeratorFactory)
     {
       _VerdictSelector = verdictSelector;
@@ -37,7 +38,7 @@ namespace Copse.Linq.Async
       _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
     }
 
-    private readonly Func<NodeContext<TInner>, FusionVerdict<TNode>> _VerdictSelector;
+    private readonly TVerdictSelector _VerdictSelector;
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
@@ -147,7 +148,7 @@ namespace Copse.Linq.Async
           // strategies are NOT yet honored on the breadth-first path (no shipped stage produces
           // them; the PruneAfter stage lands with the prune migration and needs a per-frame seam
           // here -- the depth-first driver already honors them).
-          var verdict = _VerdictSelector(InnerTreenumerator.ToNodeContext());
+          var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
           var skipped = verdict.Rejected;
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 

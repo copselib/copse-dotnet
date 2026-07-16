@@ -34,16 +34,16 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var innerSelector = _Selector;
 
-      return new FusedTreenumerable<TSource, TResult>(
+      return FusedTreenumerable.Create<TSource, TResult, FuncVerdictSelector<TSource, TResult>>(
         _Source,
-        nodeContext =>
+        new FuncVerdictSelector<TSource, TResult>(nodeContext =>
         {
           var projectedNode = innerSelector(nodeContext);
 
           return predicate(projectedNode)
             ? FusionVerdict<TResult>.Accept(projectedNode)
             : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
-        },
+        }),
         containsRelabelingStage: true);
     }
 
@@ -51,16 +51,16 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var innerSelector = _Selector;
 
-      return new FusedTreenumerable<TSource, TResult>(
+      return FusedTreenumerable.Create<TSource, TResult, FuncVerdictSelector<TSource, TResult>>(
         _Source,
-        nodeContext =>
+        new FuncVerdictSelector<TSource, TResult>(nodeContext =>
         {
           var projectedNode = innerSelector(nodeContext);
 
           return predicate(projectedNode, nodeContext.Position)
             ? FusionVerdict<TResult>.Accept(projectedNode)
             : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
-        },
+        }),
         containsRelabelingStage: true);
     }
 
