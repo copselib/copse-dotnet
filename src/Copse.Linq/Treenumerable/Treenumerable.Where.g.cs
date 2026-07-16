@@ -12,11 +12,9 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. The
-    /// value-only flavor is the fusable one: adjacent value-only Wheres collapse into a single
-    /// filtering pass by predicate combination, and a value-only Where over a Select collapses
-    /// into the projection-carrying filter driver -- neither predicate observes positions, so
-    /// the collapse is invisible (docs/OPERATOR_FUSION_DESIGN.md).
+    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
+    /// recomputed accordingly.
     /// </summary>
     public static ITreenumerable<TNode> Where<TNode>(
       this ITreenumerable<TNode> source,
@@ -33,15 +31,13 @@ namespace Copse.Linq
           return fused;
       }
 
-      return new WhereTreenumerable<TNode>(source, predicate);
+      return new FusedTreenumerable<TNode, TNode>(source, WhereVerdict(predicate), containsRelabelingStage: true);
     }
 
     /// <summary>
     /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
     /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
-    /// tree's labels, so positional Wheres never fuse with their own kind -- a Where boundary
-    /// relabels (depth compression, sibling renumbering) exactly like LINQ's indexed Where
-    /// re-counts. A positional Where over a Select still fuses (projection never moves nodes).
+    /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
     /// </summary>
     public static ITreenumerable<TNode> Where<TNode>(
       this ITreenumerable<TNode> source,
@@ -58,18 +54,7 @@ namespace Copse.Linq
           return fused;
       }
 
-      return
-        TreenumerableFactory.Create(
-          () => new WhereBreadthFirstTreenumerator<TNode, TNode>(
-            source.GetBreadthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node, nodeContext.Position),
-            NodeTraversalStrategies.SkipNode),
-          () => new WhereDepthFirstTreenumerator<TNode, TNode>(
-            source.GetDepthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node, nodeContext.Position),
-            NodeTraversalStrategies.SkipNode));
+      return new FusedTreenumerable<TNode, TNode>(source, PositionalWhereVerdict(predicate), containsRelabelingStage: true);
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -82,10 +67,7 @@ namespace Copse.Linq
       return
         TreenumerableFactory.CreateDepthFirst(
           () => new WhereDepthFirstTreenumerator<TNode, TNode>(
-            source.GetDepthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node),
-            NodeTraversalStrategies.SkipNode));
+            source.GetDepthFirstTreenumerator, WhereVerdict(predicate)));
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -98,10 +80,7 @@ namespace Copse.Linq
       return
         TreenumerableFactory.CreateDepthFirst(
           () => new WhereDepthFirstTreenumerator<TNode, TNode>(
-            source.GetDepthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node, nodeContext.Position),
-            NodeTraversalStrategies.SkipNode));
+            source.GetDepthFirstTreenumerator, PositionalWhereVerdict(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -114,10 +93,7 @@ namespace Copse.Linq
       return
         TreenumerableFactory.CreateBreadthFirst(
           () => new WhereBreadthFirstTreenumerator<TNode, TNode>(
-            source.GetBreadthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node),
-            NodeTraversalStrategies.SkipNode));
+            source.GetBreadthFirstTreenumerator, WhereVerdict(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -130,10 +106,19 @@ namespace Copse.Linq
       return
         TreenumerableFactory.CreateBreadthFirst(
           () => new WhereBreadthFirstTreenumerator<TNode, TNode>(
-            source.GetBreadthFirstTreenumerator,
-            IdentitySelector<TNode>.Instance,
-            nodeContext => predicate(nodeContext.Node, nodeContext.Position),
-            NodeTraversalStrategies.SkipNode));
+            source.GetBreadthFirstTreenumerator, PositionalWhereVerdict(predicate)));
     }
+
+    private static Func<NodeContext<TNode>, FusionVerdict<TNode>> WhereVerdict<TNode>(Func<TNode, bool> predicate)
+      => nodeContext =>
+        predicate(nodeContext.Node)
+          ? FusionVerdict<TNode>.Accept(nodeContext.Node)
+          : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode);
+
+    private static Func<NodeContext<TNode>, FusionVerdict<TNode>> PositionalWhereVerdict<TNode>(Func<TNode, NodePosition, bool> predicate)
+      => nodeContext =>
+        predicate(nodeContext.Node, nodeContext.Position)
+          ? FusionVerdict<TNode>.Accept(nodeContext.Node)
+          : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode);
   }
 }

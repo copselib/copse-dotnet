@@ -1,6 +1,7 @@
 using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
@@ -9,42 +10,41 @@ using System.Threading.Tasks;
 namespace Copse.Linq.Async
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
-  /// the <c>await</c>s and it becomes the sync Where driver. Filters the inner visit stream,
-  /// promoting a predicate-skipped node's children into its parent's slot. All structural state
-  /// lives in the shared, color-agnostic <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct
-  /// the sync driver uses, verbatim) -- the test that the codegen approach holds for the library's
-  /// most intricate operator, not just the engine. Generic over BOTH the inner (source) and
-  /// published node types: a projection seam evaluated once per accepted-or-tested node lets
-  /// SelectWhere fuse into this one machinery (plain Where instantiates <TNode, TNode> with the
-  /// cached identity selector). The path stores PROJECTED values -- values are opaque cargo to
-  /// the machinery (the library never compares nodes), so nothing downstream can tell.
+  /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
+  /// strip the <c>await</c>s and it becomes the sync driver. Runs the composed VERDICT of a
+  /// fused stage chain (docs/OPERATOR_FUSION_DESIGN.md) once per scheduled node, against the
+  /// SOURCE context: an accepted verdict's value is published (the path stores projected
+  /// values -- opaque cargo; the library never compares nodes) and its strategies apply to the
+  /// node's own traversal (PruneAfter's SkipDescendants); a rejected verdict's strategies
+  /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
+  /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
+  /// single-stage instantiations. All structural state lives in the shared, color-agnostic
+  /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
   internal sealed class AsyncWhereDepthFirstTreenumerator<TInner, TNode>
     : AsyncTreenumeratorWrapper<TInner, TNode>
   {
     public AsyncWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TInner>, TNode> selector,
-      Func<NodeContext<TNode>, bool> predicate,
-      NodeTraversalStrategies nodeTraversalStrategy)
+      Func<NodeContext<TInner>, FusionVerdict<TNode>> verdictSelector)
       : base(innerTreenumeratorFactory)
     {
-      _Selector = selector;
-      _Predicate = predicate;
-      _NodeTraversalStrategy = nodeTraversalStrategy;
+      _VerdictSelector = verdictSelector;
 
       // Seed the path with a sentinel root: the virtual forest root by definition (its value is
-      // never published, so no projection is owed).
+      // never published, so no verdict is owed).
       _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
     }
 
-    private readonly Func<NodeContext<TInner>, TNode> _Selector;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
-    private readonly NodeTraversalStrategies _NodeTraversalStrategy;
+    private readonly Func<NodeContext<TInner>, FusionVerdict<TNode>> _VerdictSelector;
 
     private WhereDepthFirstPath<TNode> _Path;
     private bool _HasCachedChild = false;
+
+    // Accept-side strategies from the last published scheduling visit's verdict, applied on the
+    // pull that follows it -- the same protocol moment a consumer's own strategies for that
+    // visit arrive, so the two simply union.
+    private NodeTraversalStrategies _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
 
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -54,6 +54,9 @@ namespace Copse.Linq.Async
         Publish(ref _Path.AcceptedTop());
         return true;
       }
+
+      nodeTraversalStrategies |= _PendingStageStrategies;
+      _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
 
       // If the consumer skipped the node we just scheduled, move it to the skipped stack so its
       // descendants get promoted. Never move the sentinel (the only node when AcceptedCount == 1).
@@ -78,9 +81,9 @@ namespace Copse.Linq.Async
 
         if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
-          if (!OnScheduling())
+          if (!OnScheduling(out var rejectedStrategies))
           {
-            nodeTraversalStrategies = _NodeTraversalStrategy;
+            nodeTraversalStrategies = rejectedStrategies;
             continue;
           }
 
@@ -94,21 +97,27 @@ namespace Copse.Linq.Async
       return false;
     }
 
-    private bool OnScheduling()
+    private bool OnScheduling(out NodeTraversalStrategies rejectedStrategies)
     {
       _Path.PopDeeperThanForScheduling(InnerTreenumerator.Position.Depth);
 
-      // Project once, against the SOURCE context; the predicate sees the projected value at the
-      // source position (a projection never moves anything), exactly as the unfused pipeline.
-      var projectedNode = _Selector(InnerTreenumerator.ToNodeContext());
+      // ONE evaluation of the composed stage chain, against the SOURCE context; every user
+      // lambda inside sees exactly what the unfused pipeline would have shown it.
+      var verdict = _VerdictSelector(InnerTreenumerator.ToNodeContext());
 
-      if (!_Predicate(new NodeContext<TNode>(projectedNode, InnerTreenumerator.Position)))
+      if (verdict.Rejected)
+      {
+        rejectedStrategies = verdict.Strategies;
         return false;
+      }
+
+      rejectedStrategies = NodeTraversalStrategies.TraverseAll;
+      _PendingStageStrategies = verdict.Strategies;
 
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(projectedNode, InnerTreenumerator.Position);
+      _Path.PushAcceptedChild(verdict.Value, InnerTreenumerator.Position);
 
       if (cacheChild)
       {

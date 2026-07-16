@@ -6,6 +6,11 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
+  // The pure-projection wrapper. Kept distinct from FusedTreenumerable deliberately: a chain of
+  // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
+  // driver -- plain operators keep their cheapest machinery; the general driver is paid only
+  // when a filter joins. Because this wrapper contains only projections, every hook fuses:
+  // its emission boundary is the identity on positions.
   internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncFusableTreenumerable<TResult>
   {
     public AsyncSelectTreenumerable(
@@ -25,31 +30,56 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>
       new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncDepthFirstTreenumerator, _Selector);
 
-    // Select's emission boundary is the identity on positions, so every appended operator may
-    // cross it: both Where flavors fuse into the projection-carrying Where drivers (the fused
-    // SelectWhere is an INSTANTIATION of the plain Where machinery, not a new driver), and an
-    // appended Select composes selectors.
-    public IAsyncTreenumerable<TResult> FuseWhere(Func<TResult, bool> predicate) =>
-      FuseContextWhere(nodeContext => predicate(nodeContext.Node));
-
-    public IAsyncTreenumerable<TResult> FusePositionalWhere(Func<TResult, NodePosition, bool> predicate) =>
-      FuseContextWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
-
-    public IAsyncTreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> outerSelector)
+    public IAsyncTreenumerable<TResult> FuseWhere(Func<TResult, bool> predicate)
     {
       var innerSelector = _Selector;
 
-      return
-        new AsyncSelectTreenumerable<TSource, TOuterResult>(
-          _Source,
-          nodeContext => outerSelector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
+      return new FusedTreenumerable<TSource, TResult>(
+        _Source,
+        nodeContext =>
+        {
+          var projectedNode = innerSelector(nodeContext);
+
+          return predicate(projectedNode)
+            ? FusionVerdict<TResult>.Accept(projectedNode)
+            : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
+        },
+        containsRelabelingStage: true);
     }
 
-    private IAsyncTreenumerable<TResult> FuseContextWhere(Func<NodeContext<TResult>, bool> contextPredicate) =>
-      AsyncTreenumerableFactory.Create(
-        () => new AsyncWhereBreadthFirstTreenumerator<TSource, TResult>(
-          _Source.GetAsyncBreadthFirstTreenumerator, _Selector, contextPredicate, NodeTraversalStrategies.SkipNode),
-        () => new AsyncWhereDepthFirstTreenumerator<TSource, TResult>(
-          _Source.GetAsyncDepthFirstTreenumerator, _Selector, contextPredicate, NodeTraversalStrategies.SkipNode));
+    public IAsyncTreenumerable<TResult> FusePositionalWhere(Func<TResult, NodePosition, bool> predicate)
+    {
+      var innerSelector = _Selector;
+
+      return new FusedTreenumerable<TSource, TResult>(
+        _Source,
+        nodeContext =>
+        {
+          var projectedNode = innerSelector(nodeContext);
+
+          return predicate(projectedNode, nodeContext.Position)
+            ? FusionVerdict<TResult>.Accept(projectedNode)
+            : FusionVerdict<TResult>.Reject(NodeTraversalStrategies.SkipNode);
+        },
+        containsRelabelingStage: true);
+    }
+
+    public IAsyncTreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
+    {
+      var innerSelector = _Selector;
+
+      return new AsyncSelectTreenumerable<TSource, TOuterResult>(
+        _Source,
+        nodeContext => selector(innerSelector(nodeContext)));
+    }
+
+    public IAsyncTreenumerable<TOuterResult> FusePositionalSelect<TOuterResult>(Func<TResult, NodePosition, TOuterResult> selector)
+    {
+      var innerSelector = _Selector;
+
+      return new AsyncSelectTreenumerable<TSource, TOuterResult>(
+        _Source,
+        nodeContext => selector(innerSelector(nodeContext), nodeContext.Position));
+    }
   }
 }

@@ -17,21 +17,6 @@ namespace Copse.Linq
     public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
-      => SelectCore(source, nodeContext => selector(nodeContext.Node));
-
-    /// <summary>
-    /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
-    /// Select. Positions never move under a projection, so this flavor fuses exactly like the
-    /// value-only one.
-    /// </summary>
-    public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(
-      this IAsyncTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TResult> selector)
-      => SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
-
-    private static IAsyncTreenumerable<TResult> SelectCore<TSource, TResult>(
-      IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TResult> selector)
     {
       if (source is IAsyncFusableTreenumerable<TSource> fusableSource)
       {
@@ -41,6 +26,33 @@ namespace Copse.Linq
           return fused;
       }
 
+      return SelectCore(source, nodeContext => selector(nodeContext.Node));
+    }
+
+    /// <summary>
+    /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
+    /// Select. Positions never move under a projection, so this flavor fuses exactly like the
+    /// value-only one.
+    /// </summary>
+    public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(
+      this IAsyncTreenumerable<TSource> source,
+      Func<TSource, NodePosition, TResult> selector)
+    {
+      if (source is IAsyncFusableTreenumerable<TSource> fusableSource)
+      {
+        var fused = fusableSource.FusePositionalSelect(selector);
+
+        if (fused != null)
+          return fused;
+      }
+
+      return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+    }
+
+    private static IAsyncTreenumerable<TResult> SelectCore<TSource, TResult>(
+      IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TResult> selector)
+    {
       return new AsyncSelectTreenumerable<TSource, TResult>(source, selector);
     }
 

@@ -39,11 +39,17 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void ValueWheres_CollapseToOneWrapper()
+    public void ValueChains_CollapseToOneWrapper_AnyOrder()
     {
-      var fused = Tree("a(b,c)").Where(n => n != "b").Where(n => n != "c").Where(n => n != "z");
+      // The verdict monad's closure property: any order, any length, one wrapper.
+      var fused = Tree("a(b,c)")
+        .Where(n => n != "b")
+        .Select(n => n + "!")
+        .Where(n => n != "c!")
+        .Select(n => n + "?")
+        .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(WhereTreenumerable<string>));
+      Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string>));
     }
 
     [TestMethod]
@@ -132,6 +138,46 @@ namespace Copse.Linq.Tests
         .GetTraversal(TreeTraversalStrategy.DepthFirst).ToArray();
 
       Assert.AreEqual(6, selectorCalls);
+    }
+
+    // PruneBefore is a verdict stage now (Rejected(SkipNodeAndDescendants)), so it joins the
+    // fused chain; a following value-Where fuses onto it.
+    [TestMethod]
+    public void PruneBefore_JoinsTheFusedChain()
+    {
+      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+      {
+        var fused = Tree("a(b(d,e),c)")
+          .PruneBefore(nodeContext => nodeContext.Node == "b")
+          .Where(n => n != "z");
+
+        Assert.IsInstanceOfType(fused, typeof(FusedTreenumerable<string, string>), "prune chain must stay fused");
+
+        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(nodeContext => nodeContext.Node == "b"))
+          .Where(n => n != "z")
+          .GetTraversal(strategy).ToArray();
+
+        CollectionAssert.AreEqual(stacked, fused.GetTraversal(strategy).ToArray(), $"{strategy}");
+      }
+    }
+
+    // The join rule, positional-Select half: after a filter it must decline (its append point
+    // becomes a real emission boundary), because it is entitled to the filtered tree's emitted
+    // labels. (The join half -- fusing over a projections-only prefix -- is observably
+    // invisible for pure lambdas by design; ValueSelects_ComposeThroughTheFusedChain covers
+    // the composition behavior.)
+    [TestMethod]
+    public void PositionalSelect_AfterWhere_SeesTheEmittedLabels()
+    {
+      // a(b(c)), b filtered: c promotes and is EMITTED at depth 1 -- the positional selector
+      // must see the relabeled coordinate, which is why it cannot join the fused chain.
+      var labeled = Tree("a(b(c))")
+        .Where(n => n != "b")
+        .Select((n, position) => $"{n}@{position.Depth}")
+        .GetTraversal(TreeTraversalStrategy.DepthFirst)
+        .Select(visit => visit.Node).Distinct().ToArray();
+
+      CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
     [TestMethod]

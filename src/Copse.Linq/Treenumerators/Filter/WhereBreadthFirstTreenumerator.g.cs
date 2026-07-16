@@ -3,6 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereBreadthFirstPath (internal, via InternalsVisibleTo)
 using System;
@@ -27,23 +28,17 @@ namespace Copse.Linq.Treenumerators
   {
     public WhereBreadthFirstTreenumerator(
       Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TInner>, TNode> selector,
-      Func<NodeContext<TNode>, bool> predicate,
-      NodeTraversalStrategies nodeTraversalStrategy)
+      Func<NodeContext<TInner>, FusionVerdict<TNode>> verdictSelector)
       : base(innerTreenumeratorFactory)
     {
-      _Selector = selector;
-      _Predicate = predicate;
-      _NodeTraversalStrategy = nodeTraversalStrategy;
+      _VerdictSelector = verdictSelector;
 
       // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
       // sentinel value is never published, so no projection is owed).
       _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
     }
 
-    private readonly Func<NodeContext<TInner>, TNode> _Selector;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
-    private readonly NodeTraversalStrategies _NodeTraversalStrategy;
+    private readonly Func<NodeContext<TInner>, FusionVerdict<TNode>> _VerdictSelector;
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
@@ -148,15 +143,18 @@ namespace Copse.Linq.Treenumerators
         {
           var innerDepth = InnerTreenumerator.Position.Depth;
 
-          // Project once, against the SOURCE context; the predicate sees the projected value at
-          // the source position (a projection never moves anything), as in the unfused pipeline.
-          var projectedNode = _Selector(InnerTreenumerator.ToNodeContext());
-          var skipped = !_Predicate(new NodeContext<TNode>(projectedNode, InnerTreenumerator.Position));
+          // ONE evaluation of the composed stage chain, against the SOURCE context; every user
+          // lambda inside sees exactly what the unfused pipeline would have shown it. Accept-side
+          // strategies are NOT yet honored on the breadth-first path (no shipped stage produces
+          // them; the PruneAfter stage lands with the prune migration and needs a per-frame seam
+          // here -- the depth-first driver already honors them).
+          var verdict = _VerdictSelector(InnerTreenumerator.ToNodeContext());
+          var skipped = verdict.Rejected;
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
           {
-            nodeTraversalStrategies = _NodeTraversalStrategy;
+            nodeTraversalStrategies = verdict.Strategies;
             continue;
           }
 
@@ -205,7 +203,7 @@ namespace Copse.Linq.Treenumerators
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(projectedNode, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
@@ -217,7 +215,7 @@ namespace Copse.Linq.Treenumerators
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(projectedNode, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
         }
         else // VisitingNode
         {

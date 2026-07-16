@@ -184,10 +184,6 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerators/StructuralMerge/StructuralMergeBreadthFirstTreenumerator.g.cs",
         "AsyncStructuralMergeBreadthFirstTreenumerator", "StructuralMergeBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
-      new("Copse.Linq.Async/Treenumerators/Filter/AsyncIdentitySelector.cs",
-        "Copse.Linq/Treenumerators/Filter/IdentitySelector.g.cs",
-        "AsyncIdentitySelector", "IdentitySelector", "Copse.Linq.Treenumerators"),
-
       new("Copse.Linq.Async/Treenumerators/Filter/AsyncWhereDepthFirstTreenumerator.cs",
         "Copse.Linq/Treenumerators/Filter/WhereDepthFirstTreenumerator.g.cs",
         "AsyncWhereDepthFirstTreenumerator", "WhereDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
@@ -270,9 +266,13 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/IFusableTreenumerable.g.cs",
         "IAsyncFusableTreenumerable", "IFusableTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncWhereTreenumerable.cs",
-        "Copse.Linq/Treenumerables/WhereTreenumerable.g.cs",
-        "AsyncWhereTreenumerable", "WhereTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/FusionVerdict.cs",
+        "Copse.Linq/Treenumerables/FusionVerdict.g.cs",
+        "FusionVerdict", "FusionVerdict", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/FusedTreenumerable.cs",
+        "Copse.Linq/Treenumerables/FusedTreenumerable.g.cs",
+        "FusedTreenumerable", "FusedTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",

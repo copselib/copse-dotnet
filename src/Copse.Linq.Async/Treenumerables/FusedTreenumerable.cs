@@ -1,0 +1,117 @@
+using Copse.Async;
+using Copse.Core;
+using Copse.Core.Async;
+using Copse.Linq.Async;
+using System;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The reified stage chain (docs/OPERATOR_FUSION_DESIGN.md, "the verdict monad"): one wrapper
+  // holding the Kleisli-composed verdict of every fused stage. Appending an operator composes
+  // and returns a new wrapper, so value-lambda chains of any length and order collapse to ONE
+  // layer over the source. The relabeling bit gates positional joins: filters and prunes
+  // relabel at this wrapper's (single, final) emission boundary, so once one is aboard, a
+  // positional lambda's append point must become a REAL emission boundary instead (decline).
+  internal sealed class FusedTreenumerable<TSource, TResult> : IAsyncFusableTreenumerable<TResult>
+  {
+    public FusedTreenumerable(
+      IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, FusionVerdict<TResult>> verdictSelector,
+      bool containsRelabelingStage)
+    {
+      _Source = source;
+      _VerdictSelector = verdictSelector;
+      _ContainsRelabelingStage = containsRelabelingStage;
+    }
+
+    private readonly IAsyncTreenumerable<TSource> _Source;
+    private readonly Func<NodeContext<TSource>, FusionVerdict<TResult>> _VerdictSelector;
+    private readonly bool _ContainsRelabelingStage;
+
+    public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator() =>
+      new AsyncWhereBreadthFirstTreenumerator<TSource, TResult>(
+        _Source.GetAsyncBreadthFirstTreenumerator, _VerdictSelector);
+
+    public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>
+      new AsyncWhereDepthFirstTreenumerator<TSource, TResult>(
+        _Source.GetAsyncDepthFirstTreenumerator, _VerdictSelector);
+
+    public IAsyncTreenumerable<TResult> FuseWhere(Func<TResult, bool> predicate)
+    {
+      var innerVerdictSelector = _VerdictSelector;
+
+      return new FusedTreenumerable<TSource, TResult>(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdictSelector(nodeContext);
+
+          if (verdict.Rejected || predicate(verdict.Value))
+            return verdict;
+
+          return FusionVerdict<TResult>.Reject(verdict.Strategies | NodeTraversalStrategies.SkipNode);
+        },
+        containsRelabelingStage: true);
+    }
+
+    // A filter's virtual boundary relabels, so a positional predicate may only join while the
+    // chain is projections-only -- and its own join makes the chain filtering.
+    public IAsyncTreenumerable<TResult> FusePositionalWhere(Func<TResult, NodePosition, bool> predicate)
+    {
+      if (_ContainsRelabelingStage)
+        return null;
+
+      var innerVerdictSelector = _VerdictSelector;
+
+      return new FusedTreenumerable<TSource, TResult>(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdictSelector(nodeContext);
+
+          if (verdict.Rejected || predicate(verdict.Value, nodeContext.Position))
+            return verdict;
+
+          return FusionVerdict<TResult>.Reject(verdict.Strategies | NodeTraversalStrategies.SkipNode);
+        },
+        containsRelabelingStage: true);
+    }
+
+    public IAsyncTreenumerable<TOuterResult> FuseSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
+    {
+      var innerVerdictSelector = _VerdictSelector;
+
+      return new FusedTreenumerable<TSource, TOuterResult>(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdictSelector(nodeContext);
+
+          return verdict.Rejected
+            ? FusionVerdict<TOuterResult>.Reject(verdict.Strategies)
+            : FusionVerdict<TOuterResult>.Accept(selector(verdict.Value), verdict.Strategies);
+        },
+        _ContainsRelabelingStage);
+    }
+
+    public IAsyncTreenumerable<TOuterResult> FusePositionalSelect<TOuterResult>(Func<TResult, NodePosition, TOuterResult> selector)
+    {
+      if (_ContainsRelabelingStage)
+        return null;
+
+      var innerVerdictSelector = _VerdictSelector;
+
+      return new FusedTreenumerable<TSource, TOuterResult>(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdictSelector(nodeContext);
+
+          return verdict.Rejected
+            ? FusionVerdict<TOuterResult>.Reject(verdict.Strategies)
+            : FusionVerdict<TOuterResult>.Accept(selector(verdict.Value, nodeContext.Position), verdict.Strategies);
+        },
+        containsRelabelingStage: false);
+    }
+  }
+}

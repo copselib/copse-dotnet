@@ -20,21 +20,6 @@ namespace Copse.Linq
     public static ITreenumerable<TResult> Select<TSource, TResult>(
       this ITreenumerable<TSource> source,
       Func<TSource, TResult> selector)
-      => SelectCore(source, nodeContext => selector(nodeContext.Node));
-
-    /// <summary>
-    /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
-    /// Select. Positions never move under a projection, so this flavor fuses exactly like the
-    /// value-only one.
-    /// </summary>
-    public static ITreenumerable<TResult> Select<TSource, TResult>(
-      this ITreenumerable<TSource> source,
-      Func<TSource, NodePosition, TResult> selector)
-      => SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
-
-    private static ITreenumerable<TResult> SelectCore<TSource, TResult>(
-      ITreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TResult> selector)
     {
       if (source is IFusableTreenumerable<TSource> fusableSource)
       {
@@ -44,6 +29,33 @@ namespace Copse.Linq
           return fused;
       }
 
+      return SelectCore(source, nodeContext => selector(nodeContext.Node));
+    }
+
+    /// <summary>
+    /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
+    /// Select. Positions never move under a projection, so this flavor fuses exactly like the
+    /// value-only one.
+    /// </summary>
+    public static ITreenumerable<TResult> Select<TSource, TResult>(
+      this ITreenumerable<TSource> source,
+      Func<TSource, NodePosition, TResult> selector)
+    {
+      if (source is IFusableTreenumerable<TSource> fusableSource)
+      {
+        var fused = fusableSource.FusePositionalSelect(selector);
+
+        if (fused != null)
+          return fused;
+      }
+
+      return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+    }
+
+    private static ITreenumerable<TResult> SelectCore<TSource, TResult>(
+      ITreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TResult> selector)
+    {
       return new SelectTreenumerable<TSource, TResult>(source, selector);
     }
 
