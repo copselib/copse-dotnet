@@ -65,6 +65,14 @@ namespace Copse.Linq.Async
     // child's own visiting turn that follows it.
     private NodeTraversalStrategies? _DeferredStrategy = null;
 
+    // Accept-side verdict strategies (PruneAfter's SkipDescendants) from the last published
+    // SCHEDULING visit, merged into the consumer's strategies on the pull that follows it --
+    // the same protocol moment the consumer's own strategies for that visit arrive. The
+    // deferred slot carries them while a consumer-skip transition holds the schedule publish
+    // back one turn (at most one deferred schedule is ever pending).
+    private NodeTraversalStrategies _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
+    private NodeTraversalStrategies _DeferredStageStrategies = NodeTraversalStrategies.TraverseAll;
+
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // Output the deferred schedule from a consumer-SkipNode'd parent transition.
@@ -72,8 +80,13 @@ namespace Copse.Linq.Async
       {
         _Path.ClearConsumerSkippedSubtree();
         Publish(ref _Path.Back, TreenumeratorMode.SchedulingNode);
+        _PendingStageStrategies = _DeferredStageStrategies;
+        _DeferredStageStrategies = NodeTraversalStrategies.TraverseAll;
         return true;
       }
+
+      nodeTraversalStrategies |= _PendingStageStrategies;
+      _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
 
       if (Mode == TreenumeratorMode.VisitingNode)
       {
@@ -158,12 +171,6 @@ namespace Copse.Linq.Async
             continue;
           }
 
-          // Accept-side strategies (the PruneAfter stage) need a per-frame seam this driver
-          // does not have yet; fail loudly rather than silently diverging from the
-          // depth-first driver, which already honors them.
-          if (verdict.Strategies != NodeTraversalStrategies.TraverseAll)
-            throw new NotSupportedException(
-              "Accept-side verdict strategies are not yet supported on the breadth-first path.");
 
           // --- Accepted node processing ---
           // Remove consumer-SkipNode'd nodes before calculating effective position.
@@ -212,6 +219,8 @@ namespace Copse.Linq.Async
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
               _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
+              // The schedule publishes on a later entry; its accept-side strategies wait with it.
+              _DeferredStageStrategies = verdict.Strategies;
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
@@ -223,6 +232,9 @@ namespace Copse.Linq.Async
           }
 
           _Path.EnqueueAccepted(verdict.Value, effectivePosition, innerDepth);
+          // The scheduling publish below is this node's; its accept-side strategies apply on
+          // the pull that follows it.
+          _PendingStageStrategies = verdict.Strategies;
         }
         else // VisitingNode
         {

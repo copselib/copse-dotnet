@@ -202,11 +202,11 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a", "b", "e" }, nodes, "b kept, its subtree dropped");
     }
 
-    // The breadth-first driver lacks the accept-strategy seam (needs per-frame stashing for its
-    // deferred publishes); until the PruneAfter stage builds it, it must fail LOUDLY instead of
-    // silently diverging from the depth-first result.
+    // The breadth-first half of the seam: accept-side strategies ride the pending/deferred
+    // slots so they apply on the pull following the node's SCHEDULING publish, matching the
+    // depth-first result (which matches what a bespoke PruneAfter produces).
     [TestMethod]
-    public void AcceptStrategies_ThrowLoudlyBreadthFirst()
+    public void AcceptStrategies_AreHonoredBreadthFirst()
     {
       var rehearsedPruneAfter = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
@@ -216,8 +216,68 @@ namespace Copse.Linq.Tests
             : FusionVerdict<string>.Accept(nodeContext.Node)),
         containsRelabelingStage: true);
 
-      Assert.ThrowsException<System.NotSupportedException>(
-        () => rehearsedPruneAfter.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray());
+      var nodes = rehearsedPruneAfter
+        .GetTraversal(TreeTraversalStrategy.BreadthFirst)
+        .Select(visit => visit.Node).Distinct().ToArray();
+
+      CollectionAssert.AreEqual(new[] { "a", "b", "e" }, nodes, "b kept, its subtree dropped");
+    }
+
+    // The seam's independent oracle: the bespoke PruneAfter operator implements the same
+    // semantics (keep the node, drop its subtree) through entirely different machinery, so the
+    // rehearsed Accept(node, SkipDescendants) stage must match it -- both dimensions, under
+    // every consumer-strategy interference aimed at every node.
+    [TestMethod]
+    public void AcceptStrategies_MatchTheBespokePruneAfterOracle()
+    {
+      var trees = new[] { "a(b(c,d),e)", "a(b(c(f),d),e)", "a(b(c)),d(e)", "a(b,c(d(e,f),g),h)" };
+      var consumerStrategies = new[]
+      {
+        NodeTraversalStrategies.TraverseAll,
+        NodeTraversalStrategies.SkipNode,
+        NodeTraversalStrategies.SkipDescendants,
+        NodeTraversalStrategies.SkipSiblings,
+        NodeTraversalStrategies.SkipNodeAndDescendants,
+        NodeTraversalStrategies.SkipNodeAndSiblings,
+        NodeTraversalStrategies.SkipDescendantsAndSiblings,
+        NodeTraversalStrategies.SkipAll,
+      };
+
+      foreach (var treeString in trees)
+      {
+        var nodes = treeString.Where(char.IsLetter).Select(character => character.ToString()).Distinct().ToArray();
+
+        foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+        foreach (var pruneTarget in nodes)
+        foreach (var strategyNode in nodes)
+        foreach (var consumerStrategy in consumerStrategies)
+        {
+          NodeTraversalStrategies Selector(NodeContext<string> nodeContext)
+            => nodeContext.Node == strategyNode ? consumerStrategy : NodeTraversalStrategies.TraverseAll;
+
+          var target = pruneTarget;
+
+          var rehearsed = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+            Tree(treeString),
+            new FuncVerdictSelector<string, string>(nodeContext =>
+              nodeContext.Node == target
+                ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
+                : FusionVerdict<string>.Accept(nodeContext.Node)),
+            containsRelabelingStage: true);
+
+          var expected = Tree(treeString).PruneAfter(nodeContext => nodeContext.Node == target)
+            .GetTraversal(strategy, Selector)
+            .Select(visit => (visit.Mode, visit.Position.Depth, visit.Position.SiblingIndex, visit.VisitCount, visit.Node));
+
+          var actual = rehearsed
+            .GetTraversal(strategy, Selector)
+            .Select(visit => (visit.Mode, visit.Position.Depth, visit.Position.SiblingIndex, visit.VisitCount, visit.Node));
+
+          Assert.IsTrue(
+            expected.SequenceEqual(actual),
+            $"{treeString} {strategy} prune={pruneTarget} consumer={strategyNode}:{consumerStrategy}");
+        }
+      }
     }
 
     [TestMethod]
