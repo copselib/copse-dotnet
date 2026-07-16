@@ -34,9 +34,5 @@ namespace Copse.Linq.Treenumerables
     public static FusionVerdict<TNode> Reject(NodeTraversalStrategies strategies)
       => new FusionVerdict<TNode>(default, strategies, rejected: true);
 
-    // The composition law's accept-side union: strategies gathered by earlier accepting
-    // stages ride along with this verdict's own.
-    public FusionVerdict<TNode> WithStrategies(NodeTraversalStrategies earlierStrategies)
-      => new FusionVerdict<TNode>(Value, Strategies | earlierStrategies, Rejected);
   }
 }

@@ -158,6 +158,13 @@ namespace Copse.Linq.Async
             continue;
           }
 
+          // Accept-side strategies (the PruneAfter stage) need a per-frame seam this driver
+          // does not have yet; fail loudly rather than silently diverging from the
+          // depth-first driver, which already honors them.
+          if (verdict.Strategies != NodeTraversalStrategies.TraverseAll)
+            throw new NotSupportedException(
+              "Accept-side verdict strategies are not yet supported on the breadth-first path.");
+
           // --- Accepted node processing ---
           // Remove consumer-SkipNode'd nodes before calculating effective position.
           var lastScheduleNodeVisitWasSkipped = _Path.Back.Skipped;

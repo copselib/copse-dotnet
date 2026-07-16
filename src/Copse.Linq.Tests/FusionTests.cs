@@ -180,6 +180,46 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
+    // The PruneAfter-stage rehearsal: nothing on the surface produces accept-side verdict
+    // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
+    // and must not sit untested until the prune migration. Accept(node, SkipDescendants) = keep
+    // the node, drop its subtree.
+    [TestMethod]
+    public void AcceptStrategies_AreHonoredDepthFirst()
+    {
+      var rehearsedPruneAfter = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+        Tree("a(b(c,d),e)"),
+        new FuncVerdictSelector<string, string>(nodeContext =>
+          nodeContext.Node == "b"
+            ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
+            : FusionVerdict<string>.Accept(nodeContext.Node)),
+        containsRelabelingStage: true);
+
+      var nodes = rehearsedPruneAfter
+        .GetTraversal(TreeTraversalStrategy.DepthFirst)
+        .Select(visit => visit.Node).Distinct().ToArray();
+
+      CollectionAssert.AreEqual(new[] { "a", "b", "e" }, nodes, "b kept, its subtree dropped");
+    }
+
+    // The breadth-first driver lacks the accept-strategy seam (needs per-frame stashing for its
+    // deferred publishes); until the PruneAfter stage builds it, it must fail LOUDLY instead of
+    // silently diverging from the depth-first result.
+    [TestMethod]
+    public void AcceptStrategies_ThrowLoudlyBreadthFirst()
+    {
+      var rehearsedPruneAfter = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+        Tree("a(b(c,d),e)"),
+        new FuncVerdictSelector<string, string>(nodeContext =>
+          nodeContext.Node == "b"
+            ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
+            : FusionVerdict<string>.Accept(nodeContext.Node)),
+        containsRelabelingStage: true);
+
+      Assert.ThrowsException<System.NotSupportedException>(
+        () => rehearsedPruneAfter.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray());
+    }
+
     [TestMethod]
     public void ValueSelects_ComposeThroughTheFusedChain()
     {
