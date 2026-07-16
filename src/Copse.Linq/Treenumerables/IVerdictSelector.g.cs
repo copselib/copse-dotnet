@@ -15,6 +15,6 @@ namespace Copse.Linq.Treenumerables
   // silently operate on a defensive copy.
   internal interface IVerdictSelector<TInner, TNode>
   {
-    FusionVerdict<TNode> GetVerdict(NodeContext<TInner> nodeContext);
+    CompositionVerdict<TNode> GetVerdict(NodeContext<TInner> nodeContext);
   }
 }

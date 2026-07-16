@@ -12,10 +12,10 @@ namespace Copse.Linq.Async.Treenumerables
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
   // spliced chains carry the composed closure in a FuncVerdictSelector (fusion inherently
   // holds user delegates). Splicing is total: every legality decision was made outer-side.
-  internal sealed class FusableTreenumerable<TSource, TResult, TVerdictSelector> : IAsyncFusableTreenumerable<TResult>
+  internal sealed class ComposableTreenumerable<TSource, TResult, TVerdictSelector> : IAsyncComposableTreenumerable<TResult>
     where TVerdictSelector : struct, IVerdictSelector<TSource, TResult>
   {
-    public FusableTreenumerable(
+    public ComposableTreenumerable(
       IAsyncTreenumerable<TSource> source,
       TVerdictSelector verdictSelector,
       bool containsRelabelingStage)
@@ -41,13 +41,13 @@ namespace Copse.Linq.Async.Treenumerables
     // Offer up the internal mapping (materialized on demand: acquisition keeps the zero-cost
     // struct seam; only actual composition pays the delegate hop, and fused paths are
     // delegate-bound anyway).
-    public IFusionMap<TResult> Map
+    public ICompositionMap<TResult> Map
     {
       get
       {
         var verdictSelector = _VerdictSelector;
 
-        return FusionMap<TSource, TResult>.OfVerdict(
+        return CompositionMap<TSource, TResult>.OfVerdict(
           _Source, nodeContext => verdictSelector.GetVerdict(nodeContext), ContainsRelabelingStage);
       }
     }

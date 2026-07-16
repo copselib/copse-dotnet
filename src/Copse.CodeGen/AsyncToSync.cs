@@ -167,7 +167,7 @@ namespace Copse.CodeGen
         ["AsyncRefCountDisposable"] = "RefCountDisposable",
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",
-        ["IAsyncFusableTreenumerable"] = "IFusableTreenumerable",
+        ["IAsyncComposableTreenumerable"] = "IComposableTreenumerable",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()

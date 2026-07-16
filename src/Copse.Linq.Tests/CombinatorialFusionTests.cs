@@ -9,9 +9,9 @@ using System.Linq;
 namespace Copse.Linq.Tests
 {
   // The exhaustive fusion gate: every tree in the combinatorial corpus x every ordered operator
-  // chain (length 1..3 over the five fusable stage kinds) x every filter-target node x consumer
+  // chain (length 1..3 over the five composable stage kinds) x every filter-target node x consumer
   // strategy interference, each case comparing the FUSED pipeline against the same chain FORCED
-  // TO STACK (Tree.Defer interposed between stages: the delegating wrapper is not fusable, and
+  // TO STACK (Tree.Defer interposed between stages: the delegating wrapper is not composable, and
   // deferring a deferred tree is semantics-neutral). Fusion's whole contract is that the two
   // are indistinguishable -- including under consumer skips, which exercise the fused driver's
   // per-node reject strategies against the stacked layers' independent ones.

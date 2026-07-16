@@ -17,8 +17,8 @@ namespace Copse.Linq.Treenumerables
 
     private readonly Func<TNode, bool> _Predicate;
 
-    public FusionVerdict<TNode> GetVerdict(NodeContext<TNode> nodeContext)
-      => new FusionVerdict<TNode>(
+    public CompositionVerdict<TNode> GetVerdict(NodeContext<TNode> nodeContext)
+      => new CompositionVerdict<TNode>(
         nodeContext.Node,
         _Predicate(nodeContext.Node)
           ? NodeTraversalStrategies.TraverseAll

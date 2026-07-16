@@ -262,9 +262,9 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",
         "AsyncHideTreenumerable", "HideTreenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncFusableTreenumerable.cs",
-        "Copse.Linq/Treenumerables/IFusableTreenumerable.g.cs",
-        "IAsyncFusableTreenumerable", "IFusableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncComposableTreenumerable.cs",
+        "Copse.Linq/Treenumerables/IComposableTreenumerable.g.cs",
+        "IAsyncComposableTreenumerable", "IComposableTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/IVerdictSelector.cs",
         "Copse.Linq/Treenumerables/IVerdictSelector.g.cs",
@@ -294,21 +294,21 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/PositionalPruneBeforeVerdictSelector.g.cs",
         "PositionalPruneBeforeVerdictSelector", "PositionalPruneBeforeVerdictSelector", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/IFusionMap.cs",
-        "Copse.Linq/Treenumerables/IFusionMap.g.cs",
-        "IFusionMap", "IFusionMap", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/ICompositionMap.cs",
+        "Copse.Linq/Treenumerables/ICompositionMap.g.cs",
+        "ICompositionMap", "ICompositionMap", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/FusionMap.cs",
-        "Copse.Linq/Treenumerables/FusionMap.g.cs",
-        "FusionMap", "FusionMap", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/CompositionMap.cs",
+        "Copse.Linq/Treenumerables/CompositionMap.g.cs",
+        "CompositionMap", "CompositionMap", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/FusionVerdict.cs",
-        "Copse.Linq/Treenumerables/FusionVerdict.g.cs",
-        "FusionVerdict", "FusionVerdict", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/CompositionVerdict.cs",
+        "Copse.Linq/Treenumerables/CompositionVerdict.g.cs",
+        "CompositionVerdict", "CompositionVerdict", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/FusableTreenumerable.cs",
-        "Copse.Linq/Treenumerables/FusableTreenumerable.g.cs",
-        "FusableTreenumerable", "FusableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/ComposableTreenumerable.cs",
+        "Copse.Linq/Treenumerables/ComposableTreenumerable.g.cs",
+        "ComposableTreenumerable", "ComposableTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",

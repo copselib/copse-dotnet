@@ -22,16 +22,16 @@ namespace Copse.Linq
         return source;
 
       // A value predicate observes no coordinates, so it composes unconditionally.
-      if (source is IAsyncFusableTreenumerable<TNode> fusableSource)
-        return fusableSource.Map.Filter(
-          nodeContext => new FusionVerdict<TNode>(
+      if (source is IAsyncComposableTreenumerable<TNode> composableSource)
+        return composableSource.Map.Filter(
+          nodeContext => new CompositionVerdict<TNode>(
             nodeContext.Node,
             predicate(nodeContext.Node)
               ? NodeTraversalStrategies.TraverseAll
               : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
-      return new FusableTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
+      return new ComposableTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
         source, new WhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 
@@ -50,16 +50,16 @@ namespace Copse.Linq
       // The join rule, applied here because only the operator knows its lambda's flavor: a
       // positional predicate is entitled to its input tree's emitted labels, so it splices
       // only while the chain is label-preserving and otherwise stacks a real layer.
-      if (source is IAsyncFusableTreenumerable<TNode> fusableSource && !fusableSource.Map.ContainsRelabelingStage)
-        return fusableSource.Map.Filter(
-          nodeContext => new FusionVerdict<TNode>(
+      if (source is IAsyncComposableTreenumerable<TNode> composableSource && !composableSource.Map.ContainsRelabelingStage)
+        return composableSource.Map.Filter(
+          nodeContext => new CompositionVerdict<TNode>(
             nodeContext.Node,
             predicate(nodeContext.Node, nodeContext.Position)
               ? NodeTraversalStrategies.TraverseAll
               : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
-      return new FusableTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
+      return new ComposableTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(
         source, new PositionalWhereVerdictSelector<TNode>(predicate), containsRelabelingStage: true);
     }
 

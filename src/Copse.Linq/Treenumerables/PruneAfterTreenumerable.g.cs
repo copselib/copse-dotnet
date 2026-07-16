@@ -9,10 +9,10 @@ using System;
 namespace Copse.Linq.Treenumerables
 {
   // PruneAfter's named wrapper: plain acquisition keeps the bespoke prune-after driver (no
-  // promotion machinery -- it only ever sheds whole subtrees below kept nodes), and fusability
+  // promotion machinery -- it only ever sheds whole subtrees below kept nodes), and composability
   // costs one property: PruneAfter is label-preserving (survivors keep their coordinates), so
   // its map carries relabeling: false and even positional lambdas may compose across it.
-  internal sealed class PruneAfterTreenumerable<TNode> : IFusableTreenumerable<TNode>
+  internal sealed class PruneAfterTreenumerable<TNode> : IComposableTreenumerable<TNode>
   {
     public PruneAfterTreenumerable(
       ITreenumerable<TNode> source,
@@ -25,15 +25,15 @@ namespace Copse.Linq.Treenumerables
     private readonly ITreenumerable<TNode> _Source;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
 
-    public IFusionMap<TNode> Map
+    public ICompositionMap<TNode> Map
     {
       get
       {
         var predicate = _Predicate;
 
-        return FusionMap<TNode, TNode>.OfVerdict(
+        return CompositionMap<TNode, TNode>.OfVerdict(
           _Source,
-          nodeContext => new FusionVerdict<TNode>(
+          nodeContext => new CompositionVerdict<TNode>(
             nodeContext.Node,
             predicate(nodeContext)
               ? NodeTraversalStrategies.SkipDescendants

@@ -2,7 +2,7 @@ using Copse.Core.Async;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The fusion recipe surface at its true minimum (docs/OPERATOR_FUSION_DESIGN.md): a fusable
+  // The fusion recipe surface at its true minimum (docs/OPERATOR_FUSION_DESIGN.md): a composable
   // wrapper offers up its internal mapping, and everything else -- composition, purity
   // tracking, the join-rule bit, the representation choice at reification -- lives on the map.
   // The operator composes with bare lambdas (it knows its own flavor and reads
@@ -12,8 +12,8 @@ namespace Copse.Linq.Async.Treenumerables
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
-  internal interface IAsyncFusableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+  internal interface IAsyncComposableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
-    IFusionMap<TNode> Map { get; }
+    ICompositionMap<TNode> Map { get; }
   }
 }

@@ -12,7 +12,7 @@ namespace Copse.Linq.Tests
   // visit streams, identical per-lambda order) and must actually HAPPEN (collapsed layers,
   // once-per-node selector evaluation). The force-unfused controls: the positional Where
   // overload never fuses with its own kind, and Tree.Defer's delegating wrapper is not
-  // fusable, so inserting it breaks any chain without changing semantics.
+  // composable, so inserting it breaks any chain without changing semantics.
   [TestClass]
   public class FusionTests
   {
@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ namespace Copse.Linq.Tests
           .Where(n => n != "b!")
           .GetTraversal(strategy).ToArray();
 
-        // Tree.Defer's wrapper is not fusable: same pipeline, forced to stack.
+        // Tree.Defer's wrapper is not composable: same pipeline, forced to stack.
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e,f),c)").Select(n => n + "!"))
           .Where(n => n != "b!")
           .GetTraversal(strategy).ToArray();
@@ -154,8 +154,8 @@ namespace Copse.Linq.Tests
         .PruneBefore(n => n == "b")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(whereThenPrune, typeof(FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
-      Assert.IsInstanceOfType(pruneThenWhere, typeof(FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(whereThenPrune, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
+      Assert.IsInstanceOfType(pruneThenWhere, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>));
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -175,7 +175,7 @@ namespace Copse.Linq.Tests
           .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(fused, typeof(FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>), "prune chain must stay fused");
+        Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>), "prune chain must stay fused");
 
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
@@ -211,10 +211,10 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
     {
-      var rehearsedPruneAfter = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
-          new FusionVerdict<string>(
+          new CompositionVerdict<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -234,10 +234,10 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredBreadthFirst()
     {
-      var rehearsedPruneAfter = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
-          new FusionVerdict<string>(
+          new CompositionVerdict<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -285,10 +285,10 @@ namespace Copse.Linq.Tests
 
           var target = pruneTarget;
 
-          var rehearsed = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
+          var rehearsed = new ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
             Tree(treeString),
             new FuncVerdictSelector<string, string>(nodeContext =>
-              new FusionVerdict<string>(
+              new CompositionVerdict<string>(
                 nodeContext.Node,
                 nodeContext.Node == target
                   ? NodeTraversalStrategies.SkipDescendants
@@ -322,7 +322,7 @@ namespace Copse.Linq.Tests
 
       Assert.IsInstanceOfType(
         composed,
-        typeof(FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>),
+        typeof(ComposableTreenumerable<string, string, FuncVerdictSelector<string, string>>),
         "positional Select must compose across the label-preserving prune");
 
       var labeled = composed

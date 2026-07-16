@@ -8,11 +8,11 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The pure-projection wrapper. Kept distinct from FusableTreenumerable deliberately: a chain of
+  // The pure-projection wrapper. Kept distinct from ComposableTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
   // when a filter joins (the map makes that representation choice at reification).
-  internal sealed class SelectTreenumerable<TSource, TResult> : IFusableTreenumerable<TResult>
+  internal sealed class SelectTreenumerable<TSource, TResult> : IComposableTreenumerable<TResult>
   {
     public SelectTreenumerable(
       ITreenumerable<TSource> source,
@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
 
     // Offer up the internal mapping: a projection-only map, so composition keeps the light
     // representation until a filter joins.
-    public IFusionMap<TResult> Map => FusionMap<TSource, TResult>.OfProjection(_Source, _Selector);
+    public ICompositionMap<TResult> Map => CompositionMap<TSource, TResult>.OfProjection(_Source, _Selector);
 
     public ITreenumerator<TResult> GetBreadthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetBreadthFirstTreenumerator, _Selector);

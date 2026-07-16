@@ -10,6 +10,12 @@
 > review: capability wins do not compound through composition, so that lattice stays
 > demoted while fusion (which does compound) proceeds.
 
+> **Vocabulary (renamed 2026-07-16):** the API spells the capability *composition* —
+> `IComposableTreenumerable` / `CompositionMap` / `CompositionVerdict` (formerly
+> Fusable/Fusion): composable names what the algebra does. "Fusion" in this document names
+> the *technique* — collapsing stacked layers into one wrapper — by its literature name
+> (LINQ's fused iterators, stream fusion).
+
 ## Motivation
 
 Composed operators stack wrapper treenumerators; every pull cascades through every layer
@@ -148,8 +154,8 @@ make this cell permanently moot.
   hidden-iterator precedent is the considered one. Internal→public later is free.
 - **Map-centric fusion (Jason's original model, fully adopted 2026-07-16)**: the fusable
   wrapper offers up its internal mapping — the interface is ONE property,
-  `IFusionMap<TNode> Map` — and operators compose onto it with bare lambdas: `Select` is
-  fmap, `Filter` is the filter-bind, `ToTreenumerable` reifies. `FusionMap<TSource, TNode>`
+  `ICompositionMap<TNode> Map` — and operators compose onto it with bare lambdas: `Select` is
+  fmap, `Filter` is the filter-bind, `ToTreenumerable` reifies. `CompositionMap<TSource, TNode>`
   owns ALL the algebra: the composition law (first reject stops; accept-side strategies
   union), purity tracking (a projection-only map keeps the raw composed selector so
   reification stays on the light Select treenumerator; the first Filter converts the
@@ -157,7 +163,7 @@ make this cell permanently moot.
   representation choice at reification. The first Select over a plain source is the monadic
   RETURN (lifting into the verdict carrier with identity strategies). Erasure is why the
   map exists: the operator cannot name the source type, so the typed map composes and
-  constructs behind the erased combinator surface. `FusionVerdict` is a BARE PAIR
+  constructs behind the erased combinator surface. `CompositionVerdict` is a BARE PAIR
   `(value, strategies)` with one constructor — rejection IS SkipNode membership, a derived
   view inherited from the consumer protocol, so every pair is coherent by definition. (An
   earlier Accept/Reject factory vocabulary was dropped in review 2026-07-16: once PruneAfter
@@ -223,7 +229,7 @@ PruneAfter is an accept carrying skip instructions and PruneBefore a reject whos
 is the whole message, case names stop carrying the semantics — the strategies value does.)
 
 Each fused stage is a Kleisli arrow `NodeContext<TSource> → Verdict<TStage>`; the fused
-wrapper (`FusableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
+wrapper (`ComposableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
 the anonymous SelectWhere result) is the reified composite arrow, and appending an
 operator Kleisli-composes and returns a new wrapper — closed under composition: one
 wrapper, any order, any length.
@@ -252,7 +258,7 @@ Select exactly as to positional Where, and to any future positional flavor.
 
 **Required interface correction (phase 1 is correct only by topology luck):** the single
 `FuseSelect` hook erases the appended Select's flavor — safe today only because the sole
-accepting wrapper is the pure-Select wrapper. `FusableTreenumerable` needs the flavor, so
+accepting wrapper is the pure-Select wrapper. `ComposableTreenumerable` needs the flavor, so
 the recipe surface splits like Where's pair: `FuseSelect(value)` /
 `FusePositionalSelect(positional)` — four hooks, each wrapper answering per flavor.
 
@@ -275,17 +281,17 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    stateless/readonly (defensive-copy trap, documented on the interface).
 1. ✅ SHIPPED (branch, 2026-07-16): Where/Select signatures migrated to the arity split —
    (node) / (node, position), NodeContext removed from these operators (~150 call sites
-   swept); unified internal `IFusableTreenumerable` (FuseWhere / FusePositionalWhere /
+   swept); unified internal `IComposableTreenumerable` (FuseWhere / FusePositionalWhere /
    FuseSelect; hooks return null to DECLINE, the operator falls back to its plain wrap);
    named `WhereTreenumerable`; value Where∘Where by predicate combination; Select↔Where
    (both Where flavors) into the projection-carrying driver. FusionTests pin
    equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
    Select legality, and once-per-node selector evaluation on the fused path (the
    invocation-count ruling, now pinned rather than open).
-2. ✅ SHIPPED (branch, 2026-07-16): `FusionVerdict<T>` + verdict-shaped filter drivers (one
+2. ✅ SHIPPED (branch, 2026-07-16): `CompositionVerdict<T>` + verdict-shaped filter drivers (one
    composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
    strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
-   `FusableTreenumerable` (the reified Kleisli arrow — value chains of any length/order
+   `ComposableTreenumerable` (the reified Kleisli arrow — value chains of any length/order
    collapse to one wrapper, pinned) with the four-hook flavor split and the relabeling bit;
    PruneBefore is a verdict stage and joins chains (removal polarity explicit in the
    verdict); the pure-Select wrapper stays distinct so projection-only chains keep the light

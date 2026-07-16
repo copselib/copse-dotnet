@@ -10,12 +10,12 @@ namespace Copse.Linq.Async.Treenumerables
   // filter converts the representation to verdict shape), and the relabeling bit. All fusion
   // algebra lives here: the composition law (first reject stops, accept-side strategies
   // union), the purity tracking, and the representation choice.
-  internal sealed class FusionMap<TSource, TNode> : IFusionMap<TNode>
+  internal sealed class CompositionMap<TSource, TNode> : ICompositionMap<TNode>
   {
-    private FusionMap(
+    private CompositionMap(
       IAsyncTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TNode> projection,
-      Func<NodeContext<TSource>, FusionVerdict<TNode>> verdict,
+      Func<NodeContext<TSource>, CompositionVerdict<TNode>> verdict,
       bool containsRelabelingStage)
     {
       _Source = source;
@@ -29,35 +29,35 @@ namespace Copse.Linq.Async.Treenumerables
     // Exactly one is set: the map's representation. Projection-only chains cannot reject and
     // never relabel; verdict-backed chains run the full monad.
     private readonly Func<NodeContext<TSource>, TNode> _Projection;
-    private readonly Func<NodeContext<TSource>, FusionVerdict<TNode>> _Verdict;
+    private readonly Func<NodeContext<TSource>, CompositionVerdict<TNode>> _Verdict;
 
     public bool ContainsRelabelingStage { get; }
 
-    public static FusionMap<TSource, TNode> OfProjection(
+    public static CompositionMap<TSource, TNode> OfProjection(
       IAsyncTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TNode> projection)
-      => new FusionMap<TSource, TNode>(source, projection, null, containsRelabelingStage: false);
+      => new CompositionMap<TSource, TNode>(source, projection, null, containsRelabelingStage: false);
 
-    public static FusionMap<TSource, TNode> OfVerdict(
+    public static CompositionMap<TSource, TNode> OfVerdict(
       IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, FusionVerdict<TNode>> verdict,
+      Func<NodeContext<TSource>, CompositionVerdict<TNode>> verdict,
       bool containsRelabelingStage)
-      => new FusionMap<TSource, TNode>(source, null, verdict, containsRelabelingStage);
+      => new CompositionMap<TSource, TNode>(source, null, verdict, containsRelabelingStage);
 
-    public IFusionMap<TOuterResult> Select<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+    public ICompositionMap<TOuterResult> Select<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
     {
       if (_Projection != null)
       {
         var innerProjection = _Projection;
 
-        return FusionMap<TSource, TOuterResult>.OfProjection(
+        return CompositionMap<TSource, TOuterResult>.OfProjection(
           _Source,
           nodeContext => selector(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)));
       }
 
       var innerVerdict = _Verdict;
 
-      return FusionMap<TSource, TOuterResult>.OfVerdict(
+      return CompositionMap<TSource, TOuterResult>.OfVerdict(
         _Source,
         nodeContext =>
         {
@@ -66,21 +66,21 @@ namespace Copse.Linq.Async.Treenumerables
           // A rejected node has no outer value -- the selector never sees it (the stacked
           // pipeline's Select layer never received the node).
           return verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
-            ? new FusionVerdict<TOuterResult>(default, verdict.Strategies)
-            : new FusionVerdict<TOuterResult>(
+            ? new CompositionVerdict<TOuterResult>(default, verdict.Strategies)
+            : new CompositionVerdict<TOuterResult>(
                 selector(new NodeContext<TNode>(verdict.Value, nodeContext.Position)),
                 verdict.Strategies);
         },
         ContainsRelabelingStage);
     }
 
-    public IFusionMap<TNode> Filter(Func<NodeContext<TNode>, FusionVerdict<TNode>> stage, bool relabels)
+    public ICompositionMap<TNode> Filter(Func<NodeContext<TNode>, CompositionVerdict<TNode>> stage, bool relabels)
     {
       if (_Projection != null)
       {
         var innerProjection = _Projection;
 
-        return FusionMap<TSource, TNode>.OfVerdict(
+        return CompositionMap<TSource, TNode>.OfVerdict(
           _Source,
           nodeContext => stage(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)),
           relabels);
@@ -88,7 +88,7 @@ namespace Copse.Linq.Async.Treenumerables
 
       var innerVerdict = _Verdict;
 
-      return FusionMap<TSource, TNode>.OfVerdict(
+      return CompositionMap<TSource, TNode>.OfVerdict(
         _Source,
         nodeContext =>
         {
@@ -107,7 +107,7 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TNode> ToTreenumerable()
       => _Projection != null
         ? (IAsyncTreenumerable<TNode>)new AsyncSelectTreenumerable<TSource, TNode>(_Source, _Projection)
-        : new FusableTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
+        : new ComposableTreenumerable<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
             _Source, new FuncVerdictSelector<TSource, TNode>(_Verdict), ContainsRelabelingStage);
   }
 }

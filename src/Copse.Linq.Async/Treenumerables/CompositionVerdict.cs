@@ -16,9 +16,9 @@ namespace Copse.Linq.Async.Treenumerables
   // "remove this node", so the verdict inherits that meaning rather than tracking a second
   // flag or a case split -- any pair is coherent because the strategies alone say what
   // happens to the node.
-  internal readonly struct FusionVerdict<TNode>
+  internal readonly struct CompositionVerdict<TNode>
   {
-    public FusionVerdict(TNode value, NodeTraversalStrategies strategies)
+    public CompositionVerdict(TNode value, NodeTraversalStrategies strategies)
     {
       Value = value;
       Strategies = strategies;
@@ -32,7 +32,7 @@ namespace Copse.Linq.Async.Treenumerables
     // The composition law's accept-side union: strategies gathered by earlier accepting stages
     // ride along. Uniform over both fates -- a rejected verdict stays rejected (SkipNode is
     // already aboard) and its instruction gains the earlier stages' contributions.
-    public FusionVerdict<TNode> WithEarlierStrategies(NodeTraversalStrategies earlierStrategies)
-      => new FusionVerdict<TNode>(Value, Strategies | earlierStrategies);
+    public CompositionVerdict<TNode> WithEarlierStrategies(NodeTraversalStrategies earlierStrategies)
+      => new CompositionVerdict<TNode>(Value, Strategies | earlierStrategies);
   }
 }

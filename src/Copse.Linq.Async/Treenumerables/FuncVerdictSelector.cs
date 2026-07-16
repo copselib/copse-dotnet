@@ -8,13 +8,13 @@ namespace Copse.Linq.Async.Treenumerables
   // the PLAIN operators don't pay it.
   internal readonly struct FuncVerdictSelector<TInner, TNode> : IVerdictSelector<TInner, TNode>
   {
-    public FuncVerdictSelector(Func<NodeContext<TInner>, FusionVerdict<TNode>> verdictSelector)
+    public FuncVerdictSelector(Func<NodeContext<TInner>, CompositionVerdict<TNode>> verdictSelector)
     {
       _VerdictSelector = verdictSelector;
     }
 
-    private readonly Func<NodeContext<TInner>, FusionVerdict<TNode>> _VerdictSelector;
+    private readonly Func<NodeContext<TInner>, CompositionVerdict<TNode>> _VerdictSelector;
 
-    public FusionVerdict<TNode> GetVerdict(NodeContext<TInner> nodeContext) => _VerdictSelector(nodeContext);
+    public CompositionVerdict<TNode> GetVerdict(NodeContext<TInner> nodeContext) => _VerdictSelector(nodeContext);
   }
 }
