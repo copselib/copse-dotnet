@@ -158,11 +158,10 @@ namespace Copse.Linq.Async
 
           // ONE evaluation of the composed stage chain, against the SOURCE context; every user
           // lambda inside sees exactly what the unfused pipeline would have shown it. Accept-side
-          // strategies are NOT yet honored on the breadth-first path (no shipped stage produces
-          // them; the PruneAfter stage lands with the prune migration and needs a per-frame seam
-          // here -- the depth-first driver already honors them).
+          // strategies ride the pending/deferred slots so they apply on the pull following the
+          // node's scheduling publish.
           var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
-          var skipped = verdict.Rejected;
+          var skipped = verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)

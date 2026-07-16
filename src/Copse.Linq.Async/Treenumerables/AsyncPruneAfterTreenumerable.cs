@@ -30,9 +30,11 @@ namespace Copse.Linq.Async.Treenumerables
 
         return FusionMap<TNode, TNode>.OfVerdict(
           _Source,
-          nodeContext => predicate(nodeContext)
-            ? FusionVerdict<TNode>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
-            : FusionVerdict<TNode>.Accept(nodeContext.Node),
+          nodeContext => new FusionVerdict<TNode>(
+            nodeContext.Node,
+            predicate(nodeContext)
+              ? NodeTraversalStrategies.SkipDescendants
+              : NodeTraversalStrategies.TraverseAll),
           containsRelabelingStage: false);
       }
     }

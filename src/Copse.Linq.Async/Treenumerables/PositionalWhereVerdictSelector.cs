@@ -14,8 +14,10 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly Func<TNode, NodePosition, bool> _Predicate;
 
     public FusionVerdict<TNode> GetVerdict(NodeContext<TNode> nodeContext)
-      => _Predicate(nodeContext.Node, nodeContext.Position)
-        ? FusionVerdict<TNode>.Accept(nodeContext.Node)
-        : FusionVerdict<TNode>.Reject(NodeTraversalStrategies.SkipNode);
+      => new FusionVerdict<TNode>(
+        nodeContext.Node,
+        _Predicate(nodeContext.Node, nodeContext.Position)
+          ? NodeTraversalStrategies.TraverseAll
+          : NodeTraversalStrategies.SkipNode);
   }
 }

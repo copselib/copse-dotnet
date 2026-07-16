@@ -66,9 +66,11 @@ namespace Copse.Linq.Treenumerables
         {
           var verdict = innerVerdict(nodeContext);
 
-          return verdict.Rejected
-            ? FusionVerdict<TOuterResult>.Reject(verdict.Strategies)
-            : FusionVerdict<TOuterResult>.Accept(
+          // A rejected node has no outer value -- the selector never sees it (the stacked
+          // pipeline's Select layer never received the node).
+          return verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
+            ? new FusionVerdict<TOuterResult>(default, verdict.Strategies)
+            : new FusionVerdict<TOuterResult>(
                 selector(new NodeContext<TNode>(verdict.Value, nodeContext.Position)),
                 verdict.Strategies);
         },
@@ -95,9 +97,10 @@ namespace Copse.Linq.Treenumerables
         {
           var verdict = innerVerdict(nodeContext);
 
-          // The composition law: the first rejecting stage ends evaluation (later stages never
-          // saw the node in the stacked pipeline); accept-side strategies union.
-          return verdict.Rejected
+          // The composition law: the fold stops once SkipNode is aboard (the node left the
+          // logical tree, so later stages never saw it in the stacked pipeline); accept-side
+          // strategies union.
+          return verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
             ? verdict
             : stage(new NodeContext<TNode>(verdict.Value, nodeContext.Position)).WithEarlierStrategies(verdict.Strategies);
         },

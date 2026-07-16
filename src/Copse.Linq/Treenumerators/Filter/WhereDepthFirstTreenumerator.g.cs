@@ -107,7 +107,7 @@ namespace Copse.Linq.Treenumerators
       // lambda inside sees exactly what the unfused pipeline would have shown it.
       var verdict = _VerdictSelector.GetVerdict(InnerTreenumerator.ToNodeContext());
 
-      if (verdict.Rejected)
+      if (verdict.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {
         rejectedStrategies = verdict.Strategies;
         return false;

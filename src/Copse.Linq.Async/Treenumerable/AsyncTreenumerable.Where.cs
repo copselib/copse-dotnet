@@ -24,9 +24,11 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IAsyncFusableTreenumerable<TNode> fusableSource)
         return fusableSource.Map.Filter(
-          nodeContext => predicate(nodeContext.Node)
-            ? FusionVerdict<TNode>.Accept(nodeContext.Node)
-            : FusionVerdict<TNode>.Reject(),
+          nodeContext => new FusionVerdict<TNode>(
+            nodeContext.Node,
+            predicate(nodeContext.Node)
+              ? NodeTraversalStrategies.TraverseAll
+              : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
       return new FusableTreenumerable<TNode, TNode, WhereVerdictSelector<TNode>>(
@@ -50,9 +52,11 @@ namespace Copse.Linq
       // only while the chain is label-preserving and otherwise stacks a real layer.
       if (source is IAsyncFusableTreenumerable<TNode> fusableSource && !fusableSource.Map.ContainsRelabelingStage)
         return fusableSource.Map.Filter(
-          nodeContext => predicate(nodeContext.Node, nodeContext.Position)
-            ? FusionVerdict<TNode>.Accept(nodeContext.Node)
-            : FusionVerdict<TNode>.Reject(),
+          nodeContext => new FusionVerdict<TNode>(
+            nodeContext.Node,
+            predicate(nodeContext.Node, nodeContext.Position)
+              ? NodeTraversalStrategies.TraverseAll
+              : NodeTraversalStrategies.SkipNode),
           relabels: true).ToTreenumerable();
 
       return new FusableTreenumerable<TNode, TNode, PositionalWhereVerdictSelector<TNode>>(

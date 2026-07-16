@@ -206,7 +206,7 @@ namespace Copse.Linq.Tests
 
     // The PruneAfter-stage rehearsal: nothing on the surface produces accept-side verdict
     // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
-    // and must not sit untested until the prune migration. Accept(node, SkipDescendants) = keep
+    // and must not sit untested until the prune migration. (node, SkipDescendants) = keep
     // the node, drop its subtree.
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
@@ -214,9 +214,11 @@ namespace Copse.Linq.Tests
       var rehearsedPruneAfter = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
-          nodeContext.Node == "b"
-            ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
-            : FusionVerdict<string>.Accept(nodeContext.Node)),
+          new FusionVerdict<string>(
+            nodeContext.Node,
+            nodeContext.Node == "b"
+              ? NodeTraversalStrategies.SkipDescendants
+              : NodeTraversalStrategies.TraverseAll)),
         containsRelabelingStage: true);
 
       var nodes = rehearsedPruneAfter
@@ -235,9 +237,11 @@ namespace Copse.Linq.Tests
       var rehearsedPruneAfter = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
-          nodeContext.Node == "b"
-            ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
-            : FusionVerdict<string>.Accept(nodeContext.Node)),
+          new FusionVerdict<string>(
+            nodeContext.Node,
+            nodeContext.Node == "b"
+              ? NodeTraversalStrategies.SkipDescendants
+              : NodeTraversalStrategies.TraverseAll)),
         containsRelabelingStage: true);
 
       var nodes = rehearsedPruneAfter
@@ -249,7 +253,7 @@ namespace Copse.Linq.Tests
 
     // The seam's independent oracle: the bespoke PruneAfter operator implements the same
     // semantics (keep the node, drop its subtree) through entirely different machinery, so the
-    // rehearsed Accept(node, SkipDescendants) stage must match it -- both dimensions, under
+    // rehearsed (node, SkipDescendants) stage must match it -- both dimensions, under
     // every consumer-strategy interference aimed at every node.
     [TestMethod]
     public void AcceptStrategies_MatchTheBespokePruneAfterOracle()
@@ -284,9 +288,11 @@ namespace Copse.Linq.Tests
           var rehearsed = new FusableTreenumerable<string, string, FuncVerdictSelector<string, string>>(
             Tree(treeString),
             new FuncVerdictSelector<string, string>(nodeContext =>
-              nodeContext.Node == target
-                ? FusionVerdict<string>.Accept(nodeContext.Node, NodeTraversalStrategies.SkipDescendants)
-                : FusionVerdict<string>.Accept(nodeContext.Node)),
+              new FusionVerdict<string>(
+                nodeContext.Node,
+                nodeContext.Node == target
+                  ? NodeTraversalStrategies.SkipDescendants
+                  : NodeTraversalStrategies.TraverseAll)),
             containsRelabelingStage: true);
 
           var expected = Tree(treeString).PruneAfter(n => n == target)

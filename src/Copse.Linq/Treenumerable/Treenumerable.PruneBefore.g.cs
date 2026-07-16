@@ -25,9 +25,11 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally.
       if (source is IFusableTreenumerable<T> fusableSource)
         return fusableSource.Map.Filter(
-          nodeContext => predicate(nodeContext.Node)
-            ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
-            : FusionVerdict<T>.Accept(nodeContext.Node),
+          nodeContext => new FusionVerdict<T>(
+            nodeContext.Node,
+            predicate(nodeContext.Node)
+              ? NodeTraversalStrategies.SkipNodeAndDescendants
+              : NodeTraversalStrategies.TraverseAll),
           relabels: true).ToTreenumerable();
 
       return new FusableTreenumerable<T, T, PruneBeforeVerdictSelector<T>>(
@@ -48,9 +50,11 @@ namespace Copse.Linq
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IFusableTreenumerable<T> fusableSource && !fusableSource.Map.ContainsRelabelingStage)
         return fusableSource.Map.Filter(
-          nodeContext => predicate(nodeContext.Node, nodeContext.Position)
-            ? FusionVerdict<T>.Reject(NodeTraversalStrategies.SkipNodeAndDescendants)
-            : FusionVerdict<T>.Accept(nodeContext.Node),
+          nodeContext => new FusionVerdict<T>(
+            nodeContext.Node,
+            predicate(nodeContext.Node, nodeContext.Position)
+              ? NodeTraversalStrategies.SkipNodeAndDescendants
+              : NodeTraversalStrategies.TraverseAll),
           relabels: true).ToTreenumerable();
 
       return new FusableTreenumerable<T, T, PositionalPruneBeforeVerdictSelector<T>>(

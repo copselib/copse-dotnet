@@ -157,9 +157,13 @@ make this cell permanently moot.
   representation choice at reification. The first Select over a plain source is the monadic
   RETURN (lifting into the verdict carrier with identity strategies). Erasure is why the
   map exists: the operator cannot name the source type, so the typed map composes and
-  constructs behind the erased combinator surface. `FusionVerdict's` `Rejected` is a DERIVED
-  view — rejection IS SkipNode membership, inherited from the consumer protocol; `Reject()`
-  establishes the invariant by construction and incoherent verdicts are unconstructible.
+  constructs behind the erased combinator surface. `FusionVerdict` is a BARE PAIR
+  `(value, strategies)` with one constructor — rejection IS SkipNode membership, a derived
+  view inherited from the consumer protocol, so every pair is coherent by definition. (An
+  earlier Accept/Reject factory vocabulary was dropped in review 2026-07-16: once PruneAfter
+  is an accept carrying skip instructions and PruneBefore a reject whose payload is the whole
+  message, the case names no longer carry the semantics — the strategies value does, and the
+  factories' implicit `| SkipNode` never fired at any call site.)
   Wrappers keep their acquisition paths (struct seam, light Select); `Map` materializes on
   demand so only composition pays the delegate hop. Design lineage, each step Jason's: four
   flavor-hooks → two methods + property → one method + self-describing stage → one property
@@ -208,9 +212,15 @@ unwrap the map and rebuild it. Formalized, the carrier is a Writer monad over th
 strategy monoid, stacked with short-circuit:
 
 ```
-Verdict<T> = Accepted(T value, NodeTraversalStrategies strategies)
-           | Rejected(NodeTraversalStrategies strategies)
+Verdict<T> = (T value, NodeTraversalStrategies strategies)   -- a bare pair, one constructor
+Rejected   ⇔ SkipNode ∈ strategies                           -- a derived view, not a case
 ```
+
+The carrier is a PRODUCT, not a sum: the strategies alone say what happens to the node,
+because the consumer protocol already defines SkipNode as removal. "Accepted"/"Rejected"
+below are the derived views, not constructors. (The review that settled this: once
+PruneAfter is an accept carrying skip instructions and PruneBefore a reject whose payload
+is the whole message, case names stop carrying the semantics — the strategies value does.)
 
 Each fused stage is a Kleisli arrow `NodeContext<TSource> → Verdict<TStage>`; the fused
 wrapper (`FusableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
@@ -225,10 +235,10 @@ wrapper, any order, any length.
   stacked pipeline, later layers never saw that node). Short-circuit early whenever the
   union reaches skip-everything.
 
-**Stage vocabulary**: value-Where = `Accepted(v, ∅) | Rejected(SkipNode)`;
-PruneBefore = `Rejected(SkipNodeAndDescendants)`; PruneAfter =
-`Accepted(v, SkipDescendants)` — the accept-with-strategy case a bool cannot express, and
-the reason the carrier is a verdict rather than a predicate; Select = `Accepted(f(v), ∅)`.
+**Stage vocabulary**: value-Where = `(v, pred ? ∅ : SkipNode)`;
+PruneBefore = `(v, pred ? SkipNodeAndDescendants : ∅)`; PruneAfter =
+`(v, pred ? SkipDescendants : ∅)` — the accept-with-strategy pair a bool cannot express, and
+the reason the carrier is a verdict rather than a predicate; Select = `(f(v), ∅)`.
 Because the composite computes the FINAL value regardless of where filters sit among
 projections, the Where-then-Select seam needs no emission-side driver surgery — it
 dissolves into closure composition.

@@ -43,14 +43,14 @@ namespace Copse.Async.Tests
     private static readonly Func<int, bool> KeepNot3Value = n => n != 3;
 
     private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.FusionVerdict<int>> KeepNot3Verdict =
-      nc => nc.Node != 3
-        ? Copse.Linq.Treenumerables.FusionVerdict<int>.Accept(nc.Node)
-        : Copse.Linq.Treenumerables.FusionVerdict<int>.Reject(NodeTraversalStrategies.SkipNode);
+      nc => new Copse.Linq.Treenumerables.FusionVerdict<int>(
+        nc.Node,
+        nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
     private static readonly Func<NodeContext<int>, Copse.Linq.Async.Treenumerables.FusionVerdict<int>> AsyncKeepNot3Verdict =
-      nc => nc.Node != 3
-        ? Copse.Linq.Async.Treenumerables.FusionVerdict<int>.Accept(nc.Node)
-        : Copse.Linq.Async.Treenumerables.FusionVerdict<int>.Reject(NodeTraversalStrategies.SkipNode);
+      nc => new Copse.Linq.Async.Treenumerables.FusionVerdict<int>(
+        nc.Node,
+        nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
     [TestMethod]
     public async Task AsyncDepthFirstEngine_MatchesSyncEngine()
