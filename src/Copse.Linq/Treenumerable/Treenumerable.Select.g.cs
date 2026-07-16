@@ -21,9 +21,9 @@ namespace Copse.Linq
       this ITreenumerable<TSource> source,
       Func<TSource, TResult> selector)
     {
-      // A value selector observes no coordinates, so it splices unconditionally.
+      // A value selector observes no coordinates, so it composes unconditionally.
       if (source is IFusableTreenumerable<TSource> fusableSource)
-        return fusableSource.Fuse(FusionStage<TSource, TResult>.OfProjection(nodeContext => selector(nodeContext.Node)));
+        return fusableSource.Map.Select(nodeContext => selector(nodeContext.Node)).ToTreenumerable();
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -39,8 +39,8 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is IFusableTreenumerable<TSource> fusableSource && !fusableSource.ContainsRelabelingStage)
-        return fusableSource.Fuse(FusionStage<TSource, TResult>.OfProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position)));
+      if (source is IFusableTreenumerable<TSource> fusableSource && !fusableSource.Map.ContainsRelabelingStage)
+        return fusableSource.Map.Select(nodeContext => selector(nodeContext.Node, nodeContext.Position)).ToTreenumerable();
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }

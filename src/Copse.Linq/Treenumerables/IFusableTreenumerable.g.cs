@@ -6,31 +6,18 @@ using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The fusion recipe surface (docs/OPERATOR_FUSION_DESIGN.md), at its floor: one property and
-  // one total method. Two kinds of dispatch, split deliberately (Jason's Compose model):
-  //
-  //   DECISION dispatch lives with the OPERATOR -- it knows its own lambda's flavor, so it
-  //   applies the join rule itself: value lambdas splice unconditionally; positional lambdas
-  //   read ContainsRelabelingStage and stack a real layer when the chain has relabeled (their
-  //   append point must be a genuine emission boundary).
-  //
-  //   CONSTRUCTION dispatch lives with the WRAPPER -- the operator cannot name the wrapper's
-  //   erased source type, so the wrapper splices the offered stage onto its internal mapping
-  //   and builds the successor. The stage carries everything the wrapper needs -- behavior,
-  //   purity (IsProjection: the light-representation choice), relabeling, and the composition
-  //   law itself (ApplyAfter) -- so Fuse is total: every legality question was answered before
-  //   the call.
+  // The fusion recipe surface at its true minimum (docs/OPERATOR_FUSION_DESIGN.md): a fusable
+  // wrapper offers up its internal mapping, and everything else -- composition, purity
+  // tracking, the join-rule bit, the representation choice at reification -- lives on the map.
+  // The operator composes with bare lambdas (it knows its own flavor and reads
+  // Map.ContainsRelabelingStage for the join rule); the map, which knows the erased source
+  // type, composes and constructs.
   //
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
   internal interface IFusableTreenumerable<TNode> : ITreenumerable<TNode>
   {
-    // True once any relabeling stage is aboard; the operators' positional flavors read this to
-    // apply the join rule.
-    bool ContainsRelabelingStage { get; }
-
-    // The monadic bind: splice the stage onto my internal mapping and return the successor.
-    ITreenumerable<TOuterResult> Fuse<TOuterResult>(FusionStage<TNode, TOuterResult> stage);
+    IFusionMap<TNode> Map { get; }
   }
 }

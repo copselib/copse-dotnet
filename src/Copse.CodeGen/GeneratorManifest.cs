@@ -286,9 +286,13 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/FuncVerdictSelector.g.cs",
         "FuncVerdictSelector", "FuncVerdictSelector", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/FusionStage.cs",
-        "Copse.Linq/Treenumerables/FusionStage.g.cs",
-        "FusionStage", "FusionStage", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IFusionMap.cs",
+        "Copse.Linq/Treenumerables/IFusionMap.g.cs",
+        "IFusionMap", "IFusionMap", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/FusionMap.cs",
+        "Copse.Linq/Treenumerables/FusionMap.g.cs",
+        "FusionMap", "FusionMap", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/FusionVerdict.cs",
         "Copse.Linq/Treenumerables/FusionVerdict.g.cs",

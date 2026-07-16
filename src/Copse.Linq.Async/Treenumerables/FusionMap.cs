@@ -1,0 +1,110 @@
+using Copse.Core;
+using Copse.Core.Async;
+using System;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The accumulated Kleisli arrow of a fused chain, reified with its combinators: the source,
+  // the composed mapping (kept in its RAWEST form -- a projection-only chain retains the bare
+  // composed selector so reification can stay on the light Select treenumerator; the first
+  // filter converts the representation to verdict shape), and the relabeling bit. All fusion
+  // algebra lives here: the composition law (first reject stops, accept-side strategies
+  // union), the purity tracking, and the representation choice.
+  internal sealed class FusionMap<TSource, TNode> : IFusionMap<TNode>
+  {
+    private FusionMap(
+      IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TNode> projection,
+      Func<NodeContext<TSource>, FusionVerdict<TNode>> verdict,
+      bool containsRelabelingStage)
+    {
+      _Source = source;
+      _Projection = projection;
+      _Verdict = verdict;
+      ContainsRelabelingStage = containsRelabelingStage;
+    }
+
+    private readonly IAsyncTreenumerable<TSource> _Source;
+
+    // Exactly one is set: the map's representation. Projection-only chains cannot reject and
+    // never relabel; verdict-backed chains run the full monad.
+    private readonly Func<NodeContext<TSource>, TNode> _Projection;
+    private readonly Func<NodeContext<TSource>, FusionVerdict<TNode>> _Verdict;
+
+    public bool ContainsRelabelingStage { get; }
+
+    public static FusionMap<TSource, TNode> OfProjection(
+      IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TNode> projection)
+      => new FusionMap<TSource, TNode>(source, projection, null, containsRelabelingStage: false);
+
+    public static FusionMap<TSource, TNode> OfVerdict(
+      IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, FusionVerdict<TNode>> verdict,
+      bool containsRelabelingStage)
+      => new FusionMap<TSource, TNode>(source, null, verdict, containsRelabelingStage);
+
+    public IFusionMap<TOuterResult> Select<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+    {
+      if (_Projection != null)
+      {
+        var innerProjection = _Projection;
+
+        return FusionMap<TSource, TOuterResult>.OfProjection(
+          _Source,
+          nodeContext => selector(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)));
+      }
+
+      var innerVerdict = _Verdict;
+
+      return FusionMap<TSource, TOuterResult>.OfVerdict(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdict(nodeContext);
+
+          return verdict.Rejected
+            ? FusionVerdict<TOuterResult>.Reject(verdict.Strategies)
+            : FusionVerdict<TOuterResult>.Accept(
+                selector(new NodeContext<TNode>(verdict.Value, nodeContext.Position)),
+                verdict.Strategies);
+        },
+        ContainsRelabelingStage);
+    }
+
+    public IFusionMap<TNode> Filter(Func<NodeContext<TNode>, FusionVerdict<TNode>> stage, bool relabels)
+    {
+      if (_Projection != null)
+      {
+        var innerProjection = _Projection;
+
+        return FusionMap<TSource, TNode>.OfVerdict(
+          _Source,
+          nodeContext => stage(new NodeContext<TNode>(innerProjection(nodeContext), nodeContext.Position)),
+          relabels);
+      }
+
+      var innerVerdict = _Verdict;
+
+      return FusionMap<TSource, TNode>.OfVerdict(
+        _Source,
+        nodeContext =>
+        {
+          var verdict = innerVerdict(nodeContext);
+
+          // The composition law: the first rejecting stage ends evaluation (later stages never
+          // saw the node in the stacked pipeline); accept-side strategies union.
+          return verdict.Rejected
+            ? verdict
+            : stage(new NodeContext<TNode>(verdict.Value, nodeContext.Position)).WithEarlierStrategies(verdict.Strategies);
+        },
+        ContainsRelabelingStage | relabels);
+    }
+
+    public IAsyncTreenumerable<TNode> ToTreenumerable()
+      => _Projection != null
+        ? (IAsyncTreenumerable<TNode>)new AsyncSelectTreenumerable<TSource, TNode>(_Source, _Projection)
+        : FusedTreenumerable.Create<TSource, TNode, FuncVerdictSelector<TSource, TNode>>(
+            _Source, new FuncVerdictSelector<TSource, TNode>(_Verdict), ContainsRelabelingStage);
+  }
+}

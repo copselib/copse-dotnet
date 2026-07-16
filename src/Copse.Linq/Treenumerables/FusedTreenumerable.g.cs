@@ -51,17 +51,18 @@ namespace Copse.Linq.Treenumerables
       new WhereDepthFirstTreenumerator<TSource, TResult, TVerdictSelector>(
         _Source.GetDepthFirstTreenumerator, _VerdictSelector);
 
-    // The bind: the stage carries the composition law, so splicing is one line plus the
-    // relabeling fold.
-    public ITreenumerable<TOuterResult> Fuse<TOuterResult>(FusionStage<TResult, TOuterResult> stage)
+    // Offer up the internal mapping (materialized on demand: acquisition keeps the zero-cost
+    // struct seam; only actual composition pays the delegate hop, and fused paths are
+    // delegate-bound anyway).
+    public IFusionMap<TResult> Map
     {
-      var innerVerdictSelector = _VerdictSelector;
+      get
+      {
+        var verdictSelector = _VerdictSelector;
 
-      return FusedTreenumerable.Create<TSource, TOuterResult, FuncVerdictSelector<TSource, TOuterResult>>(
-        _Source,
-        new FuncVerdictSelector<TSource, TOuterResult>(nodeContext =>
-          stage.ApplyAfter(innerVerdictSelector.GetVerdict(nodeContext), nodeContext.Position)),
-        ContainsRelabelingStage | stage.Relabels);
+        return FusionMap<TSource, TResult>.OfVerdict(
+          _Source, nodeContext => verdictSelector.GetVerdict(nodeContext), ContainsRelabelingStage);
+      }
     }
   }
 }
