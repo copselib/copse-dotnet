@@ -28,7 +28,7 @@ namespace Copse.Linq
             : FusionVerdict<T>.Accept(nodeContext.Node),
           relabels: true).ToTreenumerable();
 
-      return FusedTreenumerable.Create<T, T, PruneBeforeVerdictSelector<T>>(
+      return new FusedTreenumerable<T, T, PruneBeforeVerdictSelector<T>>(
         source, new PruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
     }
 
@@ -51,7 +51,7 @@ namespace Copse.Linq
             : FusionVerdict<T>.Accept(nodeContext.Node),
           relabels: true).ToTreenumerable();
 
-      return FusedTreenumerable.Create<T, T, PositionalPruneBeforeVerdictSelector<T>>(
+      return new FusedTreenumerable<T, T, PositionalPruneBeforeVerdictSelector<T>>(
         source, new PositionalPruneBeforeVerdictSelector<T>(predicate), containsRelabelingStage: true);
     }
 

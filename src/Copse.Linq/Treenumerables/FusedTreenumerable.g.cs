@@ -8,17 +8,6 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // Type-inference factory: hides the selector-struct spelling at every construction site.
-  internal static class FusedTreenumerable
-  {
-    public static FusedTreenumerable<TSource, TResult, TVerdictSelector> Create<TSource, TResult, TVerdictSelector>(
-      ITreenumerable<TSource> source,
-      TVerdictSelector verdictSelector,
-      bool containsRelabelingStage)
-      where TVerdictSelector : struct, IVerdictSelector<TSource, TResult>
-      => new FusedTreenumerable<TSource, TResult, TVerdictSelector>(source, verdictSelector, containsRelabelingStage);
-  }
-
   // The reified stage chain (docs/OPERATOR_FUSION_DESIGN.md, "the verdict monad"): one wrapper
   // holding the Kleisli-composed verdict of every fused stage, so value-lambda chains of any
   // length and order collapse to ONE layer over the source. Plain single-stage operators

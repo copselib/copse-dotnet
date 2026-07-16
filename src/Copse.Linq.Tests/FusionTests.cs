@@ -211,7 +211,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
     {
-      var rehearsedPruneAfter = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
           nodeContext.Node == "b"
@@ -232,7 +232,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredBreadthFirst()
     {
-      var rehearsedPruneAfter = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+      var rehearsedPruneAfter = new FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncVerdictSelector<string, string>(nodeContext =>
           nodeContext.Node == "b"
@@ -281,7 +281,7 @@ namespace Copse.Linq.Tests
 
           var target = pruneTarget;
 
-          var rehearsed = FusedTreenumerable.Create<string, string, FuncVerdictSelector<string, string>>(
+          var rehearsed = new FusedTreenumerable<string, string, FuncVerdictSelector<string, string>>(
             Tree(treeString),
             new FuncVerdictSelector<string, string>(nodeContext =>
               nodeContext.Node == target
