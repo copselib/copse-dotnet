@@ -283,7 +283,17 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    question — plain Where now pays library-closure + user-predicate (2 calls/node), same
    magnitude as the phase-0.5 identity pair; the struct ruling transposes to
    `TVerdictSelector : struct, IVerdictSelector<TInner,TNode>` if taken.
-2.5 Remaining phase-2 items: the BFT accept-strategy seam + the PruneAfter stage + prune
-   signature migration; Select-into-captures; narrow-receiver (D/B) fusion as template
-   instantiations.
+2.5 ✅ SHIPPED (branch, 2026-07-16): the BFT accept-strategy seam (pending/deferred slots,
+   verified against the bespoke PruneAfter oracle across ~4,600 interference sub-cases);
+   the prune signature migration ((node)/(node, position) pairs; SkipTrees and Intersection
+   migrated -- Intersection's prune now fuses into the merge pipelines); PruneAfter's named
+   wrapper (bespoke no-promotion driver for plain acquisition, Map with relabels: false --
+   label-preserving, so positional lambdas compose across it, pinned); the 8-symbol battery
+   (584 chains, 376k cases/dim, interference bounded to chains of length <= 2). The extended
+   battery immediately found a pre-existing bug: the bespoke PruneAfter driver tested the
+   user predicate against the pre-enumeration ForestRoot sentinel -- guarded, user lambdas
+   see real nodes only.
+2.6 Remaining: Select-into-captures; narrow-receiver (D/B) fusion; TakeNodesUntil/While
+   migration; the fusion benchmark rows + async OperatorStack re-measure (the tabled
+   wrapper-wave decision).
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
