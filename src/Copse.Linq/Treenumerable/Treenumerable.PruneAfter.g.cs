@@ -4,6 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -11,44 +12,97 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>PruneAfter</c>: keeps each node that matches the predicate but sheds its subtree (the
-    /// matched node is the deepest of its lineage kept). Deferred.
+    /// Async <c>PruneAfter</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// (the matched node is the deepest of its lineage kept). Deferred. PruneAfter is
+    /// label-preserving: survivors keep their coordinates.
     /// </summary>
     public static ITreenumerable<T> PruneAfter<T>(
       this ITreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        TreenumerableFactory.Create(
-          () => new PruneAfterTreenumerator<T>(source.GetBreadthFirstTreenumerator, predicate),
-          () => new PruneAfterTreenumerator<T>(source.GetDepthFirstTreenumerator, predicate));
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // comes from the wrapper's CreateResultSelector: the operator's semantics, stated once.
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
+          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
+          relabels: false);
+
+      return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
+    }
+
+    /// <summary>
+    /// Async <c>PruneAfter</c> over (node, position). Deferred. The positional predicate sees
+    /// ITS input tree's labels.
+    /// </summary>
+    public static ITreenumerable<T> PruneAfter<T>(
+      this ITreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule: a positional predicate composes only over a label-preserving chain.
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
+          relabels: false);
+
+      return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
     public static IDepthFirstTreenumerable<T> PruneAfter<T>(
       this IDepthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new PruneAfterTreenumerator<T>(source.GetDepthFirstTreenumerator, predicate));
+          () => new PruneAfterTreenumerator<T>(
+            source.GetDepthFirstTreenumerator, nodeContext => predicate(nodeContext.Node)));
+    }
+
+    public static IDepthFirstTreenumerable<T> PruneAfter<T>(
+      this IDepthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateDepthFirst(
+          () => new PruneAfterTreenumerator<T>(
+            source.GetDepthFirstTreenumerator, nodeContext => predicate(nodeContext.Node, nodeContext.Position)));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneAfter<T>(
       this IBreadthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new PruneAfterTreenumerator<T>(source.GetBreadthFirstTreenumerator, predicate));
+          () => new PruneAfterTreenumerator<T>(
+            source.GetBreadthFirstTreenumerator, nodeContext => predicate(nodeContext.Node)));
+    }
+
+    public static IBreadthFirstTreenumerable<T> PruneAfter<T>(
+      this IBreadthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateBreadthFirst(
+          () => new PruneAfterTreenumerator<T>(
+            source.GetBreadthFirstTreenumerator, nodeContext => predicate(nodeContext.Node, nodeContext.Position)));
     }
   }
 }

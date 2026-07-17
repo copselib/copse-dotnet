@@ -61,7 +61,7 @@ namespace Copse.Tests
       var treenumerable =
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
-        .Select(visit => visit.Node);
+        .Select(visit => visit);
 
       var testScenario = TreeTraversalTestData.TestTrees[testTreeIndex].TestScenarios[testScenarioIndex];
 
@@ -103,7 +103,7 @@ namespace Copse.Tests
       treenumerable =
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
-        .Select(visit => visit.Node);
+        .Select(visit => visit);
 
       var expected =
         depthFirstTest

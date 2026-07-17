@@ -68,7 +68,7 @@ namespace Copse.Tests
         var treenumerable =
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
-          .Select(visit => visit.Node);
+          .Select(visit => visit);
 
         var nodes =
           treeString

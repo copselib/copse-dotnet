@@ -167,6 +167,7 @@ namespace Copse.CodeGen
         ["AsyncRefCountDisposable"] = "RefCountDisposable",
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",
+        ["IAsyncSelectWhereTreenumerable"] = "ISelectWhereTreenumerable",
         ["IAsyncSelectTreenumerable"] = "ISelectTreenumerable",
       };
 

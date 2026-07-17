@@ -62,11 +62,11 @@ namespace Copse.Benchmarks
           nodeContext => new AsyncBinaryChildEnumerator(nodeContext.Node),
           node => node,
           RootAsync())
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == depth);
+        .PruneBefore((n, position) => position.Depth == depth);
 
     public static ITreenumerable<int> GetSyncBinaryTree(int depth)
       => new CompleteBinaryTree()
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == depth);
+        .PruneBefore((n, position) => position.Depth == depth);
 
     private static async IAsyncEnumerable<int> RootAsync()
     {
@@ -178,15 +178,15 @@ namespace Copse.Benchmarks
     [Benchmark(Baseline = true)]
     public void Sync()
       => AsyncOverheadSources.GetSyncBinaryTree(Depth)
-        .Where(nodeContext => nodeContext.Node % 3 != 0)
-        .Select(nodeContext => nodeContext.Node * 2)
+        .Where(n => n % 3 != 0)
+        .Select(n => n * 2)
         .Consume();
 
     [Benchmark]
     public async ValueTask Async()
       => await AsyncOverheadSources.GetAsyncBinaryTree(Depth)
-        .Where(nodeContext => nodeContext.Node % 3 != 0)
-        .Select(nodeContext => nodeContext.Node * 2)
+        .Where(n => n % 3 != 0)
+        .Select(n => n * 2)
         .ConsumeAsync();
   }
 

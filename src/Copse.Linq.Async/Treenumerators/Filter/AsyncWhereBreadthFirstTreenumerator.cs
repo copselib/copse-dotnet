@@ -1,6 +1,7 @@
 using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereBreadthFirstPath (internal, via InternalsVisibleTo)
 using System;
@@ -21,24 +22,23 @@ namespace Copse.Linq.Async
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  internal sealed class AsyncWhereBreadthFirstTreenumerator<TNode>
-    : AsyncTreenumeratorWrapper<TNode>
+  internal sealed class AsyncWhereBreadthFirstTreenumerator<TInner, TNode, TResultSelector>
+    : AsyncTreenumeratorWrapper<TInner, TNode>
+    where TResultSelector : struct, IResultSelector<TInner, TNode>
   {
     public AsyncWhereBreadthFirstTreenumerator(
-      Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TNode>, bool> predicate,
-      NodeTraversalStrategies nodeTraversalStrategy)
+      Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
+      TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
-      _Predicate = predicate;
-      _NodeTraversalStrategy = nodeTraversalStrategy;
+      _ResultSelector = resultSelector;
 
-      // Seed the path with a sentinel root taken from the inner treenumerator's initial position.
-      _Path = new WhereBreadthFirstPath<TNode>(InnerTreenumerator.Node, InnerTreenumerator.Position);
+      // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
+      // sentinel value is never published, so no projection is owed).
+      _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
-    private readonly NodeTraversalStrategies _NodeTraversalStrategy;
+    private readonly TResultSelector _ResultSelector;
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
@@ -65,6 +65,14 @@ namespace Copse.Linq.Async
     // child's own visiting turn that follows it.
     private NodeTraversalStrategies? _DeferredStrategy = null;
 
+    // Accept-side result strategies (PruneAfter's SkipDescendants) from the last published
+    // SCHEDULING visit, merged into the consumer's strategies on the pull that follows it --
+    // the same protocol moment the consumer's own strategies for that visit arrive. The
+    // deferred slot carries them while a consumer-skip transition holds the schedule publish
+    // back one turn (at most one deferred schedule is ever pending).
+    private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
+    private NodeTraversalStrategies _DeferredResultStrategies = NodeTraversalStrategies.TraverseAll;
+
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // Output the deferred schedule from a consumer-SkipNode'd parent transition.
@@ -72,8 +80,13 @@ namespace Copse.Linq.Async
       {
         _Path.ClearConsumerSkippedSubtree();
         Publish(ref _Path.Back, TreenumeratorMode.SchedulingNode);
+        _PendingResultStrategies = _DeferredResultStrategies;
+        _DeferredResultStrategies = NodeTraversalStrategies.TraverseAll;
         return true;
       }
+
+      nodeTraversalStrategies |= _PendingResultStrategies;
+      _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
       if (Mode == TreenumeratorMode.VisitingNode)
       {
@@ -142,14 +155,21 @@ namespace Copse.Linq.Async
         if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
           var innerDepth = InnerTreenumerator.Position.Depth;
-          var skipped = !_Predicate(InnerTreenumerator.ToNodeContext());
+
+          // ONE evaluation of the composed selector chain, against the SOURCE context; every user
+          // lambda inside sees exactly what the stacked pipeline would have shown it. Accept-side
+          // strategies ride the pending/deferred slots so they apply on the pull following the
+          // node's scheduling publish.
+          var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
+          var skipped = result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
           {
-            nodeTraversalStrategies = _NodeTraversalStrategy;
+            nodeTraversalStrategies = result.Strategies;
             continue;
           }
+
 
           // --- Accepted node processing ---
           // Remove consumer-SkipNode'd nodes before calculating effective position.
@@ -196,8 +216,10 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
+              // The schedule publishes on a later entry; its accept-side strategies wait with it.
+              _DeferredResultStrategies = result.Strategies;
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
@@ -208,7 +230,10 @@ namespace Copse.Linq.Async
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(InnerTreenumerator.Node, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
+          // The scheduling publish below is this node's; its accept-side strategies apply on
+          // the pull that follows it.
+          _PendingResultStrategies = result.Strategies;
         }
         else // VisitingNode
         {

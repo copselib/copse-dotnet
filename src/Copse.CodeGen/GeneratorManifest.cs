@@ -208,11 +208,11 @@ namespace Copse.CodeGen
       // engines -- the hand-written sync memoize machinery is retired; MemoizeTests plus the
       // conformance matrix are the non-differential oracle). The cluster's classes reference
       // each other, so Generated*-style validation naming is not an option here.
-      new("Copse.Linq.Async/Treenumerables/IAsyncTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/ITreenumerableBuffer.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/ITreenumerableBuffer.g.cs",
         "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
-      new("Copse.Linq.Async/Treenumerables/IAsyncMemoizeTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/IMemoizeTreenumerableBuffer.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncMemoizeTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/IMemoizeTreenumerableBuffer.g.cs",
         "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
@@ -223,22 +223,22 @@ namespace Copse.CodeGen
         "Copse.Linq/Stores/Memoize/MemoizeLevelOrderStore.g.cs",
         "AsyncMemoizeLevelOrderStore", "MemoizeLevelOrderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeTreenumerable.g.cs",
         "AsyncMemoizeTreenumerable", "MemoizeTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeDepthFirstSourceTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeDepthFirstSourceTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeDepthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeDepthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeDepthFirstSourceTreenumerable", "MemoizeDepthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeBreadthFirstSourceTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeBreadthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeBreadthFirstSourceTreenumerable", "MemoizeBreadthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
 
       // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
       // memoize cluster.
-      new("Copse.Linq.Async/Treenumerables/AsyncTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/TreenumerableBuffer.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/TreenumerableBuffer.g.cs",
         "AsyncTreenumerableBuffer", "TreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerators/Invert/AsyncInvertedLevelOrderStream.cs",
@@ -262,12 +262,52 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",
         "AsyncHideTreenumerable", "HideTreenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
-        "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereTreenumerable.g.cs",
+        "IAsyncSelectWhereTreenumerable", "ISelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectTreenumerable.g.cs",
         "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
-        "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/IResultSelector.g.cs",
+        "IResultSelector", "IResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/WhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/WhereResultSelector.g.cs",
+        "WhereResultSelector", "WhereResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PositionalWhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PositionalWhereResultSelector.g.cs",
+        "PositionalWhereResultSelector", "PositionalWhereResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PruneBeforeResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneBeforeResultSelector.g.cs",
+        "PruneBeforeResultSelector", "PruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/FuncResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/FuncResultSelector.g.cs",
+        "FuncResultSelector", "FuncResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneAfterTreenumerable.g.cs",
+        "AsyncPruneAfterTreenumerable", "PruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PositionalPruneBeforeResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PositionalPruneBeforeResultSelector.g.cs",
+        "PositionalPruneBeforeResultSelector", "PositionalPruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereResult.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereResult.g.cs",
+        "SelectWhereResult", "SelectWhereResult", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereTreenumerable.g.cs",
+        "SelectWhereTreenumerable", "SelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectTreenumerable.g.cs",
         "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
 
       // The fluent extension layer: every Treenumerable.X partial is generated from its

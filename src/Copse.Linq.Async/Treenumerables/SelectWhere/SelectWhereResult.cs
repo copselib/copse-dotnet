@@ -1,0 +1,32 @@
+using Copse.Core;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The composed pipeline's carrier: one evaluation of the composed selector chain against a source
+  // node answers the driver's whole per-node question -- is the node in the output tree, and
+  // how should the inner treenumerator be pulled past this point? A plain (value, strategies)
+  // pair; the strategies speak the consumer protocol directly:
+  //
+  //   (value, TraverseAll)               in the tree; traverse normally
+  //   (value, SkipDescendants)           in the tree; don't descend below it (PruneAfter)
+  //   (value, SkipNode)                  filtered; children promote (Where)
+  //   (value, SkipNodeAndDescendants)    pruned with its whole subtree (PruneBefore)
+  //
+  // REJECTION IS SkipNode-MEMBERSHIP: the consumer protocol already defines SkipNode as
+  // "remove this node", so the result inherits that meaning rather than tracking a second
+  // flag or a case split -- any pair is coherent because the strategies alone say what
+  // happens to the node.
+  internal readonly struct SelectWhereResult<TNode>
+  {
+    public SelectWhereResult(TNode value, NodeTraversalStrategies strategies)
+    {
+      Value = value;
+      Strategies = strategies;
+    }
+
+    // Unobserved when the strategies carry SkipNode (the fold stops and the driver never
+    // publishes the node).
+    public readonly TNode Value;
+    public readonly NodeTraversalStrategies Strategies;
+  }
+}

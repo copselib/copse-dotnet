@@ -4,6 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -11,58 +12,96 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>PruneBefore</c>: prunes each subtree at (and including) the first node matching the
-    /// predicate -- no child promotion (SkipNodeAndDescendants). Deferred.
+    /// Async <c>PruneBefore</c> over node VALUES (prune polarity: true = prune): removes each
+    /// matching node AND its whole subtree. Deferred.
     /// </summary>
     public static ITreenumerable<T> PruneBefore<T>(
       this ITreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        TreenumerableFactory.Create(
-          // PruneBefore's predicate means "prune when true"; the Where machinery keeps when
-          // true (the LINQ convention), so removal semantics invert here, at the operator.
-          () => new WhereBreadthFirstTreenumerator<T>(
-            source.GetBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants),
-          () => new WhereDepthFirstTreenumerator<T>(
-            source.GetDepthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // is the plain path's struct: the operator's semantics, stated once.
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+    }
+
+    /// <summary>
+    /// Async <c>PruneBefore</c> over (node, position) (prune polarity: true = prune). Deferred.
+    /// Each positional predicate sees ITS input tree's labels.
+    /// </summary>
+    public static ITreenumerable<T> PruneBefore<T>(
+      this ITreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule: a positional predicate composes only over a label-preserving chain.
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
       this IDepthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<T>(
-            source.GetDepthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+          () => new WhereDepthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetDepthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+    }
+
+    public static IDepthFirstTreenumerable<T> PruneBefore<T>(
+      this IDepthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateDepthFirst(
+          () => new WhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetDepthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
       this IBreadthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<T>(
-            source.GetBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+          () => new WhereBreadthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetBreadthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+    }
+
+    public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
+      this IBreadthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        TreenumerableFactory.CreateBreadthFirst(
+          () => new WhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetBreadthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
   }
 }

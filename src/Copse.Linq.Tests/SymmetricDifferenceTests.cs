@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Copse.Linq.Tests
 {
-  // SymmetricDifference(left, right) == left.Union(right).Where(nc => !nc.Node.HasLeftAndRight).
+  // SymmetricDifference(left, right) == left.Union(right).Where(n => !n.HasLeftAndRight).
   // Union merges POSITIONALLY (never by value); SymmetricDifference keeps only nodes NOT present
   // in both trees. Because it is built on Where, removing a shared node PROMOTES its non-shared
   // descendants up to the removed node's parent (child promotion) -- the descendants survive,
@@ -75,7 +75,7 @@ namespace Copse.Linq.Tests
       var sut =
         leftTreenumerable
         .SymmetricDifference(rightTreenumerable)
-        .Select(mergeNodeContext => $"{mergeNodeContext.Node.Left}{mergeNodeContext.Node.Right}");
+        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
       Func<NodeContext<string>, NodeTraversalStrategies> traverseAll =
         _ => NodeTraversalStrategies.TraverseAll;
@@ -139,12 +139,12 @@ namespace Copse.Linq.Tests
       IDepthFirstTreenumerable<string> narrow =
         StreamDepthFirst(left)
         .SymmetricDifference(StreamDepthFirst(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Node.Left}{mergeNodeContext.Node.Right}");
+        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .SymmetricDifference(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Node.Left}{mergeNodeContext.Node.Right}");
+        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
       VisitStreamConformance.AssertSameStream(
         full.GetDepthFirstTreenumerator(),
@@ -162,12 +162,12 @@ namespace Copse.Linq.Tests
       IBreadthFirstTreenumerable<string> narrow =
         StreamBreadthFirst(left)
         .SymmetricDifference(StreamBreadthFirst(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Node.Left}{mergeNodeContext.Node.Right}");
+        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .SymmetricDifference(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Node.Left}{mergeNodeContext.Node.Right}");
+        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
       VisitStreamConformance.AssertSameStream(
         full.GetBreadthFirstTreenumerator(),

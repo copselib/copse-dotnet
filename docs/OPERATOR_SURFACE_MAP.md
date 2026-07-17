@@ -29,13 +29,13 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 
 | Operator | Source dims | Returns | Behavior | State bound |
 |---|---|---|---|---|
-| Select | F, D, B | same-dim | streams | O(1); consecutive Selects fuse |
-| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
+| Select | F, D, B | same-dim | streams | O(1); lambdas take (node) or (node, position) — NodeContext left the operator surface 2026-07-16 (fusion design); consecutive Selects fuse, either flavor (projection never moves positions) |
+| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres FUSE (predicate combination) and fuse over Selects into the projection-carrying driver; positional Wheres never fuse with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes still NodeContext, migrating with the signature workstream |
 | TakeNodesUntil / TakeNodesWhile | F, D, B | same-dim | streams | O(1) |
 | TakeTrees / SkipTrees | F, D, B | same-dim | streams | sugar over take/prune |
 | TakeLastTrees / SkipLastTrees | F, D, B | same-dim | **eager count at call time** | two-pass by design (count the roots, then take/skip; decided 2026-07-13 — a single-pass form must buffer k whole subtrees); B's counting pass drains level 0 only |
 | Union / Intersection / Subtract / SymmetricDifference | F×F, D×D, B×B | merge/narrow | streams | lockstep co-traversal, O(depth) DFT / O(width) BFT |
-| Do / Hide | F, D, B | same-dim | streams | O(1) |
+| Do / Hide | F, D, B | same-dim | streams | O(1); Do = the sanctioned effect point: action per emitted visit, receives the full NodeVisit (deliberately permissive — narrower cadences are caller-side filters); keeps NodeVisit through the signature migration; NEVER fuses and prevents fusion across it by definition (fusion design: the window materializes the pane) |
 | RootfixScan (seed / rootNodeSelector) | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
 | Invert | **B-narrow** | IBreadthFirstTreenumerable | **streams** | O(width) — the one genuinely streaming mirror (`InvertedLevelOrderStream`) |
 | Invert | D-narrow; buffer | ITreenumerableBuffer | capture(deferred-once) | mirrored preorder arrays. **Specialization KEPT (decided 2026-07-15)**: Invert ≡ OrderChildrenByDescending by source sibling index (pinned by OrderChildrenByTests' subsumption law), but the specialized build is measured ~1.15x faster, 2.4x leaner on wide trees (no keys channel, LIFO emit, no per-group sort), and its B arm streams O(width) with NO capture — a cost class the keyed general operator cannot reach. Both families share trees on the Buffer leg, so the premium stays continuously measured; reopen only if the rows converge. |

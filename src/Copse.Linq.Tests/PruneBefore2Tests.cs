@@ -111,9 +111,9 @@ namespace Copse.Linq.Tests
 
       var expectedTree =
         tree
-        .PruneBefore(nc => nc.Node == node1)
+        .PruneBefore(n => n == node1)
         .Hide()
-        .PruneBefore(nc => nc.Node == node2);
+        .PruneBefore(n => n == node2);
 
       return TreeSerializer.SerializeDepthFirstTree(expectedTree);
     }
@@ -224,8 +224,8 @@ namespace Copse.Linq.Tests
 
       var sut =
         treenumerable
-        .PruneBefore(nc => nc.Node == skippedNodes[0])
-        .PruneBefore(nc => nc.Node == skippedNodes[1]);
+        .PruneBefore(n => n == skippedNodes[0])
+        .PruneBefore(n => n == skippedNodes[1]);
 
       Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategySelector =
         nodeContext =>

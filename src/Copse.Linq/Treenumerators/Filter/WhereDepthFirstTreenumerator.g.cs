@@ -3,6 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
@@ -10,34 +11,42 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
-  /// the <c>await</c>s and it becomes the sync Where driver. Filters the inner visit stream,
-  /// promoting a predicate-skipped node's children into its parent's slot. All structural state
-  /// lives in the shared, color-agnostic <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct
-  /// the sync driver uses, verbatim) -- the test that the codegen approach holds for the library's
-  /// most intricate operator, not just the engine.
+  /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
+  /// strip the <c>await</c>s and it becomes the sync driver. Evaluates the COMPOSED selector
+  /// chain (docs/OPERATOR_FUSION_DESIGN.md) once per scheduled node, against the
+  /// SOURCE context: an accepted result's value is published (the path stores projected
+  /// values -- opaque cargo; the library never compares nodes) and its strategies apply to the
+  /// node's own traversal (PruneAfter's SkipDescendants); a rejected result's strategies
+  /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
+  /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
+  /// single-selector instantiations. All structural state lives in the shared, color-agnostic
+  /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
-  internal sealed class WhereDepthFirstTreenumerator<TNode>
-    : TreenumeratorWrapper<TNode>
+  internal sealed class WhereDepthFirstTreenumerator<TInner, TNode, TResultSelector>
+    : TreenumeratorWrapper<TInner, TNode>
+    where TResultSelector : struct, IResultSelector<TInner, TNode>
   {
     public WhereDepthFirstTreenumerator(
-      Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TNode>, bool> predicate,
-      NodeTraversalStrategies nodeTraversalStrategy)
+      Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
+      TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
-      _Predicate = predicate;
-      _NodeTraversalStrategy = nodeTraversalStrategy;
+      _ResultSelector = resultSelector;
 
-      // Seed the path with a sentinel root: the virtual forest root by definition.
-      _Path = new WhereDepthFirstPath<TNode>(InnerTreenumerator.Node, NodePosition.ForestRoot);
+      // Seed the path with a sentinel root: the virtual forest root by definition (its value is
+      // never published, so no result is owed).
+      _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
-    private readonly NodeTraversalStrategies _NodeTraversalStrategy;
+    private readonly TResultSelector _ResultSelector;
 
     private WhereDepthFirstPath<TNode> _Path;
     private bool _HasCachedChild = false;
+
+    // Accept-side strategies from the last published scheduling visit's result, applied on the
+    // pull that follows it -- the same protocol moment a consumer's own strategies for that
+    // visit arrive, so the two simply union.
+    private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -47,6 +56,9 @@ namespace Copse.Linq.Treenumerators
         Publish(ref _Path.AcceptedTop());
         return true;
       }
+
+      nodeTraversalStrategies |= _PendingResultStrategies;
+      _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
       // If the consumer skipped the node we just scheduled, move it to the skipped stack so its
       // descendants get promoted. Never move the sentinel (the only node when AcceptedCount == 1).
@@ -71,9 +83,9 @@ namespace Copse.Linq.Treenumerators
 
         if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode)
         {
-          if (!OnScheduling())
+          if (!OnScheduling(out var rejectedStrategies))
           {
-            nodeTraversalStrategies = _NodeTraversalStrategy;
+            nodeTraversalStrategies = rejectedStrategies;
             continue;
           }
 
@@ -87,17 +99,27 @@ namespace Copse.Linq.Treenumerators
       return false;
     }
 
-    private bool OnScheduling()
+    private bool OnScheduling(out NodeTraversalStrategies rejectedStrategies)
     {
       _Path.PopDeeperThanForScheduling(InnerTreenumerator.Position.Depth);
 
-      if (!_Predicate(InnerTreenumerator.ToNodeContext()))
+      // ONE evaluation of the composed selector chain, against the SOURCE context; every user
+      // lambda inside sees exactly what the stacked pipeline would have shown it.
+      var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
+
+      if (result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
+      {
+        rejectedStrategies = result.Strategies;
         return false;
+      }
+
+      rejectedStrategies = NodeTraversalStrategies.TraverseAll;
+      _PendingResultStrategies = result.Strategies;
 
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(InnerTreenumerator.Node, InnerTreenumerator.Position);
+      _Path.PushAcceptedChild(result.Value, InnerTreenumerator.Position);
 
       if (cacheChild)
       {

@@ -24,13 +24,13 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle_HalfDepth() =>
       CanonicalTrees.MegaTriangleTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == HalfDepth)
+      .PruneAfter((n, position) => position.Depth == HalfDepth)
       .Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Bft_Triangle_HalfDepth() =>
       CanonicalTrees.MegaTriangleTree()
-      .PruneAfter(nodeContext => nodeContext.Position.Depth == HalfDepth)
+      .PruneAfter((n, position) => position.Depth == HalfDepth)
       .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }

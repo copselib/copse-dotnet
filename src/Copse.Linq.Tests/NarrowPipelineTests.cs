@@ -39,17 +39,17 @@ namespace Copse.Linq.Tests
         // narrow overloads exist (the ITreenumerable overloads are not applicable).
         IDepthFirstTreenumerable<string> narrowChain =
           StreamDepthFirst(tree)
-          .Where(nodeContext => nodeContext.Node != "b")
-          .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .Where(n => n != "b")
+          .Select(n => n.ToUpperInvariant())
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
         ITreenumerable<string> engineChain =
           TreeSerializer.DeserializeDepthFirstTree(tree)
-          .Where(nodeContext => nodeContext.Node != "b")
-          .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .Where(n => n != "b")
+          .Select(n => n.ToUpperInvariant())
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
@@ -68,17 +68,17 @@ namespace Copse.Linq.Tests
       {
         IBreadthFirstTreenumerable<string> narrowChain =
           StreamBreadthFirst(tree)
-          .Where(nodeContext => nodeContext.Node != "b")
-          .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .Where(n => n != "b")
+          .Select(n => n.ToUpperInvariant())
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
         ITreenumerable<string> engineChain =
           TreeSerializer.DeserializeDepthFirstTree(tree)
-          .Where(nodeContext => nodeContext.Node != "b")
-          .Select(nodeContext => nodeContext.Node.ToUpperInvariant())
-          .PruneAfter(nodeContext => nodeContext.Node == "D")
+          .Where(n => n != "b")
+          .Select(n => n.ToUpperInvariant())
+          .PruneAfter(n => n == "D")
           .Do(_ => { })
           .Hide();
 
@@ -97,10 +97,10 @@ namespace Copse.Linq.Tests
       const string right = "a(x,b(y))";
 
       IDepthFirstTreenumerable<string> narrowUnion =
-        StreamDepthFirst(left).Union(StreamDepthFirst(right)).Select(nodeContext => nodeContext.Node.ToString());
+        StreamDepthFirst(left).Union(StreamDepthFirst(right)).Select(n => n.ToString());
 
       ITreenumerable<string> engineUnion =
-        TreeSerializer.DeserializeDepthFirstTree(left).Union(TreeSerializer.DeserializeDepthFirstTree(right)).Select(nodeContext => nodeContext.Node.ToString());
+        TreeSerializer.DeserializeDepthFirstTree(left).Union(TreeSerializer.DeserializeDepthFirstTree(right)).Select(n => n.ToString());
 
       VisitStreamConformance.AssertSameStream(
         engineUnion.GetDepthFirstTreenumerator(),
@@ -217,7 +217,7 @@ namespace Copse.Linq.Tests
 
       IBreadthFirstTreenumerable<string> filtered =
         TreeSerializer.DeserializeBreadthFirstTree(() => new StringReader(envelope))
-        .Where(nodeContext => nodeContext.Node != "d");
+        .Where(n => n != "d");
 
       using (var writer = new StringWriter())
       {

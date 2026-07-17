@@ -31,7 +31,9 @@ namespace Copse.Linq.Async
       if (EnumerationFinished)
         return false;
 
-      if (Mode == TreenumeratorMode.SchedulingNode && _Predicate(this.ToNodeContext()))
+      // Never test the pre-enumeration sentinel (ForestRoot convention: default node, mode
+      // SchedulingNode): user lambdas see real nodes only.
+      if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot && _Predicate(this.ToNodeContext()))
         nodeTraversalStrategies |= NodeTraversalStrategies.SkipDescendants;
 
       var result = await InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false);

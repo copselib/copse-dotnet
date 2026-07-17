@@ -1,6 +1,8 @@
+using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
+using Copse.Linq.Async.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -8,58 +10,96 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Async <c>PruneBefore</c>: prunes each subtree at (and including) the first node matching the
-    /// predicate -- no child promotion (SkipNodeAndDescendants). Deferred.
+    /// Async <c>PruneBefore</c> over node VALUES (prune polarity: true = prune): removes each
+    /// matching node AND its whole subtree. Deferred.
     /// </summary>
     public static IAsyncTreenumerable<T> PruneBefore<T>(
       this IAsyncTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        AsyncTreenumerableFactory.Create(
-          // PruneBefore's predicate means "prune when true"; the Where machinery keeps when
-          // true (the LINQ convention), so removal semantics invert here, at the operator.
-          () => new AsyncWhereBreadthFirstTreenumerator<T>(
-            source.GetAsyncBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants),
-          () => new AsyncWhereDepthFirstTreenumerator<T>(
-            source.GetAsyncDepthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // is the plain path's struct: the operator's semantics, stated once.
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+    }
+
+    /// <summary>
+    /// Async <c>PruneBefore</c> over (node, position) (prune polarity: true = prune). Deferred.
+    /// Each positional predicate sees ITS input tree's labels.
+    /// </summary>
+    public static IAsyncTreenumerable<T> PruneBefore<T>(
+      this IAsyncTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule: a positional predicate composes only over a label-preserving chain.
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
       this IAsyncDepthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<T>(
-            source.GetAsyncDepthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+          () => new AsyncWhereDepthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetAsyncDepthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+    }
+
+    public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
+      this IAsyncDepthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateDepthFirst(
+          () => new AsyncWhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetAsyncDepthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
       this IAsyncBreadthFirstTreenumerable<T> source,
-      Func<NodeContext<T>, bool> predicate)
+      Func<T, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       return
         AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<T>(
-            source.GetAsyncBreadthFirstTreenumerator,
-            nodeContext => !predicate(nodeContext),
-            NodeTraversalStrategies.SkipNodeAndDescendants));
+          () => new AsyncWhereBreadthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
+            source.GetAsyncBreadthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
+      this IAsyncBreadthFirstTreenumerable<T> source,
+      Func<T, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      return
+        AsyncTreenumerableFactory.CreateBreadthFirst(
+          () => new AsyncWhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
+            source.GetAsyncBreadthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
     }
   }
 }
