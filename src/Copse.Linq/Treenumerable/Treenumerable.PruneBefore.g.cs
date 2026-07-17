@@ -24,11 +24,11 @@ namespace Copse.Linq
 
       // A value predicate observes no coordinates, so it composes unconditionally. The stage
       // is the plain path's selector struct: the operator's semantics, stated once.
-      if (source is IComposableTreenumerable<T> composableSource)
-        return composableSource.Compose(
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
           new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
-      return new ComposableTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+      return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
         source, new PruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
     }
 
@@ -44,11 +44,11 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IComposableTreenumerable<T> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.Compose(
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+        return selectWhereSource.Compose(
           new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
-      return new ComposableTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+      return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
         source, new PositionalPruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
     }
 

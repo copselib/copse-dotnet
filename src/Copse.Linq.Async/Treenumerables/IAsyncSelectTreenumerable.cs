@@ -11,8 +11,8 @@ namespace Copse.Linq.Async.Treenumerables
   // stage that never rejects); this interface only preserves the cheaper acquisition. An
   // implementer is by construction a projection-only chain, so its ContainsRelabelingStage
   // is always false.
-  internal interface IAsyncComposableProjection<TNode> : IAsyncComposableTreenumerable<TNode>
+  internal interface IAsyncSelectTreenumerable<TNode> : IAsyncSelectWhereTreenumerable<TNode>
   {
-    IAsyncTreenumerable<TOuterResult> ComposeProjection<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+    IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
   }
 }

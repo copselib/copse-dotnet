@@ -6,12 +6,12 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The pure-projection wrapper. Kept distinct from ComposableTreenumerable deliberately: a chain of
+  // The pure-projection wrapper. Kept distinct from SelectWhereTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
   // when a filter joins (the representation choice IS this type split). The projection fast
-  // path (ComposeProjection) is this type's capability, declared here alone.
-  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncComposableProjection<TResult>
+  // path (Compose) is this type's capability, declared here alone.
+  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncSelectTreenumerable<TResult>
   {
     public AsyncSelectTreenumerable(
       IAsyncTreenumerable<TSource> source,
@@ -29,7 +29,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The fast path: a projection composed onto a projection is still a projection, so the
     // chain keeps the light acquisition.
-    public IAsyncTreenumerable<TOuterResult> ComposeProjection<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
       var innerSelector = _Selector;
 
@@ -46,7 +46,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var innerSelector = _Selector;
 
-      return new ComposableTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
+      return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
         new FuncResultSelector<TSource, TOuterResult>(
           nodeContext => stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),

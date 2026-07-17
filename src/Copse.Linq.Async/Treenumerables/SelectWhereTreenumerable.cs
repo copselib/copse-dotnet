@@ -12,10 +12,10 @@ namespace Copse.Linq.Async.Treenumerables
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
   // spliced chains carry the composed closure in a FuncResultSelector (fusion inherently
   // holds user delegates). Splicing is total: every legality decision was made outer-side.
-  internal sealed class ComposableTreenumerable<TSource, TResult, TResultSelector> : IAsyncComposableTreenumerable<TResult>
+  internal sealed class SelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
-    public ComposableTreenumerable(
+    public SelectWhereTreenumerable(
       IAsyncTreenumerable<TSource> source,
       TResultSelector resultSelector,
       bool containsRelabelingStage)
@@ -48,7 +48,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var resultSelector = _ResultSelector;
 
-      return new ComposableTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
+      return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
         new FuncResultSelector<TSource, TOuterResult>(nodeContext =>
         {

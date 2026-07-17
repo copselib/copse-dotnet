@@ -13,12 +13,12 @@ namespace Copse.Linq.Async.Treenumerables
   // ONE method covers the whole stage algebra: a projection is just a stage that never
   // rejects (its results carry TraverseAll), and the composition law handles it without
   // being told. The light projection-only representation is not this contract's business --
-  // it is the capability of the one wrapper that has it (IAsyncComposableProjection).
+  // it is the capability of the one wrapper that has it (IAsyncSelectTreenumerable).
   //
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
-  internal interface IAsyncComposableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+  internal interface IAsyncSelectWhereTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
     // True once any relabeling stage is aboard; the operators' positional flavors read this
     // to apply the join rule before composing.

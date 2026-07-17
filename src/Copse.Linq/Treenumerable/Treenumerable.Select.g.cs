@@ -24,11 +24,11 @@ namespace Copse.Linq
       // A value selector observes no coordinates, so it composes unconditionally. The fast
       // path first: a projection-only chain composes selectors and stays on the light
       // acquisition; anything else composes the projection as a never-rejecting stage.
-      if (source is IComposableProjection<TSource> projectionSource)
-        return projectionSource.ComposeProjection(nodeContext => selector(nodeContext.Node));
+      if (source is ISelectTreenumerable<TSource> selectSource)
+        return selectSource.Compose(nodeContext => selector(nodeContext.Node));
 
-      if (source is IComposableTreenumerable<TSource> composableSource)
-        return composableSource.Compose(
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.Compose(
           nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
@@ -46,11 +46,11 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is IComposableProjection<TSource> projectionSource && !projectionSource.ContainsRelabelingStage)
-        return projectionSource.ComposeProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is ISelectTreenumerable<TSource> selectSource && !selectSource.ContainsRelabelingStage)
+        return selectSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
-      if (source is IComposableTreenumerable<TSource> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.Compose(
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+        return selectWhereSource.Compose(
           nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 

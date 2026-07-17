@@ -262,13 +262,13 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",
         "AsyncHideTreenumerable", "HideTreenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncComposableTreenumerable.cs",
-        "Copse.Linq/Treenumerables/IComposableTreenumerable.g.cs",
-        "IAsyncComposableTreenumerable", "IComposableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncSelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/ISelectWhereTreenumerable.g.cs",
+        "IAsyncSelectWhereTreenumerable", "ISelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncComposableProjection.cs",
-        "Copse.Linq/Treenumerables/IComposableProjection.g.cs",
-        "IAsyncComposableProjection", "IComposableProjection", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
+        "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
+        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/IResultSelector.cs",
         "Copse.Linq/Treenumerables/IResultSelector.g.cs",
@@ -302,9 +302,9 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/CompositionResult.g.cs",
         "CompositionResult", "CompositionResult", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/ComposableTreenumerable.cs",
-        "Copse.Linq/Treenumerables/ComposableTreenumerable.g.cs",
-        "ComposableTreenumerable", "ComposableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/SelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhereTreenumerable.g.cs",
+        "SelectWhereTreenumerable", "SelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",

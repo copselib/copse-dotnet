@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.IsInstanceOfType(fused, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
 
     // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
     // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
-    // result stage, composed through the same ComposeFilter hook.
+    // result stage, composed through the same Compose hook.
     [TestMethod]
     public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
     {
@@ -154,8 +154,8 @@ namespace Copse.Linq.Tests
         .PruneBefore(n => n == "b")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(whereThenPrune, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
-      Assert.IsInstanceOfType(pruneThenWhere, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.IsInstanceOfType(whereThenPrune, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.IsInstanceOfType(pruneThenWhere, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -175,7 +175,7 @@ namespace Copse.Linq.Tests
           .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(fused, typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay fused");
+        Assert.IsInstanceOfType(fused, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay fused");
 
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
@@ -211,7 +211,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
     {
-      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
+      var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
           new CompositionResult<string>(
@@ -234,7 +234,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void AcceptStrategies_AreHonoredBreadthFirst()
     {
-      var rehearsedPruneAfter = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
+      var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
           new CompositionResult<string>(
@@ -285,7 +285,7 @@ namespace Copse.Linq.Tests
 
           var target = pruneTarget;
 
-          var rehearsed = new ComposableTreenumerable<string, string, FuncResultSelector<string, string>>(
+          var rehearsed = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
             Tree(treeString),
             new FuncResultSelector<string, string>(nodeContext =>
               new CompositionResult<string>(
@@ -322,7 +322,7 @@ namespace Copse.Linq.Tests
 
       Assert.IsInstanceOfType(
         composed,
-        typeof(ComposableTreenumerable<string, string, FuncResultSelector<string, string>>),
+        typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>),
         "positional Select must compose across the label-preserving prune");
 
       var labeled = composed

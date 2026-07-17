@@ -12,7 +12,7 @@ namespace Copse.Linq.Treenumerables
   // promotion machinery -- it only ever sheds whole subtrees below kept nodes), and composability
   // costs one property: PruneAfter is label-preserving (survivors keep their coordinates), so
   // its map carries relabeling: false and even positional lambdas may compose across it.
-  internal sealed class PruneAfterTreenumerable<TNode> : IComposableTreenumerable<TNode>
+  internal sealed class PruneAfterTreenumerable<TNode> : ISelectWhereTreenumerable<TNode>
   {
     public PruneAfterTreenumerable(
       ITreenumerable<TNode> source,
@@ -39,14 +39,14 @@ namespace Copse.Linq.Treenumerables
 
     // Composition converts to the general representation and composes there (unwrap, discard,
     // rebuild); plain acquisition below keeps the bespoke driver and never pays this.
-    private ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>> ToComposable()
-      => new ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
+    private SelectWhereTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>> ToSelectWhere()
+      => new SelectWhereTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
         _Source, new FuncResultSelector<TNode, TNode>(CreateStage(_Predicate)), containsRelabelingStage: false);
 
     public ITreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TNode>, CompositionResult<TOuterResult>> stage,
       bool relabels)
-      => ToComposable().Compose(stage, relabels);
+      => ToSelectWhere().Compose(stage, relabels);
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() =>
       new PruneAfterTreenumerator<TNode>(_Source.GetBreadthFirstTreenumerator, _Predicate);

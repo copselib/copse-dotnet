@@ -10,10 +10,15 @@
 > review: capability wins do not compound through composition, so that lattice stays
 > demoted while fusion (which does compound) proceeds.
 
-> **Vocabulary (renamed 2026-07-16):** the API spells the capability *composition* —
-> `IComposableTreenumerable` / `ComposableTreenumerable` / `CompositionResult` (formerly
-> Fusable/Fusion): composable names what the algebra does. "Fusion" in this document names
-> the *technique* — collapsing stacked layers into one wrapper — by its literature name
+> **Vocabulary (settled 2026-07-17 after two renames):** the recipe surface speaks the
+> MACHINERY — `ISelectTreenumerable` (the projection wrapper's compose, reviving the
+> original interface name) and `ISelectWhereTreenumerable` / `SelectWhereTreenumerable`
+> (the general wrapper: LINQ's WhereSelect precedent; in this codebase "Where" already
+> names the generalized filter machinery that hosts the prunes). Both methods are `Compose`
+> — both kinds compose; neither is "the" canonical composition (the interim
+> Composable/Composition spelling implied exactly that and was renamed away). The stage
+> carrier keeps the algebra name, `CompositionResult`. "Fusion" in this document names the
+> *technique* — collapsing stacked layers into one wrapper — by its literature name
 > (LINQ's fused iterators, stream fusion).
 
 ## Motivation
@@ -160,12 +165,12 @@ make this cell permanently moot.
   unwraps its own mapping, composes, discards itself, constructs. One method suffices
   because the composition law subsumes fmap: a projection is a stage that never rejects
   (results carry `TraverseAll`), and the law composes it correctly without being told. The
-  law's ONLY home is `ComposableTreenumerable.Compose` (first SkipNode stops the fold — a
+  law's ONLY home is `SelectWhereTreenumerable.Compose` (first SkipNode stops the fold — a
   rejected node has no outer value; while accepting, values map and strategies union). The
   interim `CompositionMap` object had re-encoded the wrapper TYPE structure as runtime data
   and cost a transient object per composition step; deleted. The PROJECTION FAST PATH is a
-  capability interface, `IAsyncComposableProjection : IAsyncComposableTreenumerable`, that
-  ONLY `AsyncSelectTreenumerable` implements (`ComposeProjection` keeps projection∘projection
+  capability interface, `IAsyncSelectTreenumerable : IAsyncSelectWhereTreenumerable`, that
+  ONLY `AsyncSelectTreenumerable` implements (`Compose` keeps projection∘projection
   on the light acquisition; an implementer is by construction projection-only, so its
   relabeling bit is always false) — the Select operator probes the capability first, then
   falls back to the general `Compose` with the never-rejecting stage. Optimizations belong
@@ -240,7 +245,7 @@ PruneAfter is an accept carrying skip instructions and PruneBefore a reject whos
 is the whole message, case names stop carrying the semantics — the strategies value does.)
 
 Each fused stage is a Kleisli arrow `NodeContext<TSource> → Result<TStage>`; the fused
-wrapper (`ComposableTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
+wrapper (`SelectWhereTreenumerable<TSource, TResult>`, replacing both `WhereTreenumerable` and
 the anonymous SelectWhere result) is the reified composite arrow, and appending an
 operator Kleisli-composes and returns a new wrapper — closed under composition: one
 wrapper, any order, any length.
@@ -269,7 +274,7 @@ Select exactly as to positional Where, and to any future positional flavor.
 
 **Required interface correction (phase 1 is correct only by topology luck):** the single
 `FuseSelect` hook erases the appended Select's flavor — safe today only because the sole
-accepting wrapper is the pure-Select wrapper. `ComposableTreenumerable` needs the flavor, so
+accepting wrapper is the pure-Select wrapper. `SelectWhereTreenumerable` needs the flavor, so
 the recipe surface splits like Where's pair: `FuseSelect(value)` /
 `FusePositionalSelect(positional)` — four hooks, each wrapper answering per flavor.
 
@@ -292,7 +297,7 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    stateless/readonly (defensive-copy trap, documented on the interface).
 1. ✅ SHIPPED (branch, 2026-07-16): Where/Select signatures migrated to the arity split —
    (node) / (node, position), NodeContext removed from these operators (~150 call sites
-   swept); unified internal `IComposableTreenumerable` (FuseWhere / FusePositionalWhere /
+   swept); unified internal `ISelectWhereTreenumerable` (FuseWhere / FusePositionalWhere /
    FuseSelect; hooks return null to DECLINE, the operator falls back to its plain wrap);
    named `WhereTreenumerable`; value Where∘Where by predicate combination; Select↔Where
    (both Where flavors) into the projection-carrying driver. FusionTests pin
@@ -302,7 +307,7 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
 2. ✅ SHIPPED (branch, 2026-07-16): `CompositionResult<T>` + result-shaped filter drivers (one
    composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
    strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
-   `ComposableTreenumerable` (the reified Kleisli arrow — value chains of any length/order
+   `SelectWhereTreenumerable` (the reified Kleisli arrow — value chains of any length/order
    collapse to one wrapper, pinned) with the four-hook flavor split and the relabeling bit;
    PruneBefore is a result stage and joins chains (removal polarity explicit in the
    result); the pure-Select wrapper stays distinct so projection-only chains keep the light

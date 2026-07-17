@@ -22,8 +22,8 @@ namespace Copse.Linq
 
       // A value predicate observes no coordinates, so it composes unconditionally. The stage
       // comes from the wrapper's CreateStage: the operator's semantics, stated once.
-      if (source is IAsyncComposableTreenumerable<T> composableSource)
-        return composableSource.Compose(
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
           AsyncPruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node)),
           relabels: false);
 
@@ -42,8 +42,8 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IAsyncComposableTreenumerable<T> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.Compose(
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+        return selectWhereSource.Compose(
           AsyncPruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
