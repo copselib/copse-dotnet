@@ -20,14 +20,14 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally. The stage
-      // is the plain path's selector struct: the operator's semantics, stated once.
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // is the plain path's struct: the operator's semantics, stated once.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
         return selectWhereSource.Compose(
           new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
+        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     /// <summary>
@@ -42,12 +42,12 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
         return selectWhereSource.Compose(
           new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(

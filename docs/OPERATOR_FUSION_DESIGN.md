@@ -160,7 +160,7 @@ make this cell permanently moot.
   hidden-iterator precedent is the considered one. Internal→public later is free.
 - **Compose-in-one-step, ONE method (Jason's original `Compose` model, restored 2026-07-16
   after the map middleman was reviewed out; collapsed to a single method 2026-07-17)**: the
-  interface is `ContainsRelabelingStage` plus ONE total method —
+  interface is `Relabels` plus ONE total method —
   `Compose<TOut>(stage, relabels)` where a stage is `Func<NodeContext<TNode>,
   SelectWhereResult<TOut>>` — returning the successor treenumerable directly: the wrapper
   unwraps its own mapping, composes, discards itself, constructs. One method suffices
@@ -181,7 +181,7 @@ make this cell permanently moot.
   type; the method is typed on output only. Each operator's stage semantics are stated
   ONCE — the compose branch reuses the plain path's selector struct as a method group
   (`new WhereResultSelector(p).GetResult`); PruneAfter's stage lives in the wrapper's
-  `CreateStage`. `SelectWhereResult` is a BARE PAIR `(value, strategies)` — two fields, one
+  `CreateResultSelector`. `SelectWhereResult` is a BARE PAIR `(value, strategies)` — two fields, one
   constructor, zero behavior — rejection IS SkipNode membership, inherited from the
   consumer protocol, so every pair is coherent by definition. (An earlier Accept/Reject
   factory vocabulary was dropped in review 2026-07-16: once PruneAfter is an accept

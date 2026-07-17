@@ -9,9 +9,9 @@ using System.Linq;
 namespace Copse.Linq.Tests
 {
   // The exhaustive fusion gate: every tree in the combinatorial corpus x every ordered operator
-  // chain (length 1..3 over the five composable stage kinds) x every filter-target node x consumer
+  // chain (length 1..3 over the five composable operator kinds) x every filter-target node x consumer
   // strategy interference, each case comparing the FUSED pipeline against the same chain FORCED
-  // TO STACK (Tree.Defer interposed between stages: the delegating wrapper is not composable, and
+  // TO STACK (Tree.Defer interposed between operators: the delegating wrapper is not composable, and
   // deferring a deferred tree is semantics-neutral). Fusion's whole contract is that the two
   // are indistinguishable -- including under consumer skips, which exercise the fused driver's
   // per-node reject strategies against the stacked layers' independent ones.
@@ -34,11 +34,11 @@ namespace Copse.Linq.Tests
     // Filters and prunes aim at a target node by PREFIX, which keeps targets stable under the
     // tagging Selects (a node "b" stays matchable as "b*", "b*^", ...). The positional flavors
     // deliberately carry value-equivalent predicates: they exist to exercise the join/decline
-    // machinery (a positional stage joins only a projections-only prefix), not to add
+    // machinery (a positional operator joins only a projections-only prefix), not to add
     // position-dependent semantics the stacked control would just mirror anyway.
-    private delegate ITreenumerable<string> StageApplication(ITreenumerable<string> source, string targetNode);
+    private delegate ITreenumerable<string> OperatorApplication(ITreenumerable<string> source, string targetNode);
 
-    private static readonly (char Symbol, StageApplication Apply)[] StageAlphabet =
+    private static readonly (char Symbol, OperatorApplication Apply)[] OperatorAlphabet =
     {
       ('w', (source, targetNode) => source.Where(node => !node.StartsWith(targetNode))),
       ('W', (source, targetNode) => source.Where((node, position) => !node.StartsWith(targetNode))),
@@ -103,14 +103,14 @@ namespace Copse.Linq.Tests
                   : NodeTraversalStrategies.TraverseAll;
 
               ITreenumerable<string> fusedPipeline = Deserialize(treeString);
-              foreach (var stage in chain)
-                fusedPipeline = stage.Apply(fusedPipeline, targetNode);
+              foreach (var chainOperator in chain)
+                fusedPipeline = chainOperator.Apply(fusedPipeline, targetNode);
 
               ITreenumerable<string> stackedPipeline = Deserialize(treeString);
-              foreach (var stage in chain)
+              foreach (var chainOperator in chain)
               {
                 var frozen = stackedPipeline;
-                stackedPipeline = stage.Apply(Tree.Defer(() => frozen), targetNode);
+                stackedPipeline = chainOperator.Apply(Tree.Defer(() => frozen), targetNode);
               }
 
               var expected = Key(stackedPipeline.GetTraversal(treeTraversalStrategy, Selector));
@@ -121,7 +121,7 @@ namespace Copse.Linq.Tests
               {
                 failed++;
                 if (failures.Count < 40)
-                  failures.Add($"{treeString} chain={new string(chain.Select(stage => stage.Symbol).ToArray())} target={targetNode} consumer={(strategyNode == null ? "none" : $"{strategyNode}:{consumerStrategy}")}");
+                  failures.Add($"{treeString} chain={new string(chain.Select(chainOperator => chainOperator.Symbol).ToArray())} target={targetNode} consumer={(strategyNode == null ? "none" : $"{strategyNode}:{consumerStrategy}")}");
               }
             }
           }
@@ -152,17 +152,17 @@ namespace Copse.Linq.Tests
           yield return (node, consumerStrategy);
     }
 
-    private static IEnumerable<(char Symbol, StageApplication Apply)[]> Chains()
+    private static IEnumerable<(char Symbol, OperatorApplication Apply)[]> Chains()
     {
-      foreach (var first in StageAlphabet)
+      foreach (var first in OperatorAlphabet)
       {
         yield return new[] { first };
 
-        foreach (var second in StageAlphabet)
+        foreach (var second in OperatorAlphabet)
         {
           yield return new[] { first, second };
 
-          foreach (var third in StageAlphabet)
+          foreach (var third in OperatorAlphabet)
             yield return new[] { first, second, third };
         }
       }

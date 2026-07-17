@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
     private readonly Func<NodeContext<TSource>, TResult> _Selector;
 
     // Projections never relabel.
-    public bool ContainsRelabelingStage => false;
+    public bool Relabels => false;
 
     // The fast path: a projection composed onto a projection is still a projection, so the
     // chain keeps the light acquisition.
@@ -40,10 +40,10 @@ namespace Copse.Linq.Treenumerables
         nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
     }
 
-    // The general stage converts the representation. A projection cannot reject and carries
-    // no strategies, so the stage's result stands alone -- no short-circuit, no union.
+    // The general Compose converts the representation. A projection cannot reject and carries
+    // no strategies, so the selector's result stands alone -- no short-circuit, no union.
     public ITreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> stage,
+      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
     {
       var innerSelector = _Selector;
@@ -51,7 +51,7 @@ namespace Copse.Linq.Treenumerables
       return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
         new FuncResultSelector<TSource, TOuterResult>(
-          nodeContext => stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
+          nodeContext => resultSelector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
         relabels);
     }
 

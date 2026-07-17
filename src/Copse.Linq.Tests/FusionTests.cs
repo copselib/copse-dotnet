@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
 
     // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
     // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
-    // result stage, composed through the same Compose hook.
+    // result selector, composed through the same Compose hook.
     [TestMethod]
     public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
     {
@@ -161,10 +161,10 @@ namespace Copse.Linq.Tests
         CollectionAssert.AreEqual(
           pruneThenWhere.GetTraversal(strategy).ToArray(),
           whereThenPrune.GetTraversal(strategy).ToArray(),
-          $"{strategy}: same stages, same tree, order-independent here (neither filters what the other sees)");
+          $"{strategy}: same operators, same tree, order-independent here (neither filters what the other sees)");
     }
 
-    // PruneBefore is a result stage now ((node, SkipNodeAndDescendants)), so it joins the
+    // PruneBefore is a result selector now ((node, SkipNodeAndDescendants)), so it joins the
     // fused chain; a following value-Where fuses onto it.
     [TestMethod]
     public void PruneBefore_JoinsTheFusedChain()
@@ -204,7 +204,7 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
-    // The PruneAfter-stage rehearsal: nothing on the surface produces accept-side result
+    // The PruneAfter-selector rehearsal: nothing on the surface produces accept-side result
     // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
     // and must not sit untested until the prune migration. (node, SkipDescendants) = keep
     // the node, drop its subtree.
@@ -219,7 +219,7 @@ namespace Copse.Linq.Tests
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
               : NodeTraversalStrategies.TraverseAll)),
-        containsRelabelingStage: true);
+        relabels: true);
 
       var nodes = rehearsedPruneAfter
         .GetTraversal(TreeTraversalStrategy.DepthFirst)
@@ -242,7 +242,7 @@ namespace Copse.Linq.Tests
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
               : NodeTraversalStrategies.TraverseAll)),
-        containsRelabelingStage: true);
+        relabels: true);
 
       var nodes = rehearsedPruneAfter
         .GetTraversal(TreeTraversalStrategy.BreadthFirst)
@@ -253,7 +253,7 @@ namespace Copse.Linq.Tests
 
     // The seam's independent oracle: the bespoke PruneAfter operator implements the same
     // semantics (keep the node, drop its subtree) through entirely different machinery, so the
-    // rehearsed (node, SkipDescendants) stage must match it -- both dimensions, under
+    // rehearsed (node, SkipDescendants) selector must match it -- both dimensions, under
     // every consumer-strategy interference aimed at every node.
     [TestMethod]
     public void AcceptStrategies_MatchTheBespokePruneAfterOracle()
@@ -293,7 +293,7 @@ namespace Copse.Linq.Tests
                 nodeContext.Node == target
                   ? NodeTraversalStrategies.SkipDescendants
                   : NodeTraversalStrategies.TraverseAll)),
-            containsRelabelingStage: true);
+            relabels: true);
 
           var expected = Tree(treeString).PruneAfter(n => n == target)
             .GetTraversal(strategy, Selector)
@@ -312,7 +312,7 @@ namespace Copse.Linq.Tests
 
     // PruneAfter is the one filter that does NOT relabel (survivors keep their coordinates:
     // no promotion, no sibling renumbering -- only whole subtrees below kept nodes vanish),
-    // so even POSITIONAL lambdas compose across it. The distinctive property of the stage.
+    // so even POSITIONAL lambdas compose across it. The distinctive property of the operator.
     [TestMethod]
     public void PruneAfter_IsLabelPreserving_SoPositionalLambdasComposeAcrossIt()
     {

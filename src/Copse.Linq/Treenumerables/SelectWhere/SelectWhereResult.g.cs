@@ -6,7 +6,7 @@ using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The composed pipeline's carrier: one evaluation of the composed stage chain against a source
+  // The composed pipeline's carrier: one evaluation of the composed selector chain against a source
   // node answers the driver's whole per-node question -- is the node in the output tree, and
   // how should the inner treenumerator be pulled past this point? A plain (value, strategies)
   // pair; the strategies speak the consumer protocol directly:

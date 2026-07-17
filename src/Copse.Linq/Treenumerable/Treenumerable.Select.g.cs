@@ -23,7 +23,7 @@ namespace Copse.Linq
     {
       // A value selector observes no coordinates, so it composes unconditionally. The fast
       // path first: a projection-only chain composes selectors and stays on the light
-      // acquisition; anything else composes the projection as a never-rejecting stage.
+      // acquisition; anything else composes the projection as a never-rejecting selector.
       if (source is ISelectTreenumerable<TSource> selectSource)
         return selectSource.Compose(nodeContext => selector(nodeContext.Node));
 
@@ -46,10 +46,10 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is ISelectTreenumerable<TSource> selectSource && !selectSource.ContainsRelabelingStage)
+      if (source is ISelectTreenumerable<TSource> selectSource && !selectSource.Relabels)
         return selectSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
-      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
         return selectWhereSource.Compose(
           nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
           relabels: false);

@@ -11,14 +11,14 @@ namespace Copse.Linq.Async
 {
   /// <summary>
   /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
-  /// strip the <c>await</c>s and it becomes the sync driver. Evaluates the COMPOSED stage
+  /// strip the <c>await</c>s and it becomes the sync driver. Evaluates the COMPOSED selector
   /// chain (docs/OPERATOR_FUSION_DESIGN.md) once per scheduled node, against the
   /// SOURCE context: an accepted result's value is published (the path stores projected
   /// values -- opaque cargo; the library never compares nodes) and its strategies apply to the
   /// node's own traversal (PruneAfter's SkipDescendants); a rejected result's strategies
   /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
   /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
-  /// single-stage instantiations. All structural state lives in the shared, color-agnostic
+  /// single-selector instantiations. All structural state lives in the shared, color-agnostic
   /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
   internal sealed class AsyncWhereDepthFirstTreenumerator<TInner, TNode, TResultSelector>
@@ -45,7 +45,7 @@ namespace Copse.Linq.Async
     // Accept-side strategies from the last published scheduling visit's result, applied on the
     // pull that follows it -- the same protocol moment a consumer's own strategies for that
     // visit arrive, so the two simply union.
-    private NodeTraversalStrategies _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
+    private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -56,8 +56,8 @@ namespace Copse.Linq.Async
         return true;
       }
 
-      nodeTraversalStrategies |= _PendingStageStrategies;
-      _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
+      nodeTraversalStrategies |= _PendingResultStrategies;
+      _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
       // If the consumer skipped the node we just scheduled, move it to the skipped stack so its
       // descendants get promoted. Never move the sentinel (the only node when AcceptedCount == 1).
@@ -102,7 +102,7 @@ namespace Copse.Linq.Async
     {
       _Path.PopDeeperThanForScheduling(InnerTreenumerator.Position.Depth);
 
-      // ONE evaluation of the composed stage chain, against the SOURCE context; every user
+      // ONE evaluation of the composed selector chain, against the SOURCE context; every user
       // lambda inside sees exactly what the stacked pipeline would have shown it.
       var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
 
@@ -113,7 +113,7 @@ namespace Copse.Linq.Async
       }
 
       rejectedStrategies = NodeTraversalStrategies.TraverseAll;
-      _PendingStageStrategies = result.Strategies;
+      _PendingResultStrategies = result.Strategies;
 
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();

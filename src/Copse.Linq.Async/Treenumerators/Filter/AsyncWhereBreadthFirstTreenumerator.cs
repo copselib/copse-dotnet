@@ -70,8 +70,8 @@ namespace Copse.Linq.Async
     // the same protocol moment the consumer's own strategies for that visit arrive. The
     // deferred slot carries them while a consumer-skip transition holds the schedule publish
     // back one turn (at most one deferred schedule is ever pending).
-    private NodeTraversalStrategies _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
-    private NodeTraversalStrategies _DeferredStageStrategies = NodeTraversalStrategies.TraverseAll;
+    private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
+    private NodeTraversalStrategies _DeferredResultStrategies = NodeTraversalStrategies.TraverseAll;
 
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -80,13 +80,13 @@ namespace Copse.Linq.Async
       {
         _Path.ClearConsumerSkippedSubtree();
         Publish(ref _Path.Back, TreenumeratorMode.SchedulingNode);
-        _PendingStageStrategies = _DeferredStageStrategies;
-        _DeferredStageStrategies = NodeTraversalStrategies.TraverseAll;
+        _PendingResultStrategies = _DeferredResultStrategies;
+        _DeferredResultStrategies = NodeTraversalStrategies.TraverseAll;
         return true;
       }
 
-      nodeTraversalStrategies |= _PendingStageStrategies;
-      _PendingStageStrategies = NodeTraversalStrategies.TraverseAll;
+      nodeTraversalStrategies |= _PendingResultStrategies;
+      _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
       if (Mode == TreenumeratorMode.VisitingNode)
       {
@@ -156,7 +156,7 @@ namespace Copse.Linq.Async
         {
           var innerDepth = InnerTreenumerator.Position.Depth;
 
-          // ONE evaluation of the composed stage chain, against the SOURCE context; every user
+          // ONE evaluation of the composed selector chain, against the SOURCE context; every user
           // lambda inside sees exactly what the stacked pipeline would have shown it. Accept-side
           // strategies ride the pending/deferred slots so they apply on the pull following the
           // node's scheduling publish.
@@ -219,7 +219,7 @@ namespace Copse.Linq.Async
               _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               // The schedule publishes on a later entry; its accept-side strategies wait with it.
-              _DeferredStageStrategies = result.Strategies;
+              _DeferredResultStrategies = result.Strategies;
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
@@ -233,7 +233,7 @@ namespace Copse.Linq.Async
           _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
           // The scheduling publish below is this node's; its accept-side strategies apply on
           // the pull that follows it.
-          _PendingStageStrategies = result.Strategies;
+          _PendingResultStrategies = result.Strategies;
         }
         else // VisitingNode
         {

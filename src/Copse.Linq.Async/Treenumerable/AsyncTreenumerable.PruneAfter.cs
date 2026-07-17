@@ -20,11 +20,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally. The stage
-      // comes from the wrapper's CreateStage: the operator's semantics, stated once.
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // comes from the wrapper's CreateResultSelector: the operator's semantics, stated once.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
         return selectWhereSource.Compose(
-          AsyncPruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node)),
+          AsyncPruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
           relabels: false);
 
       return new AsyncPruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
@@ -42,9 +42,9 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
         return selectWhereSource.Compose(
-          AsyncPruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
+          AsyncPruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       return new AsyncPruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));

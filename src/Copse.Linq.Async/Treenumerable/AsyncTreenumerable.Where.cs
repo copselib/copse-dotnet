@@ -21,14 +21,14 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally. The stage
-      // is the plain path's selector struct: the operator's semantics, stated once.
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // is the plain path's struct: the operator's semantics, stated once.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.Compose(
           new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), containsRelabelingStage: true);
+        source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }
 
     /// <summary>
@@ -46,12 +46,12 @@ namespace Copse.Linq
       // The join rule, applied here because only the operator knows its lambda's flavor: a
       // positional predicate is entitled to its input tree's emitted labels, so it splices
       // only while the chain is label-preserving and otherwise stacks a real layer.
-      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
         return selectWhereSource.Compose(
           new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), containsRelabelingStage: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
