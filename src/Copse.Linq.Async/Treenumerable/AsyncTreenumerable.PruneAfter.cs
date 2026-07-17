@@ -20,10 +20,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // PruneAfter over PruneAfter merges by predicate union and keeps the bespoke
-      // no-promotion driver.
-      if (source is AsyncPruneAfterTreenumerable<T> pruneAfterSource)
-        return pruneAfterSource.MergePruneAfter(nodeContext => predicate(nodeContext.Node));
+      // The light tier composes a prune-after in-tier and keeps no-promotion machinery:
+      // prune over prune merges predicates on the bespoke driver; prune over projections
+      // rides the light passthrough driver.
+      if (source is IAsyncSelectPruneAfterTreenumerable<T> selectPruneAfterSource)
+        return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // comes from the wrapper's CreateResultSelector: the operator's semantics, stated once.
@@ -46,11 +47,10 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // PruneAfter over PruneAfter merges by predicate union and keeps the bespoke
-      // no-promotion driver; the wrapper never relabels, so the positional flavor always
-      // qualifies.
-      if (source is AsyncPruneAfterTreenumerable<T> pruneAfterSource)
-        return pruneAfterSource.MergePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      // The light tier composes a prune-after in-tier (see the value overload); the tier
+      // never relabels, so the positional flavor always qualifies for the join rule.
+      if (source is IAsyncSelectPruneAfterTreenumerable<T> selectPruneAfterSource)
+        return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)

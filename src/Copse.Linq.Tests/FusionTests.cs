@@ -322,8 +322,8 @@ namespace Copse.Linq.Tests
 
       Assert.IsInstanceOfType(
         composed,
-        typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>),
-        "positional Select must compose across the label-preserving prune");
+        typeof(SelectPruneAfterTreenumerable<string, string>),
+        "positional Select must compose across the label-preserving prune -- and stay on the light tier");
 
       var labeled = composed
         .GetTraversal(TreeTraversalStrategy.DepthFirst)
@@ -343,6 +343,74 @@ namespace Copse.Linq.Tests
         .GetTraversal(TreeTraversalStrategy.DepthFirst).Select(visit => visit.Node).Distinct().ToArray();
 
       CollectionAssert.AreEqual(new[] { "a12", "c12" }, fused);
+    }
+
+    // The light tier: never-rejecting chains (projections + prune-afters) must not convert
+    // to the filter driver -- they ride the light passthrough machinery.
+    [TestMethod]
+    public void SelectThenPruneAfter_StaysOnTheLightTier()
+    {
+      var composed = Tree("a(b(d,e),c)")
+        .Select(n => n + "!")
+        .PruneAfter(n => n == "b!");
+
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+
+      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+      {
+        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").Select(n => n + "!"))
+          .PruneAfter(n => n == "b!");
+
+        CollectionAssert.AreEqual(
+          stacked.GetTraversal(strategy).ToArray(),
+          composed.GetTraversal(strategy).ToArray(),
+          $"{strategy}");
+      }
+    }
+
+    [TestMethod]
+    public void PruneAfterThenSelect_StaysOnTheLightTier()
+    {
+      var composed = Tree("a(b(d,e),c)")
+        .PruneAfter(n => n == "b")
+        .Select(n => n + "!");
+
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+
+      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+      {
+        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneAfter(n => n == "b"))
+          .Select(n => n + "!");
+
+        CollectionAssert.AreEqual(
+          stacked.GetTraversal(strategy).ToArray(),
+          composed.GetTraversal(strategy).ToArray(),
+          $"{strategy}");
+      }
+    }
+
+    [TestMethod]
+    public void PruneAfterOverPruneAfter_StaysOnTheBespokeDriver()
+    {
+      var merged = Tree("a(b(d),c(e))")
+        .PruneAfter(n => n == "b")
+        .PruneAfter(n => n == "c");
+
+      Assert.IsInstanceOfType(merged, typeof(PruneAfterTreenumerable<string>));
+    }
+
+    [TestMethod]
+    public void LightTier_ConvertsWhenARejectingOperatorJoins()
+    {
+      var converted = Tree("a(b(d,e),c)")
+        .Select(n => n + "!")
+        .PruneAfter(n => n == "b!")
+        .Where(n => n != "c!");
+
+      Assert.IsInstanceOfType(
+        converted,
+        typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>),
+        "a rejecting operator must convert the light tier to the general representation");
     }
   }
 }

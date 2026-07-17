@@ -191,6 +191,23 @@ make this cell permanently moot.
   Jason's: four flavor-hooks → two methods + property → one method + self-describing stage
   → one property + the map with combinators → two compose methods + the bit, map deleted →
   ONE compose method + the bit, fast path demoted to a single-implementer capability.
+- **The representation lattice (2026-07-17; forced by the first post-merge CI run)**:
+  representations follow the relabeling gradient. `ISelectTreenumerable` widened into
+  `ISelectPruneAfterTreenumerable : ISelectWhereTreenumerable` — the LIGHT TIER, for chains
+  whose results never carry `SkipNode` (projections + prune-afters; the relabels-nothing
+  row, so `Relabels` is false by construction and positional lambdas always compose
+  across). Its two methods are the type-enforced tier boundary — `Compose(selector)`
+  returns a bare value, `ComposePruneAfter(predicate)` a bool; neither signature can
+  smuggle a rejection. Implementers: the Select wrapper (projections stay lightest), the
+  PruneAfter wrapper (prune∘prune merges by predicate union on the bespoke driver), and
+  `SelectPruneAfterTreenumerable` (mixed chains; a dimension-agnostic passthrough driver —
+  no promotion machinery, no path state, delegate-bound arrow since only composition
+  creates it). A rejecting operator converts to the SelectWhere representation via the
+  inherited general `Compose`. The lesson that forced it: composition is invisible, so
+  "who would write that chain" is the wrong rarity test — the canonical Mega trees are
+  PruneAfter-built, making prune- and select-over-pruned-tree the default shape; the Where
+  driver's path state surfaced as a 2x allocation regression within one CI run of the
+  merge.
 - **Fused machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library

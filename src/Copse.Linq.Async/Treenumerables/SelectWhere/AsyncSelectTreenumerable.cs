@@ -9,9 +9,8 @@ namespace Copse.Linq.Async.Treenumerables
   // The pure-projection wrapper. Kept distinct from SelectWhereTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
-  // when a filter joins (the representation choice IS this type split). The projection fast
-  // path (Compose) is this type's capability, declared here alone.
-  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncSelectTreenumerable<TResult>
+  // when a rejecting operator joins (the representation choice IS the type split).
+  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterTreenumerable<TResult>
   {
     public AsyncSelectTreenumerable(
       IAsyncTreenumerable<TSource> source,
@@ -36,6 +35,26 @@ namespace Copse.Linq.Async.Treenumerables
       return new AsyncSelectTreenumerable<TSource, TOuterResult>(
         _Source,
         nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
+    }
+
+    // A prune-after joins: promote to the middle tier (light passthrough driver), never the
+    // filter driver. The predicate judges the projected value.
+    public IAsyncTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+    {
+      var innerSelector = _Selector;
+
+      return new AsyncSelectPruneAfterTreenumerable<TSource, TResult>(
+        _Source,
+        nodeContext =>
+        {
+          var value = innerSelector(nodeContext);
+
+          return new SelectWhereResult<TResult>(
+            value,
+            predicate(new NodeContext<TResult>(value, nodeContext.Position))
+              ? NodeTraversalStrategies.SkipDescendants
+              : NodeTraversalStrategies.TraverseAll);
+        });
     }
 
     // The general Compose converts the representation. A projection cannot reject and carries
