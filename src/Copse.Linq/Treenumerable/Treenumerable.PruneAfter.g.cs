@@ -26,7 +26,7 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally. The stage
       // comes from the wrapper's CreateStage: the operator's semantics, stated once.
       if (source is IComposableTreenumerable<T> composableSource)
-        return composableSource.ComposeFilter(
+        return composableSource.Compose(
           PruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node)),
           relabels: false);
 
@@ -46,7 +46,7 @@ namespace Copse.Linq
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IComposableTreenumerable<T> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.ComposeFilter(
+        return composableSource.Compose(
           PruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 

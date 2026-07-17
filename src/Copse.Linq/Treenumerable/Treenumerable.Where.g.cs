@@ -26,7 +26,7 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally. The stage
       // is the plain path's selector struct: the operator's semantics, stated once.
       if (source is IComposableTreenumerable<TNode> composableSource)
-        return composableSource.ComposeFilter(
+        return composableSource.Compose(
           new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
@@ -49,7 +49,7 @@ namespace Copse.Linq
       // positional predicate is entitled to its input tree's emitted labels, so it splices
       // only while the chain is label-preserving and otherwise stacks a real layer.
       if (source is IComposableTreenumerable<TNode> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.ComposeFilter(
+        return composableSource.Compose(
           new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(

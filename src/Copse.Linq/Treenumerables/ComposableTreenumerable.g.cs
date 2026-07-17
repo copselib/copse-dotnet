@@ -40,10 +40,13 @@ namespace Copse.Linq.Treenumerables
       new WhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>(
         _Source.GetDepthFirstTreenumerator, _ResultSelector);
 
-    // fmap over the result carrier: the composed arrow runs first; a rejected node never
-    // reaches the appended selector (the stacked pipeline's Select layer never received it,
-    // so it has no outer value), an accepted node's value maps and its strategies ride.
-    public ITreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    // The composition law, written once, covering the whole stage algebra (a projection is a
+    // stage that never rejects): the fold stops at the first SkipNode-carrying result (that
+    // node left the logical tree, so later stages never saw it in the stacked pipeline, and
+    // it has no outer value); while accepting, the value maps and strategies union.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TResult>, CompositionResult<TOuterResult>> stage,
+      bool relabels)
     {
       var resultSelector = _ResultSelector;
 
@@ -53,34 +56,12 @@ namespace Copse.Linq.Treenumerables
         {
           var innerResult = resultSelector.GetResult(nodeContext);
 
-          return innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
-            ? new CompositionResult<TOuterResult>(default, innerResult.Strategies)
-            : new CompositionResult<TOuterResult>(
-                selector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position)),
-                innerResult.Strategies);
-        }),
-        ContainsRelabelingStage);
-    }
-
-    // The composition law, written once: the fold stops at the first SkipNode-carrying result
-    // (that node left the logical tree, so later stages never saw it in the stacked
-    // pipeline); while accepting, strategies union.
-    public ITreenumerable<TResult> ComposeFilter(Func<NodeContext<TResult>, CompositionResult<TResult>> stage, bool relabels)
-    {
-      var resultSelector = _ResultSelector;
-
-      return new ComposableTreenumerable<TSource, TResult, FuncResultSelector<TSource, TResult>>(
-        _Source,
-        new FuncResultSelector<TSource, TResult>(nodeContext =>
-        {
-          var innerResult = resultSelector.GetResult(nodeContext);
-
           if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
-            return innerResult;
+            return new CompositionResult<TOuterResult>(default, innerResult.Strategies);
 
           var stageResult = stage(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
 
-          return new CompositionResult<TResult>(stageResult.Value, stageResult.Strategies | innerResult.Strategies);
+          return new CompositionResult<TOuterResult>(stageResult.Value, stageResult.Strategies | innerResult.Strategies);
         }),
         ContainsRelabelingStage | relabels);
     }

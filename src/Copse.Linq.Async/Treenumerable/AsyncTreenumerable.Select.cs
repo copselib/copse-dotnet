@@ -18,9 +18,16 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
     {
-      // A value selector observes no coordinates, so it composes unconditionally.
+      // A value selector observes no coordinates, so it composes unconditionally. The fast
+      // path first: a projection-only chain composes selectors and stays on the light
+      // acquisition; anything else composes the projection as a never-rejecting stage.
+      if (source is IAsyncComposableProjection<TSource> projectionSource)
+        return projectionSource.ComposeProjection(nodeContext => selector(nodeContext.Node));
+
       if (source is IAsyncComposableTreenumerable<TSource> composableSource)
-        return composableSource.ComposeSelect(nodeContext => selector(nodeContext.Node));
+        return composableSource.Compose(
+          nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -36,8 +43,13 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
+      if (source is IAsyncComposableProjection<TSource> projectionSource && !projectionSource.ContainsRelabelingStage)
+        return projectionSource.ComposeProjection(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+
       if (source is IAsyncComposableTreenumerable<TSource> composableSource && !composableSource.ContainsRelabelingStage)
-        return composableSource.ComposeSelect(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return composableSource.Compose(
+          nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }

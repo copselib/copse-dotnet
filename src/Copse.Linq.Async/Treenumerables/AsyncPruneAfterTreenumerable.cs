@@ -40,11 +40,10 @@ namespace Copse.Linq.Async.Treenumerables
       => new ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
         _Source, new FuncResultSelector<TNode, TNode>(CreateStage(_Predicate)), containsRelabelingStage: false);
 
-    public IAsyncTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
-      => ToComposable().ComposeSelect(selector);
-
-    public IAsyncTreenumerable<TNode> ComposeFilter(Func<NodeContext<TNode>, CompositionResult<TNode>> stage, bool relabels)
-      => ToComposable().ComposeFilter(stage, relabels);
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TNode>, CompositionResult<TOuterResult>> stage,
+      bool relabels)
+      => ToComposable().Compose(stage, relabels);
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() =>
       new AsyncPruneAfterTreenumerator<TNode>(_Source.GetAsyncBreadthFirstTreenumerator, _Predicate);

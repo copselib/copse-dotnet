@@ -43,11 +43,10 @@ namespace Copse.Linq.Treenumerables
       => new ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
         _Source, new FuncResultSelector<TNode, TNode>(CreateStage(_Predicate)), containsRelabelingStage: false);
 
-    public ITreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
-      => ToComposable().ComposeSelect(selector);
-
-    public ITreenumerable<TNode> ComposeFilter(Func<NodeContext<TNode>, CompositionResult<TNode>> stage, bool relabels)
-      => ToComposable().ComposeFilter(stage, relabels);
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TNode>, CompositionResult<TOuterResult>> stage,
+      bool relabels)
+      => ToComposable().Compose(stage, relabels);
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() =>
       new PruneAfterTreenumerator<TNode>(_Source.GetBreadthFirstTreenumerator, _Predicate);

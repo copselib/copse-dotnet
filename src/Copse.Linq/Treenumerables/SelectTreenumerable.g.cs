@@ -11,8 +11,9 @@ namespace Copse.Linq.Treenumerables
   // The pure-projection wrapper. Kept distinct from ComposableTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
-  // when a filter joins (the representation choice IS this type split).
-  internal sealed class SelectTreenumerable<TSource, TResult> : IComposableTreenumerable<TResult>
+  // when a filter joins (the representation choice IS this type split). The projection fast
+  // path (ComposeProjection) is this type's capability, declared here alone.
+  internal sealed class SelectTreenumerable<TSource, TResult> : IComposableProjection<TResult>
   {
     public SelectTreenumerable(
       ITreenumerable<TSource> source,
@@ -28,9 +29,9 @@ namespace Copse.Linq.Treenumerables
     // Projections never relabel.
     public bool ContainsRelabelingStage => false;
 
-    // A projection composed onto a projection is still a projection: the chain keeps the
-    // light acquisition.
-    public ITreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    // The fast path: a projection composed onto a projection is still a projection, so the
+    // chain keeps the light acquisition.
+    public ITreenumerable<TOuterResult> ComposeProjection<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
       var innerSelector = _Selector;
 
@@ -39,15 +40,17 @@ namespace Copse.Linq.Treenumerables
         nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
     }
 
-    // The first filter converts the representation. A projection cannot reject and carries no
-    // strategies, so the stage's result stands alone -- no short-circuit, no union.
-    public ITreenumerable<TResult> ComposeFilter(Func<NodeContext<TResult>, CompositionResult<TResult>> stage, bool relabels)
+    // The general stage converts the representation. A projection cannot reject and carries
+    // no strategies, so the stage's result stands alone -- no short-circuit, no union.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TResult>, CompositionResult<TOuterResult>> stage,
+      bool relabels)
     {
       var innerSelector = _Selector;
 
-      return new ComposableTreenumerable<TSource, TResult, FuncResultSelector<TSource, TResult>>(
+      return new ComposableTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
-        new FuncResultSelector<TSource, TResult>(
+        new FuncResultSelector<TSource, TOuterResult>(
           nodeContext => stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
         relabels);
     }

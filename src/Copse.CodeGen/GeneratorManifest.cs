@@ -266,6 +266,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/IComposableTreenumerable.g.cs",
         "IAsyncComposableTreenumerable", "IComposableTreenumerable", "Copse.Linq.Treenumerables"),
 
+      new("Copse.Linq.Async/Treenumerables/IAsyncComposableProjection.cs",
+        "Copse.Linq/Treenumerables/IComposableProjection.g.cs",
+        "IAsyncComposableProjection", "IComposableProjection", "Copse.Linq.Treenumerables"),
+
       new("Copse.Linq.Async/Treenumerables/IResultSelector.cs",
         "Copse.Linq/Treenumerables/IResultSelector.g.cs",
         "IResultSelector", "IResultSelector", "Copse.Linq.Treenumerables"),
