@@ -23,15 +23,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally.
+      // A value predicate observes no coordinates, so it composes unconditionally. The stage
+      // is the plain path's selector struct: the operator's semantics, stated once.
       if (source is IComposableTreenumerable<TNode> composableSource)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<TNode>(
-            nodeContext.Node,
-            predicate(nodeContext.Node)
-              ? NodeTraversalStrategies.TraverseAll
-              : NodeTraversalStrategies.SkipNode),
-          relabels: true).ToTreenumerable();
+        return composableSource.ComposeFilter(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), containsRelabelingStage: true);
@@ -52,14 +48,9 @@ namespace Copse.Linq
       // The join rule, applied here because only the operator knows its lambda's flavor: a
       // positional predicate is entitled to its input tree's emitted labels, so it splices
       // only while the chain is label-preserving and otherwise stacks a real layer.
-      if (source is IComposableTreenumerable<TNode> composableSource && !composableSource.Map.ContainsRelabelingStage)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<TNode>(
-            nodeContext.Node,
-            predicate(nodeContext.Node, nodeContext.Position)
-              ? NodeTraversalStrategies.TraverseAll
-              : NodeTraversalStrategies.SkipNode),
-          relabels: true).ToTreenumerable();
+      if (source is IComposableTreenumerable<TNode> composableSource && !composableSource.ContainsRelabelingStage)
+        return composableSource.ComposeFilter(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
         source, new PositionalWhereResultSelector<TNode>(predicate), containsRelabelingStage: true);

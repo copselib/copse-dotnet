@@ -9,7 +9,7 @@ namespace Copse.Linq.Async.Treenumerables
   // The pure-projection wrapper. Kept distinct from ComposableTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
-  // when a filter joins (the map makes that representation choice at reification).
+  // when a filter joins (the representation choice IS this type split).
   internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncComposableTreenumerable<TResult>
   {
     public AsyncSelectTreenumerable(
@@ -23,16 +23,37 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly IAsyncTreenumerable<TSource> _Source;
     private readonly Func<NodeContext<TSource>, TResult> _Selector;
 
-    // Offer up the internal mapping: a projection-only map, so composition keeps the light
-    // representation until a filter joins.
-    public ICompositionMap<TResult> Map => CompositionMap<TSource, TResult>.OfProjection(_Source, _Selector);
+    // Projections never relabel.
+    public bool ContainsRelabelingStage => false;
+
+    // A projection composed onto a projection is still a projection: the chain keeps the
+    // light acquisition.
+    public IAsyncTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    {
+      var innerSelector = _Selector;
+
+      return new AsyncSelectTreenumerable<TSource, TOuterResult>(
+        _Source,
+        nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position)));
+    }
+
+    // The first filter converts the representation. A projection cannot reject and carries no
+    // strategies, so the stage's result stands alone -- no short-circuit, no union.
+    public IAsyncTreenumerable<TResult> ComposeFilter(Func<NodeContext<TResult>, CompositionResult<TResult>> stage, bool relabels)
+    {
+      var innerSelector = _Selector;
+
+      return new ComposableTreenumerable<TSource, TResult, FuncResultSelector<TSource, TResult>>(
+        _Source,
+        new FuncResultSelector<TSource, TResult>(
+          nodeContext => stage(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position))),
+        relabels);
+    }
 
     public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator() =>
       new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncBreadthFirstTreenumerator, _Selector);
 
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>
       new AsyncSelectTreenumerator<TSource, TResult>(_Source.GetAsyncDepthFirstTreenumerator, _Selector);
-
-
   }
 }

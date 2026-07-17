@@ -23,7 +23,7 @@ namespace Copse.Linq
     {
       // A value selector observes no coordinates, so it composes unconditionally.
       if (source is IComposableTreenumerable<TSource> composableSource)
-        return composableSource.Map.Select(nodeContext => selector(nodeContext.Node)).ToTreenumerable();
+        return composableSource.ComposeSelect(nodeContext => selector(nodeContext.Node));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -39,8 +39,8 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is IComposableTreenumerable<TSource> composableSource && !composableSource.Map.ContainsRelabelingStage)
-        return composableSource.Map.Select(nodeContext => selector(nodeContext.Node, nodeContext.Position)).ToTreenumerable();
+      if (source is IComposableTreenumerable<TSource> composableSource && !composableSource.ContainsRelabelingStage)
+        return composableSource.ComposeSelect(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }

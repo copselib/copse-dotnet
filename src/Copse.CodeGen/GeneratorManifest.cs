@@ -294,14 +294,6 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/PositionalPruneBeforeResultSelector.g.cs",
         "PositionalPruneBeforeResultSelector", "PositionalPruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/ICompositionMap.cs",
-        "Copse.Linq/Treenumerables/ICompositionMap.g.cs",
-        "ICompositionMap", "ICompositionMap", "Copse.Linq.Treenumerables"),
-
-      new("Copse.Linq.Async/Treenumerables/CompositionMap.cs",
-        "Copse.Linq/Treenumerables/CompositionMap.g.cs",
-        "CompositionMap", "CompositionMap", "Copse.Linq.Treenumerables"),
-
       new("Copse.Linq.Async/Treenumerables/CompositionResult.cs",
         "Copse.Linq/Treenumerables/CompositionResult.g.cs",
         "CompositionResult", "CompositionResult", "Copse.Linq.Treenumerables"),

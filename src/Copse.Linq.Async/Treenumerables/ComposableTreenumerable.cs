@@ -38,18 +38,49 @@ namespace Copse.Linq.Async.Treenumerables
       new AsyncWhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>(
         _Source.GetAsyncDepthFirstTreenumerator, _ResultSelector);
 
-    // Offer up the internal mapping (materialized on demand: acquisition keeps the zero-cost
-    // struct seam; only actual composition pays the delegate hop, and fused paths are
-    // delegate-bound anyway).
-    public ICompositionMap<TResult> Map
+    // fmap over the result carrier: the composed arrow runs first; a rejected node never
+    // reaches the appended selector (the stacked pipeline's Select layer never received it,
+    // so it has no outer value), an accepted node's value maps and its strategies ride.
+    public IAsyncTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
-      get
-      {
-        var resultSelector = _ResultSelector;
+      var resultSelector = _ResultSelector;
 
-        return CompositionMap<TSource, TResult>.OfResult(
-          _Source, nodeContext => resultSelector.GetResult(nodeContext), ContainsRelabelingStage);
-      }
+      return new ComposableTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
+        _Source,
+        new FuncResultSelector<TSource, TOuterResult>(nodeContext =>
+        {
+          var innerResult = resultSelector.GetResult(nodeContext);
+
+          return innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode)
+            ? new CompositionResult<TOuterResult>(default, innerResult.Strategies)
+            : new CompositionResult<TOuterResult>(
+                selector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position)),
+                innerResult.Strategies);
+        }),
+        ContainsRelabelingStage);
+    }
+
+    // The composition law, written once: the fold stops at the first SkipNode-carrying result
+    // (that node left the logical tree, so later stages never saw it in the stacked
+    // pipeline); while accepting, strategies union.
+    public IAsyncTreenumerable<TResult> ComposeFilter(Func<NodeContext<TResult>, CompositionResult<TResult>> stage, bool relabels)
+    {
+      var resultSelector = _ResultSelector;
+
+      return new ComposableTreenumerable<TSource, TResult, FuncResultSelector<TSource, TResult>>(
+        _Source,
+        new FuncResultSelector<TSource, TResult>(nodeContext =>
+        {
+          var innerResult = resultSelector.GetResult(nodeContext);
+
+          if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
+            return innerResult;
+
+          var stageResult = stage(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
+
+          return new CompositionResult<TResult>(stageResult.Value, stageResult.Strategies | innerResult.Strategies);
+        }),
+        ContainsRelabelingStage | relabels);
     }
   }
 }

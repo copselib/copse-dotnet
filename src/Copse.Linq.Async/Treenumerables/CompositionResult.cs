@@ -28,11 +28,5 @@ namespace Copse.Linq.Async.Treenumerables
     // publishes the node).
     public readonly TNode Value;
     public readonly NodeTraversalStrategies Strategies;
-
-    // The composition law's accept-side union: strategies gathered by earlier accepting stages
-    // ride along. Uniform over both fates -- a rejected result stays rejected (SkipNode is
-    // already aboard) and its instruction gains the earlier stages' contributions.
-    public CompositionResult<TNode> WithEarlierStrategies(NodeTraversalStrategies earlierStrategies)
-      => new CompositionResult<TNode>(Value, Strategies | earlierStrategies);
   }
 }

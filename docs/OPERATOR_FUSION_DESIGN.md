@@ -11,7 +11,7 @@
 > demoted while fusion (which does compound) proceeds.
 
 > **Vocabulary (renamed 2026-07-16):** the API spells the capability *composition* —
-> `IComposableTreenumerable` / `CompositionMap` / `CompositionResult` (formerly
+> `IComposableTreenumerable` / `ComposableTreenumerable` / `CompositionResult` (formerly
 > Fusable/Fusion): composable names what the algebra does. "Fusion" in this document names
 > the *technique* — collapsing stacked layers into one wrapper — by its literature name
 > (LINQ's fused iterators, stream fusion).
@@ -152,28 +152,34 @@ make this cell permanently moot.
   correctness depend on foreign `Compose` implementations, and net48/netstandard2.0 rule
   out default interface members, so public interface evolution is breaking. LINQ's
   hidden-iterator precedent is the considered one. Internal→public later is free.
-- **Map-centric fusion (Jason's original model, fully adopted 2026-07-16)**: the fusable
-  wrapper offers up its internal mapping — the interface is ONE property,
-  `ICompositionMap<TNode> Map` — and operators compose onto it with bare lambdas: `Select` is
-  fmap, `Filter` is the filter-bind, `ToTreenumerable` reifies. `CompositionMap<TSource, TNode>`
-  owns ALL the algebra: the composition law (first reject stops; accept-side strategies
-  union), purity tracking (a projection-only map keeps the raw composed selector so
-  reification stays on the light Select treenumerator; the first Filter converts the
-  representation), the relabeling bit the positional join rule reads, and the
-  representation choice at reification. The first Select over a plain source is the monadic
-  RETURN (lifting into the result carrier with identity strategies). Erasure is why the
-  map exists: the operator cannot name the source type, so the typed map composes and
-  constructs behind the erased combinator surface. `CompositionResult` is a BARE PAIR
-  `(value, strategies)` with one constructor — rejection IS SkipNode membership, a derived
-  view inherited from the consumer protocol, so every pair is coherent by definition. (An
-  earlier Accept/Reject factory vocabulary was dropped in review 2026-07-16: once PruneAfter
-  is an accept carrying skip instructions and PruneBefore a reject whose payload is the whole
-  message, the case names no longer carry the semantics — the strategies value does, and the
-  factories' implicit `| SkipNode` never fired at any call site.)
-  Wrappers keep their acquisition paths (struct seam, light Select); `Map` materializes on
-  demand so only composition pays the delegate hop. Design lineage, each step Jason's: four
-  flavor-hooks → two methods + property → one method + self-describing stage → one property
-  + the map with combinators.
+- **Compose-in-one-step (Jason's original `Compose` model, restored 2026-07-16 after the
+  map middleman was reviewed out)**: the interface is `ContainsRelabelingStage` plus two
+  TOTAL methods — `ComposeSelect<TOut>(selector)` (fmap; representation-preserving for
+  projections) and `ComposeFilter(stage, relabels)` (the filter-bind) — each returning the
+  successor treenumerable directly: the wrapper unwraps its own mapping, composes, discards
+  itself, constructs. The interim `CompositionMap` object had re-encoded the wrapper TYPE
+  structure as runtime data (projection-XOR-result fields, a reification-time
+  representation choice) and cost a transient object per composition step; deleted. The
+  representation choice is the implementing type: `AsyncSelectTreenumerable` IS the
+  projection-only representation (light acquisition; its `ComposeSelect` stays light, its
+  `ComposeFilter` converts), `ComposableTreenumerable` IS the result-backed one, and its
+  `ComposeSelect`/`ComposeFilter` are the composition law's ONLY home (first SkipNode stops
+  the fold; accept-side strategies union). `AsyncPruneAfterTreenumerable` converts itself
+  to the general representation and delegates (unwrap, discard, rebuild). Erasure
+  unchanged: the wrapper knows its source type; the methods are typed on output only.
+  Each operator's stage semantics are stated ONCE — the compose branch reuses the plain
+  path's selector struct as a method group (`new WhereResultSelector(p).GetResult`);
+  PruneAfter's stage lives in the wrapper's `CreateStage`. `CompositionResult` is a BARE
+  PAIR `(value, strategies)` — two fields, one constructor, zero behavior — rejection IS
+  SkipNode membership, inherited from the consumer protocol, so every pair is coherent by
+  definition. (An earlier Accept/Reject factory vocabulary was dropped in review
+  2026-07-16: once PruneAfter is an accept carrying skip instructions and PruneBefore a
+  reject whose payload is the whole message, the case names no longer carry the semantics —
+  the strategies value does, and the factories' implicit `| SkipNode` never fired at any
+  call site.) Design lineage, each step Jason's: four flavor-hooks → two methods + property
+  → one method + self-describing stage → one property + the map with combinators → two
+  compose methods + the bit, map deleted (the smaller algebra no longer needed a home of
+  its own).
 - **Fused machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library

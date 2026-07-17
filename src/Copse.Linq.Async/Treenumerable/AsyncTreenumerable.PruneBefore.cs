@@ -20,15 +20,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally.
+      // A value predicate observes no coordinates, so it composes unconditionally. The stage
+      // is the plain path's selector struct: the operator's semantics, stated once.
       if (source is IAsyncComposableTreenumerable<T> composableSource)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<T>(
-            nodeContext.Node,
-            predicate(nodeContext.Node)
-              ? NodeTraversalStrategies.SkipNodeAndDescendants
-              : NodeTraversalStrategies.TraverseAll),
-          relabels: true).ToTreenumerable();
+        return composableSource.ComposeFilter(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<T, T, PruneBeforeResultSelector<T>>(
         source, new PruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);
@@ -46,14 +42,9 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IAsyncComposableTreenumerable<T> composableSource && !composableSource.Map.ContainsRelabelingStage)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<T>(
-            nodeContext.Node,
-            predicate(nodeContext.Node, nodeContext.Position)
-              ? NodeTraversalStrategies.SkipNodeAndDescendants
-              : NodeTraversalStrategies.TraverseAll),
-          relabels: true).ToTreenumerable();
+      if (source is IAsyncComposableTreenumerable<T> composableSource && !composableSource.ContainsRelabelingStage)
+        return composableSource.ComposeFilter(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
 
       return new ComposableTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
         source, new PositionalPruneBeforeResultSelector<T>(predicate), containsRelabelingStage: true);

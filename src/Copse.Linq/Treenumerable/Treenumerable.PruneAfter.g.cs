@@ -23,15 +23,12 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // A value predicate observes no coordinates, so it composes unconditionally.
+      // A value predicate observes no coordinates, so it composes unconditionally. The stage
+      // comes from the wrapper's CreateStage: the operator's semantics, stated once.
       if (source is IComposableTreenumerable<T> composableSource)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<T>(
-            nodeContext.Node,
-            predicate(nodeContext.Node)
-              ? NodeTraversalStrategies.SkipDescendants
-              : NodeTraversalStrategies.TraverseAll),
-          relabels: false).ToTreenumerable();
+        return composableSource.ComposeFilter(
+          PruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node)),
+          relabels: false);
 
       return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
     }
@@ -48,14 +45,10 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is IComposableTreenumerable<T> composableSource && !composableSource.Map.ContainsRelabelingStage)
-        return composableSource.Map.Filter(
-          nodeContext => new CompositionResult<T>(
-            nodeContext.Node,
-            predicate(nodeContext.Node, nodeContext.Position)
-              ? NodeTraversalStrategies.SkipDescendants
-              : NodeTraversalStrategies.TraverseAll),
-          relabels: false).ToTreenumerable();
+      if (source is IComposableTreenumerable<T> composableSource && !composableSource.ContainsRelabelingStage)
+        return composableSource.ComposeFilter(
+          PruneAfterTreenumerable<T>.CreateStage(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
+          relabels: false);
 
       return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }

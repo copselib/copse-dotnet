@@ -25,22 +25,29 @@ namespace Copse.Linq.Treenumerables
     private readonly ITreenumerable<TNode> _Source;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
 
-    public ICompositionMap<TNode> Map
-    {
-      get
-      {
-        var predicate = _Predicate;
+    // PruneAfter is label-preserving: survivors keep their coordinates.
+    public bool ContainsRelabelingStage => false;
 
-        return CompositionMap<TNode, TNode>.OfResult(
-          _Source,
-          nodeContext => new CompositionResult<TNode>(
-            nodeContext.Node,
-            predicate(nodeContext)
-              ? NodeTraversalStrategies.SkipDescendants
-              : NodeTraversalStrategies.TraverseAll),
-          containsRelabelingStage: false);
-      }
-    }
+    // PruneAfter's stage, stated once (the operator's compose branches use this too): keep
+    // the node; a match sheds its subtree.
+    internal static Func<NodeContext<TNode>, CompositionResult<TNode>> CreateStage(Func<NodeContext<TNode>, bool> predicate)
+      => nodeContext => new CompositionResult<TNode>(
+        nodeContext.Node,
+        predicate(nodeContext)
+          ? NodeTraversalStrategies.SkipDescendants
+          : NodeTraversalStrategies.TraverseAll);
+
+    // Composition converts to the general representation and composes there (unwrap, discard,
+    // rebuild); plain acquisition below keeps the bespoke driver and never pays this.
+    private ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>> ToComposable()
+      => new ComposableTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
+        _Source, new FuncResultSelector<TNode, TNode>(CreateStage(_Predicate)), containsRelabelingStage: false);
+
+    public ITreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+      => ToComposable().ComposeSelect(selector);
+
+    public ITreenumerable<TNode> ComposeFilter(Func<NodeContext<TNode>, CompositionResult<TNode>> stage, bool relabels)
+      => ToComposable().ComposeFilter(stage, relabels);
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() =>
       new PruneAfterTreenumerator<TNode>(_Source.GetBreadthFirstTreenumerator, _Predicate);

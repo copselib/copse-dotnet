@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
 
     // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
     // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
-    // result stage, offered through the same FuseStage hook.
+    // result stage, composed through the same ComposeFilter hook.
     [TestMethod]
     public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
     {
