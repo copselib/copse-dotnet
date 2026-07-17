@@ -25,6 +25,20 @@ namespace Copse.Linq.Async.Treenumerables
     // PruneAfter is label-preserving: survivors keep their coordinates.
     public bool Relabels => false;
 
+    // PruneAfter over PruneAfter stays on the bespoke driver: both are label-preserving and
+    // neither can reject, so the pair merges into ONE wrapper by predicate union -- prune
+    // when either matches. Inner-first short-circuit preserves per-node lambda order; the
+    // outer predicate skips nodes the inner already matched, which the purity contract
+    // permits (counts unspecified). The general path would convert to the Where driver and
+    // pay promotion machinery a never-rejecting chain cannot use.
+    internal AsyncPruneAfterTreenumerable<TNode> MergePruneAfter(Func<NodeContext<TNode>, bool> outerPredicate)
+    {
+      var innerPredicate = _Predicate;
+
+      return new AsyncPruneAfterTreenumerable<TNode>(
+        _Source, nodeContext => innerPredicate(nodeContext) || outerPredicate(nodeContext));
+    }
+
     // PruneAfter's selector, stated once (the operator's compose branches use this too): keep
     // the node; a match sheds its subtree.
     internal static Func<NodeContext<TNode>, SelectWhereResult<TNode>> CreateResultSelector(Func<NodeContext<TNode>, bool> predicate)

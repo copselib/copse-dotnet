@@ -23,6 +23,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
+      // PruneAfter over PruneAfter merges by predicate union and keeps the bespoke
+      // no-promotion driver.
+      if (source is PruneAfterTreenumerable<T> pruneAfterSource)
+        return pruneAfterSource.MergePruneAfter(nodeContext => predicate(nodeContext.Node));
+
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // comes from the wrapper's CreateResultSelector: the operator's semantics, stated once.
       if (source is ISelectWhereTreenumerable<T> selectWhereSource)
@@ -43,6 +48,12 @@ namespace Copse.Linq
     {
       if (predicate == null)
         return source;
+
+      // PruneAfter over PruneAfter merges by predicate union and keeps the bespoke
+      // no-promotion driver; the wrapper never relabels, so the positional flavor always
+      // qualifies.
+      if (source is PruneAfterTreenumerable<T> pruneAfterSource)
+        return pruneAfterSource.MergePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
