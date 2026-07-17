@@ -30,8 +30,8 @@ namespace Copse.Linq.Treenumerables
 
     // PruneAfter's stage, stated once (the operator's compose branches use this too): keep
     // the node; a match sheds its subtree.
-    internal static Func<NodeContext<TNode>, CompositionResult<TNode>> CreateStage(Func<NodeContext<TNode>, bool> predicate)
-      => nodeContext => new CompositionResult<TNode>(
+    internal static Func<NodeContext<TNode>, SelectWhereResult<TNode>> CreateStage(Func<NodeContext<TNode>, bool> predicate)
+      => nodeContext => new SelectWhereResult<TNode>(
         nodeContext.Node,
         predicate(nodeContext)
           ? NodeTraversalStrategies.SkipDescendants
@@ -44,7 +44,7 @@ namespace Copse.Linq.Treenumerables
         _Source, new FuncResultSelector<TNode, TNode>(CreateStage(_Predicate)), containsRelabelingStage: false);
 
     public ITreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TNode>, CompositionResult<TOuterResult>> stage,
+      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> stage,
       bool relabels)
       => ToSelectWhere().Compose(stage, relabels);
 

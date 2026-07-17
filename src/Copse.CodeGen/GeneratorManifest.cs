@@ -298,9 +298,9 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/PositionalPruneBeforeResultSelector.g.cs",
         "PositionalPruneBeforeResultSelector", "PositionalPruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/CompositionResult.cs",
-        "Copse.Linq/Treenumerables/CompositionResult.g.cs",
-        "CompositionResult", "CompositionResult", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/SelectWhereResult.cs",
+        "Copse.Linq/Treenumerables/SelectWhereResult.g.cs",
+        "SelectWhereResult", "SelectWhereResult", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhereTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectWhereTreenumerable.g.cs",

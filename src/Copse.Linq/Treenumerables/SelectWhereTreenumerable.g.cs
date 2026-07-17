@@ -45,7 +45,7 @@ namespace Copse.Linq.Treenumerables
     // node left the logical tree, so later stages never saw it in the stacked pipeline, and
     // it has no outer value); while accepting, the value maps and strategies union.
     public ITreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, CompositionResult<TOuterResult>> stage,
+      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> stage,
       bool relabels)
     {
       var resultSelector = _ResultSelector;
@@ -57,11 +57,11 @@ namespace Copse.Linq.Treenumerables
           var innerResult = resultSelector.GetResult(nodeContext);
 
           if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
-            return new CompositionResult<TOuterResult>(default, innerResult.Strategies);
+            return new SelectWhereResult<TOuterResult>(default, innerResult.Strategies);
 
           var stageResult = stage(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
 
-          return new CompositionResult<TOuterResult>(stageResult.Value, stageResult.Strategies | innerResult.Strategies);
+          return new SelectWhereResult<TOuterResult>(stageResult.Value, stageResult.Strategies | innerResult.Strategies);
         }),
         ContainsRelabelingStage | relabels);
     }

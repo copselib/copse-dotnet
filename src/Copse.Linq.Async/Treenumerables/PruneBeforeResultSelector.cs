@@ -13,8 +13,8 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly Func<TNode, bool> _Predicate;
 
-    public CompositionResult<TNode> GetResult(NodeContext<TNode> nodeContext)
-      => new CompositionResult<TNode>(
+    public SelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
+      => new SelectWhereResult<TNode>(
         nodeContext.Node,
         _Predicate(nodeContext.Node)
           ? NodeTraversalStrategies.SkipNodeAndDescendants

@@ -42,13 +42,13 @@ namespace Copse.Async.Tests
     private static readonly Func<NodeContext<int>, bool> KeepNot3 = nc => nc.Node != 3;
     private static readonly Func<int, bool> KeepNot3Value = n => n != 3;
 
-    private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.CompositionResult<int>> KeepNot3Result =
-      nc => new Copse.Linq.Treenumerables.CompositionResult<int>(
+    private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.SelectWhereResult<int>> KeepNot3Result =
+      nc => new Copse.Linq.Treenumerables.SelectWhereResult<int>(
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
-    private static readonly Func<NodeContext<int>, Copse.Linq.Async.Treenumerables.CompositionResult<int>> AsyncKeepNot3Result =
-      nc => new Copse.Linq.Async.Treenumerables.CompositionResult<int>(
+    private static readonly Func<NodeContext<int>, Copse.Linq.Async.Treenumerables.SelectWhereResult<int>> AsyncKeepNot3Result =
+      nc => new Copse.Linq.Async.Treenumerables.SelectWhereResult<int>(
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 

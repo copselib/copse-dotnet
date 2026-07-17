@@ -41,7 +41,7 @@ namespace Copse.Linq.Async.Treenumerables
     // The general stage converts the representation. A projection cannot reject and carries
     // no strategies, so the stage's result stands alone -- no short-circuit, no union.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, CompositionResult<TOuterResult>> stage,
+      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> stage,
       bool relabels)
     {
       var innerSelector = _Selector;

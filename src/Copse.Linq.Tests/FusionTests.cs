@@ -214,7 +214,7 @@ namespace Copse.Linq.Tests
       var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
-          new CompositionResult<string>(
+          new SelectWhereResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -237,7 +237,7 @@ namespace Copse.Linq.Tests
       var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
-          new CompositionResult<string>(
+          new SelectWhereResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
@@ -288,7 +288,7 @@ namespace Copse.Linq.Tests
           var rehearsed = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
             Tree(treeString),
             new FuncResultSelector<string, string>(nodeContext =>
-              new CompositionResult<string>(
+              new SelectWhereResult<string>(
                 nodeContext.Node,
                 nodeContext.Node == target
                   ? NodeTraversalStrategies.SkipDescendants

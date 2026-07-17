@@ -16,8 +16,9 @@
 > (the general wrapper: LINQ's WhereSelect precedent; in this codebase "Where" already
 > names the generalized filter machinery that hosts the prunes). Both methods are `Compose`
 > — both kinds compose; neither is "the" canonical composition (the interim
-> Composable/Composition spelling implied exactly that and was renamed away). The stage
-> carrier keeps the algebra name, `CompositionResult`. "Fusion" in this document names the
+> Composable/Composition spelling implied exactly that and was renamed away). The carrier
+> is `SelectWhereResult`, whose two fields ARE the name's two halves: `Value` is the Select
+> half's answer, `Strategies` the Where half's. "Fusion" in this document names the
 > *technique* — collapsing stacked layers into one wrapper — by its literature name
 > (LINQ's fused iterators, stream fusion).
 
@@ -161,7 +162,7 @@ make this cell permanently moot.
   after the map middleman was reviewed out; collapsed to a single method 2026-07-17)**: the
   interface is `ContainsRelabelingStage` plus ONE total method —
   `Compose<TOut>(stage, relabels)` where a stage is `Func<NodeContext<TNode>,
-  CompositionResult<TOut>>` — returning the successor treenumerable directly: the wrapper
+  SelectWhereResult<TOut>>` — returning the successor treenumerable directly: the wrapper
   unwraps its own mapping, composes, discards itself, constructs. One method suffices
   because the composition law subsumes fmap: a projection is a stage that never rejects
   (results carry `TraverseAll`), and the law composes it correctly without being told. The
@@ -180,7 +181,7 @@ make this cell permanently moot.
   type; the method is typed on output only. Each operator's stage semantics are stated
   ONCE — the compose branch reuses the plain path's selector struct as a method group
   (`new WhereResultSelector(p).GetResult`); PruneAfter's stage lives in the wrapper's
-  `CreateStage`. `CompositionResult` is a BARE PAIR `(value, strategies)` — two fields, one
+  `CreateStage`. `SelectWhereResult` is a BARE PAIR `(value, strategies)` — two fields, one
   constructor, zero behavior — rejection IS SkipNode membership, inherited from the
   consumer protocol, so every pair is coherent by definition. (An earlier Accept/Reject
   factory vocabulary was dropped in review 2026-07-16: once PruneAfter is an accept
@@ -304,7 +305,7 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    equivalence-vs-stacked, lambda order + early exit, compound≠stacked, positional-over-
    Select legality, and once-per-node selector evaluation on the fused path (the
    invocation-count ruling, now pinned rather than open).
-2. ✅ SHIPPED (branch, 2026-07-16): `CompositionResult<T>` + result-shaped filter drivers (one
+2. ✅ SHIPPED (branch, 2026-07-16): `SelectWhereResult<T>` + result-shaped filter drivers (one
    composed evaluation per scheduled node; per-node reject strategies; DFT honors accept-side
    strategies via pending merge, BFT seam documented awaiting the PruneAfter stage);
    `SelectWhereTreenumerable` (the reified Kleisli arrow — value chains of any length/order

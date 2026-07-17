@@ -28,7 +28,7 @@ namespace Copse.Linq.Async.Treenumerables
     // relabels: whether THIS stage moves surviving nodes' labels (Where and PruneBefore do;
     // PruneAfter and projections do not).
     IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TNode>, CompositionResult<TOuterResult>> stage,
+      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> stage,
       bool relabels);
   }
 }

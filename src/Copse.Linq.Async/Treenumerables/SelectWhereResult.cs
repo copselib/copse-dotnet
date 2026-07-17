@@ -16,9 +16,9 @@ namespace Copse.Linq.Async.Treenumerables
   // "remove this node", so the result inherits that meaning rather than tracking a second
   // flag or a case split -- any pair is coherent because the strategies alone say what
   // happens to the node.
-  internal readonly struct CompositionResult<TNode>
+  internal readonly struct SelectWhereResult<TNode>
   {
-    public CompositionResult(TNode value, NodeTraversalStrategies strategies)
+    public SelectWhereResult(TNode value, NodeTraversalStrategies strategies)
     {
       Value = value;
       Strategies = strategies;

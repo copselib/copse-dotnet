@@ -29,7 +29,7 @@ namespace Copse.Linq
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
         return selectWhereSource.Compose(
-          nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
@@ -51,7 +51,7 @@ namespace Copse.Linq
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.ContainsRelabelingStage)
         return selectWhereSource.Compose(
-          nodeContext => new CompositionResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));

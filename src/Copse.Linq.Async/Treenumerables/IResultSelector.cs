@@ -11,6 +11,6 @@ namespace Copse.Linq.Async.Treenumerables
   // silently operate on a defensive copy.
   internal interface IResultSelector<TInner, TNode>
   {
-    CompositionResult<TNode> GetResult(NodeContext<TInner> nodeContext);
+    SelectWhereResult<TNode> GetResult(NodeContext<TInner> nodeContext);
   }
 }
