@@ -31,6 +31,27 @@ namespace Copse.Linq.Tests
       }
     }
 
+    // The narrow phase's guard. The committed narrow twins are ALSO the sync entries' inputs, so
+    // this test holding plus the one above proves the whole two-phase chain is fresh.
+    [TestMethod]
+    public void EveryGeneratedNarrowTwinMatchesAFreshTransform()
+    {
+      var srcRoot = FindSrcRoot();
+      Assert.IsNotNull(srcRoot, "could not locate the src root (a directory containing Copse.sln).");
+
+      foreach (var entry in GeneratorManifest.NarrowEntries)
+      {
+        var sourcePath = Path.Combine(srcRoot, entry.WideSource);
+        var twinPath = Path.Combine(srcRoot, entry.Twin);
+
+        var expected = Normalize(CompositeToNarrow.Transform(entry, File.ReadAllText(sourcePath)));
+        var actual = Normalize(File.ReadAllText(twinPath));
+
+        Assert.AreEqual(expected, actual,
+          $"{entry.Twin} is stale relative to {entry.WideSource}. Regenerate: dotnet run --project Copse.CodeGen");
+      }
+    }
+
     // Compare on content, not line endings (git may normalize checked-in files).
     private static string Normalize(string s) => s.Replace("\r\n", "\n");
 

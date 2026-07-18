@@ -1,14 +1,21 @@
 # Async→Sync Codegen: the single-source architecture
 
 The async library is the source of truth; the synchronous library is **generated from it**.
-Every `.g.cs` file under `src/Copse*/` is the mechanical sync transcription of an async source
-file, produced by `Copse.CodeGen` (a Roslyn syntax transform). The relationship is:
+Every `.g.cs` file under `src/Copse*/` is the mechanical transcription of a hand-written source
+file, produced by `Copse.CodeGen` (Roslyn syntax transforms). The relationship is:
 
 ```
 Copse.Core.Async / Copse.Async / Copse.Linq.Async / Copse.SimpleSerializer (async halves)
         │  hand-written, reviewed, tested
-        ▼
-Copse.CodeGen  (GeneratorManifest.cs drives AsyncToSync.cs)
+        ├──────────────────────────────────────────────────────┐
+        │                                                      │  (SelectWhere lattice only)
+        │                                       Copse.CodeGen phase 1: CompositeToNarrow
+        │                                                      │
+        │                                                      ▼
+        │                          narrow single-dimension async twins   *.g.cs, committed
+        │                                                      │
+        ▼                                                      ▼
+Copse.CodeGen phase 2  (GeneratorManifest.cs drives AsyncToSync.cs over both)
         │  dotnet run --project src/Copse.CodeGen
         ▼
 Copse.Core / Copse / Copse.Linq / Copse.SimpleSerializer (sync halves)   *.g.cs, committed
@@ -21,15 +28,26 @@ and sync users pay nothing — the generated code has no tasks, no state machine
 dependencies, and reads like the hand-written code it replaced (that is a hard authoring
 requirement, see "Authoring rules").
 
+The **dimension axis** gets the same treatment for the same reason (see
+OPERATOR_COMPOSITION_DESIGN.md, "the narrow halves"): C# generics cannot abstract over which
+successor type a composable wrapper constructs, so the narrow (depth-first-only /
+breadth-first-only) twins of the SelectWhere lattice are transcribed from their composite-width
+sources by `CompositeToNarrow.cs` — the source interface and return types narrow, the lattice
+types rename by a closed dictionary, and the other dimension's acquisition method is dropped.
+One composite-width async file fans out to five generated ones (narrow async ×2, sync ×3).
+
 ## The contracts
 
 1. **`.g.cs` files are committed.** The build never depends on the generator (the Npgsql
    pattern). A consumer cloning the repo builds the sync libraries without ever running codegen.
-2. **`GeneratedTwinDriftTests` is the safety net.** It re-runs the transform in-memory and
-   asserts every committed `.g.cs` byte-equals the fresh transcription of its async source. If
-   you edit an async source and forget to regenerate — or hand-edit a `.g.cs` — the suite fails.
-3. **One manifest entry per twin.** `GeneratorManifest.cs` maps each async source file to its
-   twin: async path, output path, class rename (`AsyncFoo` → `Foo`), and target namespace.
+2. **`GeneratedTwinDriftTests` is the safety net.** It re-runs both transforms in-memory and
+   asserts every committed `.g.cs` byte-equals the fresh transcription of its source. If you
+   edit a source and forget to regenerate — or hand-edit a `.g.cs` — the suite fails. The
+   committed narrow twins are also the sync entries' inputs, so the two tests together prove the
+   whole chain is fresh.
+3. **One manifest entry per twin.** `GeneratorManifest.cs` maps each source file to its twin:
+   the sync entries carry source path, output path, class rename (`AsyncFoo` → `Foo`), and
+   target namespace; the narrow entries carry source path, output path, and the kept dimension.
    Nothing is discovered by convention; the manifest is the explicit, reviewable list of what is
    generated.
 

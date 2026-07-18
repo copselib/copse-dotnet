@@ -230,7 +230,13 @@ make this cell permanently moot.
   `SelectPruneAfter…` — same drivers, same algebra, narrow successor width). The narrow
   overloads also probe the composite recipe surface first: a composite-width wrapper
   arriving through a narrow-typed receiver keeps composing on its own representation, and
-  its successor keeps both dimensions.
+  its successor keeps both dimensions. The twins are GENERATED, not hand-mirrored
+  (2026-07-18, `CompositeToNarrow` in Copse.CodeGen; see docs/ASYNC_CODEGEN.md): the
+  dimension axis, like the color axis, cannot be abstracted by C# generics — the successor
+  type constructor is what varies — so a change to a wrapper is made once, in the
+  composite-width async file, and fans out to five generated twins (narrow async ×2,
+  sync ×3). The operator overloads' probe tables stay hand-written: their narrow and
+  composite forms differ genuinely (probe sets, fallbacks).
 - **Composed machinery is the genericized core, not duplicated types**: `Where` drivers are
   `<TInner, TNode>` with a selector evaluated once per TESTED node against the source
   context; the path structs store projected values (values are opaque cargo — the library
@@ -361,7 +367,9 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    Where/Select/PruneBefore/PruneAfter probe narrow + composite recipe surfaces and build
    probeable narrow wrappers instead of anonymous factory layers. Pinned in
    NarrowCompositionTests (collapse, tiering, join rule, composite-through-narrow, engine
-   conformance over the corpus).
+   conformance over the corpus). Follow-up same day: the twelve narrow twins became
+   GENERATED files (`CompositeToNarrow` phase in Copse.CodeGen, drift-guarded) — the
+   lattice's implementation is edited in one place, the composite-width async file.
 2.8 Remaining: Select-into-captures; TakeNodesUntil/While migration; the async
    OperatorStack re-measure (the tabled wrapper-wave decision — the BFT collapse ratio is
    the strong signal).
