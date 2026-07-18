@@ -8,28 +8,28 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // The exhaustive fusion gate: every tree in the combinatorial corpus x every ordered operator
+  // The exhaustive composition gate: every tree in the combinatorial corpus x every ordered operator
   // chain (length 1..3 over the five composable operator kinds) x every filter-target node x consumer
-  // strategy interference, each case comparing the FUSED pipeline against the same chain FORCED
+  // strategy interference, each case comparing the COMPOSED pipeline against the same chain FORCED
   // TO STACK (Tree.Defer interposed between operators: the delegating wrapper is not composable, and
-  // deferring a deferred tree is semantics-neutral). Fusion's whole contract is that the two
-  // are indistinguishable -- including under consumer skips, which exercise the fused driver's
+  // deferring a deferred tree is semantics-neutral). Composition's whole contract is that the two
+  // are indistinguishable -- including under consumer skips, which exercise the composed driver's
   // per-node reject strategies against the stacked layers' independent ones.
   //
   // Mirrors CombinatorialWhereTests' one-in-process-loop shape (no DynamicData: MSTest would
   // enumerate the space during discovery). Note that suite's composed-Where arm already runs
-  // FUSED Where chains against the materialized oracle (~891k cases per dimension); this suite
+  // COMPOSED Where chains against the materialized oracle (~891k cases per dimension); this suite
   // adds the mixed-operator and positional-flavor space against the stacked control.
   [TestClass]
-  public class CombinatorialFusionTests
+  public class CombinatorialCompositionTests
   {
     public TestContext TestContext { get; set; }
 
     [TestMethod]
-    public void DepthFirstFusedMatchesStacked() => RunScan(TreeTraversalStrategy.DepthFirst);
+    public void DepthFirstComposedMatchesStacked() => RunScan(TreeTraversalStrategy.DepthFirst);
 
     [TestMethod]
-    public void BreadthFirstFusedMatchesStacked() => RunScan(TreeTraversalStrategy.BreadthFirst);
+    public void BreadthFirstComposedMatchesStacked() => RunScan(TreeTraversalStrategy.BreadthFirst);
 
     // Filters and prunes aim at a target node by PREFIX, which keeps targets stable under the
     // tagging Selects (a node "b" stays matchable as "b*", "b*^", ...). The positional flavors
@@ -102,9 +102,9 @@ namespace Copse.Linq.Tests
                   ? consumerStrategy
                   : NodeTraversalStrategies.TraverseAll;
 
-              ITreenumerable<string> fusedPipeline = Deserialize(treeString);
+              ITreenumerable<string> composedPipeline = Deserialize(treeString);
               foreach (var chainOperator in chain)
-                fusedPipeline = chainOperator.Apply(fusedPipeline, targetNode);
+                composedPipeline = chainOperator.Apply(composedPipeline, targetNode);
 
               ITreenumerable<string> stackedPipeline = Deserialize(treeString);
               foreach (var chainOperator in chain)
@@ -115,7 +115,7 @@ namespace Copse.Linq.Tests
 
               var expected = Key(stackedPipeline.GetTraversal(treeTraversalStrategy, Selector));
               // Take() bounds a hypothetical non-terminating regression into a length mismatch.
-              var actual = Key(fusedPipeline.GetTraversal(treeTraversalStrategy, Selector)).Take(100_000);
+              var actual = Key(composedPipeline.GetTraversal(treeTraversalStrategy, Selector)).Take(100_000);
 
               if (!expected.SequenceEqual(actual))
               {
@@ -128,12 +128,12 @@ namespace Copse.Linq.Tests
         }
       }
 
-      TestContext.WriteLine($"CombinatorialFusionTests ({treeTraversalStrategy}): {total} cases across {CombinatorialTestData.AllTreeStrings.Length} trees x {chains.Length} chains.");
+      TestContext.WriteLine($"CombinatorialCompositionTests ({treeTraversalStrategy}): {total} cases across {CombinatorialTestData.AllTreeStrings.Length} trees x {chains.Length} chains.");
 
       Assert.AreEqual(
         0L,
         failed,
-        $"{treeTraversalStrategy} fused pipeline diverged from the stacked control on {failed} of {total} cases:{Environment.NewLine}"
+        $"{treeTraversalStrategy} composed pipeline diverged from the stacked control on {failed} of {total} cases:{Environment.NewLine}"
         + string.Join(Environment.NewLine, failures));
     }
 

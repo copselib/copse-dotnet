@@ -4,7 +4,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
-  // Composition rows stack four projections (measures wrapper fusion / per-layer cost);
+  // Composition rows stack four projections (measures layer collapse / per-layer cost);
   // the Binary rows are the single-projection baseline.
   [MemoryDiagnoser]
   [BenchmarkCategory("Streaming", "Select")]

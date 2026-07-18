@@ -8,23 +8,23 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Pins for docs/OPERATOR_FUSION_DESIGN.md: fusion must be observably invisible (identical
+  // Pins for docs/OPERATOR_COMPOSITION_DESIGN.md: composition must be observably invisible (identical
   // visit streams, identical per-lambda order) and must actually HAPPEN (collapsed layers,
-  // once-per-node selector evaluation). The force-unfused controls: the positional Where
-  // overload never fuses with its own kind, and Tree.Defer's delegating wrapper is not
+  // once-per-node selector evaluation). The force-stacked controls: the positional Where
+  // overload never composes with its own kind, and Tree.Defer's delegating wrapper is not
   // composable, so inserting it breaks any chain without changing semantics.
   [TestClass]
-  public class FusionTests
+  public class CompositionTests
   {
     private static ITreenumerable<string> Tree(string serialized) =>
       TreeSerializer.DeserializeDepthFirstTree(serialized);
 
     [TestMethod]
-    public void ValueWheres_Fuse_AndMatchTheStackedPipeline()
+    public void ValueWheres_Compose_AndMatchTheStackedPipeline()
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var fused = Tree("a(b(d,e,f),c)")
+        var composed = Tree("a(b(d,e,f),c)")
           .Where(n => n != "b")
           .Where(n => n != "e")
           .GetTraversal(strategy).ToArray();
@@ -34,7 +34,7 @@ namespace Copse.Linq.Tests
           .Where((n, position) => n != "e")
           .GetTraversal(strategy).ToArray();
 
-        CollectionAssert.AreEqual(stacked, fused, $"{strategy}");
+        CollectionAssert.AreEqual(stacked, composed, $"{strategy}");
       }
     }
 
@@ -42,14 +42,14 @@ namespace Copse.Linq.Tests
     public void ValueChains_CollapseToOneWrapper_AnyOrder()
     {
       // The result monad's closure property: any order, any length, one wrapper.
-      var fused = Tree("a(b,c)")
+      var composed = Tree("a(b,c)")
         .Where(n => n != "b")
         .Select(n => n + "!")
         .Where(n => n != "c!")
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(fused, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.IsInstanceOfType(composed, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
     }
 
     [TestMethod]
@@ -90,11 +90,11 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void SelectThenWhere_Fuses_AndMatchesTheStackedPipeline()
+    public void SelectThenWhere_Composes_AndMatchesTheStackedPipeline()
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var fused = Tree("a(b(d,e,f),c)")
+        var composed = Tree("a(b(d,e,f),c)")
           .Select(n => n + "!")
           .Where(n => n != "b!")
           .GetTraversal(strategy).ToArray();
@@ -104,12 +104,12 @@ namespace Copse.Linq.Tests
           .Where(n => n != "b!")
           .GetTraversal(strategy).ToArray();
 
-        CollectionAssert.AreEqual(stacked, fused, $"{strategy}");
+        CollectionAssert.AreEqual(stacked, composed, $"{strategy}");
       }
     }
 
     [TestMethod]
-    public void PositionalWhere_OverSelect_StillFuses_AndSeesSourcePositions()
+    public void PositionalWhere_OverSelect_StillComposes_AndSeesSourcePositions()
     {
       // Select's emission boundary is the identity on positions, so even the positional Where
       // may cross it; the positions it sees are unchanged by the projection.
@@ -123,12 +123,12 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { 0, 1, 2 }, seenDepths);
     }
 
-    // The fused Select-Where evaluates the selector at the TEST SITE -- once per tested node --
-    // where the unfused Select wrapper re-projects on every visit. Selector invocation COUNT is
-    // declared unspecified (purity expected); this pins the fused path's actual behavior so a
+    // The composed Select-Where evaluates the selector at the TEST SITE -- once per tested node --
+    // where the uncomposed Select wrapper re-projects on every visit. Selector invocation COUNT is
+    // declared unspecified (purity expected); this pins the composed path's actual behavior so a
     // regression is a decision, not an accident.
     [TestMethod]
-    public void FusedSelectWhere_EvaluatesSelectorOncePerNode()
+    public void ComposedSelectWhere_EvaluatesSelectorOncePerNode()
     {
       var selectorCalls = 0;
 
@@ -141,7 +141,7 @@ namespace Copse.Linq.Tests
     }
 
     // Both directions now splice (the consolidation fixed the asymmetry where prune-then-where
-    // fused but where-then-prune stacked two wrappers): filters and prunes are the same kind of
+    // composed but where-then-prune stacked two wrappers): filters and prunes are the same kind of
     // result selector, composed through the same Compose hook.
     [TestMethod]
     public void WhereThenPrune_AndPruneThenWhere_BothStayOneWrapper()
@@ -165,36 +165,36 @@ namespace Copse.Linq.Tests
     }
 
     // PruneBefore is a result selector now ((node, SkipNodeAndDescendants)), so it joins the
-    // fused chain; a following value-Where fuses onto it.
+    // composed chain; a following value-Where composes onto it.
     [TestMethod]
-    public void PruneBefore_JoinsTheFusedChain()
+    public void PruneBefore_JoinsTheComposedChain()
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var fused = Tree("a(b(d,e),c)")
+        var composed = Tree("a(b(d,e),c)")
           .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(fused, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay fused");
+        Assert.IsInstanceOfType(composed, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay composed");
 
         var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
           .GetTraversal(strategy).ToArray();
 
-        CollectionAssert.AreEqual(stacked, fused.GetTraversal(strategy).ToArray(), $"{strategy}");
+        CollectionAssert.AreEqual(stacked, composed.GetTraversal(strategy).ToArray(), $"{strategy}");
       }
     }
 
     // The join rule, positional-Select half: after a filter it must decline (its append point
     // becomes a real emission boundary), because it is entitled to the filtered tree's emitted
-    // labels. (The join half -- fusing over a projections-only prefix -- is observably
-    // invisible for pure lambdas by design; ValueSelects_ComposeThroughTheFusedChain covers
+    // labels. (The join half -- composing over a projections-only prefix -- is observably
+    // invisible for pure lambdas by design; ValueSelects_ComposeThroughTheComposedChain covers
     // the composition behavior.)
     [TestMethod]
     public void PositionalSelect_AfterWhere_SeesTheEmittedLabels()
     {
       // a(b(c)), b filtered: c promotes and is EMITTED at depth 1 -- the positional selector
-      // must see the relabeled coordinate, which is why it cannot join the fused chain.
+      // must see the relabeled coordinate, which is why it cannot join the composed chain.
       var labeled = Tree("a(b(c))")
         .Where(n => n != "b")
         .Select((n, position) => $"{n}@{position.Depth}")
@@ -334,15 +334,15 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void ValueSelects_ComposeThroughTheFusedChain()
+    public void ValueSelects_ComposeThroughTheComposedChain()
     {
-      var fused = Tree("a(b,c)")
+      var composed = Tree("a(b,c)")
         .Select(n => n + "1")
         .Select(n => n + "2")
         .Where(n => n != "b12")
         .GetTraversal(TreeTraversalStrategy.DepthFirst).Select(visit => visit.Node).Distinct().ToArray();
 
-      CollectionAssert.AreEqual(new[] { "a12", "c12" }, fused);
+      CollectionAssert.AreEqual(new[] { "a12", "c12" }, composed);
     }
 
     // The light tier: never-rejecting chains (projections + prune-afters) must not convert

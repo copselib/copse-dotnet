@@ -5,27 +5,28 @@ using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
-  // The cross-operator composition sentinel (docs/OPERATOR_FUSION_DESIGN.md): mixed
+  // The cross-operator composition sentinel (docs/OPERATOR_COMPOSITION_DESIGN.md): mixed
   // Select/Where chains collapse to ONE SelectWhereTreenumerable, and these rows watch that
   // machinery -- the general Compose path, the composed law closure, and FuncResultSelector
   // chains under both drivers. (Projection-only composition -- the light fast path -- is
   // covered by the Select family's Composition rows, in place since the reorg.)
   //
-  // Rows come in fused/stacked ratio PAIRS, the AsyncOverhead convention: the stacked
+  // Rows come in composed/stacked ratio PAIRS, the AsyncOverhead convention: the stacked
   // control forces real layers by interposing Tree.Defer (a delegating wrapper nothing can
-  // compose across), so the fused:stacked ratio IS the collapse win. A machinery regression
-  // shows twice -- absolute drift on the fused row, and the ratio closing toward 1.
+  // compose across), so the composed:stacked ratio IS the collapse win. A machinery
+  // regression shows twice -- absolute drift on the composed row, and the ratio closing
+  // toward 1.
   [MemoryDiagnoser]
   [BenchmarkCategory("Streaming", "Compose")]
   public class Compose
   {
     [Benchmark]
-    public void Dft_Triangle_SelectWhere_Fused() =>
-      SelectWhereFused().Consume(TreeTraversalStrategy.DepthFirst);
+    public void Dft_Triangle_SelectWhere_Composed() =>
+      SelectWhereComposed().Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public void Bft_Triangle_SelectWhere_Fused() =>
-      SelectWhereFused().Consume(TreeTraversalStrategy.BreadthFirst);
+    public void Bft_Triangle_SelectWhere_Composed() =>
+      SelectWhereComposed().Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public void Dft_Triangle_SelectWhere_Stacked() =>
@@ -36,12 +37,12 @@ namespace Copse.Benchmarks
       SelectWhereStacked().Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
-    public void Dft_Triangle_FiveOperators_Fused() =>
-      FiveOperatorsFused().Consume(TreeTraversalStrategy.DepthFirst);
+    public void Dft_Triangle_FiveOperators_Composed() =>
+      FiveOperatorsComposed().Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public void Bft_Triangle_FiveOperators_Fused() =>
-      FiveOperatorsFused().Consume(TreeTraversalStrategy.BreadthFirst);
+    public void Bft_Triangle_FiveOperators_Composed() =>
+      FiveOperatorsComposed().Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public void Dft_Triangle_FiveOperators_Stacked() =>
@@ -52,7 +53,7 @@ namespace Copse.Benchmarks
       FiveOperatorsStacked().Consume(TreeTraversalStrategy.BreadthFirst);
 
     // The headline WhereSelect case: one projection, one ~50% filter, one wrapper.
-    private static ITreenumerable<int> SelectWhereFused() =>
+    private static ITreenumerable<int> SelectWhereComposed() =>
       CanonicalTrees.MegaTriangleTree()
       .Select(n => n + 1)
       .Where(projected => (projected & 1) == 0);
@@ -62,7 +63,7 @@ namespace Copse.Benchmarks
       .Where(projected => (projected & 1) == 0);
 
     // The closure property: five operators in any order stay one wrapper.
-    private static ITreenumerable<int> FiveOperatorsFused() =>
+    private static ITreenumerable<int> FiveOperatorsComposed() =>
       CanonicalTrees.MegaTriangleTree()
       .Where(n => n != -1)
       .Select(n => n + 1)

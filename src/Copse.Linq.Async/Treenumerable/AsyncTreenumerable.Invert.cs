@@ -86,7 +86,7 @@ namespace Copse.Linq
     // mirror in the store's own encoding, so nothing decodes tiers into a visit stream just to
     // re-encode them: the first cut here composed the narrow Invert with Memoize, and that
     // visit-stream round trip benchmarked 2.1-2.7x slower than the preorder capture it replaced
-    // (Invert Bft rows); the stream-shaped CaptureFrom keeps the fused encoding path.
+    // (Invert Bft rows); the stream-shaped CaptureFrom keeps the direct encoding path.
     //
     // Build-on-first-pull, all at once -- the same cost shape as the preorder arm. This
     // replaced an incrementally-fed store (tier-by-tier laziness for partial drains) whose

@@ -29,13 +29,13 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 
 | Operator | Source dims | Returns | Behavior | State bound |
 |---|---|---|---|---|
-| Select | F, D, B | same-dim | streams | O(1); lambdas take (node) or (node, position) — NodeContext left the operator surface 2026-07-16 (fusion design); consecutive Selects fuse, either flavor (projection never moves positions) |
-| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres FUSE (predicate combination) and fuse over Selects into the projection-carrying driver; positional Wheres never fuse with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes still NodeContext, migrating with the signature workstream |
+| Select | F, D, B | same-dim | streams | O(1); lambdas take (node) or (node, position) — NodeContext left the operator surface 2026-07-16 (composition design); consecutive Selects compose, either flavor (projection never moves positions) |
+| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres COMPOSE (predicate combination) and compose over Selects into the projection-carrying driver; positional Wheres never compose with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes still NodeContext, migrating with the signature workstream |
 | TakeNodesUntil / TakeNodesWhile | F, D, B | same-dim | streams | O(1) |
 | TakeTrees / SkipTrees | F, D, B | same-dim | streams | sugar over take/prune |
 | TakeLastTrees / SkipLastTrees | F, D, B | same-dim | **eager count at call time** | two-pass by design (count the roots, then take/skip; decided 2026-07-13 — a single-pass form must buffer k whole subtrees); B's counting pass drains level 0 only |
 | Union / Intersection / Subtract / SymmetricDifference | F×F, D×D, B×B | merge/narrow | streams | lockstep co-traversal, O(depth) DFT / O(width) BFT |
-| Do / Hide | F, D, B | same-dim | streams | O(1); Do = the sanctioned effect point: action per emitted visit, receives the full NodeVisit (deliberately permissive — narrower cadences are caller-side filters); keeps NodeVisit through the signature migration; NEVER fuses and prevents fusion across it by definition (fusion design: the window materializes the pane) |
+| Do / Hide | F, D, B | same-dim | streams | O(1); Do = the sanctioned effect point: action per emitted visit, receives the full NodeVisit (deliberately permissive — narrower cadences are caller-side filters); keeps NodeVisit through the signature migration; NEVER composes and prevents composition across it by definition (composition design: the window materializes the pane) |
 | RootfixScan (seed / rootNodeSelector) | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT |
 | Invert | **B-narrow** | IBreadthFirstTreenumerable | **streams** | O(width) — the one genuinely streaming mirror (`InvertedLevelOrderStream`) |
 | Invert | D-narrow; buffer | ITreenumerableBuffer | capture(deferred-once) | mirrored preorder arrays. **Specialization KEPT (decided 2026-07-15)**: Invert ≡ OrderChildrenByDescending by source sibling index (pinned by OrderChildrenByTests' subsumption law), but the specialized build is measured ~1.15x faster, 2.4x leaner on wide trees (no keys channel, LIFO emit, no per-group sort), and its B arm streams O(width) with NO capture — a cost class the keyed general operator cannot reach. Both families share trees on the Buffer leg, so the premium stays continuously measured; reopen only if the rows converge. |
@@ -56,7 +56,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | GetBranches | D only | IEnumerable\<TNode[]\> | streams per branch | O(depth); array per yield |
 | Get\*Traversal (visit streams) | D, B, F (±strategy selector) | IEnumerable\<NodeVisit\> | streams | |
 | RootfixAggregate (seed / selector) | D, B, F(→D) | IEnumerable | streams | RootfixScan + GetLeaves |
-| LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then fold (B)** | D peak = **largest root subtree**, buffers reused across roots; B (FUSED 2026-07-15) captures once into the memo's chunked level-order buffer, then an index-chasing DFS fold over the child spans — no visit stream decoded between the encodings; measured −39% time at near-baseline allocation (the factory-array variant was equally fast but 3x alloc — D4c evidence); cost class unchanged (peak = whole capture, first value after it) |
+| LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then fold (B)** | D peak = **largest root subtree**, buffers reused across roots; B (SINGLE-PASS 2026-07-15) captures once into the memo's chunked level-order buffer, then an index-chasing DFS fold over the child spans — no visit stream decoded between the encodings; measured −39% time at near-baseline allocation (the factory-array variant was equally fast but 3x alloc — D4c evidence); cost class unchanged (peak = whole capture, first value after it) |
 | AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
 | Consume | F(±strategy), D, B | void | **drains, unconditionally** | MECHANICAL again (2026-07-15, probes REVERTED): walks a treenumerator to exhaustion whatever the receiver — buffers replay inertly, deferred captures are FORCED, a lazy capture completes as a side effect. The probe episode (2026-07-14→15) optimized for a caller that does not exist and silently broke the benchmarks; minimum-work settling lives on the lazy buffer's Complete() member and in Materialize. One word one meaning: Consume walks, Complete finishes, Materialize delivers |
 | ToFormattedLines / ToFormattedString | D | IReadOnlyList\<string\> / string | **eager terminal** | honest since 2026-07-15 (flag 2): walks the source ONCE at the call — `To*` name, return shape, and cost now agree; one `(text, depth)` record buffer, reverse-rendered into the pre-sized result (formatter once per node, preorder); glyph contract pinned by `FormattedLinesTests` |
@@ -110,15 +110,15 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
 4. **BFT-narrow `LeaffixScan` / `OrderChildrenBy` double-capture**: the deferred build
    `Materialize()`s the source into a full memo, then walks that capture into the result
    arrays — two O(n) allocations transiently vs one on the DFT path. Correct under the
-   disclosure rule, but a candidate for a fused single capture.
-   *(RESOLVED for `OrderChildrenBy` 2026-07-15, and better than fused — STREAMING: the
+   disclosure rule, but a candidate for a combined single capture.
+   *(RESOLVED for `OrderChildrenBy` 2026-07-15, and better than a combined capture — STREAMING: the
    level-permutation build walks the BFT source ONCE straight into the ordered level-order
    encoding. Sibling groups are contiguous in level-order arrival and no level-d node is
    visited before level d finishes scheduling, so each level's permutation settles before its
    children arrive — one buffered level (O(width) auxiliary) suffices, refuting the original
    commit's "cannot generalize." The result's native layout is level-order; both entries now
    replay their own arrival dimension natively. `LeaffixScan`-B still hoists — its fold needs
-   depth-first close order; the fused-fold candidate is the LeaffixAggregate-B index-chasing
+   depth-first close order; the capture-then-fold candidate is the LeaffixAggregate-B index-chasing
    pattern.)*
 5. *(RESOLVED 2026-07-13)* `Invert(F)`'s BFT-first arm now builds its whole capture on the
    first replay pull (a one-shot drain of the streaming mirror via the stream-shaped
@@ -171,7 +171,7 @@ Capture factories (Copse/Stores ← Copse.Async/Stores; public statics; ADDED 20
 │    a Copse.Linq type this layer cannot see).
 └─ LevelOrderCapture.CaptureFrom(source)      shape B in one-shot form (the memo's front-cursor
      parse) → LevelOrderArrayStore. No consumer yet; first candidates are the LeaffixScan-B /
-     LeaffixAggregate-B fusions. No side-channel overload until a consumer exists.
+     LeaffixAggregate-B capture-then-fold rebuilds. No side-channel overload until a consumer exists.
 
 Concrete stores/streams                       consumers
 ├─ (Async)PreorderArrayStore (readonly structs)  Invert-D/F, OrderChildrenBy, LeaffixScan

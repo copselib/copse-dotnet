@@ -46,7 +46,7 @@ namespace Copse.Linq.Async
 
       // A successful pull always lands on a real visit (ForestRoot is pre-enumeration only),
       // so the composed selector sees real nodes only. Evaluated per published visit, like the
-      // unfused Select wrapper (invocation counts are unspecified; only the scheduling visit's
+      // plain Select wrapper (invocation counts are unspecified; only the scheduling visit's
       // strategies count -- subtrees are shed at scheduling, the PruneAfter contract).
       var result = _ResultSelector(InnerTreenumerator.ToNodeContext());
 
