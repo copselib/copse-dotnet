@@ -193,15 +193,39 @@ them.
 6. **Where the family lives**: grow `Copse.Dags` into contract + families, or split
    `Copse.Dags.Core` etc. mirroring the tree layering. Proposal: single project until
    graduation forces the split (the spike's own no-new-projects rule).
+7. **The scan/dispatch return shape — surfaced by building phase 2, needs a ruling.** A
+   theorem got in the way: a rootfix result is an ENTRY-TIME fact (it needs every inflow),
+   but the protocol publishes a node's value at its DISCOVERIES too, which precede entry.
+   So `RootfixScan` cannot honestly return a streaming `IForwardDagnumerable<TResult>` —
+   there is no correct value to publish at a discovery. (Trees dodge this: one in-edge, and
+   the parent's accumulation is known at scheduling.) Options: (a) return a MATERIALIZED
+   composite — run the one streaming pass into a fresh builder `Dag<TResult, TEdge>` —
+   fully composable, affords both dimensions, and the spike's own scans already return
+   exactly this shape (precedent); the laziness policy's documented-when-not clause, with
+   the theorem as the documentation; (b) publish `default` at the output's discoveries and
+   the real value at entry — streaming preserved, but a silently-wrong value in half the
+   protocol; (c) entries-only result shapes (lists/dictionaries) — honest but falls out of
+   the composition algebra. RECOMMENDATION: (a). Same ruling covers `RootfixDispatch`
+   (which also has tree-side precedent for returning a buffer).
 
 ## Phases (proposed)
 
 0. Ratify this document — naming, strategy set, `TEdge`, color posture.
 1. Vocabulary + contracts + the spike's adapter to them + the conformance harness (spike
    as oracle; battery style copied from `VisitStreamConformance`).
-2. Forward dimension end-to-end: the streaming enumerator over the builder +
-   `Select` / `PruneBefore` / `PruneAfter` / `RootfixScan` / `RootfixDispatch` / `Do` —
-   the work workload's downward half, streaming.
+2. Forward dimension end-to-end — the work workload's downward half.
+   ✅ 2a (2026-07-18): the four honestly-streaming wrappers — `Select`, `Do`,
+   `PruneBefore`, `PruneAfter` — as protocol passthroughs over
+   `IForwardDagnumerable`. The prunes ARE the strategy machinery (a wrapper answering
+   `SkipEdge` / `SkipOutEdges` to its inner walk; the source's liveness fold does the
+   rest), which is the strategy design validating itself. Operators preserve source
+   ordinals (nothing relabels — ordinals are correlation keys, not coordinates; the
+   contract wording was loosened accordingly: strictly increasing along entries, density
+   not promised). Pinned: exact streams with deliberate ordinal gaps, chains,
+   consumer-strategy passthrough, and content differentials against the builder's own
+   operator clones — the oracle earning its keep.
+   2b: `RootfixScan` / `RootfixDispatch`, blocked on open question 7 (the return-shape
+   ruling).
 3. Backward dimension + the `Leaffix` family, including `LeaffixDispatch` (the upward
    diamond, closed properly).
 4. Flat store + serializer + `Memoize`/`Materialize` + `Transpose`.
