@@ -62,7 +62,8 @@ work rides discoveries, node-grained work rides entries — the consumer chooses
 listens, not by a per-call flag.
 
 **Node correlation is by ordinal, not identity.** The stream tags each node with its
-topological ordinal (assigned at first discovery, stable for the enumeration). Consumers
+topological ordinal — its index in the enumeration dimension's topological order, stable
+for the enumeration. Consumers
 correlate a shared node's appearances by ordinal; user values are never compared or hashed.
 Identity exists only at the ADAPTER boundary — a DAG source must be able to say "this
 child is that node again," which is the one place the no-identity principle bends
@@ -167,24 +168,26 @@ them.
 | No node identity anywhere | bends ONCE, at the adapter boundary (sources must key their nodes); the stream uses ordinals |
 | Two-phase strategies (`SkipNode`/`SkipDescendants`/`SkipSiblings`) | needs its own design — see open questions; skips become liveness votes, and per-EDGE skips (impossible on trees) want to exist |
 
-## Open questions (ratify before building)
+## Open questions
 
-1. **Naming, the family**: `IDagnumerable` / `IDagnumerator` (the pun carries the brand) vs
-   something soberer. Component names downstream of that: `DagnumeratorMode`
-   (`DiscoveringNode` / `EnteringNode`?), the per-edge context struct, forward/backward
-   interface prefixes.
-2. **Strategy semantics** — the largest open design. At Enter: skip-node (node leaves the
-   logical dag; out-edges die) and skip-out-edges (keep node, cut dispatch — the PruneAfter
-   verb) seem clear; at Discover: skip-EDGE (sever one in-edge — new expressive power)
-   seems right; a SkipSiblings analog (skip the dispatching parent's remaining out-edges?)
-   needs a real case before it exists. The tree family's lesson applies: forward-built
-   seams need rehearsal tests at birth.
-3. **`TEdge` always-present vs overloadable.** The spike made edges first-class for good
-   reason (payloads travel with edges through every clone); proposal: the contract carries
-   `<TNode, TEdge>` and an edge-less source is `<TNode, Unit>` sugar. Confirm.
-4. **Async color: not day one.** The workload is in-memory; the async family + codegen rows
-   double the surface for no current consumer. Decide: sync-only until a consumer exists
-   (recommended), with contracts written so the async transcription is mechanical later.
+1. ✅ **Naming RATIFIED (Jason, 2026-07-18)**: `IDagnumerable` / `IDagnumerator` — the pun
+   carries the brand. Downstream: `DagnumeratorMode` (`DiscoveringNode` / `EnteringNode`),
+   `IForwardDagnumerable` / `IBackwardDagnumerable`, `DagTraversalStrategies`.
+2. **Strategy semantics — phase 1 ships a PROPOSAL, open for review.** The consumer can
+   only shape the FUTURE: at the moment a visit is published, everything about it has
+   already been witnessed. Hence: `SkipEdge` (at Discover — sever the just-discovered
+   in-edge; per-edge expressive power trees never had) and `SkipOutEdges` (at Enter — keep
+   the node, dispatch nothing). There is deliberately NO consumer `SkipNode`: an entry
+   cannot be retracted, and removing a node from the logical dag is operator business
+   (PruneBefore), not a consumer verdict. A node whose every potential discovery is severed
+   or never emitted simply never enters — consumer skips compose with liveness. Passing a
+   strategy in the wrong mode THROWS (strict ethos; rehearsal-tested at birth per the
+   tree family's lesson). A SkipSiblings analog (dispatching parent's remaining out-edges)
+   still needs a real case before it exists.
+3. ✅ **`TEdge` RATIFIED (Jason, 2026-07-18)**: the contract always carries
+   `<TNode, TEdge>`; an edge-less source is `<TNode, Unit>`-style sugar when needed.
+4. ✅ **Color RATIFIED (Jason, 2026-07-18)**: sync-only until a consumer exists; contracts
+   written so the async transcription stays mechanical later (no sync-only idioms).
 5. **Contraction's spelling** (`Where` vs a named operator) — deferred with the operator
    itself.
 6. **Where the family lives**: grow `Copse.Dags` into contract + families, or split
