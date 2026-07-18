@@ -1,0 +1,207 @@
+# DAG traversal contract (design sketch)
+
+> **Status: DESIGN ONLY (2026-07-18, branch `experimental/dag`). Nothing here is built.**
+> This sketches a first-class streaming DAG contract family — the `ITreenumerable` analog
+> for graphs with sharing — to be ratified (or torn apart) before any code. The existing
+> `Copse.Dags` spike (the mutable `Dag`/`DagNode` object model, 53 tests, the money-movement
+> scenario suite) is NOT superseded: it becomes the family's **builder** and its
+> **conformance oracle**, the role `EngineTree` plays for the tree families. Companion
+> records: [OPERATOR_COMPOSITION_DESIGN.md](OPERATOR_COMPOSITION_DESIGN.md) (the operator
+> architecture this family inherits), [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md)
+> (the promise this family extends), [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md)
+> (the pattern the dimension section instantiates).
+
+> **The domain this serves:** legal-entity ownership structures — the library's origin
+> problem. Nodes are entities, edge payloads are ownership fractions, flows run money down
+> (allocation) and attribution up (lookthrough). The structures became DAG-shaped when
+> entities gained multiple owners; the spike's `MoneyMovementScenarioTests` is the living
+> statement of the workload.
+
+## The one observation everything follows from
+
+**Topological order is to a DAG what preorder is to a tree**: the canonical linear
+presentation, the order a streaming pass wants, and the order a flat encoding stores.
+Copse's architecture is, top to bottom, machinery for exploiting a canonical linear
+presentation of a hierarchy — visit-stream contract, streaming operators over it, flat
+stores that ARE the presentation, narrow sources that can only afford it forward. All of it
+transfers once the presentation is topological order. What does not transfer is exactly
+what topological order cannot express: global per-node coordinates. That trade is the
+whole design.
+
+## Why `ITreenumerable` itself cannot stretch (settled)
+
+Recorded once so the question stays closed:
+
+1. **`NodePosition` has no meaning.** Sibling index is per-parent; depth is per-path. A
+   shared node has no coordinates — by theorem, not by implementation choice.
+2. **The visit protocol assumes unique parentage.** Scheduling/visiting, sibling
+   renumbering, promotion — all speak single-parent vocabulary.
+3. **Sharing requires identity**, and the tree engine's defining virtue is adapting foreign
+   data with NO node identity. Grafting DAGs onto it would force equality into a contract
+   founded on never asking for it.
+
+The precedent is the color rule: an axis the type system cannot abstract gets a parallel
+contract family with shared vocabulary and philosophy — not a leaky generalization that
+weakens the original's promises.
+
+## The visit protocol: Discover / Enter
+
+The tree's two-phase visit (scheduling, then visiting) generalizes to a DAG as:
+
+- **Discover** — emitted once per IN-EDGE, when the edge's parent (already entered)
+  dispatches its out-edges in child order. A discovery carries the per-edge context: the
+  edge payload, the dispatching parent's ordinal, and the edge's index within that parent's
+  out-edge list (the per-parent sibling index).
+- **Enter** — emitted exactly once per node, after its LAST discovery. Topological order is
+  precisely the guarantee that this is well-defined: every in-edge has been seen, so every
+  inflow is complete at entry.
+
+A tree degenerates exactly: one in-edge, so discover = schedule and enter = visit. The
+spike's per-use vs shared-once ambiguity dissolves into the protocol itself: edge-grained
+work rides discoveries, node-grained work rides entries — the consumer chooses by where it
+listens, not by a per-call flag.
+
+**Node correlation is by ordinal, not identity.** The stream tags each node with its
+topological ordinal (assigned at first discovery, stable for the enumeration). Consumers
+correlate a shared node's appearances by ordinal; user values are never compared or hashed.
+Identity exists only at the ADAPTER boundary — a DAG source must be able to say "this
+child is that node again," which is the one place the no-identity principle bends
+(quarantined exactly like the spike's import-adapter posture).
+
+Roots (in-degree zero) are discovered by convention at the start of enumeration — the
+ForestRoot-sentinel analog; details at contract-writing time.
+
+## The dimension split: forward / backward
+
+Trees split depth-first/breadth-first. DAGs split **forward topological / backward
+topological** (the transpose's forward), and the operator families sort onto the dimensions
+by the direction information flows:
+
+- **Forward** — everything whose inputs are complete at entry: `Select`, the prunes,
+  contraction (see below), `RootfixScan`/`RootfixDispatch`, `Do`, `OrderChildrenBy`
+  (reorders out-edge dispatch). The spike's finding "rootfix cannot stream on a DAG" was
+  true of its re-walk model and is FALSE in this presentation: at entry, all inflows have
+  arrived, so the rootfix family **streams** with O(frontier) state.
+- **Backward** — everything that needs children first: the `Leaffix` family, including the
+  edge-aware `LeaffixDispatch` that closes the spike's deferred upward-diamond semantic
+  (per-in-edge attribution up through a shared entity; the JV-lookthrough operator).
+
+Contract shape mirrors the tree split: `I{Forward|Backward}…` narrow interfaces, the
+composite deriving from both. A materialized store affords both dimensions; a forward-only
+source (a serialized topological stream) affords forward only — asking it for backward is a
+compile error, and `Memoize`/`Materialize` are the explicit escalation back to the
+composite. **Transpose is the new dual**: on a composite store it is a free view (swap
+which adjacency you read), and it swaps the dimensions — the `Invert` analog, structurally
+lovelier than the original.
+
+Note the tree's dimension split is *traversal strategy over the same information*; the DAG
+split is *direction of information flow*. Same architecture, deeper reason.
+
+## Streaming results that make the family worth building
+
+1. **Rootfix streams** (above): inflows complete at entry.
+2. **Prunes stream**: liveness is a forward fold. A node is live iff at least one live
+   in-edge from a live parent reaches it — decidable at entry. `PruneBefore` kills node +
+   out-edges; `PruneAfter` keeps the node, cuts its out-edges; downstream liveness
+   propagates. The spike's recomputed-reachability (a full re-walk) becomes one pass.
+3. **Contraction streams**: the entity-that-does-not-participate case (a node dissolves;
+   flow continues). At entry the node holds all in-edges; composing them with its out-edges
+   dispatches (parent, child) edges forward. The library owns the structure; the caller
+   owns the edge algebra (`inEdge ∘ outEdge` — e.g. 60% × 50% = 30%): a required lambda,
+   because payload composition is domain semantics. Parallel edges from contraction are
+   permitted (the spike already permits them). This is `Where`'s child promotion translated
+   to shared parentage — the domain even names it (disregarded / pass-through entities).
+   Whether it is spelled `Where` or named for what it does (`Contract`? `Dissolve`?) is a
+   naming question below; it is NOT day-one surface (the workload moves cash true to form;
+   this is the rare case).
+4. **Operator chains compose.** These are all arrows over the entry/discovery stream; the
+   composition architecture (one wrapper, adjacent arrows composed, representation tiers)
+   applies. Machinery deferred; the design constraint is only that nothing here prevents it.
+
+Cost model: forward streaming state is O(max frontier) — discovered-but-unentered nodes
+plus per-node pending in-degree counts — linear total work in nodes + edges. The
+*unfolding* alternative (present the DAG as its tree of paths through the existing tree
+machinery) stays available as a bridge view for genuinely per-path questions, but it is
+not the family's basis: paths are exponential in the worst case; this contract never pays
+them.
+
+## The families
+
+- **Builder / oracle**: the spike's `Dag<TValue,TEdge>`/`DagNode` object model. It already
+  computes discovery-biased topological order and carries first-class edge payloads
+  (`DagEdge`/`DagParentEdge`); it adapts to the composite contract directly, and its
+  existing operations (`LeaffixAggregate`, `RootfixAllocate`, the operator clones) are the
+  independent implementations the conformance battery diffs against — the `EngineTree`
+  role. Cycle posture unchanged: construction-time acyclicity by wrapper-node linking,
+  `DagCycleException` from the live walk. (Whether the family ever needs a posture toward
+  cyclic inputs beyond refusing is a domain question — circular holdings exist in the wild
+  — but it is out of scope for this contract; a cycle-tolerant condensation view would be
+  a future adapter, not a protocol change.)
+- **Flat family**: the topological array IS the flat DAG encoding — `values[]` in topo
+  order plus per-node out-edge lists of `(childOrdinal, TEdge)` (CSR-style adjacency;
+  sharing expressed by ordinal reference, exactly how the flat tree stores express
+  containment by index arithmetic). A forward store affords forward; storing the transpose
+  adjacency as well affords both. The serializer writes the topo stream; the forward-only
+  streaming deserialize is a narrow forward source — the same round trip the tree family
+  has, ending on the narrow tier.
+- **Adapter boundary**: foreign DAG-shaped data (the work import) enters through an adapter
+  that must supply stable node keys — the quarantined identity bend. The contract's stream
+  itself speaks ordinals only.
+
+## What carries, what changes, what dies
+
+| Tree concept | DAG fate |
+|---|---|
+| Preorder / level-order presentation | topological order |
+| Scheduling / Visiting | Discover (per in-edge) / Enter (once) |
+| `NodePosition` | per-edge context (payload, parent ordinal, per-parent index) + topo ordinal — no global coordinates, by theorem |
+| DFT / BFT dimension split | forward / backward (transpose) split; same narrow-tier + `Memoize` escalation architecture |
+| `Invert` | `Transpose` — a free view on composite stores; swaps the dimensions |
+| `Where` child promotion | contraction with caller edge-composition; not day-one |
+| Prunes | forward liveness folds (streaming) |
+| Rootfix family | forward, streaming; `RootfixDispatch` carries edges natively |
+| Leaffix family | backward; edge-aware `LeaffixDispatch` = the upward-diamond dual |
+| `Select` / `Do` / `OrderChildrenBy` | carry directly (`SelectEdges` joins as the edge dual) |
+| Flat stores + serializer | topo array + CSR adjacency; ordinal-referencing text format |
+| Set operations (`Union`, …) | DO NOT carry — they align by position; DAGs have none. Absent, not approximated |
+| No node identity anywhere | bends ONCE, at the adapter boundary (sources must key their nodes); the stream uses ordinals |
+| Two-phase strategies (`SkipNode`/`SkipDescendants`/`SkipSiblings`) | needs its own design — see open questions; skips become liveness votes, and per-EDGE skips (impossible on trees) want to exist |
+
+## Open questions (ratify before building)
+
+1. **Naming, the family**: `IDagnumerable` / `IDagnumerator` (the pun carries the brand) vs
+   something soberer. Component names downstream of that: `DagnumeratorMode`
+   (`DiscoveringNode` / `EnteringNode`?), the per-edge context struct, forward/backward
+   interface prefixes.
+2. **Strategy semantics** — the largest open design. At Enter: skip-node (node leaves the
+   logical dag; out-edges die) and skip-out-edges (keep node, cut dispatch — the PruneAfter
+   verb) seem clear; at Discover: skip-EDGE (sever one in-edge — new expressive power)
+   seems right; a SkipSiblings analog (skip the dispatching parent's remaining out-edges?)
+   needs a real case before it exists. The tree family's lesson applies: forward-built
+   seams need rehearsal tests at birth.
+3. **`TEdge` always-present vs overloadable.** The spike made edges first-class for good
+   reason (payloads travel with edges through every clone); proposal: the contract carries
+   `<TNode, TEdge>` and an edge-less source is `<TNode, Unit>` sugar. Confirm.
+4. **Async color: not day one.** The workload is in-memory; the async family + codegen rows
+   double the surface for no current consumer. Decide: sync-only until a consumer exists
+   (recommended), with contracts written so the async transcription is mechanical later.
+5. **Contraction's spelling** (`Where` vs a named operator) — deferred with the operator
+   itself.
+6. **Where the family lives**: grow `Copse.Dags` into contract + families, or split
+   `Copse.Dags.Core` etc. mirroring the tree layering. Proposal: single project until
+   graduation forces the split (the spike's own no-new-projects rule).
+
+## Phases (proposed)
+
+0. Ratify this document — naming, strategy set, `TEdge`, color posture.
+1. Vocabulary + contracts + the spike's adapter to them + the conformance harness (spike
+   as oracle; battery style copied from `VisitStreamConformance`).
+2. Forward dimension end-to-end: the streaming enumerator over the builder +
+   `Select` / `PruneBefore` / `PruneAfter` / `RootfixScan` / `RootfixDispatch` / `Do` —
+   the work workload's downward half, streaming.
+3. Backward dimension + the `Leaffix` family, including `LeaffixDispatch` (the upward
+   diamond, closed properly).
+4. Flat store + serializer + `Memoize`/`Materialize` + `Transpose`.
+5. Operator composition machinery (the tree family's architecture, transplanted).
+6. The showcase: the ownership-structure scenario suite grows into the flagship sample —
+   real workload, both dimensions, allocation down and lookthrough up.
