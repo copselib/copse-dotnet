@@ -239,8 +239,25 @@ them.
    effective-ownership lookthrough through the diamond (60%x70% + 40%x30% = 54%), money
    movement with attribution (which amount arrived on which edge), prune composition,
    leaves-never-surveyed, slot strictness, and the builder-scan oracle differential.
-3. Backward dimension + the `Leaffix` family, including `LeaffixDispatch` (the upward
-   diamond, closed properly).
+3. ✅ (2026-07-18) The `Leaffix` family — with one refinement the build surfaced: the
+   leaffix OPERATORS ride a FORWARD capture folded in reverse topological order, not the
+   backward walk. Two reasons, both structural: a leaffix result is children-first by
+   definition, so the whole graph precedes the first result regardless of walk (the tree
+   family's capture-then-fold pattern); and the result dags must be shape-isomorphic, but
+   the backward stream cannot carry a node's out-edge ORDER (it carries in-edge order — the
+   transpose's dispatch lists) — original orientation is a forward-stream fact. The
+   backward dimension keeps its honest job: direct upward consumption, and the transpose
+   view. `LeaffixScan`: edge-paired child results in out-edge order, empty at sinks seeds,
+   shared child computed once but appearing per-edge in each parent's list — the diamond
+   roll-up choice stays the caller's, documented. `LeaffixDispatch` CLOSES the deferred
+   upward-diamond semantic: each node decides what travels up EACH in-edge (exactly-once
+   targets, discovery order), so what a child sent up an edge IS that parent's share, by
+   construction — no double count. No seed, by duality: downward's money is external to
+   the dag; upward's holdings live in the nodes, so sinks just see empty upflows. Sources
+   are never surveyed; their resolved inflows ARE the attribution. Pinned: the JV
+   lookthrough (venture's 1000 arriving at the apex as 120-via-40% + 420-via-60% = 540)
+   and THE DUALITY — the downward ownership scan times the holding equals the upward
+   attribution, 54% of 1000, both ways.
 4. Flat store + serializer + `Memoize`/`Materialize` + `Transpose`.
 5. Operator composition machinery (the tree family's architecture, transplanted).
 6. The showcase: the ownership-structure scenario suite grows into the flagship sample —

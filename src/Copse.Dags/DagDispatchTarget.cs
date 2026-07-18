@@ -3,8 +3,10 @@ using System;
 namespace Copse.Dags
 {
   /// <summary>
-  /// One live out-edge presented to a <see cref="Dagnumerable.RootfixDispatch"/> survey: the
-  /// target's source value, the edge payload, and the exactly-once <see cref="Dispatch"/> slot
+  /// One live edge presented to a dispatch survey -- an out-edge downward
+  /// (<see cref="Dagnumerable.RootfixDispatch"/>), an in-edge upward
+  /// (<see cref="Dagnumerable.LeaffixDispatch"/>): the far node's source value, the edge
+  /// payload, and the exactly-once <see cref="Dispatch"/> slot
   /// the survey must write -- unwritten and double-written slots both throw (the strict ethos:
   /// a dispatch that silently drops or duplicates an outflow is a conservation bug, not a
   /// default). Only LIVE edges are presented: an edge severed upstream (a prune, a consumer
