@@ -88,12 +88,12 @@ namespace Copse.Benchmarks
     /// <summary>The complete binary tree: balanced branching, log-depth.</summary>
     public static ITreenumerable<int> MegaBinaryTree()
       => new CompleteBinaryTree()
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == MegaBinaryDepth);
+        .PruneBefore((n, position) => position.Depth == MegaBinaryDepth);
 
     /// <summary>The triangle tree: level width grows linearly with depth.</summary>
     public static ITreenumerable<int> MegaTriangleTree()
       => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == MegaTriangleDepth);
+        .PruneAfter((n, position) => position.Depth == MegaTriangleDepth);
 
     /// <summary>Twenty chains of geometrically increasing length; the deep-path stressor.</summary>
     public static ITreenumerable<int> MegaDeepChainsTree()
@@ -109,10 +109,10 @@ namespace Copse.Benchmarks
 
     public static ITreenumerable<int> StressBinaryTree()
       => new CompleteBinaryTree()
-        .PruneBefore(nodeContext => nodeContext.Position.Depth == StressBinaryDepth);
+        .PruneBefore((n, position) => position.Depth == StressBinaryDepth);
 
     public static ITreenumerable<int> StressTriangleTree()
       => new TriangleTree()
-        .PruneAfter(nodeContext => nodeContext.Position.Depth == StressTriangleDepth);
+        .PruneAfter((n, position) => position.Depth == StressTriangleDepth);
   }
 }

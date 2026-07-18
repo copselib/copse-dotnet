@@ -31,7 +31,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 #### Performance Optimizations:
 
 - Custom RefSemiDeque<T> / RefAppendOnlyList<T> with ref semantics for zero-copy state management
-- Lazy evaluation - operations compose without materializing intermediate trees
+- Lazy evaluation - operations compose without materialization when possible; when an
+  operator materializes (or might), its return type and docs say so. The policy is
+  docs/LAZINESS_AND_BUFFERING_POLICY.md; the per-operator register is
+  docs/OPERATOR_SURFACE_MAP.md — a **living inventory**: update its rows in the same commit
+  as any operator/store/decoder change
 - Struct-based nodes to minimize allocations; the flat family decodes via span/index arithmetic
   (no per-node child enumerators), which measured faster than the engine on replay/deserialize
 
@@ -62,21 +66,45 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 ### Project Structure
 
-- **Copse.Core** - The dependency root. Contracts (`ITreenumerable<T>` and its two
-  single-dimension parents, `ITreenumerator<T>`), the enums, and the vocabulary they speak
-  (`NodePosition`, `NodeVisit`, `TreeTraversalStrategy`). References nothing.
-- **Copse.Primitives** - Building blocks with no traversal semantics: the chunked ref-access
-  collections (`RefSemiDeque`, `RefAppendOnlyList`), the lifted `Copse.Disposables` algebra, and
-  the node-context value types (`NodeContext`, `NodeAndSiblingIndex`). References Core.
+> **The color rule (stated 2026-07-13; sharpened by the de-share 2026-07-14):** the sync and
+> async families ("colors") share no contracts — `Copse.Core.Async` does not reference
+> `Copse.Core`, and nothing above them crosses colors (the sole deliberate exception is
+> `Copse.SimpleSerializer`, the one both-colors package). Vocabulary, Primitives, and
+> Traversal are the **color-neutral substrate** underneath both stacks, and each holds
+> exactly what its name promises: Vocabulary holds *what the Core contracts speak*,
+> Primitives holds *tree-free mechanics*, Traversal holds *the shared sans-I/O machinery and
+> the value types it consumes*. Everything color-flavored — including the flat store SPIs,
+> read structs, and completed array stores — lives per-color, single-sourced through codegen
+> (async sources → generated sync twins), which also keeps async polyfills out of the
+> neutral layer and the sync family's dependency list empty.
+
+- **Copse.Vocabulary** - The dependency root: the value types and enums the Core contracts
+  speak (`NodePosition`, `NodeVisit`, `TreenumeratorMode`, `NodeTraversalStrategies`,
+  `TreeTraversalStrategy`). References nothing. Color-neutral.
+- **Copse.Core** - The sync traversal contracts: `ITreenumerable<T>` and its two
+  single-dimension parents, `ITreenumerator<T>`. References Vocabulary. (`Copse.Core.Async`
+  is its async twin, also over Vocabulary; the async stack mirrors the sync one from there —
+  see docs/ASYNC_CODEGEN.md.)
+- **Copse.Primitives** - Tree-free, color-neutral mechanics both families build on: the
+  chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted
+  `Copse.Disposables` algebra. References Vocabulary only.
+- **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
+  engines (`DepthFirstPathState`, `BreadthFirstPathState`, …) plus the value types it
+  consumes (`NodeContext`, `NodeAndSiblingIndex`). References Vocabulary + Primitives.
+  (`Copse.Linq.Traversal` is its Linq-level analog, referencing it.)
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
-  treenumerators, over flat preorder/level-order encodings). Also the tree-source factories
+  treenumerators, over flat preorder/level-order encodings — the store SPIs, read structs,
+  completed array stores, and capture factories live in `Copse/Stores`, generated from their
+  `Copse.Async/Stores` sources). Also the tree-source factories
   (`Tree.Defer`/`Lazy`/`Using`/`Empty` — Defer builds fresh per acquisition, Lazy pins the first
   construction) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
 - **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the
   memoize machinery rides the flat family, not a private engine).
-- **Copse.Linq.Experimental** - In-progress operators (`ExpandNodes`, `Graft`).
+- **Copse.Linq.Experimental** - Unpackaged, untested parking lot for half-baked ideas and
+  possible future surface (`ExpandNodes`, `Graft`, the tree tokenizers — demoted 2026-07-15,
+  sync-only, so the token shape isn't locked in by shipping).
 - **Copse.Trees** - Sample trees (Collatz, Triangle, etc.).
 - **Copse.SimpleSerializer** - Header-free text serialization: layout-named methods over the flat
   family (lazy string deserialize → full tree; forward-only reader deserialize → narrow tree).
@@ -102,11 +130,13 @@ The library **never performs node equality comparisons**. This is a deliberate d
   "upgrade" from a narrow source back to the composite. Deliberately **not** `IDisposable` — a
   completed capture holds only managed arrays, so it chains freely through the fluent surface.
   What `Materialize`/`LeaffixScan`/`Invert` return.
-- **ILazyTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live source
-  feed**: the lazily-growing capture `Memoize` returns. Adds `IsComplete`/`GetBufferedCount`/
-  `Consume` and `IDisposable` (disposing retires the feed). Because it *is* an
-  `ITreenumerableBuffer` it composes anywhere a capture is expected, but the fluent surface sees
-  only the non-disposable base, so the caller keeps this reference to dispose it.
+- **IMemoizeTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live
+  source feed**: the incrementally-growing capture `Memoize` returns (the type cites its
+  operator — the machinery naming grammar, see docs/LAZINESS_AND_BUFFERING_POLICY.md). Adds
+  `IsComplete`/`GetBufferedCount()`/`Complete()` and `IDisposable` (disposing retires the
+  feed). Because it *is* an `ITreenumerableBuffer` it composes anywhere a capture is
+  expected, but the fluent surface sees only the non-disposable base, so the caller keeps
+  this reference to dispose it.
 
 ### The traversal-dimension split
 

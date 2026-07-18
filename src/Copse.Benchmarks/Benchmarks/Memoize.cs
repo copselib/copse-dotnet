@@ -12,9 +12,8 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Buffer", "Memoize")]
   public class Memoize
   {
-    // Typed as plain trees ON PURPOSE: on ITreenumerableBuffer, Consume(strategy) resolves to
-    // the interface member -- a no-op on a completed capture. The plain-tree type resolves to
-    // the drain extension, which is the replay traversal being measured.
+    // Consume is MECHANICAL (walks a treenumerator unconditionally, buffers included), so
+    // these rows measure exactly what their names say: the replay traversal over a capture.
     private ITreenumerable<int> _DftCapture;
     private ITreenumerable<int> _BftCapture;
 

@@ -2,10 +2,10 @@
 //   Generated from AsyncTreenumerable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 using System;
 using System.Collections.Generic;
 using Copse.Treenumerators;
+using Copse.Core;
 
 namespace Copse.Treenumerables
 {

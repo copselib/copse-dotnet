@@ -4,60 +4,138 @@
 // </auto-generated>
 using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>Async <c>Where</c> (LINQ polarity: true = keep). Deferred; returns the filtered async tree.</summary>
+    /// <summary>
+    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
+    /// recomputed accordingly.
+    /// </summary>
     public static ITreenumerable<TNode> Where<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        TreenumerableFactory.Create(
-          () => new WhereBreadthFirstTreenumerator<TNode>(
-            source.GetBreadthFirstTreenumerator,
-            predicate,
-            NodeTraversalStrategies.SkipNode),
-          () => new WhereDepthFirstTreenumerator<TNode>(
-            source.GetDepthFirstTreenumerator,
-            predicate,
-            NodeTraversalStrategies.SkipNode));
+      // A value predicate observes no coordinates, so it composes unconditionally. The selector
+      // is the plain path's struct: the operator's semantics, stated once.
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+    }
+
+    /// <summary>
+    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
+    /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
+    /// </summary>
+    public static ITreenumerable<TNode> Where<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule, applied here because only the operator knows its lambda's flavor: a
+      // positional predicate is entitled to its input tree's emitted labels, so it splices
+      // only while the chain is label-preserving and otherwise stacks a real layer.
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        TreenumerableFactory.CreateDepthFirst(
-          () => new WhereDepthFirstTreenumerator<TNode>(
-            source.GetDepthFirstTreenumerator,
-            predicate,
-            NodeTraversalStrategies.SkipNode));
+      // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
+      // through a narrow-typed receiver composes on its own representation -- the successor
+      // keeps both dimensions; a narrow chain composes to a narrow successor.
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.Compose(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+    }
+
+    public static IDepthFirstTreenumerable<TNode> Where<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      // The join rule, as in the composite positional overload: splice only while the chain
+      // is label-preserving.
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
+        return depthFirstSelectWhereSource.Compose(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return
-        TreenumerableFactory.CreateBreadthFirst(
-          () => new WhereBreadthFirstTreenumerator<TNode>(
-            source.GetBreadthFirstTreenumerator,
-            predicate,
-            NodeTraversalStrategies.SkipNode));
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.Compose(
+          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+        source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }
+
+    public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+    {
+      if (predicate == null)
+        return source;
+
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
+        return breadthFirstSelectWhereSource.Compose(
+          new PositionalWhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+    }
+
   }
 }

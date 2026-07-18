@@ -8,6 +8,20 @@ namespace Copse.CodeGen
     string SyncClass,
     string SyncNamespace);
 
+  /// <summary>The traversal dimension a narrow twin keeps.</summary>
+  public enum NarrowDimension { DepthFirst, BreadthFirst }
+
+  /// <summary>
+  /// One composite-width async source and the narrow (single-dimension) async twin it transcribes
+  /// into (paths relative to the <c>src</c> root). The twin is itself an async source: the sync
+  /// manifest lists the generated file as its input, so the narrow phase runs first (Program) and
+  /// one composite-width file fans out to five generated ones.
+  /// </summary>
+  public readonly record struct NarrowGeneratorEntry(
+    string WideSource,
+    string Twin,
+    NarrowDimension Dimension);
+
   /// <summary>
   /// The async-source -&gt; generated-sync-twin manifest. Single source of truth for both the regen
   /// tool (Program) and the drift-guard test. Each entry carries the target class name and namespace so
@@ -17,6 +31,54 @@ namespace Copse.CodeGen
   /// </summary>
   public static class GeneratorManifest
   {
+    // The SelectWhere lattice's narrow halves, generated per dimension from the composite-width
+    // sources (see CompositeToNarrow). These run BEFORE the sync entries below, which list the
+    // generated twins as inputs.
+    public static readonly NarrowGeneratorEntry[] NarrowEntries =
+    {
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
+        NarrowDimension.DepthFirst),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        NarrowDimension.BreadthFirst),
+    };
+
     public static readonly GeneratorEntry[] Entries =
     {
       // The engines: the twin takes over the CANONICAL name in Copse.Treenumerators (the hand-tuned
@@ -62,6 +124,45 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
+      // ChildResult: the child-enumerator protocol's read struct, per-color beside its
+      // contract (IChildEnumerator / IAsyncChildEnumerator), identity-named like the reads.
+      new("Copse.Async/ChildResult.cs",
+        "Copse/ChildResult.g.cs",
+        "ChildResult", "ChildResult", "Copse"),
+
+      // The store SPIs, reads, and completed array stores: each color owns its own (decided
+      // 2026-07-14 -- the de-share; Primitives/FlatStores retired). Async is the source.
+      new("Copse.Async/Stores/IAsyncPreorderStore.cs",
+        "Copse/Stores/IPreorderStore.g.cs",
+        "IAsyncPreorderStore", "IPreorderStore", "Copse.Stores"),
+      new("Copse.Async/Stores/IAsyncLevelOrderStore.cs",
+        "Copse/Stores/ILevelOrderStore.g.cs",
+        "IAsyncLevelOrderStore", "ILevelOrderStore", "Copse.Stores"),
+      new("Copse.Async/Stores/IAsyncPreorderStream.cs",
+        "Copse/Stores/IPreorderStream.g.cs",
+        "IAsyncPreorderStream", "IPreorderStream", "Copse.Stores"),
+      new("Copse.Async/Stores/IAsyncLevelOrderStream.cs",
+        "Copse/Stores/ILevelOrderStream.g.cs",
+        "IAsyncLevelOrderStream", "ILevelOrderStream", "Copse.Stores"),
+      new("Copse.Async/Stores/PreorderRead.cs",
+        "Copse/Stores/PreorderRead.g.cs",
+        "PreorderRead", "PreorderRead", "Copse.Stores"),
+      new("Copse.Async/Stores/LevelOrderRead.cs",
+        "Copse/Stores/LevelOrderRead.g.cs",
+        "LevelOrderRead", "LevelOrderRead", "Copse.Stores"),
+      new("Copse.Async/Stores/AsyncPreorderArrayStore.cs",
+        "Copse/Stores/PreorderArrayStore.g.cs",
+        "AsyncPreorderArrayStore", "PreorderArrayStore", "Copse.Stores"),
+      new("Copse.Async/Stores/AsyncLevelOrderArrayStore.cs",
+        "Copse/Stores/LevelOrderArrayStore.g.cs",
+        "AsyncLevelOrderArrayStore", "LevelOrderArrayStore", "Copse.Stores"),
+
+      new("Copse.Async/Stores/AsyncPreorderCapture.cs",
+        "Copse/Stores/PreorderCapture.g.cs",
+        "AsyncPreorderCapture", "PreorderCapture", "Copse.Stores"),
+      new("Copse.Async/Stores/AsyncLevelOrderCapture.cs",
+        "Copse/Stores/LevelOrderCapture.g.cs",
+        "AsyncLevelOrderCapture", "LevelOrderCapture", "Copse.Stores"),
       new("Copse.Async/Treenumerators/AsyncPreorderStoreDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/PreorderStoreDepthFirstTreenumerator.g.cs",
         "AsyncPreorderStoreDepthFirstTreenumerator", "PreorderStoreDepthFirstTreenumerator", "Copse.Treenumerators"),
@@ -169,59 +270,50 @@ namespace Copse.CodeGen
       // engines -- the hand-written sync memoize machinery is retired; MemoizeTests plus the
       // conformance matrix are the non-differential oracle). The cluster's classes reference
       // each other, so Generated*-style validation naming is not an option here.
-      new("Copse.Linq.Async/Treenumerables/IAsyncTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/ITreenumerableBuffer.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/ITreenumerableBuffer.g.cs",
         "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncMemoizeTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/IMemoizeTreenumerableBuffer.g.cs",
+        "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstBuffer.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstBuffer.g.cs",
-        "AsyncMemoizeDepthFirstBuffer", "MemoizeDepthFirstBuffer", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
+        "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",
+        "AsyncMemoizePreorderStore", "MemoizePreorderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstBuffer.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstBuffer.g.cs",
-        "AsyncMemoizeBreadthFirstBuffer", "MemoizeBreadthFirstBuffer", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderStore.cs",
+        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderStore.g.cs",
+        "AsyncMemoizeLevelOrderStore", "MemoizeLevelOrderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeDepthFirstStore.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeDepthFirstStore.g.cs",
-        "AsyncMemoizeDepthFirstStore", "MemoizeDepthFirstStore", "Copse.Linq.Treenumerators"),
-
-      new("Copse.Linq.Async/Treenumerators/Memoize/AsyncMemoizeBreadthFirstStore.cs",
-        "Copse.Linq/Treenumerators/Memoize/MemoizeBreadthFirstStore.g.cs",
-        "AsyncMemoizeBreadthFirstStore", "MemoizeBreadthFirstStore", "Copse.Linq.Treenumerators"),
-
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeTreenumerable.g.cs",
         "AsyncMemoizeTreenumerable", "MemoizeTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeDepthFirstSourceTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeDepthFirstSourceTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeDepthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeDepthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeDepthFirstSourceTreenumerable", "MemoizeDepthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
-        "Copse.Linq/Treenumerables/MemoizeBreadthFirstSourceTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeBreadthFirstSourceTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MemoizeBreadthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeBreadthFirstSourceTreenumerable", "MemoizeBreadthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
 
       // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
       // memoize cluster.
-      new("Copse.Linq.Async/Treenumerables/AsyncCompletedTreenumerableBuffer.cs",
-        "Copse.Linq/Treenumerables/CompletedTreenumerableBuffer.g.cs",
-        "AsyncCompletedTreenumerableBuffer", "CompletedTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/TreenumerableBuffer.g.cs",
+        "AsyncTreenumerableBuffer", "TreenumerableBuffer", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerators/Invert/AsyncInvertedLevelOrderStream.cs",
         "Copse.Linq/Treenumerators/Invert/InvertedLevelOrderStream.g.cs",
         "AsyncInvertedLevelOrderStream", "InvertedLevelOrderStream", "Copse.Linq.Treenumerators"),
 
-      new("Copse.Linq.Async/Treenumerators/AsyncLazyBuiltPreorderStore.cs",
-        "Copse.Linq/Treenumerators/LazyBuiltPreorderStore.g.cs",
-        "AsyncLazyBuiltPreorderStore", "LazyBuiltPreorderStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/AsyncLazyPreorderStore.cs",
+        "Copse.Linq/Stores/LazyPreorderStore.g.cs",
+        "AsyncLazyPreorderStore", "LazyPreorderStore", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Treenumerators/AsyncLazyBuiltLevelOrderStore.cs",
-        "Copse.Linq/Treenumerators/LazyBuiltLevelOrderStore.g.cs",
-        "AsyncLazyBuiltLevelOrderStore", "LazyBuiltLevelOrderStore", "Copse.Linq.Treenumerators"),
-
-      new("Copse.Linq.Async/Treenumerators/AsyncStreamFedLevelOrderStore.cs",
-        "Copse.Linq/Treenumerators/StreamFedLevelOrderStore.g.cs",
-        "AsyncStreamFedLevelOrderStore", "StreamFedLevelOrderStore", "Copse.Linq.Treenumerators"),
+      new("Copse.Linq.Async/Stores/AsyncLazyLevelOrderStore.cs",
+        "Copse.Linq/Stores/LazyLevelOrderStore.g.cs",
+        "AsyncLazyLevelOrderStore", "LazyLevelOrderStore", "Copse.Linq.Stores"),
 
       // The fluent-layer construction machinery (Copse.Linq is generated from Copse.Linq.Async).
       new("Copse.Linq.Async/AsyncTreenumerableFactory.cs",
@@ -232,13 +324,113 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",
         "AsyncHideTreenumerable", "HideTreenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
-        "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
-        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereTreenumerable.g.cs",
+        "IAsyncSelectWhereTreenumerable", "ISelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/AsyncSelectTreenumerable.cs",
-        "Copse.Linq/Treenumerables/SelectTreenumerable.g.cs",
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterTreenumerable.g.cs",
+        "IAsyncSelectPruneAfterTreenumerable", "ISelectPruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectPruneAfterTreenumerable.g.cs",
+        "AsyncSelectPruneAfterTreenumerable", "SelectPruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerators/Filter/AsyncSelectPruneAfterTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Filter/SelectPruneAfterTreenumerator.g.cs",
+        "AsyncSelectPruneAfterTreenumerator", "SelectPruneAfterTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/IResultSelector.g.cs",
+        "IResultSelector", "IResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/WhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/WhereResultSelector.g.cs",
+        "WhereResultSelector", "WhereResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PositionalWhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PositionalWhereResultSelector.g.cs",
+        "PositionalWhereResultSelector", "PositionalWhereResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PruneBeforeResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneBeforeResultSelector.g.cs",
+        "PruneBeforeResultSelector", "PruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/FuncResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/FuncResultSelector.g.cs",
+        "FuncResultSelector", "FuncResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneAfterTreenumerable.g.cs",
+        "AsyncPruneAfterTreenumerable", "PruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/PositionalPruneBeforeResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PositionalPruneBeforeResultSelector.g.cs",
+        "PositionalPruneBeforeResultSelector", "PositionalPruneBeforeResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereResult.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereResult.g.cs",
+        "SelectWhereResult", "SelectWhereResult", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereTreenumerable.g.cs",
+        "SelectWhereTreenumerable", "SelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectTreenumerable.g.cs",
         "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereComposition.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereComposition.g.cs",
+        "SelectWhereComposition", "SelectWhereComposition", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereDepthFirstTreenumerable.g.cs",
+        "IAsyncSelectWhereDepthFirstTreenumerable", "ISelectWhereDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereBreadthFirstTreenumerable.g.cs",
+        "IAsyncSelectWhereBreadthFirstTreenumerable", "ISelectWhereBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterDepthFirstTreenumerable.g.cs",
+        "IAsyncSelectPruneAfterDepthFirstTreenumerable", "ISelectPruneAfterDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        "IAsyncSelectPruneAfterBreadthFirstTreenumerable", "ISelectPruneAfterBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereDepthFirstTreenumerable.g.cs",
+        "SelectWhereDepthFirstTreenumerable", "SelectWhereDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectWhereBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereBreadthFirstTreenumerable.g.cs",
+        "SelectWhereBreadthFirstTreenumerable", "SelectWhereBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectDepthFirstTreenumerable.g.cs",
+        "AsyncSelectDepthFirstTreenumerable", "SelectDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectBreadthFirstTreenumerable.g.cs",
+        "AsyncSelectBreadthFirstTreenumerable", "SelectBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneAfterDepthFirstTreenumerable.g.cs",
+        "AsyncPruneAfterDepthFirstTreenumerable", "PruneAfterDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneAfterBreadthFirstTreenumerable.g.cs",
+        "AsyncPruneAfterBreadthFirstTreenumerable", "PruneAfterBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectPruneAfterDepthFirstTreenumerable.g.cs",
+        "AsyncSelectPruneAfterDepthFirstTreenumerable", "SelectPruneAfterDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectPruneAfterBreadthFirstTreenumerable.g.cs",
+        "AsyncSelectPruneAfterBreadthFirstTreenumerable", "SelectPruneAfterBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
 
       // The fluent extension layer: every Treenumerable.X partial is generated from its
       // AsyncTreenumerable.X source (ToList is async-only; the empty partial base has no twin).
@@ -322,6 +514,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.Memoize.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.OrderChildrenBy.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.OrderChildrenBy.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.PostorderTraversal.cs",
         "Copse.Linq/Treenumerable/Treenumerable.PostorderTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
@@ -382,13 +578,7 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.TakeTrees.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/Treenumerable/Treenumerable.ToBreadthFirstTreeTokenizer.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/Treenumerable/Treenumerable.ToDepthFirstTreeTokenizer.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.ToFormattedLines.cs",
         "Copse.Linq/Treenumerable/Treenumerable.ToFormattedLines.g.cs",
@@ -407,32 +597,6 @@ namespace Copse.CodeGen
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       // The tree-tokenizer machinery (the last hand-written Copse.Linq cluster): the async
-      // tokenizer objects are the sources; their twins take over the canonical names. The
-      // sync-only interface members (non-generic GetEnumerator/Current, Reset) ride the
-      // `// codegen: begin/end sync-only` markers in the async sources.
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/IAsyncDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/IDepthFirstTreeTokenizer.g.cs",
-        "IAsyncDepthFirstTreeTokenizer", "IDepthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/AsyncDepthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/DepthFirstTreeTokenizer.g.cs",
-        "AsyncDepthFirstTreeTokenizer", "DepthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/DepthFirstTree/AsyncDepthFirstTreeTokenEnumerator.cs",
-        "Copse.Linq/TreeTokenizer/DepthFirstTree/DepthFirstTreeTokenEnumerator.g.cs",
-        "AsyncDepthFirstTreeTokenEnumerator", "DepthFirstTreeTokenEnumerator", "Copse.Linq.TreeTokenizer.DepthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/IAsyncBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/IBreadthFirstTreeTokenizer.g.cs",
-        "IAsyncBreadthFirstTreeTokenizer", "IBreadthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/AsyncBreadthFirstTreeTokenizer.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/BreadthFirstTreeTokenizer.g.cs",
-        "AsyncBreadthFirstTreeTokenizer", "BreadthFirstTreeTokenizer", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
-
-      new("Copse.Linq.Async/TreeTokenizer/BreadthFirstTree/AsyncBreadthFirstTreeTokenEnumerator.cs",
-        "Copse.Linq/TreeTokenizer/BreadthFirstTree/BreadthFirstTreeTokenEnumerator.g.cs",
-        "AsyncBreadthFirstTreeTokenEnumerator", "BreadthFirstTreeTokenEnumerator", "Copse.Linq.TreeTokenizer.BreadthFirstTree"),
 
     };
   }

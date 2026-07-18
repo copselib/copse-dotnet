@@ -1,0 +1,55 @@
+using Copse.Async;
+using Copse.Core;
+using Copse.Core.Async;
+using Copse.Linq.Async;
+using System;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The reified operator chain (docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
+  // holding the Kleisli-composed result of every composed operator, so value-lambda chains of any
+  // length and order collapse to ONE layer over the source. Plain operators
+  // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
+  // spliced chains carry the composed closure in a FuncResultSelector (composition inherently
+  // holds user delegates). Splicing is total: every legality decision was made outer-side.
+  internal sealed class SelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
+    where TResultSelector : struct, IResultSelector<TSource, TResult>
+  {
+    public SelectWhereTreenumerable(
+      IAsyncTreenumerable<TSource> source,
+      TResultSelector resultSelector,
+      bool relabels)
+    {
+      _Source = source;
+      _ResultSelector = resultSelector;
+      Relabels = relabels;
+    }
+
+    private readonly IAsyncTreenumerable<TSource> _Source;
+    private readonly TResultSelector _ResultSelector;
+
+    public bool Relabels { get; }
+
+    public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator() =>
+      new AsyncWhereBreadthFirstTreenumerator<TSource, TResult, TResultSelector>(
+        _Source.GetAsyncBreadthFirstTreenumerator, _ResultSelector);
+
+    public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>
+      new AsyncWhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>(
+        _Source.GetAsyncDepthFirstTreenumerator, _ResultSelector);
+
+    // The composition law (SelectWhereComposition, the algebra's one home) under this
+    // representation's successor choice: the general wrapper composes to a general wrapper.
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
+      bool relabels)
+    {
+      return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
+        _Source,
+        new FuncResultSelector<TSource, TOuterResult>(
+          SelectWhereComposition.ResultSelectorThenResultSelector<TSource, TResult, TResultSelector, TOuterResult>(
+            _ResultSelector, resultSelector)),
+        Relabels | relabels);
+    }
+  }
+}

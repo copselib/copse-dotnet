@@ -163,13 +163,16 @@ namespace Copse.CodeGen
         ["TAsyncChildEnumerator"] = "TChildEnumerator",
         ["GetAsyncEnumerator"] = "GetEnumerator",
         ["IAsyncTreenumerableBuffer"] = "ITreenumerableBuffer",
-        ["IAsyncLazyTreenumerableBuffer"] = "ILazyTreenumerableBuffer",
+        ["IAsyncMemoizeTreenumerableBuffer"] = "IMemoizeTreenumerableBuffer",
         ["AsyncRefCountDisposable"] = "RefCountDisposable",
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",
-        ["IAsyncSelectTreenumerable"] = "ISelectTreenumerable",
-        ["IAsyncDepthFirstTreeTokenizer"] = "IDepthFirstTreeTokenizer",
-        ["IAsyncBreadthFirstTreeTokenizer"] = "IBreadthFirstTreeTokenizer",
+        ["IAsyncSelectWhereTreenumerable"] = "ISelectWhereTreenumerable",
+        ["IAsyncSelectPruneAfterTreenumerable"] = "ISelectPruneAfterTreenumerable",
+        ["IAsyncSelectWhereDepthFirstTreenumerable"] = "ISelectWhereDepthFirstTreenumerable",
+        ["IAsyncSelectWhereBreadthFirstTreenumerable"] = "ISelectWhereBreadthFirstTreenumerable",
+        ["IAsyncSelectPruneAfterDepthFirstTreenumerable"] = "ISelectPruneAfterDepthFirstTreenumerable",
+        ["IAsyncSelectPruneAfterBreadthFirstTreenumerable"] = "ISelectPruneAfterBreadthFirstTreenumerable",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()
@@ -193,11 +196,11 @@ namespace Copse.CodeGen
         ["Copse.Core.Async"] = "Copse.Core",
         ["Copse.Async.Treenumerators"] = "Copse.Treenumerators",
         ["Copse.Async.Treenumerables"] = "Copse.Treenumerables",
+        ["Copse.Async.Stores"] = "Copse.Stores",
         ["Copse.Linq.Async"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerators"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerables"] = "Copse.Linq.Treenumerables",
-        ["Copse.Linq.Async.TreeTokenizer.DepthFirstTree"] = "Copse.Linq.TreeTokenizer.DepthFirstTree",
-        ["Copse.Linq.Async.TreeTokenizer.BreadthFirstTree"] = "Copse.Linq.TreeTokenizer.BreadthFirstTree",
+        ["Copse.Linq.Async.Stores"] = "Copse.Linq.Stores",
       };
 
       private readonly string _asyncClass;

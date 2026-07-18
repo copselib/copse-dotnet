@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
+    <ProjectReference Include="..\Copse.Traversal\Copse.Traversal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

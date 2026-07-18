@@ -15,13 +15,13 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle_Mixed() =>
       CanonicalTrees.MegaTriangleTree()
-      .Where(nodeContext => (nodeContext.Position.Depth + nodeContext.Position.SiblingIndex) % 2 == 0)
+      .Where((n, position) => (position.Depth + position.SiblingIndex) % 2 == 0)
       .Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Bft_Triangle_Mixed() =>
       CanonicalTrees.MegaTriangleTree()
-      .Where(nodeContext => (nodeContext.Position.Depth + nodeContext.Position.SiblingIndex) % 2 == 0)
+      .Where((n, position) => (position.Depth + position.SiblingIndex) % 2 == 0)
       .Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]

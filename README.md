@@ -56,8 +56,9 @@ ITreenumerable<int> tree = new Treenumerable<int, BinaryChildren>(
 //   4  5 6  7
 ```
 
-Once you have an `ITreenumerable<T>`, the full operation set is available. All operations are lazy
-and compose without materializing intermediate trees:
+Once you have an `ITreenumerable<T>`, the full operation set is available. Operations compose
+without materialization when possible — the streaming operators stay lazy end-to-end — and when
+an operation does capture the tree (or might), its return type and docs say so:
 
 ```csharp
 int[] preOrder = tree.PreOrderTraversal().ToArray();  // [1, 2, 4, 5, 3, 6, 7]

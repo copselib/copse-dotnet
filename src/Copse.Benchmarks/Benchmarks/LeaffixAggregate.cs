@@ -22,14 +22,14 @@ namespace Copse.Benchmarks
 
     [Benchmark]
     public int Triangle() =>
-      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
+      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
 
     [Benchmark]
     public int Chain() =>
-      CanonicalTrees.MegaChainTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
+      CanonicalTrees.MegaChainTree().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
 
     [Benchmark]
     public int Forest() =>
-      CanonicalTrees.MegaForest().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
+      CanonicalTrees.MegaForest().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
   }
 }

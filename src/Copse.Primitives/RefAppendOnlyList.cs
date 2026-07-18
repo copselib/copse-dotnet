@@ -166,17 +166,29 @@ namespace Copse
     }
 #endif
 
-    // Point-in-time by-value copy, front-to-back; for tests/debugging, not the hot path
-    // (same contract and rationale as RefSemiDeque.Snapshot).
-    internal T[] Snapshot()
+    // Materialize the list into one flat array, a block copy per partition -- the hand-off from
+    // chunked growth to a completed array store's arrays (the capture factories' final step,
+    // where List<T>'s cumulative doubling churn is what this type exists to avoid).
+    public T[] ToArray()
     {
       var result = new T[Count];
+      var copied = 0;
 
-      for (var i = 0; i < Count; i++)
-        result[i] = this[i];
+      for (var partitionIndex = 0; copied < Count; partitionIndex++)
+      {
+        var partition = _Partitions[partitionIndex];
+        var length = Math.Min(partition.Length, Count - copied);
+
+        Array.Copy(partition, 0, result, copied, length);
+        copied += length;
+      }
 
       return result;
     }
+
+    // Point-in-time by-value copy, front-to-back; for tests/debugging
+    // (same contract and rationale as RefSemiDeque.Snapshot).
+    internal T[] Snapshot() => ToArray();
 
     private sealed class DebugView
     {

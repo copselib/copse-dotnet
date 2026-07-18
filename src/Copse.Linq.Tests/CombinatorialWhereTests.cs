@@ -69,12 +69,12 @@ namespace Copse.Linq.Tests
           foreach (var node in skippedNodes)
           {
             var skipped = node;
-            sut = sut.Where(nodeContext => nodeContext.Node != skipped);
+            sut = sut.Where(n => n != skipped);
           }
         }
         else
         {
-          sut = Deserialize(treeString).Where(nodeContext => !skippedNodes.Contains(nodeContext.Node));
+          sut = Deserialize(treeString).Where(n => !skippedNodes.Contains(n));
         }
 
         var expected = Key(Deserialize(expectedTreeString).GetTraversal(treeTraversalStrategy, Selector));
@@ -180,7 +180,7 @@ namespace Copse.Linq.Tests
       var expectedTree = tree;
 
       foreach (var node in whereNotNodes)
-        expectedTree = expectedTree.Where(nc => nc.Node != node).Hide();
+        expectedTree = expectedTree.Where(n => n != node).Hide();
 
       return TreeSerializer.SerializeDepthFirstTree(expectedTree);
     }

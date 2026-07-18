@@ -23,5 +23,34 @@ namespace Copse.Linq
 
       return source.TakeTrees(takeCount);
     }
+
+    /// <summary>The depth-first-narrow twin: the same two passes (count the roots, then take), staying narrow.</summary>
+    public static async ValueTask<IAsyncDepthFirstTreenumerable<T>> SkipLastTreesAsync<T>(
+      this IAsyncDepthFirstTreenumerable<T> source,
+      int count,
+      CancellationToken cancellationToken = default)
+    {
+      var treeCount = await source.CountTreesAsync(cancellationToken).ConfigureAwait(false);
+
+      var takeCount = Math.Max(treeCount - count, 0);
+
+      return source.TakeTrees(takeCount);
+    }
+
+    /// <summary>
+    /// The breadth-first-narrow twin. The counting pass is nearly free in this dimension: the
+    /// roots are the whole of level 0, so it drains one level and pulls nothing deeper.
+    /// </summary>
+    public static async ValueTask<IAsyncBreadthFirstTreenumerable<T>> SkipLastTreesAsync<T>(
+      this IAsyncBreadthFirstTreenumerable<T> source,
+      int count,
+      CancellationToken cancellationToken = default)
+    {
+      var treeCount = await source.CountTreesAsync(cancellationToken).ConfigureAwait(false);
+
+      var takeCount = Math.Max(treeCount - count, 0);
+
+      return source.TakeTrees(takeCount);
+    }
   }
 }

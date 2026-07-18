@@ -37,7 +37,7 @@ namespace Copse.Linq.Tests
     // The same shape with each node's value swapped for a nasty one; cycling the offset over
     // the corpus puts every nasty value in every structural position.
     private static ITreenumerable<string> NastyTree(string shape, int offset)
-      => EngineTree.Parse(shape).Select(context => NastyValues[(context.Node[0] - 'a' + offset) % NastyValues.Length]);
+      => EngineTree.Parse(shape).Select(context => NastyValues[(context[0] - 'a' + offset) % NastyValues.Length]);
 
     private static string[] ScheduledValues(ITreenumerator<string> treenumerator)
     {
@@ -150,11 +150,11 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(
         "\"a,b\"(c)",
-        EngineTree.Parse("a(b)").Select(context => context.Node == "a" ? "a,b" : "c").SerializeDepthFirstTree());
+        EngineTree.Parse("a(b)").Select(context => context == "a" ? "a,b" : "c").SerializeDepthFirstTree());
 
       Assert.AreEqual(
         "\"a(x)\";c",
-        EngineTree.Parse("a(b)").Select(context => context.Node == "a" ? "a(x)" : "c").SerializeBreadthFirstTree());
+        EngineTree.Parse("a(b)").Select(context => context == "a" ? "a(x)" : "c").SerializeBreadthFirstTree());
     }
 
     // ---------------------------------------------------------------------------------------

@@ -15,7 +15,7 @@ namespace Copse.Linq
       return
         leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
+        .Where(mergeNode => !mergeNode.HasLeftAndRight);
     }
 
     public static IAsyncDepthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
@@ -23,13 +23,13 @@ namespace Copse.Linq
       IAsyncDepthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
+        .Where(mergeNode => !mergeNode.HasLeftAndRight);
 
     public static IAsyncBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this IAsyncBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncBreadthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasLeftAndRight);
+        .Where(mergeNode => !mergeNode.HasLeftAndRight);
   }
 }

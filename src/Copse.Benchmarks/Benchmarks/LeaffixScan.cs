@@ -24,28 +24,28 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle()
     {
-      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(SubtreeNodeCount, _ => 1);
       scan.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      ITreenumerable<int> scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(SubtreeNodeCount, _ => 1);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(SubtreeNodeCount, _ => 1);
       scan.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(_ => 1, SubtreeNodeCount);
+      ITreenumerable<int> scan = CanonicalTrees.MegaChainTree().LeaffixScan(SubtreeNodeCount, _ => 1);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }

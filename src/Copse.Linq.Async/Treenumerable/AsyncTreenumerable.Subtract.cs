@@ -15,8 +15,8 @@ namespace Copse.Linq
       return
         leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasRight)
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Where(mergeNode => !mergeNode.HasRight)
+        .Select(mergeNode => mergeNode.Left);
     }
 
     public static IAsyncDepthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(
@@ -24,15 +24,15 @@ namespace Copse.Linq
       IAsyncDepthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasRight)
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Where(mergeNode => !mergeNode.HasRight)
+        .Select(mergeNode => mergeNode.Left);
 
     public static IAsyncBreadthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(
       this IAsyncBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncBreadthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .Where(mergeNodeContext => !mergeNodeContext.Node.HasRight)
-        .Select(mergeNodeContext => mergeNodeContext.Node.Left);
+        .Where(mergeNode => !mergeNode.HasRight)
+        .Select(mergeNode => mergeNode.Left);
   }
 }

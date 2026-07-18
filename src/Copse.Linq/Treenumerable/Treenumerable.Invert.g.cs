@@ -2,10 +2,12 @@
 //   Generated from AsyncTreenumerable.Invert.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
 using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
+using Copse.Linq.Stores;
 using Copse.Linq.Treenumerators;
 using System.Collections.Generic;
 
@@ -40,19 +42,20 @@ namespace Copse.Linq
     /// <summary>
     /// The full-source overload (also the disambiguator for a source that is both breadth- and
     /// depth-first): the mirror's representation is pinned to the FIRST dimension pulled
-    /// (Tree.Lazy). Depth-first-first captures into mirrored preorder arrays; breadth-first-first
-    /// pins the streaming mirror into a lazily-growing level-order capture -- native replay for
-    /// the dimension that asked, visits emerging tier by tier rather than after a full build, and
-    /// a partial drain buffering only what it reached. Either way the source is enumerated at
-    /// most once and both dimensions replay from the one capture; the O(n) is disclosed by the
-    /// buffer return type.
+    /// (Tree.Lazy). Depth-first-first captures into mirrored preorder arrays;
+    /// breadth-first-first drains the streaming mirror into a completed level-order capture --
+    /// native replay for the dimension that asked. Both arms share one cost shape: the whole
+    /// build runs on the first replay pull. Either way the source is enumerated at most once
+    /// and both dimensions replay from the one capture; the O(n) is disclosed by the buffer
+    /// return type.
     /// </summary>
     public static ITreenumerableBuffer<TNode> Invert<TNode>(this ITreenumerable<TNode> source)
-      => new CompletedTreenumerableBuffer<TNode>(
+      => new TreenumerableBuffer<TNode>(
         Tree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? LevelOrderMirror(source)
-            : PreorderMirror(source)));
+            : PreorderMirror(source)),
+        nativeLayout: null); // decided by the first pull (the dimension dispatch above)
 
     /// <summary>
     /// The buffer overload: a capture in hand makes the mirror's depth-first dimension affordable,
@@ -69,87 +72,54 @@ namespace Copse.Linq
     // acquisition (Tree.Lazy), both dimensions served from mirrored preorder arrays. The
     // full-source overload dispatches on the first dimension instead -- see LevelOrderMirror.
     private static ITreenumerableBuffer<TNode> DeferredMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
-      => new CompletedTreenumerableBuffer<TNode>(
-        Tree.Lazy(() => PreorderMirror(source)));
+      => new TreenumerableBuffer<TNode>(
+        Tree.Lazy(() => PreorderMirror(source)), BufferLayout.Preorder);
 
     private static ITreenumerable<TNode> PreorderMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
-      var mirror = new LazyBuiltPreorderStore<TNode>(() => BuildMirror(source));
+      var mirror = new LazyPreorderStore<TNode>(() => BuildMirror(source));
 
-      return new PreorderTreenumerable<TNode, LazyBuiltPreorderStore<TNode>>(mirror);
+      return new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(mirror);
     }
 
-    // The breadth-first-first mirror: the streaming mirror's tier output pinned into a lazily
-    // growing level-order capture (AsyncStreamFedLevelOrderStore over
-    // AsyncInvertedLevelOrderStream), replays served by the store decoders. The stream already
-    // emits the mirror in the store's own encoding, so nothing decodes tiers into a visit
-    // stream just to re-encode them: the first cut here composed the narrow Invert with
-    // Memoize, and that visit-stream round trip benchmarked 2.1-2.7x slower than the preorder
-    // capture it replaced (Invert Bft rows); the fused store keeps the same laziness -- visits
-    // emerge tier by tier, partial drains buffer less -- without the round trip.
+    // The breadth-first-first mirror: the streaming mirror drained ONCE into a completed
+    // level-order capture, replays served by the store decoders. The stream already emits the
+    // mirror in the store's own encoding, so nothing decodes tiers into a visit stream just to
+    // re-encode them: the first cut here composed the narrow Invert with Memoize, and that
+    // visit-stream round trip benchmarked 2.1-2.7x slower than the preorder capture it replaced
+    // (Invert Bft rows); the stream-shaped CaptureFrom keeps the direct encoding path.
     //
-    // Treenumerator disposal is the release point (the Using idiom): every replay's dispose
-    // runs the capture-completing Consume (a no-op once complete), so a replay abandoned
-    // mid-drain finishes the capture -- the same O(n) the preorder arm pays up front -- and
-    // the store retires its feed, releasing the source's treenumerator deterministically
-    // instead of holding it (and a Using source's resource) until GC.
+    // Build-on-first-pull, all at once -- the same cost shape as the preorder arm. This
+    // replaced an incrementally-fed store (tier-by-tier laziness for partial drains) whose
+    // Dispose completed the remaining capture anyway, so the laziness was only ever real for a
+    // replay abandoned WITHOUT disposal -- a contract violation. One shape for both arms, no
+    // dispose-time cost surprise, and the capture's own disposal releases the source's
+    // treenumerator (and a Using source's resource) deterministically inside the build.
     private static ITreenumerable<TNode> LevelOrderMirror<TNode>(IBreadthFirstTreenumerable<TNode> source)
     {
-      var mirror = new StreamFedLevelOrderStore<TNode>(
-        () => new InvertedLevelOrderStream<TNode>(source.GetBreadthFirstTreenumerator()));
+      var mirror = new LazyLevelOrderStore<TNode>(
+        () => LevelOrderCapture.CaptureFrom(
+          new InvertedLevelOrderStream<TNode>(source.GetBreadthFirstTreenumerator())));
 
-      return new DelegatingTreenumerable<TNode>(
-        () => new DisposeActionTreenumerator<TNode>(
-          new LevelOrderStoreBreadthFirstTreenumerator<TNode, StreamFedLevelOrderStore<TNode>>(mirror),
-          () => mirror.Consume()),
-        () => new DisposeActionTreenumerator<TNode>(
-          new LevelOrderStoreDepthFirstTreenumerator<TNode, StreamFedLevelOrderStore<TNode>>(mirror),
-          () => mirror.Consume()));
+      return new LevelOrderTreenumerable<TNode, LazyLevelOrderStore<TNode>>(mirror);
     }
 
     private static PreorderArrayStore<TNode> BuildMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
       // 1. Capture flat preorder arrays (value + subtree size per node) from one awaited
-      //    depth-first walk of the source.
-      var values = new List<TNode>();
-      var subtreeSizes = new List<int>();
-      var open = new Stack<int>();
-
-      var treenumerator = source.GetDepthFirstTreenumerator();
-      using (treenumerator)
-      {
-        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          while (open.Count > treenumerator.Position.Depth)
-          {
-            var closed = open.Pop();
-            subtreeSizes[closed] = values.Count - closed;
-          }
-
-          open.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (open.Count > 0)
-      {
-        var closed = open.Pop();
-        subtreeSizes[closed] = values.Count - closed;
-      }
+      //    depth-first walk of the source -- the flat family's shared encode.
+      var capture = PreorderCapture.CaptureFrom(source);
 
       // 2. Emit the mirror. Pushing roots/children in forward order makes them pop in reverse,
       //    which is exactly the mirror's preorder. Each subtree keeps its size; only ordering
-      //    changes.
-      var count = values.Count;
+      //    changes. This zero-key LIFO emit stays specialized to Invert (it has CI benchmark
+      //    rows); the generalized sort-each-group emission belongs to OrderChildrenBy.
+      var count = capture.Count;
       var mirroredValues = new TNode[count];
       var mirroredSubtreeSizes = new int[count];
       var stack = new Stack<int>();
 
-      for (var root = 0; root < count; root += subtreeSizes[root])
+      for (var root = 0; root < count; root += capture.GetSubtreeSize(root))
         stack.Push(root);
 
       var output = 0;
@@ -158,13 +128,13 @@ namespace Copse.Linq
       {
         var index = stack.Pop();
 
-        mirroredValues[output] = values[index];
-        mirroredSubtreeSizes[output] = subtreeSizes[index];
+        mirroredValues[output] = capture.GetValue(index);
+        mirroredSubtreeSizes[output] = capture.GetSubtreeSize(index);
         output++;
 
-        var end = index + subtreeSizes[index];
+        var end = index + capture.GetSubtreeSize(index);
 
-        for (var child = index + 1; child < end; child += subtreeSizes[child])
+        for (var child = index + 1; child < end; child += capture.GetSubtreeSize(child))
           stack.Push(child);
       }
 

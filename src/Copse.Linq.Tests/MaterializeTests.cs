@@ -99,7 +99,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Materialize_finishes_the_most_buffered_dimension()
+    public void Materialize_completes_the_pinned_capture()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -116,11 +116,11 @@ namespace Copse.Linq.Tests
       // The sunk BFT work was finished; the DFT dimension was never opened.
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(9, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+      Assert.AreEqual(9, memo.GetBufferedCount());
     }
 
     [TestMethod]
-    public void Materialize_with_declared_strategy_outranks_sunk_cost()
+    public void Materialize_with_declared_strategy_transposes_a_mismatched_pin_from_the_buffer()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -131,14 +131,151 @@ namespace Copse.Linq.Tests
 
       var materialized = memo.Materialize(TreeTraversalStrategy.DepthFirst);
 
+      // The layout guarantee: the strategy is never ignored. The pinned level-order capture
+      // completes (the one source enumeration -- at-most-once holds), then TRANSPOSES from the
+      // buffer into a new preorder-native capture; the source is untouched by the transpose.
+      Assert.AreNotSame(memo, materialized);
+      Assert.IsTrue(memo.IsComplete);
+      Assert.AreEqual(9, memo.GetBufferedCount());
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+
+      // The transposed buffer replays the same tree in both dimensions.
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.DepthFirst),
+        Collect(materialized, TreeTraversalStrategy.DepthFirst));
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.BreadthFirst),
+        Collect(materialized, TreeTraversalStrategy.BreadthFirst));
+    }
+
+    [TestMethod]
+    public void Materialize_with_matching_strategy_reuses_the_buffer()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+      using var memo = counting.Memoize();
+
+      var first = memo.Materialize(TreeTraversalStrategy.BreadthFirst);
+      var again = first.Materialize(TreeTraversalStrategy.BreadthFirst);
+
+      Assert.AreSame(memo, first, "a fresh memo takes the declared layout as its pin");
+      Assert.AreSame(first, again, "a compliant buffer is never re-captured");
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+    }
+
+    // The both-layouts recipe for speed-over-space callers: materialize once, then materialize
+    // THAT in the other dimension -- two native-layout buffers, ONE source enumeration.
+    [TestMethod]
+    public void Both_layouts_cost_one_source_enumeration()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+
+      var levelOrder = counting.Materialize(TreeTraversalStrategy.BreadthFirst);
+      var preorder = levelOrder.Materialize(TreeTraversalStrategy.DepthFirst);
+
+      Assert.AreNotSame(levelOrder, preorder);
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the transpose walks the buffer, never the source");
+
+      CollectionAssert.AreEqual(
+        Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.DepthFirst),
+        Collect(preorder, TreeTraversalStrategy.DepthFirst));
+    }
+
+    [TestMethod]
+    public void Materialize_with_declared_strategy_pins_a_fresh_memo()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+
+      using var memo = counting.Memoize();
+      memo.Materialize(TreeTraversalStrategy.BreadthFirst);
+
+      Assert.IsTrue(memo.IsComplete);
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "a fresh memo takes the declared layout as its pin");
+    }
+
+    // The buffer probes: Materialize never re-captures a capture. Probe order matters -- the
+    // lazy buffer interface derives from the completed one, so it is tested first (a live memo
+    // must be consumed, not returned raw).
+    [TestMethod]
+    public void Materialize_consumes_a_live_memo_in_place()
+    {
+      using var memo = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Memoize();
+
+      var materialized = memo.Materialize();
+
       Assert.AreSame(memo, materialized);
       Assert.IsTrue(memo.IsComplete);
-      Assert.AreEqual(9, memo.GetBufferedCount(TreeTraversalStrategy.DepthFirst));
+    }
 
-      // Declared intent paid for a second enumeration, and the partial BFT capture was dropped.
+    [TestMethod]
+    public void Materialize_returns_a_completed_buffer_as_is()
+    {
+      var buffer = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize();
+
+      Assert.AreSame(buffer, buffer.Materialize());
+    }
+
+    // Invert's result is a deferred capture (a pinned lazy build behind the buffer type);
+    // Materialize hands it back untouched -- the build is pinned either way, so eagerness
+    // gains nothing and re-capturing would copy every node.
+    [TestMethod]
+    public void Materialize_returns_a_deferred_capture_as_is()
+    {
+      var mirror = TreeSerializer.DeserializeDepthFirstTree("a(b,c)").Invert();
+
+      Assert.AreSame(mirror, mirror.Materialize());
+    }
+
+    // Consume is MECHANICAL -- it walks anything, buffers included. The pins below say what
+    // that means for captures: a completed buffer replays without touching the source (inert),
+    // a deferred capture is FORCED by the walk, and a fresh memo's capture completes as a side
+    // effect of being walked. Minimum-work settling is Complete()/Materialize's job.
+    [TestMethod]
+    public void Consume_walks_a_completed_buffer_without_touching_the_source()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
+
+      var buffer = counting.Materialize();
+
+      buffer.Consume();
+      buffer.Consume(TreeTraversalStrategy.BreadthFirst);
+
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
-      Assert.AreEqual(0, memo.GetBufferedCount(TreeTraversalStrategy.BreadthFirst));
+      Assert.AreEqual(0, counting.BreadthFirstEnumerations, "the walks replay the inert capture; the source is retired");
+    }
+
+    [TestMethod]
+    public void Consume_forces_a_deferred_capture_by_walking_it()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b,c)"));
+
+      var mirror = counting.Invert();
+      mirror.Consume();
+
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
+        "the walk runs the pinned build -- exactly what a test reaching for Consume wants");
+
+      mirror.Consume();
+
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations,
+        "the build ran at most once; further walks replay the inert capture");
+    }
+
+    [TestMethod]
+    public void Consume_completes_a_lazy_buffer_as_a_side_effect_of_the_walk()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)"));
+
+      using var memo = counting.Memoize();
+
+      ITreenumerable<string> plain = memo;
+      plain.Consume();
+
+      Assert.IsTrue(memo.IsComplete, "walking a fresh memo to exhaustion completes its capture");
+      Assert.AreEqual(1, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
     }
 
     private sealed class CountingSource : ITreenumerable<string>

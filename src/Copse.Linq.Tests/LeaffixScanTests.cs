@@ -83,8 +83,8 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixScan(
-          nodeContext => nodeContext.Node,
-          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}")
+          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+          nodeContext => nodeContext.Node)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -97,6 +97,34 @@ namespace Copse.Linq.Tests
 
       // Assert
       CollectionAssert.AreEqual(expected, actual);
+    }
+
+    // The disclosure rule: a breadth-first-only source is accepted (the level-order arrival is
+    // captured internally, the fold runs over the capture's depth-first replay, and the O(n) is
+    // disclosed by the buffer return type) and must equal the explicit escalation.
+    [TestMethod]
+    [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+    public void NarrowBreadthFirstSource_EqualsExplicitMaterializeThenScan(
+      string treeString,
+      string expectedTreeString)
+    {
+      var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
+
+      var viaDisclosureRule = narrowSource.LeaffixScan(
+        (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+        nodeContext => nodeContext.Node);
+
+      var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
+        .Materialize()
+        .LeaffixScan(
+          (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+          nodeContext => nodeContext.Node);
+
+      foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
+        CollectionAssert.AreEqual(
+          viaExplicitEscalation.GetTraversal(treeTraversalStrategy).ToArray(),
+          viaDisclosureRule.GetTraversal(treeTraversalStrategy).ToArray(),
+          $"{treeTraversalStrategy} mismatch for {treeString}");
     }
 
     // The scan's LAYOUT is pinned to the FIRST dimension pulled (breadth-first-first lays the
@@ -120,8 +148,8 @@ namespace Copse.Linq.Tests
         var scan = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixScan(
-            nodeContext => nodeContext.Node,
-            (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}");
+            (nodeContext, children) => $"{nodeContext.Node}{string.Join("", children)}",
+            nodeContext => nodeContext.Node);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),

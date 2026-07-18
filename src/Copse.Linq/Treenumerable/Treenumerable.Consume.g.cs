@@ -3,19 +3,34 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerables;
 
 namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Terminal: drives the tree to exhaustion for its side effects, discarding the visit stream.
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Terminal: drives the tree to exhaustion (depth-first) for its side effects, discarding
+    /// the visit stream. MECHANICAL, unconditionally -- this is the hammer unit tests and
+    /// benchmarks rely on: a buffer is walked like anything else (its inert replay touches no
+    /// source), a deferred capture is forced by the walk, and a lazy buffer's capture completes
+    /// as a side effect of being walked. For settling a capture with the MINIMUM work instead,
+    /// use the lazy buffer's <c>Complete()</c> or <c>Materialize</c>. Awaitable -&gt; carries
+    /// the <c>Async</c> suffix.
     /// </summary>
     public static void Consume<TNode>(
+      this ITreenumerable<TNode> source)
+    {
+      var treenumerator = source.GetTreenumerator(TreeTraversalStrategy.DepthFirst);
+      using (treenumerator)
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+        }
+    }
+
+    /// <summary>As <c>ConsumeAsync(source)</c>, walking the named dimension.</summary>
+    public static void Consume<TNode>(
       this ITreenumerable<TNode> source,
-      TreeTraversalStrategy treeTraversalStrategy = default)
+      TreeTraversalStrategy treeTraversalStrategy)
     {
       var treenumerator = source.GetTreenumerator(treeTraversalStrategy);
       using (treenumerator)
@@ -24,23 +39,7 @@ namespace Copse.Linq
         }
     }
 
-    /// <summary>
-    /// Drive a buffer's capture to completion without naming a dimension: finish whichever
-    /// dimension's capture is furthest along -- both count toward the same total, so the larger
-    /// buffered count is the cheaper capture to complete -- with depth-first winning ties (and
-    /// hence the fresh, nothing-buffered case). A no-op on an already-complete buffer, via the
-    /// member's invariant. Callers with a layout preference use ConsumeAsync(TreeTraversalStrategy)
-    /// directly: declared intent outranks sunk cost. (Overload resolution keeps this and the
-    /// drain above apart: the buffer receiver is more specific, and the strategy-taking member
-    /// on IAsyncLazyTreenumerableBuffer beats any extension.) Growth control lives on the lazy
-    /// buffer only -- a completed capture has nothing left to consume.
-    /// </summary>
-    public static void Consume<TValue>(this ILazyTreenumerableBuffer<TValue> buffer)
-      => buffer.Consume(
-        buffer.GetBufferedCount(TreeTraversalStrategy.DepthFirst) >= buffer.GetBufferedCount(TreeTraversalStrategy.BreadthFirst)
-          ? TreeTraversalStrategy.DepthFirst
-          : TreeTraversalStrategy.BreadthFirst);
-
+    /// <summary>The depth-first-narrow entry: the same unconditional walk.</summary>
     public static void Consume<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       var treenumerator = source.GetDepthFirstTreenumerator();
@@ -50,6 +49,7 @@ namespace Copse.Linq
         }
     }
 
+    /// <summary>The breadth-first-narrow twin.</summary>
     public static void Consume<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       var treenumerator = source.GetBreadthFirstTreenumerator();

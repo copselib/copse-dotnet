@@ -1,5 +1,21 @@
 # Memoize — design spec (two-dimensional, incremental, eager-skip)
 
+> **SUPERSEDING UPDATE — THE SINGLE-CAPTURE MEMO (2026-07-15).** The "two-dimensional" half
+> of this spec — one capture per dimension, the four-case serving rule, drop-on-completion,
+> ref-counted straggler replays — is retired. The memo now holds ONE capture whose layout the
+> first acquisition (or a strategy-declaring Consume/Materialize on a fresh memo) pins;
+> replays in the other dimension ride the same capture cross-order, over a still-growing
+> capture too. What this buys: the source is enumerated AT MOST ONCE — full stop — so side
+> effects upstream of the memo fire at most once per node (the dual-buffer design opened a
+> second feed whenever both dimensions had partial work, silently double-firing effects);
+> the strategy arguments to Consume/Materialize become fresh-memo PIN requests (an existing
+> pin outranks them); and a page of race/drop machinery deletes. What it costs: off-pin
+> replays pay the cross-order locality tax, and an off-pin PARTIAL drain may over-pull. This
+> is the model every later capture op (Invert-F's first-dimension pin, the narrow-source
+> memos) had already converged on. Everything below about incremental capture,
+> eager-skip/no-holes, retain-all, and disposal semantics still stands; read
+> "two-dimensional" as historical.
+>
 > **Status: DECIDED 2026-07-03, not yet implemented.** Supersedes the 2026-06-27 preorder-only
 > spec. Of that spec's four locked decisions, two carry forward unchanged (eager-skip/no-holes,
 > no child-realization), one is softened (the finite-tree precondition), and one is overturned

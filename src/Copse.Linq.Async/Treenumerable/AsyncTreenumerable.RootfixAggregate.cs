@@ -40,5 +40,39 @@ namespace Copse.Linq
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed)
       => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, accumulator, seed);
+
+    /// <summary>
+    /// The forest-correct seeding form (see the RootfixScan rootNodeSelector overload): every
+    /// root seeds its own accumulation, so each tree of a forest folds independently.
+    /// </summary>
+    public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+    {
+      return
+        source
+        .RootfixScan(accumulator, rootNodeSelector)
+        .GetLeaves();
+    }
+
+    /// <summary>The breadth-first dual: per-root-seeded leaf accumulations in level order.</summary>
+    public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+    {
+      return
+        source
+        .RootfixScan(accumulator, rootNodeSelector)
+        .GetLeaves();
+    }
+
+    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
+    public static IAsyncEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, accumulator, rootNodeSelector);
   }
 }

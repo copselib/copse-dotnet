@@ -163,6 +163,40 @@ buffering class when consumed in that dimension (`—` = not offered / not appli
 
 ---
 
+## The disclosure rule (adopted 2026-07-11)
+
+Supersedes the per-operator "no native BFT overload" recommendations below for **capture
+operators** (tree→tree operators whose semantics require an O(n) capture regardless of source
+dimension). The rule:
+
+> **An operator may capture implicitly iff its return type discloses it
+> (`ITreenumerableBuffer<T>` in the signature). Where the return type cannot carry the
+> disclosure (enumerable/scalar returns), the operator stays dimension-fixed and the caller
+> escalates explicitly.**
+
+Rationale (decided against the alternative of consumer-side opt-in — buffer-input-only
+signatures): the capture cost is intrinsic to these operators' semantics, not to the source's
+dimension — a depth-first source pays the same O(n) a breadth-first one would, so a compile
+error on one entry point marks no cost cliff; it just charges ceremony to one caller class for
+a price every caller pays. The buffer return type is a stronger disclosure than LINQ ever gave
+(`Reverse`/`OrderBy` read typographically identical to `Select` there), and the explicit shape
+stays available to anyone who wants the capture hoisted and visible at the call site
+(`source.Materialize().LeaffixScan(...)`). Compile errors are reserved for the impossible, not
+the merely costly. `Tree.Defer` re-enumeration by sibling capture ops is intended behavior,
+not a hazard: Defer's contract IS fresh-per-acquisition; capture-once intent is what
+`Lazy`/`Memoize`/`Materialize` express.
+
+Consequences as built:
+- **Invert** already conformed (its composite/DFT arms capture implicitly behind the buffer
+  return type); it additionally keeps its genuinely-streaming BFT-narrow arm.
+- **LeaffixScan** and **OrderChildrenBy** gained breadth-first-narrow source overloads
+  (capture via `Materialize`, then the depth-first build over the capture's replay) plus the
+  composite disambiguator overloads that a second narrow overload makes mandatory.
+- **LeaffixAggregate** is the carve-out: it returns an enumerable, so no type-level disclosure
+  is possible, and its DFT form is genuinely lazy per root (peak = largest root subtree,
+  early-out works) — a buffering BFT overload would change its cost class silently. It stays
+  dimension-fixed.
+
 ## RETHINK candidates
 
 ### Invert (mirror)
