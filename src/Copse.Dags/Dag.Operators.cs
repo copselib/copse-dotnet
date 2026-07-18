@@ -86,6 +86,64 @@ namespace Copse.Dags
     }
 
     /// <summary>
+    /// The survey-shaped downward pass -- <see cref="RootfixAllocate{TAllocation}"/> with the
+    /// per-edge values COLLECTED instead of returned: the survey receives the node (already
+    /// resolved: its inflows merged by <paramref name="mergeInflows"/>, seeded at roots by the
+    /// empty-inflows call) and one <see cref="DispatchTarget{TValue, TEdge, TDispatch}"/> per
+    /// out-edge (this edge's payload included), and must call <c>Dispatch</c> exactly once on
+    /// each -- the shape a setter-callback fairness allocator plugs into without adapters.
+    /// Leaves are not surveyed (no out-edges).
+    ///
+    /// <para>DECORATES rather than replaces: returns the shape-isomorphic dag pairing every
+    /// source value with what arrived at it, edge payloads carried -- so downstream flavors are
+    /// compositions, not overloads: <c>.Select(...)</c> for immutable values, <c>.Do(...)</c>
+    /// for mutable ones.</para>
+    /// </summary>
+    public Dag<DispatchNode<TValue, TDispatch>, TEdge> RootfixDispatch<TDispatch>(
+      Func<DagNode<TValue, TEdge>, IReadOnlyList<TDispatch>, TDispatch> mergeInflows,
+      Action<DagNode<TValue, TEdge>, TDispatch, IReadOnlyList<DispatchTarget<TValue, TEdge, TDispatch>>> survey)
+    {
+      if (mergeInflows == null)
+        throw new ArgumentNullException(nameof(mergeInflows));
+      if (survey == null)
+        throw new ArgumentNullException(nameof(survey));
+
+      var dispatchedByNode = RootfixAllocate(
+        mergeInflows,
+        allocateToChildren: (node, dispatched) =>
+        {
+          var targets = node.ChildEdges
+            .Select(edge => new DispatchTarget<TValue, TEdge, TDispatch>(edge.Child, edge.Value))
+            .ToList();
+
+          survey(node, dispatched, targets);
+
+          return targets.Select(target => target.GetDispatchedOrThrow()).ToList();
+        });
+
+      return CloneShape(
+        node => new DispatchNode<TValue, TDispatch>(node.Value, dispatchedByNode[node]),
+        (parent, edge) => edge.Value);
+    }
+
+    /// <summary>
+    /// Side-effect pass over every reachable node, parents before children, each exactly once.
+    /// EAGER, unlike the tree side's lazy <c>Do</c> -- this family is materialize-first and there
+    /// is no deferred enumeration to ride, so the effects run once per call, right here. Returns
+    /// this dag unchanged for chaining.
+    /// </summary>
+    public Dag<TValue, TEdge> Do(Action<DagNode<TValue, TEdge>> action)
+    {
+      if (action == null)
+        throw new ArgumentNullException(nameof(action));
+
+      foreach (var node in GetTopologicalOrder())
+        action(node);
+
+      return this;
+    }
+
+    /// <summary>
     /// Removal-semantics filter, Copse polarity: PRUNE WHEN TRUE. A pruned node vanishes along
     /// with every edge through it; a descendant survives only while it is still reachable from a
     /// root through surviving nodes -- so a shared descendant with another live path stays (with

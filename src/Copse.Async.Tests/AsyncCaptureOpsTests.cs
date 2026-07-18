@@ -73,6 +73,45 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
+    public async Task RootfixDispatch_MatchesSync_BothDimensions()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).RootfixDispatch("s", LastSiblingSurvey);
+        var async = Async(tree).RootfixDispatch("s", LastSiblingSurvey);
+
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+      }
+    }
+
+    [TestMethod]
+    public async Task RootfixDispatch_BreadthFirstFirst_PinsTheLevelOrderLayout()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).RootfixDispatch("s", LastSiblingSurvey);
+        var async = Async(tree).RootfixDispatch("s", LastSiblingSurvey);
+
+        // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
+        // rides the same capture (the reverse pin order of the test above).
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+      }
+    }
+
+    // Reads the LAST sibling before dispatching to the first: exercises the operator's
+    // sibling-complete-visibility guarantee through a genuinely-suspending source.
+    private static void LastSiblingSurvey(
+      NodeContext<string> parentContext, string arrival, IReadOnlyList<DispatchTarget<string, string>> children)
+    {
+      var lastChildLetter = children[children.Count - 1].Node;
+
+      foreach (var child in children)
+        child.Dispatch(arrival + lastChildLetter);
+    }
+
+    [TestMethod]
     public async Task Invert_FullSource_MatchesSync_BothDimensions()
     {
       foreach (var tree in Trees)
