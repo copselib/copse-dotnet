@@ -70,7 +70,10 @@ child is that node again," which is the one place the no-identity principle bend
 (quarantined exactly like the spike's import-adapter posture).
 
 Roots (in-degree zero) are discovered by convention at the start of enumeration — the
-ForestRoot-sentinel analog; details at contract-writing time.
+ForestRoot-sentinel analog. **Dispatch is contiguous** (a stream contract clause, relied on
+by the survey-shaped passes): a node's out-edge discoveries immediately follow its entry as
+one block, in out-edge order — no other node's visits interleave. Wrappers preserve this
+(they only remove visits).
 
 ## The dimension split: forward / backward
 
@@ -193,20 +196,20 @@ them.
 6. **Where the family lives**: grow `Copse.Dags` into contract + families, or split
    `Copse.Dags.Core` etc. mirroring the tree layering. Proposal: single project until
    graduation forces the split (the spike's own no-new-projects rule).
-7. **The scan/dispatch return shape — surfaced by building phase 2, needs a ruling.** A
-   theorem got in the way: a rootfix result is an ENTRY-TIME fact (it needs every inflow),
-   but the protocol publishes a node's value at its DISCOVERIES too, which precede entry.
-   So `RootfixScan` cannot honestly return a streaming `IForwardDagnumerable<TResult>` —
-   there is no correct value to publish at a discovery. (Trees dodge this: one in-edge, and
-   the parent's accumulation is known at scheduling.) Options: (a) return a MATERIALIZED
-   composite — run the one streaming pass into a fresh builder `Dag<TResult, TEdge>` —
-   fully composable, affords both dimensions, and the spike's own scans already return
-   exactly this shape (precedent); the laziness policy's documented-when-not clause, with
-   the theorem as the documentation; (b) publish `default` at the output's discoveries and
-   the real value at entry — streaming preserved, but a silently-wrong value in half the
-   protocol; (c) entries-only result shapes (lists/dictionaries) — honest but falls out of
-   the composition algebra. RECOMMENDATION: (a). Same ruling covers `RootfixDispatch`
-   (which also has tree-side precedent for returning a buffer).
+7. ✅ **The scan/dispatch return shape RATIFIED (Jason, 2026-07-18): option (a).** The
+   theorem: a rootfix result is an ENTRY-TIME fact (it needs every inflow), but the
+   protocol publishes a node's value at its DISCOVERIES too, which precede entry — so
+   `RootfixScan` cannot honestly return a streaming `IForwardDagnumerable<TResult>`.
+   (Trees dodge this: one in-edge, and the parent's accumulation is known at scheduling.)
+   Ruling: the PASS streams (one walk, each node computed once, at entry); the RESULT is a
+   materialized composite — a fresh builder `Dag` — fully composable and affording both
+   dimensions (the materialization is an upgrade, `Memoize`-like). The spike's own scans
+   already returned this shape; the laziness policy's documented-when-not clause, with the
+   theorem as the documentation. Covers `RootfixDispatch` (tree-side buffer precedent).
+   Corollary recorded with it: identity for DAGs is irreducible (sharing IS an equality
+   proposition); the design canonicalizes it rather than pretending it away — reference
+   identity on the library-owned `DagNode` at the builder, ordinals in the stream, foreign
+   keys quarantined at the import adapter. User values are never compared or hashed.
 
 ## Phases (proposed)
 
@@ -224,8 +227,18 @@ them.
    not promised). Pinned: exact streams with deliberate ordinal gaps, chains,
    consumer-strategy passthrough, and content differentials against the builder's own
    operator clones — the oracle earning its keep.
-   2b: `RootfixScan` / `RootfixDispatch`, blocked on open question 7 (the return-shape
-   ruling).
+   ✅ 2b (2026-07-18): `RootfixScan` — edge-paired inflows (`DagInflow` closes the spike's
+   deferred pairing; empty at sources seeds the scan), one streaming pass into a
+   materialized shape-isomorphic composite. `RootfixDispatch` — the survey-shaped
+   allocation pass: nodes resolve as `DagDispatchNode` (value + edge-paired inflows;
+   sources get the single seeded inflow), surveys receive the COMPLETE live out-edge list
+   as exactly-once `DagDispatchTarget` slots (unwritten/double-written throw — the strict
+   ethos), outflows land as the targets' inflows. Only LIVE edges are surveyed, so
+   `PruneBefore(blockers).RootfixDispatch(...)` composes the blocker semantics into the
+   allocation for free — the MoveMoney shape, streaming until the capture. Pinned:
+   effective-ownership lookthrough through the diamond (60%x70% + 40%x30% = 54%), money
+   movement with attribution (which amount arrived on which edge), prune composition,
+   leaves-never-surveyed, slot strictness, and the builder-scan oracle differential.
 3. Backward dimension + the `Leaffix` family, including `LeaffixDispatch` (the upward
    diamond, closed properly).
 4. Flat store + serializer + `Memoize`/`Materialize` + `Transpose`.
