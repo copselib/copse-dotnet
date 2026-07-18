@@ -15,7 +15,7 @@ namespace Copse.Linq
     /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
-    /// the projection-carrying filter driver (docs/OPERATOR_FUSION_DESIGN.md).
+    /// the projection-carrying filter driver (docs/OPERATOR_COMPOSITION_DESIGN.md).
     /// </summary>
     public static ITreenumerable<TResult> Select<TSource, TResult>(
       this ITreenumerable<TSource> source,
@@ -67,29 +67,102 @@ namespace Copse.Linq
     public static IDepthFirstTreenumerable<TResult> Select<TSource, TResult>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
-      => TreenumerableFactory.CreateDepthFirst(
-        () => new SelectTreenumerator<TSource, TResult>(
-          source.GetDepthFirstTreenumerator, nodeContext => selector(nodeContext.Node)));
+    {
+      // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
+      // through a narrow-typed receiver composes on its own representation -- the successor
+      // keeps both dimensions; a narrow chain composes to a narrow successor.
+      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
+        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      if (source is ISelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource)
+        return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+
+      if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      return new SelectDepthFirstTreenumerable<TSource, TResult>(
+        source, nodeContext => selector(nodeContext.Node));
+    }
 
     public static IDepthFirstTreenumerable<TResult> Select<TSource, TResult>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
-      => TreenumerableFactory.CreateDepthFirst(
-        () => new SelectTreenumerator<TSource, TResult>(
-          source.GetDepthFirstTreenumerator, nodeContext => selector(nodeContext.Node, nodeContext.Position)));
+    {
+      // The join rule (see the composite positional overload): splice only over a
+      // label-preserving chain.
+      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource && !selectPruneAfterSource.Relabels)
+        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      if (source is ISelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource && !depthFirstSelectPruneAfterSource.Relabels)
+        return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+
+      if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
+        return depthFirstSelectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      return new SelectDepthFirstTreenumerable<TSource, TResult>(
+        source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+    }
 
     public static IBreadthFirstTreenumerable<TResult> Select<TSource, TResult>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
-      => TreenumerableFactory.CreateBreadthFirst(
-        () => new SelectTreenumerator<TSource, TResult>(
-          source.GetBreadthFirstTreenumerator, nodeContext => selector(nodeContext.Node)));
+    {
+      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
+        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      if (source is ISelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource)
+        return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+
+      if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      return new SelectBreadthFirstTreenumerable<TSource, TResult>(
+        source, nodeContext => selector(nodeContext.Node));
+    }
 
     public static IBreadthFirstTreenumerable<TResult> Select<TSource, TResult>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
-      => TreenumerableFactory.CreateBreadthFirst(
-        () => new SelectTreenumerator<TSource, TResult>(
-          source.GetBreadthFirstTreenumerator, nodeContext => selector(nodeContext.Node, nodeContext.Position)));
+    {
+      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource && !selectPruneAfterSource.Relabels)
+        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+
+      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      if (source is ISelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource && !breadthFirstSelectPruneAfterSource.Relabels)
+        return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+
+      if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
+        return breadthFirstSelectWhereSource.Compose(
+          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+          relabels: false);
+
+      return new SelectBreadthFirstTreenumerable<TSource, TResult>(
+        source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+    }
   }
 }

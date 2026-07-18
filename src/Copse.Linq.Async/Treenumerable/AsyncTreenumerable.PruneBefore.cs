@@ -1,4 +1,3 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -57,10 +56,19 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return
-        AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
-            source.GetAsyncDepthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+      // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
+      // through a narrow-typed receiver composes on its own representation -- the successor
+      // keeps both dimensions; a narrow chain composes to a narrow successor.
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereDepthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -70,10 +78,18 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return
-        AsyncTreenumerableFactory.CreateDepthFirst(
-          () => new AsyncWhereDepthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
-            source.GetAsyncDepthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
+      // The join rule, as in the composite positional overload: splice only while the chain
+      // is label-preserving.
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
+        return depthFirstSelectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -83,10 +99,16 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return
-        AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<T, T, PruneBeforeResultSelector<T>>(
-            source.GetAsyncBreadthFirstTreenumerator, new PruneBeforeResultSelector<T>(predicate)));
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.Compose(
+          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereBreadthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
+        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -96,10 +118,16 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return
-        AsyncTreenumerableFactory.CreateBreadthFirst(
-          () => new AsyncWhereBreadthFirstTreenumerator<T, T, PositionalPruneBeforeResultSelector<T>>(
-            source.GetAsyncBreadthFirstTreenumerator, new PositionalPruneBeforeResultSelector<T>(predicate)));
+      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
+        return selectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
+        return breadthFirstSelectWhereSource.Compose(
+          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+
+      return new SelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
+        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
     }
   }
 }

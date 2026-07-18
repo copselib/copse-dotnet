@@ -4,7 +4,7 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The composition recipe surface (docs/OPERATOR_FUSION_DESIGN.md): appending an operator is
+  // The composition recipe surface (docs/OPERATOR_COMPOSITION_DESIGN.md): appending an operator is
   // ONE call -- the wrapper unwraps its own mapping, composes the result selector onto it, discards
   // itself, and constructs the successor treenumerable. The operator composes with bare
   // lambdas (it knows its own flavor and reads Relabels for the join rule);

@@ -28,62 +28,29 @@ namespace Copse.Linq.Async.Treenumerables
     // The tier invariant: nothing in the chain moves a label.
     public bool Relabels => false;
 
-    // A projection composes in-tier: the value maps, the truncation strategies ride (nothing
-    // in the chain can reject, so no short-circuit).
+    // A projection composes in-tier.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
-      var innerResultSelector = _ResultSelector;
-
       return new AsyncSelectPruneAfterTreenumerable<TSource, TOuterResult>(
-        _Source,
-        nodeContext =>
-        {
-          var innerResult = innerResultSelector(nodeContext);
-
-          return new SelectWhereResult<TOuterResult>(
-            selector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position)),
-            innerResult.Strategies);
-        });
+        _Source, SelectWhereComposition.SelectPruneAfterThenSelect(_ResultSelector, selector));
     }
 
-    // A prune-after composes in-tier: its predicate judges the projected value; truncations
-    // union.
+    // A prune-after composes in-tier.
     public IAsyncTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
     {
-      var innerResultSelector = _ResultSelector;
-
       return new AsyncSelectPruneAfterTreenumerable<TSource, TResult>(
-        _Source,
-        nodeContext =>
-        {
-          var innerResult = innerResultSelector(nodeContext);
-
-          return new SelectWhereResult<TResult>(
-            innerResult.Value,
-            innerResult.Strategies
-              | (predicate(new NodeContext<TResult>(innerResult.Value, nodeContext.Position))
-                ? NodeTraversalStrategies.SkipDescendants
-                : NodeTraversalStrategies.TraverseAll));
-        });
+        _Source, SelectWhereComposition.SelectPruneAfterThenPruneAfter(_ResultSelector, predicate));
     }
 
-    // A rejecting operator arrived: convert to the general representation. The inner arrow
-    // never rejects, so no short-circuit -- values map, strategies union.
+    // A rejecting operator arrived: convert to the general representation.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
     {
-      var innerResultSelector = _ResultSelector;
-
       return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
-        new FuncResultSelector<TSource, TOuterResult>(nodeContext =>
-        {
-          var innerResult = innerResultSelector(nodeContext);
-          var outerResult = resultSelector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
-
-          return new SelectWhereResult<TOuterResult>(outerResult.Value, outerResult.Strategies | innerResult.Strategies);
-        }),
+        new FuncResultSelector<TSource, TOuterResult>(
+          SelectWhereComposition.SelectPruneAfterThenResultSelector(_ResultSelector, resultSelector)),
         relabels);
     }
 

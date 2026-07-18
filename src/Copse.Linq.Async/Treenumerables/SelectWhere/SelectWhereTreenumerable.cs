@@ -6,11 +6,11 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The reified operator chain (docs/OPERATOR_FUSION_DESIGN.md, "the result monad"): one wrapper
-  // holding the Kleisli-composed result of every fused operator, so value-lambda chains of any
+  // The reified operator chain (docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
+  // holding the Kleisli-composed result of every composed operator, so value-lambda chains of any
   // length and order collapse to ONE layer over the source. Plain operators
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
-  // spliced chains carry the composed closure in a FuncResultSelector (fusion inherently
+  // spliced chains carry the composed closure in a FuncResultSelector (composition inherently
   // holds user delegates). Splicing is total: every legality decision was made outer-side.
   internal sealed class SelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<TSource, TResult>
@@ -38,29 +38,17 @@ namespace Copse.Linq.Async.Treenumerables
       new AsyncWhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>(
         _Source.GetAsyncDepthFirstTreenumerator, _ResultSelector);
 
-    // The composition law, written once, covering the whole selector algebra (a projection is a
-    // result selector that never rejects): the fold stops at the first SkipNode-carrying result (that
-    // node left the logical tree, so later operators never saw it in the stacked pipeline, and
-    // it has no outer value); while accepting, the value maps and strategies union.
+    // The composition law (SelectWhereComposition, the algebra's one home) under this
+    // representation's successor choice: the general wrapper composes to a general wrapper.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
     {
-      var innerResultSelector = _ResultSelector;
-
       return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
         _Source,
-        new FuncResultSelector<TSource, TOuterResult>(nodeContext =>
-        {
-          var innerResult = innerResultSelector.GetResult(nodeContext);
-
-          if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
-            return new SelectWhereResult<TOuterResult>(default, innerResult.Strategies);
-
-          var outerResult = resultSelector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
-
-          return new SelectWhereResult<TOuterResult>(outerResult.Value, outerResult.Strategies | innerResult.Strategies);
-        }),
+        new FuncResultSelector<TSource, TOuterResult>(
+          SelectWhereComposition.ResultSelectorThenResultSelector<TSource, TResult, TResultSelector, TOuterResult>(
+            _ResultSelector, resultSelector)),
         Relabels | relabels);
     }
   }

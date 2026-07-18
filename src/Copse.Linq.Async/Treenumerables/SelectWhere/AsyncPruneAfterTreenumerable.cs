@@ -26,34 +26,19 @@ namespace Copse.Linq.Async.Treenumerables
     public bool Relabels => false;
 
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE
-    // wrapper by predicate union -- prune when either matches. Inner-first short-circuit
-    // preserves per-node lambda order; the outer predicate skips nodes the inner already
-    // matched, which the purity contract permits (counts unspecified).
+    // wrapper by predicate union.
     public IAsyncTreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> outerPredicate)
     {
-      var innerPredicate = _Predicate;
-
       return new AsyncPruneAfterTreenumerable<TNode>(
-        _Source, nodeContext => innerPredicate(nodeContext) || outerPredicate(nodeContext));
+        _Source, SelectWhereComposition.PruneAfterThenPruneAfter(_Predicate, outerPredicate));
     }
 
     // A projection joins: promote to the middle tier (light passthrough driver), never the
-    // filter driver. The prune predicate judges the source value (its layer runs first), the
-    // selector maps it.
+    // filter driver.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
     {
-      var predicate = _Predicate;
-
       return new AsyncSelectPruneAfterTreenumerable<TNode, TOuterResult>(
-        _Source,
-        nodeContext =>
-        {
-          var strategies = predicate(nodeContext)
-            ? NodeTraversalStrategies.SkipDescendants
-            : NodeTraversalStrategies.TraverseAll;
-
-          return new SelectWhereResult<TOuterResult>(selector(nodeContext), strategies);
-        });
+        _Source, SelectWhereComposition.PruneAfterThenSelect(_Predicate, selector));
     }
 
     // PruneAfter's selector, stated once (the operator's compose branches use this too): keep
