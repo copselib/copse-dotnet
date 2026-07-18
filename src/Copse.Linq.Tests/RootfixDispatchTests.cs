@@ -60,7 +60,7 @@ namespace Copse.Linq.Tests
             foreach (var child in children)
               child.Dispatch(arrival + lastChildLetter);
           })
-        .Select(nodeContext => $"{nodeContext.Node.Dispatched}{nodeContext.Node.Value}");
+        .Select(dispatchNode => $"{dispatchNode.Dispatched}{dispatchNode.Value}");
     }
 
     [TestMethod]

@@ -1,3 +1,5 @@
+using Copse.Linq.Async.Stores;
+using Copse.Async.Stores;
 using Copse.Async;
 using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
@@ -42,8 +44,8 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TSource> source,
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, IReadOnlyList<DispatchTarget<TSource, TDispatch>>> survey)
-      => new AsyncCompletedTreenumerableBuffer<DispatchNode<TSource, TDispatch>>(
-        AsyncTree.Lazy(() => PreorderDispatch(source, seed, survey)));
+      => new AsyncTreenumerableBuffer<DispatchNode<TSource, TDispatch>>(
+        AsyncTree.Lazy(() => PreorderDispatch(source, seed, survey)), BufferLayout.Preorder);
 
     // Preorder for BOTH dimensions, matching LeaffixScan's layout decision (see its note: the
     // breadth-first cross-decode tax over raw array stores is ~1.08x, not worth a transpose).
@@ -52,13 +54,13 @@ namespace Copse.Linq
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, IReadOnlyList<DispatchTarget<TSource, TDispatch>>> survey)
     {
-      var dispatched = new AsyncLazyBuiltPreorderStore<DispatchNode<TSource, TDispatch>>(
+      var dispatched = new AsyncLazyPreorderStore<DispatchNode<TSource, TDispatch>>(
         () => BuildRootfixDispatchAsync(source, seed, survey));
 
-      return new AsyncPreorderTreenumerable<DispatchNode<TSource, TDispatch>, AsyncLazyBuiltPreorderStore<DispatchNode<TSource, TDispatch>>>(dispatched);
+      return new AsyncPreorderTreenumerable<DispatchNode<TSource, TDispatch>, AsyncLazyPreorderStore<DispatchNode<TSource, TDispatch>>>(dispatched);
     }
 
-    private static async ValueTask<PreorderArrayStore<DispatchNode<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
+    private static async ValueTask<AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, IReadOnlyList<DispatchTarget<TSource, TDispatch>>> survey)
@@ -126,7 +128,7 @@ namespace Copse.Linq
           arrivals[target.Index] = target.GetDispatchedOrThrow();
       }
 
-      return new PreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes.ToArray());
+      return new AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes.ToArray());
     }
   }
 }

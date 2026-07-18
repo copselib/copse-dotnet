@@ -2,6 +2,8 @@
 //   Generated from AsyncTreenumerable.RootfixDispatch.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Stores;
+using Copse.Stores;
 using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
@@ -43,8 +45,8 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TSource> source,
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, IReadOnlyList<DispatchTarget<TSource, TDispatch>>> survey)
-      => new CompletedTreenumerableBuffer<DispatchNode<TSource, TDispatch>>(
-        Tree.Lazy(() => PreorderDispatch(source, seed, survey)));
+      => new TreenumerableBuffer<DispatchNode<TSource, TDispatch>>(
+        Tree.Lazy(() => PreorderDispatch(source, seed, survey)), BufferLayout.Preorder);
 
     // Preorder for BOTH dimensions, matching LeaffixScan's layout decision (see its note: the
     // breadth-first cross-decode tax over raw array stores is ~1.08x, not worth a transpose).
@@ -53,10 +55,10 @@ namespace Copse.Linq
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, IReadOnlyList<DispatchTarget<TSource, TDispatch>>> survey)
     {
-      var dispatched = new LazyBuiltPreorderStore<DispatchNode<TSource, TDispatch>>(
+      var dispatched = new LazyPreorderStore<DispatchNode<TSource, TDispatch>>(
         () => BuildRootfixDispatch(source, seed, survey));
 
-      return new PreorderTreenumerable<DispatchNode<TSource, TDispatch>, LazyBuiltPreorderStore<DispatchNode<TSource, TDispatch>>>(dispatched);
+      return new PreorderTreenumerable<DispatchNode<TSource, TDispatch>, LazyPreorderStore<DispatchNode<TSource, TDispatch>>>(dispatched);
     }
 
     private static PreorderArrayStore<DispatchNode<TSource, TDispatch>> BuildRootfixDispatch<TSource, TDispatch>(
