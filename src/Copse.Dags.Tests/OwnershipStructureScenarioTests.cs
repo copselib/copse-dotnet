@@ -1,0 +1,261 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Copse.Dags;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Copse.Dags.Tests
+{
+  // The library's origin problem, written against the contract operators (docs/
+  // DAG_CONTRACT_DESIGN.md, phase 6's seed): an anonymized legal-entity ownership structure --
+  // two funds co-investing through a shared JV (the DAG-ness), a blocker entity, whole-cent
+  // amounts with a largest-remainder penny-exact allocator -- exercising the real flows:
+  // effective-ownership lookthrough, money movement down (blockers pruned, or receiving and
+  // holding), NAV attribution up through the diamond, and CONSERVATION asserted end-to-end in
+  // both directions. Every business rule is a composed lambda; every traversal is the library's.
+  //
+  //   FundA (contributes 1,000,033c)        FundB (contributes 250,000c)
+  //     |-- 100% --> HoldCo                    |
+  //     |             |-- 60% --> JV <-- 40% --+
+  //     |             |           `-- 100% --> OpCo    (holds 80,000,000c)
+  //     |             `-- 100% --> SideCo              (holds 20,000,000c)
+  //     `-- 100% --> Blocker
+  //                   `-- 100% --> BlockedCo           (holds  5,000,000c)
+  [TestClass]
+  public class OwnershipStructureScenarioTests
+  {
+    private sealed record Entity(
+      string Name, bool IsBlocker = false, decimal ContributionCents = 0m, decimal HoldingCents = 0m);
+
+    private static Dag<Entity, decimal> Structure()
+    {
+      var fundA = new DagNode<Entity, decimal>(new Entity("FundA", ContributionCents: 1_000_033m));
+      var fundB = new DagNode<Entity, decimal>(new Entity("FundB", ContributionCents: 250_000m));
+
+      var holdCo = fundA.AddChild(new Entity("HoldCo"), 1.00m);
+      var blocker = fundA.AddChild(new Entity("Blocker", IsBlocker: true), 1.00m);
+
+      var jv = holdCo.AddChild(new Entity("JV"), 0.60m);
+      fundB.AddChild(jv, 0.40m);
+
+      holdCo.AddChild(new Entity("SideCo", HoldingCents: 20_000_000m), 1.00m);
+      jv.AddChild(new Entity("OpCo", HoldingCents: 80_000_000m), 1.00m);
+      blocker.AddChild(new Entity("BlockedCo", HoldingCents: 5_000_000m), 1.00m);
+
+      return new Dag<Entity, decimal>(fundA, fundB);
+    }
+
+    // The work-shaped allocator: whole cents, pro rata by edge weight, largest-remainder
+    // rounding (stable: ties break by target order), and conservation is an invariant, not a
+    // hope -- the dispatched cents always sum to the arrived cents exactly.
+    private static void AllocateWholeCents(
+      decimal arrivedCents,
+      IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
+    {
+      var totalWeight = targets.Sum(target => target.Edge);
+      var floors = new decimal[targets.Count];
+      var remainders = new decimal[targets.Count];
+
+      for (var index = 0; index < targets.Count; index++)
+      {
+        var exact = arrivedCents * targets[index].Edge / totalWeight;
+        floors[index] = decimal.Floor(exact);
+        remainders[index] = exact - floors[index];
+      }
+
+      var leftoverCents = (int)(arrivedCents - floors.Sum());
+      foreach (var index in Enumerable.Range(0, targets.Count)
+        .OrderByDescending(i => remainders[i])
+        .Take(leftoverCents))
+      {
+        floors[index] += 1m;
+      }
+
+      for (var index = 0; index < targets.Count; index++)
+        targets[index].Dispatch(floors[index]);
+    }
+
+    private static void MoveMoneySurvey(
+      DagDispatchNode<Entity, decimal, decimal> node,
+      IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
+      => AllocateWholeCents(node.Value.ContributionCents + node.Inflows.Sum(i => i.Value), targets);
+
+    private static void AttributeUpSurvey(
+      DagDispatchNode<Entity, decimal, decimal> node,
+      IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
+    {
+      var total = node.Value.HoldingCents + node.Inflows.Sum(upflow => upflow.Value);
+      foreach (var target in targets)
+        target.Dispatch(total * target.Edge);
+    }
+
+    private static Dictionary<string, DagDispatchNode<Entity, decimal, decimal>> ByName(
+      Dag<DagDispatchNode<Entity, decimal, decimal>, decimal> dispatched)
+      => dispatched.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
+
+    private static decimal Received(DagDispatchNode<Entity, decimal, decimal> node)
+      => node.Value.ContributionCents + node.Inflows.Sum(i => i.Value);
+
+    // ---------------------------------------------------------------------------------------
+    // Effective ownership (the lookthrough report).
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void EffectiveOwnership_IsFullyAccountedEverywhere()
+    {
+      // Every entity's in-edge fractions sum to 100%, so combined institutional lookthrough
+      // is 1.0 at every entity -- ownership neither leaks nor multiplies through the JV.
+      var ownership = Structure().RootfixScan<Entity, decimal, decimal>(
+        (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
+
+      foreach (var node in ownership.GetTopologicalOrder())
+        Assert.AreEqual(1m, node.Value);
+    }
+
+    [TestMethod]
+    public void EffectiveOwnership_PerFund_ByPruningTheOtherRoot()
+    {
+      // Each fund's own lookthrough: prune the other root; only its component dies, and the
+      // shared JV survives on the remaining route. The scan CARRIES the entity name in its
+      // accumulation -- the report is one composed lambda.
+      static Dictionary<string, decimal> Lookthrough(string prunedFund) => Structure()
+        .PruneBefore(entity => entity.Name == prunedFund)
+        .RootfixScan<Entity, (string Name, decimal Ownership), decimal>(
+          (entity, inflows) => (
+            entity.Name,
+            inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value.Ownership * inflow.Edge)))
+        .GetTopologicalOrder()
+        .ToDictionary(n => n.Value.Name, n => n.Value.Ownership);
+
+      var fundAView = Lookthrough(prunedFund: "FundB");
+      Assert.AreEqual(0.60m, fundAView["JV"], "FundA reaches the JV through HoldCo only");
+      Assert.AreEqual(0.60m, fundAView["OpCo"]);
+      Assert.AreEqual(1m, fundAView["SideCo"]);
+
+      var fundBView = Lookthrough(prunedFund: "FundA");
+      CollectionAssert.AreEquivalent(new[] { "FundB", "JV", "OpCo" }, fundBView.Keys,
+        "FundA's exclusive component is gone; the shared JV survives");
+      Assert.AreEqual(0.40m, fundBView["JV"]);
+      Assert.AreEqual(0.40m, fundBView["OpCo"]);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Money moves down.
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void MoveMoney_BlockersPruned_PennyExact_ConservedThroughTheSharedJV()
+    {
+      // The MoveMoney shape: blockers pruned first, so nothing is ever allocated toward them
+      // -- the allocator renormalizes over LIVE edges by construction, no special case.
+      var moved = ByName(Structure()
+        .PruneBefore(entity => entity.IsBlocker)
+        .RootfixDispatch(0m, MoveMoneySurvey));
+
+      // FundA's whole contribution rides the one live edge; HoldCo splits 60:100 weights
+      // (375,012.375 / 625,020.625 exact) -- the odd cent goes to the larger remainder.
+      Assert.AreEqual(1_000_033m, Received(moved["HoldCo"]));
+      Assert.AreEqual(625_021m, Received(moved["SideCo"]));
+
+      // The JV receives through BOTH routes -- attribution intact -- and forwards whole.
+      CollectionAssert.AreEquivalent(
+        new[] { (375_012m, 0.60m), (250_000m, 0.40m) },
+        moved["JV"].Inflows.Select(i => (i.Value, i.Edge)).ToList());
+      Assert.AreEqual(625_012m, Received(moved["OpCo"]));
+
+      // Conservation, end to end: every contributed cent lands somewhere real.
+      Assert.AreEqual(
+        1_000_033m + 250_000m,
+        Received(moved["OpCo"]) + Received(moved["SideCo"]),
+        "contributions == what the operating companies received, to the cent");
+      Assert.IsFalse(moved.ContainsKey("Blocker"), "pruned");
+      Assert.IsFalse(moved.ContainsKey("BlockedCo"), "unreachable without the blocker");
+    }
+
+    [TestMethod]
+    public void MoveMoney_BlockerReceivesButHolds_TheTrapIsVisible()
+    {
+      // The other blocker policy: PruneAfter -- the blocker takes its allocation and passes
+      // nothing through. Money is trapped there, visibly, and still conserved.
+      var moved = ByName(Structure()
+        .PruneAfter(entity => entity.IsBlocker)
+        .RootfixDispatch(0m, MoveMoneySurvey));
+
+      // FundA now splits 50:50 (equal weights); the odd cent breaks the tie toward HoldCo
+      // (first target -- stable ordering, pinned deliberately).
+      Assert.AreEqual(500_017m, Received(moved["HoldCo"]));
+      Assert.AreEqual(500_016m, Received(moved["Blocker"]), "received -- and held");
+
+      Assert.AreEqual(437_506m, Received(moved["OpCo"]), "187,506 via HoldCo + 250,000 via FundB");
+      Assert.AreEqual(312_511m, Received(moved["SideCo"]));
+      Assert.IsFalse(moved.ContainsKey("BlockedCo"), "nothing passes a holding blocker");
+
+      Assert.AreEqual(
+        1_000_033m + 250_000m,
+        Received(moved["OpCo"]) + Received(moved["SideCo"]) + Received(moved["Blocker"]),
+        "conserved: reached the real economy or trapped at the blocker, to the cent");
+    }
+
+    [TestMethod]
+    public void MoveMoney_EveryIntermediateForwardsExactlyWhatItReceived()
+    {
+      var moved = Structure()
+        .PruneBefore(entity => entity.IsBlocker)
+        .RootfixDispatch(0m, MoveMoneySurvey);
+
+      // Conservation locally, not just at the ends: for every entity with children, what went
+      // out equals what came in (plus its own contribution).
+      foreach (var node in moved.GetTopologicalOrder())
+      {
+        if (node.ChildEdges.Count == 0)
+          continue;
+
+        var sentDown = node.ChildEdges
+          .Sum(edge => edge.Child.Value.Inflows.Where(i => i.Edge == edge.Value).Sum(i => i.Value));
+
+        Assert.AreEqual(Received(node.Value), sentDown, $"conservation at {node.Value.Value.Name}");
+      }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // NAV attributes up.
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void Attribution_NAV_ConservedThroughTheDiamond()
+    {
+      // The upward question the structure exists to answer: each fund's NAV by lookthrough,
+      // with the shared JV attributed per route -- never double-counted.
+      var attributed = ByName(Structure().LeaffixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
+
+      decimal Nav(string fund) => attributed[fund].Inflows.Sum(i => i.Value);
+
+      Assert.AreEqual(73_000_000m, Nav("FundA"), "SideCo 20M + 60% of OpCo's 80M + BlockedCo 5M");
+      Assert.AreEqual(32_000_000m, Nav("FundB"), "40% of OpCo's 80M");
+
+      Assert.AreEqual(
+        105_000_000m,
+        Nav("FundA") + Nav("FundB"),
+        "the funds' NAVs sum to the total holdings -- the diamond did not double-count");
+    }
+
+    [TestMethod]
+    public void Attribution_AgreesWithTheDownwardLookthrough()
+    {
+      // The two directions computing the same truth: OpCo's holding times each fund's
+      // effective ownership equals what attribution delivers from OpCo's subtree.
+      var attributed = ByName(Structure().LeaffixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
+
+      var jvUpflowsToParents = attributed["JV"];
+      Assert.AreEqual(80_000_000m, jvUpflowsToParents.Inflows.Sum(i => i.Value), "OpCo arrives whole at the JV");
+
+      // FundA's JV-route share: 60% of 80M rode the HoldCo edge.
+      CollectionAssert.Contains(
+        attributed["HoldCo"].Inflows.Select(i => (i.Value, i.Edge)).ToList(),
+        (48_000_000m, 0.60m));
+      CollectionAssert.Contains(
+        attributed["FundB"].Inflows.Select(i => (i.Value, i.Edge)).ToList(),
+        (32_000_000m, 0.40m));
+    }
+  }
+}
