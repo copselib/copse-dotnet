@@ -119,8 +119,11 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Do_IsDeferred_TheActionFiresPerEnumeration()
     {
+      // Cast to the contract deliberately: the builder ALSO has an instance Do (the spike's
+      // eager per-node action), and a parameter-discarding lambda binds to it. The two Dos are
+      // semantically different ops sharing a name -- flagged for the graduation naming cleanup.
       var invocations = 0;
-      var wrapped = Diamond().Do(_ => invocations++);
+      var wrapped = ((IForwardDagnumerable<string, decimal>)Diamond()).Do(_ => invocations++);
 
       Assert.AreEqual(0, invocations, "constructing the wrapper runs nothing");
 
