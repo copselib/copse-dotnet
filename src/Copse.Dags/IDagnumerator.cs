@@ -10,10 +10,13 @@ namespace Copse.Dags
   /// convention at the start of enumeration, in topological order, with
   /// <see cref="ParentOrdinal"/> −1 and <see cref="EdgeIndex"/> counting the sources.
   ///
-  /// Nodes are correlated by <see cref="Ordinal"/> — the node's index in the enumeration
-  /// dimension's topological order — never by value identity: user values are never compared or
-  /// hashed. Pre-enumeration convention (the ForestRoot analog, conformance-checked): mode
-  /// DiscoveringNode, Ordinal −1, ParentOrdinal −1, EdgeIndex 0, default Node/Edge.
+  /// Nodes are correlated by <see cref="Ordinal"/> — a stable per-enumeration key, strictly
+  /// increasing along entries — never by value identity: user values are never compared or
+  /// hashed. Density is NOT promised: the builder's walks use topological indices, and operator
+  /// wrappers preserve their source's ordinals (there are no coordinates to relabel), so pruned
+  /// streams carry gaps, harmlessly. Pre-enumeration convention (the ForestRoot analog,
+  /// conformance-checked): mode DiscoveringNode, Ordinal −1, ParentOrdinal −1, EdgeIndex 0,
+  /// default Node/Edge.
   /// </summary>
   public interface IDagnumerator<TNode, TEdge> : IDisposable
   {
@@ -30,7 +33,7 @@ namespace Copse.Dags
     /// <summary>The discovered/entered node's value.</summary>
     TNode Node { get; }
 
-    /// <summary>The node's index in this dimension's topological order — the correlation key.</summary>
+    /// <summary>The node's correlation key: stable for the enumeration, strictly increasing along entries; dense only at the builder.</summary>
     int Ordinal { get; }
 
     /// <summary>Discovery only: the in-edge's payload (default for the conventional source discoveries).</summary>
