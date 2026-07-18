@@ -262,3 +262,12 @@ them.
 5. Operator composition machinery (the tree family's architecture, transplanted).
 6. The showcase: the ownership-structure scenario suite grows into the flagship sample —
    real workload, both dimensions, allocation down and lookthrough up.
+   ✅ SEEDED (2026-07-18, `OwnershipStructureScenarioTests`): two funds co-investing
+   through a shared JV, a blocker, whole-cent largest-remainder allocation. Pinned:
+   lookthrough fully accounted (1.0 everywhere — ownership neither leaks nor multiplies
+   through the JV), per-fund views by pruning the other root, money down under both
+   blocker policies (pruned: renormalization over live edges falls out of the design;
+   receive-and-hold: the trap is visible) with conservation asserted end-to-end AND at
+   every intermediate, and NAV attribution up with the funds' NAVs summing to total
+   holdings — the diamond never double-counts. Every business rule is a composed lambda;
+   every traversal is the library's.
