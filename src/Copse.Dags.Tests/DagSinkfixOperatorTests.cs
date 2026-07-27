@@ -153,11 +153,12 @@ namespace Copse.Dags.Tests
       CollectionAssert.AreEqual(new[] { (700m, 0.70m) }, byEntity["left"].Inflows.Select(i => (i.Value, i.Edge)).ToArray());
       CollectionAssert.AreEqual(new[] { (300m, 0.30m) }, byEntity["right"].Inflows.Select(i => (i.Value, i.Edge)).ToArray());
 
-      // The apex's lookthrough, attributed per route -- no double count. Arrival order is the
-      // pass's (reverse topological: right completes before left).
+      // The apex's lookthrough, attributed per route -- no double count, and each upflow names
+      // its dispatcher (the child, in an upward pass). Arrival order is the pass's (reverse
+      // topological: right completes before left).
       CollectionAssert.AreEqual(
-        new[] { (120m, 0.40m), (420m, 0.60m) },
-        byEntity["apex"].Inflows.Select(i => (i.Value, i.Edge)).ToArray());
+        new[] { (("right", 0m), 120m, 0.40m), (("left", 0m), 420m, 0.60m) },
+        byEntity["apex"].Inflows.Select(i => (i.Dispatcher, i.Value, i.Edge)).ToArray());
       Assert.AreEqual(540m, byEntity["apex"].Inflows.Sum(i => i.Value));
     }
 

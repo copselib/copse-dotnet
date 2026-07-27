@@ -18,7 +18,17 @@
 > Product surface principle, same date: everything an operation can be, it is — an
 > extension on the contract (`Dagnumerable.*`, including `GetTopologicalOrder`'s value view
 > and `GetEdges`); the builder keeps only construction, mutation (sorts), acquisition, and
-> the owned-node `GetTopologicalOrder` view. Companion
+> the owned-node `GetTopologicalOrder` view.
+>
+> **Dispatch provenance (2026-07-27, work-integration-driven):** dispatch inflows are
+> `DagDispatchInflow` and carry their **Dispatcher** — the node that wrote the slot (parent
+> downward, child upward; the seeded inflow's is default, the seed being external to the
+> dag). Provenance comes from the API, never smuggled inside `TDispatch`: the machinery
+> always knows who dispatched, and withholding it forces callers to pollute their payloads
+> with identity fields. The library never compares Dispatcher values; caller-side identity
+> joins are the caller's business, and index-based joins remain `InEdgeIndex`'s job. The
+> scans keep the lean `DagInflow` — accumulations carry no provenance until a consumer
+> needs it. Companion
 > records: [OPERATOR_COMPOSITION_DESIGN.md](OPERATOR_COMPOSITION_DESIGN.md) (the operator
 > architecture this family inherits), [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md)
 > (the promise this family extends), [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md)

@@ -28,7 +28,7 @@ namespace Copse.Dags
         throw new ArgumentNullException(nameof(survey));
 
       var nodesByOrdinal = new Dictionary<int, DagDispatchNode<TNode, TDispatch, TEdge>>();
-      var inflowsByOrdinal = new Dictionary<int, List<DagInflow<TDispatch, TEdge>>>();
+      var inflowsByOrdinal = new Dictionary<int, List<DagDispatchInflow<TNode, TDispatch, TEdge>>>();
       var sourceOrdinals = new HashSet<int>();
       var assembler = new DagAssembler<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge>();
 
@@ -53,9 +53,9 @@ namespace Copse.Dags
             throw new InvalidOperationException($"The edge to '{target.Value}' was not dispatched.");
 
           if (!inflowsByOrdinal.TryGetValue(target.TargetOrdinal, out var inflows))
-            inflowsByOrdinal[target.TargetOrdinal] = inflows = new List<DagInflow<TDispatch, TEdge>>();
+            inflowsByOrdinal[target.TargetOrdinal] = inflows = new List<DagDispatchInflow<TNode, TDispatch, TEdge>>();
 
-          inflows.Add(new DagInflow<TDispatch, TEdge>(target.DispatchedValue, target.Edge));
+          inflows.Add(new DagDispatchInflow<TNode, TDispatch, TEdge>(nodesByOrdinal[dispatchingOrdinal].Value, target.DispatchedValue, target.Edge));
         }
 
         targets = new List<DagDispatchTarget<TNode, TDispatch, TEdge>>();
@@ -84,12 +84,12 @@ namespace Copse.Dags
 
         CloseDispatchBlock();
 
-        IReadOnlyList<DagInflow<TDispatch, TEdge>> nodeInflows =
+        IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>> nodeInflows =
           sourceOrdinals.Contains(walk.Ordinal)
-            ? new[] { new DagInflow<TDispatch, TEdge>(seed, default) }
+            ? new[] { new DagDispatchInflow<TNode, TDispatch, TEdge>(default, seed, default) }
             : inflowsByOrdinal.TryGetValue(walk.Ordinal, out var arrived)
               ? arrived
-              : Array.Empty<DagInflow<TDispatch, TEdge>>();
+              : Array.Empty<DagDispatchInflow<TNode, TDispatch, TEdge>>();
 
         var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(walk.Node, nodeInflows, isSource: sourceOrdinals.Contains(walk.Ordinal));
         nodesByOrdinal[walk.Ordinal] = dispatchNode;

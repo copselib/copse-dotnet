@@ -14,7 +14,7 @@ namespace Copse.Dags
   /// </summary>
   public sealed class DagDispatchNode<TNode, TDispatch, TEdge>
   {
-    internal DagDispatchNode(TNode value, IReadOnlyList<DagInflow<TDispatch, TEdge>> inflows, bool isSource)
+    internal DagDispatchNode(TNode value, IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>> inflows, bool isSource)
     {
       Value = value;
       Inflows = inflows;
@@ -22,7 +22,7 @@ namespace Copse.Dags
     }
 
     public TNode Value { get; }
-    public IReadOnlyList<DagInflow<TDispatch, TEdge>> Inflows { get; }
+    public IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>> Inflows { get; }
 
     /// <summary>True for the walk's sources (no live in-edges) -- where a downward pass seeds and an upward attribution terminates.</summary>
     public bool IsSource { get; }

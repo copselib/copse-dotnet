@@ -215,6 +215,44 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
+    public void SourcefixDispatch_InflowsCarryTheirDispatcher()
+    {
+      // Provenance from the API, never smuggled in the payload: each inflow names the node
+      // that dispatched it. The seeded inflow has no dispatcher -- the seed is external.
+      var moved = Diamond().SourcefixDispatch(1000m, ProRata);
+
+      var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
+
+      Assert.IsNull(byEntity["apex"].Inflows[0].Dispatcher, "the seed arrives from outside the dag");
+      CollectionAssert.AreEqual(new[] { "apex" }, byEntity["left"].Inflows.Select(i => i.Dispatcher).ToArray());
+      CollectionAssert.AreEqual(
+        new[] { ("left", 420m), ("right", 120m) },
+        byEntity["venture"].Inflows.Select(i => (i.Dispatcher, i.Value)).ToArray(),
+        "the venture knows who funded it, per edge");
+    }
+
+    [TestMethod]
+    public void SourcefixDispatch_TheSurveyCanCorrelateInflowsByDispatcher_InCallback()
+    {
+      // The in-callback need that used to force provenance into the payload: the survey reads
+      // WHO sent each inflow straight off the API. (Sinks are never surveyed, so the venture's
+      // arrivals are read post-pass -- the companion pin above.)
+      var arrivals = new List<(string At, string From, decimal Amount)>();
+
+      Diamond().SourcefixDispatch(1000m, (node, targets) =>
+      {
+        foreach (var inflow in node.Inflows)
+          arrivals.Add((node.Value, inflow.Dispatcher, inflow.Value));
+
+        ProRata(node, targets);
+      });
+
+      CollectionAssert.AreEqual(
+        new[] { ("apex", (string)null, 1000m), ("left", "apex", 600m), ("right", "apex", 400m) },
+        arrivals);
+    }
+
+    [TestMethod]
     public void GetEdges_YieldsEveryEdgeOnce_WithBothEndpoints()
     {
       // The "one artifact per relationship" projection: each edge with parent, child, payload,
