@@ -40,7 +40,7 @@ namespace Copse.Dags
             ? arrived
             : Array.Empty<DagInflow<TDispatch, TEdge>>();
 
-        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows);
+        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows, !capture.InEdges.ContainsKey(ordinal));
         nodesByOrdinal[ordinal] = dispatchNode;
 
         if (!capture.InEdges.TryGetValue(ordinal, out var inEdges))

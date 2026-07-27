@@ -91,7 +91,7 @@ namespace Copse.Dags
               ? arrived
               : Array.Empty<DagInflow<TDispatch, TEdge>>();
 
-        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(walk.Node, nodeInflows);
+        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(walk.Node, nodeInflows, sourceOrdinals.Contains(walk.Ordinal));
         nodesByOrdinal[walk.Ordinal] = dispatchNode;
         assembler.AddNode(walk.Ordinal, dispatchNode);
         dispatchingOrdinal = walk.Ordinal;
