@@ -105,7 +105,7 @@ namespace Copse.Dags.Tests
     {
       // Every entity's in-edge fractions sum to 100%, so combined institutional lookthrough
       // is 1.0 at every entity -- ownership neither leaks nor multiplies through the JV.
-      var ownership = Structure().RootfixScan<Entity, decimal, decimal>(
+      var ownership = Structure().SourcefixScan<Entity, decimal, decimal>(
         (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
 
       foreach (var node in ownership.GetTopologicalOrder())
@@ -120,7 +120,7 @@ namespace Copse.Dags.Tests
       // accumulation -- the report is one composed lambda.
       static Dictionary<string, decimal> Lookthrough(string prunedFund) => Structure()
         .PruneBefore(entity => entity.Name == prunedFund)
-        .RootfixScan<Entity, (string Name, decimal Ownership), decimal>(
+        .SourcefixScan<Entity, (string Name, decimal Ownership), decimal>(
           (entity, inflows) => (
             entity.Name,
             inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value.Ownership * inflow.Edge)))
@@ -150,7 +150,7 @@ namespace Copse.Dags.Tests
       // -- the allocator renormalizes over LIVE edges by construction, no special case.
       var moved = ByName(Structure()
         .PruneBefore(entity => entity.IsBlocker)
-        .RootfixDispatch(0m, MoveMoneySurvey));
+        .SourcefixDispatch(0m, MoveMoneySurvey));
 
       // FundA's whole contribution rides the one live edge; HoldCo splits 60:100 weights
       // (375,012.375 / 625,020.625 exact) -- the odd cent goes to the larger remainder.
@@ -179,7 +179,7 @@ namespace Copse.Dags.Tests
       // nothing through. Money is trapped there, visibly, and still conserved.
       var moved = ByName(Structure()
         .PruneAfter(entity => entity.IsBlocker)
-        .RootfixDispatch(0m, MoveMoneySurvey));
+        .SourcefixDispatch(0m, MoveMoneySurvey));
 
       // FundA now splits 50:50 (equal weights); the odd cent breaks the tie toward HoldCo
       // (first target -- stable ordering, pinned deliberately).
@@ -201,7 +201,7 @@ namespace Copse.Dags.Tests
     {
       var moved = Structure()
         .PruneBefore(entity => entity.IsBlocker)
-        .RootfixDispatch(0m, MoveMoneySurvey);
+        .SourcefixDispatch(0m, MoveMoneySurvey);
 
       // Conservation locally, not just at the ends: for every entity with children, what went
       // out equals what came in (plus its own contribution).
@@ -226,7 +226,7 @@ namespace Copse.Dags.Tests
     {
       // The upward question the structure exists to answer: each fund's NAV by lookthrough,
       // with the shared JV attributed per route -- never double-counted.
-      var attributed = ByName(Structure().LeaffixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
+      var attributed = ByName(Structure().SinkfixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
 
       decimal Nav(string fund) => attributed[fund].Inflows.Sum(i => i.Value);
 
@@ -244,7 +244,7 @@ namespace Copse.Dags.Tests
     {
       // The two directions computing the same truth: OpCo's holding times each fund's
       // effective ownership equals what attribution delivers from OpCo's subtree.
-      var attributed = ByName(Structure().LeaffixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
+      var attributed = ByName(Structure().SinkfixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
 
       var jvUpflowsToParents = attributed["JV"];
       Assert.AreEqual(80_000_000m, jvUpflowsToParents.Inflows.Sum(i => i.Value), "OpCo arrives whole at the JV");

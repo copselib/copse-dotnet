@@ -19,7 +19,7 @@ namespace Copse.Dags
     /// ratified): choose the view downstream -- <c>.Select(dispatchNode =&gt; ...)</c> for
     /// values, <see cref="DagDispatchNode{TNode, TDispatch, TEdge}.Inflows"/> for attribution.
     /// </summary>
-    public static Dag<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge> RootfixDispatch<TNode, TDispatch, TEdge>(
+    public static Dag<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge> SourcefixDispatch<TNode, TDispatch, TEdge>(
       this IForwardDagnumerable<TNode, TEdge> source,
       TDispatch seed,
       Action<DagDispatchNode<TNode, TDispatch, TEdge>, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>> survey)
@@ -91,7 +91,7 @@ namespace Copse.Dags
               ? arrived
               : Array.Empty<DagInflow<TDispatch, TEdge>>();
 
-        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(walk.Node, nodeInflows, sourceOrdinals.Contains(walk.Ordinal));
+        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(walk.Node, nodeInflows, isSource: sourceOrdinals.Contains(walk.Ordinal));
         nodesByOrdinal[walk.Ordinal] = dispatchNode;
         assembler.AddNode(walk.Ordinal, dispatchNode);
         dispatchingOrdinal = walk.Ordinal;

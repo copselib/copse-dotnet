@@ -1,11 +1,24 @@
 # DAG traversal contract (design sketch)
 
-> **Status: DESIGN ONLY (2026-07-18, branch `experimental/dag`). Nothing here is built.**
-> This sketches a first-class streaming DAG contract family — the `ITreenumerable` analog
-> for graphs with sharing — to be ratified (or torn apart) before any code. The existing
-> `Copse.Dags` spike (the mutable `Dag`/`DagNode` object model, 53 tests, the money-movement
-> scenario suite) is NOT superseded: it becomes the family's **builder** and its
-> **conformance oracle**, the role `EngineTree` plays for the tree families. Companion
+> **Status: BUILT through phases 1–3 + the scenario seed (2026-07-18) and the surface
+> cleanup (2026-07-27), branch `experimental/dag`; work integration ("DIG") in progress.**
+> Written 2026-07-18 as the design sketch; the ✅ marks below track what has since shipped.
+> The `Copse.Dags` spike (the mutable `Dag`/`DagNode` object model) is NOT superseded: it
+> is the family's **builder**, and its spike-era operators serve as the **conformance
+> oracle**, the role `EngineTree` plays for the tree families.
+>
+> **Vocabulary ratified 2026-07-27 (Jason):** node sets are **sources/sinks** — graph
+> theory's own terms for in-degree/out-degree zero; category theory's initial/terminal
+> objects were considered and REJECTED for accuracy (they require uniqueness — a
+> multi-source DAG has no initial object), and roots/leaves dropped as tree-flavored. The
+> operator prefixes follow: **Sourcefix/Sinkfix** — coined here, deliberately ("as long as
+> we are blazing trails, we might as well be the ones to name the things"); the TREE family
+> keeps Blelloch's rootfix/leaffix, so each family's prefix names the fixed end in its own
+> true vocabulary. Edge endpoints keep quiver speak (source/target) where they appear.
+> Product surface principle, same date: everything an operation can be, it is — an
+> extension on the contract (`Dagnumerable.*`, including `GetTopologicalOrder`'s value view
+> and `GetEdges`); the builder keeps only construction, mutation (sorts), acquisition, and
+> the owned-node `GetTopologicalOrder` view. Companion
 > records: [OPERATOR_COMPOSITION_DESIGN.md](OPERATOR_COMPOSITION_DESIGN.md) (the operator
 > architecture this family inherits), [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md)
 > (the promise this family extends), [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md)
@@ -69,7 +82,7 @@ Identity exists only at the ADAPTER boundary — a DAG source must be able to sa
 child is that node again," which is the one place the no-identity principle bends
 (quarantined exactly like the spike's import-adapter posture).
 
-Roots (in-degree zero) are discovered by convention at the start of enumeration — the
+Sources (in-degree zero) are discovered by convention at the start of enumeration — the
 ForestRoot-sentinel analog. **Dispatch is contiguous** (a stream contract clause, relied on
 by the survey-shaped passes): a node's out-edge discoveries immediately follow its entry as
 one block, in out-edge order — no other node's visits interleave. Wrappers preserve this
@@ -82,12 +95,12 @@ topological** (the transpose's forward), and the operator families sort onto the
 by the direction information flows:
 
 - **Forward** — everything whose inputs are complete at entry: `Select`, the prunes,
-  contraction (see below), `RootfixScan`/`RootfixDispatch`, `Do`, `OrderChildrenBy`
-  (reorders out-edge dispatch). The spike's finding "rootfix cannot stream on a DAG" was
+  contraction (see below), `SourcefixScan`/`SourcefixDispatch`, `Do`, `OrderChildrenBy`
+  (reorders out-edge dispatch). The spike's finding "sourcefix cannot stream on a DAG" was
   true of its re-walk model and is FALSE in this presentation: at entry, all inflows have
-  arrived, so the rootfix family **streams** with O(frontier) state.
-- **Backward** — everything that needs children first: the `Leaffix` family, including the
-  edge-aware `LeaffixDispatch` that closes the spike's deferred upward-diamond semantic
+  arrived, so the sourcefix family **streams** with O(frontier) state.
+- **Backward** — everything that needs children first: the `Sinkfix` family, including the
+  edge-aware `SinkfixDispatch` that closes the spike's deferred upward-diamond semantic
   (per-in-edge attribution up through a shared entity; the JV-lookthrough operator).
 
 Contract shape mirrors the tree split: `I{Forward|Backward}…` narrow interfaces, the
@@ -103,7 +116,7 @@ split is *direction of information flow*. Same architecture, deeper reason.
 
 ## Streaming results that make the family worth building
 
-1. **Rootfix streams** (above): inflows complete at entry.
+1. **Sourcefix streams** (above): inflows complete at entry.
 2. **Prunes stream**: liveness is a forward fold. A node is live iff at least one live
    in-edge from a live parent reaches it — decidable at entry. `PruneBefore` kills node +
    out-edges; `PruneAfter` keeps the node, cuts its out-edges; downstream liveness
@@ -133,10 +146,11 @@ them.
 
 - **Builder / oracle**: the spike's `Dag<TValue,TEdge>`/`DagNode` object model. It already
   computes discovery-biased topological order and carries first-class edge payloads
-  (`DagEdge`/`DagParentEdge`); it adapts to the composite contract directly, and its
-  existing operations (`LeaffixAggregate`, `RootfixAllocate`, the operator clones) are the
-  independent implementations the conformance battery diffs against — the `EngineTree`
-  role. Cycle posture unchanged: construction-time acyclicity by wrapper-node linking,
+  (`DagEdge`/`DagParentEdge`); it adapts to the composite contract directly. Its spike-era
+  operations are the independent implementations the conformance battery diffs against —
+  the `EngineTree` role — and, like `EngineTree`, they live OUT of the product (relocated
+  to the test project as the `Oracle*` extensions, 2026-07-27), so the product carries ONE
+  spelling of every operator: the contract's. Cycle posture unchanged: construction-time acyclicity by wrapper-node linking,
   `DagCycleException` from the live walk. (Whether the family ever needs a posture toward
   cyclic inputs beyond refusing is a domain question — circular holdings exist in the wild
   — but it is out of scope for this contract; a cycle-tolerant condensation view would be
@@ -163,8 +177,8 @@ them.
 | `Invert` | `Transpose` — a free view on composite stores; swaps the dimensions |
 | `Where` child promotion | contraction with caller edge-composition; not day-one |
 | Prunes | forward liveness folds (streaming) |
-| Rootfix family | forward, streaming; `RootfixDispatch` carries edges natively |
-| Leaffix family | backward; edge-aware `LeaffixDispatch` = the upward-diamond dual |
+| Rootfix family | forward, streaming; `SourcefixDispatch` carries edges natively |
+| Leaffix family | backward; edge-aware `SinkfixDispatch` = the upward-diamond dual |
 | `Select` / `Do` / `OrderChildrenBy` | carry directly (`SelectEdges` joins as the edge dual) |
 | Flat stores + serializer | topo array + CSR adjacency; ordinal-referencing text format |
 | Set operations (`Union`, …) | DO NOT carry — they align by position; DAGs have none. Absent, not approximated |
@@ -197,15 +211,15 @@ them.
    `Copse.Dags.Core` etc. mirroring the tree layering. Proposal: single project until
    graduation forces the split (the spike's own no-new-projects rule).
 7. ✅ **The scan/dispatch return shape RATIFIED (Jason, 2026-07-18): option (a).** The
-   theorem: a rootfix result is an ENTRY-TIME fact (it needs every inflow), but the
+   theorem: a sourcefix result is an ENTRY-TIME fact (it needs every inflow), but the
    protocol publishes a node's value at its DISCOVERIES too, which precede entry — so
-   `RootfixScan` cannot honestly return a streaming `IForwardDagnumerable<TResult>`.
+   `SourcefixScan` cannot honestly return a streaming `IForwardDagnumerable<TResult>`.
    (Trees dodge this: one in-edge, and the parent's accumulation is known at scheduling.)
    Ruling: the PASS streams (one walk, each node computed once, at entry); the RESULT is a
    materialized composite — a fresh builder `Dag` — fully composable and affording both
    dimensions (the materialization is an upgrade, `Memoize`-like). The spike's own scans
    already returned this shape; the laziness policy's documented-when-not clause, with the
-   theorem as the documentation. Covers `RootfixDispatch` (tree-side buffer precedent).
+   theorem as the documentation. Covers `SourcefixDispatch` (tree-side buffer precedent).
    Corollary recorded with it: identity for DAGs is irreducible (sharing IS an equality
    proposition); the design canonicalizes it rather than pretending it away — reference
    identity on the library-owned `DagNode` at the builder, ordinals in the stream, foreign
@@ -227,29 +241,29 @@ them.
    not promised). Pinned: exact streams with deliberate ordinal gaps, chains,
    consumer-strategy passthrough, and content differentials against the builder's own
    operator clones — the oracle earning its keep.
-   ✅ 2b (2026-07-18): `RootfixScan` — edge-paired inflows (`DagInflow` closes the spike's
+   ✅ 2b (2026-07-18): `SourcefixScan` — edge-paired inflows (`DagInflow` closes the spike's
    deferred pairing; empty at sources seeds the scan), one streaming pass into a
-   materialized shape-isomorphic composite. `RootfixDispatch` — the survey-shaped
+   materialized shape-isomorphic composite. `SourcefixDispatch` — the survey-shaped
    allocation pass: nodes resolve as `DagDispatchNode` (value + edge-paired inflows;
    sources get the single seeded inflow), surveys receive the COMPLETE live out-edge list
    as exactly-once `DagDispatchTarget` slots (unwritten/double-written throw — the strict
    ethos), outflows land as the targets' inflows. Only LIVE edges are surveyed, so
-   `PruneBefore(blockers).RootfixDispatch(...)` composes the blocker semantics into the
+   `PruneBefore(blockers).SourcefixDispatch(...)` composes the blocker semantics into the
    allocation for free — the MoveMoney shape, streaming until the capture. Pinned:
    effective-ownership lookthrough through the diamond (60%x70% + 40%x30% = 54%), money
    movement with attribution (which amount arrived on which edge), prune composition,
    leaves-never-surveyed, slot strictness, and the builder-scan oracle differential.
-3. ✅ (2026-07-18) The `Leaffix` family — with one refinement the build surfaced: the
-   leaffix OPERATORS ride a FORWARD capture folded in reverse topological order, not the
-   backward walk. Two reasons, both structural: a leaffix result is children-first by
+3. ✅ (2026-07-18) The `Sinkfix` family — with one refinement the build surfaced: the
+   sinkfix OPERATORS ride a FORWARD capture folded in reverse topological order, not the
+   backward walk. Two reasons, both structural: a sinkfix result is children-first by
    definition, so the whole graph precedes the first result regardless of walk (the tree
    family's capture-then-fold pattern); and the result dags must be shape-isomorphic, but
    the backward stream cannot carry a node's out-edge ORDER (it carries in-edge order — the
    transpose's dispatch lists) — original orientation is a forward-stream fact. The
    backward dimension keeps its honest job: direct upward consumption, and the transpose
-   view. `LeaffixScan`: edge-paired child results in out-edge order, empty at sinks seeds,
+   view. `SinkfixScan`: edge-paired child results in out-edge order, empty at sinks seeds,
    shared child computed once but appearing per-edge in each parent's list — the diamond
-   roll-up choice stays the caller's, documented. `LeaffixDispatch` CLOSES the deferred
+   roll-up choice stays the caller's, documented. `SinkfixDispatch` CLOSES the deferred
    upward-diamond semantic: each node decides what travels up EACH in-edge (exactly-once
    targets, discovery order), so what a child sent up an edge IS that parent's share, by
    construction — no double count. No seed, by duality: downward's money is external to
@@ -265,7 +279,7 @@ them.
    ✅ SEEDED (2026-07-18, `OwnershipStructureScenarioTests`): two funds co-investing
    through a shared JV, a blocker, whole-cent largest-remainder allocation. Pinned:
    lookthrough fully accounted (1.0 everywhere — ownership neither leaks nor multiplies
-   through the JV), per-fund views by pruning the other root, money down under both
+   through the JV), per-fund views by pruning the other source, money down under both
    blocker policies (pruned: renormalization over live edges falls out of the design;
    receive-and-hold: the trap is visible) with conservation asserted end-to-end AND at
    every intermediate, and NAV attribution up with the funds' NAVs summing to total

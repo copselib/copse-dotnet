@@ -19,7 +19,7 @@ namespace Copse.Dags
     /// result. Rides one forward capture folded in reverse topological order; returns a
     /// MATERIALIZED composite, shape-isomorphic, decorate-then-choose downstream.
     /// </summary>
-    public static Dag<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge> LeaffixDispatch<TNode, TDispatch, TEdge>(
+    public static Dag<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge> SinkfixDispatch<TNode, TDispatch, TEdge>(
       this IForwardDagnumerable<TNode, TEdge> source,
       Action<DagDispatchNode<TNode, TDispatch, TEdge>, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>> survey)
     {
@@ -40,7 +40,7 @@ namespace Copse.Dags
             ? arrived
             : Array.Empty<DagInflow<TDispatch, TEdge>>();
 
-        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows, !capture.InEdges.ContainsKey(ordinal));
+        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows, isSource: !capture.InEdges.ContainsKey(ordinal));
         nodesByOrdinal[ordinal] = dispatchNode;
 
         if (!capture.InEdges.TryGetValue(ordinal, out var inEdges))

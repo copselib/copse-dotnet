@@ -13,13 +13,13 @@ namespace Copse.Dags
     /// a shared child's (single, reused) result appears in EACH parent's list, and parallel
     /// edges contribute it twice -- the diamond question stays the caller's explicit choice
     /// (combine per-edge results for per-use roll-ups; use
-    /// <see cref="LeaffixDispatch{TNode, TDispatch, TEdge}"/> for attribution that must not
-    /// double-count). Rides one forward capture folded in reverse topological order (a leaffix
+    /// <see cref="SinkfixDispatch{TNode, TDispatch, TEdge}"/> for attribution that must not
+    /// double-count). Rides one forward capture folded in reverse topological order (a sinkfix
     /// result is children-first by definition, so the whole graph precedes the first result;
     /// the backward stream cannot carry per-parent out-edge order, so the capture is also what
     /// keeps the result shape-isomorphic). Returns a MATERIALIZED composite.
     /// </summary>
-    public static Dag<TResult, TEdge> LeaffixScan<TNode, TResult, TEdge>(
+    public static Dag<TResult, TEdge> SinkfixScan<TNode, TResult, TEdge>(
       this IForwardDagnumerable<TNode, TEdge> source,
       Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
     {

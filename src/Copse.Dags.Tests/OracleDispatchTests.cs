@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Copse.Dags.Tests
 {
   [TestClass]
-  public class DispatchTests
+  public class OracleDispatchTests
   {
     // Weighted diamond: apex --0.5--> left, --0.5--> right; left --0.6--> shared, right --0.4--> shared.
     private static (Dag<string, decimal> Dag, DagNode<string, decimal> Apex, DagNode<string, decimal> Left, DagNode<string, decimal> Right, DagNode<string, decimal> Shared) BuildWeightedDiamond()
@@ -23,11 +23,11 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_PairsEveryValueWithWhatArrived_EdgesCarried()
+    public void SourcefixDispatch_PairsEveryValueWithWhatArrived_EdgesCarried()
     {
       var (dag, _, _, _, _) = BuildWeightedDiamond();
 
-      var dispatched = dag.RootfixDispatch<decimal>(
+      var dispatched = dag.OracleSourcefixDispatch<string, decimal, decimal>(
         mergeInflows: (node, inflows) => inflows.Count == 0 ? 100m : inflows.Sum(),
         survey: (node, arrived, children) =>
         {
@@ -45,10 +45,10 @@ namespace Copse.Dags.Tests
 
       // Decoration, not replacement: shape (4 nodes, shared still shared) and payloads carried.
       Assert.AreEqual(4, dispatched.GetTopologicalOrder().Count);
-      Assert.AreEqual(0.5m, dispatched.Roots[0].ChildEdges[0].Value);
+      Assert.AreEqual(0.5m, dispatched.Sources[0].ChildEdges[0].Value);
       Assert.AreSame(
-        dispatched.Roots[0].Children[0].Children[0],
-        dispatched.Roots[0].Children[1].Children[0]);
+        dispatched.Sources[0].Children[0].Children[0],
+        dispatched.Sources[0].Children[1].Children[0]);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ namespace Copse.Dags.Tests
       var (dag, _, _, _, _) = BuildWeightedDiamond();
       var edgeSeenAtSharedByParent = new Dictionary<string, decimal>();
 
-      dag.RootfixDispatch<int>(
+      dag.OracleSourcefixDispatch<string, decimal, int>(
         mergeInflows: (node, inflows) => 0,
         survey: (node, arrived, children) =>
         {
@@ -81,7 +81,7 @@ namespace Copse.Dags.Tests
       var (dag, _, _, _, _) = BuildWeightedDiamond();
       var surveyedValues = new List<string>();
 
-      dag.RootfixDispatch<int>(
+      dag.OracleSourcefixDispatch<string, decimal, int>(
         mergeInflows: (node, inflows) => 0,
         survey: (node, arrived, children) =>
         {
@@ -99,7 +99,7 @@ namespace Copse.Dags.Tests
       var (dag, _, _, _, _) = BuildWeightedDiamond();
 
       var exception = Assert.ThrowsException<InvalidOperationException>(() =>
-        dag.RootfixDispatch<int>(
+        dag.OracleSourcefixDispatch<string, decimal, int>(
           mergeInflows: (node, inflows) => 0,
           survey: (node, arrived, children) => children[0].Dispatch(0))); // later siblings skipped
 
@@ -112,7 +112,7 @@ namespace Copse.Dags.Tests
       var (dag, _, _, _, _) = BuildWeightedDiamond();
 
       var exception = Assert.ThrowsException<InvalidOperationException>(() =>
-        dag.RootfixDispatch<int>(
+        dag.OracleSourcefixDispatch<string, decimal, int>(
           mergeInflows: (node, inflows) => 0,
           survey: (node, arrived, children) =>
           {
@@ -129,7 +129,7 @@ namespace Copse.Dags.Tests
       var (dag, _, _, _, _) = BuildWeightedDiamond();
       var visitedValues = new List<string>();
 
-      var returned = dag.Do(node => visitedValues.Add(node.Value));
+      var returned = dag.OracleDo(node => visitedValues.Add(node.Value));
 
       Assert.AreSame(dag, returned);
       Assert.AreEqual(4, visitedValues.Count); // ran eagerly, once, each node once
@@ -138,7 +138,7 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void WorkShapedAllocator_PlugsIn_BlockersPruned_AppliedWithDo_RolledUpWithLeaffixScan()
+    public void WorkShapedAllocator_PlugsIn_BlockersPruned_AppliedWithDo_RolledUpWithSinkfixScan()
     {
       // The full composed methodology, dispatch-form: the setter-callback allocator drops into
       // the survey with no adapter code -- (child, amount) => child.Dispatch(amount) IS the
@@ -156,8 +156,8 @@ namespace Copse.Dags.Tests
       var structure = new Dag<LegalEntity, decimal>(fund);
 
       var dispatched = structure
-        .PruneBefore(entityNode => entityNode.Value.IsBlocker)
-        .RootfixDispatch<decimal>(
+        .OraclePruneBefore(entityNode => entityNode.Value.IsBlocker)
+        .OracleSourcefixDispatch<LegalEntity, decimal, decimal>(
           mergeInflows: (entityNode, inflows) => inflows.Count == 0 ? 1_000.00m : inflows.Sum(),
           survey: (entityNode, arrivedAmount, children) =>
             AmountAllocator.AllocateWithRounding(arrivedAmount,
@@ -168,7 +168,7 @@ namespace Copse.Dags.Tests
                                                  AmountAllocator.InputValidation.Strict));
 
       // Apply: leaves of the flow graph invest their arrival across portfolios (same allocator).
-      dispatched.Do(node =>
+      dispatched.OracleDo(node =>
       {
         if (node.Children.Count > 0)
           return;
@@ -182,7 +182,7 @@ namespace Copse.Dags.Tests
       });
 
       // Roll up over the SAME dispatched dag.
-      var rolledUp = dispatched.LeaffixScan<decimal>(
+      var rolledUp = dispatched.OracleSinkfixScan<DispatchNode<LegalEntity, decimal>, decimal, decimal>(
         (node, childTotals) => childTotals.Count == 0 ? node.Value.Dispatched : childTotals.Sum());
 
       var dispatchedByEntity = dispatched.GetTopologicalOrder()
@@ -198,7 +198,7 @@ namespace Copse.Dags.Tests
       Assert.AreEqual(250.00m, opCoB.Value.Portfolios[0].Money);
       Assert.AreEqual(0m, trappedOpCo.Value.Portfolios[0].Money);
 
-      Assert.AreEqual(1_000.00m, rolledUp.Roots[0].Value); // exact conservation
+      Assert.AreEqual(1_000.00m, rolledUp.Sources[0].Value); // exact conservation
     }
   }
 }

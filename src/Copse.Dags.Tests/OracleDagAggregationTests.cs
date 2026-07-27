@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Copse.Dags.Tests
 {
   [TestClass]
-  public class DagAggregationTests
+  public class OracleDagAggregationTests
   {
     // The canonical diamond:  apex -> left, right;  left, right -> shared.
     private static (Dag<string, int> Dag, DagNode<string, int> Apex, DagNode<string, int> Left, DagNode<string, int> Right, DagNode<string, int> Shared) BuildDiamond()
@@ -23,12 +23,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixAggregate_ComputesEachNodeExactlyOnce()
+    public void SinkfixAggregate_ComputesEachNodeExactlyOnce()
     {
       var (dag, _, _, _, _) = BuildDiamond();
       var aggregateCallCount = 0;
 
-      dag.LeaffixAggregate<int>((node, childResults) =>
+      dag.OracleSinkfixAggregate<string, int, int>((node, childResults) =>
       {
         aggregateCallCount++;
         return 0;
@@ -38,20 +38,20 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixAggregate_PerUseSemantics_SharedResultAppearsUnderEachParent()
+    public void SinkfixAggregate_PerUseSemantics_SharedResultAppearsUnderEachParent()
     {
       var (dag, apex, _, _, _) = BuildDiamond();
 
       // Subtree node count with tree-unfolding (per-use) semantics: combining the per-edge child
       // results counts the shared node once per path, so the diamond unfolds to 5.
-      var subtreeNodeCounts = dag.LeaffixAggregate<int>(
+      var subtreeNodeCounts = dag.OracleSinkfixAggregate<string, int, int>(
         (node, childResults) => 1 + childResults.Sum());
 
       Assert.AreEqual(5, subtreeNodeCounts[apex]);
     }
 
     [TestMethod]
-    public void LeaffixAggregate_DistinctSemantics_ComesFromTheTopologicalOrder()
+    public void SinkfixAggregate_DistinctSemantics_ComesFromTheTopologicalOrder()
     {
       var (dag, _, _, _, _) = BuildDiamond();
 
@@ -60,36 +60,36 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixAggregate_LeavesReceiveEmptyChildResults()
+    public void SinkfixAggregate_LeavesReceiveEmptyChildResults()
     {
       var (dag, _, _, _, shared) = BuildDiamond();
-      var childResultCountsByNode = dag.LeaffixAggregate<int>(
+      var childResultCountsByNode = dag.OracleSinkfixAggregate<string, int, int>(
         (node, childResults) => childResults.Count);
 
       Assert.AreEqual(0, childResultCountsByNode[shared]);
     }
 
     [TestMethod]
-    public void LeaffixAggregate_ParallelEdges_ContributeTheChildResultTwice()
+    public void SinkfixAggregate_ParallelEdges_ContributeTheChildResultTwice()
     {
       var parent = new DagNode<int, int>(10);
       var child = new DagNode<int, int>(7);
       parent.AddChild(child);
       parent.AddChild(child);
 
-      var sums = new Dag<int, int>(parent).LeaffixAggregate<int>(
+      var sums = new Dag<int, int>(parent).OracleSinkfixAggregate<int, int, int>(
         (node, childResults) => node.Value + childResults.Sum());
 
       Assert.AreEqual(10 + 7 + 7, sums[parent]);
     }
 
     [TestMethod]
-    public void RootfixAllocate_Diamond_SharedChildMergesInflowsFromAllParents()
+    public void SourcefixAllocate_Diamond_SharedChildMergesInflowsFromAllParents()
     {
       var (dag, apex, left, right, shared) = BuildDiamond();
 
       // Seed 100 at the root, split evenly across out-edges at every node.
-      var allocations = dag.RootfixAllocate<double>(
+      var allocations = dag.OracleSourcefixAllocate<string, int, double>(
         mergeInflows: (node, inflows) => node.Parents.Count == 0 ? 100.0 : inflows.Sum(),
         allocateToChildren: (node, allocation) =>
           node.Children.Select(child => allocation / node.Children.Count).ToList());
@@ -101,12 +101,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixAllocate_InflowOrderIsParentsInTopologicalOrder()
+    public void SourcefixAllocate_InflowOrderIsParentsInTopologicalOrder()
     {
       var (dag, _, left, right, shared) = BuildDiamond();
       var inflowSourcesAtShared = new List<string>();
 
-      dag.RootfixAllocate<string>(
+      dag.OracleSourcefixAllocate<string, int, string>(
         mergeInflows: (node, inflows) =>
         {
           if (ReferenceEquals(node, shared))
@@ -121,12 +121,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixAllocate_RootsSeedWithEmptyInflows()
+    public void SourcefixAllocate_RootsSeedWithEmptyInflows()
     {
       var root = new DagNode<string, int>("root");
       var sawEmptyInflowsAtRoot = false;
 
-      new Dag<string, int>(root).RootfixAllocate<int>(
+      new Dag<string, int>(root).OracleSourcefixAllocate<string, int, int>(
         mergeInflows: (node, inflows) =>
         {
           sawEmptyInflowsAtRoot = inflows.Count == 0;
@@ -138,13 +138,13 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixAllocate_WrongOutflowCount_Throws()
+    public void SourcefixAllocate_WrongOutflowCount_Throws()
     {
       var parent = new DagNode<string, int>("parent");
       parent.AddChild("child");
 
       var exception = Assert.ThrowsException<InvalidOperationException>(() =>
-        new Dag<string, int>(parent).RootfixAllocate<int>(
+        new Dag<string, int>(parent).OracleSourcefixAllocate<string, int, int>(
           mergeInflows: (node, inflows) => 0,
           allocateToChildren: (node, allocation) => Array.Empty<int>()));
 
@@ -152,14 +152,14 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixAllocate_ParallelEdges_DeliverOneInflowPerEdge()
+    public void SourcefixAllocate_ParallelEdges_DeliverOneInflowPerEdge()
     {
       var parent = new DagNode<int, int>(0);
       var child = new DagNode<int, int>(0);
       parent.AddChild(child);
       parent.AddChild(child);
 
-      var allocations = new Dag<int, int>(parent).RootfixAllocate<int>(
+      var allocations = new Dag<int, int>(parent).OracleSourcefixAllocate<int, int, int>(
         mergeInflows: (node, inflows) => node.Parents.Count == 0 ? 10 : inflows.Sum(),
         allocateToChildren: (node, allocation) =>
           node.Children.Select(edgeTarget => allocation / node.Children.Count).ToList());
