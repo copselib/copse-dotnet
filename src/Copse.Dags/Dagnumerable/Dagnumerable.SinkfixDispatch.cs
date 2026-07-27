@@ -28,17 +28,17 @@ namespace Copse.Dags
 
       var capture = DagCapture<TNode, TEdge>.From(source);
       var nodesByOrdinal = new Dictionary<int, DagDispatchNode<TNode, TDispatch, TEdge>>();
-      var upflowsByOrdinal = new Dictionary<int, List<DagInflow<TDispatch, TEdge>>>();
+      var upflowsByOrdinal = new Dictionary<int, List<DagDispatchInflow<TNode, TDispatch, TEdge>>>();
       var assembler = new DagAssembler<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge>();
 
       for (var index = capture.Entries.Count - 1; index >= 0; index--)
       {
         var (ordinal, value) = capture.Entries[index];
 
-        IReadOnlyList<DagInflow<TDispatch, TEdge>> upflows =
+        IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>> upflows =
           upflowsByOrdinal.TryGetValue(ordinal, out var arrived)
             ? arrived
-            : Array.Empty<DagInflow<TDispatch, TEdge>>();
+            : Array.Empty<DagDispatchInflow<TNode, TDispatch, TEdge>>();
 
         var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows, isSource: !capture.InEdges.ContainsKey(ordinal));
         nodesByOrdinal[ordinal] = dispatchNode;
@@ -58,9 +58,9 @@ namespace Copse.Dags
             throw new InvalidOperationException($"The edge to '{target.Value}' was not dispatched.");
 
           if (!upflowsByOrdinal.TryGetValue(target.TargetOrdinal, out var parentUpflows))
-            upflowsByOrdinal[target.TargetOrdinal] = parentUpflows = new List<DagInflow<TDispatch, TEdge>>();
+            upflowsByOrdinal[target.TargetOrdinal] = parentUpflows = new List<DagDispatchInflow<TNode, TDispatch, TEdge>>();
 
-          parentUpflows.Add(new DagInflow<TDispatch, TEdge>(target.DispatchedValue, target.Edge));
+          parentUpflows.Add(new DagDispatchInflow<TNode, TDispatch, TEdge>(value, target.DispatchedValue, target.Edge));
         }
       }
 
