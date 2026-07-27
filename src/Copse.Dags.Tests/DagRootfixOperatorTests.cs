@@ -203,6 +203,18 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
+    public void RootfixDispatch_IsRoot_TrueOnlyForSources()
+    {
+      var moved = Diamond().RootfixDispatch(1000m, ProRata);
+      var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
+
+      Assert.IsTrue(byEntity["apex"].IsRoot);
+      Assert.IsFalse(byEntity["left"].IsRoot);
+      Assert.IsFalse(byEntity["right"].IsRoot);
+      Assert.IsFalse(byEntity["venture"].IsRoot);
+    }
+
+    [TestMethod]
     public void RootfixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>

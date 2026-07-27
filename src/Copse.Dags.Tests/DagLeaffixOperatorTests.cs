@@ -198,6 +198,18 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
+    public void LeaffixDispatch_IsRoot_TrueOnlyForSources()
+    {
+      var attributed = ValuedDiamond().LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+      var byEntity = attributed.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
+
+      Assert.IsTrue(byEntity["apex"].IsRoot);
+      Assert.IsFalse(byEntity["left"].IsRoot);
+      Assert.IsFalse(byEntity["right"].IsRoot);
+      Assert.IsFalse(byEntity["venture"].IsRoot);
+    }
+
+    [TestMethod]
     public void LeaffixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>

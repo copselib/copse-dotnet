@@ -14,13 +14,15 @@ namespace Copse.Dags
   /// </summary>
   public sealed class DagDispatchNode<TNode, TDispatch, TEdge>
   {
-    internal DagDispatchNode(TNode value, IReadOnlyList<DagInflow<TDispatch, TEdge>> inflows)
+    internal DagDispatchNode(TNode value, IReadOnlyList<DagInflow<TDispatch, TEdge>> inflows, bool isRoot)
     {
       Value = value;
       Inflows = inflows;
+      IsRoot = isRoot;
     }
 
     public TNode Value { get; }
     public IReadOnlyList<DagInflow<TDispatch, TEdge>> Inflows { get; }
+    public bool IsRoot { get; }
   }
 }
