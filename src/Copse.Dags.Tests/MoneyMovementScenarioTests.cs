@@ -107,8 +107,8 @@ namespace Copse.Dags.Tests
       Dag<LegalEntity, decimal> flowGraph, decimal startingAmount)
     {
       // Pass 1, downward: distribute pro rata by edge ownership, fairness-allocated per edge.
-      // (RootfixAllocate, not RootfixScan: money SPLITS across out-edges; a scan would copy.)
-      var entityAmounts = flowGraph.RootfixAllocate<decimal>(
+      // (SourcefixAllocate, not SourcefixScan: money SPLITS across out-edges; a scan would copy.)
+      var entityAmounts = flowGraph.OracleSourcefixAllocate<LegalEntity, decimal, decimal>(
         mergeInflows: (entityNode, inflows) =>
           inflows.Count == 0 ? startingAmount : inflows.Sum(),
         allocateToChildren: (entityNode, entityAmount) =>
@@ -116,7 +116,7 @@ namespace Copse.Dags.Tests
 
       // Pass 2, upward: leaves of the FLOW GRAPH split their arrival across their portfolios
       // (same fairness algorithm), then every node sums the portfolio-level money beneath it.
-      flowGraph.LeaffixScan<decimal>((entityNode, childTotals) =>
+      flowGraph.OracleSinkfixScan<LegalEntity, decimal, decimal>((entityNode, childTotals) =>
       {
         if (childTotals.Count > 0)
           return childTotals.Sum();
@@ -193,7 +193,7 @@ namespace Copse.Dags.Tests
       // The composition the whole spike is about: the blocker rule is ONE prune in front of the
       // same MoveMoney the no-blocker scenario uses. Surviving edges keep their ownership
       // fractions, and the fairness allocator renormalizes 60/20 across the survivors.
-      var flowGraph = structure.PruneBefore(entityNode => entityNode.Value.IsBlocker);
+      var flowGraph = structure.OraclePruneBefore(entityNode => entityNode.Value.IsBlocker);
       var entityAmounts = MoveMoney(flowGraph, 1_000.00m);
 
       // The flow graph's nodes are fresh wrappers; correlate through the shared entity values.
@@ -226,7 +226,7 @@ namespace Copse.Dags.Tests
 
       var structure = new Dag<LegalEntity, decimal>(fund);
 
-      var flowGraph = structure.PruneBefore(entityNode => entityNode.Value.IsBlocker);
+      var flowGraph = structure.OraclePruneBefore(entityNode => entityNode.Value.IsBlocker);
       var entityAmounts = MoveMoney(flowGraph, 1_000.00m);
 
       var amountsByEntity = entityAmounts.ToDictionary(pair => pair.Key.Value, pair => pair.Value);
@@ -257,7 +257,7 @@ namespace Copse.Dags.Tests
 
       var structure = new Dag<LegalEntity, decimal>(fund);
 
-      var flowGraph = structure.PruneAfter(entityNode => entityNode.Value.IsBlocker);
+      var flowGraph = structure.OraclePruneAfter(entityNode => entityNode.Value.IsBlocker);
       var entityAmounts = MoveMoney(flowGraph, 1_000.00m);
 
       var amountsByEntity = entityAmounts.ToDictionary(pair => pair.Key.Value, pair => pair.Value);

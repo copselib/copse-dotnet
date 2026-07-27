@@ -6,14 +6,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The upward operators (docs/DAG_CONTRACT_DESIGN.md, phase 3): LeaffixScan (per-use
+  // The upward operators (docs/DAG_CONTRACT_DESIGN.md, phase 3): SinkfixScan (per-use
   // roll-ups; the shared child appears in each parent's list -- the documented diamond
-  // choice) and LeaffixDispatch -- the attribution dual that closes the deferred
+  // choice) and SinkfixDispatch -- the attribution dual that closes the deferred
   // upward-diamond semantic: each node decides what travels up each in-edge, so shared
   // subtrees are never double-counted, and the two directions agree: the ownership the
   // downward scan computes is exactly the attribution the upward dispatch delivers.
   [TestClass]
-  public class DagLeaffixOperatorTests
+  public class DagSinkfixOperatorTests
   {
     // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
     private static Dag<string, decimal> Diamond()
@@ -40,16 +40,16 @@ namespace Copse.Dags.Tests
     }
 
     // ---------------------------------------------------------------------------------------
-    // LeaffixScan.
+    // SinkfixScan.
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void LeaffixScan_NodeCount_DoubleCountsTheSharedChild_ByDocumentedChoice()
+    public void SinkfixScan_NodeCount_DoubleCountsTheSharedChild_ByDocumentedChoice()
     {
       // Per-use semantics: the venture's (single, memoized) result rides up BOTH edges, so a
       // naive roll-up counts it twice -- 1 + 2 + 2 = 5 over four nodes. That is the documented
-      // caller's choice; LeaffixDispatch is the anti-double-count tool.
-      var counts = Diamond().LeaffixScan<string, int, decimal>(
+      // caller's choice; SinkfixDispatch is the anti-double-count tool.
+      var counts = Diamond().SinkfixScan<string, int, decimal>(
         (node, childResults) => 1 + childResults.Sum(child => child.Value));
 
       CollectionAssert.AreEqual(
@@ -58,11 +58,11 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixScan_EachNodeComputedOnce_SharedOrNot()
+    public void SinkfixScan_EachNodeComputedOnce_SharedOrNot()
     {
       var computed = new List<string>();
 
-      Diamond().LeaffixScan<string, int, decimal>((node, childResults) =>
+      Diamond().SinkfixScan<string, int, decimal>((node, childResults) =>
       {
         computed.Add(node);
         return 0;
@@ -73,13 +73,13 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixScan_PreservesShapeAndEdges()
+    public void SinkfixScan_PreservesShapeAndEdges()
     {
-      var scanned = Diamond().LeaffixScan<string, string, decimal>((node, _) => node.ToUpperInvariant());
+      var scanned = Diamond().SinkfixScan<string, string, decimal>((node, _) => node.ToUpperInvariant());
       var order = scanned.GetTopologicalOrder();
 
-      Assert.AreEqual(1, scanned.Roots.Count);
-      Assert.AreEqual("APEX", scanned.Roots[0].Value);
+      Assert.AreEqual(1, scanned.Sources.Count);
+      Assert.AreEqual("APEX", scanned.Sources[0].Value);
 
       var edges = order
         .SelectMany(n => n.ChildEdges.Select(e => (Parent: n.Value, Child: e.Child.Value, Edge: e.Value)))
@@ -98,25 +98,25 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixScan_MatchesTheBuilderOracle()
+    public void SinkfixScan_MatchesTheBuilderOracle()
     {
       var contract = Diamond()
-        .LeaffixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value))
+        .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value))
         .GetTopologicalOrder().Select(n => n.Value).ToList();
 
       var oracle = Diamond()
-        .LeaffixScan<int>((node, childResults) => 1 + childResults.Sum())
+        .OracleSinkfixScan<string, decimal, int>((node, childResults) => 1 + childResults.Sum())
         .GetTopologicalOrder().Select(n => n.Value).ToList();
 
       CollectionAssert.AreEqual(oracle, contract);
     }
 
     [TestMethod]
-    public void LeaffixScan_ComposesWithAnUpstreamPrune()
+    public void SinkfixScan_ComposesWithAnUpstreamPrune()
     {
       var counts = Diamond()
         .PruneBefore(entity => entity == "left")
-        .LeaffixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value));
+        .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value));
 
       CollectionAssert.AreEqual(
         new[] { 3, 2, 1 },
@@ -125,7 +125,7 @@ namespace Copse.Dags.Tests
     }
 
     // ---------------------------------------------------------------------------------------
-    // LeaffixDispatch -- the upward-diamond attribution.
+    // SinkfixDispatch -- the upward-diamond attribution.
     // ---------------------------------------------------------------------------------------
 
     // The attribution survey: a node's total (own holding + what its children sent it) travels
@@ -140,9 +140,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixDispatch_AttributesTheVentureToItsUltimateOwner()
+    public void SinkfixDispatch_AttributesTheVentureToItsUltimateOwner()
     {
-      var attributed = ValuedDiamond().LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+      var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
 
       var byEntity = attributed.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
 
@@ -168,12 +168,12 @@ namespace Copse.Dags.Tests
       // fraction the DOWNWARD scan computes, times the holding, equals the attribution the
       // UPWARD dispatch delivers to the apex.
       var ownershipDown = Diamond()
-        .RootfixScan<string, decimal, decimal>((entity, inflows) =>
+        .SourcefixScan<string, decimal, decimal>((entity, inflows) =>
           inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge))
         .GetTopologicalOrder().Last().Value;
 
       var attributedUp = ValuedDiamond()
-        .LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp)
+        .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp)
         .GetTopologicalOrder()
         .Single(n => n.Value.Value.Name == "apex")
         .Value.Inflows.Sum(i => i.Value);
@@ -182,11 +182,11 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixDispatch_SurveysSourcesNever_AndEveryOtherNodeOnce()
+    public void SinkfixDispatch_SurveysSourcesNever_AndEveryOtherNodeOnce()
     {
       var surveyed = new List<string>();
 
-      ValuedDiamond().LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) =>
+      ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) =>
       {
         surveyed.Add(node.Value.Name);
         foreach (var target in targets)
@@ -198,31 +198,31 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void LeaffixDispatch_IsRoot_TrueOnlyForSources()
+    public void SinkfixDispatch_IsRoot_TrueOnlyForSources()
     {
-      var attributed = ValuedDiamond().LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+      var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
       var byEntity = attributed.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
 
-      Assert.IsTrue(byEntity["apex"].IsRoot);
-      Assert.IsFalse(byEntity["left"].IsRoot);
-      Assert.IsFalse(byEntity["right"].IsRoot);
-      Assert.IsFalse(byEntity["venture"].IsRoot);
+      Assert.IsTrue(byEntity["apex"].IsSource);
+      Assert.IsFalse(byEntity["left"].IsSource);
+      Assert.IsFalse(byEntity["right"].IsSource);
+      Assert.IsFalse(byEntity["venture"].IsSource);
     }
 
     [TestMethod]
-    public void LeaffixDispatch_AnUndispatchedTargetThrows()
+    public void SinkfixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        ValuedDiamond().LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) => { }));
+        ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) => { }));
     }
 
     [TestMethod]
-    public void LeaffixDispatch_ComposesWithAnUpstreamPrune()
+    public void SinkfixDispatch_ComposesWithAnUpstreamPrune()
     {
       // Blocker on the left: only the right route attributes upward.
       var attributed = ValuedDiamond()
         .PruneBefore(entity => entity.Name == "left")
-        .LeaffixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+        .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
 
       var apex = attributed.GetTopologicalOrder().Single(n => n.Value.Value.Name == "apex").Value;
 

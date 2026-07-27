@@ -15,7 +15,7 @@ namespace Copse.Dags
     /// lazy dag of results cannot honestly exist (docs/DAG_CONTRACT_DESIGN.md, open question 7,
     /// ratified). The materialization is an upgrade: the result affords both dimensions.
     /// </summary>
-    public static Dag<TResult, TEdge> RootfixScan<TNode, TResult, TEdge>(
+    public static Dag<TResult, TEdge> SourcefixScan<TNode, TResult, TEdge>(
       this IForwardDagnumerable<TNode, TEdge> source,
       Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
     {

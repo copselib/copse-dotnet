@@ -184,7 +184,7 @@ namespace Copse.Dags.Tests
       // logical dag against the builder's own PruneBefore clone -- entered values and the
       // surviving (parent, child, payload) edge multiset.
       var contract = Drain(Diamond().PruneBefore(n => n == "left").GetForwardDagnumerator());
-      var oracle = Diamond().PruneBefore(node => node.Value == "left");
+      var oracle = Diamond().OraclePruneBefore(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
         oracle.GetTopologicalOrder().Select(n => n.Value).ToList(),
@@ -251,7 +251,7 @@ namespace Copse.Dags.Tests
     public void PruneAfter_MatchesTheBuilderOracle_OnContent()
     {
       var contract = Drain(Diamond().PruneAfter(n => n == "left").GetForwardDagnumerator());
-      var oracle = Diamond().PruneAfter(node => node.Value == "left");
+      var oracle = Diamond().OraclePruneAfter(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
         oracle.GetTopologicalOrder().Select(n => n.Value).ToList(),

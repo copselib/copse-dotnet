@@ -7,12 +7,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Copse.Dags.Tests
 {
   // The downward money operators over the contract (docs/DAG_CONTRACT_DESIGN.md, phase 2b):
-  // RootfixScan (edge-paired inflows -- effective-ownership lookthrough is the headline) and
-  // RootfixDispatch (the survey-shaped allocation pass; exactly-once slots; live edges only,
+  // SourcefixScan (edge-paired inflows -- effective-ownership lookthrough is the headline) and
+  // SourcefixDispatch (the survey-shaped allocation pass; exactly-once slots; live edges only,
   // so pruning blockers upstream composes into the allocation). Differentials against the
-  // builder's own RootfixScan close the loop on the oracle.
+  // builder's own SourcefixScan close the loop on the oracle.
   [TestClass]
-  public class DagRootfixOperatorTests
+  public class DagSourcefixOperatorTests
   {
     // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
     private static Dag<string, decimal> Diamond()
@@ -32,13 +32,13 @@ namespace Copse.Dags.Tests
       => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge);
 
     // ---------------------------------------------------------------------------------------
-    // RootfixScan.
+    // SourcefixScan.
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void RootfixScan_ComputesEffectiveOwnership_ThroughTheDiamond()
+    public void SourcefixScan_ComputesEffectiveOwnership_ThroughTheDiamond()
     {
-      var ownership = Diamond().RootfixScan<string, decimal, decimal>(EffectiveOwnership);
+      var ownership = Diamond().SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
 
       CollectionAssert.AreEqual(
         new[] { 1m, 0.60m, 0.40m, 0.54m },
@@ -47,12 +47,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixScan_PreservesShapeAndEdges()
+    public void SourcefixScan_PreservesShapeAndEdges()
     {
-      var scanned = Diamond().RootfixScan<string, decimal, decimal>(EffectiveOwnership);
+      var scanned = Diamond().SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
       var order = scanned.GetTopologicalOrder();
 
-      Assert.AreEqual(1, scanned.Roots.Count);
+      Assert.AreEqual(1, scanned.Sources.Count);
       Assert.AreEqual(4, order.Count);
 
       var edges = order
@@ -72,12 +72,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixScan_ComposesWithAnUpstreamPrune()
+    public void SourcefixScan_ComposesWithAnUpstreamPrune()
     {
       // The blocker composition: with left pruned, the venture's only inflow rides right.
       var ownership = Diamond()
         .PruneBefore(entity => entity == "left")
-        .RootfixScan<string, decimal, decimal>(EffectiveOwnership);
+        .SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
 
       CollectionAssert.AreEqual(
         new[] { 1m, 0.40m, 0.12m },
@@ -86,16 +86,16 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixScan_MatchesTheBuilderOracle()
+    public void SourcefixScan_MatchesTheBuilderOracle()
     {
       // Same accumulation both sides (the oracle's inflows are bare; the contract's carry
       // edges -- align by summing the same product via the node's parent edges).
       var contract = Diamond()
-        .RootfixScan<string, decimal, decimal>(EffectiveOwnership)
+        .SourcefixScan<string, decimal, decimal>(EffectiveOwnership)
         .GetTopologicalOrder().Select(n => n.Value).ToList();
 
       var oracle = Diamond()
-        .RootfixScan<decimal>((node, inflows) =>
+        .OracleSourcefixScan<string, decimal, decimal>((node, inflows) =>
           inflows.Count == 0
             ? 1m
             : inflows.Select((inflow, index) => inflow * node.ParentEdges[index].Value).Sum())
@@ -105,9 +105,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixScan_ResultIsComposite_BothDimensionsAfford()
+    public void SourcefixScan_ResultIsComposite_BothDimensionsAfford()
     {
-      var scanned = Diamond().RootfixScan<string, decimal, decimal>(EffectiveOwnership);
+      var scanned = Diamond().SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
 
       // The materialization is an upgrade: forward AND backward walks both serve.
       using var forward = scanned.GetForwardDagnumerator();
@@ -120,7 +120,7 @@ namespace Copse.Dags.Tests
     }
 
     // ---------------------------------------------------------------------------------------
-    // RootfixDispatch.
+    // SourcefixDispatch.
     // ---------------------------------------------------------------------------------------
 
     // The pro-rata survey: each node forwards its whole arrival, split by edge fraction.
@@ -134,9 +134,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_MovesMoneyThroughTheDiamond()
+    public void SourcefixDispatch_MovesMoneyThroughTheDiamond()
     {
-      var moved = Diamond().RootfixDispatch(1000m, ProRata);
+      var moved = Diamond().SourcefixDispatch(1000m, ProRata);
 
       var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
 
@@ -150,13 +150,13 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_PruningBlockersComposesIntoTheAllocation()
+    public void SourcefixDispatch_PruningBlockersComposesIntoTheAllocation()
     {
       // The MoveMoney shape: blockers pruned first, so their edges are never surveyed and
       // nothing is allocated toward them.
       var moved = Diamond()
         .PruneBefore(entity => entity == "left")
-        .RootfixDispatch(1000m, ProRata);
+        .SourcefixDispatch(1000m, ProRata);
 
       var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
 
@@ -168,11 +168,11 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_SelectsIntoAReceivedView()
+    public void SourcefixDispatch_SelectsIntoAReceivedView()
     {
       // The decorate-then-choose composition: the full pipeline down to plain received totals.
       var received = Diamond()
-        .RootfixDispatch(1000m, ProRata)
+        .SourcefixDispatch(1000m, ProRata)
         .Select(dispatchNode => (Entity: dispatchNode.Value, Received: dispatchNode.Inflows.Sum(i => i.Value)));
 
       var entries = new List<(string, decimal)>();
@@ -187,11 +187,11 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_SurveysLeavesNever_AndEveryOtherNodeOnce()
+    public void SourcefixDispatch_SurveysLeavesNever_AndEveryOtherNodeOnce()
     {
       var surveyed = new List<string>();
 
-      Diamond().RootfixDispatch(1m, (node, targets) =>
+      Diamond().SourcefixDispatch(1m, (node, targets) =>
       {
         surveyed.Add(node.Value);
         foreach (var target in targets)
@@ -203,22 +203,66 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_IsRoot_TrueOnlyForSources()
+    public void SourcefixDispatch_IsRoot_TrueOnlyForSources()
     {
-      var moved = Diamond().RootfixDispatch(1000m, ProRata);
+      var moved = Diamond().SourcefixDispatch(1000m, ProRata);
       var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
 
-      Assert.IsTrue(byEntity["apex"].IsRoot);
-      Assert.IsFalse(byEntity["left"].IsRoot);
-      Assert.IsFalse(byEntity["right"].IsRoot);
-      Assert.IsFalse(byEntity["venture"].IsRoot);
+      Assert.IsTrue(byEntity["apex"].IsSource);
+      Assert.IsFalse(byEntity["left"].IsSource);
+      Assert.IsFalse(byEntity["right"].IsSource);
+      Assert.IsFalse(byEntity["venture"].IsSource);
     }
 
     [TestMethod]
-    public void RootfixDispatch_AnUndispatchedTargetThrows()
+    public void GetEdges_YieldsEveryEdgeOnce_WithBothEndpoints()
+    {
+      // The "one artifact per relationship" projection: each edge with parent, child, payload,
+      // and its index among the child's in-edges (arrival order).
+      CollectionAssert.AreEqual(
+        new[]
+        {
+          ("apex", "left", 0.60m, 0),
+          ("apex", "right", 0.40m, 0),
+          ("left", "venture", 0.70m, 0),
+          ("right", "venture", 0.30m, 1),
+        },
+        Diamond().GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray());
+    }
+
+    [TestMethod]
+    public void GetEdges_OverADispatchResult_BuildsTransfers_InflowsIndexAligned()
+    {
+      // The work-integration pattern: one transfer per edge, the amount recovered from the
+      // child's inflows by IN-EDGE INDEX -- never by payload comparison (user values are never
+      // compared; parallel edges stay unambiguous).
+      var transfers = Diamond()
+        .SourcefixDispatch(1000m, ProRata)
+        .GetEdges()
+        .Select(edge => (
+          From: edge.Parent.Value,
+          To: edge.Child.Value,
+          Fraction: edge.Edge,
+          Amount: edge.Child.Inflows[edge.InEdgeIndex].Value))
+        .ToArray();
+
+      CollectionAssert.AreEqual(
+        new[]
+        {
+          ("apex", "left", 0.60m, 600m),
+          ("apex", "right", 0.40m, 400m),
+          ("left", "venture", 0.70m, 420m),
+          ("right", "venture", 0.30m, 120m),
+        },
+        transfers,
+        "every contributed cent appears as exactly one transfer per relationship");
+    }
+
+    [TestMethod]
+    public void SourcefixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        Diamond().RootfixDispatch(1m, (node, targets) =>
+        Diamond().SourcefixDispatch(1m, (node, targets) =>
         {
           foreach (var target in targets.Skip(1))
             target.Dispatch(0m);
@@ -226,10 +270,10 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void RootfixDispatch_ADoubleDispatchThrows()
+    public void SourcefixDispatch_ADoubleDispatchThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        Diamond().RootfixDispatch(1m, (node, targets) =>
+        Diamond().SourcefixDispatch(1m, (node, targets) =>
         {
           foreach (var target in targets)
             target.Dispatch(0m);

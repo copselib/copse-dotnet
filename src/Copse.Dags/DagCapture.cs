@@ -4,12 +4,12 @@ namespace Copse.Dags
 {
   // The upward passes' shared substrate (docs/DAG_CONTRACT_DESIGN.md, phase 3): ONE forward
   // walk captured into ordinal-keyed structure, folded in reverse entry order (reverse
-  // topological -- children complete before parents). The leaffix family rides this rather
+  // topological -- children complete before parents). The sinkfix family rides this rather
   // than the backward walk for an information-theoretic reason: original orientation and
   // per-parent out-edge ORDER are forward-stream facts -- the backward stream carries a
   // node's in-edge order (its dispatch list is the transpose's), never its out-edge order --
   // and the result dags must be shape-isomorphic to the source. The capture is not a new cost
-  // class: leaffix results are children-first by definition, so the whole graph precedes the
+  // class: sinkfix results are children-first by definition, so the whole graph precedes the
   // first result no matter how it is walked (the tree family's capture-then-fold pattern).
   internal sealed class DagCapture<TNode, TEdge>
   {
