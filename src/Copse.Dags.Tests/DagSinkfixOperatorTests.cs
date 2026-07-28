@@ -210,6 +210,135 @@ namespace Copse.Dags.Tests
       Assert.IsFalse(byEntity["venture"].IsSource);
     }
 
+    // ---------------------------------------------------------------------------------------
+    // SinkfixDispatchEdges -- the group-scoped edge writer.
+    // ---------------------------------------------------------------------------------------
+
+    // The GP shape: a sliver-owner source alongside the main fund, co-owning X; X owns Op.
+    private static Dag<string, decimal> GpSliver()
+    {
+      var gp = new DagNode<string, decimal>("GP");
+      var fund = new DagNode<string, decimal>("Fund");
+      var x = new DagNode<string, decimal>("X");
+      gp.AddChild(x, 0.002m);
+      fund.AddChild(x, 0.998m);
+      x.AddChild("Op", 1m);
+      return new Dag<string, decimal>(gp, fund);
+    }
+
+    // Conditioning: zero the GP outcome, renormalize the survivors -- the caller's algebra,
+    // one lambda, over the complete owner group.
+    private static void ConditionOutGp(
+      DagDispatchNode<string, decimal, decimal> entity,
+      IReadOnlyList<DagDispatchTarget<string, decimal, decimal>> owners)
+    {
+      var gp = owners.Where(o => o.Value == "GP").Sum(o => o.Edge);
+      foreach (var owner in owners)
+        owner.Dispatch(owner.Value == "GP" ? 0m : owner.Edge / (1 - gp));
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_ConditionsTheOwnershipDistribution()
+    {
+      var conditioned = GpSliver().SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp);
+
+      // Edges rewritten in place: GP's stays, at zero, visible; the fund absorbs; nodes and
+      // shape untouched; groups still sum to one.
+      CollectionAssert.AreEquivalent(
+        new[] { ("GP", "X", 0m), ("Fund", "X", 1m), ("X", "Op", 1m) },
+        conditioned.GetEdges().Select(e => (e.Parent, e.Child, e.Edge)).ToList());
+
+      // The distribution invariant survives conditioning: lookthrough is fully accounted.
+      var lookthrough = conditioned.SourcefixScan<string, decimal, decimal>(
+        (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
+
+      foreach (var node in lookthrough.GetTopologicalOrder())
+        Assert.AreEqual(1m, node.Value);
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_MoneyFollowsTheConditionedEdges()
+    {
+      var moved = GpSliver()
+        .SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp)
+        .SourcefixDispatch(1_000m, (node, targets) =>
+        {
+          var arrived = node.Inflows.Sum(i => i.Value);
+          foreach (var target in targets)
+            target.Dispatch(arrived * target.Edge);
+        });
+
+      var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
+
+      CollectionAssert.AreEqual(
+        new[] { ("GP", 0m), ("Fund", 1_000m) },
+        byEntity["X"].Inflows.Select(i => (i.Dispatcher, i.Value)).ToArray(),
+        "the GP edge is live and visibly zero; the fund's carries everything");
+      Assert.AreEqual(1_000m, byEntity["Op"].Inflows.Sum(i => i.Value));
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_TheCascadeIsVisible_ChildrenResolveFirst()
+    {
+      // Reverse topological: Op's survey writes X->Op before X's survey runs, and X sees that
+      // write among its out-edge results -- dispatcher, new payload, old payload.
+      var seenAtX = new List<(string Dispatcher, decimal NewPayload, decimal OldPayload)>();
+
+      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+      {
+        if (entity.Value == "X")
+          seenAtX.AddRange(entity.Inflows.Select(i => (i.Dispatcher, i.Value, i.Edge)));
+
+        ConditionOutGp(entity, owners);
+      });
+
+      CollectionAssert.AreEqual(new[] { ("Op", 1m, 1m) }, seenAtX);
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_ParallelEdges_RewriteDistinctly_OrderPreserved()
+    {
+      var top = new DagNode<string, decimal>("top");
+      var bottom = new DagNode<string, decimal>("bottom");
+      top.AddChild(bottom, 0.25m);
+      top.AddChild(bottom, 0.75m);
+
+      var doubled = new Dag<string, decimal>(top)
+        .SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+        {
+          foreach (var owner in owners)
+            owner.Dispatch(owner.Edge * 2);
+        });
+
+      CollectionAssert.AreEqual(
+        new[] { ("top", "bottom", 0.50m, 0), ("top", "bottom", 1.50m, 1) },
+        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray(),
+        "each parallel edge rewritten from its own slot, per-parent order preserved");
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_SurveysNonSourcesOnce_InReverseTopologicalOrder()
+    {
+      var surveyed = new List<string>();
+
+      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+      {
+        surveyed.Add(entity.Value);
+        foreach (var owner in owners)
+          owner.Dispatch(owner.Edge);
+      });
+
+      CollectionAssert.AreEqual(new[] { "Op", "X" }, surveyed,
+        "sources have no in-edges and are never surveyed; every edge is written exactly once anyway");
+    }
+
+    [TestMethod]
+    public void SinkfixDispatchEdges_AnUndispatchedTargetThrows()
+    {
+      Assert.ThrowsException<InvalidOperationException>(() =>
+        GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) => { }));
+    }
+
     [TestMethod]
     public void SinkfixDispatch_AnUndispatchedTargetThrows()
     {
