@@ -217,13 +217,24 @@ last-entered node; O(1) state).
   absolute-fact consumers see the broken group. Rebalancing (conditioning: drop an outcome,
   renormalize -- P(o|not GP) = P(o)/(1-P(GP))) is caller algebra over the GROUP, which is
   tier 2's business.
-- **Tier 2 (sketched, signatures to ratify before building):** the fix-family edge flavors
-  -- results landing ON edges rather than nodes. `SourcefixScanEdges` (path-cumulative
-  values as payloads), and the dispatch flavors whose dispatched per-edge values BECOME the
-  result payloads (`SourcefixDispatchEdges` etc.) -- the general-purpose group-scoped edge
-  writer, subsuming rebalancing/conditioning without baking any domain in. The earlier
-  `RewriteInEdges` sketch folds into this tier. Also here: the builder's edge-payload
-  setter (mutation-tier completeness).
+- ✅ **`SinkfixDispatchEdges`** (tier 2's first member, 2026-07-28) -- the group-scoped
+  edge WRITER: what each survey dispatches BECOMES the result's edge payloads. Every
+  non-source node is surveyed once in reverse topological order with its complete in-edge
+  group as exactly-once targets (parent value + old payload) and its out-edges'
+  already-rewritten payloads visible as inflows (the cascade; empty at sinks). Sources are
+  never surveyed, yet every edge is written exactly once -- each edge is precisely one
+  non-source node's in-edge. ZERO new types: the dispatch decoration trio is reused with
+  `TDispatch = TEdgeResult`. This is where distribution algebra lives -- conditioning
+  (drop an outcome, renormalize; the GP case, pinned with the sliver-owner fixture:
+  fractions rewritten in place, the group still sums to one, lookthrough still fully
+  accounted, money follows the conditioned edges), rebalancing, normalization -- all
+  caller lambdas; the earlier `RewriteInEdges` sketch is subsumed and retired. Parallel
+  edges rewrite distinctly by slot (per-(parent, child) cursor -- never by payload
+  comparison).
+- **Tier 2 remaining (sketched):** `SourcefixDispatchEdges` (the downward mirror:
+  out-edge groups surveyed in forward order, ancestors' rewrites cascading), the
+  `ScanEdges` flavors (path-cumulative values as payloads), and the builder's edge-payload
+  setter (mutation-tier completeness). Ratify signatures on demand.
 
 ## Open questions
 
