@@ -273,6 +273,20 @@ lovelier than the original.
 Note the tree's dimension split is *traversal strategy over the same information*; the DAG
 split is *direction of information flow*. Same architecture, deeper reason.
 
+**Composition order is data-flow order (clause, 2026-07-28).** `SourcefixScan(f).SinkfixScan(g)`
+means g's inputs ARE f's outputs — fixed by the shape of the expression, like function
+composition; no traversal choice at the consumption end can reorder a pipeline, because each
+stage's output is a value the next stage consumed. The scans do not commute. Companion law:
+**laziness across a scan ends at the first direction reversal** — a sink's sourcefix value
+depends on every path from every source, so nothing is consumable at the sinks until the
+entire forward pass has run; a hypothetically-lazy backward read of a sourcefixed dag would
+stall its first pull while the whole pass ran underneath. Ruling (a) (scans materialize) is
+this law made explicit: cross-direction composition forces full buffering anyway, so the
+materialization boundary is honest where lazy pretense would only hide the cost (the
+tree family shows the same law in miniature: Rootfix streams with DFT, Leaffix buffers;
+`SinkfixScan` is implemented as forward-capture + reverse fold — the reversal's buffer made
+visible).
+
 ## Streaming results that make the family worth building
 
 1. **Sourcefix streams** (above): inflows complete at entry.
@@ -280,6 +294,35 @@ split is *direction of information flow*. Same architecture, deeper reason.
    in-edge from a live parent reaches it — decidable at entry. `PruneBefore` kills node +
    out-edges; `PruneAfter` keeps the node, cuts its out-edges; downstream liveness
    propagates. The spike's recomputed-reachability (a full re-walk) becomes one pass.
+
+   **Prune is TEMPORAL, not spatial (clause ratified 2026-07-28).** "Before"/"after" mean
+   before/after the node in TRAVERSAL order, so the prunes are dimension-relative: on the
+   chain `A→B→C`, the 2×2 is forward-before(B) → `{A}`, forward-after(B) → `{A→B}` (B
+   becomes a sink), backward-before(B) → `{C}`, backward-after(B) → `{B→C}` (B becomes a
+   source) — same predicate, opposite halves removed, no spatial vocabulary needed
+   (conformance-pinned, `DagPruneDirectionTests`). Off the chain the liveness caveat holds:
+   only the matched node's EXCLUSIVE reach in the traversal direction dies. Surface
+   corollary: the prunes therefore CANNOT get a composite (`IDagnumerable`) overload — a
+   composite prune would present a DIFFERENT dag per dimension, violating the
+   one-dag-two-presentations invariant. Dimension-relative operators either name their
+   direction (the Sourcefix/Sinkfix pattern) or stay narrow; the backward prune flavors
+   arrive as `Transpose().Prune…()` when Transpose lands (phase 4) — backward IS the
+   transpose's forward, so one spelling suffices and the direction is explicit at the call
+   site. Dimension-AGNOSTIC operators (`Select`, `Do`, `SelectEdges`, `PruneEdges` — an
+   edge dies in both dimensions or neither) remain composite-eligible.
+
+   **Prune may DISCONNECT the dag, and that is a legal outcome, not a hazard** (noted
+   2026-07-28): multi-source, multi-component dags are first-class from birth (the
+   two-islands corpus fixture), and the liveness fold guarantees the strong invariant that
+   matters — survivors are exactly the live reach from surviving sources, so a forward
+   prune can never orphan a node into an accidental NEW source (a node that loses its last
+   live in-edge dies with it); new sinks (forward-after) and, in the backward dimension,
+   new sources (backward-after) are deliberate outcomes, and component SPLITS (pruning a
+   shared middle node under two sources) leave every stream/assembler invariant intact —
+   topological order restricts to a valid order, ordinals persist as correlation keys with
+   gaps, dispatch contiguity is untouched. Where disconnection carries meaning
+   (conservation holds per component, not across them) it is domain semantics — the
+   caller's business, per the general-purpose rule.
 3. **Contraction streams**: the entity-that-does-not-participate case (a node dissolves;
    flow continues). At entry the node holds all in-edges; composing them with its out-edges
    dispatches (parent, child) edges forward. The library owns the structure; the caller
@@ -396,6 +439,78 @@ last-entered node; O(1) state).
 - **Tier 2 remaining (sketched):** the builder's edge-payload setter (mutation-tier
   completeness). The `ScanEdges` flavors are subsumed by the dispatch twins unless a
   streaming variant earns its keep.
+
+## The arrival protocol (the successor model — direction ratified 2026-07-28)
+
+> **Status:** direction ratified (Jason, 2026-07-28): the grouped model is the DEFAULT
+> presentation, "for all the other reasons" recorded here. Phase 1 BUILT the same day: the
+> grouping layer as an adapter over the existing protocol (`Arrivals/`,
+> `GetArrivalDagnumerator`), conformance-pinned. The Discover/Enter protocol remains the
+> shipped contract — DIG rides it — and the full migration is THICKET's decision, made
+> here while the reasoning is fresh. **Vocabulary PROVISIONAL, pending ratification:**
+> *arrival* (in-edge + far node) / *departure* (out-edge + far node) / *node event*.
+
+**The observation (Jason's):** in a DAG, the natural unit of traversal is not the node or
+the edge but the ARRIVAL — a node together with the in-edge that brought you (in-edge
+relative to the traversal dimension). The existing protocol secretly agrees: a Discover IS
+an (edge, far-node) tuple; the conventional source discovery is a node arriving on a
+synthetic boundary edge; the seeded dispatch inflow is a value arriving on a default edge.
+The type census proves it — `DagInflow`, `DagDispatchInflow`, `DagEdgeContext`, the seeded
+inflows, the conventional discoveries: five spellings of one concept. Trees never surface
+it because the in-edge is unique and implicit, which is why Treenumerable iterates nodes.
+
+**The grouped event.** One element kind, one event per node, in topological order:
+**(in-arrival group, node, out-departure group)** — arrivals carrying (dispatcher, edge
+payload), departures presented as write/verdict slots. This is what every operator built
+so far actually CONSUMES (scans take node+inflows; dispatch surveys take resolved
+node+targets; the walk internally buffers pending arrival groups); Discover/Enter is the
+ungrouped presentation of information whose every consumer immediately regroups it. The
+event can only fire when the group completes — exactly when Enter fires today — so
+Discover/Enter survives as the walk's internal bookkeeping, not the public stream.
+
+**The dialogue survives as verdicts.** The protocol is a conversation, not an enumeration
+(the union-model experiment located exactly this as the property that cannot be given up:
+any model reducing the walk to passive `IEnumerable` iteration loses dispatch, which is
+group-in, verdicts-and-writes-out). Per event the consumer may **sever arrivals** and
+**suppress departures** — per-edge granularity in BOTH directions, subsuming
+`SkipEdge`/`SkipOutEdges` and the dispatch-contiguity clause (which existed so consumers
+could reconstruct groupings from the interleaved stream). **An event cannot be retracted**
+(consumer verdicts shape only the future — the tree family's law): severing ALL of a
+node's arrivals does not un-witness its event; it voids the node's departures, and the
+liveness fold does the rest. Liveness stays a single fold in the walk.
+
+**The bijection (Jason's, 2026-07-28), and why grouped wins anyway.** The grouped and
+flat models are interconvertible — the flat (edge, node)-element model is node-only
+traversal of the dag's **edge subdivision** (every edge reified as a payload-bearing node:
+parent-node → edge-node → child-node), so every edge operation is some node operation on
+the subdivided dag (`SelectEdges` = `Select` restricted to edge-nodes; the edge-dual
+matrix is the node operators' image under subdivision). The discriminated-union element
+type is just the subdivision's node type — the parity bit falls out of the construction,
+no bleeding-edge C# required. But the bijection preserves information, NOT cost: grouped →
+flat is a free streaming explode; flat → grouped requires reassembly and buffering (the
+regrouping tax the current protocol pays inside every operator). Defaults sit where the
+expensive direction never runs. Hence three rulings:
+
+1. **The grouped event is the core model** — one element kind per dimension; transpose
+   swaps the groups; the bijection commutes with transpose (subdivision is self-dual).
+2. **The flat presentations are OPERATORS, not protocol** — `GetEdges` already ships the
+   forward half; the full mixed stream, if ever wanted, is a trivial explode.
+3. **`Subdivide()` deserves to be a first-class operator someday** —
+   `G⟨TNode,TEdge⟩ → G⟨node-or-edge, Unit⟩`: the "edge info lives on nodes" simpler model,
+   recovered COMPOSITIONALLY instead of impoverishing the core. Not day-one surface.
+
+**Correspondence with the flat encoding:** the event shape IS the CSR row — a serialized
+topological stream writes a node's out-edges with the node — so the protocol and the flat
+store (phase 4) become the same picture. Engineering note for the migration: grouped
+events hold lists, and the family resists per-node allocation, so the arrival/departure
+buffers want to be walk-owned and reused, valid until the next event (the flat family's
+read-struct discipline applied to the protocol). Phase 1's adapter allocates per event —
+reference-walk posture, correctness first.
+
+**Sources and sinks fall out:** a source's event has an empty arrival group (no
+conventional-discovery convention needed — the convention existed to make the two-phase
+stream well-formed); a sink's has an empty departure group. Disconnection and
+multi-component dags need nothing special: components interleave in topological order.
 
 ## Open questions
 
@@ -514,6 +629,13 @@ last-entered node; O(1) state).
    origin problem's actual shape, stable foreign keys quarantined at the boundary) is
    its pressure test.
 5. Operator composition machinery (the tree family's architecture, transplanted).
+   5b. The arrival protocol migration (the Thicket candidate — see its section).
+   ✅ Phase 1 (2026-07-28): the grouping layer built as an adapter over the shipped
+   protocol (`ArrivalDagnumerator` via `GetArrivalDagnumerator()` on any forward source —
+   the bijection's cheap direction, made constructive), with sever/suppress verdicts, the
+   layered liveness fold, and the event stream conformance-pinned (`ArrivalProtocolTests`)
+   including the GetEdges-flattening equivalence. Native walk, buffer reuse, and operator
+   migration are Thicket-tier work.
 6. The showcase: the ownership-structure scenario suite grows into the flagship sample —
    real workload, both dimensions, allocation down and lookthrough up.
    ✅ SEEDED (2026-07-18, `OwnershipStructureScenarioTests`): two funds co-investing
