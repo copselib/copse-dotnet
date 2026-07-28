@@ -231,10 +231,20 @@ last-entered node; O(1) state).
   caller lambdas; the earlier `RewriteInEdges` sketch is subsumed and retired. Parallel
   edges rewrite distinctly by slot (per-(parent, child) cursor -- never by payload
   comparison).
-- **Tier 2 remaining (sketched):** `SourcefixDispatchEdges` (the downward mirror:
-  out-edge groups surveyed in forward order, ancestors' rewrites cascading), the
-  `ScanEdges` flavors (path-cumulative values as payloads), and the builder's edge-payload
-  setter (mutation-tier completeness). Ratify signatures on demand.
+- ✅ **`SourcefixDispatchEdges`** (2026-07-28) -- the downward mirror: every non-sink node
+  surveyed once in forward topological order, its OUT-edge group as exactly-once targets
+  (child value + old payload, out-edge order), its IN-edges' already-rewritten payloads
+  visible as inflows (ancestors' cascade; empty at sources). Sinks never surveyed; every
+  edge is exactly one non-sink node's out-edge. Simpler rebuild than its twin -- payloads
+  written per parent's out-edge group index directly, no cursor. Division of labor between
+  the twins, pinned: the upward twin owns in-edge GROUP algebra (conditioning,
+  rebalancing); the downward twin owns path-cumulative edge values (effective ownership
+  carried TO each edge -- the diamond's in-edges rewrite to 0.42/0.12, the 54% landing on
+  the edges) -- which also makes the sketched `ScanEdges` flavors largely redundant: a
+  cumulative scan-onto-edges IS a SourcefixDispatchEdges survey.
+- **Tier 2 remaining (sketched):** the builder's edge-payload setter (mutation-tier
+  completeness). The `ScanEdges` flavors are subsumed by the dispatch twins unless a
+  streaming variant earns its keep.
 
 ## Open questions
 
