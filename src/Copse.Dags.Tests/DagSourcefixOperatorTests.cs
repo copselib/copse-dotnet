@@ -296,6 +296,100 @@ namespace Copse.Dags.Tests
         "every contributed cent appears as exactly one transfer per relationship");
     }
 
+    // ---------------------------------------------------------------------------------------
+    // SourcefixDispatchEdges -- the downward group-scoped edge writer.
+    // ---------------------------------------------------------------------------------------
+
+    // Path-cumulative ownership carried TO each edge: a source owns itself outright; below,
+    // each out-edge's new payload = (sum of the node's rewritten in-edge payloads) x its old
+    // fraction -- the cascade doing sum-over-paths-of-products, landing ON the edges.
+    private static void CumulativeOwnership(
+      DagDispatchNode<string, decimal, decimal> node,
+      IReadOnlyList<DagDispatchTarget<string, decimal, decimal>> targets)
+    {
+      var carried = node.IsSource ? 1m : node.Inflows.Sum(i => i.Value);
+      foreach (var target in targets)
+        target.Dispatch(carried * target.Edge);
+    }
+
+    [TestMethod]
+    public void SourcefixDispatchEdges_WritesPathCumulativeOwnershipOntoEdges()
+    {
+      var cumulative = Diamond().SourcefixDispatchEdges<string, decimal, decimal>(CumulativeOwnership);
+
+      CollectionAssert.AreEqual(
+        new[]
+        {
+          ("apex", "left", 0.60m),
+          ("apex", "right", 0.40m),
+          ("left", "venture", 0.42m),   // 0.60 x 0.70
+          ("right", "venture", 0.12m),  // 0.40 x 0.30
+        },
+        cumulative.GetEdges().Select(e => (e.Parent, e.Child, e.Edge)).ToArray(),
+        "the venture's in-edges now carry effective ownership per route -- summing to the 54%");
+    }
+
+    [TestMethod]
+    public void SourcefixDispatchEdges_TheCascadeIsVisible_AncestorsResolveFirst()
+    {
+      var seenAtVentureParents = new List<(string At, string Dispatcher, decimal NewPayload)>();
+
+      Diamond().SourcefixDispatchEdges<string, decimal, decimal>((node, targets) =>
+      {
+        foreach (var inflow in node.Inflows)
+          seenAtVentureParents.Add((node.Value, inflow.Dispatcher, inflow.Value));
+
+        CumulativeOwnership(node, targets);
+      });
+
+      CollectionAssert.AreEqual(
+        new[] { ("left", "apex", 0.60m), ("right", "apex", 0.40m) },
+        seenAtVentureParents,
+        "surveyed nodes see their in-edges' rewritten payloads; the venture is a sink, never surveyed");
+    }
+
+    [TestMethod]
+    public void SourcefixDispatchEdges_SurveysNonSinksOnce_InTopologicalOrder()
+    {
+      var surveyed = new List<string>();
+
+      Diamond().SourcefixDispatchEdges<string, decimal, decimal>((node, targets) =>
+      {
+        surveyed.Add(node.Value);
+        foreach (var target in targets)
+          target.Dispatch(target.Edge);
+      });
+
+      CollectionAssert.AreEqual(new[] { "apex", "left", "right" }, surveyed);
+    }
+
+    [TestMethod]
+    public void SourcefixDispatchEdges_ParallelEdges_RewriteDistinctly_OrderPreserved()
+    {
+      var top = new DagNode<string, decimal>("top");
+      var bottom = new DagNode<string, decimal>("bottom");
+      top.AddChild(bottom, 0.25m);
+      top.AddChild(bottom, 0.75m);
+
+      var doubled = new Dag<string, decimal>(top)
+        .SourcefixDispatchEdges<string, decimal, decimal>((node, targets) =>
+        {
+          foreach (var target in targets)
+            target.Dispatch(target.Edge * 2);
+        });
+
+      CollectionAssert.AreEqual(
+        new[] { ("top", "bottom", 0.50m, 0), ("top", "bottom", 1.50m, 1) },
+        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray());
+    }
+
+    [TestMethod]
+    public void SourcefixDispatchEdges_AnUndispatchedTargetThrows()
+    {
+      Assert.ThrowsException<InvalidOperationException>(() =>
+        Diamond().SourcefixDispatchEdges<string, decimal, decimal>((node, targets) => { }));
+    }
+
     [TestMethod]
     public void SourcefixDispatch_AnUndispatchedTargetThrows()
     {
