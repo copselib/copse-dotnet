@@ -385,6 +385,7 @@ them.
 | Leaffix family | backward; edge-aware `SinkfixDispatch` = the upward-diamond dual |
 | `Select` / `Do` / `OrderChildrenBy` | carry directly (`SelectEdges` joins as the edge dual) |
 | Flat stores + serializer | topo array + CSR adjacency; ordinal-referencing text format |
+| Pretty print (`ToFormattedLines`) | ✅ carries (2026-07-28, + `ToFormattedString`): DFS expansion from sources, edge payloads on branch lines; SHARING is the new problem and ordinals the answer — in-degree ≥ 2 nodes tagged `#ordinal`, expanded once, `↺` references after |
 | Set operations (`Union`, …) | DO NOT carry — they align by position; DAGs have none. Absent, not approximated |
 | No node identity anywhere | bends ONCE, at the adapter boundary (sources must key their nodes); the stream uses ordinals |
 | Two-phase strategies (`SkipNode`/`SkipDescendants`/`SkipSiblings`) | needs its own design — see open questions; skips become liveness votes, and per-EDGE skips (impossible on trees) want to exist |
