@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Copse.Dags
@@ -18,33 +17,11 @@ namespace Copse.Dags
       this IForwardDagnumerable<TNode, TEdge> source)
     {
       using var walk = source.GetForwardDagnumerator();
-
-      var dispatchingValue = default(TNode);
-      var dispatchingOrdinal = -1;
-      var inEdgeCountsByOrdinal = new Dictionary<int, int>();
+      var relationshipContext = new DagRelationshipTracker<TNode, TEdge>();
 
       while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
-      {
-        if (walk.Mode == DagnumeratorMode.EnteringNode)
-        {
-          dispatchingValue = walk.Node;
-          dispatchingOrdinal = walk.Ordinal;
-          continue;
-        }
-
-        // Conventional source discoveries have no parent -- they are not edges.
-        if (walk.ParentOrdinal < 0)
-          continue;
-
-        if (walk.ParentOrdinal != dispatchingOrdinal)
-          throw new InvalidOperationException(
-            "Non-contiguous dispatch: a discovery arrived from a node other than the last entered one.");
-
-        inEdgeCountsByOrdinal.TryGetValue(walk.Ordinal, out var inEdgeIndex);
-        inEdgeCountsByOrdinal[walk.Ordinal] = inEdgeIndex + 1;
-
-        yield return new DagEdgeContext<TNode, TEdge>(dispatchingValue, walk.Node, walk.Edge, inEdgeIndex);
-      }
+        if (relationshipContext.TryTrack(walk, out var relationship))
+          yield return relationship;
     }
   }
 }
