@@ -195,6 +195,36 @@ them.
 | No node identity anywhere | bends ONCE, at the adapter boundary (sources must key their nodes); the stream uses ordinals |
 | Two-phase strategies (`SkipNode`/`SkipDescendants`/`SkipSiblings`) | needs its own design — see open questions; skips become liveness votes, and per-EDGE skips (impossible on trees) want to exist |
 
+## The edge dual (ratified 2026-07-28; tier 1 built)
+
+The library stays GENERAL-PURPOSE -- no domain policy bakes in -- and the operator surface
+completes symmetrically instead: **for every node operation, an edge operation where one is
+meaningful.** The protocol was always ready (a Discover IS an edge visit; `SkipEdge` is the
+per-edge strategy); this fills the operator column above it. The predicate/selector input is
+the full relationship context (`DagEdgeContext`: parent, child, payload, in-edge index),
+tracked by the shared `DagRelationshipTracker` (dispatch contiguity makes the parent the
+last-entered node; O(1) state).
+
+- ✅ **`SelectEdges`** -- payload map, streaming (a payload is a discovery-time fact); node
+  values, structure, ordinals forwarded unchanged; conventional source discoveries carry no
+  edge and publish default.
+- ✅ **`PruneEdges`** -- ONE operator, no Before/After pair: that split distinguishes what
+  happens to a matched NODE's dependents, and an edge has none -- removal is removal.
+  Streaming via `SkipEdge` + the liveness fold; both endpoints untouched except through
+  liveness. CONSTRAINT CAVEAT, stated on the operator too: pruning does not rebalance
+  siblings. Where payloads form a constrained group (fractions summing to one -- a per-node
+  in-edge group read as a DISTRIBUTION), weight-normalizing flow passes stay correct, but
+  absolute-fact consumers see the broken group. Rebalancing (conditioning: drop an outcome,
+  renormalize -- P(o|not GP) = P(o)/(1-P(GP))) is caller algebra over the GROUP, which is
+  tier 2's business.
+- **Tier 2 (sketched, signatures to ratify before building):** the fix-family edge flavors
+  -- results landing ON edges rather than nodes. `SourcefixScanEdges` (path-cumulative
+  values as payloads), and the dispatch flavors whose dispatched per-edge values BECOME the
+  result payloads (`SourcefixDispatchEdges` etc.) -- the general-purpose group-scoped edge
+  writer, subsuming rebalancing/conditioning without baking any domain in. The earlier
+  `RewriteInEdges` sketch folds into this tier. Also here: the builder's edge-payload
+  setter (mutation-tier completeness).
+
 ## Open questions
 
 1. ✅ **Naming RATIFIED (Jason, 2026-07-18)**: `IDagnumerable` / `IDagnumerator` — the pun

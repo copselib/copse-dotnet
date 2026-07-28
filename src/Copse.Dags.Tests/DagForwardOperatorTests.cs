@@ -262,6 +262,80 @@ namespace Copse.Dags.Tests
     // Chains and consumer strategies through wrappers.
     // ---------------------------------------------------------------------------------------
 
+    // ---------------------------------------------------------------------------------------
+    // The edge dual: SelectEdges / PruneEdges.
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void SelectEdges_MapsPayloads_WithTheFullRelationshipInScope()
+    {
+      // Fractions to basis points, the relationship context available (parent named in the
+      // result proves it): node values, structure, ordinals all forwarded unchanged.
+      var basisPoints = Diamond().SelectEdges(e => $"{e.Parent}->{e.Child}:{(int)(e.Edge * 10_000)}");
+
+      var edges = new List<string>();
+      using (var walk = basisPoints.GetForwardDagnumerator())
+        while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
+          if (walk.Mode == DagnumeratorMode.DiscoveringNode && walk.ParentOrdinal >= 0)
+            edges.Add(walk.Edge);
+
+      CollectionAssert.AreEqual(
+        new[] { "apex->left:6000", "apex->right:4000", "left->venture:7000", "right->venture:3000" },
+        edges);
+    }
+
+    [TestMethod]
+    public void PruneEdges_TargetedRelationship_TheChildSurvivesViaItsOtherEdge()
+    {
+      // The GP shape: sever ONE relationship -- both endpoints untouched, the child lives on
+      // via its other in-edge, and the severed edge never reaches consumers.
+      var pruned = Diamond().PruneEdges(e => e.Parent == "left" && e.Child == "venture");
+
+      CollectionAssert.AreEqual(
+        new[] { ("apex", "left", 0.60m), ("apex", "right", 0.40m), ("right", "venture", 0.30m) },
+        pruned.GetEdges().Select(e => (e.Parent, e.Child, e.Edge)).ToArray());
+
+      var entries = Drain(pruned.GetForwardDagnumerator())
+        .Where(v => v.Mode == DagnumeratorMode.EnteringNode).Select(v => v.Node).ToList();
+      CollectionAssert.AreEqual(new List<string> { "apex", "left", "right", "venture" }, entries,
+        "left keeps existing; the venture keeps existing; only the relationship died");
+    }
+
+    [TestMethod]
+    public void PruneEdges_AllInEdges_TheChildVanishesByLiveness()
+    {
+      var visits = Drain(
+        Diamond().PruneEdges(e => e.Child == "venture").GetForwardDagnumerator());
+
+      Assert.AreEqual(0, visits.Count(v => v.Node == "venture"),
+        "no live in-edge, no entry -- the liveness fold, not the operator, removes the node");
+    }
+
+    [TestMethod]
+    public void PruneEdges_ComposesIntoAWeightNormalizingDispatch()
+    {
+      // The conditioning composition, general-purpose spelling: sever the relationship, then a
+      // weight-NORMALIZING survey renormalizes over the survivors at the right level. (An
+      // absolute-fraction survey would NOT -- rebalancing facts is the caller's group algebra;
+      // the operator only removes.)
+      var moved = Diamond()
+        .PruneEdges(e => e.Parent == "left" && e.Child == "venture")
+        .SourcefixDispatch(1000m, (node, targets) =>
+        {
+          var arrived = node.Inflows.Sum(i => i.Value);
+          var totalWeight = targets.Sum(t => t.Edge);
+          foreach (var target in targets)
+            target.Dispatch(arrived * target.Edge / totalWeight);
+        });
+
+      var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
+
+      Assert.AreEqual(400m, byEntity["venture"].Inflows.Sum(i => i.Value),
+        "the venture's whole funding rides right's edge -- 100% of the surviving weight");
+      Assert.AreEqual(600m, byEntity["left"].Inflows.Sum(i => i.Value),
+        "left still receives -- only its edge to the venture died, not the entity");
+    }
+
     [TestMethod]
     public void PruneThenSelect_Chains()
     {
