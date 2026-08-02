@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785641772121,
+  "lastUpdate": 1785693265524,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -10510,6 +10510,150 @@ window.BENCHMARK_DATA = {
             "value": 175572864.46153846,
             "unit": "ns",
             "range": "± 1877849.8031904183"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4244c8a877eda6ca3e5b1387871daaa6be39724e",
+          "message": "Seed before the lambda: the type-fixer-first unification across the scan/aggregate tiers\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T17:40:57Z",
+          "tree_id": "17289c7972fb3ce5371ac8d891831c4eb8da9c09",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4244c8a877eda6ca3e5b1387871daaa6be39724e"
+        },
+        "date": 1785693255886,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13936319.389583332,
+            "unit": "ns",
+            "range": "± 61364.00993875781"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21048039.708333332,
+            "unit": "ns",
+            "range": "± 192174.61352526414"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3595789.8391927085,
+            "unit": "ns",
+            "range": "± 2861.1027746491436"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3597892.190848214,
+            "unit": "ns",
+            "range": "± 7914.927342371605"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 124070983.21428572,
+            "unit": "ns",
+            "range": "± 479510.9195596397"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 139078893.38333333,
+            "unit": "ns",
+            "range": "± 708576.9896594365"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 44944523.23214286,
+            "unit": "ns",
+            "range": "± 243513.36202448115"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50453087.419999994,
+            "unit": "ns",
+            "range": "± 114111.8656292916"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46792760.83333332,
+            "unit": "ns",
+            "range": "± 90074.01549940482"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 36039975.59693878,
+            "unit": "ns",
+            "range": "± 105648.4411892579"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 27693784.294921875,
+            "unit": "ns",
+            "range": "± 515449.8164372163"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18181835.307291668,
+            "unit": "ns",
+            "range": "± 23068.65435917649"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55455686.366071425,
+            "unit": "ns",
+            "range": "± 405630.7986770434"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 83273703.64285715,
+            "unit": "ns",
+            "range": "± 98702.41810999376"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 13083200.19951923,
+            "unit": "ns",
+            "range": "± 25444.14213446922"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 15698726.33482143,
+            "unit": "ns",
+            "range": "± 26756.143115421644"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 456626000.35714287,
+            "unit": "ns",
+            "range": "± 601230.8614793242"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 564352621.6666666,
+            "unit": "ns",
+            "range": "± 789007.6031012146"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 179030356.59863946,
+            "unit": "ns",
+            "range": "± 880875.156151565"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 203018168.56,
+            "unit": "ns",
+            "range": "± 2047856.560802428"
           }
         ]
       }
