@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785640886647,
+  "lastUpdate": 1785640887086,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -46553,6 +46553,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
             "value": 64249376,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "986c57616d2a2c2d65ed4839f3e7b9656ca52158",
+          "message": "LeaffixScan's delegation premium: measured, accepted, documented\n\nThe dashboard falsified the redesign commit's \"measured equivalent\"\nclaim, precisely where the paired benchmark rows were built to catch\nit: LeaffixScan.Dft_Chain rose 77-79 -> 85.1/85.7 ms across two runs\nwhile LeaffixDispatch.Dft_Chain sits exactly at the old Scan numbers\n(77-79 ms) -- the machinery didn't slow down, the fold-adapter costs\n~8ns per internal node (the survey->accumulator double delegate hop\nplus the ChildAccumulations enumerator, versus the retired direct\nfold-into-slot). Fully exposed only on the all-internal degenerate\nchain; ~1-2% on the triangle, inside that row's wobble; allocation\nidentical everywhere.\n\nAccepted deliberately: well under the Invert specialization bar (1.15x\ntime AND 2.4x alloc), and the one-build argument already paid out once\n(the capture-factory rework landed in a single place). The operator\ndoc and the surface map row now state the premium instead of the\nfalsified equivalence; the Scan-vs-Dispatch benchmark pairs stand\nguard -- reopen if the gap widens.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T02:54:02Z",
+          "tree_id": "a1855cd351505c86b4c6f27999351d4b0db7e998",
+          "url": "https://github.com/copselib/copse-dotnet/commit/986c57616d2a2c2d65ed4839f3e7b9656ca52158"
+        },
+        "date": 1785640886998,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 32161363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 32160652,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 32160592,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 64250190,
             "unit": "bytes"
           }
         ]
