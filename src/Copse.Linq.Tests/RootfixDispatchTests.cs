@@ -55,7 +55,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree(treeString)
         .RootfixDispatch(
           "s",
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
             var lastChildLetter = default(string);
             foreach (var child in children)
@@ -159,9 +159,9 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b(d),c)")
         .RootfixDispatch(
           "s",
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
-            surveyedLetters.Add(parentContext.Node);
+            surveyedLetters.Add(parent);
             foreach (var child in children)
               child.Dispatch(arrival);
           })
@@ -180,7 +180,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch<string, string>(
           "s",
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
             surveyCount++;
             foreach (var child in children)
@@ -203,7 +203,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch<string, string>(
           "s",
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
             foreach (var child in children)
             {
@@ -225,7 +225,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b)")
         .RootfixDispatch<string, string>(
           "s",
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
             // Copies of a target share the exactly-once state -- the second Dispatch throws
             // even though it runs on a fresh copy from a fresh enumeration pass.
@@ -250,8 +250,8 @@ namespace Copse.Linq.Tests
       var labels = TreeSerializer
         .DeserializeDepthFirstTree("a(b),c(d),e")
         .RootfixDispatch(
-          rootContext => $"[{rootContext.Node}@{rootContext.Position.SiblingIndex}]",
-          (parentContext, arrival, children) =>
+          (root, position) => $"[{root}@{position.SiblingIndex}]",
+          (parent, arrival, children) =>
           {
             foreach (var child in children)
               child.Dispatch(arrival + child.Node);
@@ -273,7 +273,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch(
           0,
-          (parentContext, arrival, children) =>
+          (parent, arrival, children) =>
           {
             var childOrdinal = 0;
             foreach (var child in children)

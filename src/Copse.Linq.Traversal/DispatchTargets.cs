@@ -52,6 +52,23 @@ namespace Copse.Linq
       }
     }
 
+    /// <summary>
+    /// The explicit escalation for surveys that want indexing or LINQ over the child group:
+    /// materializes the write-handles into an array -- ONE allocation, visible at the call
+    /// site; the default enumeration path stays allocation-free. The handles share the
+    /// build's backing state, so exactly-once dispatch holds across the copies.
+    /// </summary>
+    public DispatchTarget<TSource, TDispatch>[] ToArray()
+    {
+      var targets = new DispatchTarget<TSource, TDispatch>[Count];
+
+      var index = 0;
+      foreach (var target in this)
+        targets[index++] = target;
+
+      return targets;
+    }
+
     public Enumerator GetEnumerator() =>
       new Enumerator(_Values, _Positions, _SubtreeSizes, _Arrivals, _Written, _ParentIndex);
 
