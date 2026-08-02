@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785693266841,
+  "lastUpdate": 1785693267286,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -84270,6 +84270,102 @@ window.BENCHMARK_DATA = {
             "value": 79616122.5904762,
             "unit": "ns",
             "range": "± 691591.675413532"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4244c8a877eda6ca3e5b1387871daaa6be39724e",
+          "message": "Seed before the lambda: the type-fixer-first unification across the scan/aggregate tiers\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T17:40:57Z",
+          "tree_id": "17289c7972fb3ce5371ac8d891831c4eb8da9c09",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4244c8a877eda6ca3e5b1387871daaa6be39724e"
+        },
+        "date": 1785693267197,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106122797.01666665,
+            "unit": "ns",
+            "range": "± 2700016.794692591"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 91373929.68888888,
+            "unit": "ns",
+            "range": "± 394931.2334517725"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 313505130.4166667,
+            "unit": "ns",
+            "range": "± 564211.9593267728"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 307522820.9230769,
+            "unit": "ns",
+            "range": "± 358718.7606403196"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 190928877.45238093,
+            "unit": "ns",
+            "range": "± 974398.9511178491"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 230934187.0666667,
+            "unit": "ns",
+            "range": "± 3127999.6963287033"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 104665243.54285714,
+            "unit": "ns",
+            "range": "± 254785.4469188529"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 85238072.11904763,
+            "unit": "ns",
+            "range": "± 754119.1831405227"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 480075380.5,
+            "unit": "ns",
+            "range": "± 1486702.513635397"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 501313220.6,
+            "unit": "ns",
+            "range": "± 1502739.2810612225"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 100866946.67999999,
+            "unit": "ns",
+            "range": "± 686087.2849551525"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 80078765.64761905,
+            "unit": "ns",
+            "range": "± 758925.9969809375"
           }
         ]
       }
