@@ -29,8 +29,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .LeaffixAggregate(
-          (accumulate, childAccumulate) => accumulate + childAccumulate,
-          nodeContext => nodeContext.Node)
+          nodeContext => nodeContext.Node,
+          (accumulate, childAccumulate) => accumulate + childAccumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(expected, actual);
@@ -63,12 +63,12 @@ namespace Copse.Linq.Tests
       var hoisted =
         ((IBreadthFirstTreenumerable<string>)tree)
         .Materialize()
-        .LeaffixAggregate(Accumulate, Seed)
+        .LeaffixAggregate(Seed, Accumulate)
         .ToArray();
 
       var direct =
         ((IBreadthFirstTreenumerable<string>)tree)
-        .LeaffixAggregate(Accumulate, Seed)
+        .LeaffixAggregate(Seed, Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(hoisted, direct, $"breadth-first entry disagrees for '{treeString}'");

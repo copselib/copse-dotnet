@@ -14,25 +14,25 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle() =>
       CanonicalTrees.MegaTriangleTree()
-      .RootfixScan((accumulation, _) => accumulation.Node + 1, 0)
+      .RootfixScan(0, (accumulation, _) => accumulation.Node + 1)
       .Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Bft_Triangle() =>
       CanonicalTrees.MegaTriangleTree()
-      .RootfixScan((accumulation, _) => accumulation.Node + 1, 0)
+      .RootfixScan(0, (accumulation, _) => accumulation.Node + 1)
       .Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public void Dft_Chain() =>
       CanonicalTrees.MegaChainTree()
-      .RootfixScan((accumulation, _) => accumulation.Node + 1, 0)
+      .RootfixScan(0, (accumulation, _) => accumulation.Node + 1)
       .Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Bft_Chain() =>
       CanonicalTrees.MegaChainTree()
-      .RootfixScan((accumulation, _) => accumulation.Node + 1, 0)
+      .RootfixScan(0, (accumulation, _) => accumulation.Node + 1)
       .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }

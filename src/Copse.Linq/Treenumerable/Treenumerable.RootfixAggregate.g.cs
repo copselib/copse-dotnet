@@ -16,33 +16,33 @@ namespace Copse.Linq
     /// </summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
     {
       return
         source
-        .RootfixScan(accumulator, seed)
+        .RootfixScan(seed, accumulator)
         .GetLeaves();
     }
 
     /// <summary>The breadth-first dual: leaf accumulations in level order.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
     {
       return
         source
-        .RootfixScan(accumulator, seed)
+        .RootfixScan(seed, accumulator)
         .GetLeaves();
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
-      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, accumulator, seed);
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, seed, accumulator);
 
     /// <summary>
     /// The forest-correct seeding form (see the RootfixScan rootNodeSelector overload): every
@@ -50,32 +50,32 @@ namespace Copse.Linq
     /// </summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
     {
       return
         source
-        .RootfixScan(accumulator, rootNodeSelector)
+        .RootfixScan(rootNodeSelector, accumulator)
         .GetLeaves();
     }
 
     /// <summary>The breadth-first dual: per-root-seeded leaf accumulations in level order.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
     {
       return
         source
-        .RootfixScan(accumulator, rootNodeSelector)
+        .RootfixScan(rootNodeSelector, accumulator)
         .GetLeaves();
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
     public static IEnumerable<TAccumulate> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
-      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, accumulator, rootNodeSelector);
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
   }
 }

@@ -94,8 +94,8 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixDispatch(
-          ConcatSurvey,
-          nodeContext => nodeContext.Node)
+          nodeContext => nodeContext.Node,
+          ConcatSurvey)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -122,14 +122,14 @@ namespace Copse.Linq.Tests
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var viaDisclosureRule = narrowSource.LeaffixDispatch(
-        ConcatSurvey,
-        nodeContext => nodeContext.Node);
+        nodeContext => nodeContext.Node,
+        ConcatSurvey);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
         .LeaffixDispatch(
-          ConcatSurvey,
-          nodeContext => nodeContext.Node);
+          nodeContext => nodeContext.Node,
+          ConcatSurvey);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -159,8 +159,8 @@ namespace Copse.Linq.Tests
         var dispatch = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixDispatch(
-            ConcatSurvey,
-            nodeContext => nodeContext.Node);
+            nodeContext => nodeContext.Node,
+            ConcatSurvey);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),
@@ -184,6 +184,7 @@ namespace Copse.Linq.Tests
       var actual = TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d),e)")
         .LeaffixDispatch(
+          nodeContext => nodeContext.Node,
           (nodeContext, children) =>
           {
             var lastChild = default(string);
@@ -191,8 +192,7 @@ namespace Copse.Linq.Tests
               lastChild = child;
 
             return $"{nodeContext.Node}{lastChild}[{children.Count}]";
-          },
-          nodeContext => nodeContext.Node)
+          })
         .PreorderTraversal()
         .ToArray();
 
@@ -212,14 +212,14 @@ namespace Copse.Linq.Tests
       var actual = TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d),e)")
         .LeaffixDispatch(
+          1,
           (nodeContext, children) =>
           {
             var count = 0;
             foreach (var child in children)
               count += child;
             return count;
-          },
-          1)
+          })
         .PreorderTraversal()
         .ToArray();
 

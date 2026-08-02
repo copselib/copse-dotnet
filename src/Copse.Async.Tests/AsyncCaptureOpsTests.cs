@@ -35,12 +35,12 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          (acc, kid) => acc + "|" + kid,
-          nc => nc.Node);
+          nc => nc.Node,
+          (acc, kid) => acc + "|" + kid);
 
         var async = Async(tree).LeaffixScan(
-          (acc, kid) => acc + "|" + kid,
-          nc => nc.Node);
+          nc => nc.Node,
+          (acc, kid) => acc + "|" + kid);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
@@ -53,12 +53,12 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          (acc, kid) => acc + "|" + kid,
-          nc => nc.Node);
+          nc => nc.Node,
+          (acc, kid) => acc + "|" + kid);
 
         var async = Async(tree).LeaffixScan(
-          (acc, kid) => acc + "|" + kid,
-          nc => nc.Node);
+          nc => nc.Node,
+          (acc, kid) => acc + "|" + kid);
 
         // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
         // rides the same capture (the reverse pin order of the test above).
@@ -72,8 +72,8 @@ namespace Copse.Async.Tests
     {
       foreach (var tree in Trees)
       {
-        var sync = Sync(tree).LeaffixDispatch(ConcatSurvey, nc => nc.Node);
-        var async = Async(tree).LeaffixDispatch(ConcatSurvey, nc => nc.Node);
+        var sync = Sync(tree).LeaffixDispatch(nc => nc.Node, ConcatSurvey);
+        var async = Async(tree).LeaffixDispatch(nc => nc.Node, ConcatSurvey);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");

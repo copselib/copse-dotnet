@@ -258,8 +258,8 @@ namespace Copse.Linq.Tests
 
       var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 
-      var depthFirst = engine.RootfixAggregate(Accumulate, "*").ToArray();
-      var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate(Accumulate, "*").ToArray();
+      var depthFirst = engine.RootfixAggregate("*", Accumulate).ToArray();
+      var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate("*", Accumulate).ToArray();
 
       // Same accumulations, per-dimension order (leaves: preorder vs level order). This tree's
       // leaves all sit on one level, so here the two coincide.

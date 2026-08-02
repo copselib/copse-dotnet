@@ -69,8 +69,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .RootfixScan(
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node,
-          rootContext => rootContext.Node.ToUpperInvariant())
+          rootContext => rootContext.Node.ToUpperInvariant(),
+          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
         .GetTraversal(treeTraversalStrategy)
         .ToArray();
 
@@ -90,7 +90,7 @@ namespace Copse.Linq.Tests
         var seedForm =
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
-          .RootfixScan(Accumulator, "s")
+          .RootfixScan("s", Accumulator)
           .PreorderTraversal()
           .ToArray();
 
@@ -98,8 +98,8 @@ namespace Copse.Linq.Tests
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .RootfixScan(
-            Accumulator,
-            rootContext => Accumulator(new NodeContext<string>("s", NodePosition.ForestRoot), rootContext))
+            rootContext => Accumulator(new NodeContext<string>("s", NodePosition.ForestRoot), rootContext),
+            Accumulator)
           .PreorderTraversal()
           .ToArray();
 
@@ -115,12 +115,12 @@ namespace Copse.Linq.Tests
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d),e(f)")
         .RootfixScan(
+          rootContext => rootContext.Node,
           (parentAccumulation, nodeContext) =>
           {
             sawForestRootParent |= parentAccumulation.Position.IsForestRoot;
             return parentAccumulation.Node + nodeContext.Node;
-          },
-          rootContext => rootContext.Node)
+          })
         .PreorderTraversal()
         .ToArray();
 
@@ -134,8 +134,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a(b,c),d(e)")
         .RootfixAggregate(
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node,
-          rootContext => rootContext.Node.ToUpperInvariant())
+          rootContext => rootContext.Node.ToUpperInvariant(),
+          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "Ab", "Ac", "De" }, leafAccumulations);

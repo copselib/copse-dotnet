@@ -18,14 +18,14 @@ namespace Copse.Benchmarks
 
     [Benchmark]
     public int Triangle() =>
-      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
+      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
 
     [Benchmark]
     public int Chain() =>
-      CanonicalTrees.MegaChainTree().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
+      CanonicalTrees.MegaChainTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
 
     [Benchmark]
     public int Forest() =>
-      CanonicalTrees.MegaForest().LeaffixAggregate(SubtreeNodeCount, _ => 1).Sum();
+      CanonicalTrees.MegaForest().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum();
   }
 }

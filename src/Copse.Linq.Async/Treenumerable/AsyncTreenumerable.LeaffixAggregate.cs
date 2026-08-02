@@ -25,8 +25,8 @@ namespace Copse.Linq
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var accumulations = new List<TAccumulate>();
@@ -91,8 +91,8 @@ namespace Copse.Linq
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       // The capture is the memo's chunked level-order buffer, completed in one pass -- chunked
@@ -167,33 +167,33 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector, cancellationToken);
+      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, nodeSelector, accumulator, cancellationToken);
 
     // The value-only accumulator flavor (arity-split, like Select/Where): a pure combine --
     // (runningAccumulate, childAccumulate) -- for folds that never read the folding node.
     public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregate(source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+      => LeaffixAggregate(source, nodeSelector, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), cancellationToken);
 
     public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregate(source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+      => LeaffixAggregate(source, nodeSelector, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), cancellationToken);
 
     public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, nodeSelector, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), cancellationToken);
 
     private static Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> ContextBlindAccumulator<TSource, TAccumulate>(
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)

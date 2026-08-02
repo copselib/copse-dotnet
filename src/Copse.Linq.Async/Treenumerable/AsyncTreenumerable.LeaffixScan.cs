@@ -34,9 +34,9 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>
     /// The context overload: the combine also sees the FOLDING node (the parent absorbing the
@@ -46,43 +46,43 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
 
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, nodeSelector, accumulator);
 
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
-      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, nodeSelector, accumulator);
 
     // The fold expressed as a survey: start at the node's own projection, combine each child's
     // completed accumulation in sibling order (the view enumerates children left-to-right).
     // This is the whole delegation -- the scan owns no build; LeaffixDispatch's is the one
     // buffer-producing leaffix build.
     private static Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> FoldSurvey<TSource, TAccumulate>(
-      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
       => (nodeContext, children) =>
       {
         var accumulate = nodeSelector(nodeContext);
@@ -92,8 +92,8 @@ namespace Copse.Linq
       };
 
     private static Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> FoldSurvey<TSource, TAccumulate>(
-      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
       => (nodeContext, children) =>
       {
         var accumulate = nodeSelector(nodeContext);

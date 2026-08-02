@@ -48,10 +48,10 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
       => new AsyncTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(() => PreorderDispatch(source, survey, leafNodeSelector)), BufferLayout.Preorder);
+        AsyncTree.Lazy(() => PreorderDispatch(source, leafNodeSelector, survey)), BufferLayout.Preorder);
 
     /// <summary>
     /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
@@ -62,17 +62,17 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
       => new AsyncTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, survey, leafNodeSelector)), BufferLayout.Preorder);
+        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, leafNodeSelector, survey)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, survey, leafNodeSelector);
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
 
     /// <summary>
     /// The fixed-seed form -- RootfixScan's constant-seed overload, mirrored: every leaf starts
@@ -81,21 +81,21 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      TAccumulate seed)
-      => LeaffixDispatch(source, survey, _ => seed);
+      TAccumulate seed,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch(source, _ => seed, survey);
 
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      TAccumulate seed)
-      => LeaffixDispatch(source, survey, _ => seed);
+      TAccumulate seed,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch(source, _ => seed, survey);
 
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      TAccumulate seed)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, survey, _ => seed);
+      TAccumulate seed,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, _ => seed, survey);
 
     // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
     // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
@@ -105,40 +105,40 @@ namespace Copse.Linq
     // needs ~5 replays to break even and taxes the common single-drain case ~8%.
     private static IAsyncTreenumerable<TAccumulate> PreorderDispatch<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
     {
       var surveyed = new AsyncLazyPreorderStore<TAccumulate>(
-        () => BuildLeaffixDispatchAsync(source, survey, leafNodeSelector));
+        () => BuildLeaffixDispatchAsync(source, leafNodeSelector, survey));
 
       return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(surveyed);
     }
 
     private static IAsyncTreenumerable<TAccumulate> PreorderDispatchBreadthFirstSource<TSource, TAccumulate>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
     {
       var surveyed = new AsyncLazyPreorderStore<TAccumulate>(
-        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, survey, leafNodeSelector));
+        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, leafNodeSelector, survey));
 
       return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(surveyed);
     }
 
     private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
     {
       var capture = await source.MaterializeAsync().ConfigureAwait(false);
 
-      return await BuildLeaffixDispatchAsync(capture, survey, leafNodeSelector).ConfigureAwait(false);
+      return await BuildLeaffixDispatchAsync(capture, leafNodeSelector, survey).ConfigureAwait(false);
     }
 
     private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixDispatchAsync<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
     {
       var accumulations = new List<TAccumulate>();
       var subtreeSizes = new List<int>();

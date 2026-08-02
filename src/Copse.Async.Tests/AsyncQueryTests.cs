@@ -99,8 +99,8 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         CollectionAssert.AreEqual(
-          Sync(tree).RootfixAggregate(concat, "").ToList(),
-          await ToList(Async(tree).RootfixAggregate(concat, "")),
+          Sync(tree).RootfixAggregate("", concat).ToList(),
+          await ToList(Async(tree).RootfixAggregate("", concat)),
           $"RootfixAggregate {tree}");
 
         CollectionAssert.AreEqual(
@@ -127,8 +127,8 @@ namespace Copse.Async.Tests
 
       foreach (var tree in Trees)
         CollectionAssert.AreEqual(
-          Sync(tree).LeaffixAggregate(acc, nodeSelector).ToList(),
-          await ToList(Async(tree).LeaffixAggregate(acc, nodeSelector)),
+          Sync(tree).LeaffixAggregate(nodeSelector, acc).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(nodeSelector, acc)),
           $"LeaffixAggregate {tree}");
     }
 

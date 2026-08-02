@@ -19,8 +19,8 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
       => TreenumerableFactory.Create(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
           source.GetBreadthFirstTreenumerator,
@@ -33,8 +33,8 @@ namespace Copse.Linq
 
     public static IDepthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
       => TreenumerableFactory.CreateDepthFirst(
         () => new RootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
           source.GetDepthFirstTreenumerator,
@@ -43,8 +43,8 @@ namespace Copse.Linq
 
     public static IBreadthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      TAccumulate seed)
+      TAccumulate seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
       => TreenumerableFactory.CreateBreadthFirst(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
           source.GetBreadthFirstTreenumerator,
@@ -62,32 +62,32 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
       // The engines still park a sentinel seed, but under this form it is NEVER READ: the wrapped
       // accumulator routes every root to the selector off the sentinel's POSITION alone, and
       // nothing else reads the sentinel's value -- default is the "no seed exists here" placeholder.
-      => source.RootfixScan(AccumulatorWithRootSelector(accumulator, rootNodeSelector), default(TAccumulate));
+      => source.RootfixScan(default(TAccumulate), AccumulatorWithRootSelector(rootNodeSelector, accumulator));
 
     public static IDepthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
-      => source.RootfixScan(AccumulatorWithRootSelector(accumulator, rootNodeSelector), default(TAccumulate));
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      => source.RootfixScan(default(TAccumulate), AccumulatorWithRootSelector(rootNodeSelector, accumulator));
 
     public static IBreadthFirstTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
-      => source.RootfixScan(AccumulatorWithRootSelector(accumulator, rootNodeSelector), default(TAccumulate));
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
+      => source.RootfixScan(default(TAccumulate), AccumulatorWithRootSelector(rootNodeSelector, accumulator));
 
     // The root dispatch, written once here so consumers never hand-roll the forest-root check
     // inside their accumulators: a root (parent context at the virtual forest root, where the
     // engines park the seed) takes the selector; every real parent flows through the accumulator
     // unchanged. The unused seed is default -- the selector branch is the only reader of roots.
     private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> AccumulatorWithRootSelector<TNode, TAccumulate>(
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
-      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector)
+      Func<NodeContext<TNode>, TAccumulate> rootNodeSelector,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator)
       => (parentAccumulation, nodeContext) =>
         parentAccumulation.Position.IsForestRoot
         ? rootNodeSelector(nodeContext)

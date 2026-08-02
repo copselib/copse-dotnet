@@ -87,8 +87,8 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixScan(
-          (accumulate, childAccumulate) => accumulate + childAccumulate,
-          nodeContext => nodeContext.Node)
+          nodeContext => nodeContext.Node,
+          (accumulate, childAccumulate) => accumulate + childAccumulate)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -115,14 +115,14 @@ namespace Copse.Linq.Tests
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var viaDisclosureRule = narrowSource.LeaffixScan(
-        (accumulate, childAccumulate) => accumulate + childAccumulate,
-        nodeContext => nodeContext.Node);
+        nodeContext => nodeContext.Node,
+        (accumulate, childAccumulate) => accumulate + childAccumulate);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
         .LeaffixScan(
-          (accumulate, childAccumulate) => accumulate + childAccumulate,
-          nodeContext => nodeContext.Node);
+          nodeContext => nodeContext.Node,
+          (accumulate, childAccumulate) => accumulate + childAccumulate);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -152,8 +152,8 @@ namespace Copse.Linq.Tests
         var scan = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixScan(
-            (accumulate, childAccumulate) => accumulate + childAccumulate,
-            nodeContext => nodeContext.Node);
+            nodeContext => nodeContext.Node,
+            (accumulate, childAccumulate) => accumulate + childAccumulate);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),
@@ -178,12 +178,12 @@ namespace Copse.Linq.Tests
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d)")
         .LeaffixScan(
+          nodeContext => nodeContext.Node,
           (nodeContext, accumulate, childAccumulate) =>
           {
             foldObservations.Add($"{nodeContext.Node}<-{childAccumulate}");
             return accumulate + childAccumulate;
-          },
-          nodeContext => nodeContext.Node)
+          })
         .PreorderTraversal()
         .ToArray();
 
