@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785636728733,
+  "lastUpdate": 1785636729174,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -106227,6 +106227,145 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
             "value": 50357867,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 184573936,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "dbc44c0a3760640142970776a504f6704832a4b8",
+          "message": "The leaffix redesign: fold and survey tiers, the rootfix duality, one build\n\nChildAccumulations is no longer IEnumerable<T> (nor its enumerator\nIEnumerator<T>): foreach pattern-binds to the struct enumerator at zero\nallocation, while every interface path boxed the view AND its enumerator\nper survey -- the silent per-node allocation this library exists to\navoid. Dropping the interfaces makes that cost unrepresentable rather\nthan documented-and-hoped-against; Count's O(children) hop is disclosed\non the member.\n\nThe old LeaffixScan is renamed LeaffixDispatch, because that is what it\nwas: the sibling-complete survey tier, and the TRUE upward dual of\nRootfixScan. Reversing traversal direction transposes in/out-degree --\ndownward every node receives exactly one value (which is what affords\nrootfix its single binary accumulator), upward it receives n, so the\nper-node callback must see all n arrivals: the survey. Its boundary\npair now mirrors rootfix's exactly (leafNodeSelector | fixed seed; seed\noverload added, canonical use leaf count -- pinned by an executable\ntest as the aggregation the fold tier cannot express).\n\nThe new fold-tier LeaffixScan is map-then-combine: nodeSelector\nprojects EVERY node (the fold's starting value, doubling as the node's\nexactly-once contribution -- with n children the map cannot live inside\nan accumulator that runs per child edge), then children fold in sibling\norder. The accumulator is arity-split like Select/Where: (acc,\nchildAcc) value flavor, (ctx, acc, childAcc) context flavor. And it is\nSUGAR over LeaffixDispatch -- benchmarked head-to-head the two builds\nwere identical in allocation and within noise on time, so by the Invert\nrule (specializations must measure their keep) the bespoke build is\ngone; the Scan benchmark rows now stand guard over the wrapper itself.\nCallback-timing contract documented: once per node / per child edge,\nsibling fold order guaranteed, timing against the source walk\nunspecified.\n\nLeaffixAggregate takes the same shape (nodeSelector, both flavors) but\nkeeps its own fold-into-slot build: per-root streaming with reused\nbuffers is impossible over Dispatch's whole-forest capture. Its\nsubtree-size channel dropped out -- the fold never reads it.\n\nRootfixDispatch lands fresh on the tree side (the experimental/dag\nbranch version was the learning model): survey receives arrival + all\nchildren as exactly-once write-handles through the no-copy\nDispatchTargets view -- struct targets over one whole-build\nwritten-flags array, double/missed Dispatch throws, zero per-node\nallocation, and no IReadOnlyList in the signature (the same boxing trap\nrefused at design time). DispatchNode decorates rather than replaces,\nso flavors are compositions (Select/Do), not overloads.\n\nCodegen fix en route: the ValueTask<X> unwrap regex handled one level\nof nested generics; ValueTask<PreorderArrayStore<DispatchNode<TSource,\nTDispatch>>> is the first depth-two return type. One level deeper;\nregeneration byte-identical for every existing twin.\n\nSuites: Linq 23,929 / engine 459 / async 57, all green; conformance,\ndrift guard, and cross-dimension replay included. Surface map rows\nupdated in step (the living-inventory rule).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T01:56:21Z",
+          "tree_id": "d2b44f40463aca203c9ff863e64156c9a55268a7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dbc44c0a3760640142970776a504f6704832a4b8"
+        },
+        "date": 1785636729091,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739880,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139812,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71356656,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25173966,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16848167,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400856,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21017742,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12587537,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 50021,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905435,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597512,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3363663,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80461964,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 55834892,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80637275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 55686932,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79742340,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 159389477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50360584,
             "unit": "bytes"
           },
           {
