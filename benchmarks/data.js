@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785693271731,
+  "lastUpdate": 1785693272167,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -116927,6 +116927,145 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
             "value": 151019573,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4244c8a877eda6ca3e5b1387871daaa6be39724e",
+          "message": "Seed before the lambda: the type-fixer-first unification across the scan/aggregate tiers\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T17:40:57Z",
+          "tree_id": "17289c7972fb3ce5371ac8d891831c4eb8da9c09",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4244c8a877eda6ca3e5b1387871daaa6be39724e"
+        },
+        "date": 1785693272083,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739747,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139643,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71354228,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25171238,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16848254,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400724,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21014454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12587511,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58217,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230810,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197981,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905411,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597475,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3363663,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80461699,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 51624316,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80636746,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 51476187,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79741469,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 125834946,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50357865,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 151019298,
             "unit": "bytes"
           }
         ]
