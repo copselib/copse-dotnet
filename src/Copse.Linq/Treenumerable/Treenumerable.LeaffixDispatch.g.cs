@@ -136,10 +136,31 @@ namespace Copse.Linq
       return BuildLeaffixDispatch(capture, leafNodeSelector, survey);
     }
 
+    // The pure finisher over the shared fold pass. The Do finisher
+    // (AsyncTreenumerable.LeaffixDoDispatch.cs) rides the same pass with a pass-through values
+    // sink and hands the (value, accumulation) pairs to its store instead -- one build, two
+    // exits, the rootfix pair's arrangement mirrored.
     private static PreorderArrayStore<TAccumulate> BuildLeaffixDispatch<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
       Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey)
+    {
+      var (accumulations, subtreeSizes) =
+        RunLeaffixDispatchPass(source, leafNodeSelector, survey, passThroughValues: null);
+
+      return new PreorderArrayStore<TAccumulate>(accumulations, subtreeSizes);
+    }
+
+    // The shared fold pass, both operators' engine: one depth-first walk folding into flat
+    // pre-order slots, each node closing (leaf via selector, internal via survey over the
+    // ChildAccumulations view) when the walk returns to its depth. The optional values sink
+    // collects the source values in slot order for the Do twin's pass-through result; the pure
+    // caller passes null and pays nothing for the sharing.
+    private static (TAccumulate[] Accumulations, int[] SubtreeSizes) RunLeaffixDispatchPass<TSource, TAccumulate>(
+      IDepthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> survey,
+      List<TSource> passThroughValues)
     {
       var accumulations = new List<TAccumulate>();
       var subtreeSizes = new List<int>();
@@ -172,13 +193,14 @@ namespace Copse.Linq
           path.Push(new PendingNode<TSource>(accumulations.Count, treenumerator.ToNodeContext()));
           accumulations.Add(default); // backfilled when this node closes
           subtreeSizes.Add(0);
+          passThroughValues?.Add(treenumerator.Node);
         }
       }
 
       while (path.Count > 0)
         Close();
 
-      return new PreorderArrayStore<TAccumulate>(accumulations.ToArray(), subtreeSizes.ToArray());
+      return (accumulations.ToArray(), subtreeSizes.ToArray());
     }
   }
 }
