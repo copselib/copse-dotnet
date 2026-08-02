@@ -179,6 +179,31 @@ namespace Copse.Linq
       var written = new bool[nodeCount];
       var results = new DispatchNode<TSource, TDispatch>[nodeCount];
 
+      // Pass 1½: gather the child-index -- each parent's children's preorder indices as one
+      // contiguous slice (CSR over the preorder encoding). Two O(n) hop passes and ~2n ints
+      // buy the survey view an honestly-O(1) Count and indexer (2026-08-02; previously the
+      // view span-hopped with no indexer, and indexing scenarios paid a ToArray per survey).
+      var childOffsets = new int[nodeCount + 1];
+      for (var parentIndex = 0; parentIndex < nodeCount; parentIndex++)
+      {
+        var hopEnd = parentIndex + subtreeSizes[parentIndex];
+        for (var childIndex = parentIndex + 1; childIndex < hopEnd; childIndex += subtreeSizes[childIndex])
+          childOffsets[parentIndex + 1]++;
+      }
+
+      for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
+        childOffsets[nodeIndex + 1] += childOffsets[nodeIndex];
+
+      // Parents are filled in ascending order, which IS offset order, so one cursor suffices.
+      var childIndices = new int[childOffsets[nodeCount]];
+      var childCursor = 0;
+      for (var parentIndex = 0; parentIndex < nodeCount; parentIndex++)
+      {
+        var hopEnd = parentIndex + subtreeSizes[parentIndex];
+        for (var childIndex = parentIndex + 1; childIndex < hopEnd; childIndex += subtreeSizes[childIndex])
+          childIndices[childCursor++] = childIndex;
+      }
+
       for (var rootIndex = 0; rootIndex < nodeCount; rootIndex += subtreeSizes[rootIndex])
         arrivals[rootIndex] = rootNodeSelector(values[rootIndex], positions[rootIndex]);
 
@@ -192,14 +217,13 @@ namespace Copse.Linq
         survey(
           values[nodeIndex],
           arrivals[nodeIndex],
-          new DispatchTargets<TSource, TDispatch>(values, positions, subtreeSizes, arrivals, written, nodeIndex));
+          new DispatchTargets<TSource, TDispatch>(values, positions, childIndices, childOffsets, arrivals, written, nodeIndex));
 
         // The survey returned; every child must have been dispatched to exactly once.
-        var subtreeEnd = nodeIndex + subtreeSizes[nodeIndex];
-        for (var childIndex = nodeIndex + 1; childIndex < subtreeEnd; childIndex += subtreeSizes[childIndex])
-          if (!written[childIndex])
+        for (var slot = childOffsets[nodeIndex]; slot < childOffsets[nodeIndex + 1]; slot++)
+          if (!written[childIndices[slot]])
             throw new InvalidOperationException(
-              $"The survey completed without dispatching to '{values[childIndex]}'; every child must receive exactly one Dispatch.");
+              $"The survey completed without dispatching to '{values[childIndices[slot]]}'; every child must receive exactly one Dispatch.");
       }
 
       // The result store rides the SAME subtree-size array the capture produced -- the shape is

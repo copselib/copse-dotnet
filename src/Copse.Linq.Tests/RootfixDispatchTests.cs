@@ -15,9 +15,9 @@ namespace Copse.Linq.Tests
   {
     // Corpus dispatch rule: every child receives (parent's arrival + the LAST sibling's letter).
     // Reading the last sibling is deliberate -- it proves the survey saw the COMPLETE child list
-    // before the first child's value was fixed, which is the operator's defining guarantee. With
-    // the no-copy targets view that read is its own hop pass (the view has no indexer -- a
-    // specific sibling costs one pass to find and one to dispatch, both span hops).
+    // before the first child's value was fixed, which is the operator's defining guarantee. The
+    // read rides the view's O(1) indexer (2026-08-02: the build's child-index replaced span
+    // hopping), so the corpus also exercises Count and the indexer at every surveyed node.
     // Roots arrive at the seed "s"; expected labels are (arrival + own letter).
     public static IEnumerable<object[]> GetTestData()
     {
@@ -57,9 +57,7 @@ namespace Copse.Linq.Tests
           "s",
           (parent, arrival, children) =>
           {
-            var lastChildLetter = default(string);
-            foreach (var child in children)
-              lastChildLetter = child.Node;
+            var lastChildLetter = children[children.Count - 1].Node;
 
             foreach (var child in children)
               child.Dispatch(arrival + lastChildLetter);
@@ -284,6 +282,47 @@ namespace Copse.Linq.Tests
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "a:0", "b:1", "c:2" }, pairs);
+    }
+
+    // The view's O(1) surface, pinned: Count and the indexer agree with enumeration, bounds
+    // throw, and exactly-once dispatch holds ACROSS handle copies (two fetches of children[i]
+    // share the build's written-flags -- the second Dispatch throws).
+    [TestMethod]
+    public void DispatchTargets_IndexerCountAndSharedBackingState()
+    {
+      var surveyedParents = 0;
+
+      TreeSerializer
+        .DeserializeDepthFirstTree("a(b,c(e,f,g),d)")
+        .RootfixDispatch(
+          "s",
+          (parent, arrival, children) =>
+          {
+            surveyedParents++;
+
+            var enumerated = new System.Collections.Generic.List<string>();
+            foreach (var child in children)
+              enumerated.Add(child.Node);
+
+            Assert.AreEqual(enumerated.Count, children.Count);
+            for (var index = 0; index < children.Count; index++)
+              Assert.AreEqual(enumerated[index], children[index].Node);
+
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => children[children.Count]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => children[-1]);
+
+            children[0].Dispatch(arrival + children[0].Node);
+            Assert.ThrowsException<InvalidOperationException>(
+              () => children[0].Dispatch("again"),
+              "a second Dispatch through a fresh handle copy must throw -- the backing state is shared");
+
+            for (var index = 1; index < children.Count; index++)
+              children[index].Dispatch(arrival + children[index].Node);
+          })
+        .PreorderTraversal()
+        .ToArray();
+
+      Assert.AreEqual(2, surveyedParents, "a and c are the only internal nodes");
     }
   }
 }
