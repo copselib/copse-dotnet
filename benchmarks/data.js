@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785638405928,
+  "lastUpdate": 1785638406342,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -45833,6 +45833,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
             "value": 64249540,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "fade5000310d5b39731ce02e2b7f0ec658c952f6",
+          "message": "RootfixDispatch pass 1 dissolves into the capture factory's raw form\n\nPreorderCapture gains CaptureRaw(source, sideChannelSelector): the\nnaked encoding -- the same one walk, returned as the raw\npreorder-parallel arrays (values, subtree sizes, side channel) instead\nof wrapped in a store, for consumers that weave a DIFFERENT store out\nof it. The two store-returning overloads become thin wrappers over the\nsame core, so the codebase still has exactly one capture loop.\n\nRootfixDispatch was the consumer: its pass 1 re-derived the\nDFS-into-flat-arrays skeleton with a List<NodeContext> path -- the last\ncopy of the loop the factory was hoisted to kill. Now pass 1 is one\nCaptureRaw call with positions riding the side channel (values and\npositions stored once each, never as doubled-up contexts), pass 2\nreconstructs survey contexts by index, DispatchTargets rides the raw\narrays instead of List indexers, and the result store reuses the\ncapture's subtree-size array outright -- the shape is the source's,\nonly the values changed.\n\nMeasured on the new RootfixDispatch benchmark rows (~1M-node corpus):\nallocation -25% on the triangle (81 -> 61 MB, Gen2 halved), -4..6% on\nthe chains; time -8..20% within short-run error bars. The win is the\nfactory's RefAppendOnlyList chunked growth replacing List doubling,\nplus one less ToArray -- landed once, where Invert and OrderChildrenBy\nalready ride it.\n\nRaw_form_matches_the_store_form pins the wrapper relationship in\nPreorderCaptureTests. Suites: Linq 23,930 / engine 459 / async 57, all\ngreen.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T02:27:39Z",
+          "tree_id": "ca777c84b53b051f262d1d851a2ae5a4788ed9c7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fade5000310d5b39731ce02e2b7f0ec658c952f6"
+        },
+        "date": 1785638406254,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 32161363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 32160666,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 32160697,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 64249588,
             "unit": "bytes"
           }
         ]
