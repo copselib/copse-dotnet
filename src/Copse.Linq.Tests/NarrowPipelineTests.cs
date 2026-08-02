@@ -253,13 +253,13 @@ namespace Copse.Linq.Tests
     {
       const string tree = "a(b(d,e,f),c(g,h,i))";
 
-      string Accumulate(NodeContext<string> accumulate, NodeContext<string> nodeContext)
-        => accumulate.Node + nodeContext.Node;
+      string Accumulate(ScanResult<string, string> parent, string node)
+        => parent.Accumulate + node;
 
       var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 
-      var depthFirst = engine.RootfixAggregate("*", Accumulate).ToArray();
-      var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate("*", Accumulate).ToArray();
+      var depthFirst = engine.RootfixAggregate("*", Accumulate).Select(pairing => pairing.Accumulate).ToArray();
+      var breadthFirst = StreamBreadthFirst(tree).RootfixAggregate("*", Accumulate).Select(pairing => pairing.Accumulate).ToArray();
 
       // Same accumulations, per-dimension order (leaves: preorder vs level order). This tree's
       // leaves all sit on one level, so here the two coincide.

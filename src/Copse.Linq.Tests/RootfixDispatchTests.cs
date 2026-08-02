@@ -62,7 +62,7 @@ namespace Copse.Linq.Tests
             foreach (var child in children)
               child.Dispatch(arrival + lastChildLetter);
           })
-        .Select(node => $"{node.Dispatched}{node.Value}");
+        .Select(node => $"{node.Accumulate}{node.Node}");
     }
 
     [TestMethod]
@@ -255,7 +255,7 @@ namespace Copse.Linq.Tests
               child.Dispatch(arrival + child.Node);
           })
         .PreorderTraversal()
-        .Select(node => $"{node.Dispatched}{node.Value}")
+        .Select(node => $"{node.Accumulate}{node.Node}")
         .ToArray();
 
       CollectionAssert.AreEqual(
@@ -278,7 +278,7 @@ namespace Copse.Linq.Tests
               child.Dispatch(arrival * 10 + ++childOrdinal);
           })
         .PreorderTraversal()
-        .Select(node => $"{node.Value}:{node.Dispatched}")
+        .Select(node => $"{node.Node}:{node.Accumulate}")
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "a:0", "b:1", "c:2" }, pairs);

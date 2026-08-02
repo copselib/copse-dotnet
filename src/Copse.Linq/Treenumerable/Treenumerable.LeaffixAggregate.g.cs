@@ -14,8 +14,10 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one value per root tree, the fold of the accumulator up from that tree's
-    /// leaves. Every node's accumulation starts at <paramref name="nodeSelector"/> and each
+    /// sequence -- one <see cref="ScanResult{TSource, TAccumulate}"/> per root tree: the root's
+    /// value paired with the fold of the accumulator up from that tree's leaves (the canonical
+    /// pairing, docs/SCANRESULT_DESIGN.md; callback flavors keep their NodeContext shapes until
+    /// the signature workstream). Every node's accumulation starts at <paramref name="nodeSelector"/> and each
     /// child's completed accumulation is folded in by <paramref name="accumulator"/>, one child
     /// at a time in sibling order (a leaf's value is its seed unchanged; the sibling-complete
     /// shape belongs to LeaffixDispatch). Lazy per root -- a root is emitted the moment its
@@ -24,13 +26,14 @@ namespace Copse.Linq
     /// traverses fewer roots. Zero per-node alloc: the fold writes straight into the parent's
     /// running slot.
     /// </summary>
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
     {
       var accumulations = new List<TAccumulate>();
       var path = new Stack<PendingNode<TSource>>();
+      var currentRoot = default(TSource);
 
       void Close()
       {
@@ -58,11 +61,14 @@ namespace Copse.Linq
 
           if (depth == 0 && accumulations.Count > 0)
           {
-            yield return accumulations[0];
+            yield return new ScanResult<TSource, TAccumulate>(currentRoot, accumulations[0]);
             accumulations.Clear();
           }
 
           var nodeContext = treenumerator.ToNodeContext();
+
+          if (depth == 0)
+            currentRoot = nodeContext.Node;
 
           path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
           accumulations.Add(nodeSelector(nodeContext));
@@ -73,7 +79,7 @@ namespace Copse.Linq
         Close();
 
       if (accumulations.Count > 0)
-        yield return accumulations[0];
+        yield return new ScanResult<TSource, TAccumulate>(currentRoot, accumulations[0]);
     }
 
     /// <summary>
@@ -88,7 +94,7 @@ namespace Copse.Linq
     /// after it (the fold buffers are then reused per root, as in the depth-first entry).
     /// Per-root laziness is a depth-first affordance.
     /// </summary>
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
@@ -152,7 +158,7 @@ namespace Copse.Linq
           while (path.Count > 0)
             Close();
 
-          yield return accumulations[0];
+          yield return new ScanResult<TSource, TAccumulate>(capture.GetValue(root), accumulations[0]);
           accumulations.Clear();
         }
       }
@@ -162,7 +168,7 @@ namespace Copse.Linq
     /// Disambiguation overload for full trees; keeps the depth-first consumption -- the
     /// per-root-lazy entry.
     /// </summary>
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator)
@@ -170,19 +176,19 @@ namespace Copse.Linq
 
     // The value-only accumulator flavor (arity-split, like Select/Where): a pure combine --
     // (runningAccumulate, childAccumulate) -- for folds that never read the folding node.
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
       => LeaffixAggregate(source, nodeSelector, ContextBlindAccumulator<TSource, TAccumulate>(accumulator));
 
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
       => LeaffixAggregate(source, nodeSelector, ContextBlindAccumulator<TSource, TAccumulate>(accumulator));
 
-    public static IEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+    public static IEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)

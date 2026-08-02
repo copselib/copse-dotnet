@@ -107,7 +107,8 @@ int subtreeSum = tree
     .LeaffixAggregate(
         nodeContext => nodeContext.Node,
         (accumulate, childAccumulate) => accumulate + childAccumulate)
-    .First();
+    .First()
+    .Accumulate;   // results are ScanResults: the root's value paired with its fold
 // 28  (1 + 2 + 3 + 4 + 5 + 6 + 7)
 ```
 

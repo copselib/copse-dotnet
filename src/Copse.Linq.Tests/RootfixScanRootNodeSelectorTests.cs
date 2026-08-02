@@ -69,8 +69,9 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .RootfixScan(
-          rootContext => rootContext.Node.ToUpperInvariant(),
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
+          root => root.ToUpperInvariant(),
+          (parent, node) => parent.Accumulate + node)
+        .Select(pairing => pairing.Accumulate)
         .GetTraversal(treeTraversalStrategy)
         .ToArray();
 
@@ -84,8 +85,8 @@ namespace Copse.Linq.Tests
       // the exact accumulator invocation the engines make at a root.
       foreach (var treeString in GetTestData().Select(data => (string)data[0]))
       {
-        string Accumulator(NodeContext<string> parentAccumulation, NodeContext<string> nodeContext) =>
-          parentAccumulation.Node + nodeContext.Node;
+        string Accumulator(ScanResult<string, string> parent, string node) =>
+          parent.Accumulate + node;
 
         var seedForm =
           TreeSerializer
@@ -98,7 +99,7 @@ namespace Copse.Linq.Tests
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .RootfixScan(
-            rootContext => Accumulator(new NodeContext<string>("s", NodePosition.ForestRoot), rootContext),
+            root => Accumulator(new ScanResult<string, string>(default, "s"), root),
             Accumulator)
           .PreorderTraversal()
           .ToArray();
@@ -110,16 +111,19 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Accumulator_NeverSeesAForestRootParent()
     {
+      // The parent pairing carries no position (ScanResult sweep); the sentinel is detectable
+      // by its default Node -- string nodes are never null in this corpus, so a null parent
+      // node would mean the accumulator saw the fabricated forest-root pairing.
       var sawForestRootParent = false;
 
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d),e(f)")
         .RootfixScan(
-          rootContext => rootContext.Node,
-          (parentAccumulation, nodeContext) =>
+          root => root,
+          (parent, node) =>
           {
-            sawForestRootParent |= parentAccumulation.Position.IsForestRoot;
-            return parentAccumulation.Node + nodeContext.Node;
+            sawForestRootParent |= parent.Node == null;
+            return parent.Accumulate + node;
           })
         .PreorderTraversal()
         .ToArray();
@@ -134,8 +138,9 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a(b,c),d(e)")
         .RootfixAggregate(
-          rootContext => rootContext.Node.ToUpperInvariant(),
-          (parentAccumulation, nodeContext) => parentAccumulation.Node + nodeContext.Node)
+          root => root.ToUpperInvariant(),
+          (parent, node) => parent.Accumulate + node)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "Ab", "Ac", "De" }, leafAccumulations);

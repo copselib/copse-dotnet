@@ -45,11 +45,11 @@ namespace Copse.Linq.Tests
     // The survey concatenates the node's letter with every child's accumulation, read through
     // the ChildAccumulations view (foreach binds to the struct enumerator -- the view is
     // deliberately not IEnumerable, so string.Join over it does not compile).
-    private static string ConcatSurvey(NodeContext<string> nodeContext, ChildAccumulations<string> children)
+    private static string ConcatSurvey(string node, DispatchSources<string, string> children)
     {
-      var concatenated = nodeContext.Node;
+      var concatenated = node;
       foreach (var child in children)
-        concatenated += child;
+        concatenated += child.Accumulate;
       return concatenated;
     }
 
@@ -94,8 +94,9 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixDispatch(
-          nodeContext => nodeContext.Node,
+          node => node,
           ConcatSurvey)
+        .Select(pairing => pairing.Accumulate)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -122,13 +123,13 @@ namespace Copse.Linq.Tests
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var viaDisclosureRule = narrowSource.LeaffixDispatch(
-        nodeContext => nodeContext.Node,
+        node => node,
         ConcatSurvey);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
         .LeaffixDispatch(
-          nodeContext => nodeContext.Node,
+          node => node,
           ConcatSurvey);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
@@ -159,8 +160,9 @@ namespace Copse.Linq.Tests
         var dispatch = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixDispatch(
-            nodeContext => nodeContext.Node,
-            ConcatSurvey);
+            node => node,
+            ConcatSurvey)
+          .Select(pairing => pairing.Accumulate);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),
@@ -184,15 +186,14 @@ namespace Copse.Linq.Tests
       var actual = TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d),e)")
         .LeaffixDispatch(
-          nodeContext => nodeContext.Node,
-          (nodeContext, children) =>
+          node => node,
+          (parent, children) =>
           {
-            var lastChild = default(string);
-            foreach (var child in children)
-              lastChild = child;
+            var lastChild = children[children.Count - 1].Accumulate;
 
-            return $"{nodeContext.Node}{lastChild}[{children.Count}]";
+            return $"{parent}{lastChild}[{children.Count}]";
           })
+        .Select(pairing => pairing.Accumulate)
         .PreorderTraversal()
         .ToArray();
 
@@ -213,13 +214,14 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b(c,d),e)")
         .LeaffixDispatch(
           1,
-          (nodeContext, children) =>
+          (parent, children) =>
           {
             var count = 0;
             foreach (var child in children)
-              count += child;
+              count += child.Accumulate;
             return count;
           })
+        .Select(pairing => pairing.Accumulate)
         .PreorderTraversal()
         .ToArray();
 

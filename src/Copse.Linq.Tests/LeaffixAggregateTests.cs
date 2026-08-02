@@ -31,6 +31,7 @@ namespace Copse.Linq.Tests
         .LeaffixAggregate(
           nodeContext => nodeContext.Node,
           (accumulate, childAccumulate) => accumulate + childAccumulate)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(expected, actual);
@@ -64,11 +65,13 @@ namespace Copse.Linq.Tests
         ((IBreadthFirstTreenumerable<string>)tree)
         .Materialize()
         .LeaffixAggregate(Seed, Accumulate)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       var direct =
         ((IBreadthFirstTreenumerable<string>)tree)
         .LeaffixAggregate(Seed, Accumulate)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(hoisted, direct, $"breadth-first entry disagrees for '{treeString}'");

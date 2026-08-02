@@ -22,28 +22,28 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }

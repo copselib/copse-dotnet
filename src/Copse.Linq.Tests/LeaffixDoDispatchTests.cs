@@ -41,8 +41,8 @@ namespace Copse.Linq.Tests
         (node, children) =>
         {
           var total = node.OwnValue;
-          foreach (var childTotal in children)
-            total += childTotal;
+          foreach (var child in children)
+            total += child.Accumulate;
           return total;
         },
         (entity, total) => { entity.SubtreeTotal = total; entity.Stores++; });
@@ -76,8 +76,8 @@ namespace Copse.Linq.Tests
           (node, children) =>
           {
             var count = 0;
-            foreach (var childCount in children)
-              count += childCount;
+            foreach (var child in children)
+              count += child.Accumulate;
             return count;
           },
           (entity, count) => entity.SubtreeTotal = count)
@@ -145,8 +145,8 @@ namespace Copse.Linq.Tests
           (node, children) =>
           {
             var sum = 0;
-            foreach (var childValue in children)
-              sum += childValue;
+            foreach (var child in children)
+              sum += child.Accumulate;
             return sum;
           },
           (entity, value) => entity.SubtreeTotal = value)

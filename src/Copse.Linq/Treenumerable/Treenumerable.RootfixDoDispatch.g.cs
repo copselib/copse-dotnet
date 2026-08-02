@@ -16,8 +16,8 @@ namespace Copse.Linq
     /// <summary>
     /// The IMPURE survey-shaped downward pass (SPIKE, feature/do-scan): RootfixDispatch's Do
     /// twin, for the mutable-node workload. Nodes pass through unchanged (the result is the
-    /// SOURCE tree; no <see cref="DispatchNode{TSource, TDispatch}"/> decoration ever reaches
-    /// the caller), and the flow lands where the caller wants it via <paramref name="store"/>.
+    /// SOURCE tree; no <see cref="ScanResult{TSource, TDispatch}"/> decoration ever reaches
+    /// the caller -- Do means the nodes ARE the result), and the flow lands where the caller wants it via <paramref name="store"/>.
     ///
     /// <para>Two callbacks, two contracts -- the purity boundary sits between them.
     /// <paramref name="survey"/> is PURE and speaks only the exactly-once slot protocol, with

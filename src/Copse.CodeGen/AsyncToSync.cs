@@ -29,7 +29,7 @@ namespace Copse.CodeGen
 
       // Return-type fixups that aren't identifier renames (they change to keywords). Unwrap
       // ValueTask<X> -> X (two levels of nested generics -- covers ValueTask<PreorderRead<T>> and
-      // ValueTask<PreorderArrayStore<DispatchNode<TSource, TDispatch>>>), then the bare
+      // ValueTask<PreorderArrayStore<ScanResult<TSource, TDispatch>>>), then the bare
       // ValueTask -> void. Async seams only surface as awaited expressions, so a literal
       // ValueTask<X> here is always a method return type that collapses to its synchronous result.
       var text = rewritten.ToFullString();

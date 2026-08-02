@@ -87,8 +87,9 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixScan(
-          nodeContext => nodeContext.Node,
+          node => node,
           (accumulate, childAccumulate) => accumulate + childAccumulate)
+        .Select(pairing => pairing.Accumulate)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
         .ToArray();
@@ -115,13 +116,13 @@ namespace Copse.Linq.Tests
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var viaDisclosureRule = narrowSource.LeaffixScan(
-        nodeContext => nodeContext.Node,
+        node => node,
         (accumulate, childAccumulate) => accumulate + childAccumulate);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
         .LeaffixScan(
-          nodeContext => nodeContext.Node,
+          node => node,
           (accumulate, childAccumulate) => accumulate + childAccumulate);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
@@ -152,8 +153,9 @@ namespace Copse.Linq.Tests
         var scan = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixScan(
-            nodeContext => nodeContext.Node,
-            (accumulate, childAccumulate) => accumulate + childAccumulate);
+            node => node,
+            (accumulate, childAccumulate) => accumulate + childAccumulate)
+          .Select(pairing => pairing.Accumulate);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),
@@ -178,12 +180,13 @@ namespace Copse.Linq.Tests
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d)")
         .LeaffixScan(
-          nodeContext => nodeContext.Node,
-          (nodeContext, accumulate, childAccumulate) =>
+          node => node,
+          (foldingNode, accumulate, childAccumulate) =>
           {
-            foldObservations.Add($"{nodeContext.Node}<-{childAccumulate}");
+            foldObservations.Add($"{foldingNode}<-{childAccumulate}");
             return accumulate + childAccumulate;
           })
+        .Select(pairing => pairing.Accumulate)
         .PreorderTraversal()
         .ToArray();
 

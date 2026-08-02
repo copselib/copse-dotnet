@@ -82,25 +82,25 @@ namespace Copse.Linq
 
     // The fold expressed as a survey, value-flavored (the Do tier's grammar): start at the
     // node's own projection, combine each child's completed accumulation in sibling order.
-    private static Func<TSource, ChildAccumulations<TAccumulate>, TAccumulate> DoFoldSurvey<TSource, TAccumulate>(
+    private static Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> DoFoldSurvey<TSource, TAccumulate>(
       Func<TSource, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
       => (node, children) =>
       {
         var accumulate = nodeSelector(node);
-        foreach (var childAccumulate in children)
-          accumulate = accumulator(accumulate, childAccumulate);
+        foreach (var child in children)
+          accumulate = accumulator(accumulate, child.Accumulate);
         return accumulate;
       };
 
-    private static Func<TSource, ChildAccumulations<TAccumulate>, TAccumulate> DoFoldSurvey<TSource, TAccumulate>(
+    private static Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> DoFoldSurvey<TSource, TAccumulate>(
       Func<TSource, TAccumulate> nodeSelector,
       Func<TSource, TAccumulate, TAccumulate, TAccumulate> accumulator)
       => (node, children) =>
       {
         var accumulate = nodeSelector(node);
-        foreach (var childAccumulate in children)
-          accumulate = accumulator(node, accumulate, childAccumulate);
+        foreach (var child in children)
+          accumulate = accumulator(node, accumulate, child.Accumulate);
         return accumulate;
       };
   }
