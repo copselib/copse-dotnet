@@ -17,7 +17,10 @@ namespace Copse.Linq
     /// a combine that must SEE the nodes involved takes the context overload, and anything
     /// needing all children at once (median, top-k) or boundary-only contributions (leaf
     /// count) belongs to LeaffixDispatch, the sibling-complete tier this operator is sugar
-    /// over (measured equivalent, 2026-08-01: same allocation, time within noise).
+    /// over. The delegation's measured premium (dashboard, 2026-08-02): ~8ns per internal node
+    /// -- ~8% on a degenerate chain, ~1-2% on branching shapes -- at identical allocation;
+    /// accepted deliberately (well under the Invert specialization bar), the bespoke build
+    /// stays retired, and the paired benchmark rows guard the gap.
     ///
     /// <para>Callbacks run during the deferred build, once per node (the selector) and once
     /// per child edge (the accumulator); only the sibling fold order is specified --
