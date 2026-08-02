@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785636723448,
+  "lastUpdate": 1785636723887,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -74624,6 +74624,210 @@ window.BENCHMARK_DATA = {
             "value": 7878700.833705357,
             "unit": "ns",
             "range": "± 16920.178315965233"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "dbc44c0a3760640142970776a504f6704832a4b8",
+          "message": "The leaffix redesign: fold and survey tiers, the rootfix duality, one build\n\nChildAccumulations is no longer IEnumerable<T> (nor its enumerator\nIEnumerator<T>): foreach pattern-binds to the struct enumerator at zero\nallocation, while every interface path boxed the view AND its enumerator\nper survey -- the silent per-node allocation this library exists to\navoid. Dropping the interfaces makes that cost unrepresentable rather\nthan documented-and-hoped-against; Count's O(children) hop is disclosed\non the member.\n\nThe old LeaffixScan is renamed LeaffixDispatch, because that is what it\nwas: the sibling-complete survey tier, and the TRUE upward dual of\nRootfixScan. Reversing traversal direction transposes in/out-degree --\ndownward every node receives exactly one value (which is what affords\nrootfix its single binary accumulator), upward it receives n, so the\nper-node callback must see all n arrivals: the survey. Its boundary\npair now mirrors rootfix's exactly (leafNodeSelector | fixed seed; seed\noverload added, canonical use leaf count -- pinned by an executable\ntest as the aggregation the fold tier cannot express).\n\nThe new fold-tier LeaffixScan is map-then-combine: nodeSelector\nprojects EVERY node (the fold's starting value, doubling as the node's\nexactly-once contribution -- with n children the map cannot live inside\nan accumulator that runs per child edge), then children fold in sibling\norder. The accumulator is arity-split like Select/Where: (acc,\nchildAcc) value flavor, (ctx, acc, childAcc) context flavor. And it is\nSUGAR over LeaffixDispatch -- benchmarked head-to-head the two builds\nwere identical in allocation and within noise on time, so by the Invert\nrule (specializations must measure their keep) the bespoke build is\ngone; the Scan benchmark rows now stand guard over the wrapper itself.\nCallback-timing contract documented: once per node / per child edge,\nsibling fold order guaranteed, timing against the source walk\nunspecified.\n\nLeaffixAggregate takes the same shape (nodeSelector, both flavors) but\nkeeps its own fold-into-slot build: per-root streaming with reused\nbuffers is impossible over Dispatch's whole-forest capture. Its\nsubtree-size channel dropped out -- the fold never reads it.\n\nRootfixDispatch lands fresh on the tree side (the experimental/dag\nbranch version was the learning model): survey receives arrival + all\nchildren as exactly-once write-handles through the no-copy\nDispatchTargets view -- struct targets over one whole-build\nwritten-flags array, double/missed Dispatch throws, zero per-node\nallocation, and no IReadOnlyList in the signature (the same boxing trap\nrefused at design time). DispatchNode decorates rather than replaces,\nso flavors are compositions (Select/Do), not overloads.\n\nCodegen fix en route: the ValueTask<X> unwrap regex handled one level\nof nested generics; ValueTask<PreorderArrayStore<DispatchNode<TSource,\nTDispatch>>> is the first depth-two return type. One level deeper;\nregeneration byte-identical for every existing twin.\n\nSuites: Linq 23,929 / engine 459 / async 57, all green; conformance,\ndrift guard, and cross-dimension replay included. Surface map rows\nupdated in step (the living-inventory rule).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T01:56:21Z",
+          "tree_id": "d2b44f40463aca203c9ff863e64156c9a55268a7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dbc44c0a3760640142970776a504f6704832a4b8"
+        },
+        "date": 1785636723805,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Composed",
+            "value": 45346112.31884058,
+            "unit": "ns",
+            "range": "± 1116410.2527661603"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Composed",
+            "value": 63911400.105,
+            "unit": "ns",
+            "range": "± 1638139.4431293395"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Stacked",
+            "value": 41350402.50480769,
+            "unit": "ns",
+            "range": "± 798732.5708794997"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Stacked",
+            "value": 54766718.99200001,
+            "unit": "ns",
+            "range": "± 1428385.4740914917"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Composed",
+            "value": 136997198.53030303,
+            "unit": "ns",
+            "range": "± 4326090.259024639"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Composed",
+            "value": 139839403.02941176,
+            "unit": "ns",
+            "range": "± 2788792.4251879468"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Stacked",
+            "value": 127316916.71052632,
+            "unit": "ns",
+            "range": "± 2778496.180687176"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Stacked",
+            "value": 905080216.79,
+            "unit": "ns",
+            "range": "± 69346952.1553219"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 11033042.192708334,
+            "unit": "ns",
+            "range": "± 235344.29329142623"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 6672896.832589285,
+            "unit": "ns",
+            "range": "± 153326.1370264611"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 10803268.078125,
+            "unit": "ns",
+            "range": "± 289108.18187393533"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 6284314.872931985,
+            "unit": "ns",
+            "range": "± 124373.49954854728"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 10779621.034598215,
+            "unit": "ns",
+            "range": "± 122723.14875453777"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 20612644.71577381,
+            "unit": "ns",
+            "range": "± 468324.3516904871"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 10191583.151494564,
+            "unit": "ns",
+            "range": "± 246304.2156402577"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 24343819.638888888,
+            "unit": "ns",
+            "range": "± 507734.33619530906"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 20881354.5234375,
+            "unit": "ns",
+            "range": "± 495596.8413773679"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 21328933.316810343,
+            "unit": "ns",
+            "range": "± 620904.9893273882"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 85334207.06504062,
+            "unit": "ns",
+            "range": "± 3062316.0378998467"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 123757011.9866667,
+            "unit": "ns",
+            "range": "± 1720479.3162323888"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 65570234.16776316,
+            "unit": "ns",
+            "range": "± 2259575.4930657316"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 73551459.9642857,
+            "unit": "ns",
+            "range": "± 1906029.0988551911"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 55756863.607142866,
+            "unit": "ns",
+            "range": "± 1571611.8840942546"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 56001362.91919194,
+            "unit": "ns",
+            "range": "± 1681490.8832353393"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 13560580.573958334,
+            "unit": "ns",
+            "range": "± 219178.99509808276"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 17295420.986328125,
+            "unit": "ns",
+            "range": "± 326988.51441726915"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 30975330.004166666,
+            "unit": "ns",
+            "range": "± 526341.4239766457"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 27573373.583333332,
+            "unit": "ns",
+            "range": "± 649456.2050085647"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 6842490.563541667,
+            "unit": "ns",
+            "range": "± 59910.0683164017"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 6207451.230989584,
+            "unit": "ns",
+            "range": "± 105159.6065123188"
           }
         ]
       }
