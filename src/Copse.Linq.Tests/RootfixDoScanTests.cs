@@ -136,5 +136,57 @@ namespace Copse.Linq.Tests
         new[] { 110, 115, 120, 127 },
         forest.PreorderTraversal().Select(e => e.Total).ToArray());
     }
+
+    [TestMethod]
+    public void RootSelector_SeedsPerRoot_AndComputeNeverSeesRoots()
+    {
+      // Under the selector form a root's accumulation IS the selector's value (the pure
+      // scan's forest-correct clause, inherited): compute never runs at roots, so the root's
+      // own Amount is deliberately absent from its Total.
+      var forest = TreeSerializer
+        .DeserializeDepthFirstTree("10(5),20(7)", (string s) => new Entity { Amount = int.Parse(s) })
+        .Materialize();
+
+      forest
+        .RootfixDoScan(
+          root => root.Amount * 100,
+          (arrived, entity) => arrived + entity.Amount,
+          (entity, total) => { entity.Total = total; entity.Stores++; })
+        .PreorderTraversal()
+        .ToArray();
+
+      var entities = forest.PreorderTraversal().ToArray();
+      CollectionAssert.AreEqual(new[] { 1000, 1005, 2000, 2007 }, entities.Select(e => e.Total).ToArray());
+      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray(),
+        "roots are stored via the selector wrapper, non-roots via the accumulator -- once each");
+    }
+
+    [TestMethod]
+    public void SelectorForm_ReadsLiveState_PerDrain_TheFreshnessRule()
+    {
+      // Seed-semantics-follow-purity, pinned: a seed VALUE is frozen at the call site, but the
+      // selector fires during each traversal, so a closure over a mutated local is read fresh
+      // per drain -- the Do tier's sanctioned per-run boundary input.
+      var tree = Structure();
+      var budget = 100;
+
+      var doScan = tree.RootfixDoScan(
+        _ => budget,
+        (arrived, entity) => arrived + entity.Amount,
+        (entity, total) => entity.Total = total);
+
+      doScan.PreorderTraversal().ToArray();
+      var firstDrain = tree.PreorderTraversal().Select(e => e.Total).ToArray();
+
+      budget = 200;
+      doScan.PreorderTraversal().ToArray();
+      var secondDrain = tree.PreorderTraversal().Select(e => e.Total).ToArray();
+
+      // Selector-form roots take the selector's value directly (compute never runs at roots):
+      // root Total = budget itself, children = budget + own path amounts.
+      CollectionAssert.AreEqual(new[] { 100, 105, 100, 101 }, firstDrain);
+      CollectionAssert.AreEqual(new[] { 200, 205, 200, 201 }, secondDrain,
+        "the second traversal read the mutated budget -- closures capture variables, not copies");
+    }
   }
 }

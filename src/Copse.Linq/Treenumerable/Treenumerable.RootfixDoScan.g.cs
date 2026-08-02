@@ -36,10 +36,22 @@ namespace Copse.Linq
     /// this point in the chain, so nothing may fuse across it.</para>
     ///
     /// <para>The seed is the virtual forest root's accumulation, shared by every root of a
-    /// forest (a rootNodeSelector form can join once the signature settles). Spike posture:
-    /// rides the pure scan's machinery, whose treenumerators invoke the accumulator once per
-    /// node at scheduling -- the store contract holds by construction; a graduated build gets
-    /// its own treenumerators (or a pinned clause on the scan's).</para>
+    /// forest; the rootNodeSelector overloads (value and positional flavors, the family
+    /// grammar) seed each root independently -- and on the Do tier the selector is also the
+    /// FRESHNESS form (the seed-semantics-follow-purity rule): it runs during each traversal,
+    /// so a closure reads live state at effect time, where a seed VALUE is frozen at the call.
+    /// Under the selector form roots take the selector directly and <paramref name="compute"/>
+    /// never sees a fabricated arrival (the pure scan's forest-correct clause, inherited).</para>
+    ///
+    /// <para>RootfixDoDispatch is this operator's sibling-complete twin. The implementations
+    /// deliberately DIVERGE (ruled 2026-08-02): the fold tier streams (this operator rides the
+    /// scan machinery, O(depth)/O(width) state, effects per drain), the survey tier captures
+    /// (the dispatch build, effects once) -- the same cost-class asymmetry as the pure pair,
+    /// so delegating this operator into the dispatch build would demote it from streaming to
+    /// capture-class for nothing. Spike posture: rides the pure scan's machinery, whose
+    /// treenumerators invoke the accumulator once per node at scheduling -- the store contract
+    /// holds by construction; a graduated build gets its own treenumerators (or a pinned
+    /// clause on the scan's).</para>
     /// </summary>
     public static ITreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
@@ -73,6 +85,80 @@ namespace Copse.Linq
           (Node: default(TNode), Accumulate: seed),
           ComputeStoreAccumulator(compute, store))
         .Select(pair => pair.Node);
+
+    /// <summary>
+    /// The forest-correct seeding form: every root's accumulation comes from
+    /// <paramref name="rootNodeSelector"/> (and is stored) -- each tree of a forest seeds
+    /// independently, and on this tier the selector doubles as the freshness form: it fires
+    /// per root per traversal, so a closure reads live state at effect time.
+    /// </summary>
+    public static ITreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+
+    /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the root's value and its position -- seeding by root ordinal.</summary>
+    public static ITreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => source
+        .RootfixScan(
+          SelectorWithStore(rootNodeSelector, store),
+          ComputeStoreAccumulator(compute, store))
+        .Select(pair => pair.Node);
+
+    public static IDepthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+
+    public static IDepthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => source
+        .RootfixScan(
+          SelectorWithStore(rootNodeSelector, store),
+          ComputeStoreAccumulator(compute, store))
+        .Select(pair => pair.Node);
+
+    public static IBreadthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+
+    public static IBreadthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
+      Func<TAccumulate, TNode, TAccumulate> compute,
+      Action<TNode, TAccumulate> store)
+      => source
+        .RootfixScan(
+          SelectorWithStore(rootNodeSelector, store),
+          ComputeStoreAccumulator(compute, store))
+        .Select(pair => pair.Node);
+
+    // The selector's wrapper: seed the root's accumulation, store it, and thread the pairing --
+    // the root-side half of the pass, invoked by the pure scan's forest-correct machinery once
+    // per root per traversal (compute never sees a fabricated arrival under this form).
+    private static Func<NodeContext<TNode>, (TNode Node, TAccumulate Accumulate)> SelectorWithStore<TNode, TAccumulate>(
+      Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
+      Action<TNode, TAccumulate> store)
+      => rootContext =>
+      {
+        var accumulate = rootNodeSelector(rootContext.Node, rootContext.Position);
+        store(rootContext.Node, accumulate);
+        return (rootContext.Node, accumulate);
+      };
 
     // The pass expressed over the pure scan: accumulate (node, accumulation) pairs so store
     // receives the pairing the pure composition cannot express without tuple plumbing, then
