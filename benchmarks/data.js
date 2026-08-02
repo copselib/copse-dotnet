@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785641766139,
+  "lastUpdate": 1785641766568,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -51002,6 +51002,66 @@ window.BENCHMARK_DATA = {
             "value": 149995864.54166666,
             "unit": "ns",
             "range": "± 289709.6721567252"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "226bb3c0d1404b53e466ee7c3b74beae6ff5f63f",
+          "message": "OrderChildrenBy-B: the permutation buffer joins the flush pool\n\nThe streaming breadth-first build pooled its group lists specifically\nso a chain would not allocate per single-node level (\"a million of\nthem\" -- the comment), then allocated a fresh levelPermutation array\nten lines below, every flush: a million int[1]s on the same chain,\nfound on the dashboard's memory rows as the largest footprint in the\nsuite (OrderChildrenByBreadthFirstEntry.Dft_Chain, 176 MB).\n\nThe permutation cannot ride the same single-spare pooling -- the\nflushed level's permutation must stay readable while the next level's\nis written -- so it gets a ping-ponged PAIR, grown to the widest level\nseen (doubling) and swapped at each flush. Oversize is safe: readers\nstop at flushedLevelSourceSize, writers fill their range before use.\n\nMeasured (allocation is environment-independent, so local rows compare\nto the dashboard's): both chain rows drop exactly 32.00 MB -- one\nmillion 32-byte int[1]s -- 152 -> 120 MB (Bft) and 176 -> 144 MB\n(Dft). The triangle rows drop ~4 MB too (its 1448 per-level arrays,\nsumming to ~1M ints, now ~11 doubling allocations); that one was a\nbonus, not the target.\n\nSuites: Linq 23,931 / async 57, all green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T03:22:19Z",
+          "tree_id": "e67633c50653ff3ab7ab698415c3517457dd25a1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/226bb3c0d1404b53e466ee7c3b74beae6ff5f63f"
+        },
+        "date": 1785641766484,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 74355472.53846154,
+            "unit": "ns",
+            "range": "± 138966.5415581025"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10606048.435697116,
+            "unit": "ns",
+            "range": "± 93654.62330286577"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 130073155.28846154,
+            "unit": "ns",
+            "range": "± 470926.5891286476"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17237178.96651786,
+            "unit": "ns",
+            "range": "± 136012.32858965185"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 174636258.6,
+            "unit": "ns",
+            "range": "± 3169339.845194459"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 156921663.65625,
+            "unit": "ns",
+            "range": "± 888058.185019549"
           }
         ]
       }
