@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785693269069,
+  "lastUpdate": 1785693269517,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -59906,6 +59906,114 @@ window.BENCHMARK_DATA = {
             "value": 1035300.9768229167,
             "unit": "ns",
             "range": "± 4232.680321918742"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4244c8a877eda6ca3e5b1387871daaa6be39724e",
+          "message": "Seed before the lambda: the type-fixer-first unification across the scan/aggregate tiers\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T17:40:57Z",
+          "tree_id": "17289c7972fb3ce5371ac8d891831c4eb8da9c09",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4244c8a877eda6ca3e5b1387871daaa6be39724e"
+        },
+        "date": 1785693269432,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2318716.414620536,
+            "unit": "ns",
+            "range": "± 5817.423345169833"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1924149.4125600962,
+            "unit": "ns",
+            "range": "± 1579.1109341302479"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4632049.466346154,
+            "unit": "ns",
+            "range": "± 7364.7282428220515"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3943623.18125,
+            "unit": "ns",
+            "range": "± 31666.265217792537"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 663500.8803710938,
+            "unit": "ns",
+            "range": "± 618.1053611432343"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 721234.015218099,
+            "unit": "ns",
+            "range": "± 297.29658948230826"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 413405.0150390625,
+            "unit": "ns",
+            "range": "± 1304.794083851467"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4279395.38671875,
+            "unit": "ns",
+            "range": "± 17983.98881937305"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3259364.5140625,
+            "unit": "ns",
+            "range": "± 16355.063734972113"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14375153.63169643,
+            "unit": "ns",
+            "range": "± 14837.675477145363"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7742415.137019231,
+            "unit": "ns",
+            "range": "± 20358.963195686723"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1906263.8169642857,
+            "unit": "ns",
+            "range": "± 2870.7118626607585"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1008686.3484074519,
+            "unit": "ns",
+            "range": "± 1428.7363640430237"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1032390.4145833333,
+            "unit": "ns",
+            "range": "± 1644.348972915459"
           }
         ]
       }
