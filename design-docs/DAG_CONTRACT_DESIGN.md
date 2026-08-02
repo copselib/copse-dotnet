@@ -1,7 +1,9 @@
 # DAG traversal contract (design sketch)
 
 > **Status: BUILT through phases 1–3 + the scenario seed (2026-07-18) and the surface
-> cleanup (2026-07-27), branch `experimental/dag`; work integration ("DIG") in progress.**
+> cleanup (2026-07-27), branch `experimental/dag`; work integration ("DIG") in progress.
+> Structural re-founding RATIFIED 2026-08-02 (block below) — one contract + `Transpose`,
+> `DagBuffer` as the materialized shape — implementation pending; ✅ marks predate it.**
 > Written 2026-07-18 as the design sketch; the ✅ marks below track what has since shipped.
 > The `Copse.Dags` spike (the mutable `Dag`/`DagNode` object model) is NOT superseded: it
 > is the family's **builder**, and its spike-era operators serve as the **conformance
@@ -33,6 +35,63 @@
 > architecture this family inherits), [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md)
 > (the promise this family extends), [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md)
 > (the pattern the dimension section instantiates).
+>
+> **The structural re-founding (ratified 2026-08-02, Jason; from the full-branch design
+> review):** the operator tier — the scans, the dispatch twins, the prunes, the edge dual,
+> and both scenario suites — is right and does not move. The structural layers around it
+> do. Three decisions:
+>
+> 1. **One contract.** The forward/backward dimension split is RETIRED. The tell was in
+>    this document's own table: two tree concepts (`Invert` and the DFT/BFT split) mapped
+>    onto one DAG concept, orientation-flipping — and the tree family already ruled on
+>    which homolog is real: `Invert` is an OPERATOR returning a buffer, not a dimension.
+>    BFT is a dimension because it is irreducible — not expressible as DFT-of-anything;
+>    the backward walk is *definitionally* forward-of-the-transpose (the implementation
+>    hands the reversed order to the same walk class), which makes it an operator. After
+>    phase 3's sinkfix defection to the forward capture, the backward dimension had ZERO
+>    operator consumers. `Transpose()` replaces it and strictly gains: the view inherits
+>    the entire forward operator family pointed upward (prune ancestors, scan the
+>    transpose, …) where the dimension offered a raw stream and nothing else. The
+>    affordance story survives as a store-capability fact: `Transpose` exists on the
+>    buffer (free — swap which adjacency you read) and the builder (cheap), not on a
+>    narrow forward-only stream; `Memoize`/`Materialize` escalate, as ever. The
+>    narrow/composite interface trio collapses to one `IDagnumerable`. (If a true DFT/BFT
+>    homolog is ever wanted it is depth-biased vs level-biased topological order — two
+>    forward presentations of one orientation — not backward; deferred until a layered
+>    workload asks.)
+> 2. **`DagBuffer`, the capture tier.** The materialized composite the folds return is an
+>    owned, immutable CSR capture — `values[]` in entry order (dense index IS the
+>    ordinal), out-adjacency as offsets/targets/payloads parallel arrays preserving
+>    per-parent out-edge order, `sources[]`, a `sourceOrdinals[]` back-map when captured
+>    from a gapped stream, transpose adjacency built lazily on first `Transpose()` — NOT
+>    a fresh builder `Dag`. The builder had accreted five roles (construction API, only
+>    concrete source, oracle substrate, capture, every fold's return shape); it keeps
+>    construction and shrinks back to the engine's relationship with its buffers. Two
+>    forcing facts. First, fold results were UNADDRESSABLE: correlating a result back to
+>    its input required smuggling names into payloads — precisely the failure mode the
+>    dispatch-provenance ruling above condemns — and preserved ordinals plus dense
+>    indexing fix it. Second, there is no index-arithmetic-only DAG structure to hold out
+>    for: a DAG's structure is M edges of information (the M-integer floor is arithmetic,
+>    not a design gap), so CSR is the answer, not a compromise. One type, four roles that
+>    genuinely belong together: `Materialize`'s return, the fold results, the
+>    serializer's in-memory target, the flat store — phase 4's store IS this buffer. The
+>    one-pass fill in stream order falls out of the protocol's own clauses (entries
+>    arrive in layout order; dispatch contiguity makes each adjacency block contiguous)
+>    — the edge-grained stream paying for itself.
+> 3. **The laziness ledger, stated once.** The boundary is theorem-fixed, not
+>    buffer-caused: the streaming tier (`Select`, `Do`, the prunes, edge tier 1) stays
+>    lazy wrappers; the folds materialize, per open question 7's theorem. The one honest
+>    loss against the tree family is `SourcefixScan` — tree `RootfixScan` streams because
+>    single parentage makes the accumulation a scheduling-time fact; multiple parents
+>    make it an entry-time fact — the price of admission to DAGs, paid at exactly one
+>    operator. The buffer composes through the fluent surface (it IS an `IDagnumerable`),
+>    so materialization breaks laziness, never fluency.
+>
+> Sequencing, same date: this ratification first; the refactor second (collapse + buffer
+> + retarget the folds + `Transpose` — the scenario suites should move only mechanically,
+> which is the verification); the work-import adapter THIRD, before any further operator
+> growth: the contract's stream still has one implementation and no raw consumers, and
+> the adapter — the origin problem's actual shape — is what pressure-tests it.
 
 > **The domain this serves:** legal-entity ownership structures — the library's origin
 > problem. Nodes are entities, edge payloads are ownership fractions, flows run money down
@@ -99,6 +158,12 @@ one block, in out-edge order — no other node's visits interleave. Wrappers pre
 (they only remove visits).
 
 ## The dimension split: forward / backward
+
+> **RETIRED 2026-08-02 (the re-founding, above): one contract + `Transpose()` the
+> operator.** The section below is the original design, kept as the record of why the
+> split was tried and what it got right — the affordance reasoning survives intact,
+> relocated onto the store tier (`Transpose` exists on buffer/builder, not on narrow
+> forward-only streams; `Memoize`/`Materialize` escalate).
 
 Trees split depth-first/breadth-first. DAGs split **forward topological / backward
 topological** (the transpose's forward), and the operator families sort onto the dimensions
@@ -171,7 +236,9 @@ them.
   containment by index arithmetic). A forward store affords forward; storing the transpose
   adjacency as well affords both. The serializer writes the topo stream; the forward-only
   streaming deserialize is a narrow forward source — the same round trip the tree family
-  has, ending on the narrow tier.
+  has, ending on the narrow tier. (Re-founding 2026-08-02: this store IS `DagBuffer` —
+  the capture tier and the flat family are one type; "affords both" is spelled
+  `Transpose()` rather than a second acquisition method.)
 - **Adapter boundary**: foreign DAG-shaped data (the work import) enters through an adapter
   that must supply stable node keys — the quarantined identity bend. The contract's stream
   itself speaks ordinals only.
@@ -183,8 +250,8 @@ them.
 | Preorder / level-order presentation | topological order |
 | Scheduling / Visiting | Discover (per in-edge) / Enter (once) |
 | `NodePosition` | per-edge context (payload, parent ordinal, per-parent index) + topo ordinal — no global coordinates, by theorem |
-| DFT / BFT dimension split | forward / backward (transpose) split; same narrow-tier + `Memoize` escalation architecture |
-| `Invert` | `Transpose` — a free view on composite stores; swaps the dimensions |
+| DFT / BFT dimension split | no homolog shipped (re-founded 2026-08-02: backward = forward-of-transpose, an operator not a dimension; the true analog would be depth- vs level-biased topo order, deferred) |
+| `Invert` | `Transpose()` — an OPERATOR/view (re-founded 2026-08-02): free on the buffer, cheap on the builder, absent on narrow forward-only streams |
 | `Where` child promotion | contraction with caller edge-composition; not day-one |
 | Prunes | forward liveness folds (streaming) |
 | Rootfix family | forward, streaming; `SourcefixDispatch` carries edges natively |
@@ -250,7 +317,9 @@ last-entered node; O(1) state).
 
 1. ✅ **Naming RATIFIED (Jason, 2026-07-18)**: `IDagnumerable` / `IDagnumerator` — the pun
    carries the brand. Downstream: `DagnumeratorMode` (`DiscoveringNode` / `EnteringNode`),
-   `IForwardDagnumerable` / `IBackwardDagnumerable`, `DagTraversalStrategies`.
+   `IForwardDagnumerable` / `IBackwardDagnumerable`, `DagTraversalStrategies`. (The
+   narrow pair retired 2026-08-02 with the dimension split — the re-founding; the
+   surviving contract is `IDagnumerable`, forward-topological semantics.)
 2. **Strategy semantics — phase 1 ships a PROPOSAL, open for review.** The consumer can
    only shape the FUTURE: at the moment a visit is published, everything about it has
    already been witnessed. Hence: `SkipEdge` (at Discover — sever the just-discovered
@@ -281,6 +350,9 @@ last-entered node; O(1) state).
    dimensions (the materialization is an upgrade, `Memoize`-like). The spike's own scans
    already returned this shape; the laziness policy's documented-when-not clause, with the
    theorem as the documentation. Covers `SourcefixDispatch` (tree-side buffer precedent).
+   **RE-RULED 2026-08-02 (the re-founding): the theorem and the materialization stand;
+   the composite is the `DagBuffer` capture, not a builder `Dag` — the builder as return
+   shape was the five-roles conflation, and it made results unaddressable.**
    Corollary recorded with it: identity for DAGs is irreducible (sharing IS an equality
    proposition); the design canonicalizes it rather than pretending it away — reference
    identity on the library-owned `DagNode` at the builder, ordinals in the stream, foreign
@@ -322,7 +394,9 @@ last-entered node; O(1) state).
    the backward stream cannot carry a node's out-edge ORDER (it carries in-edge order — the
    transpose's dispatch lists) — original orientation is a forward-stream fact. The
    backward dimension keeps its honest job: direct upward consumption, and the transpose
-   view. `SinkfixScan`: edge-paired child results in out-edge order, empty at sinks seeds,
+   view. (That "honest job" turned out to be nobody's job — no operator consumer ever
+   arrived, which is what forced the 2026-08-02 re-founding: the dimension is retired,
+   `Transpose()` the operator serves upward consumption.) `SinkfixScan`: edge-paired child results in out-edge order, empty at sinks seeds,
    shared child computed once but appearing per-edge in each parent's list — the diamond
    roll-up choice stays the caller's, documented. `SinkfixDispatch` CLOSES the deferred
    upward-diamond semantic: each node decides what travels up EACH in-edge (exactly-once
@@ -333,7 +407,17 @@ last-entered node; O(1) state).
    lookthrough (venture's 1000 arriving at the apex as 120-via-40% + 420-via-60% = 540)
    and THE DUALITY — the downward ownership scan times the holding equals the upward
    attribution, 54% of 1000, both ways.
-4. Flat store + serializer + `Memoize`/`Materialize` + `Transpose`.
+3½. **The re-founding refactor (ratified 2026-08-02, unbuilt)**: collapse the interface
+   trio to `IDagnumerable`; introduce `DagBuffer` (one-pass CSR capture, preserved source
+   ordinals, dense indexing) and retarget the folds at it; `Transpose()` on buffer and
+   builder. Verification bar: the scenario suites move only mechanically (`ByName` should
+   get SIMPLER — ordinal addressing replaces name-smuggling).
+4. Flat store + serializer + `Memoize`/`Materialize` — largely subsumed by 3½: the store
+   IS `DagBuffer`; what remains is the text format and the narrow streaming deserialize.
+4½. **The work-import adapter** — deliberately BEFORE further operator growth: the
+   stream contract still has one implementation and no raw consumers; the adapter (the
+   origin problem's actual shape, stable foreign keys quarantined at the boundary) is
+   its pressure test.
 5. Operator composition machinery (the tree family's architecture, transplanted).
 6. The showcase: the ownership-structure scenario suite grows into the flagship sample —
    real workload, both dimensions, allocation down and lookthrough up.
