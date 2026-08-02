@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785636724768,
+  "lastUpdate": 1785636725213,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -86510,6 +86510,138 @@ window.BENCHMARK_DATA = {
             "value": 62060776.071428575,
             "unit": "ns",
             "range": "± 132580.50192901414"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "dbc44c0a3760640142970776a504f6704832a4b8",
+          "message": "The leaffix redesign: fold and survey tiers, the rootfix duality, one build\n\nChildAccumulations is no longer IEnumerable<T> (nor its enumerator\nIEnumerator<T>): foreach pattern-binds to the struct enumerator at zero\nallocation, while every interface path boxed the view AND its enumerator\nper survey -- the silent per-node allocation this library exists to\navoid. Dropping the interfaces makes that cost unrepresentable rather\nthan documented-and-hoped-against; Count's O(children) hop is disclosed\non the member.\n\nThe old LeaffixScan is renamed LeaffixDispatch, because that is what it\nwas: the sibling-complete survey tier, and the TRUE upward dual of\nRootfixScan. Reversing traversal direction transposes in/out-degree --\ndownward every node receives exactly one value (which is what affords\nrootfix its single binary accumulator), upward it receives n, so the\nper-node callback must see all n arrivals: the survey. Its boundary\npair now mirrors rootfix's exactly (leafNodeSelector | fixed seed; seed\noverload added, canonical use leaf count -- pinned by an executable\ntest as the aggregation the fold tier cannot express).\n\nThe new fold-tier LeaffixScan is map-then-combine: nodeSelector\nprojects EVERY node (the fold's starting value, doubling as the node's\nexactly-once contribution -- with n children the map cannot live inside\nan accumulator that runs per child edge), then children fold in sibling\norder. The accumulator is arity-split like Select/Where: (acc,\nchildAcc) value flavor, (ctx, acc, childAcc) context flavor. And it is\nSUGAR over LeaffixDispatch -- benchmarked head-to-head the two builds\nwere identical in allocation and within noise on time, so by the Invert\nrule (specializations must measure their keep) the bespoke build is\ngone; the Scan benchmark rows now stand guard over the wrapper itself.\nCallback-timing contract documented: once per node / per child edge,\nsibling fold order guaranteed, timing against the source walk\nunspecified.\n\nLeaffixAggregate takes the same shape (nodeSelector, both flavors) but\nkeeps its own fold-into-slot build: per-root streaming with reused\nbuffers is impossible over Dispatch's whole-forest capture. Its\nsubtree-size channel dropped out -- the fold never reads it.\n\nRootfixDispatch lands fresh on the tree side (the experimental/dag\nbranch version was the learning model): survey receives arrival + all\nchildren as exactly-once write-handles through the no-copy\nDispatchTargets view -- struct targets over one whole-build\nwritten-flags array, double/missed Dispatch throws, zero per-node\nallocation, and no IReadOnlyList in the signature (the same boxing trap\nrefused at design time). DispatchNode decorates rather than replaces,\nso flavors are compositions (Select/Do), not overloads.\n\nCodegen fix en route: the ValueTask<X> unwrap regex handled one level\nof nested generics; ValueTask<PreorderArrayStore<DispatchNode<TSource,\nTDispatch>>> is the first depth-two return type. One level deeper;\nregeneration byte-identical for every existing twin.\n\nSuites: Linq 23,929 / engine 459 / async 57, all green; conformance,\ndrift guard, and cross-dimension replay included. Surface map rows\nupdated in step (the living-inventory rule).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T01:56:21Z",
+          "tree_id": "d2b44f40463aca203c9ff863e64156c9a55268a7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/dbc44c0a3760640142970776a504f6704832a4b8"
+        },
+        "date": 1785636725128,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 56580916.27350427,
+            "unit": "ns",
+            "range": "± 78982.18617065222"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 107706380.76923078,
+            "unit": "ns",
+            "range": "± 474291.30639705434"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 108390207.46153846,
+            "unit": "ns",
+            "range": "± 399563.7742136061"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 38909539.58461539,
+            "unit": "ns",
+            "range": "± 376370.733121902"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 124520651.76666667,
+            "unit": "ns",
+            "range": "± 640712.3997129754"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 124310449.71666667,
+            "unit": "ns",
+            "range": "± 1799684.5360339393"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 15174908.070913462,
+            "unit": "ns",
+            "range": "± 36847.160758174374"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 78915398.34722222,
+            "unit": "ns",
+            "range": "± 391036.88803348766"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 85138664.66666667,
+            "unit": "ns",
+            "range": "± 1284491.4420109869"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 86687126.87142858,
+            "unit": "ns",
+            "range": "± 898282.013214255"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 88748174.47692308,
+            "unit": "ns",
+            "range": "± 1093771.8061998826"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 53516996.138461545,
+            "unit": "ns",
+            "range": "± 73095.43292867737"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 87941578.05555557,
+            "unit": "ns",
+            "range": "± 564875.1513585165"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 42353713.21666666,
+            "unit": "ns",
+            "range": "± 379813.0692031257"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 90689260.57142858,
+            "unit": "ns",
+            "range": "± 250035.3750249412"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28411303.042410713,
+            "unit": "ns",
+            "range": "± 55483.442915688705"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 66349666.791666664,
+            "unit": "ns",
+            "range": "± 266563.5015172471"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 62703601,
+            "unit": "ns",
+            "range": "± 157601.79357583792"
           }
         ]
       }
