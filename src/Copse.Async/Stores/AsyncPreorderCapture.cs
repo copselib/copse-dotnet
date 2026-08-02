@@ -25,9 +25,13 @@ namespace Copse.Async.Stores
     /// deferral seam (<c>AsyncLazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>
-    public static ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
+    public static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
       IAsyncDepthFirstTreenumerable<TValue> source)
-      => CaptureCoreAsync<TValue, bool>(source, sideChannelSelector: null, sideChannel: null);
+    {
+      var (values, subtreeSizes) = await CaptureCoreAsync<TValue, bool>(source, sideChannelSelector: null, sideChannel: null).ConfigureAwait(false);
+
+      return new AsyncPreorderArrayStore<TValue>(values, subtreeSizes);
+    }
 
     /// <summary>
     /// As <c>CaptureFromAsync(source)</c>, additionally evaluating
@@ -41,12 +45,30 @@ namespace Copse.Async.Stores
       Func<NodeContext<TValue>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
-      var store = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
+      var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
 
-      return (store, sideChannel.ToArray());
+      return (new AsyncPreorderArrayStore<TValue>(values, subtreeSizes), sideChannel.ToArray());
     }
 
-    private static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureCoreAsync<TValue, TSide>(
+    /// <summary>
+    /// The NAKED encoding: as the side-channel form, but returning the walk's raw
+    /// preorder-parallel arrays instead of wrapping them in a store -- for consumers that weave
+    /// a DIFFERENT store out of the walk (RootfixDispatch surveys over the encoding, then
+    /// builds a DispatchNode store from the same subtree-size array). <c>Values[i]</c> in
+    /// preorder; node i's subtree spans <c>[i, i + SubtreeSizes[i])</c>;
+    /// <c>SideChannel[i]</c> evaluated once per node against the source context.
+    /// </summary>
+    public static async ValueTask<(TValue[] Values, int[] SubtreeSizes, TSide[] SideChannel)> CaptureRawAsync<TValue, TSide>(
+      IAsyncDepthFirstTreenumerable<TValue> source,
+      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    {
+      var sideChannel = new RefAppendOnlyList<TSide>();
+      var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
+
+      return (values, subtreeSizes, sideChannel.ToArray());
+    }
+
+    private static async ValueTask<(TValue[] Values, int[] SubtreeSizes)> CaptureCoreAsync<TValue, TSide>(
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
@@ -82,7 +104,7 @@ namespace Copse.Async.Stores
         subtreeSizes[closedNode] = values.Count - closedNode;
       }
 
-      return new AsyncPreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray());
+      return (values.ToArray(), subtreeSizes.ToArray());
     }
   }
 }

@@ -29,7 +29,11 @@ namespace Copse.Stores
     /// </summary>
     public static PreorderArrayStore<TValue> CaptureFrom<TValue>(
       IDepthFirstTreenumerable<TValue> source)
-      => CaptureCore<TValue, bool>(source, sideChannelSelector: null, sideChannel: null);
+    {
+      var (values, subtreeSizes) = CaptureCore<TValue, bool>(source, sideChannelSelector: null, sideChannel: null);
+
+      return new PreorderArrayStore<TValue>(values, subtreeSizes);
+    }
 
     /// <summary>
     /// As <c>CaptureFromAsync(source)</c>, additionally evaluating
@@ -43,12 +47,30 @@ namespace Copse.Stores
       Func<NodeContext<TValue>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
-      var store = CaptureCore(source, sideChannelSelector, sideChannel);
+      var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
 
-      return (store, sideChannel.ToArray());
+      return (new PreorderArrayStore<TValue>(values, subtreeSizes), sideChannel.ToArray());
     }
 
-    private static PreorderArrayStore<TValue> CaptureCore<TValue, TSide>(
+    /// <summary>
+    /// The NAKED encoding: as the side-channel form, but returning the walk's raw
+    /// preorder-parallel arrays instead of wrapping them in a store -- for consumers that weave
+    /// a DIFFERENT store out of the walk (RootfixDispatch surveys over the encoding, then
+    /// builds a DispatchNode store from the same subtree-size array). <c>Values[i]</c> in
+    /// preorder; node i's subtree spans <c>[i, i + SubtreeSizes[i])</c>;
+    /// <c>SideChannel[i]</c> evaluated once per node against the source context.
+    /// </summary>
+    public static (TValue[] Values, int[] SubtreeSizes, TSide[] SideChannel) CaptureRaw<TValue, TSide>(
+      IDepthFirstTreenumerable<TValue> source,
+      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    {
+      var sideChannel = new RefAppendOnlyList<TSide>();
+      var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
+
+      return (values, subtreeSizes, sideChannel.ToArray());
+    }
+
+    private static (TValue[] Values, int[] SubtreeSizes) CaptureCore<TValue, TSide>(
       IDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
@@ -84,7 +106,7 @@ namespace Copse.Stores
         subtreeSizes[closedNode] = values.Count - closedNode;
       }
 
-      return new PreorderArrayStore<TValue>(values.ToArray(), subtreeSizes.ToArray());
+      return (values.ToArray(), subtreeSizes.ToArray());
     }
   }
 }

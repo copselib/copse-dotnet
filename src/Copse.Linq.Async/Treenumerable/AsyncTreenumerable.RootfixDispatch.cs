@@ -110,46 +110,19 @@ namespace Copse.Linq
       TDispatch seed,
       Action<NodeContext<TSource>, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
-      // Pass 1: one forward DFS into flat pre-order arrays -- contexts plus subtree sizes (the
-      // encoding the leaffix builds produce; a node's children sit at subtree-size hops after it).
-      var contexts = new List<NodeContext<TSource>>();
-      var subtreeSizes = new List<int>();
-      var openNodeIndexes = new Stack<int>(); // open ancestors of the current node
-
-      void Close()
-      {
-        var openIndex = openNodeIndexes.Pop();
-
-        subtreeSizes[openIndex] = contexts.Count - openIndex;
-      }
-
-      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
-      await using (treenumerator.ConfigureAwait(false))
-      {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          // Returning to this depth (or shallower) means every deeper open node is complete.
-          while (openNodeIndexes.Count > treenumerator.Position.Depth)
-            Close();
-
-          openNodeIndexes.Push(contexts.Count);
-          contexts.Add(treenumerator.ToNodeContext());
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (openNodeIndexes.Count > 0)
-        Close();
+      // Pass 1: the capture factory's raw form -- one depth-first walk into the flat pre-order
+      // encoding (a node's children sit at subtree-size hops after it), positions riding the
+      // side channel so nothing is stored twice.
+      var (values, subtreeSizes, positions) = await AsyncPreorderCapture
+        .CaptureRawAsync(source, nodeContext => nodeContext.Position)
+        .ConfigureAwait(false);
 
       // Pass 2: top-down over the flat encoding. Preorder puts every parent before its children,
       // so each node's arrival is resolved before its own survey runs; roots (index 0 and every
       // whole-subtree hop after a root) are seeded first. The one written-flags array carries
       // the exactly-once bookkeeping for the whole build: every non-root is some parent's child
       // exactly once, so no slot is ever reused and nothing per-node is allocated.
-      var nodeCount = contexts.Count;
+      var nodeCount = values.Length;
       var arrivals = new TDispatch[nodeCount];
       var written = new bool[nodeCount];
       var results = new DispatchNode<TSource, TDispatch>[nodeCount];
@@ -159,25 +132,27 @@ namespace Copse.Linq
 
       for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
       {
-        results[nodeIndex] = new DispatchNode<TSource, TDispatch>(contexts[nodeIndex].Node, arrivals[nodeIndex]);
+        results[nodeIndex] = new DispatchNode<TSource, TDispatch>(values[nodeIndex], arrivals[nodeIndex]);
 
         if (subtreeSizes[nodeIndex] == 1)
           continue;
 
         survey(
-          contexts[nodeIndex],
+          new NodeContext<TSource>(values[nodeIndex], positions[nodeIndex]),
           arrivals[nodeIndex],
-          new DispatchTargets<TSource, TDispatch>(contexts, subtreeSizes, arrivals, written, nodeIndex));
+          new DispatchTargets<TSource, TDispatch>(values, positions, subtreeSizes, arrivals, written, nodeIndex));
 
         // The survey returned; every child must have been dispatched to exactly once.
         var subtreeEnd = nodeIndex + subtreeSizes[nodeIndex];
         for (var childIndex = nodeIndex + 1; childIndex < subtreeEnd; childIndex += subtreeSizes[childIndex])
           if (!written[childIndex])
             throw new InvalidOperationException(
-              $"The survey completed without dispatching to '{contexts[childIndex].Node}'; every child must receive exactly one Dispatch.");
+              $"The survey completed without dispatching to '{values[childIndex]}'; every child must receive exactly one Dispatch.");
       }
 
-      return new AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes.ToArray());
+      // The result store rides the SAME subtree-size array the capture produced -- the shape is
+      // the source's, only the values changed.
+      return new AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes);
     }
   }
 }

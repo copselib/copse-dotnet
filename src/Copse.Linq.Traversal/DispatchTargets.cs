@@ -1,12 +1,13 @@
 using Copse;
-using System.Collections.Generic;
+using Copse.Core;
 
 namespace Copse.Linq
 {
   // A no-copy, no-allocation view over a surveyed node's children as write-handles, handed to a
   // RootfixDispatch survey. In the flat pre-order encoding a node's children sit at scattered
   // indices (each child's subtree is a contiguous span), so this hops them on demand rather than
-  // gathering into a temporary list.
+  // gathering into a temporary list. Backed by the capture factory's raw preorder-parallel
+  // arrays (values + positions + subtree sizes) plus the build's arrival/written arrays.
   //
   // Deliberately NOT IEnumerable<T> / IReadOnlyList<T>: foreach binds to the public struct
   // Enumerator by pattern (zero allocation), while every interface path would box the view AND
@@ -16,21 +17,24 @@ namespace Copse.Linq
   public readonly struct DispatchTargets<TSource, TDispatch>
   {
     internal DispatchTargets(
-      List<NodeContext<TSource>> contexts,
-      List<int> subtreeSizes,
+      TSource[] values,
+      NodePosition[] positions,
+      int[] subtreeSizes,
       TDispatch[] arrivals,
       bool[] written,
       int parentIndex)
     {
-      _Contexts = contexts;
+      _Values = values;
+      _Positions = positions;
       _SubtreeSizes = subtreeSizes;
       _Arrivals = arrivals;
       _Written = written;
       _ParentIndex = parentIndex;
     }
 
-    private readonly List<NodeContext<TSource>> _Contexts;
-    private readonly List<int> _SubtreeSizes;
+    private readonly TSource[] _Values;
+    private readonly NodePosition[] _Positions;
+    private readonly int[] _SubtreeSizes;
     private readonly TDispatch[] _Arrivals;
     private readonly bool[] _Written;
     private readonly int _ParentIndex;
@@ -49,18 +53,20 @@ namespace Copse.Linq
     }
 
     public Enumerator GetEnumerator() =>
-      new Enumerator(_Contexts, _SubtreeSizes, _Arrivals, _Written, _ParentIndex);
+      new Enumerator(_Values, _Positions, _SubtreeSizes, _Arrivals, _Written, _ParentIndex);
 
     public struct Enumerator
     {
       internal Enumerator(
-        List<NodeContext<TSource>> contexts,
-        List<int> subtreeSizes,
+        TSource[] values,
+        NodePosition[] positions,
+        int[] subtreeSizes,
         TDispatch[] arrivals,
         bool[] written,
         int parentIndex)
       {
-        _Contexts = contexts;
+        _Values = values;
+        _Positions = positions;
         _SubtreeSizes = subtreeSizes;
         _Arrivals = arrivals;
         _Written = written;
@@ -69,8 +75,9 @@ namespace Copse.Linq
         _Cursor = -1;
       }
 
-      private readonly List<NodeContext<TSource>> _Contexts;
-      private readonly List<int> _SubtreeSizes;
+      private readonly TSource[] _Values;
+      private readonly NodePosition[] _Positions;
+      private readonly int[] _SubtreeSizes;
       private readonly TDispatch[] _Arrivals;
       private readonly bool[] _Written;
       private readonly int _End;
@@ -78,7 +85,8 @@ namespace Copse.Linq
       private int _Cursor;
 
       public DispatchTarget<TSource, TDispatch> Current =>
-        new DispatchTarget<TSource, TDispatch>(_Contexts[_Cursor], _Arrivals, _Written, _Cursor);
+        new DispatchTarget<TSource, TDispatch>(
+          new NodeContext<TSource>(_Values[_Cursor], _Positions[_Cursor]), _Arrivals, _Written, _Cursor);
 
       public bool MoveNext()
       {

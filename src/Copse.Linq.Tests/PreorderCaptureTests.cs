@@ -52,5 +52,25 @@ namespace Copse.Linq.Tests
         new[] { "a", "b", "d", "c" },
         Enumerable.Range(0, store.Count).Select(store.GetValue).ToArray());
     }
+
+    // The raw form is the store form unwrapped: same walk, same arrays -- for consumers that
+    // weave a different store out of the encoding (RootfixDispatch).
+    [TestMethod]
+    public void Raw_form_matches_the_store_form()
+    {
+      foreach (var tree in Trees)
+      {
+        var source = () => TreeSerializer.DeserializeDepthFirstTree(tree);
+
+        var (store, storeSide) = PreorderCapture.CaptureFrom(source(), nodeContext => nodeContext.Position);
+        var (values, subtreeSizes, rawSide) = PreorderCapture.CaptureRaw(source(), nodeContext => nodeContext.Position);
+
+        CollectionAssert.AreEqual(
+          Enumerable.Range(0, store.Count).Select(store.GetValue).ToArray(), values, $"values mismatch for '{tree}'");
+        CollectionAssert.AreEqual(
+          Enumerable.Range(0, store.Count).Select(store.GetSubtreeSize).ToArray(), subtreeSizes, $"subtree sizes mismatch for '{tree}'");
+        CollectionAssert.AreEqual(storeSide, rawSide, $"side channel mismatch for '{tree}'");
+      }
+    }
   }
 }

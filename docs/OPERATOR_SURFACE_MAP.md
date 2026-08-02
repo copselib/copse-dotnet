@@ -169,10 +169,12 @@ Capture factories (Copse/Stores ← Copse.Async/Stores; public statics; ADDED 20
 ├─ PreorderCapture.CaptureFrom(source[, sideChannelSelector])  the ENCODE direction, written
 │    once: shape A hoisted from the operator builds → PreorderArrayStore (+ preorder-parallel
 │    side array — OrderChildrenBy's keys hook). Consumers: Invert's build; OrderChildrenBy
-│    adopts at its rebase. The leaffix/dispatch builds stay bespoke (LeaffixDispatch's
-│    close-hook needs ChildAccumulations and RootfixDispatch's surveys need DispatchTargets —
-│    Copse.Linq types this layer cannot see; LeaffixScan owns no build, it delegates to
-│    LeaffixDispatch; LeaffixAggregate folds into open slots as it goes).
+│    adopts at its rebase. CaptureRaw (added 2026-08-02) is the naked-arrays form for
+│    consumers that weave a DIFFERENT store from the walk: RootfixDispatch's pass 1 dissolved
+│    into it (positions on the side channel; the result store reuses the capture's subtree-size
+│    array). The leaffix builds stay bespoke (LeaffixDispatch's close-hook needs
+│    ChildAccumulations, a Copse.Linq type this layer cannot see; LeaffixScan owns no build,
+│    it delegates to LeaffixDispatch; LeaffixAggregate folds into open slots as it goes).
 └─ LevelOrderCapture.CaptureFrom(source)      shape B in one-shot form (the memo's front-cursor
      parse) → LevelOrderArrayStore. No consumer yet; first candidates are the LeaffixScan-B /
      LeaffixAggregate-B capture-then-fold rebuilds. No side-channel overload until a consumer exists.
