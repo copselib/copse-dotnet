@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785638401107,
+  "lastUpdate": 1785638401543,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -49742,6 +49742,66 @@ window.BENCHMARK_DATA = {
             "value": 157563589.14166668,
             "unit": "ns",
             "range": "± 4701983.159180599"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "fade5000310d5b39731ce02e2b7f0ec658c952f6",
+          "message": "RootfixDispatch pass 1 dissolves into the capture factory's raw form\n\nPreorderCapture gains CaptureRaw(source, sideChannelSelector): the\nnaked encoding -- the same one walk, returned as the raw\npreorder-parallel arrays (values, subtree sizes, side channel) instead\nof wrapped in a store, for consumers that weave a DIFFERENT store out\nof it. The two store-returning overloads become thin wrappers over the\nsame core, so the codebase still has exactly one capture loop.\n\nRootfixDispatch was the consumer: its pass 1 re-derived the\nDFS-into-flat-arrays skeleton with a List<NodeContext> path -- the last\ncopy of the loop the factory was hoisted to kill. Now pass 1 is one\nCaptureRaw call with positions riding the side channel (values and\npositions stored once each, never as doubled-up contexts), pass 2\nreconstructs survey contexts by index, DispatchTargets rides the raw\narrays instead of List indexers, and the result store reuses the\ncapture's subtree-size array outright -- the shape is the source's,\nonly the values changed.\n\nMeasured on the new RootfixDispatch benchmark rows (~1M-node corpus):\nallocation -25% on the triangle (81 -> 61 MB, Gen2 halved), -4..6% on\nthe chains; time -8..20% within short-run error bars. The win is the\nfactory's RefAppendOnlyList chunked growth replacing List doubling,\nplus one less ToArray -- landed once, where Invert and OrderChildrenBy\nalready ride it.\n\nRaw_form_matches_the_store_form pins the wrapper relationship in\nPreorderCaptureTests. Suites: Linq 23,930 / engine 459 / async 57, all\ngreen.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T02:27:39Z",
+          "tree_id": "ca777c84b53b051f262d1d851a2ae5a4788ed9c7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fade5000310d5b39731ce02e2b7f0ec658c952f6"
+        },
+        "date": 1785638401455,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 73947867.47959183,
+            "unit": "ns",
+            "range": "± 252198.18205028097"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 10868450.029017856,
+            "unit": "ns",
+            "range": "± 21501.359645240344"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 139439592.1153846,
+            "unit": "ns",
+            "range": "± 559775.9037682756"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17159703.665625,
+            "unit": "ns",
+            "range": "± 169566.70975817717"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 172112702.86868688,
+            "unit": "ns",
+            "range": "± 5334761.562096244"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 151797070.5,
+            "unit": "ns",
+            "range": "± 619376.4356298195"
           }
         ]
       }
