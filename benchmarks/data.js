@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785640887539,
+  "lastUpdate": 1785641763599,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -10366,6 +10366,150 @@ window.BENCHMARK_DATA = {
             "value": 203271167.09375,
             "unit": "ns",
             "range": "± 259504.23498376147"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "226bb3c0d1404b53e466ee7c3b74beae6ff5f63f",
+          "message": "OrderChildrenBy-B: the permutation buffer joins the flush pool\n\nThe streaming breadth-first build pooled its group lists specifically\nso a chain would not allocate per single-node level (\"a million of\nthem\" -- the comment), then allocated a fresh levelPermutation array\nten lines below, every flush: a million int[1]s on the same chain,\nfound on the dashboard's memory rows as the largest footprint in the\nsuite (OrderChildrenByBreadthFirstEntry.Dft_Chain, 176 MB).\n\nThe permutation cannot ride the same single-spare pooling -- the\nflushed level's permutation must stay readable while the next level's\nis written -- so it gets a ping-ponged PAIR, grown to the widest level\nseen (doubling) and swapped at each flush. Oversize is safe: readers\nstop at flushedLevelSourceSize, writers fill their range before use.\n\nMeasured (allocation is environment-independent, so local rows compare\nto the dashboard's): both chain rows drop exactly 32.00 MB -- one\nmillion 32-byte int[1]s -- 152 -> 120 MB (Bft) and 176 -> 144 MB\n(Dft). The triangle rows drop ~4 MB too (its 1448 per-level arrays,\nsumming to ~1M ints, now ~11 doubling allocations); that one was a\nbonus, not the target.\n\nSuites: Linq 23,931 / async 57, all green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T03:22:19Z",
+          "tree_id": "e67633c50653ff3ab7ab698415c3517457dd25a1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/226bb3c0d1404b53e466ee7c3b74beae6ff5f63f"
+        },
+        "date": 1785641754880,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 11734860.179166667,
+            "unit": "ns",
+            "range": "± 71113.63256974854"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 16638502.776442308,
+            "unit": "ns",
+            "range": "± 78505.63608684021"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 5078573.8875,
+            "unit": "ns",
+            "range": "± 70185.99313574552"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3261115.5143229165,
+            "unit": "ns",
+            "range": "± 18350.770850401623"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 88833697.08888888,
+            "unit": "ns",
+            "range": "± 527598.1236876742"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 106596490.14666669,
+            "unit": "ns",
+            "range": "± 1136389.0986293268"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 35653445.94444445,
+            "unit": "ns",
+            "range": "± 212085.7956639746"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 42549998.41435186,
+            "unit": "ns",
+            "range": "± 615272.3233690674"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 34129182.88717948,
+            "unit": "ns",
+            "range": "± 208986.93175941624"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 28882257.07589286,
+            "unit": "ns",
+            "range": "± 102896.29185018931"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 20934419.20982143,
+            "unit": "ns",
+            "range": "± 76245.39718634942"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 17198526.195833333,
+            "unit": "ns",
+            "range": "± 103821.84320701292"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 44357789.844444446,
+            "unit": "ns",
+            "range": "± 147646.73958035462"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 66093426.44047619,
+            "unit": "ns",
+            "range": "± 211380.10708946112"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 20086891.93125,
+            "unit": "ns",
+            "range": "± 138150.02991713927"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 13153130.342708332,
+            "unit": "ns",
+            "range": "± 89350.03985324042"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 352833329.1333333,
+            "unit": "ns",
+            "range": "± 1173138.3106905334"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 442478495.28571427,
+            "unit": "ns",
+            "range": "± 1091612.5780787605"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 143911930.00900903,
+            "unit": "ns",
+            "range": "± 1125815.0186346245"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 175572864.46153846,
+            "unit": "ns",
+            "range": "± 1877849.8031904183"
           }
         ]
       }
