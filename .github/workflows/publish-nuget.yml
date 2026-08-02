@@ -50,7 +50,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.0.x
+          # 9.x is the floor the code actually requires (C# 13: ref-in-async in the
+          # StructuralMerge treenumerators). The previous 8.0.x pin only worked because the
+          # runner image happens to preinstall newer SDKs and no global.json pins the build.
+          dotnet-version: 9.0.x
 
       - name: Restore
         run: dotnet restore src/Copse.sln
