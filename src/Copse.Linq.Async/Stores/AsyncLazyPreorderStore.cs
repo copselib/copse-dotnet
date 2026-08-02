@@ -10,10 +10,10 @@ namespace Copse.Linq.Async.Stores
   // and every call after that answers from the completed PreorderArrayStore.
   //
   // This replaced the Lazy&lt;PreorderTreenumerable&gt; shape the hand-written sync
-  // LeaffixScan/Invert used: a sync-signature treenumerator factory cannot await, so the deferral
+  // LeaffixDispatch/Invert used: a sync-signature treenumerator factory cannot await, so the deferral
   // moves from the treenumerable (Lazy.Value inside the factory) to the store's grow seam --
   // which the store decoders already own. The sync twin (LazyPreorderStore) is generated
-  // from this and is what the generated sync LeaffixScan/Invert defer through.
+  // from this and is what the generated sync LeaffixDispatch/Invert defer through.
   //
   // GetValue/GetSubtreeSize are pure reads and stay synchronous: the decoder contract guarantees
   // a grow call precedes every read, so the store is always built by the time they run.

@@ -126,7 +126,7 @@ namespace Copse.Linq
       => OrderChildrenByDescending((IAsyncDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
 
     // Layout follows the source's arrival: depth-first sources build preorder arrays (matching
-    // LeaffixScan's measured layout decision), the breadth-first-narrow arm builds level-order
+    // LeaffixDispatch's measured layout decision), the breadth-first-narrow arm builds level-order
     // arrays directly -- the layout its arrival order IS, and the one its consumer (necessarily
     // breadth-first-inclined) replays natively.
     private static IAsyncTreenumerable<TNode> PreorderOrderChildren<TNode, TKey>(

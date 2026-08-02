@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 
 namespace Copse.Async.Tests
 {
-  // Thin MECHANICS check for the async capture operators LeaffixScan and Invert (the logic is
-  // tested once, on the generated sync twins): each must agree with its sync counterpart over
-  // the same tree, from a genuinely-suspending source, in both traversal dimensions.
+  // Thin MECHANICS check for the async capture operators (LeaffixScan/LeaffixDispatch,
+  // RootfixDispatch, Invert -- the logic is tested once, on the generated sync twins): each must
+  // agree with its sync counterpart over the same tree, from a genuinely-suspending source, in
+  // both traversal dimensions.
   [TestClass]
   public class AsyncCaptureOpsTests
   {
@@ -20,17 +21,25 @@ namespace Copse.Async.Tests
       "a", "a(b,c,d)", "a(b(e),c)", "a,b,c", "a(b(d,e),c)", "a(b(d,e,f),c(g,h,i))",
     };
 
+    private static string ConcatSurvey(NodeContext<string> nc, ChildAccumulations<string> kids)
+    {
+      var concatenated = nc.Node + "(";
+      foreach (var kid in kids)
+        concatenated += kid + ",";
+      return concatenated + ")";
+    }
+
     [TestMethod]
     public async Task LeaffixScan_MatchesSync_BothDimensions()
     {
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          (acc, kid) => acc + "|" + kid,
           nc => nc.Node);
 
         var async = Async(tree).LeaffixScan(
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          (acc, kid) => acc + "|" + kid,
           nc => nc.Node);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
@@ -44,17 +53,55 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         var sync = Sync(tree).LeaffixScan(
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          (acc, kid) => acc + "|" + kid,
           nc => nc.Node);
 
         var async = Async(tree).LeaffixScan(
-          (nc, kids) => nc.Node + "(" + string.Join(",", kids) + ")",
+          (acc, kid) => acc + "|" + kid,
           nc => nc.Node);
 
         // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
         // rides the same capture (the reverse pin order of the test above).
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+      }
+    }
+
+    [TestMethod]
+    public async Task LeaffixDispatch_MatchesSync_BothDimensions()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).LeaffixDispatch(ConcatSurvey, nc => nc.Node);
+        var async = Async(tree).LeaffixDispatch(ConcatSurvey, nc => nc.Node);
+
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+      }
+    }
+
+    [TestMethod]
+    public async Task RootfixDispatch_MatchesSync_BothDimensions()
+    {
+      static void Survey(NodeContext<string> nc, string arrival, DispatchTargets<string, string> children)
+      {
+        foreach (var child in children)
+          child.Dispatch(arrival + child.Node);
+      }
+
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree)
+          .RootfixDispatch("s", Survey)
+          .PreorderTraversal()
+          .Select(dn => dn.Dispatched + dn.Value)
+          .ToList();
+
+        var async = (await ToList(Async(tree).RootfixDispatch("s", Survey).PreorderTraversal()))
+          .Select(dn => dn.Dispatched + dn.Value)
+          .ToList();
+
+        CollectionAssert.AreEqual(sync, async, $"Preorder {tree}");
       }
     }
 

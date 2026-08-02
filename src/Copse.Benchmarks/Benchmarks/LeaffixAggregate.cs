@@ -12,13 +12,9 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Aggregate", "Leaffix")]
   public class LeaffixAggregate
   {
-    private static int SubtreeNodeCount(NodeContext<int> nodeContext, ChildAccumulations<int> children)
-    {
-      var count = 1;
-      foreach (var child in children)
-        count += child;
-      return count;
-    }
+    // Each node projects to 1 and folds in each child's completed subtree node count.
+    private static int SubtreeNodeCount(int accumulate, int childAccumulate)
+      => accumulate + childAccumulate;
 
     [Benchmark]
     public int Triangle() =>

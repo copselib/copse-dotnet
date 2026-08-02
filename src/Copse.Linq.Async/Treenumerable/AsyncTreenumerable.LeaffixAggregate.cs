@@ -13,32 +13,34 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one value per root tree, the fold of the accumulator up from that tree's leaves.
-    /// Each node accumulates over its children's accumulations (or the leaf selector at a leaf).
-    /// Lazy per root -- a root is emitted the moment its subtree completes, and the flat buffers are
-    /// then reused for the next root, so peak memory is the largest root subtree (not the whole
-    /// forest) and a consumer that stops early traverses fewer roots. Zero per-node alloc: children
-    /// are read via the no-copy ChildAccumulations view (see LeaffixScan).
+    /// sequence -- one value per root tree, the fold of the accumulator up from that tree's
+    /// leaves. Every node's accumulation starts at <paramref name="nodeSelector"/> and each
+    /// child's completed accumulation is folded in by <paramref name="accumulator"/>, one child
+    /// at a time in sibling order (a leaf's value is its seed unchanged; the sibling-complete
+    /// shape belongs to LeaffixDispatch). Lazy per root -- a root is emitted the moment its
+    /// subtree completes, and the flat buffers are then reused for the next root, so peak memory
+    /// is the largest root subtree (not the whole forest) and a consumer that stops early
+    /// traverses fewer roots. Zero per-node alloc: the fold writes straight into the parent's
+    /// running slot.
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       var accumulations = new List<TAccumulate>();
-      var subtreeSizes = new List<int>();
       var path = new Stack<PendingNode<TSource>>();
 
       void Close()
       {
         var pending = path.Pop();
-        var index = pending.Index;
-        subtreeSizes[index] = accumulations.Count - index;
-        accumulations[index] =
-          subtreeSizes[index] == 1
-          ? leafNodeSelector(pending.Context)
-          : accumulator(pending.Context, new ChildAccumulations<TAccumulate>(accumulations, subtreeSizes, index));
+
+        if (path.Count > 0)
+        {
+          var parent = path.Peek();
+          accumulations[parent.Index] = accumulator(parent.Context, accumulations[parent.Index], accumulations[pending.Index]);
+        }
       }
 
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
@@ -59,12 +61,12 @@ namespace Copse.Linq
           {
             yield return accumulations[0];
             accumulations.Clear();
-            subtreeSizes.Clear();
           }
 
-          path.Push(new PendingNode<TSource>(accumulations.Count, treenumerator.ToNodeContext()));
-          accumulations.Add(default);
-          subtreeSizes.Add(0);
+          var nodeContext = treenumerator.ToNodeContext();
+
+          path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
+          accumulations.Add(nodeSelector(nodeContext));
         }
       }
 
@@ -89,8 +91,8 @@ namespace Copse.Linq
     /// </summary>
     public static async IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       // The capture is the memo's chunked level-order buffer, completed in one pass -- chunked
@@ -102,25 +104,23 @@ namespace Copse.Linq
       {
         await capture.CompleteAsync().ConfigureAwait(false);
 
-        // The depth-first entry's preorder-shaped fold (same Close, same ChildAccumulations
-        // view), driven by index chasing over the capture's contiguous child spans instead of
+        // The depth-first entry's preorder-shaped fold (same Close, same fold-into-parent),
+        // driven by index chasing over the capture's contiguous child spans instead of
         // a visit stream. Contexts are reconstructed from the spans: depth is the walk
         // stack's, sibling index is the offset inside the parent's span (roots: the root
         // ordinal).
         var accumulations = new List<TAccumulate>();
-        var subtreeSizes = new List<int>();
         var path = new Stack<PendingNode<TSource>>();
 
         void Close()
         {
           var pending = path.Pop();
-          var index = pending.Index;
 
-          subtreeSizes[index] = accumulations.Count - index;
-          accumulations[index] =
-            subtreeSizes[index] == 1
-            ? leafNodeSelector(pending.Context)
-            : accumulator(pending.Context, new ChildAccumulations<TAccumulate>(accumulations, subtreeSizes, index));
+          if (path.Count > 0)
+          {
+            var parent = path.Peek();
+            accumulations[parent.Index] = accumulator(parent.Context, accumulations[parent.Index], accumulations[pending.Index]);
+          }
         }
 
         // Children are pushed in reverse span order so they pop in preorder.
@@ -139,11 +139,11 @@ namespace Copse.Linq
             while (path.Count > frame.Depth)
               Close();
 
-            path.Push(new PendingNode<TSource>(
-              accumulations.Count,
-              new NodeContext<TSource>(capture.GetValue(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth))));
-            accumulations.Add(default);
-            subtreeSizes.Add(0);
+            var nodeContext = new NodeContext<TSource>(
+              capture.GetValue(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth));
+
+            path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
+            accumulations.Add(nodeSelector(nodeContext));
 
             var firstChildIndex = capture.GetFirstChildIndex(frame.Index);
             var childCount = capture.GetChildCount(frame.Index);
@@ -157,7 +157,6 @@ namespace Copse.Linq
 
           yield return accumulations[0];
           accumulations.Clear();
-          subtreeSizes.Clear();
         }
       }
     }
@@ -168,9 +167,36 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, leafNodeSelector, cancellationToken);
+      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector, cancellationToken);
+
+    // The value-only accumulator flavor (arity-split, like Select/Where): a pure combine --
+    // (runningAccumulate, childAccumulate) -- for folds that never read the folding node.
+    public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TSource> source,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      CancellationToken cancellationToken = default)
+      => LeaffixAggregate(source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+
+    public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      CancellationToken cancellationToken = default)
+      => LeaffixAggregate(source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+
+    public static IAsyncEnumerable<TAccumulate> LeaffixAggregate<TSource, TAccumulate>(
+      this IAsyncTreenumerable<TSource> source,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector,
+      CancellationToken cancellationToken = default)
+      => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, ContextBlindAccumulator<TSource, TAccumulate>(accumulator), nodeSelector, cancellationToken);
+
+    private static Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> ContextBlindAccumulator<TSource, TAccumulate>(
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
+      => (_, accumulate, childAccumulate) => accumulator(accumulate, childAccumulate);
   }
 }

@@ -120,20 +120,15 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task LeaffixAggregate_MatchesSync()
     {
-      // Leaf count per root tree: leaves count 1, internal nodes sum their children's counts.
-      Func<NodeContext<string>, int> leaf = _ => 1;
-      Func<NodeContext<string>, ChildAccumulations<int>, int> acc = (_, kids) =>
-      {
-        var sum = 0;
-        foreach (var k in kids)
-          sum += k;
-        return sum;
-      };
+      // Node count per root tree: every node projects to 1 and each child's completed count
+      // folds in (value flavor).
+      Func<NodeContext<string>, int> nodeSelector = _ => 1;
+      Func<int, int, int> acc = (accumulate, childAccumulate) => accumulate + childAccumulate;
 
       foreach (var tree in Trees)
         CollectionAssert.AreEqual(
-          Sync(tree).LeaffixAggregate(acc, leaf).ToList(),
-          await ToList(Async(tree).LeaffixAggregate(acc, leaf)),
+          Sync(tree).LeaffixAggregate(acc, nodeSelector).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(acc, nodeSelector)),
           $"LeaffixAggregate {tree}");
     }
 

@@ -498,6 +498,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerable/Treenumerable.LeaffixAggregate.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.LeaffixDispatch.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.LeaffixDispatch.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.LeaffixScan.cs",
         "Copse.Linq/Treenumerable/Treenumerable.LeaffixScan.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
@@ -536,6 +540,10 @@ namespace Copse.CodeGen
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.RootfixAggregate.cs",
         "Copse.Linq/Treenumerable/Treenumerable.RootfixAggregate.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.RootfixDispatch.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.RootfixDispatch.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.RootfixScan.cs",

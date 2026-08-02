@@ -11,7 +11,7 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   [TestClass]
-  public class LeaffixScanTests
+  public class LeaffixDispatchTests
   {
     public static IEnumerable<object[]> GetTestData()
     {
@@ -42,6 +42,17 @@ namespace Copse.Linq.Tests
         : data[0].ToString();
     }
 
+    // The survey concatenates the node's letter with every child's accumulation, read through
+    // the ChildAccumulations view (foreach binds to the struct enumerator -- the view is
+    // deliberately not IEnumerable, so string.Join over it does not compile).
+    private static string ConcatSurvey(NodeContext<string> nodeContext, ChildAccumulations<string> children)
+    {
+      var concatenated = nodeContext.Node;
+      foreach (var child in children)
+        concatenated += child;
+      return concatenated;
+    }
+
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
     public void EnumerableToTreeTest_BreadthFirst(
@@ -60,10 +71,6 @@ namespace Copse.Linq.Tests
       EnumerableToTreeTest(treeString, expectedTreeString, TreeTraversalStrategy.DepthFirst);
     }
 
-    // The fold shape (value flavor): nodeSelector projects every node to its own letter and
-    // each child's completed accumulation concatenates in as its subtree closes. Concatenation
-    // is non-commutative, so the corpus also pins the sibling-order guarantee -- any
-    // out-of-order fold scrambles the expected strings.
     public void EnumerableToTreeTest(
       string treeString,
       string expectedTreeString,
@@ -86,8 +93,8 @@ namespace Copse.Linq.Tests
       Debug.WriteLine($"{Environment.NewLine}-----Actual Values-----");
       var actual =
         sut
-        .LeaffixScan(
-          (accumulate, childAccumulate) => accumulate + childAccumulate,
+        .LeaffixDispatch(
+          ConcatSurvey,
           nodeContext => nodeContext.Node)
         .GetTraversal(treeTraversalStrategy)
         .Do(visit => Debug.WriteLine(visit))
@@ -104,24 +111,24 @@ namespace Copse.Linq.Tests
     }
 
     // The disclosure rule: a breadth-first-only source is accepted (the level-order arrival is
-    // captured internally, the fold runs over the capture's depth-first replay, and the O(n) is
+    // captured internally, the survey runs over the capture's depth-first replay, and the O(n) is
     // disclosed by the buffer return type) and must equal the explicit escalation.
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void NarrowBreadthFirstSource_EqualsExplicitMaterializeThenScan(
+    public void NarrowBreadthFirstSource_EqualsExplicitMaterializeThenDispatch(
       string treeString,
       string expectedTreeString)
     {
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
-      var viaDisclosureRule = narrowSource.LeaffixScan(
-        (accumulate, childAccumulate) => accumulate + childAccumulate,
+      var viaDisclosureRule = narrowSource.LeaffixDispatch(
+        ConcatSurvey,
         nodeContext => nodeContext.Node);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
-        .LeaffixScan(
-          (accumulate, childAccumulate) => accumulate + childAccumulate,
+        .LeaffixDispatch(
+          ConcatSurvey,
           nodeContext => nodeContext.Node);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
@@ -131,12 +138,12 @@ namespace Copse.Linq.Tests
           $"{treeTraversalStrategy} mismatch for {treeString}");
     }
 
-    // The scan's LAYOUT is pinned to the FIRST dimension pulled (breadth-first-first lays the
-    // finished scan out in level order, depth-first-first in preorder); whichever wins, both
+    // The dispatch's LAYOUT is pinned to the FIRST dimension pulled (breadth-first-first lays the
+    // finished survey out in level order, depth-first-first in preorder); whichever wins, both
     // dimensions must replay the same values from the one capture.
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void ScanServesBothDimensionsWhicheverIsPulledFirst(
+    public void DispatchServesBothDimensionsWhicheverIsPulledFirst(
       string treeString,
       string expectedTreeString)
     {
@@ -149,46 +156,75 @@ namespace Copse.Linq.Tests
           ? TreeTraversalStrategy.DepthFirst
           : TreeTraversalStrategy.BreadthFirst;
 
-        var scan = TreeSerializer
+        var dispatch = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
-          .LeaffixScan(
-            (accumulate, childAccumulate) => accumulate + childAccumulate,
+          .LeaffixDispatch(
+            ConcatSurvey,
             nodeContext => nodeContext.Node);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),
-          scan.GetTraversal(firstStrategy).ToArray(),
+          dispatch.GetTraversal(firstStrategy).ToArray(),
           $"{firstStrategy}-first: first drain mismatch for {treeString}");
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(secondStrategy).ToArray(),
-          scan.GetTraversal(secondStrategy).ToArray(),
+          dispatch.GetTraversal(secondStrategy).ToArray(),
           $"{firstStrategy}-first: cross-dimension replay mismatch for {treeString}");
       }
     }
 
-    // The context flavor: the accumulator's context is the FOLDING node's (the parent
-    // receiving the child), not the closing child's -- the fold is "parent absorbs child", so
-    // a rule may weight children by the folding node's own value or position.
+    // Sibling-complete visibility is the tier's defining guarantee: every child's accumulation
+    // is readable (twice -- Count and a second pass are both span hops) before the survey
+    // returns. Each internal node's value is (own letter + LAST child's accumulation + count),
+    // which is only computable if the view really exposes the complete child list.
     [TestMethod]
-    public void AccumulatorContextIsTheParents()
+    public void SurveySeesAllChildrenAtOnce()
     {
-      var foldObservations = new List<string>();
-
-      TreeSerializer
-        .DeserializeDepthFirstTree("a(b(c),d)")
-        .LeaffixScan(
-          (nodeContext, accumulate, childAccumulate) =>
+      var actual = TreeSerializer
+        .DeserializeDepthFirstTree("a(b(c,d),e)")
+        .LeaffixDispatch(
+          (nodeContext, children) =>
           {
-            foldObservations.Add($"{nodeContext.Node}<-{childAccumulate}");
-            return accumulate + childAccumulate;
+            var lastChild = default(string);
+            foreach (var child in children)
+              lastChild = child;
+
+            return $"{nodeContext.Node}{lastChild}[{children.Count}]";
           },
           nodeContext => nodeContext.Node)
         .PreorderTraversal()
         .ToArray();
 
-      // c closes into b, then b's finished fold closes into a, then d closes into a.
-      CollectionAssert.AreEqual(new[] { "b<-c", "a<-bc", "a<-d" }, foldObservations);
+      // b's children are the leaves c,d -> "bd[2]"; a's children are b's survey and the leaf e,
+      // and e is last -> "ae[2]".
+      CollectionAssert.AreEqual(new[] { "ae[2]", "bd[2]", "c", "d", "e" }, actual);
+    }
+
+    // The fixed-seed overload -- RootfixScan's constant-seed dual -- and the canonical
+    // boundary-only aggregation it exists for: leaf count. Leaves start at the seed (1);
+    // internal nodes contribute nothing of their own, just the sum of their children. This is
+    // the aggregation the fold tier CANNOT express (nodeSelector cannot tell a leaf from an
+    // internal node), pinning the tier split.
+    [TestMethod]
+    public void FixedSeed_LeafCount()
+    {
+      var actual = TreeSerializer
+        .DeserializeDepthFirstTree("a(b(c,d),e)")
+        .LeaffixDispatch(
+          (nodeContext, children) =>
+          {
+            var count = 0;
+            foreach (var child in children)
+              count += child;
+            return count;
+          },
+          1)
+        .PreorderTraversal()
+        .ToArray();
+
+      // Leaves c,d,e count 1 each; b = c+d = 2; a = b+e = 3.
+      CollectionAssert.AreEqual(new[] { 3, 2, 1, 1, 1 }, actual);
     }
   }
 }

@@ -1,147 +1,102 @@
-using Copse.Async.Stores;
-using Copse.Async;
-using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Treenumerables;
-using Copse.Linq.Async.Stores;
-using Copse.Linq.Async.Treenumerators;
-using Copse.Linq.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Bottom-up scan: every node gets an accumulated value -- leaves from
-    /// <paramref name="leafNodeSelector"/>, internal nodes from <paramref name="accumulator"/>
-    /// over their children's accumulated values. The result tree has the same shape as the source.
+    /// The fold tier of the leaffix pair: map-then-combine up the tree. Every node's
+    /// accumulation starts at <paramref name="nodeSelector"/> (the map -- each node's own
+    /// contribution, and the fold's starting value; a leaf is the projection unchanged), and
+    /// each child's completed accumulation is combined in by <paramref name="accumulator"/> --
+    /// one child at a time, in sibling order, so non-commutative folds like concatenation are
+    /// well-defined. Decomposable aggregations (sum, count, max, concat) are one lambda each;
+    /// a combine that must SEE the nodes involved takes the context overload, and anything
+    /// needing all children at once (median, top-k) or boundary-only contributions (leaf
+    /// count) belongs to LeaffixDispatch, the sibling-complete tier this operator is sugar
+    /// over (measured equivalent, 2026-08-01: same allocation, time within noise).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because LeaffixScan
-    /// MANUFACTURES owned O(n) storage: the projected accumulations are new values that exist
-    /// nowhere in the source, and a root's value IS its whole subtree's aggregate -- the source
-    /// is fully consumed before the first result visit can be published, so the result is a
-    /// completed capture, not a lazy stream. Deferred (hence the sync name): construction is
-    /// pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited build runs
-    /// ONCE, on the first replay pull, through the lazy-built store's grow seam. The source is
-    /// consumed depth-first only, so a streamed narrow source can leaffix.</para>
+    /// <para>Callbacks run during the deferred build, once per node (the selector) and once
+    /// per child edge (the accumulator); only the sibling fold order is specified --
+    /// invocation timing relative to the source walk is not, so callbacks should be pure.</para>
     ///
-    /// <para>Single forward DFS pass into flat pre-order arrays; see the sync operator for the
-    /// construction notes (subtree-size hop, O(depth) working set).</para>
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because a leaffix scan
+    /// MANUFACTURES owned O(n) storage: a root's value IS its whole subtree's aggregate, so
+    /// the source is fully consumed before the first result visit can be published. Deferred:
+    /// construction is pinned to the first treenumerator acquisition. The source is consumed
+    /// depth-first only, so a streamed narrow source can leaffix.</para>
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => new AsyncTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(() => PreorderScan(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
 
     /// <summary>
-    /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
-    /// here, instead of at every call site: a leaffix fold runs in depth-first subtree-close
-    /// order, which a level-order arrival cannot provide, so the source is captured (the same
-    /// O(n) every LeaffixScan pays, disclosed by the buffer return type) and the fold runs over
-    /// the capture's depth-first replay.
+    /// The context overload: the combine also sees the FOLDING node (the parent absorbing the
+    /// child), for rules like weighting each child's rollup by the folding node's own factor.
+    /// If the rule needs more than that -- other children, child identity -- it is a survey:
+    /// use LeaffixDispatch.
     /// </summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => new AsyncTreenumerableBuffer<TAccumulate>(
-        AsyncTree.Lazy(() => PreorderScanBreadthFirstSource(source, accumulator, leafNodeSelector)), BufferLayout.Preorder);
+      this IAsyncDepthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
 
-    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first consumption.</summary>
+    /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
+    public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+
+    public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixDispatch(source, FoldSurvey(accumulator, nodeSelector), nodeSelector);
+
+    /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, leafNodeSelector);
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector);
 
-    // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
-    // breadth-first-first pull (Tree.Lazy's dimension dispatch, one transpose pass into
-    // LevelOrderArrayStore) was built and MEASURED OUT -- over raw array stores the
-    // breadth-first cross-decode tax is only ~1.08x (the Memoize replay rows' 1.53x is
-    // memo-store overhead, not layout), so the transpose plus transient double storage
-    // needs ~5 replays to break even and taxes the common single-drain case ~8%.
-    private static IAsyncTreenumerable<TAccumulate> PreorderScan<TSource, TAccumulate>(
-      IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-    {
-      var scanned = new AsyncLazyPreorderStore<TAccumulate>(
-        () => BuildLeaffixScanAsync(source, accumulator, leafNodeSelector));
+    public static IAsyncTreenumerableBuffer<TAccumulate> LeaffixScan<TSource, TAccumulate>(
+      this IAsyncTreenumerable<TSource> source,
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, accumulator, nodeSelector);
 
-      return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(scanned);
-    }
-
-    private static IAsyncTreenumerable<TAccumulate> PreorderScanBreadthFirstSource<TSource, TAccumulate>(
-      IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-    {
-      var scanned = new AsyncLazyPreorderStore<TAccumulate>(
-        () => BuildLeaffixScanFromBreadthFirstAsync(source, accumulator, leafNodeSelector));
-
-      return new AsyncPreorderTreenumerable<TAccumulate, AsyncLazyPreorderStore<TAccumulate>>(scanned);
-    }
-
-    private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixScanFromBreadthFirstAsync<TSource, TAccumulate>(
-      IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-    {
-      var capture = await source.MaterializeAsync().ConfigureAwait(false);
-
-      return await BuildLeaffixScanAsync(capture, accumulator, leafNodeSelector).ConfigureAwait(false);
-    }
-
-    private static async ValueTask<AsyncPreorderArrayStore<TAccumulate>> BuildLeaffixScanAsync<TSource, TAccumulate>(
-      IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> accumulator,
-      Func<NodeContext<TSource>, TAccumulate> leafNodeSelector)
-    {
-      var accumulations = new List<TAccumulate>();
-      var subtreeSizes = new List<int>();
-      var path = new Stack<PendingNode<TSource>>(); // open ancestors of the current node
-
-      void Close()
+    // The fold expressed as a survey: start at the node's own projection, combine each child's
+    // completed accumulation in sibling order (the view enumerates children left-to-right).
+    // This is the whole delegation -- the scan owns no build; LeaffixDispatch's is the one
+    // buffer-producing leaffix build.
+    private static Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> FoldSurvey<TSource, TAccumulate>(
+      Func<TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => (nodeContext, children) =>
       {
-        var pending = path.Pop();
-        var index = pending.Index;
+        var accumulate = nodeSelector(nodeContext);
+        foreach (var childAccumulate in children)
+          accumulate = accumulator(accumulate, childAccumulate);
+        return accumulate;
+      };
 
-        subtreeSizes[index] = accumulations.Count - index;
-        accumulations[index] =
-          subtreeSizes[index] == 1
-          ? leafNodeSelector(pending.Context)
-          : accumulator(pending.Context, new ChildAccumulations<TAccumulate>(accumulations, subtreeSizes, index));
-      }
-
-      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
-      await using (treenumerator.ConfigureAwait(false))
+    private static Func<NodeContext<TSource>, ChildAccumulations<TAccumulate>, TAccumulate> FoldSurvey<TSource, TAccumulate>(
+      Func<NodeContext<TSource>, TAccumulate, TAccumulate, TAccumulate> accumulator,
+      Func<NodeContext<TSource>, TAccumulate> nodeSelector)
+      => (nodeContext, children) =>
       {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          // Returning to this depth (or shallower) means every deeper open node is complete.
-          while (path.Count > treenumerator.Position.Depth)
-            Close();
-
-          path.Push(new PendingNode<TSource>(accumulations.Count, treenumerator.ToNodeContext()));
-          accumulations.Add(default); // backfilled when this node closes
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (path.Count > 0)
-        Close();
-
-      return new AsyncPreorderArrayStore<TAccumulate>(accumulations.ToArray(), subtreeSizes.ToArray());
-    }
+        var accumulate = nodeSelector(nodeContext);
+        foreach (var childAccumulate in children)
+          accumulate = accumulator(nodeContext, accumulate, childAccumulate);
+        return accumulate;
+      };
   }
 }

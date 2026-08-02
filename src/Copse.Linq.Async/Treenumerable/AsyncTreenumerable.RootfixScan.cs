@@ -53,8 +53,9 @@ namespace Copse.Linq
     /// per-root function -- EVERY root starts its accumulation from
     /// <paramref name="rootNodeSelector"/>, so each tree of a forest seeds independently, and the
     /// accumulator only ever sees real parents (never a fabricated forest-root context). The
-    /// single-seed overload is this with a constant at the roots; LeaffixScan's leafNodeSelector
-    /// is the same fringe-answers-for-itself collapse at the other end of the tree.
+    /// single-seed overload is this with a constant at the roots; LeaffixDispatch's
+    /// leafNodeSelector is the same fringe-answers-for-itself collapse at the other end of the
+    /// tree (LeaffixScan folds it into seedSelector, which seeds EVERY node).
     /// </summary>
     public static IAsyncTreenumerable<TAccumulate> RootfixScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,

@@ -23,7 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 #### LINQ-Style Operations (45+ methods):
 
 - Query: Where(), Select(), CountNodes(), GetLeaves(), GetLevels()
-- Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan)
+- Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan — the fold tier), sibling-complete surveys (RootfixDispatch/LeaffixDispatch — the dispatch tier)
 - Set operations: Union(), Intersection(), Subtract(), SymmetricDifference()
 - Transformation: Invert() (mirror), Memoize()/Materialize(), pretty printing
 - (SelectMany is designed but not yet implemented — see docs/SELECTMANY_DESIGN.md.)

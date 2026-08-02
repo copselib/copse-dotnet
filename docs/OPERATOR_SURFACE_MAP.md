@@ -40,7 +40,9 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Invert | **B-narrow** | IBreadthFirstTreenumerable | **streams** | O(width) — the one genuinely streaming mirror (`InvertedLevelOrderStream`) |
 | Invert | D-narrow; buffer | ITreenumerableBuffer | capture(deferred-once) | mirrored preorder arrays. **Specialization KEPT (decided 2026-07-15)**: Invert ≡ OrderChildrenByDescending by source sibling index (pinned by OrderChildrenByTests' subsumption law), but the specialized build is measured ~1.15x faster, 2.4x leaner on wide trees (no keys channel, LIFO emit, no per-group sort), and its B arm streams O(width) with NO capture — a cost class the keyed general operator cannot reach. Both families share trees on the Buffer leg, so the premium stays continuously measured; reopen only if the rows converge. |
 | Invert | F | ITreenumerableBuffer | capture(deferred-once) | dimension-dispatched: DFT-first → mirrored preorder arrays; BFT-first → the streaming mirror drained once into level-order arrays (2026-07-13; both arms now share the build-on-first-pull cost shape) |
-| LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | O(n) result arrays, O(depth) build working set; **B overload Materializes the source first** (see flags) |
+| LeaffixScan | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | **FOLD TIER — sugar over LeaffixDispatch (2026-08-02; measured equivalent 2026-08-01, so no bespoke build)**: map-then-combine — `nodeSelector` projects EVERY node (the fold's start AND the node's exactly-once contribution; upward in-degree is n, so the map can't live in the accumulator like rootfix's does), then children fold in sibling order. Accumulator is arity-split like Select/Where: `(acc, childAcc)` value flavor, `(ctx, acc, childAcc)` context flavor (ctx = the folding node; needs more → it's a survey, use Dispatch). Boundary-only contributions (leaf count) are inexpressible here BY DESIGN — Dispatch tier. Callback timing vs the source walk unspecified (doc'd contract); only sibling fold order promised |
+| LeaffixDispatch | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | **SIBLING-COMPLETE TIER, and the true upward dual of RootfixScan** (survey = once per node receiving all n arrivals; boundary pair `leafNodeSelector` \| fixed `seed` mirrors rootfix's selector \| seed — seed overload added 2026-08-02, canonical use: leaf count): survey sees all children at once via the no-copy `ChildAccumulations` view (subtree-span hops; deliberately NOT IEnumerable — interface paths would box per survey); owns the one buffer-producing leaffix build (LeaffixScan delegates in) |
+| RootfixDispatch (seed) | D; **B**; F(→D) | ITreenumerableBuffer\<DispatchNode\> | capture(deferred-once) | **SIBLING-COMPLETE TIER of the rootfix pair** (added 2026-08-01; fold tier = RootfixScan, which streams): survey sees arrival + ALL children as exactly-once write-handles via the no-copy `DispatchTargets` view (one whole-build written-flags array; double/missed Dispatch throws); result DECORATES (`DispatchNode` = value + arrival), flavors are compositions (Select/Do); two-pass build (structure DFS, then top-down surveys in preorder); B overload Materializes first |
 | OrderChildrenBy / …Descending (±comparer) | D; **B**; F(→D) | ITreenumerableBuffer | capture(deferred-once) | key selector once per node at capture, source context; stable per-group sort; D rides the keyed `PreorderCapture.CaptureFrom` → preorder layout; **B STREAMS (2026-07-15): one source walk, one buffered level (O(width) aux), level-order layout** — flag 4 |
 | Memoize | F, D, B | **IMemoizeTreenumerableBuffer (IDisposable)** | capture(lazy, incremental) | ONE capture (2026-07-15): the first pull pins the layout; off-pin replays ride it cross-order; **source enumerated at most once** — upstream side effects fire at most once per node; pays only for the region reached; idempotent on a live memo; **the only disposable return on the surface** |
 | Materialize | F(±strategy), D, B | ITreenumerableBuffer | **capture(eager)** | probes first (2026-07-13): a live memo is consumed in place; a compliant buffer returned as-is; otherwise `Memoize()+Consume()`. The strategy overload is a layout GUARANTEE (2026-07-15): never ignored — fresh memo pins it, mismatched buffer is TRANSPOSED from the buffer (new instance, source untouched); the both-layouts recipe = materialize twice, one source pass |
@@ -56,7 +58,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | GetBranches | D only | IEnumerable\<TNode[]\> | streams per branch | O(depth); array per yield |
 | Get\*Traversal (visit streams) | D, B, F (±strategy selector) | IEnumerable\<NodeVisit\> | streams | |
 | RootfixAggregate (seed / selector) | D, B, F(→D) | IEnumerable | streams | RootfixScan + GetLeaves |
-| LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then fold (B)** | D peak = **largest root subtree**, buffers reused across roots; B (SINGLE-PASS 2026-07-15) captures once into the memo's chunked level-order buffer, then an index-chasing DFS fold over the child spans — no visit stream decoded between the encodings; measured −39% time at near-baseline allocation (the factory-array variant was equally fast but 3x alloc — D4c evidence); cost class unchanged (peak = whole capture, first value after it) |
+| LeaffixAggregate | D; **B** (documented capture, 2026-07-13); F(→D) | IEnumerable | streams per root (D) / **capture then fold (B)** | fold-shaped since 2026-08-01 (`nodeSelector` + arity-split accumulator flavors matching LeaffixScan, 2026-08-02; the subtree-size channel dropped out — the fold never reads it); keeps its own fold-into-slot build (NOT delegated: per-root streaming is impossible over Dispatch's whole-forest capture); D peak = **largest root subtree**, buffers reused across roots; B (SINGLE-PASS 2026-07-15) captures once into the memo's chunked level-order buffer, then an index-chasing DFS fold over the child spans — no visit stream decoded between the encodings; measured −39% time at near-baseline allocation (the factory-array variant was equally fast but 3x alloc — D4c evidence); cost class unchanged (peak = whole capture, first value after it) |
 | AnyNodes / AllNodes / CountNodes / CountTrees | F, D, B | scalar | drains | Any short-circuits; CountTrees gained its B + F entries 2026-07-13 (B counting = a level-0 drain via SkipNodeAndDescendants) |
 | Consume | F(±strategy), D, B | void | **drains, unconditionally** | MECHANICAL again (2026-07-15, probes REVERTED): walks a treenumerator to exhaustion whatever the receiver — buffers replay inertly, deferred captures are FORCED, a lazy capture completes as a side effect. The probe episode (2026-07-14→15) optimized for a caller that does not exist and silently broke the benchmarks; minimum-work settling lives on the lazy buffer's Complete() member and in Materialize. One word one meaning: Consume walks, Complete finishes, Materialize delivers |
 | ToFormattedLines / ToFormattedString | D | IReadOnlyList\<string\> / string | **eager terminal** | honest since 2026-07-15 (flag 2): walks the source ONCE at the call — `To*` name, return shape, and cost now agree; one `(text, depth)` record buffer, reverse-rendered into the pre-sized result (formatter once per node, preorder); glyph contract pinned by `FormattedLinesTests` |
@@ -107,7 +109,7 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    queue slots hold k whole *subtrees* (the parked preorder-window at tree granularity), so
    two passes at O(1) space is the better default; impure-`Defer` callers can `Materialize`
    first. B's counting pass drains level 0 only.
-4. **BFT-narrow `LeaffixScan` / `OrderChildrenBy` double-capture**: the deferred build
+4. **BFT-narrow leaffix/`RootfixDispatch` / `OrderChildrenBy` double-capture**: the deferred build
    `Materialize()`s the source into a full memo, then walks that capture into the result
    arrays — two O(n) allocations transiently vs one on the DFT path. Correct under the
    disclosure rule, but a candidate for a combined single capture.
@@ -117,9 +119,9 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
    visited before level d finishes scheduling, so each level's permutation settles before its
    children arrive — one buffered level (O(width) auxiliary) suffices, refuting the original
    commit's "cannot generalize." The result's native layout is level-order; both entries now
-   replay their own arrival dimension natively. `LeaffixScan`-B still hoists — its fold needs
-   depth-first close order; the capture-then-fold candidate is the LeaffixAggregate-B index-chasing
-   pattern.)*
+   replay their own arrival dimension natively. `LeaffixScan`/`LeaffixDispatch`/`RootfixDispatch`-B
+   still hoist — their builds need depth-first order; the capture-then-fold candidate is the
+   LeaffixAggregate-B index-chasing pattern.)*
 5. *(RESOLVED 2026-07-13)* `Invert(F)`'s BFT-first arm now builds its whole capture on the
    first replay pull (a one-shot drain of the streaming mirror via the stream-shaped
    `LevelOrderCapture.CaptureFrom`), matching the preorder arm's cost shape. The
@@ -167,14 +169,16 @@ Capture factories (Copse/Stores ← Copse.Async/Stores; public statics; ADDED 20
 ├─ PreorderCapture.CaptureFrom(source[, sideChannelSelector])  the ENCODE direction, written
 │    once: shape A hoisted from the operator builds → PreorderArrayStore (+ preorder-parallel
 │    side array — OrderChildrenBy's keys hook). Consumers: Invert's build; OrderChildrenBy
-│    adopts at its rebase. LeaffixScan stays bespoke (its close-hook needs ChildAccumulations,
-│    a Copse.Linq type this layer cannot see).
+│    adopts at its rebase. The leaffix/dispatch builds stay bespoke (LeaffixDispatch's
+│    close-hook needs ChildAccumulations and RootfixDispatch's surveys need DispatchTargets —
+│    Copse.Linq types this layer cannot see; LeaffixScan owns no build, it delegates to
+│    LeaffixDispatch; LeaffixAggregate folds into open slots as it goes).
 └─ LevelOrderCapture.CaptureFrom(source)      shape B in one-shot form (the memo's front-cursor
      parse) → LevelOrderArrayStore. No consumer yet; first candidates are the LeaffixScan-B /
      LeaffixAggregate-B capture-then-fold rebuilds. No side-channel overload until a consumer exists.
 
 Concrete stores/streams                       consumers
-├─ (Async)PreorderArrayStore (readonly structs)  Invert-D/F, OrderChildrenBy, LeaffixScan
+├─ (Async)PreorderArrayStore (readonly structs)  Invert-D/F, OrderChildrenBy, LeaffixScan/LeaffixDispatch, RootfixDispatch
 │    (per-color since the de-share: Copse/Stores builds all terminate here; benchmarks; tests
 │     ← Copse.Async/Stores, completed arrays)
 ├─ (Async)LevelOrderArrayStore (readonly structs)  Invert-F BFT arm; benchmarks/tests
