@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785693265524,
+  "lastUpdate": 1785693265967,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -67548,6 +67548,102 @@ window.BENCHMARK_DATA = {
             "value": 28264240.834134616,
             "unit": "ns",
             "range": "± 84905.6220825895"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4244c8a877eda6ca3e5b1387871daaa6be39724e",
+          "message": "Seed before the lambda: the type-fixer-first unification across the scan/aggregate tiers\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T17:40:57Z",
+          "tree_id": "17289c7972fb3ce5371ac8d891831c4eb8da9c09",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4244c8a877eda6ca3e5b1387871daaa6be39724e"
+        },
+        "date": 1785693265884,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 22257300.779166665,
+            "unit": "ns",
+            "range": "± 157352.59975693788"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 6410343.608854166,
+            "unit": "ns",
+            "range": "± 14432.495004042994"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 122927860.77142856,
+            "unit": "ns",
+            "range": "± 501080.0854652939"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 48608941.67272728,
+            "unit": "ns",
+            "range": "± 352533.62423376506"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 17741423.297916666,
+            "unit": "ns",
+            "range": "± 12855.800758164813"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 10023762.919270834,
+            "unit": "ns",
+            "range": "± 5866.218565480037"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 76987156.21904762,
+            "unit": "ns",
+            "range": "± 837647.3313458841"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 25373432.46875,
+            "unit": "ns",
+            "range": "± 42991.8502927724"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 9564987.044270834,
+            "unit": "ns",
+            "range": "± 10171.464325476989"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5169092.776227678,
+            "unit": "ns",
+            "range": "± 3214.584384249635"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 72416539.15306123,
+            "unit": "ns",
+            "range": "± 69536.04802269196"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 21965100.810416665,
+            "unit": "ns",
+            "range": "± 29595.79831621806"
           }
         ]
       }
