@@ -185,6 +185,13 @@ namespace Copse.Linq
       var spareNodeLists = new Stack<List<TNode>>();
       var spareKeyLists = new Stack<List<TKey>>();
 
+      // The permutation buffer is pooled the same way, but needs TWO: the flushed level's
+      // permutation must stay readable while the next level's is written, so one buffer cannot
+      // serve both sides -- the pair ping-pongs (grown to the widest level seen, doubling), and
+      // a chain-shaped tree would otherwise allocate a fresh int[1] per level, a million of
+      // them (found on the dashboard's memory rows, 2026-08-02).
+      var sparePermutation = default(int[]);
+
       // The most recently flushed level: where it landed in the store, its source-to-ordered
       // permutation, and its source size (which is how far the front travels before crossing).
       var flushedLevelStoreStart = 0;
@@ -200,7 +207,10 @@ namespace Copse.Linq
       {
         var levelStoreStart = values.Count;
         var orderedPositionInLevel = 0;
-        var levelPermutation = new int[pendingLevelArrivals];
+
+        if (sparePermutation == null || sparePermutation.Length < pendingLevelArrivals)
+          sparePermutation = new int[Math.Max(pendingLevelArrivals, 2 * (sparePermutation?.Length ?? 0))];
+        var levelPermutation = sparePermutation;
 
         // Roots arrive as one parentless group and stay first; deeper levels emit their groups
         // in the ORDERED order of their parents, which the previous flush settled. A single
@@ -258,7 +268,10 @@ namespace Copse.Linq
         }
 
         flushedLevelStoreStart = levelStoreStart;
-        flushedLevelPermutation = levelPermutation;
+        // Swap, don't overwrite: the buffer just written becomes the readable flushed side, and
+        // the previous flushed buffer becomes next flush's scratch. Oversize is fine -- readers
+        // stop at flushedLevelSourceSize, writers fill [0, pendingLevelArrivals) before use.
+        (flushedLevelPermutation, sparePermutation) = (levelPermutation, flushedLevelPermutation);
         flushedLevelSourceSize = pendingLevelArrivals;
 
         pendingGroups.Clear();
