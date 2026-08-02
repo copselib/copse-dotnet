@@ -157,7 +157,29 @@ namespace Copse.Linq
       return await BuildRootfixDispatchAsync(capture, rootNodeSelector, survey).ConfigureAwait(false);
     }
 
+    // The pure finisher: run the shared pass, then zip (values, arrivals) into the DispatchNode
+    // decoration. The Do finisher (AsyncTreenumerable.RootfixDoDispatch.cs) rides the same pass
+    // and hands the same pairs to its store instead -- one build, two exits.
     private static async ValueTask<AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
+      IAsyncDepthFirstTreenumerable<TSource> source,
+      Func<TSource, NodePosition, TDispatch> rootNodeSelector,
+      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+    {
+      var (values, subtreeSizes, arrivals) = await RunRootfixDispatchPassAsync(source, rootNodeSelector, survey).ConfigureAwait(false);
+
+      var results = new DispatchNode<TSource, TDispatch>[values.Length];
+      for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
+        results[nodeIndex] = new DispatchNode<TSource, TDispatch>(values[nodeIndex], arrivals[nodeIndex]);
+
+      // The result store rides the SAME subtree-size array the capture produced -- the shape is
+      // the source's, only the values changed.
+      return new AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes);
+    }
+
+    // The shared dispatch pass, both operators' engine: capture, child-index, arrival
+    // resolution, surveys, exactly-once validation. Returns the raw arrays; the callers differ
+    // only in their finisher.
+    private static async ValueTask<(TSource[] Values, int[] SubtreeSizes, TDispatch[] Arrivals)> RunRootfixDispatchPassAsync<TSource, TDispatch>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
       Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
@@ -177,7 +199,6 @@ namespace Copse.Linq
       var nodeCount = values.Length;
       var arrivals = new TDispatch[nodeCount];
       var written = new bool[nodeCount];
-      var results = new DispatchNode<TSource, TDispatch>[nodeCount];
 
       // Pass 1½: gather the child-index -- each parent's children's preorder indices as one
       // contiguous slice (CSR over the preorder encoding). Two O(n) hop passes and ~2n ints
@@ -209,8 +230,6 @@ namespace Copse.Linq
 
       for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
       {
-        results[nodeIndex] = new DispatchNode<TSource, TDispatch>(values[nodeIndex], arrivals[nodeIndex]);
-
         if (subtreeSizes[nodeIndex] == 1)
           continue;
 
@@ -226,9 +245,7 @@ namespace Copse.Linq
               $"The survey completed without dispatching to '{values[childIndices[slot]]}'; every child must receive exactly one Dispatch.");
       }
 
-      // The result store rides the SAME subtree-size array the capture produced -- the shape is
-      // the source's, only the values changed.
-      return new AsyncPreorderArrayStore<DispatchNode<TSource, TDispatch>>(results, subtreeSizes);
+      return (values, subtreeSizes, arrivals);
     }
   }
 }
