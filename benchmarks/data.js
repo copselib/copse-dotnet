@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785640884921,
+  "lastUpdate": 1785640885325,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -108396,6 +108396,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
             "value": 234144,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889824,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "986c57616d2a2c2d65ed4839f3e7b9656ca52158",
+          "message": "LeaffixScan's delegation premium: measured, accepted, documented\n\nThe dashboard falsified the redesign commit's \"measured equivalent\"\nclaim, precisely where the paired benchmark rows were built to catch\nit: LeaffixScan.Dft_Chain rose 77-79 -> 85.1/85.7 ms across two runs\nwhile LeaffixDispatch.Dft_Chain sits exactly at the old Scan numbers\n(77-79 ms) -- the machinery didn't slow down, the fold-adapter costs\n~8ns per internal node (the survey->accumulator double delegate hop\nplus the ChildAccumulations enumerator, versus the retired direct\nfold-into-slot). Fully exposed only on the all-internal degenerate\nchain; ~1-2% on the triangle, inside that row's wobble; allocation\nidentical everywhere.\n\nAccepted deliberately: well under the Invert specialization bar (1.15x\ntime AND 2.4x alloc), and the one-build argument already paid out once\n(the capture-factory rework landed in a single place). The operator\ndoc and the surface map row now state the premium instead of the\nfalsified equivalence; the Scan-vs-Dispatch benchmark pairs stand\nguard -- reopen if the gap widens.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T02:54:02Z",
+          "tree_id": "a1855cd351505c86b4c6f27999351d4b0db7e998",
+          "url": "https://github.com/copselib/copse-dotnet/commit/986c57616d2a2c2d65ed4839f3e7b9656ca52158"
+        },
+        "date": 1785640885243,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234021,
             "unit": "bytes"
           },
           {
