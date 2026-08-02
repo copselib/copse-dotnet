@@ -241,6 +241,29 @@ namespace Copse.Linq.Tests
       StringAssert.Contains(exception.Message, "twice");
     }
 
+    // The forest-correct seeding form: every root's arrival comes from rootNodeSelector against
+    // that root's SOURCE context, so each tree of a forest seeds independently -- completing
+    // the boundary-pair grid (RootfixScan and LeaffixDispatch each offer selector | seed).
+    [TestMethod]
+    public void RootNodeSelector_SeedsEachForestTreeIndependently()
+    {
+      var labels = TreeSerializer
+        .DeserializeDepthFirstTree("a(b),c(d),e")
+        .RootfixDispatch(
+          rootContext => $"[{rootContext.Node}@{rootContext.Position.SiblingIndex}]",
+          (parentContext, arrival, children) =>
+          {
+            foreach (var child in children)
+              child.Dispatch(arrival + child.Node);
+          })
+        .PreorderTraversal()
+        .Select(node => $"{node.Dispatched}{node.Value}")
+        .ToArray();
+
+      CollectionAssert.AreEqual(
+        new[] { "[a@0]a", "[a@0]bb", "[c@1]c", "[c@1]dd", "[e@2]e" }, labels);
+    }
+
     // The decoration contract: the buffer holds (source value, arrival) pairs in the source's
     // shape, so downstream composition is ordinary Select/Do -- no operator flavors.
     [TestMethod]
