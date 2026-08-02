@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785639362015,
+  "lastUpdate": 1785639362444,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -106416,6 +106416,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Dft_Forests",
             "value": 1296,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "3bb7c5240e5838a92001221b674d63123572b414",
+          "message": "RootfixDispatch gains rootNodeSelector: the boundary-pair grid closes\n\nThe forest-correct seeding form, RootfixScan's rootNodeSelector\noverload mirrored onto the dispatch tier: every root's arrival comes\nfrom the selector against that root's SOURCE context, so each tree of\na forest seeds independently. The fixed-seed overloads become the\nconstant case (`_ => seed`), the same collapse RootfixScan already\nuses; the build's seeding loop evaluates the selector at whole-subtree\nhops over the capture's values/positions arrays.\n\nWith this, every fix operator that has an arriving boundary offers the\nsame pair at it: RootfixScan (roots: selector | seed), RootfixDispatch\n(roots: selector | seed), LeaffixDispatch (leaves: selector | seed).\nLeaffixScan deliberately has no boundary pair -- its nodeSelector runs\non every node because the upward fold needs a start value everywhere,\nwhich is the tier's whole distinction.\n\nSuites: Linq 23,931 / engine 459 / async 57, all green (new forest\ntest pins per-root independence and source-context access).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-02T02:38:04Z",
+          "tree_id": "f4b94be89d1e3dfaf0c148f0712015b82cdef599",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3bb7c5240e5838a92001221b674d63123572b414"
+        },
+        "date": 1785639362360,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234144,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889824,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
             "unit": "bytes"
           },
           {
