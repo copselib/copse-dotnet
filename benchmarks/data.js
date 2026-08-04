@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785814717606,
+  "lastUpdate": 1785814718039,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -97224,6 +97224,162 @@ window.BENCHMARK_DATA = {
             "value": 62739655.93333333,
             "unit": "ns",
             "range": "± 326601.54922079225"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e30bffc290bfc372eb1f64e53ad8b1c184834459",
+          "message": "Seal the light tier: prune-afters compose in-tier only, rejecting operators stack\n\nThe composition merge (fe44f88c) regressed Where.Dft/Bft_Triangle_Mixed 20-25%\n-- every one of the 10 CI runs since sits entirely outside the 31-run pre-merge\nsame-run-ratio distribution, masked in absolutes by a fast runner on merge day.\nAllocations byte-flat: pure per-pull delegate cost.\n\nThe mechanism, isolated by a per-process A/B matrix: a composed chain's cost was\nPATH-DEPENDENT. A splice leg donated by a general wrapper arrives as an\ninlinable struct, but the light tier (PruneAfterTreenumerable,\nSelectPruneAfterTreenumerable) holds bare Funcs -- so any splice absorbing a\nlight wrapper produced an all-delegate FuncResultSelector chain. Absorbing a\nnear-free passthrough layer at that price is underwater: Where over the light\nprune +20-25% mixed / +9-11% keep-all, while Where over a plain source is at\nexact cross-version parity (the genericized driver and selector structs cost\nnothing) and the reversed order (value PruneAfter over Where) is at parity\nbecause the general wrapper donates its struct leg.\n\nThe ruling, structural rather than economic (no case-by-case splice pricing,\nno order-dependent guards): the light tier leaves the general-splice surface.\nISelectPruneAfterTreenumerable no longer extends ISelectWhereTreenumerable; the\nprune-carrying wrappers lose their conversion doors (general Compose,\nToSelectWhere, Relabels); PruneAfter's probes compose in-tier only. One\ndeliberate exception: the bare projection wrapper keeps dual citizenship\n(SelectTreenumerable also implements ISelectWhereTreenumerable), so the\nSelect/Where collapse -- the Compose family's measured win -- is untouched.\nSplicing stays total on the general surface.\n\nMeasured after the seal (same machine, per-process): Mixed 76.9 -> 65.5ms\nagainst a 61.5ms pre-merge baseline (~75-80% recovered; drift anchor +1.5%),\nlight-tier source win intact (52-53ms vs 63.9 pre-merge), Select-over-prune\nstill light, plain-path rows unmoved. Expect the Where/PruneBefore/PruneAfter\nTriangle rows AND the Compose family's composed legs to step DOWN in Bencher\n(the composed legs were paying the light-source conversion too).\n\nPinned by LightTier_StaysSealedWhenARejectingOperatorJoins (+ narrow twin),\nwhich replace the two conversion-door pins. The reunification path -- struct-\ncomposed selectors making every leg inlinable, at which point the light tier\ncan rejoin benchmark-gated -- is recorded as the bench session's centerpiece\n(design doc 2.9).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-04T03:09:08Z",
+          "tree_id": "3b901ac6405efe3d3c8764b9c4cfa7335850e141",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e30bffc290bfc372eb1f64e53ad8b1c184834459"
+        },
+        "date": 1785814717954,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 57662166.14285714,
+            "unit": "ns",
+            "range": "± 117474.76548775671"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 109252495,
+            "unit": "ns",
+            "range": "± 364124.25322684454"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 109970857.81428568,
+            "unit": "ns",
+            "range": "± 710136.5430921804"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 39674136.92820513,
+            "unit": "ns",
+            "range": "± 518772.6650047008"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 123243760.9,
+            "unit": "ns",
+            "range": "± 1840791.861039711"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 123611257.58333333,
+            "unit": "ns",
+            "range": "± 1792573.3058545173"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 15321254.177884616,
+            "unit": "ns",
+            "range": "± 97517.70214353768"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 77472725.26923077,
+            "unit": "ns",
+            "range": "± 512471.62700981344"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 84170529.84444444,
+            "unit": "ns",
+            "range": "± 938244.8789003302"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 86693366,
+            "unit": "ns",
+            "range": "± 820220.3733959679"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 89208464.32857142,
+            "unit": "ns",
+            "range": "± 931383.5515614351"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 53655875.066666655,
+            "unit": "ns",
+            "range": "± 133061.21928296576"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 92158608.08000001,
+            "unit": "ns",
+            "range": "± 424320.28165411495"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 88654809.52564102,
+            "unit": "ns",
+            "range": "± 260620.06366107395"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41811787.03296704,
+            "unit": "ns",
+            "range": "± 365423.42911714077"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 107799870.8,
+            "unit": "ns",
+            "range": "± 1109149.6391467967"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 90513771.52564102,
+            "unit": "ns",
+            "range": "± 82761.63477112981"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 28837207.488839287,
+            "unit": "ns",
+            "range": "± 61428.1740227383"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 96663833.78059073,
+            "unit": "ns",
+            "range": "± 4987652.731190529"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 66854731.241071425,
+            "unit": "ns",
+            "range": "± 391071.0603492616"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 104764304.63076922,
+            "unit": "ns",
+            "range": "± 1160826.0380660444"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 62478607.4375,
+            "unit": "ns",
+            "range": "± 111923.80390691203"
           }
         ]
       }
