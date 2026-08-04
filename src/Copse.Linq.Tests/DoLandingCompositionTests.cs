@@ -155,6 +155,37 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
+    public void ImpureSelectIsTheTrap_TheEffectCountDependsOnTheConsumer()
+    {
+      // The tempting "safer" recipe -- landing inside Select -- is the trap (found in the
+      // field, 2026-08-04): the wrapper projects per PULLED VISIT, so an impure selector's
+      // effect count depends on the CONSUMER's pull pattern -- a value drain pulls
+      // scheduling-only and LOOKS once-per-node; a structural drain pulls the full visit
+      // stream and re-projects per visit -- and on downstream COMPOSITION (a following Where
+      // fuses to once per tested node; CompositionTests). Contractually unspecified on every
+      // axis. Idempotent assignments hide the variability; += compounds. Effects belong in
+      // Do, whose scheduling filter is deterministic under every consumer and composition.
+      var corpus = Corpus();
+      var selectorCalls = 0;
+
+      var landing = corpus
+        .RootfixScan(100m, (arrived, e) => arrived + e.Weight)
+        .Select(pairing => { selectorCalls++; return pairing.Node; });  // impure: the anti-pattern
+
+      landing.PreorderTraversal().ToArray();
+      var valueDrainCalls = selectorCalls;
+
+      selectorCalls = 0;
+      landing.ToFormattedString();
+      var structuralDrainCalls = selectorCalls;
+
+      Assert.AreEqual(5, valueDrainCalls,
+        "a value drain pulls scheduling-only -- deceptively once per node; this is why the recipe LOOKS safe");
+      Assert.IsTrue(structuralDrainCalls > valueDrainCalls,
+        $"a structural drain re-projects per visit ({structuralDrainCalls} calls, 5 nodes) -- same chain, different consumer, different effect count");
+    }
+
+    [TestMethod]
     public void EffectsFirePerDrain_AndMaterializeIsTheConsumersPin()
     {
       // The re-enumeration contract: the landing chain refires per drain (each drain of each

@@ -16,6 +16,20 @@ namespace Copse.Linq
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (docs/OPERATOR_COMPOSITION_DESIGN.md).
+    ///
+    /// <para>THE SELECTOR MUST BE PURE -- its invocation count is deliberately UNSPECIFIED
+    /// along two axes: COMPOSITION (a following Where fuses to once per tested node, where
+    /// the uncomposed wrapper projects per pulled visit) and the CONSUMER's pull pattern (a
+    /// value drain pulls scheduling-only, so the wrapper LOOKS once-per-node; a structural
+    /// drain pulls the full visit stream and re-projects per visit). An impure selector's
+    /// effect count therefore silently changes with the operators AFTER it and the drain at
+    /// the END of the chain (pinned by CompositionTests and DoLandingCompositionTests; the
+    /// freedom is what lets the fusion machinery evolve). Effects belong in <c>Do</c>, the
+    /// composition barrier with the exact per-visit contract: to LAND aggregation results on
+    /// mutable nodes, use the landing idiom -- <c>.Do(visit =&gt; { if (visit.Mode ==
+    /// TreenumeratorMode.SchedulingNode) ... })</c>, deterministically once per scheduled
+    /// node under every composition and every consumer (docs/SCANRESULT_DESIGN.md, THE
+    /// DEMOTION).</para>
     /// </summary>
     public static ITreenumerable<TResult> Select<TSource, TResult>(
       this ITreenumerable<TSource> source,
