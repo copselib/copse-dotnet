@@ -7,147 +7,103 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// The IMPURE rootfix scan (SPIKE, feature/do-scan): a downward cumulative pass whose point
-    /// is its SIDE EFFECTS -- the Do idiom, scan-shaped. Nodes pass through unchanged (Do means
-    /// the nodes ARE the result; no <see cref="ScanResult{TSource, TAccumulate}"/> travels --
-    /// a packaged accumulate would duplicate what <paramref name="store"/> landed), and
-    /// <typeparamref name="TAccumulate"/> is internal plumbing: <paramref name="seed"/> fixes
-    /// it, <paramref name="compute"/> threads it down each root-to-node path, and
-    /// <paramref name="store"/> -- the declared effect point -- lands each node's accumulation
-    /// wherever the caller wants it, typically a property on a mutable node.
+    /// The IMPURE rootfix scan: a downward cumulative pass whose point is its side effects --
+    /// the Do idiom, scan-shaped. Nodes pass through unchanged (Do means the nodes ARE the
+    /// result), and the operator is the pure scan plus a LICENSE: <paramref name="fold"/> is
+    /// invoked EXACTLY ONCE per node per traversal, in that traversal's scheduling order, with
+    /// effects inside it sanctioned -- where the pure scan's accumulator is contractually pure
+    /// under the permissive unspecified-counts clause, the <c>Do</c> in this operator's name
+    /// buys the strict clause. That license is the operator's entire content (the family
+    /// equation, ratified 2026-08-04): <c>RootfixDoScan(seed, fold)</c> IS
+    /// <c>RootfixScan(seed, fold).Select(r =&gt; r.Node)</c>, and the implementation is
+    /// literally that composition.
     ///
-    /// <para>Two lambdas, two contracts -- the purity boundary sits between them.
-    /// <paramref name="compute"/> is PURE with the scan family's permissive clause (invocation
-    /// counts unspecified). <paramref name="store"/> fires EXACTLY ONCE per node per traversal,
-    /// in that traversal's scheduling order, receiving the (node, accumulation) pairing -- the
-    /// tightened clause that makes caching meaningful. The split also makes input/output
-    /// separation the natural idiom (compute reads pristine inputs, store writes outputs), so a
-    /// pass whose read and write fields are distinct is safely re-runnable; read-modify-write
-    /// is something a caller must write deliberately, never something this shape hands out.</para>
+    /// <para>THE LANDING RULE: the fold's return does double duty -- it is the value that
+    /// flows to the node's children as their arrival, and returning it is how the node's own
+    /// value lands. Mutate, then return:
+    /// <c>(arrived, node) =&gt; { node.Total = arrived + node.Amount; return node.Total; }</c>.
+    /// (C# assignment is an expression whose value is the assigned value, so the terse form
+    /// <c>(arrived, node) =&gt; node.Total = arrived + node.Amount</c> is equivalent.) A pass
+    /// whose read fields (<c>Amount</c>) and written fields (<c>Total</c>) are distinct is
+    /// safely re-runnable; read-modify-write (<c>node.Total += arrived</c>) compounds across
+    /// drains and is something a caller writes deliberately.</para>
     ///
     /// <para>Deferred and IMPURE BY DECLARATION: effects fire on EVERY traversal -- each drain
     /// of each dimension is a traversal -- which is sometimes exactly what the caller wants
     /// (recompute after mutating the tree between drains). A caller who wants the effects
     /// pinned to one run says so with the existing escalation vocabulary:
     /// <c>Memoize</c>/<c>Materialize</c> drain the source once and replay thereafter. Like
-    /// <c>Do</c>, this operator is a composition barrier: store observes the visit stream at
-    /// this point in the chain, so nothing may fuse across it.</para>
+    /// <c>Do</c>, this operator is a composition barrier: nothing may fuse across the declared
+    /// effect point.</para>
     ///
-    /// <para>The seed is the virtual forest root's accumulation, shared by every root of a
-    /// forest; the rootNodeSelector overloads (value and positional flavors, the family
-    /// grammar) seed each root independently -- and on the Do tier the selector is also the
-    /// FRESHNESS form (the seed-semantics-follow-purity rule): it runs during each traversal,
-    /// so a closure reads live state at effect time, where a seed VALUE is frozen at the call.
-    /// Under the selector form roots take the selector directly and <paramref name="compute"/>
-    /// never sees a fabricated arrival (the pure scan's forest-correct clause, inherited).</para>
-    ///
-    /// <para>RootfixDoDispatch is this operator's sibling-complete twin. The implementations
-    /// deliberately DIVERGE (ruled 2026-08-02): the fold tier streams, the survey tier
-    /// captures. Under the seat rule the pure accumulator and <paramref name="compute"/> share
-    /// one shape, so this operator is the pure scan plus store, verbatim. Spike posture: the
-    /// scan's treenumerators invoke the accumulator once per node at scheduling -- the store
-    /// contract holds by construction.</para>
+    /// <para>This is the family's ONE merged shape, and the reason is structural: the rootfix
+    /// fold is the only Do callback that fires exactly once per node with that node's
+    /// completed value in hand, so landing can ride the return. Everywhere that fails, a
+    /// <c>store</c> keeps its seat: LeaffixDoScan's binary combine fires per child edge (never
+    /// once per node), and neither survey tier reaches the leaves.</para>
     /// </summary>
     public static IAsyncTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source.RootfixScan(seed, ComputeStoreAccumulator(compute, store)).Select(pairing => pairing.Node);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(seed, fold).Select(pairing => pairing.Node);
 
     public static IAsyncDepthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source.RootfixScan(seed, ComputeStoreAccumulator(compute, store)).Select(pairing => pairing.Node);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(seed, fold).Select(pairing => pairing.Node);
 
     public static IAsyncBreadthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source.RootfixScan(seed, ComputeStoreAccumulator(compute, store)).Select(pairing => pairing.Node);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(seed, fold).Select(pairing => pairing.Node);
 
     /// <summary>
     /// The forest-correct seeding form: every root's accumulation comes from
-    /// <paramref name="rootNodeSelector"/> (and is stored) -- each tree of a forest seeds
-    /// independently, and on this tier the selector doubles as the freshness form: it fires
-    /// per root per traversal, so a closure reads live state at effect time.
+    /// <paramref name="rootNodeSelector"/>, so each tree of a forest seeds independently.
+    /// Under this form the fold never fires at roots, so THE SELECTOR IS THE ROOT'S LANDING --
+    /// its return is the root's value, and any mutation the root needs happens inside it
+    /// (<c>root =&gt; root.Total = 1_000M</c>). The selector is also the FRESHNESS form (the
+    /// seed-semantics-follow-purity rule): it runs during each traversal, so a closure reads
+    /// live state at effect time, where a seed VALUE is frozen at the call.
     /// </summary>
     public static IAsyncTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the root's value and its position -- seeding by root ordinal.</summary>
     public static IAsyncTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source
-        .RootfixScan(SelectorWithStore(rootNodeSelector, store), ComputeStoreAccumulator(compute, store))
-        .Select(pairing => pairing.Node);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
 
     public static IAsyncDepthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
 
     public static IAsyncDepthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source
-        .RootfixScan(SelectorWithStore(rootNodeSelector, store), ComputeStoreAccumulator(compute, store))
-        .Select(pairing => pairing.Node);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
 
     public static IAsyncBreadthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => RootfixDoScan(source, (node, _) => rootNodeSelector(node), compute, store);
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
 
     public static IAsyncBreadthFirstTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => source
-        .RootfixScan(SelectorWithStore(rootNodeSelector, store), ComputeStoreAccumulator(compute, store))
-        .Select(pairing => pairing.Node);
-
-    // The pass expressed over the pure scan: under the seat rule the pure accumulator speaks
-    // compute's own (accumulate, node) shape, so the wrapper is compute + store verbatim --
-    // every fold callback lifts between the pure and Do twins unchanged.
-    private static Func<TAccumulate, TNode, TAccumulate> ComputeStoreAccumulator<TNode, TAccumulate>(
-      Func<TAccumulate, TNode, TAccumulate> compute,
-      Action<TNode, TAccumulate> store)
-      => (arrived, node) =>
-      {
-        var accumulate = compute(arrived, node);
-        store(node, accumulate);
-        return accumulate;
-      };
-
-    // The selector's wrapper: seed the root's accumulation and store it -- the root-side half
-    // of the pass, invoked by the pure scan's forest-correct machinery once per root per
-    // traversal (compute never sees a fabricated arrival under this form).
-    private static Func<TNode, NodePosition, TAccumulate> SelectorWithStore<TNode, TAccumulate>(
-      Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Action<TNode, TAccumulate> store)
-      => (rootNode, rootPosition) =>
-      {
-        var accumulate = rootNodeSelector(rootNode, rootPosition);
-        store(rootNode, accumulate);
-        return accumulate;
-      };
+      Func<TAccumulate, TNode, TAccumulate> fold)
+      => source.RootfixScan(rootNodeSelector, fold).Select(pairing => pairing.Node);
   }
 }

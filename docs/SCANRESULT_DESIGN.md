@@ -1,4 +1,4 @@
-# ScanResult: the canonical pairing (ratified 2026-08-02; seat rule 2026-08-04)
+# ScanResult: the canonical pairing (ratified 2026-08-02; seat rule + landing rule 2026-08-04)
 
 > **Status: RATIFIED 2026-08-02 (Jason; the coffee-walk session), swept on
 > `feature/do-scan` ahead of the alpha. AMENDED 2026-08-04 (the alpha.9 LINQPad verdict):
@@ -64,16 +64,70 @@ slippery-slope is the proof — there is no non-arbitrary place to stop). Hence:
   and genuinely underivable (`Where` renumbering), rationed by arity-split.
 - **`ScanResult` appears in NO callback input.** Its only home is the pure results and
   the aggregates' yields. Consequence: **every callback is shared verbatim between an
-  operator and its Do twin** — only the landing differs.
+  operator and its Do twin** — only the landing differs. (Taken to its endpoint by the
+  landing rule below: RootfixDoScan's fold is now literally the pure accumulator's
+  parameter, impurity sanctioned.)
 
-## The delivery model (ratified 2026-08-04 — the Do dispatches)
+## The delivery model (ratified 2026-08-04; re-founded same day — the Do dispatches)
 
 `Dispatch` DELIVERS. The pure operator's `Dispatch` writes into the result pairing; the
 Do operator's writes onto the caller's entity via `store`, the landing rule declared
-once. The seed is a delivery to the roots. All deliveries land together when the pass
-completes VALIDATED — a failed pass lands nothing (all-or-nothing effects). This replaces
-the "two callbacks, two contracts" framing whose decoy-mutation reading confused even the
-design's author at his own call site.
+once. The seed is a delivery to the roots. This replaces the "two callbacks, two
+contracts" framing whose decoy-mutation reading confused even the design's author at his
+own call site.
+
+**Re-founded (same day, after adversarial testing): the docs pin SEQUENCING, not
+atomicity.** Stores fire in preorder after the pass completes and validates — that is the
+contract, mechanism not morals. Untouched-on-pass-failure follows as a corollary the
+caller derives in one step; a throwing *store* leaves the preorder prefix landed, so
+"all-or-nothing" was never fully true and is no longer claimed. Atomicity is a free
+byproduct of the capture-class build (the arrivals array exists anyway), demoted from
+purpose to property. `store`'s seat never rested on it: **the surveys don't reach every
+node** (rootfix: leaves are never surveyed; leaffix: leaves take the seed/selector
+boundary), so the landing rule is the only every-node channel — that is the structural
+seat. The tested-and-rejected alternatives (Dispatch-carries-the-mutation: kills the seed,
+kills the value channel, allocates a closure per edge; `DoDispatchWithValidation` twin:
+the buffer is theorem-forced by sibling-completeness, so the "plain" variant differs only
+by a weaker failure posture no workload wants) are recorded in RootfixDoDispatch's doc.
+
+## The family equation and the landing rule (ratified 2026-08-04 — the Do tier's final form)
+
+> **`XDoY ≡ XY(pure) ∘ Do(scheduling-filtered effect) ∘ Select(.Node)`**
+
+Every Do operator is derivable from the pure tier plus `Do` plus `Select` — the family
+has **zero unique algorithmic content**; it is contract plus fusion ("sugar + license",
+LINQ's `Average`-over-`Sum`/`Count` status). What the dedicated operators sell over the
+composition: (1) a NODE-GRAINED effect contract over a visit-grained stream — `Do` fires
+per visit event (a k-child node emits 1 S + k+1 V), so the composed form needs the
+scheduling-mode filter that the obvious call site forgets; the dedicated operators make
+that trap inexpressible; (2) the effect-class defaults (capture-class Do operators fire
+once per build; the composed chain refires per drain unless pinned); (3) one call. The
+composition is the documented escape hatch — and the conformance ORACLE: the
+`DoFamilyCompositionOracleTests` battery pins dedicated ≡ composed over a mutable corpus.
+
+**The landing rule** (the fold-shape resolution, after the ecosystem detour): *the
+callback that produces a node's value lands it; where no callback produces a node's value
+with the node in hand, `store` lands for you.* Consequences:
+
+- **RootfixDoScan MERGES** — the family's one shape where one callback per node produces
+  that node's value. `RootfixDoScan(seed | rootSelector, Func<TAcc, TNode, TAcc> fold)`:
+  the fold's return both lands on the node and flows to its children (C# assignment is an
+  expression, so `(a, n) => n.Total = a + n.Weight` is a valid fold; docs lead with the
+  block form). Under the selector flavors the fold never fires at roots, so **the selector
+  is the root's landing** — the author's original instinctive call site, now correct by
+  design. Implementation is literally `RootfixScan(seed, fold).Select(r => r.Node)` (the
+  old `(compute, store)` split's `ComputeStoreAccumulator` fused them into exactly this
+  fold before the machinery ever saw them — the API now speaks the machinery's shape).
+  The operator's remaining content is the LICENSE: fold invoked exactly once per node per
+  traversal, effects sanctioned — where the pure scan keeps the permissive
+  unspecified-counts clause.
+- **LeaffixDoScan keeps `store`** — its binary combine fires per CHILD EDGE (zero times
+  on leaves, k times on a k-child node, no invocation knowably last), so no fold
+  invocation ever holds a completed accumulation.
+- **Both DoDispatches keep `(survey, store)`** — the surveys don't reach the leaves.
+- Rejected fold shapes: bare `Action<TAcc, TNode>` (severs the accumulate chain — the
+  machinery cannot read the flow back off the node); `Action` + read-back selector (the
+  author's original form — fuses into the Func anyway one layer down; sugar over sugar).
 
 ## The recording rule (the alpha.9 edge-1 clause)
 
@@ -106,7 +160,9 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | pure result decorates (`ScanResult`) | pure result decorates (`ScanResult`) | matched (this sweep — leaffix previously REPLACED) |
 | survey records the ARRIVAL (its input; no node-grained output exists) | survey records its OUTPUT (n-in-1-out has one) | forced-different — the recording rule (2026-08-04) |
 | callbacks: minimal basis — subject + flow state, pairing in results only | callbacks: minimal basis — subject + flow state, pairing in results only | matched (the seat rule, 2026-08-04) |
-| Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual |
+| Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual (the dispatch tier) |
+| fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |
+| survey never reaches leaves → `store` is the every-node channel | leaves take the seed/selector boundary → same | matched — the structural seat, born dual |
 
 Any future operator pair gets this audit before shipping.
 

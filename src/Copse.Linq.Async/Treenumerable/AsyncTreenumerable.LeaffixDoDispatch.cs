@@ -19,14 +19,20 @@ namespace Copse.Linq
     /// tree ever reaches the caller), and each node's accumulation lands via
     /// <paramref name="store"/>.
     ///
-    /// <para>THE DELIVERY MODEL (ratified 2026-08-04), upward-flavored: every node's
-    /// accumulation -- a leaf's seed/selector value, an internal node's survey result -- lands
-    /// on your entity via <paramref name="store"/>, the landing rule you declare once. The
-    /// survey stays pure and shares the pure operator's exact shape (the node's value and ALL
-    /// of its children's accumulations through the no-copy
+    /// <para>THE DELIVERY MODEL (ratified 2026-08-04; re-founded same day), upward-flavored:
+    /// every node's accumulation -- a leaf's seed/selector value, an internal node's survey
+    /// result -- lands on your entity via <paramref name="store"/>, the landing rule you
+    /// declare once. The survey stays pure and shares the pure operator's exact shape (the
+    /// node's value and ALL of its children's accumulations through the no-copy
     /// <see cref="DispatchSources{TSource, TAccumulate}"/> view). <paramref name="store"/>
-    /// fires EXACTLY ONCE per node, and all landings happen together when the fold completes
-    /// -- a failed pass lands NOTHING: all-or-nothing effects.</para>
+    /// fires EXACTLY ONCE per node. SEQUENCING: stores fire in preorder, after the whole fold
+    /// pass completes -- so a throwing survey lands nothing, while a throwing store leaves the
+    /// preorder prefix already landed (disclosed corollaries, not promises).
+    /// <paramref name="store"/>'s seat is structural, the leaffix survey's version of
+    /// "leaves are never surveyed": leaves take their values from the seed/selector boundary,
+    /// so no single callback both fires on every node and holds its completed accumulation --
+    /// except the landing rule. (See RootfixDoDispatch's doc for the full seat argument;
+    /// contrast RootfixDoScan, the family's one merged shape.)</para>
     ///
     /// <para>Effect count follows the operator's laziness class, which the return type
     /// discloses: BOTH leaffix tiers are captures (children-first -- the whole tree precedes

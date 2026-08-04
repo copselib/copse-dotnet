@@ -6,10 +6,11 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // The impure rootfix scan (SPIKE, feature/do-scan): the Do idiom, scan-shaped. The battery
-  // pins the operator's two contracts -- compute pure/permissive, store exactly once per node
-  // per traversal -- plus the pass-through (the result IS the source tree), the documented
-  // per-traversal refire, and Memoize/Materialize as the pinning composition.
+  // The impure rootfix scan: the Do idiom, scan-shaped, MERGED (2026-08-04) -- one impure
+  // fold whose return both lands on the node and flows to its children. The battery pins the
+  // license (the fold fires exactly once per node per traversal), the pass-through (the
+  // result IS the source tree), the documented per-traversal refire, the selector-lands-the-
+  // roots clause, and Memoize/Materialize as the pinning composition.
   [TestClass]
   public class RootfixDoScanTests
   {
@@ -17,7 +18,7 @@ namespace Copse.Linq.Tests
     {
       public int Amount;
       public int Total;
-      public int Stores;
+      public int Folds;
 
       public override string ToString() => $"{Amount}";
     }
@@ -31,14 +32,19 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("10(5,0,1)", (string s) => new Entity { Amount = int.Parse(s) })
         .Materialize();
 
+    // The doc-first block form: mutate, then return -- landing and flow as two visible acts.
     private static ITreenumerable<Entity> DoScan(ITreenumerable<Entity> tree) =>
       tree.RootfixDoScan(
         100,
-        (arrived, entity) => arrived + entity.Amount,
-        (entity, total) => { entity.Total = total; entity.Stores++; });
+        (arrived, entity) =>
+        {
+          entity.Total = arrived + entity.Amount;
+          entity.Folds++;
+          return entity.Total;
+        });
 
     [TestMethod]
-    public void TotalsLandOnTheEntities_StoreFiresOncePerNode()
+    public void TotalsLandOnTheEntities_FoldFiresOncePerNode()
     {
       var tree = Structure();
 
@@ -46,7 +52,7 @@ namespace Copse.Linq.Tests
 
       var entities = tree.PreorderTraversal().ToArray();
       CollectionAssert.AreEqual(new[] { 110, 115, 110, 111 }, entities.Select(e => e.Total).ToArray());
-      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray());
+      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Folds).ToArray());
     }
 
     [TestMethod]
@@ -69,10 +75,11 @@ namespace Copse.Linq.Tests
       doScan.LevelOrderTraversal().ToArray();
 
       var entities = tree.PreorderTraversal().ToArray();
-      CollectionAssert.AreEqual(new[] { 2, 2, 2, 2 }, entities.Select(e => e.Stores).ToArray());
+      CollectionAssert.AreEqual(new[] { 2, 2, 2, 2 }, entities.Select(e => e.Folds).ToArray());
 
-      // The compute/store split's payoff: inputs (Amount) and outputs (Total) are distinct
-      // fields, so the refire is idempotent on the totals -- re-running is harmless by shape.
+      // The landing rule's re-runnable idiom: read fields (Amount) and written fields (Total)
+      // are distinct, so the refire is idempotent on the totals -- unlike read-modify-write
+      // (Total += arrived), which would compound and is a shape a caller writes deliberately.
       CollectionAssert.AreEqual(new[] { 110, 115, 110, 111 }, entities.Select(e => e.Total).ToArray());
     }
 
@@ -88,7 +95,7 @@ namespace Copse.Linq.Tests
       pinned.PreorderTraversal().ToArray();
 
       var entities = tree.PreorderTraversal().ToArray();
-      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray(),
+      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Folds).ToArray(),
         "one drain at the capture; replays never re-fire");
       CollectionAssert.AreEqual(new[] { 110, 115, 110, 111 }, entities.Select(e => e.Total).ToArray());
     }
@@ -105,30 +112,32 @@ namespace Copse.Linq.Tests
       pinned.LevelOrderTraversal().ToArray();
 
       var entities = tree.PreorderTraversal().ToArray();
-      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray());
+      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Folds).ToArray());
     }
 
     [TestMethod]
-    public void BreadthFirstDrain_StoreStillFiresOncePerNode()
+    public void BreadthFirstDrain_FoldStillFiresOncePerNode()
     {
       var tree = Structure();
 
       DoScan(tree).LevelOrderTraversal().ToArray();
 
       var entities = tree.PreorderTraversal().ToArray();
-      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray());
+      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Folds).ToArray());
       CollectionAssert.AreEqual(new[] { 110, 115, 110, 111 }, entities.Select(e => e.Total).ToArray());
     }
 
     [TestMethod]
     public void ForestRootsShareTheSeed()
     {
+      // The terse landing idiom: C# assignment is an expression returning the assigned value,
+      // so this expression-bodied fold is the block form's exact equivalent.
       var forest = TreeSerializer
         .DeserializeDepthFirstTree("10(5),20(7)", (string s) => new Entity { Amount = int.Parse(s) })
         .Materialize();
 
       forest
-        .RootfixDoScan(100, (arrived, entity) => arrived + entity.Amount, (entity, total) => entity.Total = total)
+        .RootfixDoScan(100, (arrived, entity) => entity.Total = arrived + entity.Amount)
         .PreorderTraversal()
         .ToArray();
 
@@ -138,27 +147,31 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void RootSelector_SeedsPerRoot_AndComputeNeverSeesRoots()
+    public void RootSelector_LandsTheRoots_AndTheFoldNeverFiresAtRoots()
     {
-      // Under the selector form a root's accumulation IS the selector's value (the pure
-      // scan's forest-correct clause, inherited): compute never runs at roots, so the root's
-      // own Amount is deliberately absent from its Total.
+      // Under the selector form a root's value IS the selector's return (the pure scan's
+      // forest-correct clause, inherited), so THE SELECTOR IS THE ROOT'S LANDING: the fold
+      // never runs at roots, and the root's own Amount is deliberately absent from its Total.
       var forest = TreeSerializer
         .DeserializeDepthFirstTree("10(5),20(7)", (string s) => new Entity { Amount = int.Parse(s) })
         .Materialize();
 
       forest
         .RootfixDoScan(
-          root => root.Amount * 100,
-          (arrived, entity) => arrived + entity.Amount,
-          (entity, total) => { entity.Total = total; entity.Stores++; })
+          root => root.Total = root.Amount * 100,
+          (arrived, entity) =>
+          {
+            entity.Total = arrived + entity.Amount;
+            entity.Folds++;
+            return entity.Total;
+          })
         .PreorderTraversal()
         .ToArray();
 
       var entities = forest.PreorderTraversal().ToArray();
       CollectionAssert.AreEqual(new[] { 1000, 1005, 2000, 2007 }, entities.Select(e => e.Total).ToArray());
-      CollectionAssert.AreEqual(new[] { 1, 1, 1, 1 }, entities.Select(e => e.Stores).ToArray(),
-        "roots are stored via the selector wrapper, non-roots via the accumulator -- once each");
+      CollectionAssert.AreEqual(new[] { 0, 1, 0, 1 }, entities.Select(e => e.Folds).ToArray(),
+        "roots land via the selector's return, non-roots via the fold's -- once each");
     }
 
     [TestMethod]
@@ -171,9 +184,8 @@ namespace Copse.Linq.Tests
       var budget = 100;
 
       var doScan = tree.RootfixDoScan(
-        _ => budget,
-        (arrived, entity) => arrived + entity.Amount,
-        (entity, total) => entity.Total = total);
+        root => root.Total = budget,
+        (arrived, entity) => entity.Total = arrived + entity.Amount);
 
       doScan.PreorderTraversal().ToArray();
       var firstDrain = tree.PreorderTraversal().Select(e => e.Total).ToArray();
@@ -182,7 +194,7 @@ namespace Copse.Linq.Tests
       doScan.PreorderTraversal().ToArray();
       var secondDrain = tree.PreorderTraversal().Select(e => e.Total).ToArray();
 
-      // Selector-form roots take the selector's value directly (compute never runs at roots):
+      // Selector-form roots take the selector's value directly (the fold never runs at roots):
       // root Total = budget itself, children = budget + own path amounts.
       CollectionAssert.AreEqual(new[] { 100, 105, 100, 101 }, firstDrain);
       CollectionAssert.AreEqual(new[] { 200, 205, 200, 201 }, secondDrain,

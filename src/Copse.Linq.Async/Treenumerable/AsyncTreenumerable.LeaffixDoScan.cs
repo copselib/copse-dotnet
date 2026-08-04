@@ -15,13 +15,22 @@ namespace Copse.Linq
     /// unchanged) and each child's completed accumulation is combined in by
     /// <paramref name="accumulator"/>, one child at a time in sibling order.
     ///
-    /// <para>Purity boundary: <paramref name="nodeSelector"/> and <paramref name="accumulator"/>
-    /// are PURE; <paramref name="store"/> is the declared effect point -- EXACTLY once per node
-    /// per build, preorder order, the (node, accumulation) pairing. Effect count follows the
+    /// <para>WHY <paramref name="store"/> KEEPS ITS SEAT HERE when RootfixDoScan's merged away
+    /// (ruled 2026-08-04): the binary combine fires per CHILD EDGE -- zero times on leaves, k
+    /// times on a k-child node, and no invocation can know it is the last -- so no fold
+    /// invocation ever holds a node's completed accumulation to land. <paramref name="store"/>
+    /// is the only node-grained channel; the rootfix fold, the family's one
+    /// once-per-node-with-value-in-hand callback, is the only shape where landing rides the
+    /// return. <paramref name="nodeSelector"/> and <paramref name="accumulator"/> are PURE;
+    /// <paramref name="store"/> is the declared effect point -- EXACTLY once per node per
+    /// build, preorder order, the (node, accumulation) pairing. Effect count follows the
     /// laziness class: leaffix folds are CAPTURES (children-first), so effects fire once per
     /// operator instance at the first drain and replays never re-fire -- unlike the streaming
-    /// RootfixDoScan's per-drain contract, and for the same rule. Composition barrier like
-    /// <c>Do</c>.</para>
+    /// RootfixDoScan's per-drain contract, and for the same rule. Sequencing (via the dispatch
+    /// build): stores fire in preorder AFTER the whole fold pass completes, so a throwing
+    /// <paramref name="accumulator"/> lands nothing, while a throwing <paramref name="store"/>
+    /// leaves the prefix already landed -- disclosed, not contracted against. Composition
+    /// barrier like <c>Do</c>.</para>
     ///
     /// <para>Sugar over <see cref="LeaffixDoDispatch{TSource, TAccumulate}"/>, the pure pair's
     /// own delegation LEGITIMATELY mirrored: both leaffix tiers share one cost class, so the

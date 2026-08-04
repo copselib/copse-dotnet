@@ -18,19 +18,35 @@ namespace Copse.Linq
     /// SOURCE tree; no <see cref="ScanResult{TSource, TDispatch}"/> decoration ever reaches
     /// the caller -- Do means the nodes ARE the result), and the flow lands where the caller wants it via <paramref name="store"/>.
     ///
-    /// <para>THE DELIVERY MODEL (ratified 2026-08-04): <c>Dispatch</c> DELIVERS, and every
-    /// delivery lands on your entity via <paramref name="store"/> -- the pure operator's
-    /// <c>Dispatch</c> writes into the result pairing; this one writes onto YOUR object, via
-    /// the landing rule you declare once. The <paramref name="seed"/> is a delivery to the
-    /// roots (so it lands like every other delivery -- never land it by hand in the selector).
-    /// Every node receives exactly one delivery -- roots the seed, every other node its
-    /// parent's dispatch -- so <paramref name="store"/> fires EXACTLY ONCE per node, and all
-    /// deliveries land together when the pass completes VALIDATED (missed and doubled slots
-    /// throw first): a failed pass lands NOTHING -- all-or-nothing effects, the property money
-    /// code wants. The survey stays pure and shares the pure operator's exact shape (a
-    /// setter-callback allocator plugs in verbatim -- <c>(child, amount) =&gt;
-    /// child.Dispatch(amount)</c> IS its assignment callback); keeping the entity-write in the
-    /// declared landing rule is what makes flow-versus-field divergence inexpressible.</para>
+    /// <para>THE DELIVERY MODEL (ratified 2026-08-04; re-founded same day): <c>Dispatch</c>
+    /// DELIVERS, and every delivery lands on your entity via <paramref name="store"/> -- the
+    /// pure operator's <c>Dispatch</c> writes into the result pairing; this one writes onto
+    /// YOUR object, via the landing rule you declare once. The <paramref name="seed"/> is a
+    /// delivery to the roots (so it lands like every other delivery -- never land it by hand
+    /// in the selector). Every node receives exactly one delivery -- roots the seed, every
+    /// other node its parent's dispatch -- so <paramref name="store"/> fires EXACTLY ONCE per
+    /// node. SEQUENCING: stores fire in preorder, after the whole pass completes and
+    /// validates (missed and doubled slots throw during the surveys). Corollaries the caller
+    /// can derive, disclosed rather than promised: a failed PASS lands nothing; a throwing
+    /// STORE leaves the preorder prefix already landed. The survey stays pure and shares the
+    /// pure operator's exact shape -- a setter-callback allocator plugs in verbatim
+    /// (<c>(child, amount) =&gt; child.Dispatch(amount)</c> IS its assignment callback).</para>
+    ///
+    /// <para>WHY <c>Dispatch</c> TAKES A VALUE, NOT THE MUTATION (the operator's most natural
+    /// misreading -- asked twice by the library's own author, so it will be asked by every
+    /// consumer): dispatching <c>child =&gt; mutate(child)</c> instead of a value fails three
+    /// ways. (1) The seed has no deliverer -- with no value channel the seed cannot enter as
+    /// data, so roots become a special case needing their own landing syntax; the uniform
+    /// <paramref name="store"/> is the dissolution of that special case. (2) The value channel
+    /// dies for everyone -- each survey would have to read its subject's field to know what to
+    /// subdivide, so any quantity you did not want persisted on every entity would need a
+    /// scratch field on YOUR domain type; <typeparamref name="TDispatch"/> is the
+    /// library-provided scratch channel, and it lets flow and field diverge. (3) A closure per
+    /// child per node, where the value form writes into a slot. WHY <paramref name="store"/>
+    /// EXISTS AT ALL: the survey is a parent's sibling-complete operator -- leaves are never
+    /// surveyed -- so <paramref name="store"/> is the only callback that reaches every node.
+    /// (Its seat is structural; contrast RootfixDoScan, whose once-per-node fold lets landing
+    /// ride the return and needs no store.)</para>
     ///
     /// <para>Effect count follows the operator's laziness class, which the return type
     /// discloses: a buffer is a deferred-once capture (Tree.Lazy pins the build to the first
