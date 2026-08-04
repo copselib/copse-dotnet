@@ -56,10 +56,15 @@ slippery-slope is the proof — there is no non-arbitrary place to stop). Hence:
 
 - **Folds** are `(TAccumulate, TNode)` everywhere — LINQ Aggregate's shape; the pure
   accumulator and the Do tier's `compute` are the SAME shape.
-- **Surveys** are `(TNode subject, TDispatch arrival, view)` — the survey's node is not
-  ancestry-context but the OPERAND (you cannot survey a node you were not handed); it
-  keeps its seat. A parent-centric rule is not a fold with a missing parameter — it is a
-  survey.
+- **Surveys**: ~~`(TNode subject, TDispatch arrival, view)` — the subject is the
+  OPERAND~~ **OVERTURNED same day by the unification (below): the rootfix survey is
+  `(TDispatch arrival, targets)` — the subject was a derivable seat.** A node's arrival is
+  authored at its parent's dispatch site with the node in hand as the target's `.Node`, so
+  any subject-shaped fact flows inside `TDispatch`; the operand is the FAMILY, and the
+  family is (arrival, targets). The leaffix survey keeps its subject — upward flow means
+  the node's own value passes through nobody else's hands (each survey keeps exactly the
+  seats its flow direction cannot derive). A parent-centric rule is not a fold with a
+  missing parameter — it is a survey.
 - **Positional flavors** are justified seats: a node's coordinates are machinery-owned
   and genuinely underivable (`Where` renumbering), rationed by arity-split.
 - **`ScanResult` appears in NO callback input.** Its only home is the pure results and
@@ -82,13 +87,16 @@ contract, mechanism not morals. Untouched-on-pass-failure follows as a corollary
 caller derives in one step; a throwing *store* leaves the preorder prefix landed, so
 "all-or-nothing" was never fully true and is no longer claimed. Atomicity is a free
 byproduct of the capture-class build (the arrivals array exists anyway), demoted from
-purpose to property. `store`'s seat never rested on it: **the surveys don't reach every
-node** (rootfix: leaves are never surveyed; leaffix: leaves take the seed/selector
-boundary), so the landing rule is the only every-node channel — that is the structural
-seat. The tested-and-rejected alternatives (Dispatch-carries-the-mutation: kills the seed,
-kills the value channel, allocates a closure per edge; `DoDispatchWithValidation` twin:
-the buffer is theorem-forced by sibling-completeness, so the "plain" variant differs only
-by a weaker failure posture no workload wants) are recorded in RootfixDoDispatch's doc.
+purpose to property. `store`'s seat (as re-argued after full participation): the survey's
+writes are EDGE-grained deliveries into machinery slots; `store` is the NODE-grained
+landing rule, declared once, applied after validation — landing inside the survey would
+be two acts per call site (`dt.Node.X = v; dt.Dispatch(v)`), the forgettable-second-act
+trap. (The original "surveys don't reach every node" coverage argument was retired by
+full participation; the leaffix merge question this opens is tier 3, held.) The
+tested-and-rejected alternatives (Dispatch-carries-the-mutation: the two-act trap, kills
+the value channel, allocates a closure per edge; `DoDispatchWithValidation` twin: the
+buffer is theorem-forced by sibling-completeness, so the "plain" variant differs only by
+a weaker failure posture no workload wants) are recorded in RootfixDoDispatch's doc.
 
 ## The family equation and the landing rule (ratified 2026-08-04 — the Do tier's final form)
 
@@ -135,16 +143,20 @@ The alpha.10 root-asymmetry verdict ("I don't see why roots should be treated di
 than other levels" — and they shouldn't): **a tier's boundary must speak the tier's own
 shape, and no node class is excluded from its tier's callback.**
 
-- **Rootfix dispatches**: the roots are the children of the VIRTUAL FOREST ROOT
-  (`NodePosition.ForestRoot`, the machinery's standing convention — the scan always
-  seeded "the virtual root's accumulation"; the dispatch had forgotten the virtual root
-  exists). The root family is surveyed like every other: the new
-  `(seed, rootSurvey, survey)` form hands `rootSurvey` the seed (the virtual root's
-  arrival) and the forest's roots as sibling-complete targets, under the same
-  exactly-once protocol. No subject parameter — the virtual root has no value. Payoff: a
-  budget allocates ACROSS a forest's roots in-band, one pass — previously each root
-  seeded in isolation. The seed/selector flavors are the boundary's sugar (broadcast /
-  per-root).
+- **Rootfix dispatches — UNIFIED (same day; the `rootSurvey` intermediate lived one
+  tag)**: the roots are the children of the VIRTUAL FOREST ROOT
+  (`NodePosition.ForestRoot`, the machinery's standing convention). A separate rootSurvey
+  callback duplicated the dispatcher ("why do we have to duplicate the dispatcher for
+  roots?"), and the duplication exposed the survey's SUBJECT as a derivable seat (see the
+  seat rule above). With the subject dropped, ONE survey `(arrival, targets)` serves
+  every family — the machinery invokes it for the virtual root's family first
+  (`(seed, roots)`), then per internal family: **the boundary is an INVOCATION, not a
+  callback.** The seed flavor IS the participation form; roots participate with zero
+  ceremony; a budget allocates ACROSS a forest's roots with the same callback that
+  allocates everywhere else. The rootNodeSelector flavors survive as sugar for roots that
+  follow a different, per-root rule. A distinct sibling-complete ROOT rule
+  (rootSurvey's only unique power) waits for a real workload — the house resurrects
+  seats on demand.
 - **Leaffix dispatches**: the survey fires on EVERY node — a leaf's sources view is
   EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The survey-only
   overload is the general form ("my value plus my children's rollups" needs no boundary
@@ -192,7 +204,8 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | callbacks: minimal basis — subject + flow state, pairing in results only | callbacks: minimal basis — subject + flow state, pairing in results only | matched (the seat rule, 2026-08-04) |
 | Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual (the dispatch tier) |
 | fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |
-| boundary = the virtual root's family survey (seed = its arrival; roots are its sibling-complete targets) | boundary = sugar over the survey's own empty-sources leaf case | forced-different under full participation (2026-08-04) — the virtual root is ONE family; the fringe is every family's base case |
+| boundary = an INVOCATION of the same survey: the virtual root's family goes first, (seed, roots) | boundary = an invocation of the same survey with empty sources (the fringe is every family's base case) | matched — full participation, unified: boundaries are invocations, not callbacks; flavors are sugar |
+| survey `(arrival, targets)` — subject DERIVABLE (the arrival is authored with the node in hand at the dispatch site) | survey `(subject, sources)` — subject UNDERIVABLE (upward flow: the node's value passes through nobody else's hands) | forced-different — each survey keeps exactly the seats its flow direction cannot derive (2026-08-04) |
 | survey never reaches leaves (they have no children) → `store` is the every-node channel | survey reaches EVERY node since full participation → `store` derivable in principle; merge HELD OPEN (tier 3) | forced-different since full participation — was "matched, born dual" |
 
 Any future operator pair gets this audit before shipping.

@@ -54,8 +54,8 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .RootfixDispatch(
-          "s",
-          (parent, arrival, children) =>
+          _ => "s",
+          (arrival, children) =>
           {
             var lastChildLetter = children[children.Count - 1].Node;
 
@@ -149,24 +149,29 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void SurveysRunInPreorder_AndOnlyOnInternalNodes()
+    public void SurveysRunInPreorder_TheVirtualRootFamilyFirst_LeafFamiliesNever()
     {
-      var surveyedLetters = new List<string>();
+      var surveyedFamilies = new List<string>();
 
       TreeSerializer
         .DeserializeDepthFirstTree("a(b(d),c)")
         .RootfixDispatch(
           "s",
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
-            surveyedLetters.Add(parent);
-            foreach (var child in children)
-              child.Dispatch(arrival);
+            var family = "";
+            foreach (var member in members)
+              family += member.Node;
+            surveyedFamilies.Add(family);
+
+            foreach (var member in members)
+              member.Dispatch(arrival);
           })
         .PreorderTraversal()
         .ToArray();
 
-      CollectionAssert.AreEqual(new[] { "a", "b" }, surveyedLetters); // c and d are leaves
+      // The virtual root's family {a} first, then a's {b,c}, then b's {d}; leaves head no family.
+      CollectionAssert.AreEqual(new[] { "a", "bc", "d" }, surveyedFamilies);
     }
 
     [TestMethod]
@@ -178,20 +183,20 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch<string, string>(
           "s",
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
             surveyCount++;
-            foreach (var child in children)
-              child.Dispatch(arrival);
+            foreach (var member in members)
+              member.Dispatch(arrival);
           });
 
       Assert.AreEqual(0, surveyCount); // deferred: nothing runs until the first pull
 
       dispatch.PreorderTraversal().ToArray();
-      Assert.AreEqual(1, surveyCount);
+      Assert.AreEqual(2, surveyCount); // the virtual root's family {a} and a's {b,c}
 
       dispatch.LevelOrderTraversal().ToArray(); // cross-dimension replay rides the same capture
-      Assert.AreEqual(1, surveyCount);
+      Assert.AreEqual(2, surveyCount);
     }
 
     [TestMethod]
@@ -201,11 +206,11 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch<string, string>(
           "s",
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
-            foreach (var child in children)
+            foreach (var member in members)
             {
-              child.Dispatch(arrival);
+              member.Dispatch(arrival);
               break; // later siblings skipped
             }
           });
@@ -223,14 +228,15 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b)")
         .RootfixDispatch<string, string>(
           "s",
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
             // Copies of a target share the exactly-once state -- the second Dispatch throws
-            // even though it runs on a fresh copy from a fresh enumeration pass.
-            foreach (var child in children)
-              child.Dispatch(arrival);
-            foreach (var child in children)
-              child.Dispatch(arrival);
+            // even though it runs on a fresh copy from a fresh enumeration pass. (Under full
+            // participation this trips at the virtual root's family, the first surveyed.)
+            foreach (var member in members)
+              member.Dispatch(arrival);
+            foreach (var member in members)
+              member.Dispatch(arrival);
           });
 
       var exception = Assert.ThrowsException<InvalidOperationException>(
@@ -249,10 +255,10 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b),c(d),e")
         .RootfixDispatch(
           (root, position) => $"[{root}@{position.SiblingIndex}]",
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
-            foreach (var child in children)
-              child.Dispatch(arrival + child.Node);
+            foreach (var member in members)
+              member.Dispatch(arrival + member.Node);
           })
         .PreorderTraversal()
         .Select(node => $"{node.Accumulate}{node.Node}")
@@ -271,17 +277,18 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c)")
         .RootfixDispatch(
           0,
-          (parent, arrival, children) =>
+          (arrival, members) =>
           {
-            var childOrdinal = 0;
-            foreach (var child in children)
-              child.Dispatch(arrival * 10 + ++childOrdinal);
+            var memberOrdinal = 0;
+            foreach (var member in members)
+              member.Dispatch(arrival * 10 + ++memberOrdinal);
           })
         .PreorderTraversal()
         .Select(node => $"{node.Node}:{node.Accumulate}")
         .ToArray();
 
-      CollectionAssert.AreEqual(new[] { "a:0", "b:1", "c:2" }, pairs);
+      // The virtual family numbers the root (0*10+1), then a's family numbers b and c off it.
+      CollectionAssert.AreEqual(new[] { "a:1", "b:11", "c:12" }, pairs);
     }
 
     // The view's O(1) surface, pinned: Count and the indexer agree with enumeration, bounds
@@ -296,7 +303,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a(b,c(e,f,g),d)")
         .RootfixDispatch(
           "s",
-          (parent, arrival, children) =>
+          (arrival, children) =>
           {
             surveyedParents++;
 
@@ -322,52 +329,47 @@ namespace Copse.Linq.Tests
         .PreorderTraversal()
         .ToArray();
 
-      Assert.AreEqual(2, surveyedParents, "a and c are the only internal nodes");
+      Assert.AreEqual(3, surveyedParents, "the virtual root's family, a's, and c's");
     }
 
     [TestMethod]
-    public void RootSurvey_SeedsTheRootsSiblingCompletely_FullParticipation()
+    public void SeedFlavor_OneDispatcherSurveysTheVirtualRootFamilyFirst()
     {
-      // Full participation (2026-08-04): the virtual forest root's family is surveyed like any
-      // other -- the seed string is dealt out one letter per root, provable only with the
-      // COMPLETE root list in hand (the boundary's sibling-complete upgrade over the selector).
+      // Full participation, unified (2026-08-04): ONE subject-less survey serves every family
+      // -- the virtual forest root's first, with the seed as its arrival and the roots as its
+      // sibling-complete targets. The last-member rule is provable only with the COMPLETE
+      // member list in hand, and here it proves it at the boundary too: both roots receive
+      // (seed + last ROOT's letter).
       var results =
         TreeSerializer
         .DeserializeDepthFirstTree("a(c),b(d)")
         .RootfixDispatch(
-          "xy",
-          (seed, roots) =>
+          "s",
+          (arrival, members) =>
           {
-            for (var rootIndex = 0; rootIndex < roots.Count; rootIndex++)
-              roots[rootIndex].Dispatch(seed[rootIndex].ToString());
-          },
-          (node, arrival, children) =>
-          {
-            foreach (var child in children)
-              child.Dispatch(arrival + node);
+            var lastMemberLetter = members[members.Count - 1].Node;
+
+            foreach (var member in members)
+              member.Dispatch(arrival + lastMemberLetter);
           })
         .PreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
-      CollectionAssert.AreEqual(new[] { "x", "xa", "y", "yb" }, results);
+      // Virtual family: a and b receive "s" + "b". a's family: c receives "sb" + "c"; likewise d.
+      CollectionAssert.AreEqual(new[] { "sb", "sbc", "sb", "sbd" }, results);
     }
 
     [TestMethod]
-    public void RootSurvey_MissedRoot_Throws_TheProtocolCoversTheBoundary()
+    public void SeedFlavor_MissedRoot_Throws_TheProtocolCoversTheBoundary()
     {
-      // The root family obeys the same exactly-once protocol as every other family.
+      // The virtual root family obeys the same exactly-once protocol as every other family.
       var dispatch =
         TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .RootfixDispatch(
           "s",
-          (seed, roots) => roots[0].Dispatch(seed),
-          (node, arrival, children) =>
-          {
-            foreach (var child in children)
-              child.Dispatch(arrival);
-          });
+          (arrival, members) => members[0].Dispatch(arrival));
 
       Assert.ThrowsException<InvalidOperationException>(() => dispatch.PreorderTraversal().ToArray());
     }

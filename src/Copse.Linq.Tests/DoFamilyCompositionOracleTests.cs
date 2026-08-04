@@ -93,15 +93,16 @@ namespace Copse.Linq.Tests
     }
 
     // The work-shaped survey, shared verbatim by the dedicated and composed passes (the seat
-    // rule's callbacks-lift-unchanged clause): allocate the arrival pro rata by child weight.
-    private static void AllocateByWeight(Entity parent, decimal arrival, DispatchTargets<Entity, decimal> children)
+    // rule's callbacks-lift-unchanged clause), subject-less (the unified signature): allocate
+    // the family's arrival pro rata by member weight -- the virtual root family included.
+    private static void AllocateByWeight(decimal arrival, DispatchTargets<Entity, decimal> members)
     {
       var totalWeight = 0m;
-      foreach (var child in children)
-        totalWeight += child.Node.Weight;
+      foreach (var member in members)
+        totalWeight += member.Node.Weight;
 
-      foreach (var child in children)
-        child.Dispatch(arrival * child.Node.Weight / totalWeight);
+      foreach (var member in members)
+        member.Dispatch(arrival * member.Node.Weight / totalWeight);
     }
 
     [TestMethod]

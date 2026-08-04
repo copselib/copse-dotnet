@@ -36,11 +36,11 @@ namespace Copse.Linq
     /// <c>Do</c>, this operator is a composition barrier: nothing may fuse across the declared
     /// effect point.</para>
     ///
-    /// <para>This is the family's ONE merged shape, and the reason is structural: the rootfix
-    /// fold is the only Do callback that fires exactly once per node with that node's
-    /// completed value in hand, so landing can ride the return. Everywhere that fails, a
-    /// <c>store</c> keeps its seat: LeaffixDoScan's binary combine fires per child edge (never
-    /// once per node), and neither survey tier reaches the leaves.</para>
+    /// <para>This is the fold tier's merged shape, and the reason is structural: the rootfix
+    /// fold fires exactly once per node with that node's completed value in hand, so landing
+    /// can ride the return. Where that fails, a <c>store</c> keeps its seat: LeaffixDoScan's
+    /// binary combine fires per child edge (never once per node), and the survey tiers'
+    /// deliveries are edge-grained (store is their node-grained landing rule).</para>
     /// </summary>
     public static IAsyncTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,

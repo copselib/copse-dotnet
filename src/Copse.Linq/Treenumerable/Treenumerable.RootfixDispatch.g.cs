@@ -19,47 +19,46 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The survey-shaped downward pass -- the sibling-complete tier of the rootfix pair (the
-    /// fold-shaped tier is RootfixScan): arrivals resolve top-down (every node receives what
-    /// was dispatched to it), and each internal node's <paramref name="survey"/> sees its
-    /// arrival together with ALL of its children at once through the no-copy
-    /// <see cref="DispatchTargets{TSource, TDispatch}"/> view -- one write-handle per child,
+    /// fold-shaped tier is RootfixScan): ONE dispatcher for every family in the forest.
+    /// <paramref name="survey"/> receives a family's arrival together with ALL of that
+    /// family's members at once through the no-copy
+    /// <see cref="DispatchTargets{TSource, TDispatch}"/> view -- one write-handle per member,
     /// each of which must receive exactly one
-    /// <see cref="DispatchTarget{TSource, TDispatch}.Dispatch"/> (a second throws immediately; a
-    /// missed one throws when the survey returns). Sibling-complete visibility is the point: a
-    /// fairness split cannot allocate its edges independently, and a setter-callback allocator
-    /// plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS its assignment
-    /// callback. Leaves are not surveyed (they have no children). Surveys run in depth-first
-    /// preorder.
+    /// <see cref="DispatchTarget{TSource, TDispatch}.Dispatch"/> (a second throws immediately;
+    /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
+    /// a fairness split cannot allocate its edges independently, and a setter-callback
+    /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
+    /// its assignment callback. Surveys run in depth-first preorder.
     ///
-    /// <para>FULL PARTICIPATION (ratified 2026-08-04 -- boundary-shape-follows-tier-shape):
-    /// the roots are not a special case. They are the children of the VIRTUAL FOREST ROOT
-    /// (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and that
-    /// family is surveyed like every other: the <paramref name="seed"/> is the virtual root's
-    /// arrival, and the rootSurvey overload receives it with the forest's roots as its
-    /// sibling-complete targets -- so a budget can be allocated ACROSS the roots exactly the
-    /// way a survey allocates across any other family, under the same exactly-once protocol.
-    /// The seed-only and rootNodeSelector flavors are that boundary's sugar: broadcast the
-    /// seed to every root, or dispatch per-root in isolation.</para>
+    /// <para>FULL PARTICIPATION (2026-08-04; unified same day -- the boundary is an
+    /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
+    /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
+    /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
+    /// <c>(arrival, children)</c> at every internal node. No node class sits outside the
+    /// dispatcher, no root-specific callback exists, and a budget allocates ACROSS the roots
+    /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
+    /// the boundary's sugar for roots that follow a different, per-root rule.</para>
     ///
-    /// <para>VALUE-flavored (2026-08-02): the survey receives the parent's VALUE, and the root
-    /// selector is arity-split on the Select/Where grammar -- value flavor primary,
-    /// (node, position) flavor for seeding by root ordinal. This is the surface the Do tier
-    /// inherits, born on the house's value-flavor grammar. Child positions stay available
-    /// per-target (<see cref="DispatchTarget{TSource, TDispatch}.Context"/>); a survey flavor
-    /// that sees the PARENT's position waits for a real case.</para>
+    /// <para>THE SUBJECT SEAT, REMOVED (2026-08-04 -- the seat rule, aimed at the survey): the
+    /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
+    /// authored at its parent's dispatch site, where that node is in hand as the target's
+    /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
+    /// <typeparamref name="TDispatch"/> at the moment of dispatch. (Contrast LeaffixDispatch,
+    /// whose survey keeps its subject: upward flow means the node's own value passes through
+    /// nobody else's hands -- each survey keeps exactly the seats its flow direction cannot
+    /// derive.)</para>
     ///
     /// <para>The result pairs every source value with what ARRIVED at it
     /// (<see cref="ScanResult{TSource, TDispatch}"/>, the family's canonical pairing --
     /// docs/SCANRESULT_DESIGN.md) in the source tree's shape. NOTE the deliberate contrast
-    /// with the fold tiers: a fold records its OUTPUT (the root's pairing includes the root's
-    /// contribution), while this survey records its INPUT -- a root's pairing is what the root
-    /// family's survey dispatched to it -- because the survey's outputs are edge-grained and
-    /// land as the CHILDREN's arrivals; a survey has no node-grained output to record. Project
-    /// <c>.Accumulate</c> away with Select for immutable values, or use RootfixDoDispatch for
-    /// mutable ones.</para>
+    /// with the fold tiers: a fold records its OUTPUT, while this survey records its INPUT --
+    /// a node's pairing is what its family's survey dispatched to it -- because the survey's
+    /// outputs are edge-grained and land as the MEMBERS' arrivals; a survey has no
+    /// node-grained output to record. Project <c>.Accumulate</c> away with Select for
+    /// immutable values, or use RootfixDoDispatch for mutable ones.</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> for LeaffixDispatch's
-    /// reason, mirrored: the survey needs its FULL child list before the first child's value
+    /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
@@ -69,37 +68,21 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IDepthFirstTreenumerable<TSource> source,
       TDispatch seed,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => RootfixDispatch(source, seed, BroadcastRootSurvey<TSource, TDispatch>(), survey);
-
-    /// <summary>
-    /// The root-family survey form -- the boundary's GENERAL shape (full participation): the
-    /// virtual forest root's family surveyed like any other. <paramref name="rootSurvey"/>
-    /// receives the <paramref name="seed"/> (the virtual root's arrival) and the forest's
-    /// roots as sibling-complete targets, and must dispatch to each exactly once -- so a
-    /// budget splits ACROSS the roots the way any survey splits across a family. No subject
-    /// parameter: the virtual root has no value. The seed-only and selector flavors are this
-    /// boundary's sugar.
-    /// </summary>
-    public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
-      this IDepthFirstTreenumerable<TSource> source,
-      TDispatch seed,
-      Action<TDispatch, DispatchTargets<TSource, TDispatch>> rootSurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
-        Tree.Lazy(() => PreorderRootfixDispatch(source, targets => rootSurvey(seed, targets), survey)), BufferLayout.Preorder);
+        Tree.Lazy(() => PreorderRootfixDispatch(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
     /// <summary>
-    /// The forest-correct seeding form -- RootfixScan's rootNodeSelector overload, mirrored:
-    /// EVERY root's arrival comes from <paramref name="rootNodeSelector"/> against that root's
-    /// SOURCE context, so each tree of a forest seeds independently. The fixed-seed overload is
-    /// this with a constant at the roots; the rootSurvey overload is the general form when the
-    /// roots must be seeded sibling-completely.
+    /// The per-root seeding flavor -- boundary sugar for roots that follow a DIFFERENT,
+    /// per-root rule than the survey: every root's arrival comes from
+    /// <paramref name="rootNodeSelector"/> against that root's own context, in isolation; the
+    /// survey then runs every internal family. (Under the seed flavor the roots are simply the
+    /// survey's first family.)
     /// </summary>
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
         Tree.Lazy(() => PreorderRootfixDispatch(source, PerRootSurvey<TSource, TDispatch>((node, _) => rootNodeSelector(node)), survey)), BufferLayout.Preorder);
 
@@ -107,7 +90,7 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
         Tree.Lazy(() => PreorderRootfixDispatch(source, PerRootSurvey<TSource, TDispatch>(rootNodeSelector), survey)), BufferLayout.Preorder);
 
@@ -121,28 +104,21 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IBreadthFirstTreenumerable<TSource> source,
       TDispatch seed,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => RootfixDispatch(source, seed, BroadcastRootSurvey<TSource, TDispatch>(), survey);
-
-    public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
-      this IBreadthFirstTreenumerable<TSource> source,
-      TDispatch seed,
-      Action<TDispatch, DispatchTargets<TSource, TDispatch>> rootSurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
-        Tree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, targets => rootSurvey(seed, targets), survey)), BufferLayout.Preorder);
+        Tree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
         Tree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, PerRootSurvey<TSource, TDispatch>((node, _) => rootNodeSelector(node)), survey)), BufferLayout.Preorder);
 
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => new TreenumerableBuffer<ScanResult<TSource, TDispatch>>(
         Tree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, PerRootSurvey<TSource, TDispatch>(rootNodeSelector), survey)), BufferLayout.Preorder);
 
@@ -150,40 +126,24 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this ITreenumerable<TSource> source,
       TDispatch seed,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => RootfixDispatch((IDepthFirstTreenumerable<TSource>)source, seed, survey);
 
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this ITreenumerable<TSource> source,
-      TDispatch seed,
-      Action<TDispatch, DispatchTargets<TSource, TDispatch>> rootSurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => RootfixDispatch((IDepthFirstTreenumerable<TSource>)source, seed, rootSurvey, survey);
-
-    public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
-      this ITreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => RootfixDispatch((IDepthFirstTreenumerable<TSource>)source, rootNodeSelector, survey);
 
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this ITreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => RootfixDispatch((IDepthFirstTreenumerable<TSource>)source, rootNodeSelector, survey);
 
-    // The seed flavor's boundary: broadcast -- the virtual root delivers its arrival to every
-    // root verbatim.
-    private static Action<TDispatch, DispatchTargets<TSource, TDispatch>> BroadcastRootSurvey<TSource, TDispatch>()
-      => (seed, targets) =>
-      {
-        foreach (var target in targets)
-          target.Dispatch(seed);
-      };
-
     // The selector flavors' boundary: per-root dispatch in isolation -- each root's arrival
-    // computed from its own context, no sibling-complete visibility (that is the rootSurvey
-    // form's upgrade).
+    // computed from its own context, no sibling-complete visibility (under the seed flavor the
+    // roots are simply the survey's first family, sibling-complete like every other).
     private static Action<DispatchTargets<TSource, TDispatch>> PerRootSurvey<TSource, TDispatch>(
       Func<TSource, NodePosition, TDispatch> rootNodeSelector)
       => targets =>
@@ -198,7 +158,7 @@ namespace Copse.Linq
     private static ITreenumerable<ScanResult<TSource, TDispatch>> PreorderRootfixDispatch<TSource, TDispatch>(
       IDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       var dispatched = new LazyPreorderStore<ScanResult<TSource, TDispatch>>(
         () => BuildRootfixDispatch(source, rootFamilySurvey, survey));
@@ -209,7 +169,7 @@ namespace Copse.Linq
     private static ITreenumerable<ScanResult<TSource, TDispatch>> PreorderRootfixDispatchBreadthFirstSource<TSource, TDispatch>(
       IBreadthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       var dispatched = new LazyPreorderStore<ScanResult<TSource, TDispatch>>(
         () => BuildRootfixDispatchFromBreadthFirst(source, rootFamilySurvey, survey));
@@ -220,20 +180,20 @@ namespace Copse.Linq
     private static PreorderArrayStore<ScanResult<TSource, TDispatch>> BuildRootfixDispatchFromBreadthFirst<TSource, TDispatch>(
       IBreadthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       var capture = source.Materialize();
 
       return BuildRootfixDispatch(capture, rootFamilySurvey, survey);
     }
 
-    // The pure finisher: run the shared pass, then zip (values, arrivals) into the DispatchNode
+    // The pure finisher: run the shared pass, then zip (values, arrivals) into the ScanResult
     // decoration. The Do finisher (AsyncTreenumerable.RootfixDoDispatch.cs) rides the same pass
     // and hands the same pairs to its store instead -- one build, two exits.
     private static PreorderArrayStore<ScanResult<TSource, TDispatch>> BuildRootfixDispatch<TSource, TDispatch>(
       IDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       var (values, subtreeSizes, arrivals) = RunRootfixDispatchPass(source, rootFamilySurvey, survey);
 
@@ -252,7 +212,7 @@ namespace Copse.Linq
     private static (TSource[] Values, int[] SubtreeSizes, TDispatch[] Arrivals) RunRootfixDispatchPass<TSource, TDispatch>(
       IDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
-      Action<TSource, TDispatch, DispatchTargets<TSource, TDispatch>> survey)
+      Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       // Pass 1: the capture factory's raw form -- one depth-first walk into the flat pre-order
       // encoding (a node's children sit at subtree-size hops after it), positions riding the
@@ -261,7 +221,7 @@ namespace Copse.Linq
         .CaptureRaw(source, nodeContext => nodeContext.Position);
 
       // Pass 2: top-down over the flat encoding. Preorder puts every parent before its children,
-      // so each node's arrival is resolved before its own survey runs. The one written-flags
+      // so each family's arrival is resolved before its own survey runs. The one written-flags
       // array carries the exactly-once bookkeeping for the whole build: every node -- roots
       // included, as the virtual root family's children -- is some family's child exactly once,
       // so no slot is ever reused and nothing per-node is allocated.
@@ -273,9 +233,10 @@ namespace Copse.Linq
       // encoding) buys the survey view its honestly-O(1) Count and indexer.
       var (childOffsets, childIndices) = DispatchChildIndex.Build(subtreeSizes);
 
-      // FULL PARTICIPATION (2026-08-04): the virtual forest root's family goes first. The
-      // roots gathered into a one-family index so the boundary speaks the same sibling-complete
-      // view -- and obeys the same exactly-once protocol -- as every other survey.
+      // FULL PARTICIPATION (2026-08-04): the virtual forest root's family goes first, through
+      // the same survey as every other family (the seed flavor) or the selector sugar -- the
+      // roots gathered into a one-family index so the boundary speaks the same
+      // sibling-complete view and obeys the same exactly-once protocol.
       var rootCount = 0;
       for (var rootIndex = 0; rootIndex < nodeCount; rootIndex += subtreeSizes[rootIndex])
         rootCount++;
@@ -290,7 +251,7 @@ namespace Copse.Linq
       for (var slot = 0; slot < rootCount; slot++)
         if (!written[rootIndices[slot]])
           throw new InvalidOperationException(
-            $"The root survey completed without dispatching to root '{values[rootIndices[slot]]}'; every root must receive exactly one Dispatch (the virtual forest root's family).");
+            $"The survey completed without dispatching to root '{values[rootIndices[slot]]}'; every root must receive exactly one Dispatch (the virtual forest root's family).");
 
       for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
       {
@@ -298,7 +259,6 @@ namespace Copse.Linq
           continue;
 
         survey(
-          values[nodeIndex],
           arrivals[nodeIndex],
           new DispatchTargets<TSource, TDispatch>(values, positions, childIndices, childOffsets, arrivals, written, nodeIndex));
 

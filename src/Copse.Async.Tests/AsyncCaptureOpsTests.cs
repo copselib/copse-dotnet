@@ -83,7 +83,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task RootfixDispatch_MatchesSync_BothDimensions()
     {
-      static void Survey(string parent, string arrival, DispatchTargets<string, string> children)
+      static void Survey(string arrival, DispatchTargets<string, string> children)
       {
         foreach (var child in children)
           child.Dispatch(arrival + child.Node);
