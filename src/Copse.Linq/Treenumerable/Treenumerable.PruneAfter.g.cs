@@ -25,16 +25,11 @@ namespace Copse.Linq
 
       // The light tier composes a prune-after in-tier and keeps no-promotion machinery:
       // prune over prune merges predicates on the bespoke driver; prune over projections
-      // rides the light passthrough driver.
+      // rides the light passthrough driver. Prune-afters compose ONLY in-tier (boundary
+      // ruling 2026-08-04): over a general chain the light wrapper stacks on top -- joining
+      // the chain would demote its representation for a layer that costs almost nothing.
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
-
-      // A value predicate observes no coordinates, so it composes unconditionally. The selector
-      // comes from the wrapper's CreateResultSelector: the operator's semantics, stated once.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
-          relabels: false);
 
       return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
     }
@@ -50,16 +45,11 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // The light tier composes a prune-after in-tier (see the value overload); the tier
-      // never relabels, so the positional flavor always qualifies for the join rule.
+      // The light tier composes a prune-after in-tier (see the value overload, including the
+      // in-tier-only boundary ruling); the tier never relabels, so the positional flavor
+      // always qualifies for the join rule.
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
-
-      // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
 
       return new PruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
@@ -71,24 +61,15 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
-      // through a narrow-typed receiver composes on its own representation -- the successor
-      // keeps both dimensions; a narrow chain composes to a narrow successor.
+      // The narrow probes mirror the composite overload's (in-tier only -- see the composite
+      // value overload's boundary ruling). A composite-width wrapper arriving through a
+      // narrow-typed receiver composes on its own representation -- the successor keeps both
+      // dimensions; a narrow chain composes to a narrow successor.
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
-          relabels: false);
-
       if (source is ISelectPruneAfterDepthFirstTreenumerable<T> depthFirstSelectPruneAfterSource)
         return depthFirstSelectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
-
-      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
-          relabels: false);
 
       return new PruneAfterDepthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
     }
@@ -101,22 +82,12 @@ namespace Copse.Linq
         return source;
 
       // The light tier never relabels, so the positional flavor always qualifies for the join
-      // rule; on the general representation it composes only over a label-preserving chain.
+      // rule (in-tier only -- see the composite value overload's boundary ruling).
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
-
       if (source is ISelectPruneAfterDepthFirstTreenumerable<T> depthFirstSelectPruneAfterSource)
         return depthFirstSelectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
-
-      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
 
       return new PruneAfterDepthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
@@ -131,18 +102,8 @@ namespace Copse.Linq
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
-          relabels: false);
-
       if (source is ISelectPruneAfterBreadthFirstTreenumerable<T> breadthFirstSelectPruneAfterSource)
         return breadthFirstSelectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
-
-      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node)),
-          relabels: false);
 
       return new PruneAfterBreadthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
     }
@@ -157,18 +118,8 @@ namespace Copse.Linq
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
-
       if (source is ISelectPruneAfterBreadthFirstTreenumerable<T> breadthFirstSelectPruneAfterSource)
         return breadthFirstSelectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
-
-      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose(
-          PruneAfterTreenumerable<T>.CreateResultSelector(nodeContext => predicate(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
 
       return new PruneAfterBreadthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }

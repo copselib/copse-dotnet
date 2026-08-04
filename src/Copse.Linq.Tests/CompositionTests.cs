@@ -399,18 +399,22 @@ namespace Copse.Linq.Tests
       Assert.IsInstanceOfType(merged, typeof(PruneAfterTreenumerable<string>));
     }
 
+    // The tier seal (boundary ruling 2026-08-04): a rejecting operator STACKS its
+    // inlined-struct driver over a light wrapper instead of converting it -- the light
+    // wrapper has no struct leg to donate, so absorbing it traded a near-free passthrough
+    // layer for an all-delegate chain (the Where.Triangle_Mixed regression, +25%).
     [TestMethod]
-    public void LightTier_ConvertsWhenARejectingOperatorJoins()
+    public void LightTier_StaysSealedWhenARejectingOperatorJoins()
     {
-      var converted = Tree("a(b(d,e),c)")
+      var stacked = Tree("a(b(d,e),c)")
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!")
         .Where(n => n != "c!");
 
       Assert.IsInstanceOfType(
-        converted,
-        typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>),
-        "a rejecting operator must convert the light tier to the general representation");
+        stacked,
+        typeof(SelectWhereTreenumerable<string, string, WhereResultSelector<string>>),
+        "a rejecting operator must stack its struct-selector driver over the sealed light tier, not convert it");
     }
   }
 }

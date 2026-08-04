@@ -7,14 +7,23 @@ namespace Copse.Linq.Async.Treenumerables
   // The light tier, declared only where it exists: a wrapper whose composed chain NEVER
   // carries SkipNode -- projections and prune-afters only -- composes further members of
   // that family without converting to the filter driver. Nothing in the tier moves a label
-  // (the relabels-nothing row of the gradient: no promotion, no renumbering), so
-  // implementers' Relabels is always false and even positional lambdas compose across them.
+  // (the relabels-nothing row of the gradient: no promotion, no renumbering), so even
+  // positional lambdas compose across it.
   //
   // Both signatures are the type-enforced tier boundary: a projection returns a bare value
   // and a prune-after returns a bool -- neither can smuggle SkipNode, so composing through
-  // these doors provably stays in the tier. A rejecting operator (Where, PruneBefore)
-  // arrives through the inherited general Compose and converts the representation.
-  internal interface IAsyncSelectPruneAfterTreenumerable<TNode> : IAsyncSelectWhereTreenumerable<TNode>
+  // these doors provably stays in the tier.
+  //
+  // THE TIER IS SEALED (boundary ruling 2026-08-04): this interface deliberately does NOT
+  // extend the general-splice surface, so a rejecting operator (Where, PruneBefore) STACKS
+  // its inlined-struct driver over a light wrapper instead of converting it. Conversion was
+  // measured underwater both ways -- the light wrapper is the one splice participant with no
+  // struct leg to donate, so absorbing it trades a near-free passthrough layer for an
+  // all-delegate FuncResultSelector chain (Where.Dft_Triangle_Mixed, +25%). The one
+  // exception is the bare projection wrapper: AsyncSelectTreenumerable additionally
+  // implements IAsyncSelectWhereTreenumerable (dual citizenship), because absorbing a full
+  // projection layer is the composition family's measured win.
+  internal interface IAsyncSelectPruneAfterTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
     // Compose a projection, staying on the tier's light machinery.
     IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
