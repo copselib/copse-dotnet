@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785805657681,
+  "lastUpdate": 1785805658116,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -123281,6 +123281,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
             "value": 1821,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "168ad1c22263422e8c32b9d7204dc99662647fef",
+          "message": "Deserialize means Defer: the string tier's hidden schedule unified\n\nRe-enumerating a string-deserialized tree in LinqPad parsed only once: the\nstring tier shared one growing store across every treenumerator of a result\n(parse once, replay many) while the Func<TextReader> tier built fresh per\nacquisition. Same method name, opposite re-enumeration semantics -- the map\nran once-ever vs per-traversal, instances aliased vs fresh -- selected by\noverload resolution, disclosed only in internal store comments. An\nundocumented Memoize schedule behind a plain ITreenumerable return breaks\nthe policy's three-sentence model AND the naming session's one-word-one-\nmeaning rule (the same rule that keeps Tree.Defer and Tree.Lazy separate\nnames).\n\nRuled: unify on Defer, the standard lazy contract, rather than name the\nanomaly. The string tier now wraps store construction in Tree.Defer -- a\nfresh lazily-parsed store per treenumerator acquisition, parse still bounded\nby the traversal frontier, retention collected with its treenumerator.\nParse-once-replay-many is the caller's explicit escalation: Materialize()\n(eager) or Memoize() (incremental). No new dependency: Tree lives in Copse,\nwhich the serializer already references.\n\nBREAKING (release notes): the string-tier value map goes from once-ever to\nper-traversal, and enumerations no longer share instances.\n\nAlso: SerializerTests gains the dual re-parse pins (map count + fresh\ninstances, both grammars); OPERATOR_SURFACE_MAP gains the Serializer surface\nsection (the serializer had no rows in section 1 -- which is how the\nschedule went unregistered); the Serialization benchmark's Serialize rows\nserialize a Materialized buffer now that setup's pre-Consume cannot carry\nover (same rows, but the source becomes an array store -- expect a possible\nstep in those Bencher series). Full suite 24,449 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-04T00:54:06Z",
+          "tree_id": "c4e7369b1f4364ef3f624f0f1a2cd62144112c24",
+          "url": "https://github.com/copselib/copse-dotnet/commit/168ad1c22263422e8c32b9d7204dc99662647fef"
+        },
+        "date": 1785805658031,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 16903599,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 42145413,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 42145509,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 50353234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 42318142,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 42318238,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 684,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 96515275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 96515371,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 67136452,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 67132874,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 108698,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 64157645,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 141867,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 41945757,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 64330252,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 315003,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 895,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93367119,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 92301028,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988450,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1852,
             "unit": "bytes"
           }
         ]
