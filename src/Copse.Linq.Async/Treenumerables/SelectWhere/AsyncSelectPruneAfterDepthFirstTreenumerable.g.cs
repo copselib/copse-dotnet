@@ -29,9 +29,6 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly IAsyncDepthFirstTreenumerable<TSource> _Source;
     private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
-    // The tier invariant: nothing in the chain moves a label.
-    public bool Relabels => false;
-
     // A projection composes in-tier.
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
@@ -44,18 +41,6 @@ namespace Copse.Linq.Async.Treenumerables
     {
       return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult>(
         _Source, SelectWhereComposition.SelectPruneAfterThenPruneAfter(_ResultSelector, predicate));
-    }
-
-    // A rejecting operator arrived: convert to the general representation.
-    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-    {
-      return new SelectWhereDepthFirstTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
-        _Source,
-        new FuncResultSelector<TSource, TOuterResult>(
-          SelectWhereComposition.SelectPruneAfterThenResultSelector(_ResultSelector, resultSelector)),
-        relabels);
     }
 
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>

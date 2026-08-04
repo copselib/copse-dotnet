@@ -30,7 +30,7 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Operator | Source dims | Returns | Behavior | State bound |
 |---|---|---|---|---|
 | Select | F, D, B | same-dim | streams | O(1); lambdas take (node) or (node, position) — NodeContext left the operator surface 2026-07-16 (composition design); consecutive Selects compose, either flavor (projection never moves positions) |
-| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres COMPOSE (predicate combination) and compose over Selects into the projection-carrying driver; positional Wheres never compose with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes still NodeContext, migrating with the signature workstream |
+| Where / PruneBefore / PruneAfter | F, D, B | same-dim | streams | O(depth) DFT / O(width) BFT; Where lambdas take (node) or (node, position) — value-only Wheres COMPOSE (predicate combination) and compose over Selects into the projection-carrying driver; positional Wheres never compose with their own kind (each layer sees its input tree's labels — LINQ's indexed-Where rule); prunes take (node) or (node, position) too. **TIER SEAL 2026-08-04** (OPERATOR_COMPOSITION_DESIGN.md 2.9, the Where.Triangle_Mixed regression): prune-afters compose only IN-TIER (the light Select/PruneAfter family); rejecting operators STACK their inlined-struct drivers over light wrappers instead of converting them — the light tier donates no struct leg, so absorbing it made composed chains all-delegate (+20–25% on the Mixed rows, 10 CI runs) |
 | TakeNodesUntil / TakeNodesWhile | F, D, B | same-dim | streams | O(1) |
 | TakeTrees / SkipTrees | F, D, B | same-dim | streams | sugar over take/prune |
 | TakeLastTrees / SkipLastTrees | F, D, B | same-dim | **eager count at call time** | two-pass by design (count the roots, then take/skip; decided 2026-07-13 — a single-pass form must buffer k whole subtrees); B's counting pass drains level 0 only |
@@ -79,6 +79,20 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Tree.Empty | singleton |
 | Preorder/LevelOrderTreenumerable | full citizen over a random-access store (off-native dimension rides cross-order, ~1.08x tax) |
 | Preorder/LevelOrderStreamTreenumerable | narrow-dimension over a forward-only stream; fresh stream per acquisition, treenumerator owns/disposes it |
+
+### Serializer surface (Copse.SimpleSerializer)
+
+Registered 2026-08-03 — the serializer had no rows here, which is how the string tier's
+schedule went undisclosed. **Every Deserialize overload now has Defer semantics** (the
+standard lazy contract): re-enumeration re-parses, the value map runs per traversal, fresh
+instances every pass; parse-once-replay-many is the caller's explicit `Materialize`/`Memoize`
+escalation.
+
+| Method | Source | Returns | Behavior |
+|---|---|---|---|
+| Deserialize{DepthFirst,BreadthFirst}Tree (±map) | `string` | **F** | streams via `Tree.Defer`: fresh lazily-parsed string store per acquisition, parse bounded by the traversal frontier; retention scoped to the treenumerator. *(Until 2026-08-03 one growing store was shared by every treenumerator of a result — an undisclosed Memoize schedule selected by overload resolution; unified after it surprised on re-enumeration.)* |
+| Deserialize{DepthFirst,BreadthFirst}Tree (±map) / …FromFile | `Func<TextReader>` / path | **D** / **B** narrow | streams: fresh reader per acquisition, owned and disposed by the treenumerator; the unaffordable dimension is absent from the type — escalation is explicit `Memoize`/`Materialize` |
+| Serialize{DepthFirst,BreadthFirst}Tree (±map) | D / B narrow receiver | `string` / writer `void` | drains; narrow interfaces are the honest receivers (each layout needs only its own dimension) |
 
 ### Experimental
 

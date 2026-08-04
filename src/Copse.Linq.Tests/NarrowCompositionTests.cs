@@ -136,18 +136,20 @@ namespace Copse.Linq.Tests
         depthFirst.PreorderTraversal().ToArray());
     }
 
+    // The tier seal, narrow half (boundary ruling 2026-08-04): rejecting operators stack
+    // over the sealed light tier -- see CompositionTests.LightTier_StaysSealedWhenARejectingOperatorJoins.
     [TestMethod]
-    public void NarrowLightTier_ConvertsWhenARejectingOperatorJoins()
+    public void NarrowLightTier_StaysSealedWhenARejectingOperatorJoins()
     {
-      IDepthFirstTreenumerable<string> converted = StreamDepthFirst("a(b(d,e),c)")
+      IDepthFirstTreenumerable<string> stacked = StreamDepthFirst("a(b(d,e),c)")
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!")
         .Where(n => n != "c!");
 
       Assert.IsInstanceOfType(
-        converted,
-        typeof(SelectWhereDepthFirstTreenumerable<string, string, FuncResultSelector<string, string>>),
-        "a rejecting operator must convert the narrow light tier to the general representation");
+        stacked,
+        typeof(SelectWhereDepthFirstTreenumerable<string, string, WhereResultSelector<string>>),
+        "a rejecting operator must stack its struct-selector driver over the sealed narrow light tier, not convert it");
     }
 
     // The join rule, narrow half: a positional lambda is entitled to its input tree's emitted

@@ -43,7 +43,7 @@ namespace Copse.Linq
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
       // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource && !selectPruneAfterSource.Relabels)
+      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
@@ -94,7 +94,7 @@ namespace Copse.Linq
     {
       // The join rule (see the composite positional overload): splice only over a
       // label-preserving chain.
-      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource && !selectPruneAfterSource.Relabels)
+      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
@@ -102,7 +102,7 @@ namespace Copse.Linq
           nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
-      if (source is IAsyncSelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource && !depthFirstSelectPruneAfterSource.Relabels)
+      if (source is IAsyncSelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource) // the tier never relabels
         return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
@@ -142,7 +142,7 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
     {
-      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource && !selectPruneAfterSource.Relabels)
+      if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
@@ -150,7 +150,7 @@ namespace Copse.Linq
           nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
-      if (source is IAsyncSelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource && !breadthFirstSelectPruneAfterSource.Relabels)
+      if (source is IAsyncSelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource) // the tier never relabels
         return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)

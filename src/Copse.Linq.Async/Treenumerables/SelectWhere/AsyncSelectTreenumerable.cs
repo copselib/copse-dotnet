@@ -10,7 +10,10 @@ namespace Copse.Linq.Async.Treenumerables
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
   // when a rejecting operator joins (the representation choice IS the type split).
-  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterTreenumerable<TResult>
+  // Dual citizenship (boundary ruling 2026-08-04): the bare projection wrapper is the one
+  // light-tier member that stays on the general-splice surface -- absorbing a full projection
+  // layer is the composition family's measured win, unlike the prune-carrying wrappers.
+  internal sealed class AsyncSelectTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterTreenumerable<TResult>, IAsyncSelectWhereTreenumerable<TResult>
   {
     public AsyncSelectTreenumerable(
       IAsyncTreenumerable<TSource> source,

@@ -11,9 +11,16 @@ namespace Copse.SimpleSerializer
   // the stored layout by choosing DeserializeDepthFirstTree (preorder grammar, "a(b(d,e),c)") or
   // DeserializeBreadthFirstTree (level-order groups grammar, "a;b,c;d,e"). There is NO layout
   // header: the method IS the layout declaration, and a wrong-layout string fails fast on the
-  // first alien structural character (see the string stores). Parsing is lazy -- composing
-  // touches nothing; each pull parses only as far as the traversal's frontier reaches; one
-  // shared store serves every treenumerator of the same result.
+  // first alien structural character (see the string stores).
+  //
+  // Every Deserialize overload, both tiers, has the SAME schedule -- Defer, the standard lazy
+  // contract (unified 2026-08-03; the string tier previously shared one growing store across
+  // every treenumerator of a result, an undisclosed Memoize schedule selected by overload
+  // resolution). Each treenumerator acquisition constructs a fresh store via Tree.Defer, parses
+  // only as far as its traversal's frontier reaches, and is collected with it: re-enumeration
+  // re-parses, the value map runs per traversal, and every traversal sees fresh instances.
+  // Parse-once-replay-many is the caller's explicit escalation: Materialize() (eager capture)
+  // or Memoize() (incremental capture).
   //
   // The forward-only reader/file tier -- bounded memory, single dimension -- lives in
   // TreeSerializer.Stream.cs.
@@ -33,8 +40,9 @@ namespace Copse.SimpleSerializer
     // Span overload: the map receives each value as a slice of the source (no intermediate
     // string), so deserializing into non-string values allocates no value strings at all.
     public static ITreenumerable<TValue> DeserializeDepthFirstTree<TValue>(string tree, SpanMap<TValue> map)
-      => new PreorderTreenumerable<TValue, PreorderStringStore<TValue>.Handle>(
-        new PreorderStringStore<TValue>.Handle(new PreorderStringStore<TValue>(tree, map)));
+      => Tree.Defer(() =>
+        new PreorderTreenumerable<TValue, PreorderStringStore<TValue>.Handle>(
+          new PreorderStringStore<TValue>.Handle(new PreorderStringStore<TValue>(tree, map))));
 
     public static ITreenumerable<string> DeserializeBreadthFirstTree(string tree)
       => DeserializeBreadthFirstTree(tree, value => value);
@@ -46,8 +54,9 @@ namespace Copse.SimpleSerializer
     }
 
     public static ITreenumerable<TValue> DeserializeBreadthFirstTree<TValue>(string tree, SpanMap<TValue> map)
-      => new LevelOrderTreenumerable<TValue, LevelOrderStringStore<TValue>.Handle>(
-        new LevelOrderStringStore<TValue>.Handle(new LevelOrderStringStore<TValue>(tree, map)));
+      => Tree.Defer(() =>
+        new LevelOrderTreenumerable<TValue, LevelOrderStringStore<TValue>.Handle>(
+          new LevelOrderStringStore<TValue>.Handle(new LevelOrderStringStore<TValue>(tree, map))));
 
     // ----- Serialize (tree -> string) -----
     //

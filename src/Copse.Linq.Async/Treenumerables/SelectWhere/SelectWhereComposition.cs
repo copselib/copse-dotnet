@@ -128,19 +128,8 @@ namespace Copse.Linq.Async.Treenumerables
       };
     }
 
-    // A rejecting operator joins a never-rejecting chain. The inner arrow never rejects, so
-    // no short-circuit -- values map, strategies union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectPruneAfterThenResultSelector<TSource, TResult, TOuterResult>(
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector)
-    {
-      return nodeContext =>
-      {
-        var innerResult = innerResultSelector(nodeContext);
-        var outerResult = resultSelector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
-
-        return new SelectWhereResult<TOuterResult>(outerResult.Value, outerResult.Strategies | innerResult.Strategies);
-      };
-    }
+    // (The rejecting-joins-never-rejecting arrow was deleted with the tier seal, boundary
+    // ruling 2026-08-04: a rejecting operator STACKS over a light wrapper instead of
+    // converting it, so no arrow crosses the tier boundary anymore.)
   }
 }

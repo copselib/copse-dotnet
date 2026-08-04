@@ -14,8 +14,8 @@ namespace Copse.Benchmarks
   //     DOCUMENTED TIER EXCEPTION: a Mega-tier chain serialization is a ~10 MB string with
   //     matching per-op allocation, blowing the memory budget for no extra signal; 100K keeps
   //     the row well above the noise floor.
-  // Trees are materialized SimpleNode structures in [GlobalSetup] (via Deserialize), so the timed
-  // methods measure pure serializer work, not tree generation.
+  // Trees are settled buffers built in [GlobalSetup] (Deserialize + Materialize), so the timed
+  // Serialize methods measure pure serializer work, not tree generation or parsing.
   [MemoryDiagnoser]
   [BenchmarkCategory("Serialization")]
   public class Serialization
@@ -32,12 +32,10 @@ namespace Copse.Benchmarks
     {
       _forestString = Enumerable.Range(0, CanonicalTrees.MegaChain).ToTrivialForest().SerializeDepthFirstTree(value => value.ToString());
       _chainString = Enumerable.Range(0, ChainDepth).ToDegenerateTree().SerializeDepthFirstTree(value => value.ToString());
-      _forestTree = TreeSerializer.DeserializeDepthFirstTree(_forestString);
-      _chainTree = TreeSerializer.DeserializeDepthFirstTree(_chainString);
-      // Deserialization is lazy; force the shared stores to parse fully so the Serialize rows
-      // measure pure serializer work.
-      _forestTree.Consume(TreeTraversalStrategy.DepthFirst);
-      _chainTree.Consume(TreeTraversalStrategy.DepthFirst);
+      // Deserialize has Defer semantics (every treenumerator acquisition re-parses), so the
+      // Serialize rows serialize a settled buffer to keep measuring pure serializer work.
+      _forestTree = TreeSerializer.DeserializeDepthFirstTree(_forestString).Materialize();
+      _chainTree = TreeSerializer.DeserializeDepthFirstTree(_chainString).Materialize();
     }
 
     [Benchmark]

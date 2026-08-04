@@ -373,4 +373,39 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
 2.8 Remaining: Select-into-captures; TakeNodesUntil/While migration; the async
    OperatorStack re-measure (the tabled wrapper-wave decision — the BFT collapse ratio is
    the strong signal).
+2.9 ✅ SHIPPED (main, 2026-08-04): **the tier seal** — the light tier left the
+   general-splice surface. `ISelectPruneAfterTreenumerable` no longer extends
+   `ISelectWhereTreenumerable`; the prune-carrying wrappers lost their conversion doors
+   (`ToSelectWhere`, the general `Compose`, `Relabels`); PruneAfter's operator probes
+   compose in-tier only. The bare projection wrapper keeps dual citizenship (it also
+   implements `ISelectWhereTreenumerable`), so Select∘Where collapse — the family's
+   measured win — is untouched.
+
+   **The evidence (the Where.Triangle_Mixed regression, found via gh-pages ratio analysis
+   2026-08-04):** a composed chain's cost was PATH-DEPENDENT — a splice leg donated by a
+   general wrapper arrives as an inlinable struct, but the light tier holds bare `Func`s,
+   so any splice absorbing a light wrapper produced an all-delegate FuncResultSelector
+   chain. Absorbing a near-free passthrough layer at that price measured underwater both
+   ways: Where over the light prune +20–25% (Dft/Bft_Triangle_Mixed, 10 consecutive CI runs
+   entirely outside the 31-run pre-merge ratio distribution), keep-all +9–11%; the reversed
+   order (value PruneAfter over Where) at parity — the general wrapper donates its struct
+   leg, so only the light-as-source direction drowned. Allocations byte-flat throughout:
+   pure per-pull delegate cost.
+
+   **The ruling (the dragon clause):** rather than price splices case-by-case (an
+   economics table bolted onto a total algebra — order-dependent rules breeding more
+   rules), the boundary is structural: **prune-afters compose only in-tier; rejecting
+   operators stack their inlined-struct drivers over light wrappers.** Splicing stays
+   total on the general surface. Measured after the seal (same machine, per-process
+   harness): Mixed rows 76.9→65.5ms against a 61.5ms pre-merge baseline (~75–80%
+   recovered; residual within a couple points of session drift), light-tier and
+   Select∘Where wins intact, plain-path rows unmoved. Pinned by
+   `LightTier_StaysSealedWhenARejectingOperatorJoins` (+ narrow twin).
+
+   **The reunification path:** struct-composed selectors
+   (`ComposedResultSelector<TInnerSelector, TOuterSelector>` nesting selector structs as
+   type parameters, a generic struct-taking `Compose`) would make every leg inlinable and
+   the cost shape-independent — at which point the light tier can rejoin the general
+   algebra, benchmark-gated by the Compose family. That is the bench session's centerpiece
+   (it subsumes the structs-4→2 consolidation), not a patch to rush.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.

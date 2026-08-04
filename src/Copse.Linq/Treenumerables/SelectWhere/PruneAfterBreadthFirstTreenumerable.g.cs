@@ -7,15 +7,16 @@
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerators; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
 namespace Copse.Linq.Treenumerables
 {
   // PruneAfter's named wrapper: plain acquisition keeps the bespoke prune-after driver (no
-  // promotion machinery -- it only ever sheds whole subtrees below kept nodes), and composability
-  // costs one property: PruneAfter is label-preserving (survivors keep their coordinates), so
-  // its map carries relabeling: false and even positional lambdas may compose across it.
+  // promotion machinery -- it only ever sheds whole subtrees below kept nodes). PruneAfter is
+  // label-preserving (survivors keep their coordinates), so even positional lambdas compose
+  // across it -- but only IN-TIER: this wrapper is sealed against general splices (see the
+  // interface's boundary ruling), so a rejecting operator stacks over it.
   internal sealed class PruneAfterBreadthFirstTreenumerable<TNode> : ISelectPruneAfterBreadthFirstTreenumerable<TNode>
   {
     public PruneAfterBreadthFirstTreenumerable(
@@ -28,9 +29,6 @@ namespace Copse.Linq.Treenumerables
 
     private readonly IBreadthFirstTreenumerable<TNode> _Source;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
-
-    // PruneAfter is label-preserving: survivors keep their coordinates.
-    public bool Relabels => false;
 
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE
     // wrapper by predicate union.
@@ -47,26 +45,6 @@ namespace Copse.Linq.Treenumerables
       return new SelectPruneAfterBreadthFirstTreenumerable<TNode, TOuterResult>(
         _Source, SelectWhereComposition.PruneAfterThenSelect(_Predicate, selector));
     }
-
-    // PruneAfter's selector, stated once (the operator's compose branches use this too): keep
-    // the node; a match sheds its subtree.
-    internal static Func<NodeContext<TNode>, SelectWhereResult<TNode>> CreateResultSelector(Func<NodeContext<TNode>, bool> predicate)
-      => nodeContext => new SelectWhereResult<TNode>(
-        nodeContext.Node,
-        predicate(nodeContext)
-          ? NodeTraversalStrategies.SkipDescendants
-          : NodeTraversalStrategies.TraverseAll);
-
-    // Composition converts to the general representation and composes there (unwrap, discard,
-    // rebuild); plain acquisition below keeps the bespoke driver and never pays this.
-    private SelectWhereBreadthFirstTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>> ToSelectWhere()
-      => new SelectWhereBreadthFirstTreenumerable<TNode, TNode, FuncResultSelector<TNode, TNode>>(
-        _Source, new FuncResultSelector<TNode, TNode>(CreateResultSelector(_Predicate)), relabels: false);
-
-    public IBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => ToSelectWhere().Compose(resultSelector, relabels);
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() =>
       new PruneAfterTreenumerator<TNode>(_Source.GetBreadthFirstTreenumerator, _Predicate);
