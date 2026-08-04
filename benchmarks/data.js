@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785814718914,
+  "lastUpdate": 1785814719305,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -61070,6 +61070,114 @@ window.BENCHMARK_DATA = {
             "value": 1041999.0090144231,
             "unit": "ns",
             "range": "± 1741.2834277660309"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e30bffc290bfc372eb1f64e53ad8b1c184834459",
+          "message": "Seal the light tier: prune-afters compose in-tier only, rejecting operators stack\n\nThe composition merge (fe44f88c) regressed Where.Dft/Bft_Triangle_Mixed 20-25%\n-- every one of the 10 CI runs since sits entirely outside the 31-run pre-merge\nsame-run-ratio distribution, masked in absolutes by a fast runner on merge day.\nAllocations byte-flat: pure per-pull delegate cost.\n\nThe mechanism, isolated by a per-process A/B matrix: a composed chain's cost was\nPATH-DEPENDENT. A splice leg donated by a general wrapper arrives as an\ninlinable struct, but the light tier (PruneAfterTreenumerable,\nSelectPruneAfterTreenumerable) holds bare Funcs -- so any splice absorbing a\nlight wrapper produced an all-delegate FuncResultSelector chain. Absorbing a\nnear-free passthrough layer at that price is underwater: Where over the light\nprune +20-25% mixed / +9-11% keep-all, while Where over a plain source is at\nexact cross-version parity (the genericized driver and selector structs cost\nnothing) and the reversed order (value PruneAfter over Where) is at parity\nbecause the general wrapper donates its struct leg.\n\nThe ruling, structural rather than economic (no case-by-case splice pricing,\nno order-dependent guards): the light tier leaves the general-splice surface.\nISelectPruneAfterTreenumerable no longer extends ISelectWhereTreenumerable; the\nprune-carrying wrappers lose their conversion doors (general Compose,\nToSelectWhere, Relabels); PruneAfter's probes compose in-tier only. One\ndeliberate exception: the bare projection wrapper keeps dual citizenship\n(SelectTreenumerable also implements ISelectWhereTreenumerable), so the\nSelect/Where collapse -- the Compose family's measured win -- is untouched.\nSplicing stays total on the general surface.\n\nMeasured after the seal (same machine, per-process): Mixed 76.9 -> 65.5ms\nagainst a 61.5ms pre-merge baseline (~75-80% recovered; drift anchor +1.5%),\nlight-tier source win intact (52-53ms vs 63.9 pre-merge), Select-over-prune\nstill light, plain-path rows unmoved. Expect the Where/PruneBefore/PruneAfter\nTriangle rows AND the Compose family's composed legs to step DOWN in Bencher\n(the composed legs were paying the light-source conversion too).\n\nPinned by LightTier_StaysSealedWhenARejectingOperatorJoins (+ narrow twin),\nwhich replace the two conversion-door pins. The reunification path -- struct-\ncomposed selectors making every leg inlinable, at which point the light tier\ncan rejoin benchmark-gated -- is recorded as the bench session's centerpiece\n(design doc 2.9).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-04T03:09:08Z",
+          "tree_id": "3b901ac6405efe3d3c8764b9c4cfa7335850e141",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e30bffc290bfc372eb1f64e53ad8b1c184834459"
+        },
+        "date": 1785814719224,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2215299.5993303573,
+            "unit": "ns",
+            "range": "± 7592.754241362501"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1783168.4598858173,
+            "unit": "ns",
+            "range": "± 2891.951953029527"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4180920.534375,
+            "unit": "ns",
+            "range": "± 23249.155734379685"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3685818.232979911,
+            "unit": "ns",
+            "range": "± 10299.75205346552"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 627872.2823660715,
+            "unit": "ns",
+            "range": "± 1209.42517144567"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 738666.500375601,
+            "unit": "ns",
+            "range": "± 742.7409678903197"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 416912.4209333147,
+            "unit": "ns",
+            "range": "± 943.320436115746"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4431239.10625,
+            "unit": "ns",
+            "range": "± 101365.10821650046"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3322065.501822917,
+            "unit": "ns",
+            "range": "± 8576.739529666427"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13752969.004166666,
+            "unit": "ns",
+            "range": "± 126089.18497137266"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7716256.9703125,
+            "unit": "ns",
+            "range": "± 41283.99592299466"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1493228.0525948661,
+            "unit": "ns",
+            "range": "± 2603.787949219736"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1041824.8641183035,
+            "unit": "ns",
+            "range": "± 2976.2077702168904"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1041614.0549665178,
+            "unit": "ns",
+            "range": "± 1774.869860240798"
           }
         ]
       }
