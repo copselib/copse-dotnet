@@ -159,5 +159,36 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(101, byName["c"].SubtreeTotal, "depth 1, sibling 1 -- a leaf");
       Assert.AreEqual(401, byName["b"].SubtreeTotal, "sum of its leaves");
     }
+
+    [TestMethod]
+    public void SurveyOnly_FullParticipation_TheSurveyAnswersForTheFringe()
+    {
+      // The survey-only general form (2026-08-04): the rollup survey already answers for
+      // leaves -- own value plus zero children's totals -- so no leaf boundary is needed, and
+      // the totals match the selector-flavored Rollup exactly.
+      var tree = Structure();
+
+      tree
+        .LeaffixDoDispatch<Entity, int>(
+          (node, children) =>
+          {
+            var total = node.OwnValue;
+            foreach (var child in children)
+              total += child.Accumulate;
+            return total;
+          },
+          (entity, total) => { entity.SubtreeTotal = total; entity.Stores++; })
+        .PreorderTraversal()
+        .ToArray();
+
+      var byName = tree.PreorderTraversal().ToDictionary(e => e.Name);
+      Assert.AreEqual(15, byName["a"].SubtreeTotal);
+      Assert.AreEqual(11, byName["b"].SubtreeTotal);
+      Assert.AreEqual(4, byName["d"].SubtreeTotal);
+      CollectionAssert.AreEqual(
+        new[] { 1, 1, 1, 1, 1 },
+        tree.PreorderTraversal().Select(e => e.Stores).ToArray(),
+        "every node surveyed and stored exactly once -- fringe included");
+    }
   }
 }

@@ -21,19 +21,20 @@ namespace Copse.Linq
     /// <paramref name="store"/>.
     ///
     /// <para>THE DELIVERY MODEL (ratified 2026-08-04; re-founded same day), upward-flavored:
-    /// every node's accumulation -- a leaf's seed/selector value, an internal node's survey
-    /// result -- lands on your entity via <paramref name="store"/>, the landing rule you
+    /// every node's accumulation -- the survey's result at every node, or the seed/selector
+    /// sugar's value at leaves -- lands on your entity via <paramref name="store"/>, the landing rule you
     /// declare once. The survey stays pure and shares the pure operator's exact shape (the
     /// node's value and ALL of its children's accumulations through the no-copy
     /// <see cref="DispatchSources{TSource, TAccumulate}"/> view). <paramref name="store"/>
     /// fires EXACTLY ONCE per node. SEQUENCING: stores fire in preorder, after the whole fold
     /// pass completes -- so a throwing survey lands nothing, while a throwing store leaves the
     /// preorder prefix already landed (disclosed corollaries, not promises).
-    /// <paramref name="store"/>'s seat is structural, the leaffix survey's version of
-    /// "leaves are never surveyed": leaves take their values from the seed/selector boundary,
-    /// so no single callback both fires on every node and holds its completed accumulation --
-    /// except the landing rule. (See RootfixDoDispatch's doc for the full seat argument;
-    /// contrast RootfixDoScan, the family's one merged shape.)</para>
+    /// NOTE (2026-08-04, full participation): the survey now fires on EVERY node -- a leaf's
+    /// sources view is empty, not skipped -- which makes <paramref name="store"/> derivable in
+    /// principle (an impure survey could land via its return, the landing rule's shape). The
+    /// merge is DELIBERATELY DEFERRED pending field testing; until then store remains the
+    /// declared-once landing with its sequencing contract. (See RootfixDoDispatch's doc for
+    /// the seat argument; contrast RootfixDoScan, the family's one merged shape.)</para>
     ///
     /// <para>Effect count follows the operator's laziness class, which the return type
     /// discloses: BOTH leaffix tiers are captures (children-first -- the whole tree precedes
@@ -48,10 +49,18 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
+      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Action<TSource, TAccumulate> store)
+      => new TreenumerableBuffer<TSource>(
+        Tree.Lazy(() => PreorderLeaffixDoDispatch(source, FullSurvey(survey), store)), BufferLayout.Preorder);
+
+    /// <summary>The leaf-seeded flavor: sugar wrapping <paramref name="survey"/> with a leaf branch -- every leaf's accumulation is the seed; the survey answers for internal nodes.</summary>
+    public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
+      this IDepthFirstTreenumerable<TSource> source,
       TAccumulate seed,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
-      => LeaffixDoDispatch(source, _ => seed, survey, store);
+      => LeaffixDoDispatch(source, (TSource _, NodePosition __) => seed, survey, store);
 
     /// <summary>
     /// The per-leaf seeding form: every leaf's accumulation comes from
@@ -64,7 +73,7 @@ namespace Copse.Linq
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
-      => LeaffixDoDispatch(source, (node, _) => leafNodeSelector(node), survey, store);
+      => LeaffixDoDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey, store);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
@@ -73,7 +82,7 @@ namespace Copse.Linq
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
       => new TreenumerableBuffer<TSource>(
-        Tree.Lazy(() => PreorderLeaffixDoDispatch(source, leafNodeSelector, survey, store)), BufferLayout.Preorder);
+        Tree.Lazy(() => PreorderLeaffixDoDispatch(source, LeafBoundedSurvey(leafNodeSelector, survey), store)), BufferLayout.Preorder);
 
     /// <summary>
     /// The breadth-first-only source overload -- the disclosure rule's escalation, mirrored
@@ -82,17 +91,24 @@ namespace Copse.Linq
     /// </summary>
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
+      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Action<TSource, TAccumulate> store)
+      => new TreenumerableBuffer<TSource>(
+        Tree.Lazy(() => PreorderLeaffixDoDispatchBreadthFirstSource(source, FullSurvey(survey), store)), BufferLayout.Preorder);
+
+    public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
+      this IBreadthFirstTreenumerable<TSource> source,
       TAccumulate seed,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
-      => LeaffixDoDispatch(source, _ => seed, survey, store);
+      => LeaffixDoDispatch(source, (TSource _, NodePosition __) => seed, survey, store);
 
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
-      => LeaffixDoDispatch(source, (node, _) => leafNodeSelector(node), survey, store);
+      => LeaffixDoDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey, store);
 
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
@@ -100,9 +116,15 @@ namespace Copse.Linq
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
       Action<TSource, TAccumulate> store)
       => new TreenumerableBuffer<TSource>(
-        Tree.Lazy(() => PreorderLeaffixDoDispatchBreadthFirstSource(source, leafNodeSelector, survey, store)), BufferLayout.Preorder);
+        Tree.Lazy(() => PreorderLeaffixDoDispatchBreadthFirstSource(source, LeafBoundedSurvey(leafNodeSelector, survey), store)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overloads for full trees; keep the depth-first consumption.</summary>
+    public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
+      this ITreenumerable<TSource> source,
+      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Action<TSource, TAccumulate> store)
+      => LeaffixDoDispatch((IDepthFirstTreenumerable<TSource>)source, survey, store);
+
     public static ITreenumerableBuffer<TSource> LeaffixDoDispatch<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       TAccumulate seed,
@@ -126,37 +148,34 @@ namespace Copse.Linq
 
     private static ITreenumerable<TSource> PreorderLeaffixDoDispatch<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
       Action<TSource, TAccumulate> store)
     {
       var stored = new LazyPreorderStore<TSource>(
-        () => BuildLeaffixDoDispatch(source, leafNodeSelector, survey, store));
+        () => BuildLeaffixDoDispatch(source, nodeSurvey, store));
 
       return new PreorderTreenumerable<TSource, LazyPreorderStore<TSource>>(stored);
     }
 
     private static ITreenumerable<TSource> PreorderLeaffixDoDispatchBreadthFirstSource<TSource, TAccumulate>(
       IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
       Action<TSource, TAccumulate> store)
     {
       var stored = new LazyPreorderStore<TSource>(
-        () => BuildLeaffixDoDispatchFromBreadthFirst(source, leafNodeSelector, survey, store));
+        () => BuildLeaffixDoDispatchFromBreadthFirst(source, nodeSurvey, store));
 
       return new PreorderTreenumerable<TSource, LazyPreorderStore<TSource>>(stored);
     }
 
     private static PreorderArrayStore<TSource> BuildLeaffixDoDispatchFromBreadthFirst<TSource, TAccumulate>(
       IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
       Action<TSource, TAccumulate> store)
     {
       var capture = source.Materialize();
 
-      return BuildLeaffixDoDispatch(capture, leafNodeSelector, survey, store);
+      return BuildLeaffixDoDispatch(capture, nodeSurvey, store);
     }
 
     // The Do finisher over the shared fold pass: where the pure build zips the pairs into its
@@ -165,12 +184,11 @@ namespace Copse.Linq
     // the capture's own arrays: pass-through needs no storage of its own.
     private static PreorderArrayStore<TSource> BuildLeaffixDoDispatch<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey,
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
       Action<TSource, TAccumulate> store)
     {
       var (values, subtreeSizes, accumulations) =
-        RunLeaffixDispatchPass(source, leafNodeSelector, survey);
+        RunLeaffixDispatchPass(source, nodeSurvey);
 
       for (var nodeIndex = 0; nodeIndex < values.Length; nodeIndex++)
         store(values[nodeIndex], accumulations[nodeIndex]);

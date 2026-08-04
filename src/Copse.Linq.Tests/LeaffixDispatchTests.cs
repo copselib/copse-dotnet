@@ -228,5 +228,22 @@ namespace Copse.Linq.Tests
       // Leaves c,d,e count 1 each; b = c+d = 2; a = b+e = 3.
       CollectionAssert.AreEqual(new[] { 3, 2, 1, 1, 1 }, actual);
     }
+
+    [TestMethod]
+    public void SurveyOnly_FullParticipation_TheSurveyAnswersForTheFringe()
+    {
+      // The survey-only general form (2026-08-04): leaves are surveyed with an EMPTY sources
+      // view, so ConcatSurvey handles the fringe with no boundary at all -- concat over zero
+      // children is the node's own letter, matching the boundary-flavored corpus exactly.
+      var results =
+        TreeSerializer
+        .DeserializeDepthFirstTree("a(b(c,d))")
+        .LeaffixDispatch<string, string>(ConcatSurvey)
+        .PreorderTraversal()
+        .Select(pairing => pairing.Accumulate)
+        .ToArray();
+
+      CollectionAssert.AreEqual(new[] { "abcd", "bcd", "c", "d" }, results);
+    }
   }
 }

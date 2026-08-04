@@ -153,5 +153,42 @@ namespace Copse.Linq.Tests
         () => allocated.PreorderTraversal().ToArray(),
         "the pure operator's exactly-once slot validation rides the shared pass");
     }
+
+    [TestMethod]
+    public void RootSurvey_AllocatesTheBudgetAcrossTheForest()
+    {
+      // Full participation, the day-job shape: ONE budget split ACROSS the forest's roots pro
+      // rata by weight, then onward down each tree -- in-band, sibling-complete, one pass; the
+      // per-root selector could only seed each root in isolation.
+      var forest = TreeSerializer
+        .DeserializeDepthFirstTree("a-1(b-3,c-1),d-3", (string s) =>
+        {
+          var parts = s.Split('-');
+          return new Entity { Name = parts[0], Weight = decimal.Parse(parts[1]) };
+        })
+        .Materialize();
+
+      forest
+        .RootfixDoDispatch(
+          8_000m,
+          (seed, roots) =>
+          {
+            var totalWeight = 0m;
+            foreach (var root in roots)
+              totalWeight += root.Node.Weight;
+
+            foreach (var root in roots)
+              root.Dispatch(seed * root.Node.Weight / totalWeight);
+          },
+          AllocateByWeight,
+          (entity, arrived) => entity.Received = arrived)
+        .PreorderTraversal()
+        .ToArray();
+
+      // Roots split 8000 by 1:3 (a=2000, d=6000); a's children split 2000 by 3:1.
+      CollectionAssert.AreEqual(
+        new[] { 2_000m, 1_500m, 500m, 6_000m },
+        forest.PreorderTraversal().Select(e => e.Received).ToArray());
+    }
   }
 }

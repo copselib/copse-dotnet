@@ -324,5 +324,52 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(2, surveyedParents, "a and c are the only internal nodes");
     }
+
+    [TestMethod]
+    public void RootSurvey_SeedsTheRootsSiblingCompletely_FullParticipation()
+    {
+      // Full participation (2026-08-04): the virtual forest root's family is surveyed like any
+      // other -- the seed string is dealt out one letter per root, provable only with the
+      // COMPLETE root list in hand (the boundary's sibling-complete upgrade over the selector).
+      var results =
+        TreeSerializer
+        .DeserializeDepthFirstTree("a(c),b(d)")
+        .RootfixDispatch(
+          "xy",
+          (seed, roots) =>
+          {
+            for (var rootIndex = 0; rootIndex < roots.Count; rootIndex++)
+              roots[rootIndex].Dispatch(seed[rootIndex].ToString());
+          },
+          (node, arrival, children) =>
+          {
+            foreach (var child in children)
+              child.Dispatch(arrival + node);
+          })
+        .PreorderTraversal()
+        .Select(pairing => pairing.Accumulate)
+        .ToArray();
+
+      CollectionAssert.AreEqual(new[] { "x", "xa", "y", "yb" }, results);
+    }
+
+    [TestMethod]
+    public void RootSurvey_MissedRoot_Throws_TheProtocolCoversTheBoundary()
+    {
+      // The root family obeys the same exactly-once protocol as every other family.
+      var dispatch =
+        TreeSerializer
+        .DeserializeDepthFirstTree("a,b")
+        .RootfixDispatch(
+          "s",
+          (seed, roots) => roots[0].Dispatch(seed),
+          (node, arrival, children) =>
+          {
+            foreach (var child in children)
+              child.Dispatch(arrival);
+          });
+
+      Assert.ThrowsException<InvalidOperationException>(() => dispatch.PreorderTraversal().ToArray());
+    }
   }
 }

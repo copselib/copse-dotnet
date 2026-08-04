@@ -129,6 +129,36 @@ with the node in hand, `store` lands for you.* Consequences:
   machinery cannot read the flow back off the node); `Action` + read-back selector (the
   author's original form — fuses into the Func anyway one layer down; sugar over sugar).
 
+## Full participation (ratified 2026-08-04, same day — boundary-shape-follows-tier-shape)
+
+The alpha.10 root-asymmetry verdict ("I don't see why roots should be treated differently
+than other levels" — and they shouldn't): **a tier's boundary must speak the tier's own
+shape, and no node class is excluded from its tier's callback.**
+
+- **Rootfix dispatches**: the roots are the children of the VIRTUAL FOREST ROOT
+  (`NodePosition.ForestRoot`, the machinery's standing convention — the scan always
+  seeded "the virtual root's accumulation"; the dispatch had forgotten the virtual root
+  exists). The root family is surveyed like every other: the new
+  `(seed, rootSurvey, survey)` form hands `rootSurvey` the seed (the virtual root's
+  arrival) and the forest's roots as sibling-complete targets, under the same
+  exactly-once protocol. No subject parameter — the virtual root has no value. Payoff: a
+  budget allocates ACROSS a forest's roots in-band, one pass — previously each root
+  seeded in isolation. The seed/selector flavors are the boundary's sugar (broadcast /
+  per-root).
+- **Leaffix dispatches**: the survey fires on EVERY node — a leaf's sources view is
+  EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The survey-only
+  overload is the general form ("my value plus my children's rollups" needs no boundary
+  at all); the seed/selector flavors are sugar wrapping the survey with a leaf branch.
+- **Scans were already correct**: fold-shaped tiers have fold-shaped boundaries that fire
+  per root (rootfix) / per node (the leaffix map) — the boundary mismatch was the
+  survey tier's alone.
+- **HELD OPEN (tier 3)**: full participation re-opens the dispatch `store` seats — the
+  leaffix survey is now a once-per-node-with-value-in-hand callback, so under the landing
+  rule LeaffixDoDispatch could merge to a single impure survey, and rootfix `store`'s
+  argument shifts from structural coverage to the one-act principle plus declared-once
+  sequencing. Deliberately deferred for field testing rather than ratified on momentum;
+  the operator docs disclose it.
+
 ## The recording rule (the alpha.9 edge-1 clause)
 
 Folds record their OUTPUT (the node's accumulation). The rootfix survey records its
@@ -162,7 +192,8 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | callbacks: minimal basis — subject + flow state, pairing in results only | callbacks: minimal basis — subject + flow state, pairing in results only | matched (the seat rule, 2026-08-04) |
 | Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual (the dispatch tier) |
 | fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |
-| survey never reaches leaves → `store` is the every-node channel | leaves take the seed/selector boundary → same | matched — the structural seat, born dual |
+| boundary = the virtual root's family survey (seed = its arrival; roots are its sibling-complete targets) | boundary = sugar over the survey's own empty-sources leaf case | forced-different under full participation (2026-08-04) — the virtual root is ONE family; the fringe is every family's base case |
+| survey never reaches leaves (they have no children) → `store` is the every-node channel | survey reaches EVERY node since full participation → `store` derivable in principle; merge HELD OPEN (tier 3) | forced-different since full participation — was "matched, born dual" |
 
 Any future operator pair gets this audit before shipping.
 

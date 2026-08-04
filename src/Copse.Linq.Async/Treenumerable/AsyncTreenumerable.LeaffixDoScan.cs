@@ -19,9 +19,10 @@ namespace Copse.Linq
     /// (ruled 2026-08-04): the binary combine fires per CHILD EDGE -- zero times on leaves, k
     /// times on a k-child node, and no invocation can know it is the last -- so no fold
     /// invocation ever holds a node's completed accumulation to land. <paramref name="store"/>
-    /// is the only node-grained channel; the rootfix fold, the family's one
-    /// once-per-node-with-value-in-hand callback, is the only shape where landing rides the
-    /// return. <paramref name="nodeSelector"/> and <paramref name="accumulator"/> are PURE;
+    /// is this operator's only node-grained channel -- landing rides the return only where one
+    /// callback per node produces that node's value (RootfixDoScan's fold; and, since full
+    /// participation, the leaffix dispatch survey -- whose merge is deliberately deferred).
+    /// <paramref name="nodeSelector"/> and <paramref name="accumulator"/> are PURE;
     /// <paramref name="store"/> is the declared effect point -- EXACTLY once per node per
     /// build, preorder order, the (node, accumulation) pairing. Effect count follows the
     /// laziness class: leaffix folds are CAPTURES (children-first), so effects fire once per
