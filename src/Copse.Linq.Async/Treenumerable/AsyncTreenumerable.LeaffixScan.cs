@@ -19,7 +19,8 @@ namespace Copse.Linq
     ///
     /// <para>VALUE-flavored (2026-08-02, the ScanResult sweep), and returns the CANONICAL
     /// PAIRING: a buffer of <see cref="ScanResult{TSource, TAccumulate}"/>s -- project
-    /// <c>.Accumulate</c> for values, or use LeaffixDoScan for mutable nodes. Callbacks run
+    /// <c>.Accumulate</c> for values; for mutable nodes, land with the composed effect idiom
+    /// (see LeaffixDispatch's doc -- the demotion record). Callbacks run
     /// during the deferred build, once per node (the selector) and once per child edge (the
     /// accumulator); only the sibling fold order is specified, so callbacks should be pure.</para>
     ///

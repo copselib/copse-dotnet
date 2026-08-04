@@ -73,7 +73,7 @@ slippery-slope is the proof — there is no non-arbitrary place to stop). Hence:
   landing rule below: RootfixDoScan's fold is now literally the pure accumulator's
   parameter, impurity sanctioned.)
 
-## The delivery model (ratified 2026-08-04; re-founded same day — the Do dispatches)
+## The delivery model (2026-08-04; the Do dispatches are deleted — historical, but the sequencing analysis informed the demotion)
 
 `Dispatch` DELIVERS. The pure operator's `Dispatch` writes into the result pairing; the
 Do operator's writes onto the caller's entity via `store`, the landing rule declared
@@ -98,7 +98,7 @@ the value channel, allocates a closure per edge; `DoDispatchWithValidation` twin
 buffer is theorem-forced by sibling-completeness, so the "plain" variant differs only by
 a weaker failure posture no workload wants) are recorded in RootfixDoDispatch's doc.
 
-## The family equation and the landing rule (ratified 2026-08-04 — the Do tier's final form)
+## The family equation and the landing rule (2026-08-04; the equation's right-hand side is now the ONLY side — see THE DEMOTION)
 
 > **`XDoY ≡ XY(pure) ∘ Do(scheduling-filtered effect) ∘ Select(.Node)`**
 
@@ -137,6 +137,50 @@ with the node in hand, `store` lands for you.* Consequences:
   machinery cannot read the flow back off the node); `Action` + read-back selector (the
   author's original form — fuses into the Func anyway one layer down; sugar over sugar).
 
+## THE DEMOTION (ratified 2026-08-04 night — composition wins)
+
+**The Do quartet is DELETED** (`RootfixDoScan`, `LeaffixDoScan`, `RootfixDoDispatch`,
+`LeaffixDoDispatch`, both colors). The sections above and below that describe their design
+are the genealogy of how the deletion was earned — each round of convergence shrank the
+family's unique content until nothing but derivable sugar remained. The closing arguments:
+
+1. **Derivability** (the family equation): zero unique algorithmic content — pure ∘ Do ∘
+   Select expresses everything, and the mode filter is the honest price of the
+   visit-grained truth.
+2. **The pinning principle** (the deserialize-means-Defer precedent): `ITreenumerable` is
+   a contract to re-enumerate; effects ride enumeration, per drain; pinning is the
+   CONSUMER's `Materialize`/`Memoize`. The capture-class Do operators fired effects once
+   per build — an effect schedule the consumer could not un-pin: the same disease the
+   string tier was cured of.
+3. **The buffer argument** (the final nail): a "safe" DoOnce would have to return a
+   buffer, i.e. be `Do().Materialize()` or `Do().Memoize()` — and choosing between them
+   is situational, so the operator cannot exist without deciding for the consumer. The
+   recipe is the API.
+4. **The gold-plating slope**: DoOnce/DoNTimes/DoIf/DoWhen are all `Do` plus an in-band
+   conditional — derivable seats with no non-arbitrary stopping point.
+
+**The surviving surface**: the pure tier (ScanResult results), `Do` (visit-grained,
+unchanged), `Select`, and the consumer's pin. The canonical landing idiom:
+
+```csharp
+tree.RootfixDispatch(10_000m, AllocateByWeight)
+    .Do(visit =>
+    {
+      if (visit.Mode == TreenumeratorMode.SchedulingNode)
+        visit.Node.Node.Amount = visit.Node.Accumulate;
+    })
+    .Select(pairing => pairing.Node)
+    // .Materialize() -- the consumer's exactly-once pin, when wanted
+```
+
+Effect semantics, precisely: effects fire per drain, per scheduled node, in that
+traversal's scheduling order; pruned subtrees never fire; partial drains fire partial
+prefixes; overlapping treenumerators interleave — all inherited from `Do`'s existing
+contract and identical to impure `IEnumerable` chains. `Materialize` is definitionally
+one full traversal, so the pin removes the partial/double hazards. **The admission bar
+for any future Do variant: a workload the mode filter cannot serve.** Tier 3 (below) is
+resolved by deletion. `DoLandingCompositionTests` pins the idiom.
+
 ## Full participation (ratified 2026-08-04, same day — boundary-shape-follows-tier-shape)
 
 The alpha.10 root-asymmetry verdict ("I don't see why roots should be treated differently
@@ -161,15 +205,18 @@ shape, and no node class is excluded from its tier's callback.**
   EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The survey-only
   overload is the general form ("my value plus my children's rollups" needs no boundary
   at all); the seed/selector flavors are sugar wrapping the survey with a leaf branch.
-- **Scans were already correct**: fold-shaped tiers have fold-shaped boundaries that fire
-  per root (rootfix) / per node (the leaffix map) — the boundary mismatch was the
-  survey tier's alone.
-- **HELD OPEN (tier 3)**: full participation re-opens the dispatch `store` seats — the
-  leaffix survey is now a once-per-node-with-value-in-hand callback, so under the landing
-  rule LeaffixDoDispatch could merge to a single impure survey, and rootfix `store`'s
-  argument shifts from structural coverage to the one-act principle plus declared-once
-  sequencing. Deliberately deferred for field testing rather than ratified on momentum;
-  the operator docs disclose it.
+- **Scans — ARRIVAL SEMANTICS (2026-08-04 night, the "1(2,3,4)" verdict)**: the rootfix
+  selector flavor was the fold tier's own participation defect — the selector's return
+  WAS the root's accumulate and the fold skipped roots, so the pure and effect-composed
+  forms diverged at roots (composed lands the selector's value; nothing else does). Fixed:
+  the selector supplies the root's ARRIVAL, the fold fires at EVERY node
+  (`accumulator(selector(root), root)`, exactly as the seed flavor), the seed flavor is
+  the constant selector, and the invocation sentinel is n, not n − roots. The leaffix map
+  was always per-node — no change.
+- ~~**HELD OPEN (tier 3)**: the re-opened dispatch `store` seats~~ — RESOLVED BY
+  DELETION (see THE DEMOTION): the Do dispatches no longer exist, so there is no store to
+  merge. The pure surveys' seats are settled (rootfix subject-less; leaffix
+  subject-bearing).
 
 ## The recording rule (the alpha.9 edge-1 clause)
 
@@ -178,7 +225,7 @@ INPUT — the arrival — because it is the family's one 1-in-n-out shape: no no
 output exists, and its n outputs are recorded as its children's arrivals. Forced, not
 accidental; stated on `ScanResult` and `RootfixDispatch`.
 
-## The Do-tier ruling
+## The Do-tier ruling (historical — see THE DEMOTION)
 
 `Do` = declared intent to mutate the nodes, so the nodes ARE the result: ScanResult never
 travels through Do operators — pass-through is forced by the semantics, not preference

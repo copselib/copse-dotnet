@@ -40,8 +40,12 @@ namespace Copse.Linq
     /// VALUE; the leaf boundary is arity-split (seed | value selector | positional
     /// selector). Returns the CANONICAL PAIRING: a buffer of
     /// <see cref="ScanResult{TSource, TAccumulate}"/>s in the source tree's shape -- it
-    /// DECORATES rather than replaces; project <c>.Accumulate</c> for values, or use
-    /// LeaffixDoDispatch for mutable nodes.</para>
+    /// DECORATES rather than replaces; project <c>.Accumulate</c> for values. For mutable
+    /// nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
+    /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
+    /// visit.Node.Accumulate; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
@@ -190,10 +194,8 @@ namespace Copse.Linq
       return BuildLeaffixDispatch(capture, nodeSurvey);
     }
 
-    // The pure finisher over the shared fold pass: zip (values, accumulations) into the
-    // canonical pairing. The Do finisher (AsyncTreenumerable.LeaffixDoDispatch.cs) rides the
-    // same pass and hands the same pairs to its store instead -- one build, two exits, the
-    // rootfix pair's arrangement mirrored.
+    // The finisher over the fold pass: zip (values, accumulations) into the canonical
+    // pairing.
     private static PreorderArrayStore<ScanResult<TSource, TAccumulate>> BuildLeaffixDispatch<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)

@@ -9,26 +9,28 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   // The (rootNodeSelector, accumulator) overload -- LeaffixScan's structural dual -- whose point
-  // is FORESTS: every root seeds its own accumulation instead of sharing one seed. The wrapped
-  // accumulator rides the same treenumerators the seed-form's full strategy matrix already
-  // exercises, so these tests target the seeding semantics themselves.
+  // is FORESTS: every root's ARRIVAL comes from the selector instead of a shared seed, and the
+  // fold fires at EVERY node, roots included (arrival semantics, full participation 2026-08-04).
+  // The wrapped accumulator rides the same treenumerators the seed-form's full strategy matrix
+  // already exercises, so these tests target the seeding semantics themselves.
   [TestClass]
   public class RootfixScanRootNodeSelectorTests
   {
-    // Selector: each root seeds as its own letter UPPERCASED; accumulator: parent accumulation +
-    // node letter. A shared seed could never produce two different root values, so the multi-root
-    // rows prove per-root seeding.
+    // Selector: each root's ARRIVAL is its own letter UPPERCASED; accumulator: arrival +
+    // node letter -- so a root's accumulation is fold(selector(root), root) (e.g. "Aa"), the
+    // fold firing at roots exactly as it fires everywhere. A shared seed could never produce
+    // two different root arrivals, so the multi-root rows prove per-root seeding.
     public static IEnumerable<object[]> GetTestData()
     {
       return new[]
         {
-          new [] { ""               , ""                       },
-          new [] { "a"              , "A"                      },
-          new [] { "a,b,c"          , "A,B,C"                  },
-          new [] { "a(b,c)"         , "A(Ab,Ac)"               },
-          new [] { "a(b(c))"        , "A(Ab(Abc))"             },
-          new [] { "a(b,c),d(e,f)"  , "A(Ab,Ac),D(De,Df)"      },
-          new [] { "a,b(c),d(e(f))" , "A,B(Bc),D(De(Def))"     },
+          new [] { ""               , ""                             },
+          new [] { "a"              , "Aa"                           },
+          new [] { "a,b,c"          , "Aa,Bb,Cc"                     },
+          new [] { "a(b,c)"         , "Aa(Aab,Aac)"                  },
+          new [] { "a(b(c))"        , "Aa(Aab(Aabc))"                },
+          new [] { "a(b,c),d(e,f)"  , "Aa(Aab,Aac),Dd(Dde,Ddf)"      },
+          new [] { "a,b(c),d(e(f))" , "Aa,Bb(Bbc),Dd(Dde(Ddef))"     },
         };
     }
 
@@ -81,8 +83,9 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void SeedOverload_IsTheConstantRootSelector()
     {
-      // The single-seed form must equal the selector form whose selector replays the seed fold --
-      // the exact accumulator invocation the engines make at a root.
+      // Arrival semantics make the flavors' relationship exact: the seed form IS the selector
+      // form with a constant selector -- both hand every root the same arrival, and the fold
+      // fires at every node under both.
       foreach (var treeString in GetTestData().Select(data => (string)data[0]))
       {
         string Accumulator(string accumulate, string node) =>
@@ -99,7 +102,7 @@ namespace Copse.Linq.Tests
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .RootfixScan(
-            root => Accumulator("s", root),
+            _ => "s",
             Accumulator)
           .PreorderTraversal()
           .ToArray();
@@ -109,12 +112,11 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Accumulator_NeverSeesAForestRootParent()
+    public void Accumulator_FiresAtEveryNode_RootsIncluded()
     {
-      // Under the seat rule the accumulator sees only (accumulate, node), so the fabricated
-      // forest-root arrival is undetectable by inspection -- the pin becomes a COUNT: under
-      // the selector form the accumulator runs once per NON-ROOT node only (6 nodes, 2 roots
-      // -> 4 invocations); a fabricated root invocation would make it 6.
+      // Full participation on the fold tier, pinned as a COUNT: the fold fires once per node
+      // -- roots included, their arrival being the selector's return -- so 6 nodes means 6
+      // invocations. (The prior semantics skipped roots: 4.)
       var accumulatorInvocations = 0;
 
       TreeSerializer
@@ -129,12 +131,13 @@ namespace Copse.Linq.Tests
         .PreorderTraversal()
         .ToArray();
 
-      Assert.AreEqual(4, accumulatorInvocations);
+      Assert.AreEqual(6, accumulatorInvocations);
     }
 
     [TestMethod]
     public void RootfixAggregate_SeedsPerRoot()
     {
+      // Arrival semantics: a's leaves fold from a's accumulation "Aa"; d's from "Dd".
       var leafAccumulations =
         TreeSerializer
         .DeserializeDepthFirstTree("a(b,c),d(e)")
@@ -144,7 +147,7 @@ namespace Copse.Linq.Tests
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
-      CollectionAssert.AreEqual(new[] { "Ab", "Ac", "De" }, leafAccumulations);
+      CollectionAssert.AreEqual(new[] { "Aab", "Aac", "Dde" }, leafAccumulations);
     }
   }
 }

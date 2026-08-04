@@ -54,7 +54,12 @@ namespace Copse.Linq
     /// a node's pairing is what its family's survey dispatched to it -- because the survey's
     /// outputs are edge-grained and land as the MEMBERS' arrivals; a survey has no
     /// node-grained output to record. Project <c>.Accumulate</c> away with Select for
-    /// immutable values, or use RootfixDoDispatch for mutable ones.</para>
+    /// immutable values. For mutable nodes, LAND the arrivals with the composed effect idiom
+    /// -- <c>.Do(visit =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode)
+    /// visit.Node.Node.Amount = visit.Node.Accumulate; }).Select(pairing =&gt;
+    /// pairing.Node)</c> -- effects fire per drain (the re-enumeration contract);
+    /// Materialize/Memoize is the consumer's pin (docs/SCANRESULT_DESIGN.md, the demotion
+    /// record).</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
@@ -186,9 +191,8 @@ namespace Copse.Linq
       return await BuildRootfixDispatchAsync(capture, rootFamilySurvey, survey).ConfigureAwait(false);
     }
 
-    // The pure finisher: run the shared pass, then zip (values, arrivals) into the ScanResult
-    // decoration. The Do finisher (AsyncTreenumerable.RootfixDoDispatch.cs) rides the same pass
-    // and hands the same pairs to its store instead -- one build, two exits.
+    // The finisher: run the pass, then zip (values, arrivals) into the ScanResult
+    // decoration.
     private static async ValueTask<AsyncPreorderArrayStore<ScanResult<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,

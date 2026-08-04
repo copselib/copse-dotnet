@@ -60,10 +60,13 @@ namespace Copse.Linq
           new ScanResult<TNode, TAccumulate>(default, seed)));
 
     /// <summary>
-    /// The forest-correct seeding form: EVERY root's accumulation comes from
+    /// The forest-correct seeding form: every root's ARRIVAL comes from
     /// <paramref name="rootNodeSelector"/> against that root's value, so each tree of a forest
-    /// seeds independently and the accumulator only ever sees real parents (never a fabricated
-    /// forest-root pairing). The single-seed overload is this with a constant at the roots.
+    /// seeds independently -- and the fold fires at EVERY node, roots included (full
+    /// participation, 2026-08-04): a root's accumulation is
+    /// <c>accumulator(selector(root), root)</c>, exactly as the seed flavor's is
+    /// <c>accumulator(seed, root)</c>. The selector personalizes WHAT arrives at each root,
+    /// never whether the root folds. The single-seed overload is this with a constant.
     /// </summary>
     public static IAsyncTreenumerable<ScanResult<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
@@ -128,16 +131,20 @@ namespace Copse.Linq
       => (parentPairing, nodeContext) =>
         new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
 
-    // The root dispatch, written once so consumers never hand-roll the forest-root check: a
-    // root (parent pairing parked at the virtual forest root) takes the selector; every real
-    // parent flows through the accumulator unchanged. The unused sentinel seed is default --
-    // the selector branch is the only reader of roots.
+    // The root boundary, written once so consumers never hand-roll the forest-root check.
+    // ARRIVAL SEMANTICS (2026-08-04, full participation on the fold tier): the selector
+    // supplies the root's ARRIVAL -- what the virtual forest root hands down -- and the fold
+    // fires at EVERY node, roots included: root accumulate = accumulator(selector(root), root),
+    // exactly as the seed flavor's is accumulator(seed, root). (The prior semantics -- the
+    // selector's return WAS the root's accumulate, the fold skipped at roots -- excluded the
+    // root class from the tier's callback and made the pure and effect-composed forms diverge.)
+    // The unused sentinel seed is default -- the selector branch is the only reader of roots.
     private static Func<NodeContext<ScanResult<TNode, TAccumulate>>, NodeContext<TNode>, ScanResult<TNode, TAccumulate>> PairingAccumulatorWithRootSelector<TNode, TAccumulate>(
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => (parentPairing, nodeContext) =>
         parentPairing.Position.IsForestRoot
-        ? new ScanResult<TNode, TAccumulate>(nodeContext.Node, rootNodeSelector(nodeContext.Node, nodeContext.Position))
+        ? new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(rootNodeSelector(nodeContext.Node, nodeContext.Position), nodeContext.Node))
         : new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
   }
 }
