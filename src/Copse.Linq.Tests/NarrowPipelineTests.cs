@@ -253,8 +253,8 @@ namespace Copse.Linq.Tests
     {
       const string tree = "a(b(d,e,f),c(g,h,i))";
 
-      string Accumulate(ScanResult<string, string> parent, string node)
-        => parent.Accumulate + node;
+      string Accumulate(string accumulate, string node)
+        => accumulate + node;
 
       var engine = TreeSerializer.DeserializeDepthFirstTree(tree);
 

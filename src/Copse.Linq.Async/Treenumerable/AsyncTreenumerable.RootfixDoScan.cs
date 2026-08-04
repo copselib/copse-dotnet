@@ -42,11 +42,11 @@ namespace Copse.Linq
     /// never sees a fabricated arrival (the pure scan's forest-correct clause, inherited).</para>
     ///
     /// <para>RootfixDoDispatch is this operator's sibling-complete twin. The implementations
-    /// deliberately DIVERGE (ruled 2026-08-02): the fold tier streams (this operator rides the
-    /// pure scan, whose ScanResult pairing carries the (node, accumulation) pair natively --
-    /// the ScanResult sweep retired the internal tuple), the survey tier captures. Spike
-    /// posture: the scan's treenumerators invoke the accumulator once per node at scheduling
-    /// -- the store contract holds by construction.</para>
+    /// deliberately DIVERGE (ruled 2026-08-02): the fold tier streams, the survey tier
+    /// captures. Under the seat rule the pure accumulator and <paramref name="compute"/> share
+    /// one shape, so this operator is the pure scan plus store, verbatim. Spike posture: the
+    /// scan's treenumerators invoke the accumulator once per node at scheduling -- the store
+    /// contract holds by construction.</para>
     /// </summary>
     public static IAsyncTreenumerable<TNode> RootfixDoScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
@@ -124,15 +124,15 @@ namespace Copse.Linq
         .RootfixScan(SelectorWithStore(rootNodeSelector, store), ComputeStoreAccumulator(compute, store))
         .Select(pairing => pairing.Node);
 
-    // The pass expressed over the pure scan, whose ScanResult pairing IS the (node, accumulate)
-    // pair store needs -- the ScanResult sweep retired the internal tuple. The sentinel pairing
-    // at the roots carries the seed as its Accumulate; store runs only for real nodes.
-    private static Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> ComputeStoreAccumulator<TNode, TAccumulate>(
+    // The pass expressed over the pure scan: under the seat rule the pure accumulator speaks
+    // compute's own (accumulate, node) shape, so the wrapper is compute + store verbatim --
+    // every fold callback lifts between the pure and Do twins unchanged.
+    private static Func<TAccumulate, TNode, TAccumulate> ComputeStoreAccumulator<TNode, TAccumulate>(
       Func<TAccumulate, TNode, TAccumulate> compute,
       Action<TNode, TAccumulate> store)
-      => (parentPairing, node) =>
+      => (arrived, node) =>
       {
-        var accumulate = compute(parentPairing.Accumulate, node);
+        var accumulate = compute(arrived, node);
         store(node, accumulate);
         return accumulate;
       };

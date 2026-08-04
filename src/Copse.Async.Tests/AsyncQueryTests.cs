@@ -94,7 +94,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task RootfixAggregate_And_VisitStreamTraversals_MatchSync()
     {
-      Func<ScanResult<string, string>, string, string> concat = (parent, node) => parent.Accumulate + node;
+      Func<string, string, string> concat = (accumulate, node) => accumulate + node;
 
       foreach (var tree in Trees)
       {

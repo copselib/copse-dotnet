@@ -20,14 +20,14 @@ namespace Copse.Linq
     /// tree ever reaches the caller), and each node's accumulation lands via
     /// <paramref name="store"/>.
     ///
-    /// <para>Two callbacks, two contracts -- the purity boundary sits between them.
-    /// <paramref name="survey"/> is PURE with the pure operator's identical shape, value-flavored:
-    /// the node's value and ALL of its children's accumulations at once through the no-copy
-    /// <see cref="DispatchSources{TSource, TAccumulate}"/> view; leaves take <paramref name="seed"/>
-    /// (or the leafNodeSelector flavors) instead. <paramref name="store"/> is the declared
-    /// effect point: it fires EXACTLY ONCE per node per build, in preorder order after the fold
-    /// completes, receiving the (node, accumulation) pairing -- leaves and internal nodes
-    /// alike, so coverage is total.</para>
+    /// <para>THE DELIVERY MODEL (ratified 2026-08-04), upward-flavored: every node's
+    /// accumulation -- a leaf's seed/selector value, an internal node's survey result -- lands
+    /// on your entity via <paramref name="store"/>, the landing rule you declare once. The
+    /// survey stays pure and shares the pure operator's exact shape (the node's value and ALL
+    /// of its children's accumulations through the no-copy
+    /// <see cref="DispatchSources{TSource, TAccumulate}"/> view). <paramref name="store"/>
+    /// fires EXACTLY ONCE per node, and all landings happen together when the fold completes
+    /// -- a failed pass lands NOTHING: all-or-nothing effects.</para>
     ///
     /// <para>Effect count follows the operator's laziness class, which the return type
     /// discloses: BOTH leaffix tiers are captures (children-first -- the whole tree precedes

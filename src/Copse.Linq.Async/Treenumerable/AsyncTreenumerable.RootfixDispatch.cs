@@ -36,11 +36,14 @@ namespace Copse.Linq
     /// per-target (<see cref="DispatchTarget{TSource, TDispatch}.Context"/>); a survey flavor
     /// that sees the PARENT's position waits for a real case.</para>
     ///
-    /// <para>The result pairs every source value with what arrived at it
+    /// <para>The result pairs every source value with what ARRIVED at it
     /// (<see cref="ScanResult{TSource, TDispatch}"/>, the family's canonical pairing --
-    /// docs/SCANRESULT_DESIGN.md) in the source tree's shape -- it DECORATES rather than
-    /// replaces, so the flavors are compositions: project <c>.Accumulate</c> away with Select
-    /// for immutable values, or use RootfixDoDispatch for mutable ones.</para>
+    /// docs/SCANRESULT_DESIGN.md) in the source tree's shape. NOTE the deliberate contrast
+    /// with the fold tiers: a fold records its OUTPUT (the root's pairing includes the root's
+    /// contribution), while this survey records its INPUT -- the root's pairing IS the seed --
+    /// because the survey's outputs are edge-grained and land as the CHILDREN's arrivals; a
+    /// survey has no node-grained output to record. Project <c>.Accumulate</c> away with
+    /// Select for immutable values, or use RootfixDoDispatch for mutable ones.</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL child list before the first child's value

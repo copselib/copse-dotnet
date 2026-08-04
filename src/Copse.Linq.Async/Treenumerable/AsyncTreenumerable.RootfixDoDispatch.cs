@@ -18,17 +18,19 @@ namespace Copse.Linq
     /// SOURCE tree; no <see cref="ScanResult{TSource, TDispatch}"/> decoration ever reaches
     /// the caller -- Do means the nodes ARE the result), and the flow lands where the caller wants it via <paramref name="store"/>.
     ///
-    /// <para>Two callbacks, two contracts -- the purity boundary sits between them.
-    /// <paramref name="survey"/> is PURE and speaks only the exactly-once slot protocol, with
-    /// the pure operator's identical shape: the parent's value, its arrival, and the complete
-    /// live child list as write-handles (a setter-callback allocator plugs in verbatim --
-    /// <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS its assignment callback; missed
-    /// and doubled slots throw). <paramref name="store"/> is the declared effect point: it
-    /// fires EXACTLY ONCE per node per build, in preorder order, receiving the
-    /// (node, arrival) pairing -- roots receive the seed, leaves their arrivals, so coverage
-    /// is total. Where the pure build writes each (value, arrival) pair into its decoration,
-    /// this build hands the same pair to store; keeping the entity-write out of the survey is
-    /// what makes flow-versus-field divergence inexpressible.</para>
+    /// <para>THE DELIVERY MODEL (ratified 2026-08-04): <c>Dispatch</c> DELIVERS, and every
+    /// delivery lands on your entity via <paramref name="store"/> -- the pure operator's
+    /// <c>Dispatch</c> writes into the result pairing; this one writes onto YOUR object, via
+    /// the landing rule you declare once. The <paramref name="seed"/> is a delivery to the
+    /// roots (so it lands like every other delivery -- never land it by hand in the selector).
+    /// Every node receives exactly one delivery -- roots the seed, every other node its
+    /// parent's dispatch -- so <paramref name="store"/> fires EXACTLY ONCE per node, and all
+    /// deliveries land together when the pass completes VALIDATED (missed and doubled slots
+    /// throw first): a failed pass lands NOTHING -- all-or-nothing effects, the property money
+    /// code wants. The survey stays pure and shares the pure operator's exact shape (a
+    /// setter-callback allocator plugs in verbatim -- <c>(child, amount) =&gt;
+    /// child.Dispatch(amount)</c> IS its assignment callback); keeping the entity-write in the
+    /// declared landing rule is what makes flow-versus-field divergence inexpressible.</para>
     ///
     /// <para>Effect count follows the operator's laziness class, which the return type
     /// discloses: a buffer is a deferred-once capture (Tree.Lazy pins the build to the first

@@ -186,7 +186,7 @@ namespace Copse.Linq.Tests
 
       var sut =
         treenumerable
-        .RootfixScan("", (parent, node) => parent.Accumulate + node)
+        .RootfixScan("", (accumulate, node) => accumulate + node)
         .Select(pairing => pairing.Accumulate);
 
       Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
@@ -240,7 +240,7 @@ namespace Copse.Linq.Tests
       var scan =
         TreeSerializer
         .DeserializeDepthFirstTree("a(b(c),d),e(f)")
-        .RootfixScan("s", (parent, node) => parent.Accumulate + node)
+        .RootfixScan("s", (accumulate, node) => accumulate + node)
         .Select(pairing => pairing.Accumulate);
 
       CollectionAssert.AreEqual(

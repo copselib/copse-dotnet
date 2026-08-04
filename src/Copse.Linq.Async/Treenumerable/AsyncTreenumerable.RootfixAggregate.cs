@@ -16,7 +16,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -28,7 +28,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -40,7 +40,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       TAccumulate seed,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, seed, accumulator);
 
     /// <summary>
@@ -50,7 +50,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -62,7 +62,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -74,14 +74,14 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
 
     /// <summary>The positional selector flavor: seeding by root ordinal.</summary>
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -92,7 +92,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
     {
       return
         source
@@ -103,7 +103,7 @@ namespace Copse.Linq
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
-      Func<ScanResult<TNode, TAccumulate>, TNode, TAccumulate> accumulator)
+      Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
   }
 }

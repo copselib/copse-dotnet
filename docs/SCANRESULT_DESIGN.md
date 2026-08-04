@@ -1,7 +1,10 @@
-# ScanResult: the canonical pairing (ratified 2026-08-02)
+# ScanResult: the canonical pairing (ratified 2026-08-02; seat rule 2026-08-04)
 
 > **Status: RATIFIED 2026-08-02 (Jason; the coffee-walk session), swept on
-> `feature/do-scan` ahead of the alpha.** Vocabulary ratified same date:
+> `feature/do-scan` ahead of the alpha. AMENDED 2026-08-04 (the alpha.9 LINQPad verdict):
+> the SEAT RULE below supersedes this document's callback-input clause -- the pairing's
+> only home is the RESULT; callbacks speak the minimal basis. The 2026-08-02 sweep's
+> ScanResult-parent accumulator was reverted accordingly.** Vocabulary ratified same date:
 > `ScanResult<TSource, TAccumulate>` with `.Node` / `.Accumulate` ("scan" read broadly as
 > the aggregation family); the leaffix survey view renames to **DispatchSources** — the
 > dual of DispatchTargets (write-handles down, read-handles up), accepting the "source"
@@ -40,6 +43,45 @@ never smuggled through the payload.**
   **in-band positions go stale under composition** (`Where` renumbers siblings, promotion
   compresses depths). The visit stream is the single source of truth for coordinates.
 
+## The seat rule (ratified 2026-08-04 — supersedes the callback-input clause above)
+
+> **A parameter earns a seat iff the caller cannot derive it from the seats already at
+> the table.**
+
+`TAccumulate` IS the caller's chosen summary of the root-to-node path — that is what a
+fold's state parameter *means*. Parent entity, grandparent, the full ancestor list: every
+ancestry-shaped fact is a particular path statistic, all served by the state channel, and
+privileging any one of them is bolting a derivable axiom to the API (the grandparent
+slippery-slope is the proof — there is no non-arbitrary place to stop). Hence:
+
+- **Folds** are `(TAccumulate, TNode)` everywhere — LINQ Aggregate's shape; the pure
+  accumulator and the Do tier's `compute` are the SAME shape.
+- **Surveys** are `(TNode subject, TDispatch arrival, view)` — the survey's node is not
+  ancestry-context but the OPERAND (you cannot survey a node you were not handed); it
+  keeps its seat. A parent-centric rule is not a fold with a missing parameter — it is a
+  survey.
+- **Positional flavors** are justified seats: a node's coordinates are machinery-owned
+  and genuinely underivable (`Where` renumbering), rationed by arity-split.
+- **`ScanResult` appears in NO callback input.** Its only home is the pure results and
+  the aggregates' yields. Consequence: **every callback is shared verbatim between an
+  operator and its Do twin** — only the landing differs.
+
+## The delivery model (ratified 2026-08-04 — the Do dispatches)
+
+`Dispatch` DELIVERS. The pure operator's `Dispatch` writes into the result pairing; the
+Do operator's writes onto the caller's entity via `store`, the landing rule declared
+once. The seed is a delivery to the roots. All deliveries land together when the pass
+completes VALIDATED — a failed pass lands nothing (all-or-nothing effects). This replaces
+the "two callbacks, two contracts" framing whose decoy-mutation reading confused even the
+design's author at his own call site.
+
+## The recording rule (the alpha.9 edge-1 clause)
+
+Folds record their OUTPUT (the node's accumulation). The rootfix survey records its
+INPUT — the arrival — because it is the family's one 1-in-n-out shape: no node-grained
+output exists, and its n outputs are recorded as its children's arrivals. Forced, not
+accidental; stated on `ScanResult` and `RootfixDispatch`.
+
 ## The Do-tier ruling
 
 `Do` = declared intent to mutate the nodes, so the nodes ARE the result: ScanResult never
@@ -62,6 +104,8 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | O(1) Count + indexer via the child-index | O(1) Count + indexer via the child-index | matched (this sweep — the leaffix build restructured to capture-then-fold, sharing the rootfix passes) |
 | `DispatchTargets` | `DispatchSources` | matched (this sweep) |
 | pure result decorates (`ScanResult`) | pure result decorates (`ScanResult`) | matched (this sweep — leaffix previously REPLACED) |
+| survey records the ARRIVAL (its input; no node-grained output exists) | survey records its OUTPUT (n-in-1-out has one) | forced-different — the recording rule (2026-08-04) |
+| callbacks: minimal basis — subject + flow state, pairing in results only | callbacks: minimal basis — subject + flow state, pairing in results only | matched (the seat rule, 2026-08-04) |
 | Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual |
 
 Any future operator pair gets this audit before shipping.
