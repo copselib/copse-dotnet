@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785814715913,
+  "lastUpdate": 1785814716305,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -75238,6 +75238,150 @@ window.BENCHMARK_DATA = {
             "value": 43457182.08333334,
             "unit": "ns",
             "range": "± 76508.35412053054"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e30bffc290bfc372eb1f64e53ad8b1c184834459",
+          "message": "Seal the light tier: prune-afters compose in-tier only, rejecting operators stack\n\nThe composition merge (fe44f88c) regressed Where.Dft/Bft_Triangle_Mixed 20-25%\n-- every one of the 10 CI runs since sits entirely outside the 31-run pre-merge\nsame-run-ratio distribution, masked in absolutes by a fast runner on merge day.\nAllocations byte-flat: pure per-pull delegate cost.\n\nThe mechanism, isolated by a per-process A/B matrix: a composed chain's cost was\nPATH-DEPENDENT. A splice leg donated by a general wrapper arrives as an\ninlinable struct, but the light tier (PruneAfterTreenumerable,\nSelectPruneAfterTreenumerable) holds bare Funcs -- so any splice absorbing a\nlight wrapper produced an all-delegate FuncResultSelector chain. Absorbing a\nnear-free passthrough layer at that price is underwater: Where over the light\nprune +20-25% mixed / +9-11% keep-all, while Where over a plain source is at\nexact cross-version parity (the genericized driver and selector structs cost\nnothing) and the reversed order (value PruneAfter over Where) is at parity\nbecause the general wrapper donates its struct leg.\n\nThe ruling, structural rather than economic (no case-by-case splice pricing,\nno order-dependent guards): the light tier leaves the general-splice surface.\nISelectPruneAfterTreenumerable no longer extends ISelectWhereTreenumerable; the\nprune-carrying wrappers lose their conversion doors (general Compose,\nToSelectWhere, Relabels); PruneAfter's probes compose in-tier only. One\ndeliberate exception: the bare projection wrapper keeps dual citizenship\n(SelectTreenumerable also implements ISelectWhereTreenumerable), so the\nSelect/Where collapse -- the Compose family's measured win -- is untouched.\nSplicing stays total on the general surface.\n\nMeasured after the seal (same machine, per-process): Mixed 76.9 -> 65.5ms\nagainst a 61.5ms pre-merge baseline (~75-80% recovered; drift anchor +1.5%),\nlight-tier source win intact (52-53ms vs 63.9 pre-merge), Select-over-prune\nstill light, plain-path rows unmoved. Expect the Where/PruneBefore/PruneAfter\nTriangle rows AND the Compose family's composed legs to step DOWN in Bencher\n(the composed legs were paying the light-source conversion too).\n\nPinned by LightTier_StaysSealedWhenARejectingOperatorJoins (+ narrow twin),\nwhich replace the two conversion-door pins. The reunification path -- struct-\ncomposed selectors making every leg inlinable, at which point the light tier\ncan rejoin benchmark-gated -- is recorded as the bench session's centerpiece\n(design doc 2.9).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-04T03:09:08Z",
+          "tree_id": "3b901ac6405efe3d3c8764b9c4cfa7335850e141",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e30bffc290bfc372eb1f64e53ad8b1c184834459"
+        },
+        "date": 1785814716226,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12752446.685096154,
+            "unit": "ns",
+            "range": "± 32840.03335097388"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22164973.792410713,
+            "unit": "ns",
+            "range": "± 48779.20912153997"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3872012.1158353365,
+            "unit": "ns",
+            "range": "± 2141.203058814092"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4667567.272321428,
+            "unit": "ns",
+            "range": "± 8218.964383783212"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 95401386.20238097,
+            "unit": "ns",
+            "range": "± 318599.37470405415"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 149590152.57777777,
+            "unit": "ns",
+            "range": "± 1174755.916157022"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 32154725.15625,
+            "unit": "ns",
+            "range": "± 104603.2653779595"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54431731.538461536,
+            "unit": "ns",
+            "range": "± 75694.512867594"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12154458.588942308,
+            "unit": "ns",
+            "range": "± 22668.504512009833"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11704719.563701924,
+            "unit": "ns",
+            "range": "± 18301.20913550887"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3250684.8504464286,
+            "unit": "ns",
+            "range": "± 1255.5512297540076"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3250704.4123883927,
+            "unit": "ns",
+            "range": "± 3027.857900578278"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 91368132.20238097,
+            "unit": "ns",
+            "range": "± 117713.95708339545"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 83033672.5,
+            "unit": "ns",
+            "range": "± 374682.9839453394"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 30906139.635416668,
+            "unit": "ns",
+            "range": "± 111604.425915159"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 21260903.18125,
+            "unit": "ns",
+            "range": "± 41683.958353994"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 95790899.81538461,
+            "unit": "ns",
+            "range": "± 214797.2522401129"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 155294696.2857143,
+            "unit": "ns",
+            "range": "± 459632.5130119196"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18920122.489583332,
+            "unit": "ns",
+            "range": "± 36689.25446515937"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43857166.6888889,
+            "unit": "ns",
+            "range": "± 353089.21578207496"
           }
         ]
       }
