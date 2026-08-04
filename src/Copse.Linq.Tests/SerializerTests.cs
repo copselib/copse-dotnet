@@ -3,8 +3,10 @@ using Copse.SimpleSerializer;
 using Copse.TestUtils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Tests
 {
@@ -183,6 +185,61 @@ namespace Copse.Linq.Tests
 
         Assert.AreEqual(6, sum);
       }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Every Deserialize overload has Defer semantics -- the string tier included (unified
+    // 2026-08-03): each treenumerator acquisition parses afresh, so the map runs per traversal
+    // and re-enumeration yields fresh instances. Parse-once replay is the caller's explicit
+    // Materialize/Memoize escalation.
+    // ---------------------------------------------------------------------------------------
+
+    [TestMethod]
+    public void DeserializeDepthFirstStringReEnumerationReParses()
+    {
+      var mapCalls = 0;
+
+      var tree = TreeSerializer.DeserializeDepthFirstTree(
+        "a(b,c)",
+        value => { mapCalls++; return new StrongBox<string>(value); });
+
+      var firstPass = CollectScheduledNodes(tree.GetDepthFirstTreenumerator());
+      var secondPass = CollectScheduledNodes(tree.GetDepthFirstTreenumerator());
+
+      Assert.AreEqual(6, mapCalls, "the map runs per traversal (Defer), not once ever");
+
+      for (var index = 0; index < firstPass.Count; index++)
+        Assert.AreNotSame(firstPass[index], secondPass[index], "re-enumeration must yield fresh instances");
+    }
+
+    [TestMethod]
+    public void DeserializeBreadthFirstStringReEnumerationReParses()
+    {
+      var mapCalls = 0;
+
+      var tree = TreeSerializer.DeserializeBreadthFirstTree(
+        "a;b,c",
+        value => { mapCalls++; return new StrongBox<string>(value); });
+
+      var firstPass = CollectScheduledNodes(tree.GetBreadthFirstTreenumerator());
+      var secondPass = CollectScheduledNodes(tree.GetBreadthFirstTreenumerator());
+
+      Assert.AreEqual(6, mapCalls, "the map runs per traversal (Defer), not once ever");
+
+      for (var index = 0; index < firstPass.Count; index++)
+        Assert.AreNotSame(firstPass[index], secondPass[index], "re-enumeration must yield fresh instances");
+    }
+
+    private static List<StrongBox<string>> CollectScheduledNodes(ITreenumerator<StrongBox<string>> treenumerator)
+    {
+      var scheduledNodes = new List<StrongBox<string>>();
+
+      using (treenumerator)
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
+            scheduledNodes.Add(treenumerator.Node);
+
+      return scheduledNodes;
     }
 
     [TestMethod]

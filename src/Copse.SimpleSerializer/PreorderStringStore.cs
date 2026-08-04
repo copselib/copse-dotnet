@@ -9,7 +9,8 @@ namespace Copse.SimpleSerializer
   // at its matching ')'; ',' separates siblings), pulled one committed value or one subtree
   // close at a time, exactly as far as some traversal's frontier demands. Retiring the eager
   // parse was the point of the whole serialization redesign: composing costs nothing, early-out
-  // never touches the rest of the string, and the value map runs once per node ever reached.
+  // never touches the rest of the string, and the value map runs only for nodes the traversal
+  // actually reaches.
   //
   // Values ride the shared value-token layer (ValueTokenStringScanner): quoted values may
   // contain ANY character, unquoted trailing line endings at end of input are ignored (files
@@ -19,9 +20,12 @@ namespace Copse.SimpleSerializer
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via PreorderTreenumerable); parsed values and spans are
   // retained as they materialize -- the same growing-capture shape as the memo's DFT buffer,
-  // with subtreeSizes[i] == 0 meaning node i's subtree is still OPEN. One store is shared by
-  // every treenumerator of the same Deserialize result: parse once, replay many. Single-threaded
-  // by contract, like every treenumerator in the library.
+  // with subtreeSizes[i] == 0 meaning node i's subtree is still OPEN. Retention is scoped to
+  // ONE treenumerator: the surface wraps construction in Tree.Defer (Defer schedule, unified
+  // 2026-08-03), so each acquisition parses afresh and the store is collected with its
+  // treenumerator -- re-enumeration yields fresh instances; parse-once replay is the caller's
+  // explicit Materialize/Memoize escalation. Single-threaded by contract, like every
+  // treenumerator in the library.
   //
   // Detection replaces the retired layout header (see TRAVERSAL_DIMENSION_SPLIT.md): the caller
   // states the layout by choosing DeserializeDepthFirstTree, and an UNQUOTED level-order

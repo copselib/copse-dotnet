@@ -76,6 +76,20 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 | Preorder/LevelOrderTreenumerable | full citizen over a random-access store (off-native dimension rides cross-order, ~1.08x tax) |
 | Preorder/LevelOrderStreamTreenumerable | narrow-dimension over a forward-only stream; fresh stream per acquisition, treenumerator owns/disposes it |
 
+### Serializer surface (Copse.SimpleSerializer)
+
+Registered 2026-08-03 — the serializer had no rows here, which is how the string tier's
+schedule went undisclosed. **Every Deserialize overload now has Defer semantics** (the
+standard lazy contract): re-enumeration re-parses, the value map runs per traversal, fresh
+instances every pass; parse-once-replay-many is the caller's explicit `Materialize`/`Memoize`
+escalation.
+
+| Method | Source | Returns | Behavior |
+|---|---|---|---|
+| Deserialize{DepthFirst,BreadthFirst}Tree (±map) | `string` | **F** | streams via `Tree.Defer`: fresh lazily-parsed string store per acquisition, parse bounded by the traversal frontier; retention scoped to the treenumerator. *(Until 2026-08-03 one growing store was shared by every treenumerator of a result — an undisclosed Memoize schedule selected by overload resolution; unified after it surprised on re-enumeration.)* |
+| Deserialize{DepthFirst,BreadthFirst}Tree (±map) / …FromFile | `Func<TextReader>` / path | **D** / **B** narrow | streams: fresh reader per acquisition, owned and disposed by the treenumerator; the unaffordable dimension is absent from the type — escalation is explicit `Memoize`/`Materialize` |
+| Serialize{DepthFirst,BreadthFirst}Tree (±map) | D / B narrow receiver | `string` / writer `void` | drains; narrow interfaces are the honest receivers (each layout needs only its own dimension) |
+
 ### Experimental
 
 `ExpandNode` and `Graft` (F ×5 overloads each) return `ITreenumerable` but their
