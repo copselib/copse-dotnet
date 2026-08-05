@@ -70,6 +70,15 @@ namespace Copse.Stores
       return (values, subtreeSizes, sideChannel.ToArray());
     }
 
+    /// <summary>
+    /// The side-channel-free raw form: values and subtree sizes only -- for passes that derive
+    /// coordinates from the encoding itself (a child's sibling index is its offset in the
+    /// parent's span; depth threads through the walk) instead of storing them.
+    /// </summary>
+    public static (TValue[] Values, int[] SubtreeSizes) CaptureRaw<TValue>(
+      IDepthFirstTreenumerable<TValue> source)
+      => CaptureCore<TValue, int>(source, null, null);
+
     private static (TValue[] Values, int[] SubtreeSizes) CaptureCore<TValue, TSide>(
       IDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,

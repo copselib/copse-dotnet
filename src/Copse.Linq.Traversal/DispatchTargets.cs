@@ -20,29 +20,29 @@ namespace Copse.Linq
   {
     internal DispatchTargets(
       TSource[] values,
-      NodePosition[] positions,
       int[] childIndices,
       int[] childOffsets,
       TDispatch[] arrivals,
       bool[] written,
-      int parentIndex)
+      int parentIndex,
+      int childDepth)
     {
       _Values = values;
-      _Positions = positions;
       _ChildIndices = childIndices;
       _ChildOffsets = childOffsets;
       _Arrivals = arrivals;
       _Written = written;
       _ParentIndex = parentIndex;
+      _ChildDepth = childDepth;
     }
 
     private readonly TSource[] _Values;
-    private readonly NodePosition[] _Positions;
     private readonly int[] _ChildIndices;
     private readonly int[] _ChildOffsets;
     private readonly TDispatch[] _Arrivals;
     private readonly bool[] _Written;
     private readonly int _ParentIndex;
+    private readonly int _ChildDepth;
 
     /// <summary>The number of children. O(1) -- read off the child-index offsets.</summary>
     public int Count => _ChildOffsets[_ParentIndex + 1] - _ChildOffsets[_ParentIndex];
@@ -61,8 +61,12 @@ namespace Copse.Linq
 
         var childIndex = _ChildIndices[_ChildOffsets[_ParentIndex] + index];
 
+        // POSITIONS ARE DERIVED, NOT STORED (2026-08-05, the perf re-baseline's verdict): a
+        // child's sibling index IS its offset in the parent's span (the child-index preserves
+        // sibling order by construction), and its depth is the pass's walk depth plus one --
+        // so the build allocates no positions array.
         return new DispatchTarget<TSource, TDispatch>(
-          new NodeContext<TSource>(_Values[childIndex], _Positions[childIndex]), _Arrivals, _Written, childIndex);
+          new NodeContext<TSource>(_Values[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
       }
     }
 

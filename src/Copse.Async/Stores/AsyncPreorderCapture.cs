@@ -68,6 +68,15 @@ namespace Copse.Async.Stores
       return (values, subtreeSizes, sideChannel.ToArray());
     }
 
+    /// <summary>
+    /// The side-channel-free raw form: values and subtree sizes only -- for passes that derive
+    /// coordinates from the encoding itself (a child's sibling index is its offset in the
+    /// parent's span; depth threads through the walk) instead of storing them.
+    /// </summary>
+    public static async ValueTask<(TValue[] Values, int[] SubtreeSizes)> CaptureRawAsync<TValue>(
+      IAsyncDepthFirstTreenumerable<TValue> source)
+      => await CaptureCoreAsync<TValue, int>(source, null, null).ConfigureAwait(false);
+
     private static async ValueTask<(TValue[] Values, int[] SubtreeSizes)> CaptureCoreAsync<TValue, TSide>(
       IAsyncDepthFirstTreenumerable<TValue> source,
       Func<NodeContext<TValue>, TSide> sideChannelSelector,

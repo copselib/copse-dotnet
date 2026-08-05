@@ -224,10 +224,12 @@ namespace Copse.Linq
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       // Pass 1: the capture factory's raw form -- one depth-first walk into the flat pre-order
-      // encoding (a node's children sit at subtree-size hops after it), positions riding the
-      // side channel so nothing is stored twice.
-      var (values, subtreeSizes, positions) = await AsyncPreorderCapture
-        .CaptureRawAsync(source, nodeContext => nodeContext.Position)
+      // encoding (a node's children sit at subtree-size hops after it). No positions array:
+      // coordinates are DERIVED (sibling index = span offset, depth = the walk's ancestor
+      // count) -- the perf re-baseline priced the stored array at 8 bytes/node and the
+      // derivation at nothing.
+      var (values, subtreeSizes) = await AsyncPreorderCapture
+        .CaptureRawAsync(source)
         .ConfigureAwait(false);
 
       // Pass 2: top-down over the flat encoding. Preorder puts every parent before its children,
@@ -256,21 +258,32 @@ namespace Copse.Linq
       for (var rootIndex = 0; rootIndex < nodeCount; rootIndex += subtreeSizes[rootIndex])
         rootIndices[nextRootSlot++] = rootIndex;
 
-      rootFamilySurvey(new DispatchTargets<TSource, TDispatch>(values, positions, rootIndices, new[] { 0, rootCount }, arrivals, written, 0));
+      rootFamilySurvey(new DispatchTargets<TSource, TDispatch>(values, rootIndices, new[] { 0, rootCount }, arrivals, written, 0, childDepth: 0));
 
       for (var slot = 0; slot < rootCount; slot++)
         if (!written[rootIndices[slot]])
           throw new InvalidOperationException(
             $"The survey completed without dispatching to root '{values[rootIndices[slot]]}'; every root must receive exactly one Dispatch (the virtual forest root's family).");
 
+      // The ancestor stack carries each surveyed family's depth: entries are the open
+      // subtrees' end indices, so a node's depth is the count of spans still covering it.
+      // Leaves are never pushed (nothing ever sits inside a leaf's span).
+      var openSubtreeEnds = new Stack<int>();
+
       for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
       {
+        while (openSubtreeEnds.Count > 0 && openSubtreeEnds.Peek() <= nodeIndex)
+          openSubtreeEnds.Pop();
+
         if (subtreeSizes[nodeIndex] == 1)
           continue;
 
+        var depth = openSubtreeEnds.Count;
+        openSubtreeEnds.Push(nodeIndex + subtreeSizes[nodeIndex]);
+
         survey(
           arrivals[nodeIndex],
-          new DispatchTargets<TSource, TDispatch>(values, positions, childIndices, childOffsets, arrivals, written, nodeIndex));
+          new DispatchTargets<TSource, TDispatch>(values, childIndices, childOffsets, arrivals, written, nodeIndex, childDepth: depth + 1));
 
         // The survey returned; every child must have been dispatched to exactly once.
         for (var slot = childOffsets[nodeIndex]; slot < childOffsets[nodeIndex + 1]; slot++)
