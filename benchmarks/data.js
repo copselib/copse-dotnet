@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785955949171,
+  "lastUpdate": 1785955949580,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -134601,6 +134601,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
             "value": 63990552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 2012,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "339aa65774779bc712585582b6435ad8e6d5cb60",
+          "message": "Perf 2/4: the leaffix positions fill inside the child-index build\n\nThe capture's positions side channel dies here too, but the leaffix fold\nruns in reverse, where the rootfix pass's stateless derivation has no cheap\nanalog -- a forward close-stack walk was built and measured out (O(depth)\nentries are O(n) on chains: 96 -> 112 MB, +14% time). Instead the\nchild-index build fills one exact-size positions array as its slices fill:\nparents precede children in preorder, so depth threads through for free.\nThree-way A/B: chains 96.1 -> 88.1 MB (best of all candidates, below even\nthe side-channel form), triangles 68.2 -> 52.2 MB, fold time flat.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:34:14Z",
+          "tree_id": "d442823cc729174346f4858fcbd0eca543f22719",
+          "url": "https://github.com/copselib/copse-dotnet/commit/339aa65774779bc712585582b6435ad8e6d5cb60"
+        },
+        "date": 1785955949464,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 21098786,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 54734648,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 54734664,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 52450841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 54910147,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 54910163,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 815,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 92322154,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 92323130,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 62941550,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 62939486,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 126556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 47396898,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 158331,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 50334461,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 47569454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 331483,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 1046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93372860,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 109077743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988520,
             "unit": "bytes"
           },
           {
