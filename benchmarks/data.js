@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785960054833,
+  "lastUpdate": 1785963413095,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -11660,6 +11660,150 @@ window.BENCHMARK_DATA = {
             "value": 220458195.24,
             "unit": "ns",
             "range": "± 21259386.772221"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "980552aef0b33ba0ec0346eebdcda2db314a0311",
+          "message": "NodeContext retires from the public surface: the flavor grammar, family-wide\n\nThe arity-split that Select/Where composition forced -- value flavor\nprimary, (node, position) for coordinate-reading rules -- now covers every\nconsumer-facing callback: AnyNodes, AllNodes, CountNodes, TakeNodesUntil\nand -While, GetTraversals' strategies selector, and OrderChildrenBy's key\nselector (hand-verified, per the scar). NodeContext<T> appears in no public\ncallback signature; its lawful homes are the view element types (immediate,\nconsumed in place, cannot go stale) and internal machinery -- the fusion\ncurrency, the engine's child-enumerator protocol, and the capture/fold\nplumbing. The callback grammar is written into the design doc.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T20:37:17Z",
+          "tree_id": "d2090dae5288d7a9064a095d5a6a4708d9b6e8a5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/980552aef0b33ba0ec0346eebdcda2db314a0311"
+        },
+        "date": 1785963401445,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13503436.048177084,
+            "unit": "ns",
+            "range": "± 36764.08123325118"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21678432.339285713,
+            "unit": "ns",
+            "range": "± 45411.5241439042"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3349625.2747395835,
+            "unit": "ns",
+            "range": "± 1655.538105919966"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 4066227.1875,
+            "unit": "ns",
+            "range": "± 3922.3824156755236"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 121507657.15384617,
+            "unit": "ns",
+            "range": "± 621495.8514138316"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 144070326.93333334,
+            "unit": "ns",
+            "range": "± 689026.7411935078"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 49540045.44166667,
+            "unit": "ns",
+            "range": "± 185564.22919212998"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 51257248.76428572,
+            "unit": "ns",
+            "range": "± 211733.9470537876"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 67669246.45,
+            "unit": "ns",
+            "range": "± 50185.535785621076"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 36284697.97802198,
+            "unit": "ns",
+            "range": "± 122717.83911580298"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 28511673.734375,
+            "unit": "ns",
+            "range": "± 69438.29328766541"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 20277624.3875,
+            "unit": "ns",
+            "range": "± 53549.48645085165"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 56666251.3,
+            "unit": "ns",
+            "range": "± 605696.6913640357"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 87844091.38888888,
+            "unit": "ns",
+            "range": "± 112383.49196707038"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14598334.840198863,
+            "unit": "ns",
+            "range": "± 351822.6814497068"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 16284833.75,
+            "unit": "ns",
+            "range": "± 48807.13548642054"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 465035690.3333333,
+            "unit": "ns",
+            "range": "± 727733.4933522065"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 593368514.4285715,
+            "unit": "ns",
+            "range": "± 482774.5134224297"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 196660581.60784313,
+            "unit": "ns",
+            "range": "± 2315513.4430339313"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 210053008.84,
+            "unit": "ns",
+            "range": "± 4839618.521400408"
           }
         ]
       }
