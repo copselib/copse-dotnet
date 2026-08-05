@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785963414525,
+  "lastUpdate": 1785963414982,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -93974,6 +93974,102 @@ window.BENCHMARK_DATA = {
             "value": 79094829.51648353,
             "unit": "ns",
             "range": "± 432291.85149628134"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "980552aef0b33ba0ec0346eebdcda2db314a0311",
+          "message": "NodeContext retires from the public surface: the flavor grammar, family-wide\n\nThe arity-split that Select/Where composition forced -- value flavor\nprimary, (node, position) for coordinate-reading rules -- now covers every\nconsumer-facing callback: AnyNodes, AllNodes, CountNodes, TakeNodesUntil\nand -While, GetTraversals' strategies selector, and OrderChildrenBy's key\nselector (hand-verified, per the scar). NodeContext<T> appears in no public\ncallback signature; its lawful homes are the view element types (immediate,\nconsumed in place, cannot go stale) and internal machinery -- the fusion\ncurrency, the engine's child-enumerator protocol, and the capture/fold\nplumbing. The callback grammar is written into the design doc.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T20:37:17Z",
+          "tree_id": "d2090dae5288d7a9064a095d5a6a4708d9b6e8a5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/980552aef0b33ba0ec0346eebdcda2db314a0311"
+        },
+        "date": 1785963414892,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106320137.65714286,
+            "unit": "ns",
+            "range": "± 196903.4158968191"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 87005295.07692307,
+            "unit": "ns",
+            "range": "± 549744.5536892493"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 245871838.78571424,
+            "unit": "ns",
+            "range": "± 1503306.8059912485"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 266910549.67857143,
+            "unit": "ns",
+            "range": "± 354780.1313427258"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 194294645.06410253,
+            "unit": "ns",
+            "range": "± 5299846.714005178"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 196082229.5641026,
+            "unit": "ns",
+            "range": "± 993214.259183233"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 114752499.6923077,
+            "unit": "ns",
+            "range": "± 1185547.0916074773"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 84549593.34444447,
+            "unit": "ns",
+            "range": "± 645766.7941421556"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 498357346.8,
+            "unit": "ns",
+            "range": "± 1659104.5725463396"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 462802967,
+            "unit": "ns",
+            "range": "± 810422.3571779307"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 106911526.74736843,
+            "unit": "ns",
+            "range": "± 2367163.5876792227"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 80806312.3076923,
+            "unit": "ns",
+            "range": "± 274872.9239875823"
           }
         ]
       }
