@@ -156,6 +156,16 @@ The invariant makes the TWO INSTRUMENTS uniform across the tiers (subsuming the
 - Consequently seed ≠ constant selector on BOTH tiers (pinned deliberately-different on
   both), and the flavors' meanings never shift as a consumer moves between tiers.
 
+**The leaffix corollary (same day)**: a seed exists only where the flow has an entry
+channel for it to participate through. Upward flow has none — the leaffix survey has no
+arrival seat — so the leaffix broadcast-seed flavor was the bypass instrument wearing the
+seed's name (identically `_ => x`) and is DELETED; leaves are set by SELECTOR flavors,
+honestly named, and the survey-only overload is the general form. LeaffixScan needs no
+boundary flavors at all (boundaries exist only where the tier's callback structurally
+requires an input it cannot make; the leaffix combine starts from the map at every node),
+and its delegation now routes through the survey-only overload — the scan IS the
+fold-encoded dispatch, literally, pinned in the battery.
+
 **This REVERSED the arrival-semantics decision of 2026-08-04** (selector-as-arrival,
 fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence
 (seed ≡ constant selector) at the cost of the cross-tier one, and its real motivation —

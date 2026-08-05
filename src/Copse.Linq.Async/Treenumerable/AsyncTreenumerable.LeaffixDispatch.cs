@@ -30,10 +30,19 @@ namespace Copse.Linq
     /// leaves are not a special case. The survey fires on EVERY node; a leaf's sources view is
     /// simply EMPTY (<c>sources.Count == 0</c> is the in-band leaf test), and a survey like
     /// "my value plus my children's rollups" handles the fringe with no boundary at all -- the
-    /// survey-only overload is the general form. The seed and leafNodeSelector flavors are
-    /// that boundary's sugar: they wrap the survey with a leaf branch
+    /// survey-only overload is the general form. The leafNodeSelector flavors are that
+    /// boundary's sugar: they wrap the survey with a leaf branch
     /// (<c>sources.Count == 0 ? boundary : survey</c>), preserving the "leaves start at the
     /// boundary" idiom for surveys that cannot answer for the fringe.</para>
+    ///
+    /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR, 2026-08-05): a SEED is the value
+    /// that PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
+    /// surveyed -- and upward flow has no pre-fringe channel for one to enter through; the
+    /// leaffix survey has no arrival seat. The old broadcast-seed overload was the bypass
+    /// instrument wearing the seed's name (identically <c>_ =&gt; x</c>, the constant
+    /// selector) and was deleted so the boundary grammar reads the same on every tier: a seed
+    /// exists only where the flow has an entry channel for it; where values are set directly,
+    /// the instrument is a SELECTOR.</para>
     ///
     /// <para>VALUE-flavored (2026-08-02, the ScanResult sweep): the survey receives the node's
     /// VALUE; the leaf boundary is arity-split (seed | value selector | positional
@@ -60,13 +69,6 @@ namespace Copse.Linq
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
         AsyncTree.Lazy(() => PreorderDispatch(source, FullSurvey(survey))), BufferLayout.Preorder);
-
-    /// <summary>The leaf-seeded flavor: sugar wrapping <paramref name="survey"/> with a leaf branch -- every leaf's accumulation is the seed; the survey answers for internal nodes.</summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncDepthFirstTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch(source, (TSource _, NodePosition __) => seed, survey);
 
     /// <summary>
     /// The per-leaf seeding form: sugar wrapping <paramref name="survey"/> with a leaf branch --
@@ -102,12 +104,6 @@ namespace Copse.Linq
 
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch(source, (TSource _, NodePosition __) => seed, survey);
-
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey);
@@ -124,12 +120,6 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, survey);
-
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, seed, survey);
 
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,

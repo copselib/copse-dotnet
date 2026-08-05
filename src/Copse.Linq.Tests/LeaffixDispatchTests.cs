@@ -208,12 +208,15 @@ namespace Copse.Linq.Tests
     // the aggregation the fold tier CANNOT express (nodeSelector cannot tell a leaf from an
     // internal node), pinning the tier split.
     [TestMethod]
-    public void FixedSeed_LeafCount()
+    public void LeafSelector_LeafCount()
     {
+      // The canonical leaf-count workload rides the SELECTOR (there is no leaffix seed flavor
+      // -- THE NORTH STAR, 2026-08-05: a seed participates through the tier's callback, and
+      // upward flow has no channel for one; setting leaves directly is the selector's job).
       var actual = TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d),e)")
         .LeaffixDispatch(
-          1,
+          _ => 1,
           (parent, children) =>
           {
             var count = 0;

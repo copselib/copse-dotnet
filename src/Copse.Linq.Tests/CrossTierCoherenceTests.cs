@@ -63,6 +63,32 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
+    public void Leaffix_ScanIsTheFoldShapedDispatch_BySurveyOnlyEncoding()
+    {
+      // The leaffix half of the invariant: LeaffixScan(map, combine) == the survey-only
+      // LeaffixDispatch whose survey starts at the map and folds the children's rollups in --
+      // which is literally the scan's implementation, now pinned as law. (Leaffix has no
+      // boundary flavors to pair: the map serves every node, and a seed cannot exist where
+      // upward flow has no channel for it to participate through.)
+      var scan = Pairings(
+        TreeSerializer.DeserializeDepthFirstTree(Forest)
+          .LeaffixScan(node => node, (accumulate, child) => accumulate + child));
+
+      var dispatch = Pairings(
+        TreeSerializer.DeserializeDepthFirstTree(Forest)
+          .LeaffixDispatch<string, string>((node, children) =>
+          {
+            var accumulate = node;
+            foreach (var child in children)
+              accumulate += child.Accumulate;
+            return accumulate;
+          }));
+
+      CollectionAssert.AreEqual(new[] { "a:abc", "b:b", "c:c", "d:def", "e:e", "f:f" }, scan);
+      CollectionAssert.AreEqual(scan, dispatch);
+    }
+
+    [TestMethod]
     public void PositionalSelectorFlavor_ScanIsTheFoldShapedDispatch()
     {
       var scan = Pairings(

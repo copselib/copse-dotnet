@@ -37,7 +37,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
-      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
+      => LeaffixDispatch(source, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>
     /// The context flavor: the combine also sees the FOLDING node's value, for rules like
@@ -48,20 +48,20 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> nodeSelector,
       Func<TSource, TAccumulate, TAccumulate, TAccumulate> accumulator)
-      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
+      => LeaffixDispatch(source, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
     public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> nodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> accumulator)
-      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
+      => LeaffixDispatch(source, FoldSurvey(nodeSelector, accumulator));
 
     public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> nodeSelector,
       Func<TSource, TAccumulate, TAccumulate, TAccumulate> accumulator)
-      => LeaffixDispatch(source, nodeSelector, FoldSurvey(nodeSelector, accumulator));
+      => LeaffixDispatch(source, FoldSurvey(nodeSelector, accumulator));
 
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
     public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
