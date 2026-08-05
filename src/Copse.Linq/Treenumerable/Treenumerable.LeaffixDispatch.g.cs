@@ -28,6 +28,16 @@ namespace Copse.Linq
     /// other; a fold that only needs one child at a time belongs to LeaffixScan (sugar over
     /// this operator).
     ///
+    /// <para>THE READINESS CLAUSE (2026-08-05): a survey fires when its data is ready -- here,
+    /// after its children complete -- so every child's survey precedes its parent's, and each
+    /// view's sibling order is guaranteed; the TOTAL cross-node sequence is deliberately
+    /// UNSPECIFIED (a pure callback cannot observe it, and pinning it would foreclose parallel
+    /// builds). Do not depend on the current reverse-preorder. (A FUSED single-walk build
+    /// firing surveys at subtree close was built and MEASURED OUT 2026-08-05: it lost to the
+    /// three sequential array passes on every cell -- time and memory, chains and triangles --
+    /// because the walk's fine-grained bookkeeping outweighs re-iterating flat arrays the
+    /// prefetcher loves. The pass structure is settled by evidence.)</para>
+    ///
     /// <para>FULL PARTICIPATION (ratified 2026-08-04 -- boundary-shape-follows-tier-shape):
     /// leaves are not a special case -- the internal pass surveys EVERY node, a leaf's sources
     /// view simply EMPTY. The public surface leads with the leafNodeSelector flavors (a

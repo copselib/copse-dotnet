@@ -27,7 +27,13 @@ namespace Copse.Linq
     /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
     /// a fairness split cannot allocate its edges independently, and a setter-callback
     /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
-    /// its assignment callback. Surveys run in depth-first preorder.
+    /// its assignment callback.
+    ///
+    /// <para>THE READINESS CLAUSE (2026-08-05): a survey fires when its data is ready -- here,
+    /// after the family's arrival lands -- so every parent's survey precedes its children's,
+    /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
+    /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
+    /// foreclose parallel builds). Do not depend on the current preorder.</para>
     ///
     /// <para>FULL PARTICIPATION (2026-08-04; unified same day -- the boundary is an
     /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST

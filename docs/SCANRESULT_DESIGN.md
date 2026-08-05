@@ -196,6 +196,22 @@ fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence
 the merged RootfixDoScan's silent root landing — had already died with the quartet. The
 one-day detour is preserved in history; the north star is the standing law.
 
+## The readiness clause (ratified 2026-08-05 — survey order)
+
+A survey fires when its data is ready: after the arrival lands (rootfix — parents before
+children), after the children complete (leaffix — children before parents). The PARTIAL
+order is the operator's meaning and is guaranteed, as is sibling order within every view;
+the TOTAL cross-node sequence is deliberately UNSPECIFIED — a pure callback cannot
+observe it, its only beneficiaries would be off-contract impure surveys, and pinning it
+would foreclose parallel builds forever. (Field origin: a candidate fused leaffix build would have changed
+reverse-preorder to postorder and the author noticed he had assumed an order; the clause
+converts that from a latent trap into stated law. The fused build itself was then
+MEASURED OUT -- one walk lost to three sequential array passes on every cell, time and
+memory both, because fine-grained walk bookkeeping outweighs re-iterating flat arrays --
+so the clause outlived its trigger: survey order stays unspecified, the pass structure is
+settled by evidence, and the remaining chain-time delta versus the pre-ScanResult build
+is the PRICED cost of the features: pairing results, child identity, O(1) views.)
+
 ## THE DEMOTION (ratified 2026-08-04 night — composition wins)
 
 **The Do quartet is DELETED** (`RootfixDoScan`, `LeaffixDoScan`, `RootfixDoDispatch`,
