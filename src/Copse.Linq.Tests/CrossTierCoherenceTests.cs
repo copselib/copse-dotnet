@@ -63,28 +63,54 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Leaffix_ScanIsTheFoldShapedDispatch_BySurveyOnlyEncoding()
+    public void LeaffixSeedFlavor_ScanIsTheFoldShapedDispatch()
     {
-      // The leaffix half of the invariant: LeaffixScan(map, combine) == the survey-only
-      // LeaffixDispatch whose survey starts at the map and folds the children's rollups in --
-      // which is literally the scan's implementation, now pinned as law. (Leaffix has no
-      // boundary flavors to pair: the map serves every node, and a seed cannot exist where
-      // upward flow has no channel for it to participate through.)
+      // The leaffix half of the invariant, dual shape (2026-08-05): the seed is the VIRTUAL
+      // FRINGE's arrival, participating through the node accumulator at every leaf -- visible
+      // here as the "*" folded into every fringe value.
       var scan = Pairings(
         TreeSerializer.DeserializeDepthFirstTree(Forest)
-          .LeaffixScan(node => node, (accumulate, child) => accumulate + child));
+          .LeaffixScan("*", (left, right) => left + right, (accumulate, node) => node + accumulate));
 
       var dispatch = Pairings(
         TreeSerializer.DeserializeDepthFirstTree(Forest)
           .LeaffixDispatch<string, string>((node, children) =>
           {
-            var accumulate = node;
-            foreach (var child in children)
-              accumulate += child.Accumulate;
-            return accumulate;
+            if (children.Count == 0)
+              return node + "*";
+
+            var reduced = children[0].Accumulate;
+            for (var siblingIndex = 1; siblingIndex < children.Count; siblingIndex++)
+              reduced += children[siblingIndex].Accumulate;
+            return node + reduced;
           }));
 
-      CollectionAssert.AreEqual(new[] { "a:abc", "b:b", "c:c", "d:def", "e:e", "f:f" }, scan);
+      CollectionAssert.AreEqual(new[] { "a:ab*c*", "b:b*", "c:c*", "d:de*f*", "e:e*", "f:f*" }, scan,
+        "the seed folds through the node accumulator at every leaf");
+      CollectionAssert.AreEqual(scan, dispatch);
+    }
+
+    [TestMethod]
+    public void LeaffixSelectorFlavor_ScanIsTheFoldShapedDispatch()
+    {
+      var scan = Pairings(
+        TreeSerializer.DeserializeDepthFirstTree(Forest)
+          .LeaffixScan(leaf => leaf.ToUpperInvariant(), (left, right) => left + right, (accumulate, node) => node + accumulate));
+
+      var dispatch = Pairings(
+        TreeSerializer.DeserializeDepthFirstTree(Forest)
+          .LeaffixDispatch(
+            leaf => leaf.ToUpperInvariant(),
+            (node, children) =>
+            {
+              var reduced = children[0].Accumulate;
+              for (var siblingIndex = 1; siblingIndex < children.Count; siblingIndex++)
+                reduced += children[siblingIndex].Accumulate;
+              return node + reduced;
+            }));
+
+      CollectionAssert.AreEqual(new[] { "a:aBC", "b:B", "c:C", "d:dEF", "e:E", "f:F" }, scan,
+        "the selector sets each leaf directly, node accumulator bypassed at the fringe");
       CollectionAssert.AreEqual(scan, dispatch);
     }
 

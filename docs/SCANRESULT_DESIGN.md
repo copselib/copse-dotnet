@@ -157,14 +157,33 @@ The invariant makes the TWO INSTRUMENTS uniform across the tiers (subsuming the
   both), and the flavors' meanings never shift as a consumer moves between tiers.
 
 **The leaffix corollary (same day)**: a seed exists only where the flow has an entry
-channel for it to participate through. Upward flow has none — the leaffix survey has no
-arrival seat — so the leaffix broadcast-seed flavor was the bypass instrument wearing the
-seed's name (identically `_ => x`) and is DELETED; leaves are set by SELECTOR flavors,
-honestly named, and the survey-only overload is the general form. LeaffixScan needs no
-boundary flavors at all (boundaries exist only where the tier's callback structurally
-requires an input it cannot make; the leaffix combine starts from the map at every node),
-and its delegation now routes through the survey-only overload — the scan IS the
-fold-encoded dispatch, literally, pinned in the battery.
+channel for it to participate through. The leaffix DISPATCH survey has no arrival seat —
+its broadcast-seed flavor was the bypass instrument wearing the seed's name (identically
+`_ => x`) and stays DELETED; leaves are set by SELECTOR flavors, and the survey-only
+overload is the general form.
+
+**THE LEAFFIX DUAL (2026-08-05, the same day's second act — "the mechanism is not the
+dual of RootfixScan")**: the old LeaffixScan fused the boundary INTO its map ("both an
+accumulator and a generator"), which is why it had no boundary flavors and read as
+non-dual. The true dual decomposes on upstream multiplicity — one parent down, n children
+up — so the reshape is:
+
+> `LeaffixScan(seed | leafSelector | positional, edgeAccumulator, nodeAccumulator)` —
+> `value(n) = nodeAccumulator(edgeReduce(children), n)`; at the fringe
+> `value(leaf) = nodeAccumulator(seed, leaf)`, character-for-character the dual of
+> `fold(seed, root)`.
+
+The `nodeAccumulator` is LITERALLY RootfixScan's fold shape `(TAcc, TSource)`; the
+`edgeAccumulator` reduces siblings left-to-right from the first child (k−1 firings, no
+identity demanded); and **the seed returns to the leaffix scan with lawful participate
+semantics** — the reshape CREATED the channel the corollary's rule requires (the node
+accumulator's state seat at every leaf: the VIRTUAL FRINGE's arrival, the virtual forest
+root's dual). Both instruments now exist at both boundaries of the family, pinned
+deliberately-different everywhere; per-edge node context flavors on `edgeAccumulator`
+wait for a workload. `LeaffixAggregate` was re-derived on the same shape, value-flavored
+— retiring the family's last NodeContext callbacks and the long-deferred signature
+workstream. The ternary map-flavor died with the map (its per-edge node context returns
+as an `edgeAccumulator` arity-split if a workload shows).
 
 **This REVERSED the arrival-semantics decision of 2026-08-04** (selector-as-arrival,
 fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence

@@ -12,20 +12,24 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Aggregate", "Leaffix")]
   public class LeaffixAggregate
   {
-    // Each node projects to 1 and folds in each child's completed subtree node count.
-    private static int SubtreeNodeCount(int accumulate, int childAccumulate)
-      => accumulate + childAccumulate;
+    // Subtree node count on the dual shape: seed 0 at the fringe, edge-sum the children's
+    // counts, node accumulator adds one for the node itself.
+    private static int EdgeSum(int left, int right)
+      => left + right;
+
+    private static int CountNode(int accumulate, int node)
+      => accumulate + 1;
 
     [Benchmark]
     public int Triangle() =>
-      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum(pairing => pairing.Accumulate);
+      CanonicalTrees.MegaTriangleTree().LeaffixAggregate(0, EdgeSum, CountNode).Sum(pairing => pairing.Accumulate);
 
     [Benchmark]
     public int Chain() =>
-      CanonicalTrees.MegaChainTree().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum(pairing => pairing.Accumulate);
+      CanonicalTrees.MegaChainTree().LeaffixAggregate(0, EdgeSum, CountNode).Sum(pairing => pairing.Accumulate);
 
     [Benchmark]
     public int Forest() =>
-      CanonicalTrees.MegaForest().LeaffixAggregate(_ => 1, SubtreeNodeCount).Sum(pairing => pairing.Accumulate);
+      CanonicalTrees.MegaForest().LeaffixAggregate(0, EdgeSum, CountNode).Sum(pairing => pairing.Accumulate);
   }
 }

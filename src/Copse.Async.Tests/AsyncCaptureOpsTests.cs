@@ -36,11 +36,13 @@ namespace Copse.Async.Tests
       {
         var sync = Sync(tree).LeaffixScan(
           node => node,
-          (acc, kid) => acc + "|" + kid);
+          (left, right) => left + "|" + right,
+          (accumulate, node) => node + "|" + accumulate);
 
         var async = Async(tree).LeaffixScan(
           node => node,
-          (acc, kid) => acc + "|" + kid);
+          (left, right) => left + "|" + right,
+          (accumulate, node) => node + "|" + accumulate);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
@@ -54,11 +56,13 @@ namespace Copse.Async.Tests
       {
         var sync = Sync(tree).LeaffixScan(
           node => node,
-          (acc, kid) => acc + "|" + kid);
+          (left, right) => left + "|" + right,
+          (accumulate, node) => node + "|" + accumulate);
 
         var async = Async(tree).LeaffixScan(
           node => node,
-          (acc, kid) => acc + "|" + kid);
+          (left, right) => left + "|" + right,
+          (accumulate, node) => node + "|" + accumulate);
 
         // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
         // rides the same capture (the reverse pin order of the test above).
