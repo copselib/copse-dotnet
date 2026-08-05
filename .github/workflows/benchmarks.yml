@@ -45,7 +45,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.x'
+          # 9.x is the floor the code actually requires (C# 13: ref-in-async in the
+          # StructuralMerge treenumerators) -- same pin as publish-nuget.yml; the 8.0.x pin
+          # only worked while the runner image happened to preinstall newer SDKs. The
+          # benchmark binaries still target net8.0; only the compiler needs 9.
+          dotnet-version: 9.0.x
 
       - name: Restore dependencies
         run: dotnet restore src/Copse.sln
