@@ -11,6 +11,7 @@ using Copse.Linq.Stores;
 using Copse.Linq.Treenumerators;
 using Copse.Linq.Extensions;
 using System;
+using System.Collections.Generic;
 
 namespace Copse.Linq
 {
@@ -186,20 +187,23 @@ namespace Copse.Linq
       return new PreorderArrayStore<ScanResult<TSource, TAccumulate>>(results, subtreeSizes);
     }
 
-    // The shared fold pass, both operators' engine (the ScanResult sweep's rebuild): one raw
-    // capture into the flat pre-order encoding, the shared child-index, then a REVERSE-preorder
-    // fold -- descendants sit after their parent in preorder, so the backward walk completes
-    // every child before its parent's survey runs. The same passes as the rootfix dispatch
-    // build; only the fold direction differs. Full participation (2026-08-04): the survey
-    // fires on every node -- a leaf's sources view is empty, not skipped.
+    // The shared fold pass, both operators' engine: one raw capture into the flat pre-order
+    // encoding (no positions side channel), the child-index build filling the exact-size
+    // positions array as its slices fill (parents precede children in preorder, so depth
+    // threads through the build for free), then the REVERSE-preorder fold -- descendants sit
+    // after their parent, so the backward walk completes every child before its parent's
+    // survey runs, with zero walk state. (A forward close-stack walk deriving positions was
+    // built and MEASURED OUT: O(depth) entries are O(n) on chains.) Full participation
+    // (2026-08-04): the survey fires on every node -- a leaf's sources view is empty, not
+    // skipped.
     private static (TSource[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations) RunLeaffixDispatchPass<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
-      var (values, subtreeSizes, positions) = PreorderCapture
-        .CaptureRaw(source, nodeContext => nodeContext.Position);
+      var (values, subtreeSizes) = PreorderCapture
+        .CaptureRaw(source);
 
-      var (childOffsets, childIndices) = DispatchChildIndex.Build(subtreeSizes);
+      var (childOffsets, childIndices, positions) = DispatchChildIndex.BuildWithPositions(subtreeSizes);
 
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)

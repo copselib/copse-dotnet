@@ -78,6 +78,9 @@ namespace Copse.Linq
 
         var childIndex = _ChildIndices[_ChildOffsets[_ParentIndex] + index];
 
+        // Positions come from the child-index build's exact-size array (no capture side
+        // channel) -- the reverse fold cannot derive them statelessly the way the rootfix
+        // pass does, and a close-stack walk measured out (O(n) entries on chains).
         return new DispatchSource<TSource, TAccumulate>(
           new NodeContext<TSource>(_Values[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
       }
