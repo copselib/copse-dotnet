@@ -94,7 +94,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task RootfixAggregate_And_VisitStreamTraversals_MatchSync()
     {
-      Func<NodeContext<string>, NodeContext<string>, string> concat = (acc, node) => acc.Node + node.Node;
+      Func<string, string, string> concat = (accumulate, node) => accumulate + node;
 
       foreach (var tree in Trees)
       {
@@ -120,15 +120,15 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task LeaffixAggregate_MatchesSync()
     {
-      // Node count per root tree: every node projects to 1 and each child's completed count
-      // folds in (value flavor).
-      Func<NodeContext<string>, int> nodeSelector = _ => 1;
-      Func<int, int, int> acc = (accumulate, childAccumulate) => accumulate + childAccumulate;
+      // Node count per root tree (the dual shape): seed 0 at the fringe, edge-sum the
+      // children's counts, node accumulator adds one for the node itself.
+      Func<int, int, int> edge = (left, right) => left + right;
+      Func<int, string, int> node = (accumulate, _) => accumulate + 1;
 
       foreach (var tree in Trees)
         CollectionAssert.AreEqual(
-          Sync(tree).LeaffixAggregate(nodeSelector, acc).ToList(),
-          await ToList(Async(tree).LeaffixAggregate(nodeSelector, acc)),
+          Sync(tree).LeaffixAggregate(0, edge, node).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(0, edge, node)),
           $"LeaffixAggregate {tree}");
     }
 

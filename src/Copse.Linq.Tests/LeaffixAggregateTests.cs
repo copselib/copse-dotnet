@@ -8,9 +8,9 @@ namespace Copse.Linq.Tests
   [TestClass]
   public class LeaffixAggregateTests
   {
-    // Value flavor: nodeSelector projects each node to its own value and each child's
-    // completed fold concatenates in sibling order, so a root's value is the concatenation of
-    // its whole subtree. Expected roots are ';'-separated.
+    // The dual fold (2026-08-05): seed "" at the fringe, edge concatenation in sibling order,
+    // node prepended once -- a root's value is the concatenation of its whole subtree.
+    // Expected roots are ';'-separated.
     [DataTestMethod]
     [DataRow("", "")]
     [DataRow("a", "a")]
@@ -29,8 +29,10 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .LeaffixAggregate(
-          nodeContext => nodeContext.Node,
-          (accumulate, childAccumulate) => accumulate + childAccumulate)
+          "",
+          (left, right) => left + right,
+          (accumulate, node) => node + accumulate)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(expected, actual);
@@ -49,26 +51,30 @@ namespace Copse.Linq.Tests
     [DataRow("a(d),b,c(e)")]
     public void BreadthFirstEntryMatchesTheExplicitHoist(string treeString)
     {
-      // Context flavor, position included, so the oracle also pins the CONTEXTS the fold
-      // reconstructs from the capture's child spans, not just the values -- the accumulator's
-      // context is the folding parent's, the selector's is the node's own.
-      string Seed(NodeContext<string> nodeContext)
-        => $"{nodeContext.Node}@{nodeContext.Position.SiblingIndex}.{nodeContext.Position.Depth}";
+      // The positional leaf selector, so the oracle also pins the LEAF contexts the fold
+      // reconstructs from the capture's child spans, not just the values.
+      string LeafValue(string node, NodePosition position)
+        => $"{node}@{position.SiblingIndex}.{position.Depth}";
 
-      string Accumulate(NodeContext<string> nodeContext, string accumulate, string childAccumulate)
-        => $"{accumulate}[{Seed(nodeContext)}<-{childAccumulate}]";
+      string Edge(string left, string right)
+        => $"{left},{right}";
+
+      string NodeFold(string accumulate, string node)
+        => $"{node}[{accumulate}]";
 
       var tree = TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var hoisted =
         ((IBreadthFirstTreenumerable<string>)tree)
         .Materialize()
-        .LeaffixAggregate(Seed, Accumulate)
+        .LeaffixAggregate(LeafValue, Edge, NodeFold)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       var direct =
         ((IBreadthFirstTreenumerable<string>)tree)
-        .LeaffixAggregate(Seed, Accumulate)
+        .LeaffixAggregate(LeafValue, Edge, NodeFold)
+        .Select(pairing => pairing.Accumulate)
         .ToArray();
 
       CollectionAssert.AreEqual(hoisted, direct, $"breadth-first entry disagrees for '{treeString}'");

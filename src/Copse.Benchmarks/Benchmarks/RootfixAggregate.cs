@@ -14,19 +14,19 @@ namespace Copse.Benchmarks
     [Benchmark]
     public int Triangle() =>
       CanonicalTrees.MegaTriangleTree()
-      .RootfixAggregate(0, (accumulation, _) => accumulation.Node + 1)
-      .Sum();
+      .RootfixAggregate(0, (accumulate, _) => accumulate + 1)
+      .Sum(pairing => pairing.Accumulate);
 
     [Benchmark]
     public int Chain() =>
       CanonicalTrees.MegaChainTree()
-      .RootfixAggregate(0, (accumulation, _) => accumulation.Node + 1)
-      .Sum();
+      .RootfixAggregate(0, (accumulate, _) => accumulate + 1)
+      .Sum(pairing => pairing.Accumulate);
 
     [Benchmark]
     public int Forest() =>
       CanonicalTrees.MegaForest()
-      .RootfixAggregate(0, (accumulation, _) => accumulation.Node + 1)
-      .Sum();
+      .RootfixAggregate(0, (accumulate, _) => accumulate + 1)
+      .Sum(pairing => pairing.Accumulate);
   }
 }

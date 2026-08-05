@@ -14,39 +14,39 @@ namespace Copse.Benchmarks
   public class LeaffixDispatch
   {
     // Each node accumulates its own subtree node count from its children's counts.
-    private static int SubtreeNodeCount(NodeContext<int> nodeContext, ChildAccumulations<int> children)
+    private static int SubtreeNodeCount(int node, DispatchSources<int, int> children)
     {
       var count = 1;
       foreach (var child in children)
-        count += child;
+        count += child.Accumulate;
       return count;
     }
 
     [Benchmark]
     public void Dft_Triangle()
     {
-      ITreenumerable<int> dispatch = CanonicalTrees.MegaTriangleTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
+      var dispatch = CanonicalTrees.MegaTriangleTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      ITreenumerable<int> dispatch = CanonicalTrees.MegaTriangleTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
+      var dispatch = CanonicalTrees.MegaTriangleTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      ITreenumerable<int> dispatch = CanonicalTrees.MegaChainTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
+      var dispatch = CanonicalTrees.MegaChainTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      ITreenumerable<int> dispatch = CanonicalTrees.MegaChainTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
+      var dispatch = CanonicalTrees.MegaChainTree().LeaffixDispatch(_ => 1, SubtreeNodeCount);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }

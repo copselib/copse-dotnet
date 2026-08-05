@@ -12,8 +12,9 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Aggregate", "Rootfix")]
   public class RootfixDispatch
   {
-    // Depth decoration: every child receives its parent's arrival + 1.
-    private static void DispatchDepth(NodeContext<int> nodeContext, int arrival, DispatchTargets<int, int> children)
+    // Depth decoration: every member receives its family's arrival + 1 (the unified
+    // subject-less survey; the virtual root family is surveyed too, so roots sit at depth 1).
+    private static void DispatchDepth(int arrival, DispatchTargets<int, int> children)
     {
       foreach (var child in children)
         child.Dispatch(arrival + 1);
@@ -22,28 +23,28 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaTriangleTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      ITreenumerable<DispatchNode<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
+      ITreenumerable<ScanResult<int, int>> dispatch = CanonicalTrees.MegaChainTree().RootfixDispatch(0, DispatchDepth);
       dispatch.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }
