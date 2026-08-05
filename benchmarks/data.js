@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785960052857,
+  "lastUpdate": 1785960053215,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -126385,6 +126385,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Bft_Forests",
             "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "9f21eb90ab0298d091f8763347b6dccb7deab2e1",
+          "message": "Perf 4/4: the aggregate's branch facts are index arithmetic, not stored state\n\nThe node-last fold needs two booleans per close -- did this node have\nchildren, and is this the parent's first closing child -- and both derive\nfrom preorder indices: closes fire before the next sibling schedules, so a\nnode has children iff anything scheduled after it, and children close in\nsibling order, so the first to close sits immediately after its parent.\nThe parallel has-children list dies (its per-node adds, per-root clears,\nand three indexed accesses per close), and the flag-carrying-frame\nalternative was measured out first (fat frames re-tax chains, +15 MB).\nA/B: memory down on every corpus (triangle -4.2 MB, chain -2.1 MB),\naggregate time ~10-15% better normalized.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T19:47:03Z",
+          "tree_id": "d77aacddc5dca31480bc4796c70ef054db4d49e1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9f21eb90ab0298d091f8763347b6dccb7deab2e1"
+        },
+        "date": 1785960053150,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234021,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889824,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1683,
             "unit": "bytes"
           },
           {
