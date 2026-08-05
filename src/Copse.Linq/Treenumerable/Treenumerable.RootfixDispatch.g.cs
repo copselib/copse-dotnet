@@ -78,11 +78,17 @@ namespace Copse.Linq
         Tree.Lazy(() => PreorderRootfixDispatch(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
     /// <summary>
-    /// The per-root seeding flavor -- boundary sugar for roots that follow a DIFFERENT,
-    /// per-root rule than the survey: every root's arrival comes from
-    /// <paramref name="rootNodeSelector"/> against that root's own context, in isolation; the
-    /// survey then runs every internal family. (Under the seed flavor the roots are simply the
-    /// survey's first family.)
+    /// The per-root seeding flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a
+    /// different spelling of it (ruled 2026-08-04): every root's arrival comes from
+    /// <paramref name="rootNodeSelector"/> DIRECTLY, bypassing the survey -- set each root's
+    /// seed explicitly (known per-root budgets) -- where the seed flavor hands ONE value to
+    /// your survey at the virtual family to divide among the roots (one budget, divvied).
+    /// Consequently <c>RootfixDispatch(seed, survey)</c> is NOT
+    /// <c>RootfixDispatch(_ =&gt; seed, survey)</c> here, though the two coincide on the fold
+    /// tier: a fold transforms both flavors identically (arrival != value), while on this
+    /// tier arrival IS the value and the virtual-family survey is the only transformation
+    /// point, which the selector bypasses. Pinned deliberately-different by
+    /// RootfixDispatchTests.
     /// </summary>
     public static ITreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IDepthFirstTreenumerable<TSource> source,

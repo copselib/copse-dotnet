@@ -361,6 +361,46 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
+    public void SeedAndSelectorFlavors_AreDifferentInstruments_OnTheSurveyTier()
+    {
+      // Ruled 2026-08-04 (the "1(2,3),4(5,6)" probe): on the FOLD tier the seed flavor IS the
+      // constant selector (both arrivals transform through the fold --
+      // RootfixScanRootNodeSelectorTests pins the equivalence). On THIS tier they are
+      // deliberately DIFFERENT INSTRUMENTS: the seed enters through the survey at the virtual
+      // family (one budget, divvied among the roots), while the selector sets each root's
+      // arrival DIRECTLY, bypassing the survey (known per-root budgets). This pin makes any
+      // future "consistency fix" a decision, not an accident.
+      Action<int, DispatchTargets<string, int>> proportionSurvey = (arrival, members) =>
+      {
+        var count = 0;
+        foreach (var member in members)
+          count++;
+
+        foreach (var member in members)
+          member.Dispatch(arrival / count);
+      };
+
+      var seedFlavor =
+        TreeSerializer
+        .DeserializeDepthFirstTree("a,b")
+        .RootfixDispatch(10, proportionSurvey)
+        .PreorderTraversal()
+        .Select(pairing => pairing.Accumulate)
+        .ToArray();
+
+      var selectorFlavor =
+        TreeSerializer
+        .DeserializeDepthFirstTree("a,b")
+        .RootfixDispatch(_ => 10, proportionSurvey)
+        .PreorderTraversal()
+        .Select(pairing => pairing.Accumulate)
+        .ToArray();
+
+      CollectionAssert.AreEqual(new[] { 5, 5 }, seedFlavor, "the seed is divvied by the survey at the virtual family");
+      CollectionAssert.AreEqual(new[] { 10, 10 }, selectorFlavor, "the selector sets each root's arrival directly");
+    }
+
+    [TestMethod]
     public void SeedFlavor_MissedRoot_Throws_TheProtocolCoversTheBoundary()
     {
       // The virtual root family obeys the same exactly-once protocol as every other family.
