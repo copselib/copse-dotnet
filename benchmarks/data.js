@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785954519199,
+  "lastUpdate": 1785955943422,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -11372,6 +11372,150 @@ window.BENCHMARK_DATA = {
             "value": 204040892.89473686,
             "unit": "ns",
             "range": "± 540245.8820576922"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "339aa65774779bc712585582b6435ad8e6d5cb60",
+          "message": "Perf 2/4: the leaffix positions fill inside the child-index build\n\nThe capture's positions side channel dies here too, but the leaffix fold\nruns in reverse, where the rootfix pass's stateless derivation has no cheap\nanalog -- a forward close-stack walk was built and measured out (O(depth)\nentries are O(n) on chains: 96 -> 112 MB, +14% time). Instead the\nchild-index build fills one exact-size positions array as its slices fill:\nparents precede children in preorder, so depth threads through for free.\nThree-way A/B: chains 96.1 -> 88.1 MB (best of all candidates, below even\nthe side-channel form), triangles 68.2 -> 52.2 MB, fold time flat.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:34:14Z",
+          "tree_id": "d442823cc729174346f4858fcbd0eca543f22719",
+          "url": "https://github.com/copselib/copse-dotnet/commit/339aa65774779bc712585582b6435ad8e6d5cb60"
+        },
+        "date": 1785955932085,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13506551.724330356,
+            "unit": "ns",
+            "range": "± 49035.98703145194"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21686705.567307692,
+            "unit": "ns",
+            "range": "± 58826.021736759256"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3658613.3473668983,
+            "unit": "ns",
+            "range": "± 102309.02944134643"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3694017.508138021,
+            "unit": "ns",
+            "range": "± 1850.8411839492392"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 119915262.89333333,
+            "unit": "ns",
+            "range": "± 613498.1640887012"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 146831296.01666668,
+            "unit": "ns",
+            "range": "± 2210209.4921443057"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 48840471.552083336,
+            "unit": "ns",
+            "range": "± 50040.96332740065"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50831087.94615385,
+            "unit": "ns",
+            "range": "± 24886.58235213039"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 68807655.2,
+            "unit": "ns",
+            "range": "± 136977.86494072614"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 36129165.13333334,
+            "unit": "ns",
+            "range": "± 176529.50235067084"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 28601391.098214287,
+            "unit": "ns",
+            "range": "± 103738.80171826734"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 20134465.714583334,
+            "unit": "ns",
+            "range": "± 77450.12168558914"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55606222.97692307,
+            "unit": "ns",
+            "range": "± 519336.07856932987"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 87738552.87777779,
+            "unit": "ns",
+            "range": "± 75047.42386462168"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14411285.10685484,
+            "unit": "ns",
+            "range": "± 437045.558577022"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14679884.866666667,
+            "unit": "ns",
+            "range": "± 224474.90676559327"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 478322149.26666665,
+            "unit": "ns",
+            "range": "± 1570252.1491018324"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 593359073.4285715,
+            "unit": "ns",
+            "range": "± 1176539.728540547"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 196756852.625,
+            "unit": "ns",
+            "range": "± 4117426.5370708145"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 205019262.24418604,
+            "unit": "ns",
+            "range": "± 7498865.485812563"
           }
         ]
       }
