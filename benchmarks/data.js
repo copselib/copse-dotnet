@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785954518747,
+  "lastUpdate": 1785954519199,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -67492,6 +67492,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
             "value": 2840160,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 299793,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 265129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "9a671cb9ddf231204b17be1f4c504726a49b9155",
+          "message": "Perf 1/4: the rootfix dispatch derives positions instead of storing them\n\nA child's sibling index IS its offset in the parent's span, and depth is\nthe walk's open-ancestor count -- so the positions side channel (8 bytes a\nnode stored, about double that through the append-list's chunks and copy)\nbuys nothing the encoding didn't already know. Local A/B: mega-triangle\ndispatch allocation 69.2 MB -> 45.2 MB, below even the pre-branch build;\ntime flat. DispatchTargets constructs each target's NodeContext from span\noffset and family depth.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:15:27Z",
+          "tree_id": "b9a9105a73deeb7e1cb66bae1c536e753c3040e4",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9a671cb9ddf231204b17be1f4c504726a49b9155"
+        },
+        "date": 1785954519111,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642108,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2417,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693218,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 37529,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 2865,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789058,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051115,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840154,
             "unit": "bytes"
           },
           {
