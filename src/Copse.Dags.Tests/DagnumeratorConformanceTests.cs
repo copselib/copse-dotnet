@@ -8,8 +8,9 @@ namespace Copse.Dags.Tests
 {
   // The visit-stream conformance battery for the DAG traversal contract
   // (docs/DAG_CONTRACT_DESIGN.md): exact-stream pins on the canonical shapes, protocol
-  // invariants over a corpus, the transpose duality (the backward walk must equal the forward
-  // walk of the hand-transposed dag), the topological oracle (entry order must match
+  // invariants over a corpus, the transpose duality (Transpose()'s walk must present every
+  // forward edge reversed -- orientation is an OPERATOR, not a dimension), the topological
+  // oracle (entry order must match
   // GetTopologicalOrder -- the builder is the family's oracle), and the strategy semantics,
   // rehearsal-tested at birth per the tree family's lesson.
   [TestClass]
@@ -99,7 +100,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void PreEnumerationConvention_IsTheSentinel()
     {
-      using var dagnumerator = Diamond().GetForwardDagnumerator();
+      using var dagnumerator = Diamond().GetDagnumerator();
 
       Assert.AreEqual(DagnumeratorMode.DiscoveringNode, dagnumerator.Mode);
       Assert.AreEqual(-1, dagnumerator.Ordinal);
@@ -114,7 +115,7 @@ namespace Copse.Dags.Tests
     {
       // Topological order (discovery-biased): apex, left, right, venture. The venture's entry
       // fires only after BOTH discoveries -- the protocol's defining guarantee.
-      using var dagnumerator = Diamond().GetForwardDagnumerator();
+      using var dagnumerator = Diamond().GetDagnumerator();
 
       CollectionAssert.AreEqual(
         new[]
@@ -135,9 +136,11 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Diamond_BackwardStream_IsPinned()
     {
-      // The transpose walk: sources are the sinks; ordinals index the REVERSED topological
-      // order (venture 0, right 1, left 2, apex 3); the apex enters last with two discoveries.
-      using var dagnumerator = Diamond().GetBackwardDagnumerator();
+      // The transpose walk -- the operator the retired backward dimension became (the 2026-08-02
+      // re-founding): sources are the sinks; ordinals index the transpose's OWN topological
+      // order, which is the reverse of the forward one (venture 0, right 1, left 2, apex 3), so
+      // the old backward stream carries over verbatim; the apex enters last with two discoveries.
+      using var dagnumerator = Diamond().Transpose().GetDagnumerator();
 
       CollectionAssert.AreEqual(
         new[]
@@ -158,7 +161,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void EmptyDag_StreamsNothing()
     {
-      using var dagnumerator = new Dag<string, decimal>().GetForwardDagnumerator();
+      using var dagnumerator = new Dag<string, decimal>().GetDagnumerator();
 
       Assert.IsFalse(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll));
     }
@@ -171,7 +174,7 @@ namespace Copse.Dags.Tests
       top.AddChild(bottom, 0.25m);
       top.AddChild(bottom, 0.75m);
 
-      using var dagnumerator = new Dag<string, decimal>(top).GetForwardDagnumerator();
+      using var dagnumerator = new Dag<string, decimal>(top).GetDagnumerator();
 
       CollectionAssert.AreEqual(
         new[]
@@ -194,7 +197,7 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in Corpus())
       {
-        var visits = Drain(dag.GetForwardDagnumerator());
+        var visits = Drain(dag.GetDagnumerator());
         var topologicalOrder = dag.GetTopologicalOrder();
 
         for (var ordinal = 0; ordinal < topologicalOrder.Count; ordinal++)
@@ -215,7 +218,7 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in Corpus())
       {
-        var visits = Drain(dag.GetForwardDagnumerator());
+        var visits = Drain(dag.GetDagnumerator());
         var entered = new HashSet<int>();
 
         foreach (var visit in visits)
@@ -238,7 +241,7 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in Corpus())
       {
-        var entries = Drain(dag.GetForwardDagnumerator())
+        var entries = Drain(dag.GetDagnumerator())
           .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
           .Select(v => v.Node)
           .ToList();
@@ -256,7 +259,7 @@ namespace Copse.Dags.Tests
       // (the dag's out-edges), every discovery before its entry, every dispatcher entered.
       foreach (var dag in Corpus())
       {
-        var visits = Drain(dag.GetBackwardDagnumerator());
+        var visits = Drain(dag.Transpose().GetDagnumerator());
         var reversedOrder = dag.GetTopologicalOrder().Reverse().ToList();
         var entered = new HashSet<int>();
 
@@ -289,7 +292,7 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in Corpus())
       {
-        var entries = Drain(dag.GetBackwardDagnumerator())
+        var entries = Drain(dag.Transpose().GetDagnumerator())
           .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
           .Select(v => v.Node)
           .ToList();
@@ -309,14 +312,14 @@ namespace Copse.Dags.Tests
       // identify edges; parallel edges are compared as a multiset via sorted sequences.)
       foreach (var dag in Corpus())
       {
-        var forwardEdges = Drain(dag.GetForwardDagnumerator())
+        var forwardEdges = Drain(dag.GetDagnumerator())
           .Where(v => v.Mode == DagnumeratorMode.DiscoveringNode && v.ParentOrdinal >= 0)
           .ToList();
-        var forwardOrdinalValues = Drain(dag.GetForwardDagnumerator())
+        var forwardOrdinalValues = Drain(dag.GetDagnumerator())
           .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
           .ToDictionary(v => v.Ordinal, v => v.Node);
 
-        var backwardVisits = Drain(dag.GetBackwardDagnumerator());
+        var backwardVisits = Drain(dag.Transpose().GetDagnumerator());
         var backwardOrdinalValues = backwardVisits
           .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
           .ToDictionary(v => v.Ordinal, v => v.Node);
@@ -341,7 +344,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnOneDiamondInEdge_TheSharedNodeStillEnters()
     {
       var visits = Drain(
-        Diamond().GetForwardDagnumerator(),
+        Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.DiscoveringNode && visit.Node == "venture" && visit.ParentOrdinal == 1
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -354,7 +357,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnEveryInEdge_TheNodeNeverEnters()
     {
       var visits = Drain(
-        Diamond().GetForwardDagnumerator(),
+        Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.DiscoveringNode && visit.Node == "venture"
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -368,7 +371,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnASourceDiscovery_KillsTheComponentReachableOnlyThroughIt()
     {
       var visits = Drain(
-        Diamond().GetForwardDagnumerator(),
+        Diamond().GetDagnumerator(),
         visit => visit.Node == "apex" && visit.Mode == DagnumeratorMode.DiscoveringNode
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -384,7 +387,7 @@ namespace Copse.Dags.Tests
     {
       // Suppress left's dispatch: the venture must still enter, via right's edge alone.
       var visits = Drain(
-        Diamond().GetForwardDagnumerator(),
+        Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.EnteringNode && visit.Node == "left"
           ? DagTraversalStrategies.SkipOutEdges
           : DagTraversalStrategies.TraverseAll);
@@ -403,7 +406,7 @@ namespace Copse.Dags.Tests
       chainRoot.AddChild("b", 1m).AddChild("c", 1m);
 
       var visits = Drain(
-        new Dag<string, decimal>(chainRoot).GetForwardDagnumerator(),
+        new Dag<string, decimal>(chainRoot).GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.EnteringNode && visit.Node == "b"
           ? DagTraversalStrategies.SkipOutEdges
           : DagTraversalStrategies.TraverseAll);
@@ -415,7 +418,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void WrongModeStrategies_Throw()
     {
-      using (var dagnumerator = Diamond().GetForwardDagnumerator())
+      using (var dagnumerator = Diamond().GetDagnumerator())
       {
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll));
         Assert.AreEqual(DagnumeratorMode.DiscoveringNode, dagnumerator.Mode);
@@ -423,7 +426,7 @@ namespace Copse.Dags.Tests
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipOutEdges));
       }
 
-      using (var dagnumerator = Diamond().GetForwardDagnumerator())
+      using (var dagnumerator = Diamond().GetDagnumerator())
       {
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll)); // sentinel -> D(apex)
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll)); // D(apex) -> E(apex)
@@ -432,7 +435,7 @@ namespace Copse.Dags.Tests
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipEdge));
       }
 
-      using (var dagnumerator = Diamond().GetForwardDagnumerator())
+      using (var dagnumerator = Diamond().GetDagnumerator())
       {
         Assert.ThrowsException<ArgumentException>(
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipEdge));
@@ -447,7 +450,7 @@ namespace Copse.Dags.Tests
       second.AddChild(first, 1m);
 
       Assert.ThrowsException<DagCycleException>(
-        () => new Dag<string, decimal>(first).GetForwardDagnumerator());
+        () => new Dag<string, decimal>(first).GetDagnumerator());
     }
   }
 }

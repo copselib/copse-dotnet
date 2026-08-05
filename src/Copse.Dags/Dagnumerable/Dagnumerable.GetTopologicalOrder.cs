@@ -13,11 +13,11 @@ namespace Copse.Dags
     /// contract surface use this one and never touch a node type.
     /// </summary>
     public static IReadOnlyList<TNode> GetTopologicalOrder<TNode, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source)
+      this IDagnumerable<TNode, TEdge> source)
     {
       var topologicalOrder = new List<TNode>();
 
-      using var walk = source.GetForwardDagnumerator();
+      using var walk = source.GetDagnumerator();
       while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
         if (walk.Mode == DagnumeratorMode.EnteringNode)
           topologicalOrder.Add(walk.Node);

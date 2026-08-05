@@ -252,7 +252,7 @@ namespace Copse.Dags.Tests
   }
 
   /// <summary>
-  /// The oracle dispatch decoration (spike-era; the contract's DagDispatchNode superseded it in
+  /// The oracle dispatch decoration (spike-era; the contract's DagDispatchResult superseded it in
   /// the product): a source value paired with what the pass delivered.
   /// </summary>
   public readonly struct DispatchNode<TValue, TDispatch>

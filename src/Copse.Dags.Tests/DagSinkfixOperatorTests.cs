@@ -39,6 +39,32 @@ namespace Copse.Dags.Tests
       return new Dag<(string, decimal), decimal>(apex);
     }
 
+    // Source-ness is a STREAM fact, not a decoration: a discovery with no dispatching parent is
+    // the conventional source discovery (result buffers carry no Sources list).
+    private static List<TNode> Sources<TNode, TEdge>(IDagnumerable<TNode, TEdge> source)
+    {
+      var sources = new List<TNode>();
+
+      using var walk = source.GetDagnumerator();
+      while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
+        if (walk.Mode == DagnumeratorMode.DiscoveringNode && walk.ParentOrdinal < 0)
+          sources.Add(walk.Node);
+
+      return sources;
+    }
+
+    // The post-pass upflow read at one node. An upward pass's arrivals sit in OUT-edge order, and
+    // GetEdges yields a parent's out-edges contiguously in that same order -- so position within
+    // the parent's block IS the arrival index. Provenance is the join, not a field on the result
+    // (the split-homes ruling, 2026-08-05).
+    private static (string From, decimal Amount, decimal Edge)[] UpflowsAt(
+      DagBuffer<DagDispatchResult<(string Name, decimal Holding), decimal>, decimal> attributed,
+      string entity)
+      => attributed.GetEdges()
+        .Where(edge => edge.Parent.Node.Name == entity)
+        .Select((edge, outEdgeIndex) => (edge.Child.Node.Name, edge.Parent.Arrivals[outEdgeIndex], edge.Edge))
+        .ToArray();
+
     // ---------------------------------------------------------------------------------------
     // SinkfixScan.
     // ---------------------------------------------------------------------------------------
@@ -54,7 +80,7 @@ namespace Copse.Dags.Tests
 
       CollectionAssert.AreEqual(
         new[] { 5, 2, 2, 1 },
-        counts.GetTopologicalOrder().Select(n => n.Value).ToArray());
+        counts.Values.Select(pairing => pairing.Accumulate).ToArray());
     }
 
     [TestMethod]
@@ -76,13 +102,15 @@ namespace Copse.Dags.Tests
     public void SinkfixScan_PreservesShapeAndEdges()
     {
       var scanned = Diamond().SinkfixScan<string, string, decimal>((node, _) => node.ToUpperInvariant());
-      var order = scanned.GetTopologicalOrder();
 
-      Assert.AreEqual(1, scanned.Sources.Count);
-      Assert.AreEqual("APEX", scanned.Sources[0].Value);
+      CollectionAssert.AreEqual(
+        new[] { "APEX" },
+        Sources(scanned).Select(pairing => pairing.Accumulate).ToArray());
 
-      var edges = order
-        .SelectMany(n => n.ChildEdges.Select(e => (Parent: n.Value, Child: e.Child.Value, Edge: e.Value)))
+      // The result is a PAIRING over the source's shared structure: edges read off the buffer,
+      // .Accumulate projects the fold's values.
+      var edges = scanned.GetEdges()
+        .Select(e => (Parent: e.Parent.Accumulate, Child: e.Child.Accumulate, Edge: e.Edge))
         .OrderBy(edge => edge).ToList();
 
       CollectionAssert.AreEqual(
@@ -102,7 +130,7 @@ namespace Copse.Dags.Tests
     {
       var contract = Diamond()
         .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value))
-        .GetTopologicalOrder().Select(n => n.Value).ToList();
+        .Values.Select(pairing => pairing.Accumulate).ToList();
 
       var oracle = Diamond()
         .OracleSinkfixScan<string, decimal, int>((node, childResults) => 1 + childResults.Sum())
@@ -120,7 +148,7 @@ namespace Copse.Dags.Tests
 
       CollectionAssert.AreEqual(
         new[] { 3, 2, 1 },
-        counts.GetTopologicalOrder().Select(n => n.Value).ToArray(),
+        counts.Values.Select(pairing => pairing.Accumulate).ToArray(),
         "apex + right + venture, one path each");
     }
 
@@ -131,10 +159,13 @@ namespace Copse.Dags.Tests
     // The attribution survey: a node's total (own holding + what its children sent it) travels
     // up each in-edge scaled by that edge's ownership fraction.
     private static void AttributeUp(
-      DagDispatchNode<(string Name, decimal Holding), decimal, decimal> node,
+      (string Name, decimal Holding) subject,
+      IReadOnlyList<DagDispatchInflow<(string Name, decimal Holding), decimal, decimal>> arrivals,
       IReadOnlyList<DagDispatchTarget<(string Name, decimal Holding), decimal, decimal>> targets)
     {
-      var total = node.Value.Holding + node.Inflows.Sum(upflow => upflow.Value);
+      // No virtual family upward: value ORIGINATES in the nodes, so the pass runs unseeded and
+      // sinks simply see no arrivals.
+      var total = subject.Holding + arrivals.Sum(upflow => upflow.Value);
       foreach (var target in targets)
         target.Dispatch(total * target.Edge);
     }
@@ -144,22 +175,23 @@ namespace Copse.Dags.Tests
     {
       var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
 
-      var byEntity = attributed.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
+      var byEntity = attributed.Values.ToDictionary(result => result.Node.Name, result => result);
 
       // The venture holds 1000 and originates everything (no upflows -- sinks receive none).
-      Assert.AreEqual(0, byEntity["venture"].Inflows.Count);
+      Assert.AreEqual(0, byEntity["venture"].Arrivals.Count);
 
       // Each middle entity sees its edge's share of the venture.
-      CollectionAssert.AreEqual(new[] { (700m, 0.70m) }, byEntity["left"].Inflows.Select(i => (i.Value, i.Edge)).ToArray());
-      CollectionAssert.AreEqual(new[] { (300m, 0.30m) }, byEntity["right"].Inflows.Select(i => (i.Value, i.Edge)).ToArray());
+      CollectionAssert.AreEqual(new[] { ("venture", 700m, 0.70m) }, UpflowsAt(attributed, "left"));
+      CollectionAssert.AreEqual(new[] { ("venture", 300m, 0.30m) }, UpflowsAt(attributed, "right"));
 
-      // The apex's lookthrough, attributed per route -- no double count, and each upflow names
-      // its dispatcher (the child, in an upward pass). Arrival order is the pass's (reverse
-      // topological: right completes before left).
+      // The apex's lookthrough, attributed per route -- no double count, each upflow joined back
+      // to its dispatcher (the child, in an upward pass). Arrivals sit in OUT-EDGE order, which
+      // the derivation pins deliberately (a literal transpose walk would present them in
+      // reverse-topological child order instead -- the per-group order trap, dodged).
       CollectionAssert.AreEqual(
-        new[] { (("right", 0m), 120m, 0.40m), (("left", 0m), 420m, 0.60m) },
-        byEntity["apex"].Inflows.Select(i => (i.Dispatcher, i.Value, i.Edge)).ToArray());
-      Assert.AreEqual(540m, byEntity["apex"].Inflows.Sum(i => i.Value));
+        new[] { ("left", 420m, 0.60m), ("right", 120m, 0.40m) },
+        UpflowsAt(attributed, "apex"));
+      Assert.AreEqual(540m, byEntity["apex"].Arrivals.ToArray().Sum());
     }
 
     [TestMethod]
@@ -171,13 +203,12 @@ namespace Copse.Dags.Tests
       var ownershipDown = Diamond()
         .SourcefixScan<string, decimal, decimal>((entity, inflows) =>
           inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge))
-        .GetTopologicalOrder().Last().Value;
+        .Values.Last().Accumulate;
 
       var attributedUp = ValuedDiamond()
         .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp)
-        .GetTopologicalOrder()
-        .Single(n => n.Value.Value.Name == "apex")
-        .Value.Inflows.Sum(i => i.Value);
+        .Values.Single(result => result.Node.Name == "apex")
+        .Arrivals.ToArray().Sum();
 
       Assert.AreEqual(ownershipDown * 1000m, attributedUp, "54% of 1000, both ways");
     }
@@ -187,27 +218,29 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) =>
-      {
-        surveyed.Add(node.Value.Name);
-        foreach (var target in targets)
-          target.Dispatch(0m);
-      });
+      ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(
+        (subject, arrivals, targets) =>
+        {
+          surveyed.Add(subject.Name);
+          foreach (var target in targets)
+            target.Dispatch(0m);
+        });
 
       CollectionAssert.AreEqual(new[] { "venture", "right", "left" }, surveyed,
         "the apex has no in-edges; its resolved inflows ARE the result");
     }
 
     [TestMethod]
-    public void SinkfixDispatch_IsRoot_TrueOnlyForSources()
+    public void SinkfixDispatch_SourceNess_IsTheConventionalDiscovery()
     {
+      // The retired IsSource decoration's replacement: source-ness is a stream fact, read off
+      // the result buffer's own walk -- and upward it is exactly the never-surveyed node set
+      // whose resolved arrivals ARE the attribution.
       var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
-      var byEntity = attributed.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
 
-      Assert.IsTrue(byEntity["apex"].IsSource);
-      Assert.IsFalse(byEntity["left"].IsSource);
-      Assert.IsFalse(byEntity["right"].IsSource);
-      Assert.IsFalse(byEntity["venture"].IsSource);
+      CollectionAssert.AreEqual(
+        new[] { "apex" },
+        Sources(attributed).Select(result => result.Node.Name).ToArray());
     }
 
     // ---------------------------------------------------------------------------------------
@@ -229,7 +262,8 @@ namespace Copse.Dags.Tests
     // Conditioning: zero the GP outcome, renormalize the survivors -- the caller's algebra,
     // one lambda, over the complete owner group.
     private static void ConditionOutGp(
-      DagDispatchNode<string, decimal, decimal> entity,
+      string subject,
+      IReadOnlyList<DagDispatchInflow<string, decimal, decimal>> arrivals,
       IReadOnlyList<DagDispatchTarget<string, decimal, decimal>> owners)
     {
       var gp = owners.Where(o => o.Value == "GP").Sum(o => o.Edge);
@@ -252,8 +286,8 @@ namespace Copse.Dags.Tests
       var lookthrough = conditioned.SourcefixScan<string, decimal, decimal>(
         (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
 
-      foreach (var node in lookthrough.GetTopologicalOrder())
-        Assert.AreEqual(1m, node.Value);
+      foreach (var pairing in lookthrough.Values)
+        Assert.AreEqual(1m, pairing.Accumulate);
     }
 
     [TestMethod]
@@ -261,20 +295,33 @@ namespace Copse.Dags.Tests
     {
       var moved = GpSliver()
         .SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp)
-        .SourcefixDispatch(1_000m, (node, targets) =>
+        .SourcefixDispatch(1_000m, (subject, arrivals, targets) =>
         {
-          var arrived = node.Inflows.Sum(i => i.Value);
+          var arrived = arrivals.Sum(arrival => arrival.Value);
+
+          // The virtual source family, surveyed first: both sources receive the seed verbatim
+          // (its targets carry no payload to split by) -- the pre-re-founding semantics.
+          if (subject is null)
+          {
+            foreach (var target in targets)
+              target.Dispatch(arrived);
+            return;
+          }
+
           foreach (var target in targets)
             target.Dispatch(arrived * target.Edge);
         });
 
-      var byEntity = moved.GetTopologicalOrder().ToDictionary(n => n.Value.Value, n => n.Value);
-
       CollectionAssert.AreEqual(
         new[] { ("GP", 0m), ("Fund", 1_000m) },
-        byEntity["X"].Inflows.Select(i => (i.Dispatcher, i.Value)).ToArray(),
+        moved.GetEdges()
+          .Where(edge => edge.Child.Node == "X")
+          .Select(edge => (edge.Parent.Node, edge.Child.Arrivals[edge.InEdgeIndex]))
+          .ToArray(),
         "the GP edge is live and visibly zero; the fund's carries everything");
-      Assert.AreEqual(1_000m, byEntity["Op"].Inflows.Sum(i => i.Value));
+      Assert.AreEqual(
+        1_000m,
+        moved.Values.Single(result => result.Node == "Op").Arrivals.ToArray().Sum());
     }
 
     [TestMethod]
@@ -284,12 +331,12 @@ namespace Copse.Dags.Tests
       // write among its out-edge results -- dispatcher, new payload, old payload.
       var seenAtX = new List<(string Dispatcher, decimal NewPayload, decimal OldPayload)>();
 
-      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
       {
-        if (entity.Value == "X")
-          seenAtX.AddRange(entity.Inflows.Select(i => (i.Dispatcher, i.Value, i.Edge)));
+        if (subject == "X")
+          seenAtX.AddRange(arrivals.Select(i => (i.Dispatcher, i.Value, i.Edge)));
 
-        ConditionOutGp(entity, owners);
+        ConditionOutGp(subject, arrivals, owners);
       });
 
       CollectionAssert.AreEqual(new[] { ("Op", 1m, 1m) }, seenAtX);
@@ -304,7 +351,7 @@ namespace Copse.Dags.Tests
       top.AddChild(bottom, 0.75m);
 
       var doubled = new Dag<string, decimal>(top)
-        .SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+        .SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
         {
           foreach (var owner in owners)
             owner.Dispatch(owner.Edge * 2);
@@ -321,9 +368,9 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) =>
+      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
       {
-        surveyed.Add(entity.Value);
+        surveyed.Add(subject);
         foreach (var owner in owners)
           owner.Dispatch(owner.Edge);
       });
@@ -336,14 +383,15 @@ namespace Copse.Dags.Tests
     public void SinkfixDispatchEdges_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((entity, owners) => { }));
+        GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) => { }));
     }
 
     [TestMethod]
     public void SinkfixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>((node, targets) => { }));
+        ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(
+          (subject, arrivals, targets) => { }));
     }
 
     [TestMethod]
@@ -354,11 +402,9 @@ namespace Copse.Dags.Tests
         .PruneBefore(entity => entity.Name == "left")
         .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
 
-      var apex = attributed.GetTopologicalOrder().Single(n => n.Value.Value.Name == "apex").Value;
-
       CollectionAssert.AreEqual(
-        new[] { (120m, 0.40m) },
-        apex.Inflows.Select(i => (i.Value, i.Edge)).ToArray(),
+        new[] { ("right", 120m, 0.40m) },
+        UpflowsAt(attributed, "apex"),
         "1000 x 30% x 40%, the surviving route only");
     }
   }

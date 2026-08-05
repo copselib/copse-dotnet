@@ -12,8 +12,8 @@ namespace Copse.Dags
     /// suppresses those visits, and the source's own liveness fold does the rest. The predicate
     /// is evaluated per discovery (counts unspecified; purity expected).
     /// </summary>
-    public static IForwardDagnumerable<TNode, TEdge> PruneBefore<TNode, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static IDagnumerable<TNode, TEdge> PruneBefore<TNode, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
       Func<TNode, bool> predicate)
     {
       if (predicate == null)
@@ -23,19 +23,19 @@ namespace Copse.Dags
     }
   }
 
-  internal sealed class PruneBeforeForwardDagnumerable<TNode, TEdge> : IForwardDagnumerable<TNode, TEdge>
+  internal sealed class PruneBeforeForwardDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
   {
-    public PruneBeforeForwardDagnumerable(IForwardDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
+    public PruneBeforeForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
     }
 
-    private readonly IForwardDagnumerable<TNode, TEdge> _Source;
+    private readonly IDagnumerable<TNode, TEdge> _Source;
     private readonly Func<TNode, bool> _Predicate;
 
-    public IDagnumerator<TNode, TEdge> GetForwardDagnumerator() =>
-      new PruneBeforeDagnumerator<TNode, TEdge>(_Source.GetForwardDagnumerator(), _Predicate);
+    public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
+      new PruneBeforeDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
   internal sealed class PruneBeforeDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>

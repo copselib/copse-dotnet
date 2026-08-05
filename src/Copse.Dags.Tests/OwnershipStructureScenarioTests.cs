@@ -76,25 +76,62 @@ namespace Copse.Dags.Tests
     }
 
     private static void MoveMoneySurvey(
-      DagDispatchNode<Entity, decimal, decimal> node,
-      IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
-      => AllocateWholeCents(node.Value.ContributionCents + node.Inflows.Sum(i => i.Value), targets);
-
-    private static void AttributeUpSurvey(
-      DagDispatchNode<Entity, decimal, decimal> node,
+      Entity subject,
+      IReadOnlyList<DagDispatchInflow<Entity, decimal, decimal>> arrivals,
       IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
     {
-      var total = node.Value.HoldingCents + node.Inflows.Sum(upflow => upflow.Value);
+      var arrived = arrivals.Sum(arrival => arrival.Value);
+
+      // The virtual source family, surveyed first (full participation, 2026-08-05): its targets
+      // are the funds and carry no ownership weight, so there is nothing to allocate pro rata --
+      // the seed reaches each source verbatim, exactly the pre-re-founding semantics. (Each
+      // fund's OWN contribution is added at its own survey, below.)
+      if (subject is null)
+      {
+        foreach (var target in targets)
+          target.Dispatch(arrived);
+        return;
+      }
+
+      AllocateWholeCents(subject.ContributionCents + arrived, targets);
+    }
+
+    private static void AttributeUpSurvey(
+      Entity subject,
+      IReadOnlyList<DagDispatchInflow<Entity, decimal, decimal>> arrivals,
+      IReadOnlyList<DagDispatchTarget<Entity, decimal, decimal>> targets)
+    {
+      // No virtual family upward: holdings originate IN the nodes, so sinks simply see none.
+      var total = subject.HoldingCents + arrivals.Sum(upflow => upflow.Value);
       foreach (var target in targets)
         target.Dispatch(total * target.Edge);
     }
 
-    private static Dictionary<string, DagDispatchNode<Entity, decimal, decimal>> ByName(
-      Dag<DagDispatchNode<Entity, decimal, decimal>, decimal> dispatched)
-      => dispatched.GetTopologicalOrder().ToDictionary(n => n.Value.Value.Name, n => n.Value);
+    private static Dictionary<string, DagDispatchResult<Entity, decimal>> ByName(
+      DagBuffer<DagDispatchResult<Entity, decimal>, decimal> dispatched)
+      => dispatched.Values.ToDictionary(result => result.Node.Name, result => result);
 
-    private static decimal Received(DagDispatchNode<Entity, decimal, decimal> node)
-      => node.Value.ContributionCents + node.Inflows.Sum(i => i.Value);
+    private static decimal Received(DagDispatchResult<Entity, decimal> result)
+      => result.Node.ContributionCents + result.Arrivals.ToArray().Sum();
+
+    // The post-pass arrival read with edge context: provenance no longer travels ON the result
+    // (the split-homes ruling, 2026-08-05), so "what arrived on which edge" is the GetEdges join
+    // keyed by in-edge index -- never a payload comparison.
+    private static (decimal Amount, decimal Edge)[] ArrivalsAt(
+      DagBuffer<DagDispatchResult<Entity, decimal>, decimal> dispatched, string entity)
+      => dispatched.GetEdges()
+        .Where(edge => edge.Child.Node.Name == entity)
+        .Select(edge => (edge.Child.Arrivals[edge.InEdgeIndex], edge.Edge))
+        .ToArray();
+
+    // The upward twin: arrivals sit in OUT-edge order and GetEdges yields a parent's out-edges
+    // contiguously in that order, so position within the parent's block IS the arrival index.
+    private static (decimal Amount, decimal Edge)[] UpflowsAt(
+      DagBuffer<DagDispatchResult<Entity, decimal>, decimal> attributed, string entity)
+      => attributed.GetEdges()
+        .Where(edge => edge.Parent.Node.Name == entity)
+        .Select((edge, outEdgeIndex) => (edge.Parent.Arrivals[outEdgeIndex], edge.Edge))
+        .ToArray();
 
     // ---------------------------------------------------------------------------------------
     // Effective ownership (the lookthrough report).
@@ -108,8 +145,8 @@ namespace Copse.Dags.Tests
       var ownership = Structure().SourcefixScan<Entity, decimal, decimal>(
         (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
 
-      foreach (var node in ownership.GetTopologicalOrder())
-        Assert.AreEqual(1m, node.Value);
+      foreach (var pairing in ownership.Values)
+        Assert.AreEqual(1m, pairing.Accumulate);
     }
 
     [TestMethod]
@@ -124,8 +161,8 @@ namespace Copse.Dags.Tests
           (entity, inflows) => (
             entity.Name,
             inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value.Ownership * inflow.Edge)))
-        .GetTopologicalOrder()
-        .ToDictionary(n => n.Value.Name, n => n.Value.Ownership);
+        .Values
+        .ToDictionary(pairing => pairing.Accumulate.Name, pairing => pairing.Accumulate.Ownership);
 
       var fundAView = Lookthrough(prunedFund: "FundB");
       Assert.AreEqual(0.60m, fundAView["JV"], "FundA reaches the JV through HoldCo only");
@@ -148,28 +185,29 @@ namespace Copse.Dags.Tests
     {
       // The MoveMoney shape: blockers pruned first, so nothing is ever allocated toward them
       // -- the allocator renormalizes over LIVE edges by construction, no special case.
-      var moved = ByName(Structure()
+      var moved = Structure()
         .PruneBefore(entity => entity.IsBlocker)
-        .SourcefixDispatch(0m, MoveMoneySurvey));
+        .SourcefixDispatch(0m, MoveMoneySurvey);
+      var byName = ByName(moved);
 
       // FundA's whole contribution rides the one live edge; HoldCo splits 60:100 weights
       // (375,012.375 / 625,020.625 exact) -- the odd cent goes to the larger remainder.
-      Assert.AreEqual(1_000_033m, Received(moved["HoldCo"]));
-      Assert.AreEqual(625_021m, Received(moved["SideCo"]));
+      Assert.AreEqual(1_000_033m, Received(byName["HoldCo"]));
+      Assert.AreEqual(625_021m, Received(byName["SideCo"]));
 
       // The JV receives through BOTH routes -- attribution intact -- and forwards whole.
       CollectionAssert.AreEquivalent(
         new[] { (375_012m, 0.60m), (250_000m, 0.40m) },
-        moved["JV"].Inflows.Select(i => (i.Value, i.Edge)).ToList());
-      Assert.AreEqual(625_012m, Received(moved["OpCo"]));
+        ArrivalsAt(moved, "JV").ToList());
+      Assert.AreEqual(625_012m, Received(byName["OpCo"]));
 
       // Conservation, end to end: every contributed cent lands somewhere real.
       Assert.AreEqual(
         1_000_033m + 250_000m,
-        Received(moved["OpCo"]) + Received(moved["SideCo"]),
+        Received(byName["OpCo"]) + Received(byName["SideCo"]),
         "contributions == what the operating companies received, to the cent");
-      Assert.IsFalse(moved.ContainsKey("Blocker"), "pruned");
-      Assert.IsFalse(moved.ContainsKey("BlockedCo"), "unreachable without the blocker");
+      Assert.IsFalse(byName.ContainsKey("Blocker"), "pruned");
+      Assert.IsFalse(byName.ContainsKey("BlockedCo"), "unreachable without the blocker");
     }
 
     [TestMethod]
@@ -204,16 +242,17 @@ namespace Copse.Dags.Tests
         .SourcefixDispatch(0m, MoveMoneySurvey);
 
       // Conservation locally, not just at the ends: for every entity with children, what went
-      // out equals what came in (plus its own contribution).
-      foreach (var node in moved.GetTopologicalOrder())
+      // out equals what came in (plus its own contribution). Each edge's amount is recovered by
+      // IN-EDGE INDEX -- the honest correlation key; the old payload match was ambiguous under
+      // equal weights and is exactly what the library says never to do.
+      foreach (var dispatcher in moved.GetEdges().GroupBy(edge => edge.Parent.Node.Name))
       {
-        if (node.ChildEdges.Count == 0)
-          continue;
+        var sentDown = dispatcher.Sum(edge => edge.Child.Arrivals[edge.InEdgeIndex]);
 
-        var sentDown = node.ChildEdges
-          .Sum(edge => edge.Child.Value.Inflows.Where(i => i.Edge == edge.Value).Sum(i => i.Value));
-
-        Assert.AreEqual(Received(node.Value), sentDown, $"conservation at {node.Value.Value.Name}");
+        Assert.AreEqual(
+          Received(moved.Values.Single(result => result.Node.Name == dispatcher.Key)),
+          sentDown,
+          $"conservation at {dispatcher.Key}");
       }
     }
 
@@ -228,7 +267,7 @@ namespace Copse.Dags.Tests
       // with the shared JV attributed per route -- never double-counted.
       var attributed = ByName(Structure().SinkfixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
 
-      decimal Nav(string fund) => attributed[fund].Inflows.Sum(i => i.Value);
+      decimal Nav(string fund) => attributed[fund].Arrivals.ToArray().Sum();
 
       Assert.AreEqual(73_000_000m, Nav("FundA"), "SideCo 20M + 60% of OpCo's 80M + BlockedCo 5M");
       Assert.AreEqual(32_000_000m, Nav("FundB"), "40% of OpCo's 80M");
@@ -244,18 +283,16 @@ namespace Copse.Dags.Tests
     {
       // The two directions computing the same truth: OpCo's holding times each fund's
       // effective ownership equals what attribution delivers from OpCo's subtree.
-      var attributed = ByName(Structure().SinkfixDispatch<Entity, decimal, decimal>(AttributeUpSurvey));
+      var attributed = Structure().SinkfixDispatch<Entity, decimal, decimal>(AttributeUpSurvey);
 
-      var jvUpflowsToParents = attributed["JV"];
-      Assert.AreEqual(80_000_000m, jvUpflowsToParents.Inflows.Sum(i => i.Value), "OpCo arrives whole at the JV");
+      Assert.AreEqual(
+        80_000_000m,
+        ByName(attributed)["JV"].Arrivals.ToArray().Sum(),
+        "OpCo arrives whole at the JV");
 
       // FundA's JV-route share: 60% of 80M rode the HoldCo edge.
-      CollectionAssert.Contains(
-        attributed["HoldCo"].Inflows.Select(i => (i.Value, i.Edge)).ToList(),
-        (48_000_000m, 0.60m));
-      CollectionAssert.Contains(
-        attributed["FundB"].Inflows.Select(i => (i.Value, i.Edge)).ToList(),
-        (32_000_000m, 0.40m));
+      CollectionAssert.Contains(UpflowsAt(attributed, "HoldCo").ToList(), (48_000_000m, 0.60m));
+      CollectionAssert.Contains(UpflowsAt(attributed, "FundB").ToList(), (32_000_000m, 0.40m));
     }
   }
 }

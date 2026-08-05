@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Copse.Dags
 {
-  // The reference walk behind both dimensions (docs/DAG_CONTRACT_DESIGN.md): one class, handed
-  // an acquisition-time topological snapshot and a direction, emits the Discover/Enter stream
-  // with the liveness fold running as it goes. Direction is total role-reversal — backward walks
-  // the reversed order reading parent edges as out-edges — and is resolved at construction into
-  // snapshot-relative adjacency, so the protocol code is direction-blind. Snapshot-relative
-  // matters: a member node may have a STRAY parent outside the dag (linked above a root, never
-  // reachable from one); its edges are not the dag's and neither count toward pending nor
-  // appear in the stream. Perf posture is the builder family's (correctness first).
+  // The reference walk behind the contract (docs/DAG_CONTRACT_DESIGN.md): handed an
+  // acquisition-time topological snapshot as flat CSR adjacency (the 2026-08-05 constitution
+  // alignment: sequential flat-array passes are the measured winner), emits the Discover/Enter
+  // stream with the liveness fold running as it goes. The walk is orientation-blind — a
+  // transpose walk is the same class over the transpose's adjacency; direction was resolved by
+  // whoever built the arrays. Ordinals are snapshot indices: dense here, though the CONTRACT
+  // does not promise density (wrappers preserve their source's ordinals, so pruned streams
+  // carry gaps).
   //
   // Liveness, stated once: a node enters iff at least one of its discoveries was emitted and the
   // consumer did not sever it. A dead or dispatch-suppressed node still DECREMENTS its targets'
@@ -18,44 +18,20 @@ namespace Copse.Dags
   // shared target with another live in-edge proceed while an exclusively-reached one vanishes.
   internal sealed class TopologicalDagnumerator<TValue, TEdge> : IDagnumerator<TValue, TEdge>
   {
-    public TopologicalDagnumerator(IReadOnlyList<DagNode<TValue, TEdge>> topologicalOrder, bool forward)
+    public TopologicalDagnumerator(TValue[] values, int[] outEdgeOffsets, int[] outEdgeTargets, TEdge[] outEdgePayloads)
     {
-      _TopologicalOrder = topologicalOrder;
+      _Values = values;
+      _OutEdgeOffsets = outEdgeOffsets;
+      _OutEdgeTargets = outEdgeTargets;
+      _OutEdgePayloads = outEdgePayloads;
 
-      var ordinals = new Dictionary<DagNode<TValue, TEdge>, int>(topologicalOrder.Count);
-      for (var ordinal = 0; ordinal < topologicalOrder.Count; ordinal++)
-        ordinals[topologicalOrder[ordinal]] = ordinal;
+      _PendingDiscoveries = new int[values.Length];
+      _LiveDiscoveries = new int[values.Length];
 
-      // Resolve direction into snapshot-relative out-edge lists, and pending counts from the
-      // in-degrees those lists imply. Sources (walked in-degree zero) owe one conventional
-      // discovery instead.
-      _OutEdges = new (int TargetOrdinal, TEdge Edge)[topologicalOrder.Count][];
-      _PendingDiscoveries = new int[topologicalOrder.Count];
-      _LiveDiscoveries = new int[topologicalOrder.Count];
+      for (var edgeIndex = 0; edgeIndex < outEdgeTargets.Length; edgeIndex++)
+        _PendingDiscoveries[outEdgeTargets[edgeIndex]]++;
 
-      for (var ordinal = 0; ordinal < topologicalOrder.Count; ordinal++)
-      {
-        var node = topologicalOrder[ordinal];
-        var outEdges = new List<(int TargetOrdinal, TEdge Edge)>();
-
-        if (forward)
-        {
-          foreach (var childEdge in node.ChildEdges)
-            outEdges.Add((ordinals[childEdge.Child], childEdge.Value));
-        }
-        else
-        {
-          foreach (var parentEdge in node.ParentEdges)
-            if (ordinals.TryGetValue(parentEdge.Parent, out var parentOrdinal))
-              outEdges.Add((parentOrdinal, parentEdge.Value));
-        }
-
-        _OutEdges[ordinal] = outEdges.ToArray();
-        foreach (var outEdge in _OutEdges[ordinal])
-          _PendingDiscoveries[outEdge.TargetOrdinal]++;
-      }
-
-      for (var ordinal = 0; ordinal < topologicalOrder.Count; ordinal++)
+      for (var ordinal = 0; ordinal < values.Length; ordinal++)
       {
         if (_PendingDiscoveries[ordinal] == 0)
         {
@@ -71,8 +47,10 @@ namespace Copse.Dags
       EdgeIndex = 0;
     }
 
-    private readonly IReadOnlyList<DagNode<TValue, TEdge>> _TopologicalOrder;
-    private readonly (int TargetOrdinal, TEdge Edge)[][] _OutEdges;
+    private readonly TValue[] _Values;
+    private readonly int[] _OutEdgeOffsets;
+    private readonly int[] _OutEdgeTargets;
+    private readonly TEdge[] _OutEdgePayloads;
     private readonly int[] _PendingDiscoveries;
     private readonly int[] _LiveDiscoveries;
     private readonly List<int> _Sources = new();
@@ -117,7 +95,7 @@ namespace Copse.Dags
             continue;
 
           case WalkPhase.Entering:
-            if (_TopoIndex >= _TopologicalOrder.Count)
+            if (_TopoIndex >= _Values.Length)
             {
               _Phase = WalkPhase.Done;
               continue;
@@ -148,14 +126,15 @@ namespace Copse.Dags
             if (_SuppressDispatch)
             {
               DecrementTargetsSilently(_TopoIndex, _OutEdgeIndex);
-              _OutEdgeIndex = _OutEdges[_TopoIndex].Length;
+              _OutEdgeIndex = OutDegree(_TopoIndex);
             }
 
-            if (_OutEdgeIndex < _OutEdges[_TopoIndex].Length)
+            if (_OutEdgeIndex < OutDegree(_TopoIndex))
             {
-              var (targetOrdinal, edge) = _OutEdges[_TopoIndex][_OutEdgeIndex];
+              var edgeSlot = _OutEdgeOffsets[_TopoIndex] + _OutEdgeIndex;
+              var targetOrdinal = _OutEdgeTargets[edgeSlot];
               _PendingDiscoveries[targetOrdinal]--;
-              PublishDiscovery(targetOrdinal, parentOrdinal: _TopoIndex, edgeIndex: _OutEdgeIndex, edge);
+              PublishDiscovery(targetOrdinal, parentOrdinal: _TopoIndex, edgeIndex: _OutEdgeIndex, _OutEdgePayloads[edgeSlot]);
               _OutEdgeIndex++;
               return true;
             }
@@ -172,6 +151,8 @@ namespace Copse.Dags
         }
       }
     }
+
+    private int OutDegree(int ordinal) => _OutEdgeOffsets[ordinal + 1] - _OutEdgeOffsets[ordinal];
 
     // The consumer's verdict on the visit just witnessed. Verdicts only shape the future:
     // a discovery's liveness lands here (severed edges never count), and an entry's dispatch
@@ -213,7 +194,7 @@ namespace Copse.Dags
     private void PublishDiscovery(int ordinal, int parentOrdinal, int edgeIndex, TEdge edge)
     {
       Mode = DagnumeratorMode.DiscoveringNode;
-      Node = _TopologicalOrder[ordinal].Value;
+      Node = _Values[ordinal];
       Ordinal = ordinal;
       Edge = edge;
       ParentOrdinal = parentOrdinal;
@@ -223,7 +204,7 @@ namespace Copse.Dags
     private void PublishEntry(int ordinal)
     {
       Mode = DagnumeratorMode.EnteringNode;
-      Node = _TopologicalOrder[ordinal].Value;
+      Node = _Values[ordinal];
       Ordinal = ordinal;
       Edge = default;
       ParentOrdinal = -1;
@@ -232,8 +213,8 @@ namespace Copse.Dags
 
     private void DecrementTargetsSilently(int ordinal, int fromOutEdgeIndex)
     {
-      for (var outEdgeIndex = fromOutEdgeIndex; outEdgeIndex < _OutEdges[ordinal].Length; outEdgeIndex++)
-        _PendingDiscoveries[_OutEdges[ordinal][outEdgeIndex].TargetOrdinal]--;
+      for (var outEdgeIndex = fromOutEdgeIndex; outEdgeIndex < OutDegree(ordinal); outEdgeIndex++)
+        _PendingDiscoveries[_OutEdgeTargets[_OutEdgeOffsets[ordinal] + outEdgeIndex]]--;
     }
 
     public void Dispose()

@@ -14,17 +14,19 @@ namespace Copse.Dags
   /// </summary>
   public sealed class DagDispatchTarget<TNode, TDispatch, TEdge>
   {
-    internal DagDispatchTarget(TNode value, TEdge edge, int targetOrdinal)
+    internal DagDispatchTarget(TNode value, TEdge edge, int slot)
     {
       Value = value;
       Edge = edge;
-      TargetOrdinal = targetOrdinal;
+      Slot = slot;
     }
 
     public TNode Value { get; }
     public TEdge Edge { get; }
 
-    internal int TargetOrdinal { get; }
+    /// <summary>The pass-owned landing slot this target writes (an arrival slot or a payload slot).</summary>
+    internal int Slot { get; }
+
     internal bool IsDispatched { get; private set; }
     internal TDispatch DispatchedValue { get; private set; }
 

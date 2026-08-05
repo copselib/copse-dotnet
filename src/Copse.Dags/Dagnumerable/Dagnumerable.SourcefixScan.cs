@@ -3,60 +3,105 @@ using System.Collections.Generic;
 
 namespace Copse.Dags
 {
+  // The fold direction over a buffer's structure. ONE core serves both scan operators (and
+  // likewise the dispatch cores): sinkfix IS sourcefix-of-the-transpose (the 2026-08-05
+  // ruling -- the transpose LAW is pinned semantically by the coherence battery), and the
+  // orientation flag is how one implementation reads the transpose WITHOUT materializing it
+  // -- which also preserves each operator's promised per-group order exactly (sinkfix
+  // arrivals in OUT-EDGE order, sinkfix targets in discovery order; a literal transpose walk
+  // would present arrival groups in reverse-topological child order instead -- the per-group
+  // order trap the ratification flagged for verification, verified and dodged here).
+  internal enum DagFlowOrientation
+  {
+    Sourcefix,
+    Sinkfix,
+  }
+
   public static partial class Dagnumerable
   {
     /// <summary>
     /// Downward cumulative scan over the contract: <paramref name="accumulate"/> receives each
     /// node and one EDGE-PAIRED inflow per live in-edge -- the parent's accumulated result with
     /// the payload it arrived on, in discovery order; empty at sources, which is the call that
-    /// seeds the scan. Runs the forward pass NOW, streaming (each node computed exactly once,
-    /// at entry, inflows complete by protocol guarantee), and returns the results as a
-    /// MATERIALIZED shape-isomorphic composite -- a scan's value is an entry-time fact, so a
-    /// lazy dag of results cannot honestly exist (docs/DAG_CONTRACT_DESIGN.md, open question 7,
-    /// ratified). The materialization is an upgrade: the result affords both dimensions.
+    /// seeds the scan (the fused-callback shape, A/B-ruled 2026-08-05: kept; the four-seat
+    /// dual fold is logged for the future). Runs the pass NOW -- a scan's value is an
+    /// entry-time fact under multiple parentage, so a lazy dag of results cannot honestly
+    /// exist (docs/DAG_CONTRACT_DESIGN.md, open question 7) -- and returns the CANONICAL
+    /// PAIRING: a <see cref="DagBuffer{TNode, TEdge}"/> of
+    /// <see cref="DagScanResult{TNode, TAccumulate}"/>s over the source's SHARED structure
+    /// (project <c>.Accumulate</c> for values). Callbacks fire when their data is ready
+    /// (arrivals complete); only the per-group order is contract -- the total cross-node
+    /// order is deliberately unspecified.
     /// </summary>
-    public static Dag<TResult, TEdge> SourcefixScan<TNode, TResult, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static DagBuffer<DagScanResult<TNode, TResult>, TEdge> SourcefixScan<TNode, TResult, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
       Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
     {
       if (accumulate == null)
         throw new ArgumentNullException(nameof(accumulate));
 
-      var resultsByOrdinal = new Dictionary<int, TResult>();
-      var inflowsByOrdinal = new Dictionary<int, List<DagInflow<TResult, TEdge>>>();
-      var assembler = new DagAssembler<TResult, TEdge>();
+      return ScanBuffer(source.Materialize(), DagFlowOrientation.Sourcefix, accumulate);
+    }
 
-      using var walk = source.GetForwardDagnumerator();
-      while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
+    // The shared fold core: one pass over the buffer in flow order (sourcefix: entry order,
+    // parents settle first; sinkfix: reverse entry order, children settle first), assembling
+    // each node's edge-paired arrival group from the flat adjacency the orientation selects.
+    internal static DagBuffer<DagScanResult<TNode, TResult>, TEdge> ScanBuffer<TNode, TResult, TEdge>(
+      DagBuffer<TNode, TEdge> buffer,
+      DagFlowOrientation orientation,
+      Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
+    {
+      var structure = buffer.Structure;
+      var count = buffer.Count;
+      var sourcefix = orientation == DagFlowOrientation.Sourcefix;
+      int[] inOffsets = null, inParents = null, inEdgeOutSlots = null;
+      if (sourcefix)
+        (inOffsets, inParents, inEdgeOutSlots) = structure.InAdjacency();
+
+      var results = new TResult[count];
+      var pairs = new DagScanResult<TNode, TResult>[count];
+
+      for (var step = 0; step < count; step++)
       {
-        if (walk.Mode == DagnumeratorMode.DiscoveringNode)
+        var ordinal = sourcefix ? step : count - 1 - step;
+
+        int arrivalDegree;
+        if (sourcefix)
+          arrivalDegree = inOffsets[ordinal + 1] - inOffsets[ordinal];
+        else
+          arrivalDegree = structure.OutOffsets[ordinal + 1] - structure.OutOffsets[ordinal];
+
+        IReadOnlyList<DagInflow<TResult, TEdge>> inflows;
+        if (arrivalDegree == 0)
         {
-          if (walk.ParentOrdinal < 0)
+          inflows = Array.Empty<DagInflow<TResult, TEdge>>();
+        }
+        else
+        {
+          var arrived = new DagInflow<TResult, TEdge>[arrivalDegree];
+          for (var index = 0; index < arrivalDegree; index++)
           {
-            assembler.AddSource(walk.Ordinal);
-            continue;
+            if (sourcefix)
+            {
+              var inSlot = inOffsets[ordinal] + index;
+              arrived[index] = new DagInflow<TResult, TEdge>(
+                results[inParents[inSlot]], structure.OutPayloads[inEdgeOutSlots[inSlot]]);
+            }
+            else
+            {
+              var outSlot = structure.OutOffsets[ordinal] + index;
+              arrived[index] = new DagInflow<TResult, TEdge>(
+                results[structure.OutTargets[outSlot]], structure.OutPayloads[outSlot]);
+            }
           }
-
-          // The dispatching parent has entered, so its result exists -- the scan copies it
-          // down every out-edge, paired with the edge it rides.
-          if (!inflowsByOrdinal.TryGetValue(walk.Ordinal, out var inflows))
-            inflowsByOrdinal[walk.Ordinal] = inflows = new List<DagInflow<TResult, TEdge>>();
-
-          inflows.Add(new DagInflow<TResult, TEdge>(resultsByOrdinal[walk.ParentOrdinal], walk.Edge));
-          assembler.AddEdge(walk.ParentOrdinal, walk.Ordinal, walk.Edge);
-          continue;
+          inflows = arrived;
         }
 
-        var nodeInflows = inflowsByOrdinal.TryGetValue(walk.Ordinal, out var arrived)
-          ? (IReadOnlyList<DagInflow<TResult, TEdge>>)arrived
-          : Array.Empty<DagInflow<TResult, TEdge>>();
-
-        var result = accumulate(walk.Node, nodeInflows);
-        resultsByOrdinal[walk.Ordinal] = result;
-        assembler.AddNode(walk.Ordinal, result);
+        results[ordinal] = accumulate(buffer[ordinal], inflows);
+        pairs[ordinal] = new DagScanResult<TNode, TResult>(buffer[ordinal], results[ordinal]);
       }
 
-      return assembler.Build();
+      return buffer.WithValues(pairs);
     }
   }
 }

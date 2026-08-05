@@ -20,8 +20,8 @@ namespace Copse.Dags
     /// the payload) see the broken group -- rebalancing is the caller's algebra, on the group
     /// (see the design doc's edge-dual notes).</para>
     /// </summary>
-    public static IForwardDagnumerable<TNode, TEdge> PruneEdges<TNode, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static IDagnumerable<TNode, TEdge> PruneEdges<TNode, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
       Func<DagEdgeContext<TNode, TEdge>, bool> predicate)
     {
       if (predicate == null)
@@ -31,21 +31,21 @@ namespace Copse.Dags
     }
   }
 
-  internal sealed class PruneEdgesForwardDagnumerable<TNode, TEdge> : IForwardDagnumerable<TNode, TEdge>
+  internal sealed class PruneEdgesForwardDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
   {
     public PruneEdgesForwardDagnumerable(
-      IForwardDagnumerable<TNode, TEdge> source,
+      IDagnumerable<TNode, TEdge> source,
       Func<DagEdgeContext<TNode, TEdge>, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
     }
 
-    private readonly IForwardDagnumerable<TNode, TEdge> _Source;
+    private readonly IDagnumerable<TNode, TEdge> _Source;
     private readonly Func<DagEdgeContext<TNode, TEdge>, bool> _Predicate;
 
-    public IDagnumerator<TNode, TEdge> GetForwardDagnumerator() =>
-      new PruneEdgesDagnumerator<TNode, TEdge>(_Source.GetForwardDagnumerator(), _Predicate);
+    public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
+      new PruneEdgesDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
   internal sealed class PruneEdgesDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>

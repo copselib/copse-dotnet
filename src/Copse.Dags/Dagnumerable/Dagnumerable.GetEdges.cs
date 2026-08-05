@@ -14,9 +14,9 @@ namespace Copse.Dags
     /// on first enumeration.
     /// </summary>
     public static IEnumerable<DagEdgeContext<TNode, TEdge>> GetEdges<TNode, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source)
+      this IDagnumerable<TNode, TEdge> source)
     {
-      using var walk = source.GetForwardDagnumerator();
+      using var walk = source.GetDagnumerator();
       var relationshipContext = new DagRelationshipTracker<TNode, TEdge>();
 
       while (walk.MoveNext(DagTraversalStrategies.TraverseAll))

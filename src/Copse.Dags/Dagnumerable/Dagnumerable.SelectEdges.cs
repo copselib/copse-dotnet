@@ -13,8 +13,8 @@ namespace Copse.Dags
     /// edge and publish <c>default</c>. Deferred, streaming: an edge payload is a discovery-time
     /// fact, so nothing materializes.
     /// </summary>
-    public static IForwardDagnumerable<TNode, TEdgeResult> SelectEdges<TNode, TEdge, TEdgeResult>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static IDagnumerable<TNode, TEdgeResult> SelectEdges<TNode, TEdge, TEdgeResult>(
+      this IDagnumerable<TNode, TEdge> source,
       Func<DagEdgeContext<TNode, TEdge>, TEdgeResult> selector)
     {
       if (selector == null)
@@ -24,21 +24,21 @@ namespace Copse.Dags
     }
   }
 
-  internal sealed class SelectEdgesForwardDagnumerable<TNode, TEdge, TEdgeResult> : IForwardDagnumerable<TNode, TEdgeResult>
+  internal sealed class SelectEdgesForwardDagnumerable<TNode, TEdge, TEdgeResult> : IDagnumerable<TNode, TEdgeResult>
   {
     public SelectEdgesForwardDagnumerable(
-      IForwardDagnumerable<TNode, TEdge> source,
+      IDagnumerable<TNode, TEdge> source,
       Func<DagEdgeContext<TNode, TEdge>, TEdgeResult> selector)
     {
       _Source = source;
       _Selector = selector;
     }
 
-    private readonly IForwardDagnumerable<TNode, TEdge> _Source;
+    private readonly IDagnumerable<TNode, TEdge> _Source;
     private readonly Func<DagEdgeContext<TNode, TEdge>, TEdgeResult> _Selector;
 
-    public IDagnumerator<TNode, TEdgeResult> GetForwardDagnumerator() =>
-      new SelectEdgesDagnumerator<TNode, TEdge, TEdgeResult>(_Source.GetForwardDagnumerator(), _Selector);
+    public IDagnumerator<TNode, TEdgeResult> GetDagnumerator() =>
+      new SelectEdgesDagnumerator<TNode, TEdge, TEdgeResult>(_Source.GetDagnumerator(), _Selector);
   }
 
   internal sealed class SelectEdgesDagnumerator<TNode, TEdge, TEdgeResult> : IDagnumerator<TNode, TEdgeResult>

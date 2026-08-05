@@ -50,7 +50,7 @@ namespace Copse.Dags
     /// first-to-last) wherever the edge constraints allow.
     /// Throws <see cref="DagCycleException"/> if the reachable graph has a cycle.
     /// This is the owned-node view; the contract-level value view is the
-    /// <c>GetTopologicalOrder</c> extension on <see cref="IForwardDagnumerable{TNode, TEdge}"/>.
+    /// <c>GetTopologicalOrder</c> extension on <see cref="IDagnumerable{TNode, TEdge}"/>.
     /// </summary>
     public IReadOnlyList<DagNode<TValue, TEdge>> GetTopologicalOrder()
     {

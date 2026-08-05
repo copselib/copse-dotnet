@@ -93,6 +93,90 @@
 > growth: the contract's stream still has one implementation and no raw consumers, and
 > the adapter — the origin problem's actual shape — is what pressure-tests it.
 
+> **The constitution alignment (ratified 2026-08-05, Jason; the tree-constitution review
+> session):** the tree family's aggregation constitution (docs/SCANRESULT_DESIGN.md on
+> main — ScanResult, the seat rule, the two instruments, the north star, full
+> participation, the readiness clause, type-fixer-first) re-derives this family's
+> operator surface. The 2026-08-02 re-founding stands; these rulings compose with it and
+> the refactor executes both as ONE re-derivation per operator, not two rewrites. The
+> project stays **100% self-contained** — no references outside `Copse.Dags`; the
+> constitution transfers by philosophy, never by shared types (the color-rule posture),
+> so shared vocabulary gets DAG twins (`DagScanResult`).
+>
+> 1. **Results are pairings, from the API.** The folds return `DagBuffer` captures of
+>    `DagScanResult<TNode, TResult>` — the value-replacing shape-isomorphic result and
+>    the name-smuggling it forced (`ByName`, tuple-carried names) die. The dispatches
+>    return a DISTINCT record type pairing the node with its arrival GROUP as a
+>    buffer-backed view (indices into the capture's parallel arrays, O(1)) — the
+>    recording rule made type-level, sidestepping the tree's `.Accumulate`
+>    double-meaning from birth. `DagDispatchNode` retires as a result shape.
+> 2. **Surveys keep their SUBJECT, both directions — forced by n-ary in-flow.** The
+>    tree's subject-drop rested on single parentage: one dispatch site holds everything,
+>    so the target-node fold-encoding works. With n parents no authoring site holds a
+>    node's whole arrival, the only fold-encoding is same-node, and it needs the subject
+>    — every DAG node is input-side leaffix-like, and the tree's leaffix keeps its
+>    subject for exactly this reason ("each survey keeps the seats its flow direction
+>    cannot derive"). Seats are DESTRUCTURED — `(self, arrivals-view, targets-view)` —
+>    the bundled `DagDispatchNode` callback parameter was a pairing-in-callback, which
+>    the seat rule outlaws.
+> 3. **Full participation via the VIRTUAL SOURCE FAMILY** (matching main: the boundary
+>    is an invocation, not a callback). The protocol already discovers all sources as a
+>    block at enumeration start, so the same survey fires first for
+>    `(default subject, seed, sources-as-targets)` — the virtual source has no value,
+>    and that one invocation's empty subject is semantically true, not manufactured.
+>    Each source's arrival is thereby AUTHORED with the source in hand; the manufactured
+>    `DagDispatchInflow(default, seed, default)` and the `IsSource` flag both die; a
+>    dispatcher-less arrival is the in-band arrived-from-outside test; and a budget
+>    allocates ACROSS co-investing sources (the ownership workload's own shape) with
+>    the same callback that allocates everywhere else.
+> 4. **The Dispatcher seat SPLITS HOMES** (re-argued under the seat rule; reverses the
+>    2026-07-27 in-band ruling, whose derivability facts the buffer changed). It stays
+>    in the callback views — immediate context, consumed in place, mid-pass no buffer
+>    exists to consult — and leaves the traveling results, where "who wrote in-edge i of
+>    node n" is index arithmetic over the buffer's transpose adjacency. The provenance
+>    principle survives intact; its implementation moves from an in-band field into the
+>    buffer's structure.
+> 5. **The scans keep the fused callback** (A/B-tested 2026-08-05, ruled "close enough —
+>    keep and move forward"): the four-seat dual fold (seed | selector, edgeMap,
+>    edgeAccumulator, nodeAccumulator — the tree leaffix dual with the edge payload's
+>    justified seat) produced identical results at every ported call site, won inference
+>    (zero explicit type args vs required-everywhere) and allocations (−14%: no per-node
+>    inflow list), and tied on time — LOGGED for possible future adoption. Accepted
+>    consequences: the scans stay fixer-less and boundary-fused (`Count == 0` in-band).
+>    NOTED SEAM: the scan's boundary instrument (in-band empty) differs from the
+>    dispatch's (virtual-family seed), so the scan≡dispatch coherence pin encodes
+>    through the dispatcher-less filter (fold over authored arrivals only) rather than
+>    boundary-for-boundary.
+> 6. **The sinkfix family is DERIVED**: `Transpose ∘ Sourcefix* ∘ Transpose` — minimal
+>    effort, reversible free. Build order follows: `DagBuffer` + `Transpose()` land
+>    before any sinkfix operator; the `DispatchEdges` twins collapse to one
+>    implementation; the coherence battery gains the transpose law and must VERIFY (not
+>    assume) per-group edge order under transpose. Sinkfix seed flavors DEFERRED — ruled
+>    lawful in principle, a genuine departure from the tree: the DAG's upward dispatch
+>    is family-shaped with a real arrival seat (the virtual sink family is the virtual
+>    source family of the transpose), where the tree's leaffix survey has no seat for a
+>    seed to participate through — but not MVP. Consequences accepted for MVP:
+>    `SinkfixDispatch` and the `DispatchEdges` twins stay fixer-less (explicit type
+>    args); the `sourceNodeSelector` bypass flavor is likewise deferred (the grid closes
+>    later at zero cost).
+> 7. **The readiness clause** (main's, adopted): a survey fires when its data is ready —
+>    arrivals complete (sourcefix), children's writes complete (sinkfix). The PARTIAL
+>    order is the operator's meaning and is guaranteed, as is per-group order — which on
+>    a DAG is a PRESENTATION fact (in-edge arrival order varies across valid topological
+>    presentations), stable within an enumeration and frozen by capture. The total
+>    cross-node order is deliberately unspecified: topo order is already non-unique, and
+>    pinning the walk's accidental linearization would foreclose parallel builds. The
+>    operator docs' current total-order promises reword accordingly.
+> 8. **Internals follow the measured lessons**: the dictionary-spined passes rebuild as
+>    sequential flat-array CSR passes (capture → child-index → fold) — the tree family's
+>    evidence-settled structure (fused walks measured out, twice); streaming-state
+>    claims carry honest O(max frontier) statements.
+>
+> Verification bar for the refactor: the scenario suites move only mechanically (the
+> re-founding's bar — `ByName` gets simpler, per pairing results), PLUS the coherence
+> battery: scan ≡ fold-encoded dispatch (via the noted seam's encoding) and
+> sinkfix ≡ transpose-derived, every flavor pinned, every future flavor joining.
+
 > **The domain this serves:** legal-entity ownership structures — the library's origin
 > problem. Nodes are entities, edge payloads are ownership fractions, flows run money down
 > (allocation) and attribution up (lookthrough). The structures became DAG-shaped when
@@ -407,11 +491,17 @@ last-entered node; O(1) state).
    lookthrough (venture's 1000 arriving at the apex as 120-via-40% + 420-via-60% = 540)
    and THE DUALITY — the downward ownership scan times the holding equals the upward
    attribution, 54% of 1000, both ways.
-3½. **The re-founding refactor (ratified 2026-08-02, unbuilt)**: collapse the interface
-   trio to `IDagnumerable`; introduce `DagBuffer` (one-pass CSR capture, preserved source
-   ordinals, dense indexing) and retarget the folds at it; `Transpose()` on buffer and
-   builder. Verification bar: the scenario suites move only mechanically (`ByName` should
-   get SIMPLER — ordinal addressing replaces name-smuggling).
+3½. **The re-founding refactor (ratified 2026-08-02; SCOPE GREW 2026-08-05 — the
+   constitution alignment executes in the same pass, one re-derivation per operator)**:
+   collapse the interface trio to `IDagnumerable`; introduce `DagBuffer` (one-pass CSR
+   capture, preserved source ordinals, dense indexing, lazy transpose adjacency) and
+   `Transpose()` on buffer and builder; retarget the folds at pairing results
+   (`DagScanResult` / the dispatch record) with destructured subject-keeping surveys and
+   the virtual source family; DERIVE the sinkfix family through the transpose; split the
+   Dispatcher's homes; reword the order promises to the readiness clause. Verification
+   bar: the scenario suites move only mechanically (`ByName` should get SIMPLER —
+   ordinal addressing replaces name-smuggling) plus the coherence battery (scan ≡
+   fold-encoded dispatch; sinkfix ≡ transpose-derived).
 4. Flat store + serializer + `Memoize`/`Materialize` — largely subsumed by 3½: the store
    IS `DagBuffer`; what remains is the text format and the narrow streaming deserialize.
 4½. **The work-import adapter** — deliberately BEFORE further operator growth: the

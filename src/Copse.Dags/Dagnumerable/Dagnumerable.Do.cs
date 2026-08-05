@@ -11,8 +11,8 @@ namespace Copse.Dags
     /// caller's action (<c>Mode == EnteringNode</c> = once per node; <c>ParentOrdinal &gt;= 0</c>
     /// = real edges only). Deferred: the action fires per enumeration.
     /// </summary>
-    public static IForwardDagnumerable<TNode, TEdge> Do<TNode, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static IDagnumerable<TNode, TEdge> Do<TNode, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
       Action<DagVisit<TNode, TEdge>> action)
     {
       if (action == null)
@@ -22,19 +22,19 @@ namespace Copse.Dags
     }
   }
 
-  internal sealed class DoForwardDagnumerable<TNode, TEdge> : IForwardDagnumerable<TNode, TEdge>
+  internal sealed class DoForwardDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
   {
-    public DoForwardDagnumerable(IForwardDagnumerable<TNode, TEdge> source, Action<DagVisit<TNode, TEdge>> action)
+    public DoForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Action<DagVisit<TNode, TEdge>> action)
     {
       _Source = source;
       _Action = action;
     }
 
-    private readonly IForwardDagnumerable<TNode, TEdge> _Source;
+    private readonly IDagnumerable<TNode, TEdge> _Source;
     private readonly Action<DagVisit<TNode, TEdge>> _Action;
 
-    public IDagnumerator<TNode, TEdge> GetForwardDagnumerator() =>
-      new DoDagnumerator<TNode, TEdge>(_Source.GetForwardDagnumerator(), _Action);
+    public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
+      new DoDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Action);
   }
 
   internal sealed class DoDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>

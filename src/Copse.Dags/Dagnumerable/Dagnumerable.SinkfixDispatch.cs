@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Copse.Dags
 {
@@ -7,68 +6,27 @@ namespace Copse.Dags
   {
     /// <summary>
     /// The survey-shaped UPWARD pass -- per-owner attribution through shared entities, the
-    /// diamond's anti-double-count (a naive upward sum counts a shared subtree once per
-    /// parent; here each node decides what travels up EACH in-edge, so what a child sent up an
-    /// edge IS that parent's share, by construction). Each node resolves as a
-    /// <see cref="DagDispatchNode{TNode, TDispatch, TEdge}"/> -- its value plus the edge-paired
-    /// upflows its children dispatched to it (empty at sinks: value originates IN the nodes, so
-    /// there is no seed, the downward pass's dual asymmetry) -- and, when it has live in-edges,
-    /// <paramref name="survey"/> is handed the resolved node and one exactly-once
-    /// <see cref="DagDispatchTarget{TNode, TDispatch, TEdge}"/> per in-edge (in discovery
-    /// order) to write. Sources are never surveyed; their resolved inflows ARE the attribution
-    /// result. Rides one forward capture folded in reverse topological order; returns a
-    /// MATERIALIZED composite, shape-isomorphic, decorate-then-choose downstream.
+    /// diamond's anti-double-count (each node decides what travels up EACH in-edge, so what a
+    /// child sent up an edge IS that parent's share, by construction). Sourcefix-of-the-
+    /// transpose, served by the same survey core read upward (the 2026-08-05 derivation
+    /// ruling). Destructured seats: each node with live in-edges is surveyed once, in
+    /// readiness order (children's upflows complete first), receiving its value, its
+    /// edge-paired upflow arrivals (the children's writes, in out-edge order; empty at sinks
+    /// -- value originates IN the nodes, so the pass runs UNSEEDED and no virtual family
+    /// fires; the seed flavor is ruled lawful but deferred, so this signature is deliberately
+    /// fixer-less: explicit type arguments, accepted with eyes open), and one exactly-once
+    /// target per IN-edge (parent value, payload; discovery order). Sources are never
+    /// surveyed; their arrival groups in the result ARE the attribution. Returns the survey
+    /// tier's pairing over the source's shared structure, in the source's own orientation.
     /// </summary>
-    public static Dag<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge> SinkfixDispatch<TNode, TDispatch, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
-      Action<DagDispatchNode<TNode, TDispatch, TEdge>, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>> survey)
+    public static DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> SinkfixDispatch<TNode, TDispatch, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
+      DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {
       if (survey == null)
         throw new ArgumentNullException(nameof(survey));
 
-      var capture = DagCapture<TNode, TEdge>.From(source);
-      var nodesByOrdinal = new Dictionary<int, DagDispatchNode<TNode, TDispatch, TEdge>>();
-      var upflowsByOrdinal = new Dictionary<int, List<DagDispatchInflow<TNode, TDispatch, TEdge>>>();
-      var assembler = new DagAssembler<DagDispatchNode<TNode, TDispatch, TEdge>, TEdge>();
-
-      for (var index = capture.Entries.Count - 1; index >= 0; index--)
-      {
-        var (ordinal, value) = capture.Entries[index];
-
-        IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>> upflows =
-          upflowsByOrdinal.TryGetValue(ordinal, out var arrived)
-            ? arrived
-            : Array.Empty<DagDispatchInflow<TNode, TDispatch, TEdge>>();
-
-        var dispatchNode = new DagDispatchNode<TNode, TDispatch, TEdge>(value, upflows, isSource: !capture.InEdges.ContainsKey(ordinal));
-        nodesByOrdinal[ordinal] = dispatchNode;
-
-        if (!capture.InEdges.TryGetValue(ordinal, out var inEdges))
-          continue;
-
-        var targets = new List<DagDispatchTarget<TNode, TDispatch, TEdge>>(inEdges.Count);
-        foreach (var (parentOrdinal, edge) in inEdges)
-          targets.Add(new DagDispatchTarget<TNode, TDispatch, TEdge>(capture.Values[parentOrdinal], edge, parentOrdinal));
-
-        survey(dispatchNode, targets);
-
-        foreach (var target in targets)
-        {
-          if (!target.IsDispatched)
-            throw new InvalidOperationException($"The edge to '{target.Value}' was not dispatched.");
-
-          if (!upflowsByOrdinal.TryGetValue(target.TargetOrdinal, out var parentUpflows))
-            upflowsByOrdinal[target.TargetOrdinal] = parentUpflows = new List<DagDispatchInflow<TNode, TDispatch, TEdge>>();
-
-          parentUpflows.Add(new DagDispatchInflow<TNode, TDispatch, TEdge>(value, target.DispatchedValue, target.Edge));
-        }
-      }
-
-      foreach (var (ordinal, _) in capture.Entries)
-        assembler.AddNode(ordinal, nodesByOrdinal[ordinal]);
-      capture.WireStructure(assembler);
-
-      return assembler.Build();
+      return DispatchBuffer(source.Materialize(), seeded: false, default, DagFlowOrientation.Sinkfix, survey);
     }
   }
 }

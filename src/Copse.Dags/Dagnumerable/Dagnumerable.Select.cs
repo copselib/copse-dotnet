@@ -4,7 +4,7 @@ namespace Copse.Dags
 {
   /// <summary>
   /// The streaming operators over the DAG traversal contract (docs/DAG_CONTRACT_DESIGN.md,
-  /// phase 2): composable wrappers over <see cref="IForwardDagnumerable{TNode, TEdge}"/>.
+  /// phase 2): composable wrappers over <see cref="IDagnumerable{TNode, TEdge}"/>.
   /// Operators preserve their source's ordinals (no relabeling exists to do -- ordinals are
   /// correlation keys, not coordinates), so pruned streams carry gaps, harmlessly.
   /// </summary>
@@ -16,8 +16,8 @@ namespace Copse.Dags
     /// discoveries and entry each see it run; invocation counts are unspecified -- purity
     /// expected, the house contract).
     /// </summary>
-    public static IForwardDagnumerable<TResult, TEdge> Select<TNode, TResult, TEdge>(
-      this IForwardDagnumerable<TNode, TEdge> source,
+    public static IDagnumerable<TResult, TEdge> Select<TNode, TResult, TEdge>(
+      this IDagnumerable<TNode, TEdge> source,
       Func<TNode, TResult> selector)
     {
       if (selector == null)
@@ -27,19 +27,19 @@ namespace Copse.Dags
     }
   }
 
-  internal sealed class SelectForwardDagnumerable<TNode, TResult, TEdge> : IForwardDagnumerable<TResult, TEdge>
+  internal sealed class SelectForwardDagnumerable<TNode, TResult, TEdge> : IDagnumerable<TResult, TEdge>
   {
-    public SelectForwardDagnumerable(IForwardDagnumerable<TNode, TEdge> source, Func<TNode, TResult> selector)
+    public SelectForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, TResult> selector)
     {
       _Source = source;
       _Selector = selector;
     }
 
-    private readonly IForwardDagnumerable<TNode, TEdge> _Source;
+    private readonly IDagnumerable<TNode, TEdge> _Source;
     private readonly Func<TNode, TResult> _Selector;
 
-    public IDagnumerator<TResult, TEdge> GetForwardDagnumerator() =>
-      new SelectDagnumerator<TNode, TResult, TEdge>(_Source.GetForwardDagnumerator(), _Selector);
+    public IDagnumerator<TResult, TEdge> GetDagnumerator() =>
+      new SelectDagnumerator<TNode, TResult, TEdge>(_Source.GetDagnumerator(), _Selector);
   }
 
   internal sealed class SelectDagnumerator<TNode, TResult, TEdge> : IDagnumerator<TResult, TEdge>
