@@ -140,12 +140,12 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void LeaffixDispatchLanding_SurveyOnly()
+    public void LeaffixDispatchLanding()
     {
       var corpus = Corpus();
 
       corpus
-        .LeaffixDispatch<Entity, decimal>(RollUp)
+        .LeaffixDispatch(leaf => leaf.Weight, RollUp)
         .Do(Land())
         .Select(pairing => pairing.Node)
         .PreorderTraversal().ToArray();

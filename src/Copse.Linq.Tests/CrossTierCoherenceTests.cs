@@ -74,16 +74,15 @@ namespace Copse.Linq.Tests
 
       var dispatch = Pairings(
         TreeSerializer.DeserializeDepthFirstTree(Forest)
-          .LeaffixDispatch<string, string>((node, children) =>
-          {
-            if (children.Count == 0)
-              return node + "*";
-
-            var reduced = children[0].Accumulate;
-            for (var siblingIndex = 1; siblingIndex < children.Count; siblingIndex++)
-              reduced += children[siblingIndex].Accumulate;
-            return node + reduced;
-          }));
+          .LeaffixDispatch(
+            leaf => leaf + "*",
+            (node, children) =>
+            {
+              var reduced = children[0].Accumulate;
+              for (var siblingIndex = 1; siblingIndex < children.Count; siblingIndex++)
+                reduced += children[siblingIndex].Accumulate;
+              return node + reduced;
+            }));
 
       CollectionAssert.AreEqual(new[] { "a:ab*c*", "b:b*", "c:c*", "d:de*f*", "e:e*", "f:f*" }, scan,
         "the seed folds through the node accumulator at every leaf");

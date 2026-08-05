@@ -27,13 +27,15 @@ namespace Copse.Linq
     /// this operator).
     ///
     /// <para>FULL PARTICIPATION (ratified 2026-08-04 -- boundary-shape-follows-tier-shape):
-    /// leaves are not a special case. The survey fires on EVERY node; a leaf's sources view is
-    /// simply EMPTY (<c>sources.Count == 0</c> is the in-band leaf test), and a survey like
-    /// "my value plus my children's rollups" handles the fringe with no boundary at all -- the
-    /// survey-only overload is the general form. The leafNodeSelector flavors are that
-    /// boundary's sugar: they wrap the survey with a leaf branch
-    /// (<c>sources.Count == 0 ? boundary : survey</c>), preserving the "leaves start at the
-    /// boundary" idiom for surveys that cannot answer for the fringe.</para>
+    /// leaves are not a special case -- the internal pass surveys EVERY node, a leaf's sources
+    /// view simply EMPTY. The public surface leads with the leafNodeSelector flavors (a
+    /// survey-only overload existed briefly and was DELETED 2026-08-05: the family's one
+    /// fixer-less signature -- TAccumulate appears only inside the lambda, so inference
+    /// always failed, the type-fixer-first grammar enforced by the compiler itself -- and the
+    /// use-case survey showed the sibling-comparative workloads this tier exists for need a
+    /// leaf rule anyway, while formula-shaped fringes belong to LeaffixScan's dual fold).
+    /// The selector wraps the survey with a leaf branch
+    /// (<c>sources.Count == 0 ? boundary : survey</c>).</para>
     ///
     /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR, 2026-08-05): a SEED is the value
     /// that PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
@@ -64,12 +66,6 @@ namespace Copse.Linq
     /// capture, the shared child-index, then a reverse-preorder fold -- the same passes as the
     /// rootfix dispatch build, genuinely shared.</para>
     /// </summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatch(source, FullSurvey(survey))), BufferLayout.Preorder);
-
     /// <summary>
     /// The per-leaf seeding form: sugar wrapping <paramref name="survey"/> with a leaf branch --
     /// every leaf's accumulation comes from <paramref name="leafNodeSelector"/>, the fringe
@@ -98,12 +94,6 @@ namespace Copse.Linq
     /// </summary>
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, FullSurvey(survey))), BufferLayout.Preorder);
-
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey);
@@ -118,11 +108,6 @@ namespace Copse.Linq
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, survey);
-
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
@@ -133,8 +118,9 @@ namespace Copse.Linq
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
 
-    // The survey-only form's adapter onto the unified per-node callback: full participation,
-    // no leaf branch -- the survey answers for every node, fringe included (empty sources).
+    // The no-leaf-branch adapter onto the unified per-node callback -- the survey answers for
+    // every node, fringe included (empty sources). Internal only (the public survey-only
+    // overload died 2026-08-05, fixer-less); LeaffixScan's seed flavor rides this path.
     private static Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> FullSurvey<TSource, TAccumulate>(
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => (node, _, sources) => survey(node, sources);

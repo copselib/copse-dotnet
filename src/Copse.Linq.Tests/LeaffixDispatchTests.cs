@@ -233,15 +233,16 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void SurveyOnly_FullParticipation_TheSurveyAnswersForTheFringe()
+    public void SelectorFlavor_IsTheSurfaceForTheFringe()
     {
-      // The survey-only general form (2026-08-04): leaves are surveyed with an EMPTY sources
-      // view, so ConcatSurvey handles the fringe with no boundary at all -- concat over zero
-      // children is the node's own letter, matching the boundary-flavored corpus exactly.
+      // The survey-only overload died in 2026-08-05's use-case survey (fixer-less: TAccumulate
+      // only inside the lambda, inference impossible -- the type-fixer-first grammar enforced
+      // by the compiler). The selector names the fringe rule; internally the pass still
+      // surveys every node (full participation).
       var results =
         TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d))")
-        .LeaffixDispatch<string, string>(ConcatSurvey)
+        .LeaffixDispatch(node => node, ConcatSurvey)
         .PreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();

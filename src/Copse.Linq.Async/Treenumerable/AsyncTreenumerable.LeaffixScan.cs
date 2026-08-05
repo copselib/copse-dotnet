@@ -1,3 +1,5 @@
+using Copse.Async;
+using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Treenumerables;
@@ -50,7 +52,8 @@ namespace Copse.Linq
       TAccumulate seed,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixDispatch(source, SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator));
+      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
+        AsyncTree.Lazy(() => PreorderDispatch(source, FullSurvey(SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator)))), BufferLayout.Preorder);
 
     /// <summary>
     /// The per-leaf flavor -- the BYPASS instrument: every leaf's accumulation comes from
@@ -79,7 +82,8 @@ namespace Copse.Linq
       TAccumulate seed,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixDispatch(source, SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator));
+      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
+        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, FullSurvey(SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator)))), BufferLayout.Preorder);
 
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,

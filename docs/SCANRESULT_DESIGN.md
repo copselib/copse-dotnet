@@ -159,8 +159,13 @@ The invariant makes the TWO INSTRUMENTS uniform across the tiers (subsuming the
 **The leaffix corollary (same day)**: a seed exists only where the flow has an entry
 channel for it to participate through. The leaffix DISPATCH survey has no arrival seat —
 its broadcast-seed flavor was the bypass instrument wearing the seed's name (identically
-`_ => x`) and stays DELETED; leaves are set by SELECTOR flavors, and the survey-only
-overload is the general form.
+`_ => x`) and stays DELETED; leaves are set by SELECTOR flavors. (The survey-only
+overload followed it on 2026-08-05: the family's one fixer-less signature -- TAccumulate
+appears only inside the lambda, so inference structurally fails; the type-fixer-first
+grammar, enforced by the compiler. The use-case survey showed the sibling-comparative
+workloads this tier exists for need a leaf rule anyway, and formula-shaped fringes belong
+to LeaffixScan's dual fold. Full participation persists internally -- the pass surveys
+every node; the selector flavors are its public face.)
 
 **THE LEAFFIX DUAL (2026-08-05, the same day's second act — "the mechanism is not the
 dual of RootfixScan")**: the old LeaffixScan fused the boundary INTO its map ("both an
@@ -256,9 +261,10 @@ shape, and no node class is excluded from its tier's callback.**
   (rootSurvey's only unique power) waits for a real workload — the house resurrects
   seats on demand.
 - **Leaffix dispatches**: the survey fires on EVERY node — a leaf's sources view is
-  EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The survey-only
-  overload is the general form ("my value plus my children's rollups" needs no boundary
-  at all); the seed/selector flavors are sugar wrapping the survey with a leaf branch.
+  EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The selector
+  flavors are the public face (the survey-only overload was deleted 2026-08-05 as
+  fixer-less; the seed flavor as a misnamed bypass); full participation persists in the
+  internal pass.
 - **Scans — the ARRIVAL SEMANTICS detour (2026-08-04, REVERSED 2026-08-05 by THE NORTH
   STAR)**: the "1(2,3,4)" verdict briefly made the rootfix selector supply the root's
   arrival with the fold firing at every node, chasing the intra-tier seed ≡
