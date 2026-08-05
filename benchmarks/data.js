@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785955948804,
+  "lastUpdate": 1785955949171,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -129723,6 +129723,145 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
             "value": 151019573,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "339aa65774779bc712585582b6435ad8e6d5cb60",
+          "message": "Perf 2/4: the leaffix positions fill inside the child-index build\n\nThe capture's positions side channel dies here too, but the leaffix fold\nruns in reverse, where the rootfix pass's stateless derivation has no cheap\nanalog -- a forward close-stack walk was built and measured out (O(depth)\nentries are O(n) on chains: 96 -> 112 MB, +14% time). Instead the\nchild-index build fills one exact-size positions array as its slices fill:\nparents precede children in preorder, so depth threads through for free.\nThree-way A/B: chains 96.1 -> 88.1 MB (best of all candidates, below even\nthe side-channel form), triangles 68.2 -> 52.2 MB, fold time flat.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:34:14Z",
+          "tree_id": "d442823cc729174346f4858fcbd0eca543f22719",
+          "url": "https://github.com/copselib/copse-dotnet/commit/339aa65774779bc712585582b6435ad8e6d5cb60"
+        },
+        "date": 1785955949096,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739880,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139812,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71354885,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25171347,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 16848163,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 25400856,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 21016478,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 12587537,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 58234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 230828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 50021,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905435,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597512,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3363663,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80461964,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 51624316,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80636746,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 51476356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79742340,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 125835117,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50357867,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 151019584,
             "unit": "bytes"
           }
         ]
