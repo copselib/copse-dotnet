@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785955943422,
+  "lastUpdate": 1785955943817,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -72162,6 +72162,102 @@ window.BENCHMARK_DATA = {
             "value": 24652825.139583334,
             "unit": "ns",
             "range": "± 190975.93254287037"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "339aa65774779bc712585582b6435ad8e6d5cb60",
+          "message": "Perf 2/4: the leaffix positions fill inside the child-index build\n\nThe capture's positions side channel dies here too, but the leaffix fold\nruns in reverse, where the rootfix pass's stateless derivation has no cheap\nanalog -- a forward close-stack walk was built and measured out (O(depth)\nentries are O(n) on chains: 96 -> 112 MB, +14% time). Instead the\nchild-index build fills one exact-size positions array as its slices fill:\nparents precede children in preorder, so depth threads through for free.\nThree-way A/B: chains 96.1 -> 88.1 MB (best of all candidates, below even\nthe side-channel form), triangles 68.2 -> 52.2 MB, fold time flat.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:34:14Z",
+          "tree_id": "d442823cc729174346f4858fcbd0eca543f22719",
+          "url": "https://github.com/copselib/copse-dotnet/commit/339aa65774779bc712585582b6435ad8e6d5cb60"
+        },
+        "date": 1785955943741,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 27400492.735576924,
+            "unit": "ns",
+            "range": "± 34697.519176363"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8375546.485677083,
+            "unit": "ns",
+            "range": "± 34554.15692361312"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 152987673.80769232,
+            "unit": "ns",
+            "range": "± 360860.073594527"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 60610825.700854704,
+            "unit": "ns",
+            "range": "± 71445.02702631413"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 22982709.75,
+            "unit": "ns",
+            "range": "± 22074.76435055729"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 13131131.037259616,
+            "unit": "ns",
+            "range": "± 92927.42680892891"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 99747526.41111112,
+            "unit": "ns",
+            "range": "± 485598.66693561035"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 33101180.53125,
+            "unit": "ns",
+            "range": "± 320265.82345460705"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 12435943.698317308,
+            "unit": "ns",
+            "range": "± 27983.1005901062"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6653667.395647322,
+            "unit": "ns",
+            "range": "± 6946.613611873058"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 97925880.17142858,
+            "unit": "ns",
+            "range": "± 274277.1375674196"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 28521181.05580357,
+            "unit": "ns",
+            "range": "± 106918.79063680647"
           }
         ]
       }
