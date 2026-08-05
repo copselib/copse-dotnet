@@ -119,16 +119,21 @@ namespace Copse.Linq
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       var accumulations = new List<TAccumulate>();
-      var hasChildren = new List<bool>();
       var path = new Stack<PendingNode<TSource>>();
       var currentRoot = default(TSource);
 
+      // Both branch facts are INDEX ARITHMETIC, not stored state (the parallel has-children
+      // list and flag-carrying frames were each built and measured out -- per-node bookkeeping
+      // on one side, chain-deep fat frames on the other): a closing node has children iff
+      // anything was scheduled after it before its close, and a closing child is its parent's
+      // FIRST iff it sits immediately after the parent in preorder (children close in sibling
+      // order, and closes fire before the next sibling schedules).
       void Close()
       {
         var pending = path.Pop();
 
         var closed =
-          hasChildren[pending.Index]
+          accumulations.Count > pending.Index + 1
           ? nodeAccumulator(accumulations[pending.Index], pending.Context.Node)
           : leafValue(pending.Context);
 
@@ -139,10 +144,9 @@ namespace Copse.Linq
           var parent = path.Peek();
 
           accumulations[parent.Index] =
-            hasChildren[parent.Index]
+            pending.Index > parent.Index + 1
             ? edgeAccumulator(accumulations[parent.Index], closed)
             : closed;
-          hasChildren[parent.Index] = true;
         }
       }
 
@@ -163,7 +167,6 @@ namespace Copse.Linq
           {
             yield return new ScanResult<TSource, TAccumulate>(currentRoot, accumulations[0]);
             accumulations.Clear();
-            hasChildren.Clear();
           }
 
           var nodeContext = treenumerator.ToNodeContext();
@@ -173,7 +176,6 @@ namespace Copse.Linq
 
           path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
           accumulations.Add(default);
-          hasChildren.Add(false);
         }
       }
 
@@ -202,15 +204,16 @@ namespace Copse.Linq
         capture.Complete();
 
         var accumulations = new List<TAccumulate>();
-        var hasChildren = new List<bool>();
         var path = new Stack<PendingNode<TSource>>();
 
+        // Index arithmetic, as in the depth-first core: the walk schedules in preorder and
+        // closes before scheduling the next sibling, so both branch facts derive from indices.
         void Close()
         {
           var pending = path.Pop();
 
           var closed =
-            hasChildren[pending.Index]
+            accumulations.Count > pending.Index + 1
             ? nodeAccumulator(accumulations[pending.Index], pending.Context.Node)
             : leafValue(pending.Context);
 
@@ -221,10 +224,9 @@ namespace Copse.Linq
             var parent = path.Peek();
 
             accumulations[parent.Index] =
-              hasChildren[parent.Index]
+              pending.Index > parent.Index + 1
               ? edgeAccumulator(accumulations[parent.Index], closed)
               : closed;
-            hasChildren[parent.Index] = true;
           }
         }
 
@@ -248,7 +250,6 @@ namespace Copse.Linq
 
             path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
             accumulations.Add(default);
-            hasChildren.Add(false);
 
             var firstChildIndex = capture.GetFirstChildIndex(frame.Index);
             var childCount = capture.GetChildCount(frame.Index);
@@ -262,7 +263,6 @@ namespace Copse.Linq
 
           yield return new ScanResult<TSource, TAccumulate>(capture.GetValue(root), accumulations[0]);
           accumulations.Clear();
-          hasChildren.Clear();
         }
       }
     }
