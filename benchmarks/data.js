@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785955950395,
+  "lastUpdate": 1785955950762,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -68173,6 +68173,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
             "value": 299793,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 265129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "339aa65774779bc712585582b6435ad8e6d5cb60",
+          "message": "Perf 2/4: the leaffix positions fill inside the child-index build\n\nThe capture's positions side channel dies here too, but the leaffix fold\nruns in reverse, where the rootfix pass's stateless derivation has no cheap\nanalog -- a forward close-stack walk was built and measured out (O(depth)\nentries are O(n) on chains: 96 -> 112 MB, +14% time). Instead the\nchild-index build fills one exact-size positions array as its slices fill:\nparents precede children in preorder, so depth threads through for free.\nThree-way A/B: chains 96.1 -> 88.1 MB (best of all candidates, below even\nthe side-channel form), triangles 68.2 -> 52.2 MB, fold time flat.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T18:34:14Z",
+          "tree_id": "d442823cc729174346f4858fcbd0eca543f22719",
+          "url": "https://github.com/copselib/copse-dotnet/commit/339aa65774779bc712585582b6435ad8e6d5cb60"
+        },
+        "date": 1785955950687,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642108,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2417,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693218,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 37529,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 2865,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789058,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051115,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840160,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 299795,
             "unit": "bytes"
           },
           {
