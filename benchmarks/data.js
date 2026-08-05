@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785952152056,
+  "lastUpdate": 1785952153044,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -84698,6 +84698,208 @@ window.BENCHMARK_DATA = {
             "value": 8494646.752232144,
             "unit": "ns",
             "range": "± 18070.502132380363"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "id": "28a981141763475058d3a78998f3f67e4b031318",
+          "message": "Merge feature/do-scan: the aggregation family re-founded on ScanResult\n\nTwo days of adversarial design that ended smaller than it began: the Do\nquartet built, converged, and deleted in favor of the landing composition;\nthe seat rule, landing rule, full participation, and the north star\n(scan == fold-encoded dispatch, every boundary flavor) each ratified and\nbattery-pinned; the survey unified subject-less with the virtual forest\nroot's family surveyed first; LeaffixScan reshaped to the true dual (edge\nand node accumulators, the seed as the virtual fringe's arrival); and\ntype-fixer-first enforced across every public aggregation signature.\nScanResult is the keystone: results stay inside the tree monad, which is\nwhat made composition win.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T17:18:45Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/28a981141763475058d3a78998f3f67e4b031318"
+        },
+        "date": 1785952152939,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Composed",
+            "value": 61797150.3095238,
+            "unit": "ns",
+            "range": "± 155539.55933577448"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Composed",
+            "value": 82571440.90816326,
+            "unit": "ns",
+            "range": "± 418309.35493739456"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Stacked",
+            "value": 64080923.83035714,
+            "unit": "ns",
+            "range": "± 226321.22305296286"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Stacked",
+            "value": 78553845.86904763,
+            "unit": "ns",
+            "range": "± 279110.35886084556"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Composed",
+            "value": 146089673.39285713,
+            "unit": "ns",
+            "range": "± 380108.5024578978"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Composed",
+            "value": 151153969.8,
+            "unit": "ns",
+            "range": "± 829104.5011723773"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Stacked",
+            "value": 169751707.26190475,
+            "unit": "ns",
+            "range": "± 2092478.2719416984"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Stacked",
+            "value": 1063443250.6,
+            "unit": "ns",
+            "range": "± 8733923.260283334"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 14065098.765625,
+            "unit": "ns",
+            "range": "± 101407.21764781744"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 9708318.181490384,
+            "unit": "ns",
+            "range": "± 18316.278049408214"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 13969616.438541668,
+            "unit": "ns",
+            "range": "± 25461.007906815285"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 8596244.14955357,
+            "unit": "ns",
+            "range": "± 28678.412330120915"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 14211054.802083334,
+            "unit": "ns",
+            "range": "± 54251.19321665172"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 25059728.945833333,
+            "unit": "ns",
+            "range": "± 67622.36396987484"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 13096535.139583332,
+            "unit": "ns",
+            "range": "± 130507.92915149512"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 28458450.30357143,
+            "unit": "ns",
+            "range": "± 199723.46810762328"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 27429698.355769232,
+            "unit": "ns",
+            "range": "± 32178.509693426317"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 28887607.615384616,
+            "unit": "ns",
+            "range": "± 18252.680837320477"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 125064678.05,
+            "unit": "ns",
+            "range": "± 442670.5258802331"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 163360770.74358973,
+            "unit": "ns",
+            "range": "± 285796.01401132793"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 64962391.114583336,
+            "unit": "ns",
+            "range": "± 71809.40519823707"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 66180136.39423077,
+            "unit": "ns",
+            "range": "± 105059.73652733148"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 80266473.89795919,
+            "unit": "ns",
+            "range": "± 373460.0189884402"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 81201386.65714286,
+            "unit": "ns",
+            "range": "± 620432.6682984709"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 17974813.795833334,
+            "unit": "ns",
+            "range": "± 27804.09803540122"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 24805790.4896875,
+            "unit": "ns",
+            "range": "± 1580388.0106478517"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 44506358.375,
+            "unit": "ns",
+            "range": "± 142611.7497378843"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 41938872.51388889,
+            "unit": "ns",
+            "range": "± 79531.57966916646"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 9739163.861607144,
+            "unit": "ns",
+            "range": "± 8480.660782438212"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 8461414.078125,
+            "unit": "ns",
+            "range": "± 19329.833789667766"
           }
         ]
       }
