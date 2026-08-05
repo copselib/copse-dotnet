@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785963417797,
+  "lastUpdate": 1785963418265,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -110922,6 +110922,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PreorderTraversal.Binary",
             "value": 3035,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26135,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "980552aef0b33ba0ec0346eebdcda2db314a0311",
+          "message": "NodeContext retires from the public surface: the flavor grammar, family-wide\n\nThe arity-split that Select/Where composition forced -- value flavor\nprimary, (node, position) for coordinate-reading rules -- now covers every\nconsumer-facing callback: AnyNodes, AllNodes, CountNodes, TakeNodesUntil\nand -While, GetTraversals' strategies selector, and OrderChildrenBy's key\nselector (hand-verified, per the scar). NodeContext<T> appears in no public\ncallback signature; its lawful homes are the view element types (immediate,\nconsumed in place, cannot go stale) and internal machinery -- the fusion\ncurrency, the engine's child-enumerator protocol, and the capture/fold\nplumbing. The callback grammar is written into the design doc.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T20:37:17Z",
+          "tree_id": "d2090dae5288d7a9064a095d5a6a4708d9b6e8a5",
+          "url": "https://github.com/copselib/copse-dotnet/commit/980552aef0b33ba0ec0346eebdcda2db314a0311"
+        },
+        "date": 1785963418174,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 807,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 342,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27502103,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231209,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214095,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 3452,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35079,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 339,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3004,
             "unit": "bytes"
           },
           {
