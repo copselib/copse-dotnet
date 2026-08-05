@@ -137,6 +137,31 @@ with the node in hand, `store` lands for you.* Consequences:
   machinery cannot read the flow back off the node); `Action` + read-back selector (the
   author's original form — fuses into the Func anyway one layer down; sugar over sugar).
 
+## THE NORTH STAR (ratified 2026-08-05 — cross-tier flavor coherence)
+
+> **A scan is the fold-shaped dispatch: for EVERY boundary flavor,
+> `Scan(boundary, fold)` ≡ `Dispatch(boundary, (a, dts) => { foreach dt:
+> dt.Dispatch(fold(a, dt.Node)); })`.** Pinned by `CrossTierCoherenceTests`; every future
+> boundary flavor must join the battery.
+
+The invariant makes the TWO INSTRUMENTS uniform across the tiers (subsuming the
+2026-08-04 two-instruments ruling, which had them per-tier-asymmetric):
+
+- **The SEED is the virtual root's arrival**, transformed by the tier's callback — the
+  fold at every node (`fold(seed, root)`), the survey at every family (the virtual
+  root's first). One value the callback speaks over; everything participates.
+- **The SELECTOR sets each root's value directly**, bypassing the callback — known
+  per-root values, the explicit instrument. On the survey tier arrival IS the value, so
+  the bypass sets arrivals; on the fold tier it sets accumulations.
+- Consequently seed ≠ constant selector on BOTH tiers (pinned deliberately-different on
+  both), and the flavors' meanings never shift as a consumer moves between tiers.
+
+**This REVERSED the arrival-semantics decision of 2026-08-04** (selector-as-arrival,
+fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence
+(seed ≡ constant selector) at the cost of the cross-tier one, and its real motivation —
+the merged RootfixDoScan's silent root landing — had already died with the quartet. The
+one-day detour is preserved in history; the north star is the standing law.
+
 ## THE DEMOTION (ratified 2026-08-04 night — composition wins)
 
 **The Do quartet is DELETED** (`RootfixDoScan`, `LeaffixDoScan`, `RootfixDoDispatch`,
@@ -205,14 +230,15 @@ shape, and no node class is excluded from its tier's callback.**
   EMPTY, not skipped (`sources.Count == 0` is the in-band leaf test). The survey-only
   overload is the general form ("my value plus my children's rollups" needs no boundary
   at all); the seed/selector flavors are sugar wrapping the survey with a leaf branch.
-- **Scans — ARRIVAL SEMANTICS (2026-08-04 night, the "1(2,3,4)" verdict)**: the rootfix
-  selector flavor was the fold tier's own participation defect — the selector's return
-  WAS the root's accumulate and the fold skipped roots, so the pure and effect-composed
-  forms diverged at roots (composed lands the selector's value; nothing else does). Fixed:
-  the selector supplies the root's ARRIVAL, the fold fires at EVERY node
-  (`accumulator(selector(root), root)`, exactly as the seed flavor), the seed flavor is
-  the constant selector, and the invocation sentinel is n, not n − roots. The leaffix map
-  was always per-node — no change.
+- **Scans — the ARRIVAL SEMANTICS detour (2026-08-04, REVERSED 2026-08-05 by THE NORTH
+  STAR)**: the "1(2,3,4)" verdict briefly made the rootfix selector supply the root's
+  arrival with the fold firing at every node, chasing the intra-tier seed ≡
+  constant-selector equivalence. The north star showed the cross-tier equivalence is the
+  one consumers reason by, and it requires the ORIGINAL semantics: the selector sets the
+  root's accumulation directly, the bypass instrument, mirroring the dispatch selector.
+  (The detour's real motivation — the merged DoScan's silent root landing — had already
+  died with the quartet.) The seed flavor folds at every node on both tiers, unchanged
+  throughout. The leaffix map was always per-node — no change.
 - ~~**HELD OPEN (tier 3)**: the re-opened dispatch `store` seats~~ — RESOLVED BY
   DELETION (see THE DEMOTION): the Do dispatches no longer exist, so there is no store to
   merge. The pure surveys' seats are settled (rootfix subject-less; leaffix
@@ -253,7 +279,7 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |
 | boundary = an INVOCATION of the same survey: the virtual root's family goes first, (seed, roots) | boundary = an invocation of the same survey with empty sources (the fringe is every family's base case) | matched — full participation, unified: boundaries are invocations, not callbacks; flavors are sugar |
 | survey `(arrival, targets)` — subject DERIVABLE (the arrival is authored with the node in hand at the dispatch site) | survey `(subject, sources)` — subject UNDERIVABLE (upward flow: the node's value passes through nobody else's hands) | forced-different — each survey keeps exactly the seats its flow direction cannot derive (2026-08-04) |
-| fold tier: seed ≡ constant selector (both arrivals transform through the fold — a theorem, pinned) | survey tier: seed ≠ constant selector — TWO INSTRUMENTS (seed = one budget divvied by the survey at the virtual family; selector = known per-root budgets set directly, bypassing the survey) | forced-different — arrival IS the value on the survey tier, so the virtual-family survey is the only transformation point and a per-root selector cannot route through a family-grained callback (the "1(2,3),4(5,6)" probe, 2026-08-04; pinned deliberately-different) |
+| seed = the virtual root's arrival, folded at every node; selector = each root's ACCUMULATION set directly (fold bypassed at roots) | seed = the virtual root's arrival, surveyed at the virtual family; selector = each root's ARRIVAL set directly (survey bypassed) | matched — THE NORTH STAR (2026-08-05): the two instruments, uniform across tiers; seed ≠ constant selector on both, pinned deliberately-different on both; Scan(boundary, fold) ≡ fold-encoded Dispatch(boundary) for every flavor (CrossTierCoherenceTests) |
 | survey never reaches leaves (they have no children) → `store` is the every-node channel | survey reaches EVERY node since full participation → `store` derivable in principle; merge HELD OPEN (tier 3) | forced-different since full participation — was "matched, born dual" |
 
 Any future operator pair gets this audit before shipping.

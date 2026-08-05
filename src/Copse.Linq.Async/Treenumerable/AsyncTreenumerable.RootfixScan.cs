@@ -60,13 +60,20 @@ namespace Copse.Linq
           new ScanResult<TNode, TAccumulate>(default, seed)));
 
     /// <summary>
-    /// The forest-correct seeding form: every root's ARRIVAL comes from
-    /// <paramref name="rootNodeSelector"/> against that root's value, so each tree of a forest
-    /// seeds independently -- and the fold fires at EVERY node, roots included (full
-    /// participation, 2026-08-04): a root's accumulation is
-    /// <c>accumulator(selector(root), root)</c>, exactly as the seed flavor's is
-    /// <c>accumulator(seed, root)</c>. The selector personalizes WHAT arrives at each root,
-    /// never whether the root folds. The single-seed overload is this with a constant.
+    /// The per-root flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a different
+    /// spelling of it (THE NORTH STAR, 2026-08-05: boundary flavors mean the same thing on
+    /// both tiers -- docs/SCANRESULT_DESIGN.md): every root's ACCUMULATION is
+    /// <paramref name="rootNodeSelector"/>'s return, set DIRECTLY -- the fold fires only at
+    /// non-roots -- exactly as RootfixDispatch's selector sets each root's arrival directly,
+    /// bypassing the survey. Set each tree's starting value explicitly (known per-root
+    /// budgets); the SEED flavor is the other instrument -- the virtual root's arrival,
+    /// transformed by the fold at every node (<c>accumulator(seed, root)</c>), one value the
+    /// tier's callback speaks over. Consequently <c>RootfixScan(seed, fold)</c> is NOT
+    /// <c>RootfixScan(_ =&gt; seed, fold)</c> -- pinned deliberately-different, mirroring the
+    /// dispatch tier's pin -- and <c>RootfixScan(boundary, fold)</c> IS
+    /// <c>RootfixDispatch(boundary, (a, dts) =&gt; { foreach (var dt in dts)
+    /// dt.Dispatch(fold(a, dt.Node)); })</c> for EVERY boundary flavor
+    /// (CrossTierCoherenceTests, the invariant's battery).
     /// </summary>
     public static IAsyncTreenumerable<ScanResult<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
@@ -131,20 +138,22 @@ namespace Copse.Linq
       => (parentPairing, nodeContext) =>
         new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
 
-    // The root boundary, written once so consumers never hand-roll the forest-root check.
-    // ARRIVAL SEMANTICS (2026-08-04, full participation on the fold tier): the selector
-    // supplies the root's ARRIVAL -- what the virtual forest root hands down -- and the fold
-    // fires at EVERY node, roots included: root accumulate = accumulator(selector(root), root),
-    // exactly as the seed flavor's is accumulator(seed, root). (The prior semantics -- the
-    // selector's return WAS the root's accumulate, the fold skipped at roots -- excluded the
-    // root class from the tier's callback and made the pure and effect-composed forms diverge.)
-    // The unused sentinel seed is default -- the selector branch is the only reader of roots.
+    // The root boundary, written once so consumers never hand-roll the forest-root check: a
+    // root (parent pairing parked at the virtual forest root) takes the selector's return AS
+    // its accumulation -- the bypass instrument, THE NORTH STAR's scan half (2026-08-05):
+    // cross-tier flavor coherence selects these semantics, because the dispatch selector sets
+    // roots' arrivals directly and arrival IS the value there, so the fold-encoded dispatch
+    // and this scan agree at roots only if the selector bypasses the fold. (The one-day
+    // arrival-semantics detour -- fold(selector(root), root) -- optimized the lesser,
+    // intra-tier equivalence and was reversed; its real motivation, the merged DoScan's
+    // silent root landing, died with the quartet.) The unused sentinel seed is default --
+    // the selector branch is the only reader of roots.
     private static Func<NodeContext<ScanResult<TNode, TAccumulate>>, NodeContext<TNode>, ScanResult<TNode, TAccumulate>> PairingAccumulatorWithRootSelector<TNode, TAccumulate>(
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => (parentPairing, nodeContext) =>
         parentPairing.Position.IsForestRoot
-        ? new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(rootNodeSelector(nodeContext.Node, nodeContext.Position), nodeContext.Node))
+        ? new ScanResult<TNode, TAccumulate>(nodeContext.Node, rootNodeSelector(nodeContext.Node, nodeContext.Position))
         : new ScanResult<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
   }
 }

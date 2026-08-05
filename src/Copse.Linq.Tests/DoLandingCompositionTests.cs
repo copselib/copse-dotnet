@@ -68,11 +68,10 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void RootfixScanLanding_SelectorFlavor_RootsFold()
+    public void RootfixScanLanding_SelectorFlavor_RootsLandTheSelectorValue()
     {
-      // Arrival semantics (full participation on the fold tier): the selector supplies the
-      // root's ARRIVAL and the fold fires at every node -- the root lands fold(10, root), not
-      // the selector's bare return.
+      // The bypass instrument (THE NORTH STAR, 2026-08-05): the selector sets the root's
+      // accumulation directly -- the root lands 100 verbatim, the fold fires from there.
       var corpus = Corpus();
 
       corpus
@@ -81,8 +80,8 @@ namespace Copse.Linq.Tests
         .Select(pairing => pairing.Node)
         .PreorderTraversal().ToArray();
 
-      CollectionAssert.AreEqual(new[] { 110m, 115m, 116m, 117m, 114m }, LandedPreorder(corpus),
-        "the constant selector must land exactly what the seed flavor lands -- roots fold under both");
+      CollectionAssert.AreEqual(new[] { 100m, 105m, 106m, 107m, 104m }, LandedPreorder(corpus),
+        "roots land the selector's return directly; children fold from it");
     }
 
     [TestMethod]
