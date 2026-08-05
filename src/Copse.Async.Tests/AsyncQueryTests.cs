@@ -25,11 +25,11 @@ namespace Copse.Async.Tests
     {
       foreach (var tree in Trees)
       {
-        Func<NodeContext<string>, bool> hasB = nc => nc.Node == "b";
+        Func<string, bool> hasB = node => node == "b";
         Assert.AreEqual(Sync(tree).AnyNodes(hasB), await Async(tree).AnyNodesAsync(hasB), $"AnyNodes {tree}");
-        Assert.AreEqual(Sync(tree).AnyNodes(nc => nc.Node == "z"), await Async(tree).AnyNodesAsync(nc => nc.Node == "z"), $"AnyNodes-none {tree}");
+        Assert.AreEqual(Sync(tree).AnyNodes(node => node == "z"), await Async(tree).AnyNodesAsync(node => node == "z"), $"AnyNodes-none {tree}");
 
-        Func<NodeContext<string>, bool> notZ = nc => nc.Node != "z";
+        Func<string, bool> notZ = node => node != "z";
         Assert.AreEqual(Sync(tree).AllNodes(notZ), await Async(tree).AllNodesAsync(notZ), $"AllNodes {tree}");
         Assert.AreEqual(Sync(tree).AllNodes(hasB), await Async(tree).AllNodesAsync(hasB), $"AllNodes-not {tree}");
       }

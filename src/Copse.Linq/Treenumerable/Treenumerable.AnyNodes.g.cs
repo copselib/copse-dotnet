@@ -14,12 +14,46 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
+    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static bool AnyNodes<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<TNode, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node), treeTraversalStrategy);
+
+    /// <summary>The positional flavor: the node's value and its position.</summary>
+    public static bool AnyNodes<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate,
+      TreeTraversalStrategy treeTraversalStrategy = default)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy);
+
+    public static bool AnyNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
+
+    public static bool AnyNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+
+    public static bool AnyNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
+
+    public static bool AnyNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+
+    private static bool AnyNodesCore<TNode>(
+      ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      TreeTraversalStrategy treeTraversalStrategy)
     {
       var nodeTraversalStrategies =
         treeTraversalStrategy == TreeTraversalStrategy.BreadthFirst
@@ -37,8 +71,8 @@ namespace Copse.Linq
       return false;
     }
 
-    public static bool AnyNodes<TNode>(
-      this IDepthFirstTreenumerable<TNode> source,
+    private static bool AnyNodesCore<TNode>(
+      IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate)
     {
       var treenumerator = source.GetDepthFirstTreenumerator();
@@ -52,8 +86,8 @@ namespace Copse.Linq
       return false;
     }
 
-    public static bool AnyNodes<TNode>(
-      this IBreadthFirstTreenumerable<TNode> source,
+    private static bool AnyNodesCore<TNode>(
+      IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate)
     {
       var treenumerator = source.GetBreadthFirstTreenumerator();

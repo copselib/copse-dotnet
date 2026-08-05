@@ -280,8 +280,8 @@ namespace Copse.Linq.Tests
         foreach (var strategyNode in nodes)
         foreach (var consumerStrategy in consumerStrategies)
         {
-          NodeTraversalStrategies Selector(NodeContext<string> nodeContext)
-            => nodeContext.Node == strategyNode ? consumerStrategy : NodeTraversalStrategies.TraverseAll;
+          NodeTraversalStrategies Selector(string node)
+            => node == strategyNode ? consumerStrategy : NodeTraversalStrategies.TraverseAll;
 
           var target = pruneTarget;
 

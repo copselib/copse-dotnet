@@ -196,6 +196,28 @@ fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence
 the merged RootfixDoScan's silent root landing — had already died with the quartet. The
 one-day detour is preserved in history; the north star is the standing law.
 
+## The callback grammar (articulated 2026-08-04; NodeContext retired from the surface 2026-08-05)
+
+Every consumer-facing callback in the library follows one grammar:
+
+- **Value flavor primary, positional arity-split**: a callback receives the NODE; rules
+  that read coordinates take the `(node, position)` overload (positions are
+  machinery-owned and underivable — justified seats, rationed by arity). Forced on the
+  library by Select/Where composition; swept family-wide 2026-08-05 (AnyNodes, AllNodes,
+  CountNodes, TakeNodesUntil/While, GetTraversals' strategies selector, OrderChildrenBy's
+  key selector — the aggregation family was already there).
+- **The Aggregate pair travels intact**: wherever a fold happens, `(state, increment)`
+  order is preserved (rootfix fold `(acc, node)`; edge accumulator `(left, right)`).
+- **Applicators are target-first**: a callback whose job is operating on a node leads
+  with it (the old store's `(node, value)`; the leaffix survey's subject).
+- **Context prefixes**: contextual extras go in front of an intact pair, never inside it.
+
+`NodeContext<T>` consequently appears in NO public callback signature. Its lawful homes:
+the view element types (`DispatchTarget`/`DispatchSource.Context` — immediate, consumed
+in place, cannot go stale, per the position ruling) and internal machinery (the
+SelectWhere fusion currency; the engine's child-enumerator protocol; capture/fold
+plumbing; the test scenario corpus, adapted at single call sites).
+
 ## The readiness clause (ratified 2026-08-05 — survey order)
 
 A survey fires when its data is ready: after the arrival lands (rootfix — parents before

@@ -11,20 +11,39 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The full depth-first visit stream (every scheduling/visiting visit), with a per-node strategy selector.</summary>
+    /// <summary>
+    /// The full depth-first visit stream (every scheduling/visiting visit), with a per-node
+    /// strategy selector. Value flavor primary; the positional flavor is the arity-split (the
+    /// Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeTraversalStrategiesSelector);
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node));
+    }
+
+    /// <summary>The positional flavor: the node's value and its position.</summary>
+    public static IEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+    {
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position));
     }
 
     /// <summary>The full breadth-first visit stream, with a per-node strategy selector.</summary>
     public static IEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(source.GetBreadthFirstTreenumerator, nodeTraversalStrategiesSelector);
+      return EnumerateTraversal(source.GetBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node));
+    }
+
+    public static IEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+    {
+      return EnumerateTraversal(source.GetBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position));
     }
 
     /// <summary>The full depth-first visit stream (TraverseAll).</summary>
@@ -45,9 +64,17 @@ namespace Copse.Linq
     public static IEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
       this ITreenumerable<TNode> source,
       TreeTraversalStrategy treeTraversalStrategy,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeTraversalStrategiesSelector);
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node));
+    }
+
+    public static IEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
+      this ITreenumerable<TNode> source,
+      TreeTraversalStrategy treeTraversalStrategy,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+    {
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position));
     }
 
     /// <summary>The full visit stream in the given dimension (TraverseAll).</summary>

@@ -189,10 +189,10 @@ namespace Copse.Linq.Tests
         .RootfixScan("", (accumulate, node) => accumulate + node)
         .Select(pairing => pairing.Accumulate);
 
-      Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
-        nodeContext =>
+      Func<string, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
+        node =>
         {
-          var testNodeIndex = Array.IndexOf(testNodes, nodeContext.Node);
+          var testNodeIndex = Array.IndexOf(testNodes, node);
 
           if (testNodeIndex == -1)
             return NodeTraversalStrategies.TraverseAll;

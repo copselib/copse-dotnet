@@ -59,14 +59,14 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(
         TreeSerializer.DeserializeDepthFirstTree(expectedAscending).GetTraversal(treeTraversalStrategy).ToArray(),
         TreeSerializer.DeserializeDepthFirstTree(treeString)
-          .OrderChildrenBy(nodeContext => nodeContext.Node)
+          .OrderChildrenBy(node => node)
           .GetTraversal(treeTraversalStrategy).ToArray(),
         $"ascending mismatch for {treeString}");
 
       CollectionAssert.AreEqual(
         TreeSerializer.DeserializeDepthFirstTree(expectedDescending).GetTraversal(treeTraversalStrategy).ToArray(),
         TreeSerializer.DeserializeDepthFirstTree(treeString)
-          .OrderChildrenByDescending(nodeContext => nodeContext.Node)
+          .OrderChildrenByDescending(node => node)
           .GetTraversal(treeTraversalStrategy).ToArray(),
         $"descending mismatch for {treeString}");
     }
@@ -86,7 +86,7 @@ namespace Copse.Linq.Tests
             .Invert()
             .GetTraversal(treeTraversalStrategy).ToArray(),
           TreeSerializer.DeserializeDepthFirstTree(treeString)
-            .OrderChildrenByDescending(nodeContext => nodeContext.Position.SiblingIndex)
+            .OrderChildrenByDescending((_, position) => position.SiblingIndex)
             .GetTraversal(treeTraversalStrategy).ToArray(),
           $"{treeTraversalStrategy} mismatch for {treeString}");
       }
@@ -99,14 +99,14 @@ namespace Copse.Linq.Tests
       // directions (LINQ ordering semantics -- descending does not reverse ties).
       var ascending =
         TreeSerializer.DeserializeDepthFirstTree("ax,ay,b")
-        .OrderChildrenBy(nodeContext => nodeContext.Node[0])
+        .OrderChildrenBy(node => node[0])
         .PreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "ax", "ay", "b" }, ascending);
 
       var descending =
         TreeSerializer.DeserializeDepthFirstTree("ax,ay,b")
-        .OrderChildrenByDescending(nodeContext => nodeContext.Node[0])
+        .OrderChildrenByDescending(node => node[0])
         .PreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "b", "ax", "ay" }, descending);
@@ -120,13 +120,13 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(
         new[] { "a", "B" },
         TreeSerializer.DeserializeDepthFirstTree("B,a")
-          .OrderChildrenBy(nodeContext => nodeContext.Node)
+          .OrderChildrenBy(node => node)
           .PreorderTraversal().ToArray());
 
       CollectionAssert.AreEqual(
         new[] { "B", "a" },
         TreeSerializer.DeserializeDepthFirstTree("B,a")
-          .OrderChildrenBy(nodeContext => nodeContext.Node, StringComparer.Ordinal)
+          .OrderChildrenBy(node => node, StringComparer.Ordinal)
           .PreorderTraversal().ToArray());
     }
 
@@ -137,10 +137,10 @@ namespace Copse.Linq.Tests
 
       var ordered =
         TreeSerializer.DeserializeDepthFirstTree("b,a")
-        .OrderChildrenBy(nodeContext =>
+        .OrderChildrenBy((node, position) =>
         {
-          seenSiblingIndexesByNode.Add(nodeContext.Node, nodeContext.Position.SiblingIndex); // Add throws on a re-run
-          return nodeContext.Node;
+          seenSiblingIndexesByNode.Add(node, position.SiblingIndex); // Add throws on a re-run
+          return node;
         });
 
       Assert.AreEqual(0, seenSiblingIndexesByNode.Count); // deferred: nothing runs until the first pull
@@ -164,11 +164,11 @@ namespace Copse.Linq.Tests
     {
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
-      var viaDisclosureRule = narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node);
+      var viaDisclosureRule = narrowSource.OrderChildrenBy(node => node);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
-        .OrderChildrenBy(nodeContext => nodeContext.Node);
+        .OrderChildrenBy(node => node);
 
       foreach (var treeTraversalStrategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -187,13 +187,13 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(
         BufferLayout.Preorder,
-        TreeSerializer.DeserializeDepthFirstTree(tree).OrderChildrenBy(nodeContext => nodeContext.Node).NativeLayout,
+        TreeSerializer.DeserializeDepthFirstTree(tree).OrderChildrenBy(node => node).NativeLayout,
         "depth-first entry");
 
       Assert.AreEqual(
         BufferLayout.LevelOrder,
         ((IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(tree))
-          .OrderChildrenBy(nodeContext => nodeContext.Node).NativeLayout,
+          .OrderChildrenBy(node => node).NativeLayout,
         "breadth-first entry");
     }
 
@@ -210,7 +210,7 @@ namespace Copse.Linq.Tests
         return TreeSerializer.DeserializeDepthFirstTree("a(c,b(e,d))");
       });
 
-      var ordered = countingSource.OrderChildrenBy(nodeContext => nodeContext.Node);
+      var ordered = countingSource.OrderChildrenBy(node => node);
       Assert.AreEqual(0, sourceBuilds, "composition must not walk the source");
 
       ordered.GetTraversal(TreeTraversalStrategy.BreadthFirst).ToArray();
@@ -237,7 +237,7 @@ namespace Copse.Linq.Tests
 
         var ordered =
           TreeSerializer.DeserializeDepthFirstTree(treeString)
-          .OrderChildrenBy(nodeContext => nodeContext.Node);
+          .OrderChildrenBy(node => node);
 
         CollectionAssert.AreEqual(
           expectedTree.GetTraversal(firstStrategy).ToArray(),

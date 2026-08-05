@@ -70,7 +70,7 @@ namespace Copse.Linq.Tests
       ("Select(upper)", t => t.Select(n => n.ToUpperInvariant())),
       ("PruneBefore(== b)", t => t.PruneBefore(n => n == "b")),
       ("PruneAfter(== b)", t => t.PruneAfter(n => n == "b")),
-      ("TakeNodesWhile(!= e)", t => t.TakeNodesWhile(nodeContext => nodeContext.Node != "e", false)),
+      ("TakeNodesWhile(!= e)", t => t.TakeNodesWhile(node => node != "e", false)),
       ("Union", t => t.Union(EngineTree.Parse("a(x,b(y))")).Select(n => n.ToString())),
       ("RootfixScan(concat)", t => t.RootfixScan("*", (accumulate, node) => accumulate + node).Select(pairing => pairing.Accumulate)),
       ("Invert+Memoize", t => t.Invert().Memoize()),

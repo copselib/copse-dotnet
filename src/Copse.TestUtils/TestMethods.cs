@@ -38,7 +38,11 @@ namespace Copse.TestUtils
       if (operation != null)
         treenumerable = operation(treenumerable);
 
-      var traversal = treenumerable.GetTraversal(treeTraversalStrategy, nodeTraversalStrategiesSelector);
+      // The scenario corpus speaks NodeContext (internal-state camp); adapt at the operator's
+      // positional flavor here so hundreds of scenario definitions stay untouched.
+      var traversal = treenumerable.GetTraversal(
+        treeTraversalStrategy,
+        (node, position) => nodeTraversalStrategiesSelector(new NodeContext<string>(node, position)));
 
       // Act
       Debug.WriteLine($"{Environment.NewLine}----- Actual Values -----");

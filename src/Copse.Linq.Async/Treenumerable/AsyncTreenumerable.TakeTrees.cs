@@ -10,21 +10,21 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       int count)
       => source.TakeNodesUntil(
-        visit => visit.Position.Depth == 0 && visit.Position.SiblingIndex == count,
+        (_, position) => position.Depth == 0 && position.SiblingIndex == count,
         false);
 
     public static IAsyncDepthFirstTreenumerable<TNode> TakeTrees<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       int count)
       => source.TakeNodesUntil(
-        visit => visit.Position.Depth == 0 && visit.Position.SiblingIndex == count,
+        (_, position) => position.Depth == 0 && position.SiblingIndex == count,
         false);
 
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeTrees<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       int count)
       => source.TakeNodesUntil(
-        visit => visit.Position.Depth == 0 && visit.Position.SiblingIndex == count,
+        (_, position) => position.Depth == 0 && position.SiblingIndex == count,
         false);
   }
 }

@@ -115,8 +115,8 @@ namespace Copse.Async.Tests
       foreach (var tree in Trees)
       {
         // Descending so the (already alphabetical) corpus actually reorders.
-        var sync = Sync(tree).OrderChildrenByDescending(nc => nc.Node);
-        var async = Async(tree).OrderChildrenByDescending(nc => nc.Node);
+        var sync = Sync(tree).OrderChildrenByDescending(node => node);
+        var async = Async(tree).OrderChildrenByDescending(node => node);
 
         CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");

@@ -448,7 +448,7 @@ namespace Copse.Linq.Tests
       string target,
       NodeTraversalStrategies strategy)
       => tree
-        .GetTraversal(traversal, nc => nc.Node == target ? strategy : NodeTraversalStrategies.TraverseAll)
+        .GetTraversal(traversal, node => node == target ? strategy : NodeTraversalStrategies.TraverseAll)
         .Select(v => (v.Mode, v.Position.Depth, v.Position.SiblingIndex, v.VisitCount, v.Node))
         .ToList();
 

@@ -10,22 +10,43 @@ namespace Copse.Linq
 {
   public static partial class AsyncTreenumerable
   {
-    /// <summary>The full depth-first visit stream (every scheduling/visiting visit), with a per-node strategy selector.</summary>
+    /// <summary>
+    /// The full depth-first visit stream (every scheduling/visiting visit), with a per-node
+    /// strategy selector. Value flavor primary; the positional flavor is the arity-split (the
+    /// Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       CancellationToken cancellationToken = default)
     {
-      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, nodeTraversalStrategiesSelector, cancellationToken);
+      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
+    }
+
+    /// <summary>The positional flavor: the node's value and its position.</summary>
+    public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      CancellationToken cancellationToken = default)
+    {
+      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
     }
 
     /// <summary>The full breadth-first visit stream, with a per-node strategy selector.</summary>
     public static IAsyncEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       CancellationToken cancellationToken = default)
     {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeTraversalStrategiesSelector, cancellationToken);
+      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
+    }
+
+    public static IAsyncEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      CancellationToken cancellationToken = default)
+    {
+      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
     }
 
     /// <summary>The full depth-first visit stream (TraverseAll).</summary>
@@ -48,10 +69,19 @@ namespace Copse.Linq
     public static IAsyncEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
       this IAsyncTreenumerable<TNode> source,
       TreeTraversalStrategy treeTraversalStrategy,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       CancellationToken cancellationToken = default)
     {
-      return EnumerateTraversalAsync(() => source.GetAsyncTreenumerator(treeTraversalStrategy), nodeTraversalStrategiesSelector, cancellationToken);
+      return EnumerateTraversalAsync(() => source.GetAsyncTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
+    }
+
+    public static IAsyncEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      TreeTraversalStrategy treeTraversalStrategy,
+      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      CancellationToken cancellationToken = default)
+    {
+      return EnumerateTraversalAsync(() => source.GetAsyncTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
     }
 
     /// <summary>The full visit stream in the given dimension (TraverseAll).</summary>

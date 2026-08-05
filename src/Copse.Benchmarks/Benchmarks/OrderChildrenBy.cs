@@ -17,28 +17,28 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle()
     {
-      ITreenumerable<int> ordered = CanonicalTrees.MegaTriangleTree().OrderChildrenBy(nodeContext => nodeContext.Node);
+      ITreenumerable<int> ordered = CanonicalTrees.MegaTriangleTree().OrderChildrenBy(node => node);
       ordered.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      ITreenumerable<int> ordered = CanonicalTrees.MegaTriangleTree().OrderChildrenBy(nodeContext => nodeContext.Node);
+      ITreenumerable<int> ordered = CanonicalTrees.MegaTriangleTree().OrderChildrenBy(node => node);
       ordered.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      ITreenumerable<int> ordered = CanonicalTrees.MegaChainTree().OrderChildrenBy(nodeContext => nodeContext.Node);
+      ITreenumerable<int> ordered = CanonicalTrees.MegaChainTree().OrderChildrenBy(node => node);
       ordered.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      ITreenumerable<int> ordered = CanonicalTrees.MegaChainTree().OrderChildrenBy(nodeContext => nodeContext.Node);
+      ITreenumerable<int> ordered = CanonicalTrees.MegaChainTree().OrderChildrenBy(node => node);
       ordered.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }
@@ -55,28 +55,28 @@ namespace Copse.Benchmarks
     public void Bft_Triangle()
     {
       var narrowSource = (IBreadthFirstTreenumerable<int>)CanonicalTrees.MegaTriangleTree();
-      narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node).Consume(TreeTraversalStrategy.BreadthFirst);
+      narrowSource.OrderChildrenBy(node => node).Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Triangle()
     {
       var narrowSource = (IBreadthFirstTreenumerable<int>)CanonicalTrees.MegaTriangleTree();
-      narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node).Consume(TreeTraversalStrategy.DepthFirst);
+      narrowSource.OrderChildrenBy(node => node).Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
       var narrowSource = (IBreadthFirstTreenumerable<int>)CanonicalTrees.MegaChainTree();
-      narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node).Consume(TreeTraversalStrategy.BreadthFirst);
+      narrowSource.OrderChildrenBy(node => node).Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
       var narrowSource = (IBreadthFirstTreenumerable<int>)CanonicalTrees.MegaChainTree();
-      narrowSource.OrderChildrenBy(nodeContext => nodeContext.Node).Consume(TreeTraversalStrategy.DepthFirst);
+      narrowSource.OrderChildrenBy(node => node).Consume(TreeTraversalStrategy.DepthFirst);
     }
   }
 }

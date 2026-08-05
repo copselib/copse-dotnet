@@ -74,14 +74,14 @@ namespace Copse.Tests
       Debug.WriteLine("-----Breadth First-----");
       var breadthFirst =
         treenumerable
-        .GetBreadthFirstTraversal(testScenario.NodeTraversalStrategiesSelector)
+        .GetBreadthFirstTraversal((node, position) => testScenario.NodeTraversalStrategiesSelector(new NodeContext<string>(node, position)))
         .Do(x => Debug.WriteLine(x))
         .ToArray();
 
       Debug.WriteLine($"{Environment.NewLine}-----Depth First------");
       var depthFirst =
         treenumerable
-        .GetDepthFirstTraversal(testScenario.NodeTraversalStrategiesSelector)
+        .GetDepthFirstTraversal((node, position) => testScenario.NodeTraversalStrategiesSelector(new NodeContext<string>(node, position)))
         .Do(x => Debug.WriteLine(x))
         .ToArray();
 
@@ -120,8 +120,8 @@ namespace Copse.Tests
 
       var moveNextEnumerable =
         depthFirstTest
-        ? treenumerable.GetDepthFirstTraversal(testScenario.NodeTraversalStrategiesSelector)
-        : treenumerable.GetBreadthFirstTraversal(testScenario.NodeTraversalStrategiesSelector);
+        ? treenumerable.GetDepthFirstTraversal((node, position) => testScenario.NodeTraversalStrategiesSelector(new NodeContext<string>(node, position)))
+        : treenumerable.GetBreadthFirstTraversal((node, position) => testScenario.NodeTraversalStrategiesSelector(new NodeContext<string>(node, position)));
 
       // Act
       Debug.WriteLine($"{Environment.NewLine}----- Actual Values -----");

@@ -70,7 +70,7 @@ namespace Copse.Linq.Tests
 
         var scheduled =
           tree
-          .GetTraversal(strategy, nc => nc.Node == "a" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll)
+          .GetTraversal(strategy, node => node == "a" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll)
           .Where(visit => visit.Mode == TreenumeratorMode.SchedulingNode)
           .Select(visit => visit.Node)
           .ToList();

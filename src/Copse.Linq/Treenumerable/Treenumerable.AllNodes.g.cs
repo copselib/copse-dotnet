@@ -11,23 +11,39 @@ namespace Copse.Linq
   {
     // All(p) == !Any(!p). (Fixed 2026-07-05: the outer negation was missing, so the operator
     // returned the complement of its name -- "at least one node fails" -- with no test coverage
-    // to catch it. Regression-pinned in AllNodesTests.)
+    // to catch it. Regression-pinned in AllNodesTests.) Value flavor primary; positional is
+    // the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     public static bool AllNodes<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<TNode, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default)
-    {
-      return !source.AnyNodes(nodeContext => !predicate(nodeContext), treeTraversalStrategy);
-    }
+      => !source.AnyNodes(node => !predicate(node), treeTraversalStrategy);
+
+    /// <summary>The positional flavor: the node's value and its position.</summary>
+    public static bool AllNodes<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate,
+      TreeTraversalStrategy treeTraversalStrategy = default)
+      => !source.AnyNodes((node, position) => !predicate(node, position), treeTraversalStrategy);
 
     public static bool AllNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-      => !source.AnyNodes(nodeContext => !predicate(nodeContext));
+      Func<TNode, bool> predicate)
+      => !source.AnyNodes(node => !predicate(node));
+
+    public static bool AllNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => !source.AnyNodes((node, position) => !predicate(node, position));
 
     public static bool AllNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-      => !source.AnyNodes(nodeContext => !predicate(nodeContext));
+      Func<TNode, bool> predicate)
+      => !source.AnyNodes(node => !predicate(node));
+
+    public static bool AllNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => !source.AnyNodes((node, position) => !predicate(node, position));
   }
 }

@@ -225,12 +225,12 @@ namespace Copse.Linq.Tests
 
       var sut =
         treenumerable
-        .TakeNodesUntil(nodeContext => nodeContext.Node == filter, keepNode);
+        .TakeNodesUntil(node => node == filter, keepNode);
 
-      Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
-        nodeContext =>
+      Func<string, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
+        node =>
         {
-          var testNodeIndex = Array.IndexOf(testNodes, nodeContext.Node);
+          var testNodeIndex = Array.IndexOf(testNodes, node);
 
           if (testNodeIndex == -1)
             return NodeTraversalStrategies.TraverseAll;

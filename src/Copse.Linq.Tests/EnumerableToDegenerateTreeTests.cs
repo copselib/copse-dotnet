@@ -173,10 +173,10 @@ namespace Copse.Linq.Tests
 
       var sut = enumerable.ToDegenerateTree();
 
-      Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
-        nodeContext =>
+      Func<string, NodeTraversalStrategies> nodeTraversalStrategiesSelector =
+        node =>
         {
-          var testNodeIndex = Array.IndexOf(testNodes, nodeContext.Node);
+          var testNodeIndex = Array.IndexOf(testNodes, node);
 
           if (testNodeIndex == -1)
             return NodeTraversalStrategies.TraverseAll;

@@ -227,10 +227,10 @@ namespace Copse.Linq.Tests
         .PruneBefore(n => n == skippedNodes[0])
         .PruneBefore(n => n == skippedNodes[1]);
 
-      Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategySelector =
-        nodeContext =>
+      Func<string, NodeTraversalStrategies> nodeTraversalStrategySelector =
+        node =>
         {
-          var testNodeIndex = Array.IndexOf(testNodes, nodeContext.Node);
+          var testNodeIndex = Array.IndexOf(testNodes, node);
 
           if (testNodeIndex == -1)
             return NodeTraversalStrategies.TraverseAll;

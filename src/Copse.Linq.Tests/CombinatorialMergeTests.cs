@@ -202,9 +202,9 @@ namespace Copse.Linq.Tests
 
           total++;
 
-          NodeTraversalStrategies Selector(NodeContext<MergeNode<string, string>> nodeContext)
+          NodeTraversalStrategies Selector(MergeNode<string, string> node)
           {
-            var key = Key(nodeContext.Node);
+            var key = Key(node);
             foreach (var pair in assignment)
               if (pair.Node == key)
                 return pair.NodeTraversalStrategy;

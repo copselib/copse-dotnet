@@ -54,7 +54,7 @@ namespace Copse.Linq.Tests
       var result =
         tree
           .PruneBefore((n, position) => position.Depth == 2)
-          .AnyNodes(ctx => ctx.Node == "d", TreeTraversalStrategy.DepthFirst);
+          .AnyNodes(node => node == "d", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsTrue(result);
     }
@@ -68,7 +68,7 @@ namespace Copse.Linq.Tests
       var result =
         tree
           .PruneBefore((n, position) => position.Depth == 2)
-          .AnyNodes(ctx => ctx.Node == "c", TreeTraversalStrategy.DepthFirst);
+          .AnyNodes(node => node == "c", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);
     }
@@ -84,7 +84,7 @@ namespace Copse.Linq.Tests
       var foundExisting =
         tree
           .Where(_ => true)
-          .AnyNodes(ctx => ctx.Node == "e", TreeTraversalStrategy.DepthFirst);
+          .AnyNodes(node => node == "e", TreeTraversalStrategy.DepthFirst);
 
       var foundMissing =
         tree
@@ -105,9 +105,9 @@ namespace Copse.Linq.Tests
       // Remove b; c and d are promoted under a.
       var pruned = tree.Where(ctx => ctx != "b");
 
-      Assert.IsTrue(pruned.AnyNodes(ctx => ctx.Node == "c", TreeTraversalStrategy.DepthFirst));
-      Assert.IsTrue(pruned.AnyNodes(ctx => ctx.Node == "d", TreeTraversalStrategy.DepthFirst));
-      Assert.IsFalse(pruned.AnyNodes(ctx => ctx.Node == "b", TreeTraversalStrategy.DepthFirst));
+      Assert.IsTrue(pruned.AnyNodes(node => node == "c", TreeTraversalStrategy.DepthFirst));
+      Assert.IsTrue(pruned.AnyNodes(node => node == "d", TreeTraversalStrategy.DepthFirst));
+      Assert.IsFalse(pruned.AnyNodes(node => node == "b", TreeTraversalStrategy.DepthFirst));
     }
   }
 }

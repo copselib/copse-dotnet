@@ -76,7 +76,7 @@ namespace Copse.Linq.Tests
         .Intersection(rightTreenumerable)
         .Select(mergeNodeContext => mergeNodeContext.Left);
 
-      Func<NodeContext<string>, NodeTraversalStrategies> traverseAll =
+      Func<string, NodeTraversalStrategies> traverseAll =
         _ => NodeTraversalStrategies.TraverseAll;
 
       var expected =

@@ -14,8 +14,8 @@ namespace Copse.Linq.Tests
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
-      Assert.IsTrue(tree.AllNodes(nodeContext => nodeContext.Node.Length == 1));
-      Assert.IsTrue(tree.AllNodes(nodeContext => nodeContext.Node.Length == 1, TreeTraversalStrategy.BreadthFirst));
+      Assert.IsTrue(tree.AllNodes(node => node.Length == 1));
+      Assert.IsTrue(tree.AllNodes(node => node.Length == 1, TreeTraversalStrategy.BreadthFirst));
     }
 
     [TestMethod]
@@ -23,8 +23,8 @@ namespace Copse.Linq.Tests
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
-      Assert.IsFalse(tree.AllNodes(nodeContext => nodeContext.Node != "d"));
-      Assert.IsFalse(tree.AllNodes(nodeContext => nodeContext.Node != "d", TreeTraversalStrategy.BreadthFirst));
+      Assert.IsFalse(tree.AllNodes(node => node != "d"));
+      Assert.IsFalse(tree.AllNodes(node => node != "d", TreeTraversalStrategy.BreadthFirst));
     }
 
     [TestMethod]
@@ -38,10 +38,10 @@ namespace Copse.Linq.Tests
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)");
 
-      Assert.IsTrue(((IDepthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node.Length == 1));
-      Assert.IsFalse(((IDepthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node != "d"));
-      Assert.IsTrue(((IBreadthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node.Length == 1));
-      Assert.IsFalse(((IBreadthFirstTreenumerable<string>)tree).AllNodes(nodeContext => nodeContext.Node != "d"));
+      Assert.IsTrue(((IDepthFirstTreenumerable<string>)tree).AllNodes(node => node.Length == 1));
+      Assert.IsFalse(((IDepthFirstTreenumerable<string>)tree).AllNodes(node => node != "d"));
+      Assert.IsTrue(((IBreadthFirstTreenumerable<string>)tree).AllNodes(node => node.Length == 1));
+      Assert.IsFalse(((IBreadthFirstTreenumerable<string>)tree).AllNodes(node => node != "d"));
     }
   }
 }

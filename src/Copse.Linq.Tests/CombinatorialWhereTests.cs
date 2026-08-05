@@ -54,10 +54,10 @@ namespace Copse.Linq.Tests
         var composeOperations = (bool)data[3];
         var pairs = (CombinatorialTestData.NodeAndTraversalStrategy[])data[4];
 
-        NodeTraversalStrategies Selector(NodeContext<string> nodeContext)
+        NodeTraversalStrategies Selector(string node)
         {
           foreach (var pair in pairs)
-            if (pair.Node == nodeContext.Node)
+            if (pair.Node == node)
               return pair.NodeTraversalStrategy;
           return NodeTraversalStrategies.TraverseAll;
         }

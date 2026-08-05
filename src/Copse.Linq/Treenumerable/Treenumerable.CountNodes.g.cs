@@ -11,15 +11,56 @@ namespace Copse.Linq
   {
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
-    /// this counts scheduling visits. Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static int CountNodes<TNode>(this ITreenumerable<TNode> source)
-      => source.CountNodes(_ => true);
+      => CountNodesCore(source, _ => true, default);
 
     public static int CountNodes<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<TNode, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node), treeTraversalStrategy);
+
+    /// <summary>The positional flavor: the node's value and its position.</summary>
+    public static int CountNodes<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate,
+      TreeTraversalStrategy treeTraversalStrategy = default)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy);
+
+    public static int CountNodes<TNode>(this IDepthFirstTreenumerable<TNode> source)
+      => CountNodesCore(source, _ => true);
+
+    public static int CountNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node));
+
+    public static int CountNodes<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+
+    public static int CountNodes<TNode>(this IBreadthFirstTreenumerable<TNode> source)
+      => CountNodesCore(source, _ => true);
+
+    public static int CountNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node));
+
+    public static int CountNodes<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
+      => CountNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+
+    private static int CountNodesCore<TNode>(
+      ITreenumerable<TNode> source,
+      Func<NodeContext<TNode>, bool> predicate,
+      TreeTraversalStrategy treeTraversalStrategy)
     {
       if (source == null)
         return 0;
@@ -37,11 +78,8 @@ namespace Copse.Linq
       return result;
     }
 
-    public static int CountNodes<TNode>(this IDepthFirstTreenumerable<TNode> source)
-      => source.CountNodes(_ => true);
-
-    public static int CountNodes<TNode>(
-      this IDepthFirstTreenumerable<TNode> source,
+    private static int CountNodesCore<TNode>(
+      IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate)
     {
       if (source == null)
@@ -60,11 +98,8 @@ namespace Copse.Linq
       return result;
     }
 
-    public static int CountNodes<TNode>(this IBreadthFirstTreenumerable<TNode> source)
-      => source.CountNodes(_ => true);
-
-    public static int CountNodes<TNode>(
-      this IBreadthFirstTreenumerable<TNode> source,
+    private static int CountNodesCore<TNode>(
+      IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate)
     {
       if (source == null)

@@ -97,8 +97,8 @@ namespace Copse.Linq.Tests
             {
               total++;
 
-              NodeTraversalStrategies Selector(NodeContext<string> nodeContext)
-                => strategyNode != null && nodeContext.Node.StartsWith(strategyNode)
+              NodeTraversalStrategies Selector(string node)
+                => strategyNode != null && node.StartsWith(strategyNode)
                   ? consumerStrategy
                   : NodeTraversalStrategies.TraverseAll;
 

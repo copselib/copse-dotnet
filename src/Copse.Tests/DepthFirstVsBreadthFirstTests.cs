@@ -88,8 +88,8 @@ namespace Copse.Tests
               for (int i = 0; i < k; i++)
                 map[nodes[nodeCombination[i]]] = strategyTuple[i];
 
-              NodeTraversalStrategies Selector(NodeContext<string> nodeContext) =>
-                map.TryGetValue(nodeContext.Node, out var strategy)
+              NodeTraversalStrategies Selector(string node) =>
+                map.TryGetValue(node, out var strategy)
                 ? strategy
                 : NodeTraversalStrategies.TraverseAll;
 

@@ -77,7 +77,7 @@ namespace Copse.Linq.Tests
         .SymmetricDifference(rightTreenumerable)
         .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
 
-      Func<NodeContext<string>, NodeTraversalStrategies> traverseAll =
+      Func<string, NodeTraversalStrategies> traverseAll =
         _ => NodeTraversalStrategies.TraverseAll;
 
       var expected =
