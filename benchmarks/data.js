@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785960050442,
+  "lastUpdate": 1785960050815,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -63966,6 +63966,114 @@ window.BENCHMARK_DATA = {
             "value": 1039754.7836216518,
             "unit": "ns",
             "range": "± 1243.981399348286"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "9f21eb90ab0298d091f8763347b6dccb7deab2e1",
+          "message": "Perf 4/4: the aggregate's branch facts are index arithmetic, not stored state\n\nThe node-last fold needs two booleans per close -- did this node have\nchildren, and is this the parent's first closing child -- and both derive\nfrom preorder indices: closes fire before the next sibling schedules, so a\nnode has children iff anything scheduled after it, and children close in\nsibling order, so the first to close sits immediately after its parent.\nThe parallel has-children list dies (its per-node adds, per-root clears,\nand three indexed accesses per close), and the flag-carrying-frame\nalternative was measured out first (fat frames re-tax chains, +15 MB).\nA/B: memory down on every corpus (triangle -4.2 MB, chain -2.1 MB),\naggregate time ~10-15% better normalized.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01YQ1awUfwyxtjMUekhQgpXo",
+          "timestamp": "2026-08-05T19:47:03Z",
+          "tree_id": "d77aacddc5dca31480bc4796c70ef054db4d49e1",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9f21eb90ab0298d091f8763347b6dccb7deab2e1"
+        },
+        "date": 1785960050752,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2298152.0099158655,
+            "unit": "ns",
+            "range": "± 4833.960366471212"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1895445.5294921875,
+            "unit": "ns",
+            "range": "± 3380.330268227717"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4515732.041666667,
+            "unit": "ns",
+            "range": "± 1895.2719088700571"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3886643.38671875,
+            "unit": "ns",
+            "range": "± 8765.22365566533"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 655215.6409737723,
+            "unit": "ns",
+            "range": "± 678.3711944127726"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 691978.6598182091,
+            "unit": "ns",
+            "range": "± 848.8941071865593"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 409084.37165715144,
+            "unit": "ns",
+            "range": "± 833.8237168422025"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4158435.046875,
+            "unit": "ns",
+            "range": "± 11089.262820750724"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3328904.830208333,
+            "unit": "ns",
+            "range": "± 9723.876357247147"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14263872.432291666,
+            "unit": "ns",
+            "range": "± 30288.84210467348"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7668411.605168269,
+            "unit": "ns",
+            "range": "± 30774.276175118466"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1693180.525111607,
+            "unit": "ns",
+            "range": "± 2446.1186813531644"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1015037.1852463942,
+            "unit": "ns",
+            "range": "± 1355.9753893486488"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1034152.1273716518,
+            "unit": "ns",
+            "range": "± 2619.7967259394118"
           }
         ]
       }
