@@ -18,11 +18,16 @@ namespace Copse.Dags
     /// group in scope -- conditioning, rebalancing, normalization are all one survey lambda;
     /// the caller owns the payload algebra, the library owns completeness, order, and
     /// strictness. No boundary, no seed (no virtual edges exist to rewrite): deliberately
-    /// fixer-less. Returns node values unchanged over the same shape with payloads replaced.
+    /// fixer-less. Returns node values unchanged over the same shape with each payload PAIRED
+    /// (THE EDGE-PAIRING AMENDMENT, 2026-08-06 -- aggregation pairs, projection replaces):
+    /// the original payload with the value the survey dispatched along the edge, as
+    /// <see cref="DagEdgeResult{TEdge, TDispatch}"/>. Project
+    /// <c>.SelectEdges(e =&gt; e.Edge.Accumulate)</c> when only the computed values should
+    /// travel on.
     /// </summary>
-    public static DagBuffer<TNode, TEdgeResult> SinkfixDispatchEdges<TNode, TEdge, TEdgeResult>(
+    public static DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> SinkfixDispatchEdges<TNode, TEdge, TDispatch>(
       this IDagnumerable<TNode, TEdge> source,
-      DagDispatchSurvey<TNode, TEdgeResult, TEdge> survey)
+      DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {
       if (survey == null)
         throw new ArgumentNullException(nameof(survey));

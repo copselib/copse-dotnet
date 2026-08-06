@@ -277,14 +277,23 @@ namespace Copse.Dags.Tests
       var conditioned = GpSliver().SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp);
 
       // Edges rewritten in place: GP's stays, at zero, visible; the fund absorbs; nodes and
-      // shape untouched; groups still sum to one.
+      // shape untouched; groups still sum to one. The result payloads are PAIRINGS (the
+      // edge-pairing amendment): the conditioned value beside the stake it was computed from.
       CollectionAssert.AreEquivalent(
         new[] { ("GP", "X", 0m), ("Fund", "X", 1m), ("X", "Op", 1m) },
-        conditioned.GetEdges().Select(e => (e.Parent, e.Child, e.Edge)).ToList());
+        conditioned.GetEdges().Select(e => (e.Parent, e.Child, e.Edge.Accumulate)).ToList());
+
+      // The original distribution rides along, undamaged -- nothing to reconstruct.
+      CollectionAssert.AreEquivalent(
+        new[] { ("GP", "X", 0.002m), ("Fund", "X", 0.998m), ("X", "Op", 1m) },
+        conditioned.GetEdges().Select(e => (e.Parent, e.Child, e.Edge.Edge)).ToList());
 
       // The distribution invariant survives conditioning: lookthrough is fully accounted.
-      var lookthrough = conditioned.SourcefixScan<string, decimal, decimal>(
-        (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
+      // (Project the pairing away first -- the doc's own idiom for values traveling on.)
+      var lookthrough = conditioned
+        .SelectEdges(e => e.Edge.Accumulate)
+        .SourcefixScan<string, decimal, decimal>(
+          (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
 
       foreach (var pairing in lookthrough.Values)
         Assert.AreEqual(1m, pairing.Accumulate);
@@ -295,6 +304,7 @@ namespace Copse.Dags.Tests
     {
       var moved = GpSliver()
         .SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp)
+        .SelectEdges(e => e.Edge.Accumulate)
         .SourcefixDispatch(1_000m, (subject, arrivals, targets) =>
         {
           var arrived = arrivals.Sum(arrival => arrival.Value);
@@ -359,7 +369,7 @@ namespace Copse.Dags.Tests
 
       CollectionAssert.AreEqual(
         new[] { ("top", "bottom", 0.50m, 0), ("top", "bottom", 1.50m, 1) },
-        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray(),
+        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge.Accumulate, e.InEdgeIndex)).ToArray(),
         "each parallel edge rewritten from its own slot, per-parent order preserved");
     }
 

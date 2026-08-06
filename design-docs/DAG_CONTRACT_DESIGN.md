@@ -668,3 +668,29 @@ still earn their seats. Ruling: they do — the model fused the STREAM, not the 
   the phase-5 composition machinery will fuse the chain mechanically anyway. `Select`
   keeps its name (node-value projection is what `Select` means family-wide); no
   `SelectNodes` rename for local symmetry.
+
+## THE EDGE-PAIRING AMENDMENT (ratified and built 2026-08-06 — aggregation pairs, projection replaces)
+
+Jason's challenge — why don't edges get the node treatment? — was correct by the
+family's own rule, and the rule is now stated once: **projection replaces; aggregation
+pairs.** `Select`/`SelectEdges` replace their channel's values lawfully (the consumer
+authored the mapping; each output is derivable from its own input; keeping the old is
+one closure away). The scans and dispatches pair, because their values are
+FLOW-COMPUTED — path-cumulative, cascade-dependent — so the association between subject
+and computed value must come from the API, assembled. The `DispatchEdges` twins were the
+one aggregation in either family whose result replaced instead of paired — and the
+machinery itself was the witness: the arrival seat pairs new value with old payload at
+every survey (`DagDispatchInflow`), then the old result boundary discarded the pairing.
+
+Built: both twins now return `DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>>` — each
+edge's original payload with the value the survey dispatched along it, paired by the
+machinery at the result boundary. Surveys are UNCHANGED (they still dispatch bare
+`TDispatch`; pairing is the API's job, never the caller's). ONE pairing shape suffices:
+an edge is 1-in-1-out, so its value is simultaneously the tail's outflow and the head's
+arrival — `Accumulate` covers both readings, with no input/output split (contrast the
+node side, whose 1-in-n-out asymmetry forced `DagScanResult` and `DagDispatchResult`
+apart). Values traveling on project the pairing away — `.SelectEdges(e =>
+e.Edge.Accumulate)` — the idiom the operator docs teach. `SelectEdges`/`PruneEdges` are
+untouched: projection and filtering are not aggregations. The ownership workload gets
+the pairing's payoff directly: a conditioned or flow-labeled edge carries its original
+stake beside the computed value — nothing reconstructed, nothing smuggled.

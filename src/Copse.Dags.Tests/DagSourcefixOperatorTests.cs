@@ -376,7 +376,7 @@ namespace Copse.Dags.Tests
           ("left", "venture", 0.42m),   // 0.60 x 0.70
           ("right", "venture", 0.12m),  // 0.40 x 0.30
         },
-        cumulative.GetEdges().Select(e => (e.Parent, e.Child, e.Edge)).ToArray(),
+        cumulative.GetEdges().Select(e => (e.Parent, e.Child, e.Edge.Accumulate)).ToArray(),
         "the venture's in-edges now carry effective ownership per route -- summing to the 54%");
     }
 
@@ -431,7 +431,7 @@ namespace Copse.Dags.Tests
 
       CollectionAssert.AreEqual(
         new[] { ("top", "bottom", 0.50m, 0), ("top", "bottom", 1.50m, 1) },
-        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray());
+        doubled.GetEdges().Select(e => (e.Parent, e.Child, e.Edge.Accumulate, e.InEdgeIndex)).ToArray());
     }
 
     [TestMethod]
