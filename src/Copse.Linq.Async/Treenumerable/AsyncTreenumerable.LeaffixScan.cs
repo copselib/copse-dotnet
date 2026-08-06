@@ -1,5 +1,3 @@
-using Copse.Async;
-using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Treenumerables;
@@ -23,17 +21,18 @@ namespace Copse.Linq
     /// going up. (The former map-then-combine shape fused the boundary INTO the map -- "both
     /// an accumulator and a generator" -- and was replaced by this honest decomposition.)
     ///
-    /// <para>THE BOUNDARY, both instruments (mirroring rootfix exactly): the
-    /// <paramref name="seed"/> is what arrives at a LEAF from below -- the VIRTUAL FRINGE's
-    /// arrival, the virtual forest root's dual -- and it PARTICIPATES through the fold:
-    /// <c>value(leaf) = nodeAccumulator(seed, leaf)</c>, character-for-character the dual of
-    /// <c>fold(seed, root)</c>. The leafNodeSelector flavors are the BYPASS instrument: each
-    /// leaf's accumulation set directly, the node accumulator skipped at the fringe. Seed and
-    /// constant selector are therefore deliberately DIFFERENT -- the same two-instruments pin
-    /// as every other boundary in the family. Anything needing all children at once (median,
-    /// top-k) is a survey: LeaffixDispatch, the sibling-complete tier this operator is sugar
-    /// over -- <c>LeaffixScan(boundary, edge, node)</c> IS the fold-encoded LeaffixDispatch
-    /// (CrossTierCoherenceTests).</para>
+    /// <para>THE BOUNDARY: selector flavors only -- <paramref name="leafNodeSelector"/> sets
+    /// each leaf's accumulation directly, the node accumulator bypassed at the fringe. There
+    /// is NO seed flavor at the leaffix boundary, either tier (THE VIRTUAL-ROOT RULE,
+    /// 2026-08-06, docs/SCANRESULT_DESIGN.md): a seed is the arrival from a boundary's
+    /// virtual node, and only the rootfix boundary has one -- the virtual forest root is a
+    /// single tree-lawful node, while a singular virtual node below all leaves would need n
+    /// parents, which is no tree. The fringe's honest instrument is the per-leaf rule; a
+    /// formula-shaped fringe ("every leaf starts from x, folded") is written
+    /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>. Anything needing all children at once
+    /// (median, top-k) is a survey: LeaffixDispatch, the sibling-complete tier this operator
+    /// is sugar over -- <c>LeaffixScan(boundary, edge, node)</c> IS the fold-encoded
+    /// LeaffixDispatch (CrossTierCoherenceTests).</para>
     ///
     /// <para>Returns the CANONICAL PAIRING: a buffer of
     /// <see cref="ScanResult{TSource, TAccumulate}"/>s -- project <c>.Accumulate</c> for
@@ -46,20 +45,6 @@ namespace Copse.Linq
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
     /// The source is consumed depth-first only, so a streamed narrow source can leaffix.</para>
-    /// </summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IAsyncDepthFirstTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatch(source, FullSurvey(SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator)))), BufferLayout.Preorder);
-
-    /// <summary>
-    /// The per-leaf flavor -- the BYPASS instrument: every leaf's accumulation comes from
-    /// <paramref name="leafNodeSelector"/> DIRECTLY, the node accumulator skipped at the
-    /// fringe (set each leaf explicitly; the seed flavor is the other instrument -- the
-    /// virtual fringe's arrival, folded).
     /// </summary>
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
@@ -79,14 +64,6 @@ namespace Copse.Linq
     /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, FullSurvey(SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator)))), BufferLayout.Preorder);
-
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
@@ -100,13 +77,6 @@ namespace Copse.Linq
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IAsyncTreenumerable<TSource> source,
-      TAccumulate seed,
-      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixScan((IAsyncDepthFirstTreenumerable<TSource>)source, seed, edgeAccumulator, nodeAccumulator);
-
     public static IAsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
@@ -130,15 +100,6 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
       => (node, children) => nodeAccumulator(EdgeReduce(children, edgeAccumulator), node);
-
-    // The seed flavor's survey -- full participation, no leaf branch outside it: a leaf's
-    // reduction is EMPTY, so the virtual fringe's arrival stands in and the node accumulator
-    // folds every node, fringe included.
-    private static Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> SeededDualFoldSurvey<TSource, TAccumulate>(
-      TAccumulate seed,
-      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => (node, children) => nodeAccumulator(children.Count == 0 ? seed : EdgeReduce(children, edgeAccumulator), node);
 
     // Left-fold of the children's completed accumulations, first child as the start -- k-1
     // edge applications, no identity element demanded (internal families always have a child).

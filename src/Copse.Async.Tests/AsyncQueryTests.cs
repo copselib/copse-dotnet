@@ -120,15 +120,16 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task LeaffixAggregate_MatchesSync()
     {
-      // Node count per root tree (the dual shape): seed 0 at the fringe, edge-sum the
+      // Node count per root tree (the dual shape): each leaf counts as one, edge-sum the
       // children's counts, node accumulator adds one for the node itself.
+      Func<string, int> leaf = _ => 1;
       Func<int, int, int> edge = (left, right) => left + right;
       Func<int, string, int> node = (accumulate, _) => accumulate + 1;
 
       foreach (var tree in Trees)
         CollectionAssert.AreEqual(
-          Sync(tree).LeaffixAggregate(0, edge, node).ToList(),
-          await ToList(Async(tree).LeaffixAggregate(0, edge, node)),
+          Sync(tree).LeaffixAggregate(leaf, edge, node).ToList(),
+          await ToList(Async(tree).LeaffixAggregate(leaf, edge, node)),
           $"LeaffixAggregate {tree}");
     }
 

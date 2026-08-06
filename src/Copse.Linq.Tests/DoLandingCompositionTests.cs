@@ -90,7 +90,7 @@ namespace Copse.Linq.Tests
       var corpus = Corpus();
 
       corpus
-        .LeaffixScan(0m, (left, right) => left + right, (accumulate, e) => accumulate + e.Weight)
+        .LeaffixScan(e => e.Weight, (left, right) => left + right, (accumulate, e) => accumulate + e.Weight)
         .Do(Land())
         .Select(pairing => pairing.Node)
         .PreorderTraversal().ToArray();

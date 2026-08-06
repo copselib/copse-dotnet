@@ -142,30 +142,81 @@ with the node in hand, `store` lands for you.* Consequences:
 > **A scan is the fold-shaped dispatch: for EVERY boundary flavor,
 > `Scan(boundary, fold)` ≡ `Dispatch(boundary, (a, dts) => { foreach dt:
 > dt.Dispatch(fold(a, dt.Node)); })`.** Pinned by `CrossTierCoherenceTests`; every future
-> boundary flavor must join the battery.
+> boundary flavor must join the battery. (Since THE VIRTUAL-ROOT RULE, 2026-08-06, the
+> quantifier is EXACT: every surface flavor has a same-boundary twin on the other tier.
+> As ratified it was overstated — the leaffix scan's seed flavor had no same-boundary
+> dispatch twin and pinned through the translated boundary `nodeAcc(seed, ·)`; the rule
+> retired that flavor rather than keep the translation clause.)
 
 The invariant makes the TWO INSTRUMENTS uniform across the tiers (subsuming the
 2026-08-04 two-instruments ruling, which had them per-tier-asymmetric):
 
 - **The SEED is the virtual root's arrival**, transformed by the tier's callback — the
   fold at every node (`fold(seed, root)`), the survey at every family (the virtual
-  root's first). One value the callback speaks over; everything participates.
-- **The SELECTOR sets each root's value directly**, bypassing the callback — known
-  per-root values, the explicit instrument. On the survey tier arrival IS the value, so
-  the bypass sets arrivals; on the fold tier it sets accumulations.
-- Consequently seed ≠ constant selector on BOTH tiers (pinned deliberately-different on
-  both), and the flavors' meanings never shift as a consumer moves between tiers.
+  root's first). One value the callback speaks over; everything participates. Rootfix
+  only, since THE VIRTUAL-ROOT RULE below.
+- **The SELECTOR sets each boundary node's value directly**, bypassing the callback —
+  known per-node values, the explicit instrument. On the survey tier arrival IS the
+  value, so the bypass sets arrivals; on the fold tier it sets accumulations.
+- Consequently seed ≠ constant selector wherever both exist (pinned
+  deliberately-different), and the flavors' meanings never shift as a consumer moves
+  between tiers.
 
-**The leaffix corollary (same day)**: a seed exists only where the flow has an entry
-channel for it to participate through. The leaffix DISPATCH survey has no arrival seat —
-its broadcast-seed flavor was the bypass instrument wearing the seed's name (identically
-`_ => x`) and stays DELETED; leaves are set by SELECTOR flavors. (The survey-only
-overload followed it on 2026-08-05: the family's one fixer-less signature -- TAccumulate
-appears only inside the lambda, so inference structurally fails; the type-fixer-first
-grammar, enforced by the compiler. The use-case survey showed the sibling-comparative
-workloads this tier exists for need a leaf rule anyway, and formula-shaped fringes belong
-to LeaffixScan's dual fold. Full participation persists internally -- the pass surveys
-every node; the selector flavors are its public face.)
+**The leaffix corollary (same day; subsumed 2026-08-06 by THE VIRTUAL-ROOT RULE)**: a
+seed exists only where the flow has an entry channel for it to participate through. The
+leaffix DISPATCH survey has no arrival seat — its broadcast-seed flavor was the bypass
+instrument wearing the seed's name (identically `_ => x`) and stays DELETED; leaves are
+set by SELECTOR flavors. (The survey-only overload followed it on 2026-08-05: the
+family's one fixer-less signature -- TAccumulate appears only inside the lambda, so
+inference structurally fails; the type-fixer-first grammar, enforced by the compiler. The
+use-case survey showed the sibling-comparative workloads this tier exists for need a leaf
+rule anyway, and formula-shaped fringes belong to LeaffixScan's dual fold. Full
+participation persists internally -- the pass surveys every node; the selector flavors
+are its public face.)
+
+## THE VIRTUAL-ROOT RULE (ratified 2026-08-06 — seeds belong to an object, not a shape)
+
+The corollary's seat test was mechanism-visible, not consumer-visible, and it priced in
+an inconsistency: the leaffix SCAN kept a seed flavor that was extensionally pure form —
+`LeaffixScan(seed, edge, nodeAcc)` ≡ `LeaffixScan(leaf => nodeAcc(seed, leaf), edge,
+nodeAcc)` on every tree — while the leaffix dispatch had none. The author's verdict:
+*"either they all take a seed, or only those that are strictly necessary take seed — I
+don't want to live in a world where one method that doesn't require a seed has a seed,
+and one method that doesn't require a seed doesn't get a seed."* "All" is not honestly
+available (a leaffix-dispatch seed can only mean broadcast, the deleted alias), so the
+rule is:
+
+> **The SEED is the virtual forest root's arrival, and it exists exactly where that
+> object faces the boundary: Rootfix methods speak the virtual root — seed and selector
+> flavors. Leaffix methods speak the fringe per-leaf — selector flavors only, both
+> tiers.**
+
+The predicate is the existence of an OBJECT, not the shape of a callback seat. The
+virtual forest root is real in this library — singular, tree-lawful, load-bearing
+(`NodePosition.ForestRoot`, the conformance-checked pre-enumeration convention). Its
+would-be dual is not: a SINGULAR virtual node below all leaves would have n parents —
+that is no tree (it is a DAG object; compare Copse.Dags, whose MVP likewise ruled no
+sinkfix seeds — the families align on source-side-only seeds). The only tree-lawful
+reading of the fringe is plural, one virtual child per leaf, and a plural boundary's
+instrument is a per-leaf RULE — which is the selector. The redundancy inventory that
+forced the choice: the rootfix DISPATCH seed is irreplaceable (the survey over the
+virtual family is group-shaped; no per-root selector encodes it), the two fold-tier
+seeds were both pure form (each expressible as the translated selector), and the
+leaffix dispatch seed was impossible. The seed is kept as a CLASS at the rootfix
+boundary — the object is load-bearing there, and `(seed, fold)` is the fold tradition's
+canonical grammar — and retired entirely at the leaffix boundary, where no object ever
+backed it. Formula-shaped fringes are written `leaf => nodeAcc(x, leaf)`.
+
+Consequences: the north star's quantifier became exact (no translated equivalence in the
+battery); LeaffixScan's seed machinery died with the flavor (`SeededDualFoldSurvey`, the
+internal `FullSurvey` no-leaf-branch path — every remaining LeaffixScan flavor routes
+through public LeaffixDispatch, so `CrossTierCoherenceTests` no longer pins an
+internally-unreachable path); LeaffixAggregate's seed flavors (already implemented AS
+the translation) went with it. The dual reshape's content survives untouched — the
+edge/node decomposition, the node accumulator being literally RootfixScan's fold shape.
+What's demoted is the boundary-flavor symmetry claim: the FOLD dualizes; the boundary
+does not, because the multiplicity flip is precisely what trees cannot dualize — the
+same fact, applied consistently, that deleted the dispatch seed.
 
 **THE LEAFFIX DUAL (2026-08-05, the same day's second act — "the mechanism is not the
 dual of RootfixScan")**: the old LeaffixScan fused the boundary INTO its map ("both an
@@ -173,22 +224,24 @@ accumulator and a generator"), which is why it had no boundary flavors and read 
 non-dual. The true dual decomposes on upstream multiplicity — one parent down, n children
 up — so the reshape is:
 
-> `LeaffixScan(seed | leafSelector | positional, edgeAccumulator, nodeAccumulator)` —
-> `value(n) = nodeAccumulator(edgeReduce(children), n)`; at the fringe
+> `LeaffixScan(leafSelector | positional, edgeAccumulator, nodeAccumulator)` —
+> `value(n) = nodeAccumulator(edgeReduce(children), n)`; at the fringe the selector
+> answers directly. (As reshaped the boundary also took a seed —
 > `value(leaf) = nodeAccumulator(seed, leaf)`, character-for-character the dual of
-> `fold(seed, root)`.
+> `fold(seed, root)` — retired 2026-08-06 by THE VIRTUAL-ROOT RULE.)
 
 The `nodeAccumulator` is LITERALLY RootfixScan's fold shape `(TAcc, TSource)`; the
 `edgeAccumulator` reduces siblings left-to-right from the first child (k−1 firings, no
-identity demanded); and **the seed returns to the leaffix scan with lawful participate
-semantics** — the reshape CREATED the channel the corollary's rule requires (the node
-accumulator's state seat at every leaf: the VIRTUAL FRINGE's arrival, the virtual forest
-root's dual). Both instruments now exist at both boundaries of the family, pinned
-deliberately-different everywhere; per-edge node context flavors on `edgeAccumulator`
-wait for a workload. `LeaffixAggregate` was re-derived on the same shape, value-flavored
-— retiring the family's last NodeContext callbacks and the long-deferred signature
-workstream. The ternary map-flavor died with the map (its per-edge node context returns
-as an `edgeAccumulator` arity-split if a workload shows).
+identity demanded). The reshape also returned the seed to the leaffix scan — the node
+accumulator's state seat at every leaf created the participation channel the corollary's
+rule required — but the channel proved to be form without power (the seed flavor was
+extensionally the translated selector), and THE VIRTUAL-ROOT RULE retired it the next
+day: a channel is not a mandate, and no singular virtual object backs a leaffix seed.
+Per-edge node context flavors on `edgeAccumulator` wait for a workload.
+`LeaffixAggregate` was re-derived on the same shape, value-flavored — retiring the
+family's last NodeContext callbacks and the long-deferred signature workstream. The
+ternary map-flavor died with the map (its per-edge node context returns as an
+`edgeAccumulator` arity-split if a workload shows).
 
 **This REVERSED the arrival-semantics decision of 2026-08-04** (selector-as-arrival,
 fold-fires-everywhere): that fix optimized the lesser, intra-tier equivalence
@@ -310,8 +363,9 @@ shape, and no node class is excluded from its tier's callback.**
   one consumers reason by, and it requires the ORIGINAL semantics: the selector sets the
   root's accumulation directly, the bypass instrument, mirroring the dispatch selector.
   (The detour's real motivation — the merged DoScan's silent root landing — had already
-  died with the quartet.) The seed flavor folds at every node on both tiers, unchanged
-  throughout. The leaffix map was always per-node — no change.
+  died with the quartet.) The rootfix seed flavor folds at every node, unchanged
+  throughout (the leaffix seed flavors were later retired outright — THE VIRTUAL-ROOT
+  RULE, 2026-08-06). The leaffix map was always per-node — no change.
 - ~~**HELD OPEN (tier 3)**: the re-opened dispatch `store` seats~~ — RESOLVED BY
   DELETION (see THE DEMOTION): the Do dispatches no longer exist, so there is no store to
   merge. The pure surveys' seats are settled (rootfix subject-less; leaffix
@@ -341,7 +395,7 @@ or **forced by the direction of information flow** — never accidental. Dual �
 |---|---|---|
 | survey distributes: 1 arrival in, n writes out | survey collects: n reads in, 1 result out | matched — Action+in-param ↔ Func+return |
 | exactly-once WRITE: runtime protocol (flags, throws) | exactly-one RESULT: the return type | forced-different — n obligations need runtime enforcement; one obligation is the type system's |
-| roots take the seed (no parent) | leaves take the seed (no children) | matched — the boundary pair |
+| roots take the seed (no parent above — but the VIRTUAL forest root stands in, one tree-lawful node) | leaves take NO seed (a singular virtual node below all leaves would need n parents — no tree has one) | forced-different — THE VIRTUAL-ROOT RULE (2026-08-06); was "matched — the boundary pair" while the leaffix scan seed lived |
 | `DispatchTarget`: context + write facility | `DispatchSource`: context + read value | matched (this sweep) |
 | O(1) Count + indexer via the child-index | O(1) Count + indexer via the child-index | matched (this sweep — the leaffix build restructured to capture-then-fold, sharing the rootfix passes) |
 | `DispatchTargets` | `DispatchSources` | matched (this sweep) |
@@ -352,7 +406,7 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |
 | boundary = an INVOCATION of the same survey: the virtual root's family goes first, (seed, roots) | boundary = an invocation of the same survey with empty sources (the fringe is every family's base case) | matched — full participation, unified: boundaries are invocations, not callbacks; flavors are sugar |
 | survey `(arrival, targets)` — subject DERIVABLE (the arrival is authored with the node in hand at the dispatch site) | survey `(subject, sources)` — subject UNDERIVABLE (upward flow: the node's value passes through nobody else's hands) | forced-different — each survey keeps exactly the seats its flow direction cannot derive (2026-08-04) |
-| seed = the virtual root's arrival, folded at every node; selector = each root's ACCUMULATION set directly (fold bypassed at roots) | seed = the virtual root's arrival, surveyed at the virtual family; selector = each root's ARRIVAL set directly (survey bypassed) | matched — THE NORTH STAR (2026-08-05): the two instruments, uniform across tiers; seed ≠ constant selector on both, pinned deliberately-different on both; Scan(boundary, fold) ≡ fold-encoded Dispatch(boundary) for every flavor (CrossTierCoherenceTests) |
+| seed = the virtual root's arrival, folded at every node; selector = each root's ACCUMULATION set directly (fold bypassed at roots) | seed = the virtual root's arrival, surveyed at the virtual family; selector = each root's ARRIVAL set directly (survey bypassed) | matched — THE NORTH STAR (2026-08-05): the two instruments, uniform across tiers; seed ≠ constant selector on both, pinned deliberately-different on both; Scan(boundary, fold) ≡ fold-encoded Dispatch(boundary) for every flavor, the quantifier EXACT since THE VIRTUAL-ROOT RULE confined seeds to this rootfix column (CrossTierCoherenceTests) |
 | survey never reaches leaves (they have no children) → `store` is the every-node channel | survey reaches EVERY node since full participation → `store` derivable in principle; merge HELD OPEN (tier 3) | forced-different since full participation — was "matched, born dual" |
 
 Any future operator pair gets this audit before shipping.

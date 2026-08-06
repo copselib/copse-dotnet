@@ -56,10 +56,13 @@ namespace Copse.Linq
     /// instrument wearing the seed's name (identically <c>_ =&gt; x</c>, the constant
     /// selector) and was deleted so the boundary grammar reads the same on every tier: a seed
     /// exists only where the flow has an entry channel for it; where values are set directly,
-    /// the instrument is a SELECTOR.</para>
+    /// the instrument is a SELECTOR. (Generalized 2026-08-06 by THE VIRTUAL-ROOT RULE,
+    /// docs/SCANRESULT_DESIGN.md: seeds belong to the virtual forest root, the family's one
+    /// tree-lawful virtual node -- the leaffix boundary is selector-only on BOTH tiers, so
+    /// the flavor inventory reads off the group, not the callback shape.)</para>
     ///
     /// <para>VALUE-flavored (2026-08-02, the ScanResult sweep): the survey receives the node's
-    /// VALUE; the leaf boundary is arity-split (seed | value selector | positional
+    /// VALUE; the leaf boundary is arity-split (value selector | positional
     /// selector). Returns the CANONICAL PAIRING: a buffer of
     /// <see cref="ScanResult{TSource, TAccumulate}"/>s in the source tree's shape -- it
     /// DECORATES rather than replaces; project <c>.Accumulate</c> for values. For mutable
@@ -129,13 +132,6 @@ namespace Copse.Linq
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
-
-    // The no-leaf-branch adapter onto the unified per-node callback -- the survey answers for
-    // every node, fringe included (empty sources). Internal only (the public survey-only
-    // overload died 2026-08-05, fixer-less); LeaffixScan's seed flavor rides this path.
-    private static Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> FullSurvey<TSource, TAccumulate>(
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => (node, _, sources) => survey(node, sources);
 
     // The boundary flavors' adapter: the in-band leaf branch. sources.Count == 0 IS the leaf
     // test -- the same fact the old pass read off the subtree sizes, now speaking the view's
