@@ -230,6 +230,10 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerators/Filter/TakeNodesUntilTreenumerator.g.cs",
         "AsyncTakeNodesUntilTreenumerator", "TakeNodesUntilTreenumerator", "Copse.Linq.Treenumerators"),
 
+      new("Copse.Linq.Async/Treenumerators/Filter/AsyncTakeSubtreesWhereTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Filter/TakeSubtreesWhereTreenumerator.g.cs",
+        "AsyncTakeSubtreesWhereTreenumerator", "TakeSubtreesWhereTreenumerator", "Copse.Linq.Treenumerators"),
+
       new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanDepthFirstTreenumerator.cs",
         "Copse.Linq/Treenumerators/RootfixScan/RootfixScanDepthFirstTreenumerator.g.cs",
         "AsyncRootfixScanDepthFirstTreenumerator", "RootfixScanDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
@@ -580,6 +584,10 @@ namespace Copse.CodeGen
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.TakeNodesWhile.cs",
         "Copse.Linq/Treenumerable/Treenumerable.TakeNodesWhile.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
+      new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.TakeSubtreesWhere.cs",
+        "Copse.Linq/Treenumerable/Treenumerable.TakeSubtreesWhere.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerable/AsyncTreenumerable.TakeTrees.cs",

@@ -177,6 +177,19 @@ namespace Copse.Async.Tests
       }
     }
 
+    [TestMethod]
+    public async Task TakeSubtreesWhere_MatchesSync_BothDimensions()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).TakeSubtreesWhere(node => node == "b" || node == "c");
+        var async = Async(tree).TakeSubtreesWhere(node => node == "b" || node == "c");
+
+        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+      }
+    }
+
     private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)
     {
       var list = new List<T>();
