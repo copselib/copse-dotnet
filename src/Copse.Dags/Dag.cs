@@ -8,15 +8,19 @@ namespace Copse.Dags
   /// <summary>
   /// The owned, mutation-friendly builder -- a DAG held by its SOURCE nodes (in-degree zero;
   /// the graph-theoretic vocabulary: sources and sinks, docs/DAG_CONTRACT_DESIGN.md) -- and the
-  /// family's concrete <see cref="IDagnumerable{TNode, TEdge}"/>: acquisition snapshots the
-  /// topological order (cycle detection lives there), and the contract operators build their
-  /// materialized results back into fresh <see cref="Dag{TValue, TEdge}"/>s.
+  /// family's concrete <see cref="IDagnumerable{TNode, TEdge}"/>. Acquisition is LAZY (THE
+  /// LAZY BUILDER RULING, 2026-08-06): Kahn on demand over the live node graph, no snapshot,
+  /// no cycle check -- a cyclic graph streams its maximal acyclic prefix and throws
+  /// <see cref="DagCycleException"/> at exhaustion; <c>Materialize</c> is the validator and
+  /// the completed buffer is the certificate. (The owned-node
+  /// <see cref="GetTopologicalOrder"/> view below remains eager and cycle-throwing -- it
+  /// returns a completed list, so it IS a drain.)
   ///
-  /// <para>Deliberately NOT a frozen snapshot: it holds only the sources, and every acquisition
-  /// re-walks the live node graph (one iterative depth-first pass with a visited set, validating
-  /// acyclicity as it goes). Mutate the nodes -- relink, sort children -- and the next
-  /// acquisition just sees the new shape; there is no invalidation protocol to get wrong. Perf
-  /// is explicitly not a goal of this tier.</para>
+  /// <para>Deliberately NOT a frozen snapshot: it holds only the sources, and every
+  /// acquisition walks the live node graph. Mutate the nodes -- relink, sort children -- and
+  /// the next acquisition just sees the new shape; there is no invalidation protocol to get
+  /// wrong ("is acyclic" is a predicate of a DRAIN, never of this mutable object). Perf is
+  /// explicitly not a goal of this tier.</para>
   /// </summary>
   public sealed partial class Dag<TValue, TEdge>
   {

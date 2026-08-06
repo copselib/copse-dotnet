@@ -10,13 +10,16 @@ namespace Copse.Dags
   /// convention at the start of enumeration, in topological order, with
   /// <see cref="ParentOrdinal"/> −1 and <see cref="EdgeIndex"/> counting the sources.
   ///
-  /// Nodes are correlated by <see cref="Ordinal"/> — a stable per-enumeration key, strictly
-  /// increasing along entries — never by value identity: user values are never compared or
-  /// hashed. Density is NOT promised: the builder's walks use topological indices, and operator
-  /// wrappers preserve their source's ordinals (there are no coordinates to relabel), so pruned
-  /// streams carry gaps, harmlessly. Pre-enumeration convention (the ForestRoot analog,
-  /// conformance-checked): mode DiscoveringNode, Ordinal −1, ParentOrdinal −1, EdgeIndex 0,
-  /// default Node/Edge.
+  /// Nodes are correlated by <see cref="Ordinal"/> — a stable per-enumeration key assigned at
+  /// FIRST DISCOVERY — never by value identity: user values are never compared or hashed.
+  /// Entries occur in topological order, but ordinals do not promise to be entry-monotone
+  /// (amended 2026-08-06, THE LAZY BUILDER RULING: a lazy walk cannot cite a node's future
+  /// entry index at discovery, so the builder assigns ordinals dense in discovery order;
+  /// entry-indexed ordinals are the BUFFER's presentation — its dense index is its entry
+  /// order). Density is NOT promised either: operator wrappers preserve their source's
+  /// ordinals (there are no coordinates to relabel), so pruned streams carry gaps, harmlessly.
+  /// Pre-enumeration convention (the ForestRoot analog, conformance-checked): mode
+  /// DiscoveringNode, Ordinal −1, ParentOrdinal −1, EdgeIndex 0, default Node/Edge.
   /// </summary>
   public interface IDagnumerator<TNode, TEdge> : IDisposable
   {

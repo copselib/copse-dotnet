@@ -443,14 +443,19 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void CyclicGraph_ThrowsAtAcquisition()
+    public void CyclicGraph_ThrowsAtStarvation_NotAcquisition()
     {
+      // THE LAZY BUILDER RULING (2026-08-06): acquisition no longer validates -- the drain
+      // does, at the starvation point. Here every member sits on the cycle (the listed source
+      // has an in-edge), so the prefix is empty and the very first advance starves.
       var first = new DagNode<string, decimal>("first");
       var second = first.AddChild("second", 1m);
       second.AddChild(first, 1m);
 
+      using var dagnumerator = new Dag<string, decimal>(first).GetDagnumerator();
+
       Assert.ThrowsException<DagCycleException>(
-        () => new Dag<string, decimal>(first).GetDagnumerator());
+        () => dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll));
     }
   }
 }

@@ -565,21 +565,33 @@ the closure selector, three operators, one file each.
 
 ## THE LAZY BUILDER RULING (ratified 2026-08-06 — eager validation drops; Materialize is the certificate)
 
-Consensus reached in design discussion; **direction ratified, implementation deferred to
-a future sitting.** Nothing below is built yet; current code (eager CSR acquisition,
-"acquisition validates acyclicity") remains accurate until the implementation lands.
+**BUILT same day** (`BuilderDagnumerator`; the eager CSR acquisition deleted). Two
+implementation facts refined the ruling as written:
 
-- **The builder goes lazy.** Builder acquisition today precomputes the full CSR arrays —
-  a smuggled buffer inside what the type presents as a stream, the exact tier violation
-  the tree family's disclosure rule outlaws. The replacement is Kahn ON DEMAND: the
-  visit protocol IS Kahn's trace (pop ready node = entry; dispatch out-edges =
-  discoveries, decrementing children's remaining in-degrees; a child hitting zero joins
-  the queue), so the lazy walk is a hand-rolled state machine — ready queue plus
-  counters, no coroutine mystery. In-degree bookkeeping moves to construction
-  (`AddChild` maintains counts), the seed queue is the in-degree-zero set, so
-  sources-at-the-start survives and `GetSources`' early exit costs O(sources). Work is
-  O(consumed): a consumer who takes three nodes pays for three nodes. Per-walk counter
-  state rides an overlay (decrements only) over the builder's live counts.
+1. **Acquisition keeps ONE light counting pass** (membership + member-in-degree, a
+   visited-set walk over child edges — no ordering, no validation). The ruling's
+   "AddChild maintains counts" didn't survive contact with the STRAY-PARENT affordance:
+   a member may have a parent outside the dag whose edges are not the dag's, so
+   in-degree is a REACHABILITY fact, uncomputable at construction. Everything after the
+   counting pass is O(consumed).
+2. **Ordinals are assigned at FIRST DISCOVERY** (dense in discovery order at the
+   builder), amending the protocol's "strictly increasing along entries" clause: a lazy
+   walk cannot cite a node's future entry index at discovery time. The contract's real
+   promise is narrowed to what it always meant — a stable per-enumeration correlation
+   key, entries in topological order; entry-indexed ordinals are the BUFFER's
+   presentation (its dense index is its entry order). Entry discipline is depth-biased
+   (each phase's newly ready nodes push in reverse) to match the eager walk's
+   discovery-order bias — every pinned stream in the battery came through unchanged.
+
+- **The builder goes lazy.** Builder acquisition previously precomputed the full CSR
+  arrays — a smuggled buffer inside what the type presents as a stream, the exact tier
+  violation the tree family's disclosure rule outlaws. The replacement is Kahn ON
+  DEMAND: the visit protocol IS Kahn's trace (pop ready node = entry; dispatch
+  out-edges = discoveries, decrementing children's remaining in-degrees; a child
+  hitting zero joins the ready set), a hand-rolled state machine — no coroutine
+  mystery. The walk-source set is the members nothing points to, so
+  sources-at-the-start survives and `GetSources`' early exit works on CYCLIC graphs
+  (it never reaches the starvation point).
 - **Eager cycle validation drops, by the finiteness symmetry.** Eager cycle validation
   of a dag is the twin of eagerly validating that a lazy tree is finite — both are "can
   this stream complete" facts, discoverable only by full drain, and tree-side nobody

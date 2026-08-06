@@ -12,7 +12,9 @@ namespace Copse.Dags
     /// survives every wrapper: pruning severs edges and the liveness fold kills what loses its
     /// last path, so no operator ever creates a mid-stream source (the same fact that makes a
     /// streaming TakeSubgraphsWhere a contract amendment rather than a wrapper). Deferred: the walk
-    /// is acquired on first enumeration; acquisition validates acyclicity.
+    /// is acquired on first enumeration -- and the early exit means a CYCLIC graph's sources
+    /// still stream fine (the lazy builder ruling: cycles surface as starvation at exhaustion,
+    /// which this drain never reaches).
     /// </summary>
     public static IEnumerable<TNode> GetSources<TNode, TEdge>(
       this IDagnumerable<TNode, TEdge> source)
