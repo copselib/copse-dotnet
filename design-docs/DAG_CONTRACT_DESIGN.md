@@ -520,3 +520,45 @@ last-entered node; O(1) state).
    every intermediate, and NAV attribution up with the funds' NAVs summing to total
    holdings — the diamond never double-counts. Every business rule is a composed lambda;
    every traversal is the library's.
+
+## THE SUBGRAPH SELECTION CLUSTER (ratified 2026-08-06 — the first real-world ask)
+
+Driven by the project-graph workload (the first field consumer): the boundary drains and
+the closure selector, three operators, one file each.
+
+- **`GetSources` / `GetSinks`** — the boundary drains, `GetRoots`/`GetLeaves`' dag
+  analogs, both in topological order. `GetSources` is O(1)-state with an EARLY EXIT: the
+  protocol's sources-at-the-start convention makes the source discoveries a stream
+  prefix, and no wrapper ever creates a mid-stream source (pruning severs edges; the
+  liveness fold kills what loses its last path), so the drain reads the prefix and
+  stops. `GetSinks` consumes the whole walk (a sink is a whole-stream fact) but dispatch
+  contiguity collapses the state to one pending node — O(1), the transpose's GetSources
+  without the transpose.
+- **`TakeSubgraphsWhere(predicate)`** — the closure selector (`TakeSubtreesWhere`' dag analog):
+  every match, everything reachable from a match, and the edges among them — ONE result
+  dag, the matches re-rooted. The tree operator's no-nested-matches flag is EMERGENT
+  here, not a rule: a match reachable from another match keeps an in-closure in-edge and
+  comes out interior; the result's sources are exactly the matches nothing else swept in
+  (induced in-degree zero). Shared descendants are shared, never duplicated — a second
+  path into included structure is an edge, not a copy. Outside edges die with their
+  excluded parents; because inclusion is a downward closure, every included node's
+  out-block survives whole (the compaction copies blocks, no per-edge test). Per-match
+  separate closures are the caller's loop; ancestry selection is
+  `Transpose().TakeSubgraphsWhere(p).Transpose()`.
+- **Capture-shaped BY CONTRACT, and the logged streaming amendment**: `TakeSubgraphsWhere`
+  returns a `DagBuffer` not for convenience but because the protocol discovers a
+  stream's sources at the start of enumeration, and this operator's result-sources are
+  found by the predicate mid-walk — a lazy wrapper cannot honestly present them.
+  Membership itself IS online-decidable (entries strictly after their last discovery
+  means every parent settles first — the topological presentation is the
+  anti-re-entrancy invariant, and `PruneBefore`'s twenty-line wrapper is the proof the
+  tier streams). The streaming variant therefore waits on ONE contract amendment,
+  logged, not taken: restate the source convention as "a source's discovery precedes
+  its entry; the BUILDER additionally presents all its sources first," licensing
+  wrappers to surface sources mid-stream. Decide it on a workload, in its own sitting.
+- **The tree analog (`TakeSubtreesWhere`), follow-on for main**: matched subtrees re-rooted
+  as a result forest, outermost-match-wins as a RULE (the in-subtree flag — trees
+  cannot share, so nested matches must be suppressed, not absorbed); D-narrow streams
+  O(depth) (a matched subtree is contiguous in preorder), B captures (matches start at
+  different source depths), F dimension-dispatches — Invert's disclosure pattern.
+  Deferred to the tree family's own branch; the dag operator is the general form.
