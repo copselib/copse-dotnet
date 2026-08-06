@@ -562,3 +562,71 @@ the closure selector, three operators, one file each.
   O(depth) (a matched subtree is contiguous in preorder), B captures (matches start at
   different source depths), F dimension-dispatches — Invert's disclosure pattern.
   Deferred to the tree family's own branch; the dag operator is the general form.
+
+## THE LAZY BUILDER RULING (ratified 2026-08-06 — eager validation drops; Materialize is the certificate)
+
+Consensus reached in design discussion; **direction ratified, implementation deferred to
+a future sitting.** Nothing below is built yet; current code (eager CSR acquisition,
+"acquisition validates acyclicity") remains accurate until the implementation lands.
+
+- **The builder goes lazy.** Builder acquisition today precomputes the full CSR arrays —
+  a smuggled buffer inside what the type presents as a stream, the exact tier violation
+  the tree family's disclosure rule outlaws. The replacement is Kahn ON DEMAND: the
+  visit protocol IS Kahn's trace (pop ready node = entry; dispatch out-edges =
+  discoveries, decrementing children's remaining in-degrees; a child hitting zero joins
+  the queue), so the lazy walk is a hand-rolled state machine — ready queue plus
+  counters, no coroutine mystery. In-degree bookkeeping moves to construction
+  (`AddChild` maintains counts), the seed queue is the in-degree-zero set, so
+  sources-at-the-start survives and `GetSources`' early exit costs O(sources). Work is
+  O(consumed): a consumer who takes three nodes pays for three nodes. Per-walk counter
+  state rides an overlay (decrements only) over the builder's live counts.
+- **Eager cycle validation drops, by the finiteness symmetry.** Eager cycle validation
+  of a dag is the twin of eagerly validating that a lazy tree is finite — both are "can
+  this stream complete" facts, discoverable only by full drain, and tree-side nobody
+  demands the proof at acquisition. The symmetric posture: eager-validate NEITHER
+  family; each contract fails where it actually fails. Trees never fail (the tree
+  contract is unfalsifiable by content — a shared-reference stream is a lawful
+  unfolding); a cyclic dag drain fails at STARVATION (queue empty, entered < built),
+  throwing `DagCycleException` at exhaustion after publishing the maximal acyclic
+  downward-closed prefix, deterministically per drain. The dag's node count is what
+  converts the tree's divergence into detection — the one place this family improves on
+  the tree posture instead of mirroring it.
+- **Materialize IS the validator; the buffer is the certificate — and it certifies
+  ITSELF.** A completed capture drained the walk and the walk did not starve; that value
+  is acyclic permanently, regardless of what the builder did before, after, or during.
+  Certificates attach to values, not to objects with identity through time — which is
+  why no `ValidateNoCycles` operator ships (extensionally `Materialize`; the seed
+  lesson: no existing instrument under a second name). Drain-without-residency
+  validation is `Consume`'s seat (dag `Consume` does not exist yet; it arrives with the
+  lazy builder — full drain, keep nothing, throw on starvation). Three postures, zero
+  new vocabulary: drain validates, `Materialize` validates and keeps the certificate,
+  `Consume` validates and discards.
+- **The three-tier stability story.** The concrete builder is mutable, List-style, and
+  keeps implementing `IDagnumerable` (the `List : IEnumerable` precedent; an explicit
+  build boundary already exists under a better name — `Materialize`). The INTERFACE
+  promises re-enumeration, not stability — a Defer-style dag source lawfully differs
+  per drain, so "is acyclic" is a predicate of a DRAIN, never of a source. `Hide` gets
+  its dag seat (the tree/Ix precedent): it launders identity — the consumer cannot cast
+  back to the builder — but does NOT make the source stable; the owner still can mutate
+  behind it. The buffer is the only tier where immutability is a promise. Builder
+  guarantees nothing; Hide guarantees the consumer can't mutate; the buffer guarantees
+  nobody can.
+- **DEFERRED — the mutation guard (noted for future development, usefulness agreed
+  2026-08-06).** Guards follow claims: a family guards exactly the falsifiable claims it
+  makes. The dag family uniquely claims "starvation means cycle," and mid-drain
+  `AddChild` can falsify it (an in-degree bumped under a walk's decrements can starve an
+  acyclic graph — a FALSE `DagCycleException`; torn drains are merely odd, and the
+  buffer's self-certificate is out of the blast radius entirely). The guard: builder
+  version stamp, snapshotted at walk acquisition, checked per MoveNext, throwing
+  `InvalidOperationException` on mid-drain mutation — one int compare, protecting the
+  meaning of one word (`DagCycleException` ⇒ cycle, not cycle-or-mutation). No tree-side
+  symmetry debt: trees make no falsifiable claims (a mid-mutation tree drain is a
+  coherent walk of a Frankenstein tree, never a lie; BCL child collections self-guard).
+  The tolerate-and-document alternative (exception reworded to "the drain starved")
+  stays on record as the rejected-for-now road.
+- **Parked separately: value-distinctness lint.** Edge validation (acyclicity) checks
+  structure the library AUTHORED — validatable by its own machinery. Node validation
+  (duplicate values at distinct positions/ordinals) checks identity the library NEVER
+  READS — only a consumer-supplied comparer can lend it; duplicates never confuse the
+  machinery in either family (positions/ordinals are the identity), so it is a lint on
+  consumer intent, family-symmetric if ever built, waiting on a workload.
