@@ -38,7 +38,7 @@ namespace Copse.Linq
     /// LeaffixDispatch (CrossTierCoherenceTests).</para>
     ///
     /// <para>Returns the CANONICAL PAIRING: a buffer of
-    /// <see cref="ScanResult{TSource, TAccumulate}"/>s -- project <c>.Accumulate</c> for
+    /// <see cref="NodeAccumulation{TSource, TAccumulate}"/>s -- project <c>.Accumulate</c> for
     /// values; for mutable nodes, land with the composed effect idiom (see LeaffixDispatch's
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
@@ -49,7 +49,7 @@ namespace Copse.Linq
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
     /// The source is consumed depth-first only, so a streamed narrow source can leaffix.</para>
     /// </summary>
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -57,7 +57,7 @@ namespace Copse.Linq
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -65,14 +65,14 @@ namespace Copse.Linq
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -80,14 +80,14 @@ namespace Copse.Linq
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
       => LeaffixScan((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
-    public static ITreenumerableBuffer<ScanResult<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
+    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,

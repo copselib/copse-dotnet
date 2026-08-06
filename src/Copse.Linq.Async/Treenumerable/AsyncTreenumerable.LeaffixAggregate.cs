@@ -13,7 +13,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one <see cref="ScanResult{TSource, TAccumulate}"/> per root tree: the root's
+    /// sequence -- one <see cref="NodeAccumulation{TSource, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
     /// docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape, 2026-08-05 -- the
     /// NodeContext-flavored map-then-combine signatures are retired). The mechanism is
@@ -30,7 +30,7 @@ namespace Copse.Linq
     /// stops early traverses fewer roots. Zero per-node alloc: the fold writes straight into
     /// the flat slots.
     /// </summary>
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -39,7 +39,7 @@ namespace Copse.Linq
       => LeaffixAggregateCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -59,7 +59,7 @@ namespace Copse.Linq
     /// after it (the fold buffers are then reused per root, as in the depth-first entry).
     /// Per-root laziness is a depth-first affordance.
     /// </summary>
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -67,7 +67,7 @@ namespace Copse.Linq
       CancellationToken cancellationToken = default)
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
 
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -76,7 +76,7 @@ namespace Copse.Linq
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node, nodeContext.Position), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>Disambiguation overloads for full trees; keep the depth-first consumption -- the per-root-lazy entry.</summary>
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -84,7 +84,7 @@ namespace Copse.Linq
       CancellationToken cancellationToken = default)
       => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator, cancellationToken);
 
-    public static IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
+    public static IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -96,7 +96,7 @@ namespace Copse.Linq
     // RUNNING EDGE-REDUCTION of its closed children until the node itself closes (the parallel
     // hasChildren list distinguishes "no child closed yet" from any real accumulate -- no
     // sentinel value is stolen from TAccumulate's range).
-    private static async IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregateCore<TSource, TAccumulate>(
+    private static async IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregateCore<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -151,7 +151,7 @@ namespace Copse.Linq
 
           if (depth == 0 && accumulations.Count > 0)
           {
-            yield return new ScanResult<TSource, TAccumulate>(currentRoot, accumulations[0]);
+            yield return new NodeAccumulation<TSource, TAccumulate>(currentRoot, accumulations[0]);
             accumulations.Clear();
           }
 
@@ -169,7 +169,7 @@ namespace Copse.Linq
         Close();
 
       if (accumulations.Count > 0)
-        yield return new ScanResult<TSource, TAccumulate>(currentRoot, accumulations[0]);
+        yield return new NodeAccumulation<TSource, TAccumulate>(currentRoot, accumulations[0]);
     }
 
     // The breadth-first core: the capture is the memo's chunked level-order buffer, completed
@@ -178,7 +178,7 @@ namespace Copse.Linq
     // fold is the depth-first core's (same Close, node-last), driven by index chasing over the
     // capture's contiguous child spans instead of a visit stream; contexts are reconstructed
     // from the spans (depth from the walk stack, sibling index from the span offset).
-    private static async IAsyncEnumerable<ScanResult<TSource, TAccumulate>> LeaffixAggregateBreadthFirstCore<TSource, TAccumulate>(
+    private static async IAsyncEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregateBreadthFirstCore<TSource, TAccumulate>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<NodeContext<TSource>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
@@ -249,7 +249,7 @@ namespace Copse.Linq
           while (path.Count > 0)
             Close();
 
-          yield return new ScanResult<TSource, TAccumulate>(capture.GetValue(root), accumulations[0]);
+          yield return new NodeAccumulation<TSource, TAccumulate>(capture.GetValue(root), accumulations[0]);
           accumulations.Clear();
         }
       }

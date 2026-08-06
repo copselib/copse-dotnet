@@ -4,7 +4,11 @@
 > `feature/do-scan` ahead of the alpha. AMENDED 2026-08-04 (the alpha.9 LINQPad verdict):
 > the SEAT RULE below supersedes this document's callback-input clause -- the pairing's
 > only home is the RESULT; callbacks speak the minimal basis. The 2026-08-02 sweep's
-> ScanResult-parent accumulator was reverted accordingly.** Vocabulary ratified same date:
+> ScanResult-parent accumulator was reverted accordingly. RENAMED 2026-08-06 (the
+> recording rule made type-level): `ScanResult` is now TWO payload-named pairings,
+> `NodeAccumulation` (output) and `NodeArrival` (input, RootfixDispatch's) -- see The
+> recording rule below; this document keeps its historical filename.** Vocabulary
+> ratified same date:
 > `ScanResult<TSource, TAccumulate>` with `.Node` / `.Accumulate` ("scan" read broadly as
 > the aggregation family); the leaffix survey view renames to **DispatchSources** — the
 > dual of DispatchTargets (write-handles down, read-handles up), accepting the "source"
@@ -371,12 +375,30 @@ shape, and no node class is excluded from its tier's callback.**
   merge. The pure surveys' seats are settled (rootfix subject-less; leaffix
   subject-bearing).
 
-## The recording rule (the alpha.9 edge-1 clause)
+## The recording rule (the alpha.9 edge-1 clause; TYPE-LEVEL since 2026-08-06)
 
 Folds record their OUTPUT (the node's accumulation). The rootfix survey records its
 INPUT — the arrival — because it is the family's one 1-in-n-out shape: no node-grained
 output exists, and its n outputs are recorded as its children's arrivals. Forced, not
-accidental; stated on `ScanResult` and `RootfixDispatch`.
+accidental.
+
+**Made TYPE-LEVEL 2026-08-06** (the logged item-2 amendment, following the dag family's
+`DagScanResult`/`DagDispatchResult` split — "the two tiers never overload one field with
+two meanings"): the two recordings no longer share a field. Output-recorders — the
+scans, the aggregates, and LeaffixDispatch — return
+`NodeAccumulation<TSource, TAccumulate>` (`.Accumulate`); the family's ONE
+input-recorder, RootfixDispatch, returns `NodeArrival<TSource, TDispatch>` (`.Arrival`).
+The old single type's dual reading was only "forced" while one type served both tiers —
+its signature already confessed (`RootfixDispatch<TSource, TDispatch>` returning a field
+named `Accumulate`). Named by PAYLOAD, not operator (the house pairing grammar:
+NodeContext, NodeVisit, NodePosition), because tree-side the operator axis lies:
+LeaffixDispatch is a dispatch that records accumulations (n-in-1-out has a node-grained
+output) — where the dag family's operator↔payload mapping is exact, so its
+operator-named pairings are honest there. The tree arrival is SINGULAR (one parent)
+where the dag's is a group (`DagArrivals`, n parents): the field shape itself records
+the structural difference between the families. `ScanResult` was the shared type's name
+from ratification (2026-08-02) to the split; this document keeps its historical
+filename.
 
 ## The Do-tier ruling (historical — see THE DEMOTION)
 
@@ -399,8 +421,8 @@ or **forced by the direction of information flow** — never accidental. Dual �
 | `DispatchTarget`: context + write facility | `DispatchSource`: context + read value | matched (this sweep) |
 | O(1) Count + indexer via the child-index | O(1) Count + indexer via the child-index | matched (this sweep — the leaffix build restructured to capture-then-fold, sharing the rootfix passes) |
 | `DispatchTargets` | `DispatchSources` | matched (this sweep) |
-| pure result decorates (`ScanResult`) | pure result decorates (`ScanResult`) | matched (this sweep — leaffix previously REPLACED) |
-| survey records the ARRIVAL (its input; no node-grained output exists) | survey records its OUTPUT (n-in-1-out has one) | forced-different — the recording rule (2026-08-04) |
+| pure result decorates (`NodeAccumulation`; `NodeArrival` for the dispatch tier) | pure result decorates (`NodeAccumulation`, both tiers) | matched on decoration (this sweep — leaffix previously REPLACED); the pairing TYPE follows the recording rule (2026-08-06) |
+| survey records the ARRIVAL (its input; no node-grained output exists) → `NodeArrival` | survey records its OUTPUT (n-in-1-out has one) → `NodeAccumulation` | forced-different — the recording rule (2026-08-04; type-level 2026-08-06) |
 | callbacks: minimal basis — subject + flow state, pairing in results only | callbacks: minimal basis — subject + flow state, pairing in results only | matched (the seat rule, 2026-08-04) |
 | Do store: (node, arrival) | Do store: (node, rollup) | matched — born dual (the dispatch tier) |
 | fold tier: landing rides the fold's return (RootfixDoScan MERGED — one callback per node produces that node's value) | fold tier: combine is child-edge-grained (0× on leaves, k× else) — `store` keeps its seat | forced-different — the landing rule (2026-08-04) |

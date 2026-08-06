@@ -98,11 +98,11 @@ namespace Copse.Async.Tests
         var sync = Sync(tree)
           .RootfixDispatch("s", Survey)
           .PreorderTraversal()
-          .Select(dn => dn.Accumulate + dn.Node)
+          .Select(dn => dn.Arrival + dn.Node)
           .ToList();
 
         var async = (await ToList(Async(tree).RootfixDispatch("s", Survey).PreorderTraversal()))
-          .Select(dn => dn.Accumulate + dn.Node)
+          .Select(dn => dn.Arrival + dn.Node)
           .ToList();
 
         CollectionAssert.AreEqual(sync, async, $"Preorder {tree}");

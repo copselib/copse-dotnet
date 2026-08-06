@@ -34,8 +34,14 @@ namespace Copse.Linq.Tests
         member.Dispatch(Fold(arrival, member.Node));
     }
 
-    private static string[] Pairings(ITreenumerable<ScanResult<string, string>> results) =>
+    private static string[] Pairings(ITreenumerable<NodeAccumulation<string, string>> results) =>
       results.PreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Accumulate}").ToArray();
+
+    // The dispatch side records ARRIVALS (NodeArrival -- the recording rule, type-level since
+    // 2026-08-06); under the fold encoding what arrives at a node IS its accumulation, which
+    // is exactly the equivalence this battery pins -- the projections coincide by the law.
+    private static string[] Pairings(ITreenumerable<NodeArrival<string, string>> results) =>
+      results.PreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Arrival}").ToArray();
 
     [TestMethod]
     public void SeedFlavor_ScanIsTheFoldShapedDispatch()

@@ -46,11 +46,19 @@ namespace Copse.Linq.Tests
       corpus.PreorderTraversal().Select(e => e.Landed).ToArray();
 
     // The canonical landing effect: once per node, at scheduling.
-    private static System.Action<NodeVisit<ScanResult<Entity, decimal>>> Land() =>
+    private static System.Action<NodeVisit<NodeAccumulation<Entity, decimal>>> Land() =>
       visit =>
       {
         if (visit.Mode == TreenumeratorMode.SchedulingNode)
           visit.Node.Node.Landed = visit.Node.Accumulate;
+      };
+
+    // Its arrival twin for the family's one input-recorder (RootfixDispatch -> NodeArrival).
+    private static System.Action<NodeVisit<NodeArrival<Entity, decimal>>> LandArrival() =>
+      visit =>
+      {
+        if (visit.Mode == TreenumeratorMode.SchedulingNode)
+          visit.Node.Node.Landed = visit.Node.Arrival;
       };
 
     [TestMethod]
@@ -118,7 +126,7 @@ namespace Copse.Linq.Tests
 
       corpus
         .RootfixDispatch(9_000m, AllocateByWeight)
-        .Do(Land())
+        .Do(LandArrival())
         .Select(pairing => pairing.Node)
         .PreorderTraversal().ToArray();
 
