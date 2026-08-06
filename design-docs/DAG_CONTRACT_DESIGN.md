@@ -642,3 +642,29 @@ implementation facts refined the ruling as written:
   READS — only a consumer-supplied comparer can lend it; duplicates never confuse the
   machinery in either family (positions/ordinals are the identity), so it is a lint on
   consumer intent, family-symmetric if ever built, waiting on a workload.
+
+## ONE OPERATOR, ONE GRAIN (noted 2026-08-06 — Select / SelectEdges stay separate)
+
+Revisited after the fused visit model (a discovery IS an in-edge and its target node,
+published together) raised the question of whether separate node and edge projections
+still earn their seats. Ruling: they do — the model fused the STREAM, not the grains.
+
+- `Select` projects a NODE fact (one value per node); `SelectEdges` projects an EDGE
+  fact (one payload per edge). A unified visit-level projection would sit at the visit
+  grain, which is neither: the edge half fits (discoveries are edge-grained), but the
+  node half becomes incoherent — a node with n in-edges would have its value projected
+  per discovery with nothing obliging the projections to agree, an arrival-dependent
+  fact wearing a node's seat. The same smuggling the recording rule and the seat rule
+  exist to forbid, closed the same way: one operator per grain.
+- The observable trace of the grain difference is CADENCE: `SelectEdges` evaluates
+  ON-grain (exactly once per discovery, the edge's natural site), while `Select`
+  evaluates OFF-grain by design (a node-grained projection run at visit cadence,
+  n+1 times per node — the stateless wrapper's price, covered by the house purity
+  contract's unspecified-counts clause). Cadence is the difference the fused model
+  makes visible; the grains are why it is not a defect.
+- The two-selector convenience overload `Select(nodeSelector, edgeSelector)` — now
+  trivially one wrapper over the fused stream — is HELD at the admission gate: it is
+  extensionally the `.Select(f).SelectEdges(g)` chain (an alias-shaped temptation), and
+  the phase-5 composition machinery will fuse the chain mechanically anyway. `Select`
+  keeps its name (node-value projection is what `Select` means family-wide); no
+  `SelectNodes` rename for local symmetry.
