@@ -151,6 +151,50 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
+    public void ExpandEdgesWhere_IsTheBindWithAKeepBranch()
+    {
+      var viaSugar = Diamond().ExpandEdgesWhere(
+        e => e.Child == "venture",
+        e => DagEdgePath<string, decimal>.Through(e.Edge, $"via-{e.Parent}", 1m));
+
+      var viaBind = Diamond().ReplaceEdges(e =>
+        e.Child == "venture"
+          ? DagEdgePath<string, decimal>.Through(e.Edge, $"via-{e.Parent}", 1m)
+          : DagEdgePath<string, decimal>.Keep(e.Edge));
+
+      CollectionAssert.AreEqual(viaBind.GetTopologicalOrder().ToArray(), viaSugar.GetTopologicalOrder().ToArray());
+      CollectionAssert.AreEqual(Edges(viaBind), Edges(viaSugar));
+    }
+
+    [TestMethod]
+    public void ExpandEdgesWhere_TheReifyMove_MakesAnchorsOfDecorations()
+    {
+      // The PoC's shape in miniature: interpose an anchor on every "program" edge, then a
+      // restart-at-anchors upward scan attributes ownership per anchor -- the path-dependent
+      // query becomes a per-node one. PLACEMENT MATTERS for attribution: the stake rides the
+      // leg BELOW the anchor (the owner wholly owns its program position; the position owns
+      // the stake of the target), so the anchor's own lookthrough IS the stake.
+      var expanded = Diamond().ExpandEdgesWhere(
+        e => e.Child == "venture",
+        e => DagEdgePath<string, decimal>.Through(1m, $"program-{e.Parent}", e.Edge));
+
+      CollectionAssert.AreEqual(
+        new[] { "apex", "left", "program-left", "right", "program-right", "venture" },
+        expanded.GetTopologicalOrder().ToArray());
+
+      // Effective ownership per anchor: each program node's lookthrough of the venture.
+      var lookthrough = expanded.SinkfixScan<string, decimal, decimal>(
+        (node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
+
+      CollectionAssert.AreEqual(
+        new[] { ("program-left", 0.70m), ("program-right", 0.30m) },
+        lookthrough.Values
+          .Where(pairing => pairing.Node.StartsWith("program-"))
+          .Select(pairing => (pairing.Node, pairing.Accumulate))
+          .ToArray());
+    }
+
+    [TestMethod]
     public void SelectorNeverSeesADeadParentsEdges()
     {
       // Dropping apex->left kills left (its only in-edge); left's own out-edge must never be
