@@ -694,3 +694,56 @@ e.Edge.Accumulate)` — the idiom the operator docs teach. `SelectEdges`/`PruneE
 untouched: projection and filtering are not aggregations. The ownership workload gets
 the pairing's payoff directly: a conditioned or flow-labeled edge carries its original
 stake beside the computed value — nothing reconstructed, nothing smuggled.
+
+## EDGE REPLACEMENT (ratified and built 2026-08-07 — ReplaceEdges; SelectMany stays reserved)
+
+Born from the PoC's SIP diagnosis (path-dependent queries mean the model is missing
+nodes; reify the anchors) and generalized by Jason from the drafted `ExpandEdgesWhere`:
+the bespoke expander was the general operation plus a caller-side branch — the general
+form is the operator, the special case is a lambda (the seed lesson, in reverse gear).
+
+**The naming ruling (Jason, same day; briefly shipped as `SelectManyEdges`, renamed
+before push):** this is NOT LINQ's bind and must not wear its name. `SelectMany` names
+the collection monad's bind — element → collection, flattened by concatenation — and
+consumers fluent in LINQ will predict those semantics; ours is endpoint-constrained
+substitution, in situ. (The pedant's defense — paths over a quiver form the free
+category, and edge→path substitution is Kleisli-flavored for THAT monad — is exactly
+the kind of technically-true-but-misleading vocabulary the sources/sinks ruling
+rejected.) More binding still: `SelectMany` is RESERVED in this codebase for the true
+node-channel bind — `ITreenumerable` is constitutionally a tree monad, root-graft
+substitution (SELECTMANY_DESIGN.md) is its designed bind, and a future dag node→subdag
+substitution would inherit the name. Graph rewriting supplies the honest term of art:
+EDGE REPLACEMENT. The operator family reads `SelectEdges` / `PruneEdges` /
+`ReplaceEdges` / `ExpandEdgesWhere`.
+
+- **`ReplaceEdges(selector)`**: every edge becomes the `DagEdgePath` the selector
+  returns — an implicit-endpoint path: first payload, then one `(node, payload)` link
+  per fresh interior node. `Keep` is identity (or a payload rewrite), `Through` is
+  subdivision (the reify move), `Chain` generalizes, `Drop` (the default value) deletes.
+- **One edge-removal semantics, not two**: `Drop` follows the family's liveness rule —
+  a node losing its last inbound path dies unless it was an original source — so
+  `PruneEdges` is exactly the replacement's streaming special case, and `SelectEdges`
+  its streaming pure-rewrite special case. All three keep their seats: different cost
+  classes, not aliases. A dead parent's edges are never consulted (pinned).
+- **Cycle-safe by construction**: interior nodes are always FRESH (no value comparison,
+  so no existing node can be referenced), and fresh nodes subdividing existing edges
+  cannot close a cycle — the result buffer inherits its source's acyclicity certificate
+  with no revalidation.
+- **Stake placement matters for attribution** (the reify test's lesson): for per-anchor
+  attribution the stake rides the leg BELOW the anchor — `Through(1.0, anchor, stake)` —
+  the owner wholly owns its position, the position owns the stake. Total lookthrough is
+  placement-invariant; per-anchor attribution is not (pinned).
+- **Born-here ordinals**: interior nodes have no twin in the captured source, so their
+  `SourceOrdinal` is −1 — synthesized-ness as an in-band queryable fact. (Chosen here
+  provisionally; the convention is on the sitting's agenda with the ordinal-range
+  amendment.)
+- **Buffer by CONVENTION, not theorem** (Jason's catch, and the doc says so): streaming
+  subdivision is visit-protocol-legal — contiguity and readiness both hold for an
+  interposed entry-and-dispatch — and only ordinal minting blocks a wrapper form (a
+  stream cannot know which ordinals are free). The reserved synthesized-ordinal-range
+  amendment, bundled with the streaming-sources sitting, would make it streamable.
+- **Family map**: tree `SelectMany` (SELECTMANY_DESIGN.md, root-graft) remains the
+  designed node-channel bind, name reserved; `ReplaceEdges` is the rewriting-tier
+  operation, dag-side first because the field workload asked. Placement of interior
+  nodes is topological by construction (immediately after the parent), so the result's
+  dense order needs no re-sort.
