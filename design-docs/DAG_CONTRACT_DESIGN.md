@@ -419,8 +419,13 @@ last-entered node; O(1) state).
    `<TNode, TEdge>`; an edge-less source is `<TNode, Unit>`-style sugar when needed.
 4. ✅ **Color RATIFIED (Jason, 2026-07-18)**: sync-only until a consumer exists; contracts
    written so the async transcription stays mechanical later (no sync-only idioms).
-5. **Contraction's spelling** (`Where` vs a named operator) — deferred with the operator
-   itself.
+5. ✅ **Contraction's spelling RESOLVED (2026-08-08, the substitution taxonomy sitting —
+   docs/SUBSTITUTION_TAXONOMY.md)**: spelled `Where` — the family homolog (vertex bypass
+   with caller edge composition, LINQ polarity, bypass-not-removal: filtered sources
+   promote their children to sources). `Contract` was rejected for accuracy (graph
+   theory's contraction merges endpoints — the sources/sinks ruling's standard). Built
+   capture-shaped; the streaming blocker is DISPATCH CONTIGUITY (a manufactured
+   through-edge cites a long-closed parent block), logged in the taxonomy doc's ledger.
 6. **Where the family lives**: grow `Copse.Dags` into contract + families, or split
    `Copse.Dags.Core` etc. mirroring the tree layering. Proposal: single project until
    graduation forces the split (the spike's own no-new-projects rule).

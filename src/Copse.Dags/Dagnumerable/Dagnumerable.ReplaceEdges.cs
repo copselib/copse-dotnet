@@ -156,18 +156,10 @@ namespace Copse.Dags
         }
       }
 
-      var dense = true;
-      for (var resultOrdinal = 0; resultOrdinal < resultSourceOrdinals.Count; resultOrdinal++)
-        if (resultSourceOrdinals[resultOrdinal] != resultOrdinal)
-        {
-          dense = false;
-          break;
-        }
-
-      return new DagBuffer<TNode, TEdge>(
+      return DagBuffer<TNode, TEdge>.FromParts(
         resultValues.ToArray(),
         new DagStructure<TEdge>(resultOffsets.ToArray(), resultTargets.ToArray(), resultPayloads.ToArray()),
-        dense ? null : resultSourceOrdinals.ToArray());
+        resultSourceOrdinals.ToArray());
     }
   }
 }

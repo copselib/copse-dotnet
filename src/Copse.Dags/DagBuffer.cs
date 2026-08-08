@@ -77,6 +77,24 @@ namespace Copse.Dags
       new(_Values, Structure.WithPayloads(payloads), _SourceOrdinals);
 
     /// <summary>
+    /// Builds a buffer from rebuild parts, collapsing an identity ordinal map to null -- the
+    /// SourceOrdinal invariant's one home (an identity back-map MUST collapse, or dense and
+    /// gapped captures would answer <see cref="SourceOrdinal"/> differently).
+    /// </summary>
+    internal static DagBuffer<TNode, TEdge> FromParts(TNode[] values, DagStructure<TEdge> structure, int[] sourceOrdinals)
+    {
+      var dense = true;
+      for (var ordinal = 0; ordinal < sourceOrdinals.Length; ordinal++)
+        if (sourceOrdinals[ordinal] != ordinal)
+        {
+          dense = false;
+          break;
+        }
+
+      return new DagBuffer<TNode, TEdge>(values, structure, dense ? null : sourceOrdinals);
+    }
+
+    /// <summary>
     /// Captures a source's live stream in ONE pass (dispatch contiguity makes each adjacency
     /// block contiguous in arrival order -- the edge-grained stream paying for itself),
     /// re-keying possibly-gapped stream ordinals to dense indices.
@@ -123,18 +141,10 @@ namespace Copse.Dags
       for (var slot = 0; slot < targets.Length; slot++)
         targets[slot] = denseByStream[edgeTargetStreamOrdinals[slot]];
 
-      var dense = true;
-      for (var ordinal = 0; ordinal < streamOrdinals.Count; ordinal++)
-        if (streamOrdinals[ordinal] != ordinal)
-        {
-          dense = false;
-          break;
-        }
-
-      return new DagBuffer<TNode, TEdge>(
+      return FromParts(
         values.ToArray(),
         new DagStructure<TEdge>(offsets, targets, edgePayloads.ToArray()),
-        dense ? null : streamOrdinals.ToArray());
+        streamOrdinals.ToArray());
     }
   }
 }
