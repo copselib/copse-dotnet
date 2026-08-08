@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 
 namespace Copse.Dags
 {
@@ -11,8 +11,9 @@ namespace Copse.Dags
   // No topological snapshot, no CSR arrays, no cycle check at acquisition: the eager
   // acquisition was a smuggled buffer, and cycle detection is STARVATION -- the ready stack
   // drains with members unsettled -- surfacing as DagCycleException at exhaustion, after the
-  // maximal acyclic downward-closed prefix has been published, deterministically per drain.
-  // Materialize is the validator; the completed buffer is the certificate.
+  // maximal acyclic downward-closed prefix has been published, deterministically per drain
+  // (the exception names one concrete cycle, found by a failure-path-only walk of the
+  // starved members). Materialize is the validator; the completed buffer is the certificate.
   //
   // Acquisition runs ONE light counting pass (membership + member-in-degree, a visited-set
   // walk over child edges): the stray-parent affordance (a member may have a parent OUTSIDE
@@ -305,20 +306,90 @@ namespace Copse.Dags
       EdgeIndex = 0;
     }
 
+    // At exhaustion every unsettled member still waits on an undelivered in-edge, and each
+    // such edge's parent is itself unsettled (a settled node delivers or silently settles
+    // every out-edge) -- so the starved subgraph has in-degree >= 1 everywhere and must
+    // contain a cycle. Kahn cannot name it (starvation is a set, not a walk); this
+    // failure-path-only DFS over the starved members finds one concrete loop to report,
+    // with the starved count kept as context -- the wreckage can extend beyond the loop
+    // shown (its downstream victims starve too, but are no part of it).
     private string DescribeStarvation()
     {
-      // At exhaustion every unsettled member still waits on an undelivered in-edge.
-      var starved = _States
-        .Where(memberState => memberState.Value.Pending > 0)
-        .Select(memberState => memberState.Key.Value?.ToString() ?? "<null>")
-        .Take(8)
-        .ToList();
-
       var starvedCount = _States.Count - _SettledCount;
+      var context = $"({starvedCount} node(s) starved -- every remaining node waits on an undelivered in-edge).";
+      var cyclePath = DescribeOneStarvedCycle();
 
-      return $"Cycle detected: {starvedCount} node(s) starved -- every remaining node waits on an undelivered in-edge"
-        + (starved.Count > 0 ? $" (including: {string.Join(", ", starved)})" : "")
-        + ".";
+      return cyclePath == null
+        ? $"Cycle detected: the walk starved with no loop found among the unsettled members {context}"
+        : $"{cyclePath} {context}";
+    }
+
+    private string DescribeOneStarvedCycle()
+    {
+      var starved = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
+
+      foreach (var memberState in _States)
+        if (memberState.Value.Pending > 0)
+          starved.Add(memberState.Key);
+
+      // Iterative DFS with an on-path set, restricted to starved members (a starved parent
+      // never dispatched, so every starved-to-starved out-edge is genuinely undelivered).
+      var visitedNodes = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
+      var nodesOnPath = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
+      var pathFrames = new List<StarvedPathFrame>();
+
+      foreach (var memberState in _States)
+      {
+        var root = memberState.Key;
+
+        if (!starved.Contains(root) || !visitedNodes.Add(root))
+          continue;
+
+        nodesOnPath.Add(root);
+        pathFrames.Add(new StarvedPathFrame(root));
+
+        while (pathFrames.Count > 0)
+        {
+          var frameIndex = pathFrames.Count - 1;
+          var frame = pathFrames[frameIndex];
+
+          if (frame.NextChildIndex == frame.Node.ChildEdges.Count)
+          {
+            pathFrames.RemoveAt(frameIndex);
+            nodesOnPath.Remove(frame.Node);
+            continue;
+          }
+
+          var child = frame.Node.ChildEdges[frame.NextChildIndex].Child;
+          frame.NextChildIndex++;
+          pathFrames[frameIndex] = frame;
+
+          if (!starved.Contains(child))
+            continue;
+
+          if (nodesOnPath.Contains(child))
+            return DescribeCycleFromPath(pathFrames, child);
+
+          if (visitedNodes.Add(child))
+          {
+            nodesOnPath.Add(child);
+            pathFrames.Add(new StarvedPathFrame(child));
+          }
+        }
+      }
+
+      return null;
+    }
+
+    private static string DescribeCycleFromPath(List<StarvedPathFrame> pathFrames, DagNode<TValue, TEdge> reencounteredNode)
+    {
+      var cycleStartIndex = pathFrames.FindIndex(frame => ReferenceEquals(frame.Node, reencounteredNode));
+      var cycleDescription = new StringBuilder("Cycle detected: ");
+
+      for (var frameIndex = cycleStartIndex; frameIndex < pathFrames.Count; frameIndex++)
+        cycleDescription.Append(pathFrames[frameIndex].Node.Value?.ToString() ?? "<null>").Append(" -> ");
+
+      return cycleDescription.Append(reencounteredNode.Value?.ToString() ?? "<null>").ToString();
     }
 
     public void Dispose()
@@ -339,6 +410,18 @@ namespace Copse.Dags
       Entering,
       Dispatching,
       Done,
+    }
+
+    private struct StarvedPathFrame
+    {
+      public StarvedPathFrame(DagNode<TValue, TEdge> node)
+      {
+        Node = node;
+        NextChildIndex = 0;
+      }
+
+      public readonly DagNode<TValue, TEdge> Node;
+      public int NextChildIndex;
     }
   }
 }

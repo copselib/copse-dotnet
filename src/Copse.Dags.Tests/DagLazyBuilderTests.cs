@@ -48,6 +48,36 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
+    public void Starvation_NamesAConcreteCyclePath()
+    {
+      // The starvation exception must be as actionable as the eager walk's: one concrete
+      // loop named ("Cycle detected: a -> b -> a"), found by the failure-path-only DFS over
+      // the starved members, with the starved count kept as context.
+      var exception = Assert.ThrowsException<DagCycleException>(() => CycleUnderSource().Materialize());
+
+      StringAssert.Contains(exception.Message, "Cycle detected: a -> b -> a");
+      StringAssert.Contains(exception.Message, "starved");
+    }
+
+    [TestMethod]
+    public void Starvation_NamesTheLoop_NotItsDownstreamVictims()
+    {
+      // s -> a -> b -> c -> b, plus c -> d: d starves too (its only in-path runs through
+      // the loop) but is no part of it; the named path must be exactly the loop.
+      var s = new DagNode<string, int>("s");
+      var a = s.AddChild("a");
+      var b = a.AddChild("b");
+      var c = b.AddChild("c");
+      c.AddChild(b);
+      c.AddChild("d");
+
+      var exception = Assert.ThrowsException<DagCycleException>(() => new Dag<string, int>(s).Materialize());
+
+      StringAssert.Contains(exception.Message, "Cycle detected: b -> c -> b");
+      StringAssert.Contains(exception.Message, "3 node(s) starved");
+    }
+
+    [TestMethod]
     public void CyclicGraph_PrefixIsDeterministic_PerDrain()
     {
       var dag = CycleUnderSource();
