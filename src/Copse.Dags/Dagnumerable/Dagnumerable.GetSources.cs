@@ -11,7 +11,7 @@ namespace Copse.Dags
     /// and stops at the first non-source event without walking the rest of the dag. The prefix
     /// survives every wrapper: pruning severs edges and the liveness fold kills what loses its
     /// last path, so no operator ever creates a mid-stream source (the same fact that makes a
-    /// streaming TakeSubgraphsWhere a contract amendment rather than a wrapper). Deferred: the walk
+    /// streaming TakeDownstreamWhere a contract amendment rather than a wrapper). Deferred: the walk
     /// is acquired on first enumeration -- and the early exit means a CYCLIC graph's sources
     /// still stream fine (the lazy builder ruling: cycles surface as starvation at exhaustion,
     /// which this drain never reaches).

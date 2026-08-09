@@ -539,18 +539,20 @@ the closure selector, three operators, one file each.
   stops. `GetSinks` consumes the whole walk (a sink is a whole-stream fact) but dispatch
   contiguity collapses the state to one pending node — O(1), the transpose's GetSources
   without the transpose.
-- **`TakeSubgraphsWhere(predicate)`** — the closure selector (`TakeSubtreesWhere`' dag analog):
-  every match, everything reachable from a match, and the edges among them — ONE result
-  dag, the matches re-rooted. The tree operator's no-nested-matches flag is EMERGENT
-  here, not a rule: a match reachable from another match keeps an in-closure in-edge and
-  comes out interior; the result's sources are exactly the matches nothing else swept in
-  (induced in-degree zero). Shared descendants are shared, never duplicated — a second
-  path into included structure is an edge, not a copy. Outside edges die with their
-  excluded parents; because inclusion is a downward closure, every included node's
-  out-block survives whole (the compaction copies blocks, no per-edge test). Per-match
-  separate closures are the caller's loop; ancestry selection is
-  `Transpose().TakeSubgraphsWhere(p).Transpose()`.
-- **Capture-shaped BY CONTRACT, and the logged streaming amendment**: `TakeSubgraphsWhere`
+- **`TakeDownstreamWhere(predicate)`** — the closure selector (`TakeSubtreesWhere`' dag
+  analog; named `TakeSubgraphsWhere` at ratification — renamed 2026-08-09, see the
+  flow-direction naming block below): every match, everything reachable from a match, and
+  the edges among them — ONE result dag, the matches re-rooted. The tree operator's
+  no-nested-matches flag is EMERGENT here, not a rule: a match reachable from another
+  match keeps an in-closure in-edge and comes out interior; the result's sources are
+  exactly the matches nothing else swept in (induced in-degree zero). Shared descendants
+  are shared, never duplicated — a second path into included structure is an edge, not a
+  copy. Outside edges die with their excluded parents; because inclusion is a downward
+  closure, every included node's out-block survives whole (the compaction copies blocks,
+  no per-edge test). Per-match separate closures are the caller's loop; ancestry
+  selection is `TakeUpstreamWhere` (below; the conjugate spelling
+  `Transpose().TakeDownstreamWhere(p).Transpose()` survives as the pinned law).
+- **Capture-shaped BY CONTRACT, and the logged streaming amendment**: `TakeDownstreamWhere`
   returns a `DagBuffer` not for convenience but because the protocol discovers a
   stream's sources at the start of enumeration, and this operator's result-sources are
   found by the predicate mid-walk — a lazy wrapper cannot honestly present them.
@@ -567,6 +569,41 @@ the closure selector, three operators, one file each.
   O(depth) (a matched subtree is contiguous in preorder), B captures (matches start at
   different source depths), F dimension-dispatches — Invert's disclosure pattern.
   Deferred to the tree family's own branch; the dag operator is the general form.
+
+### Flow-direction naming + the upstream mirror (ratified 2026-08-09 — the viewer's closure sitting)
+
+Driven by the ownership-viewer workload (the second field consumer): the service's three
+closure questions — Above(x), Below(x), Structures(x) = one ancestor cone per sink Below(x)
+reaches — made ancestry selection the hot path, and the transpose sandwich pays two full
+buffer materializations around one mark-and-compact.
+
+- **Naming RULED (Jason): the selectors say flow direction, not shape.** "A subgraph could
+  be anything" — the word names a subset, not a direction, so `TakeSubgraphsWhere` leaned on
+  a homology that doesn't transfer (on trees, *subtree* IS the descendant closure; *subgraph*
+  carries nothing). The pair is now **`TakeDownstreamWhere`** / **`TakeUpstreamWhere`** —
+  the house grammar's axis (sources, sinks, Sourcefix, Sinkfix: direction along the flow)
+  and the practitioner vocabulary of build/dataflow systems. Ancestor/descendant was
+  rejected (names the neighbors, not the flow; tree-flavored in a family that speaks
+  source/sink); reachable/reaching was rejected (a near-invisible distinction carrying the
+  entire meaning). The tree analog keeps `TakeSubtreesWhere` — *subtree* earns its name.
+- **`TakeUpstreamWhere(predicate)`** — every match, everything that REACHES a match, and
+  the edges among them; the matches come out the result's outlets. The emergence mirrors:
+  a match that reaches another match keeps an in-closure out-edge and comes out interior;
+  the result's SINKS are exactly the matches reaching no further match. Edges to outside
+  die with their excluded children; every included node's in-edges survive whole (upward
+  closure), but out-blocks do NOT close, so the compaction pays the per-edge test the
+  downstream operator skips.
+- **Implementation is the mirror sweep, not the sandwich**: one REVERSE-ordinal pass over
+  the same out-CSR — dense ordinals are a topological order, so every child settles before
+  its parent, and a node is included iff it matches or any out-target is included. Zero
+  transposes, zero in-adjacency, same capture-in/capture-out contract (result sources are
+  unknowable until the mark completes — the cluster's streaming argument verbatim). The
+  law `TakeUpstreamWhere(p) ≡ Transpose().TakeDownstreamWhere(p).Transpose()` is pinned
+  content-canonically in the battery.
+- **The between-graph falls out as a composition**: `TakeDownstreamWhere(n == x)
+  .TakeUpstreamWhere(n == sink)` — every path from x down to that sink and nothing else
+  ("downstream of x, upstream of the sink"). Pinned in the battery as a composition test;
+  no operator warranted.
 
 ## THE LAZY BUILDER RULING (ratified 2026-08-06 — eager validation drops; Materialize is the certificate)
 
