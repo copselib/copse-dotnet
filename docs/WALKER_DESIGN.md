@@ -182,6 +182,24 @@ flat-store step costs thereafter. The resulting buffer is the **interchange
 citizen**: it carries both surfaces (walkable and streamable), so materializing a
 view is simultaneously how an adjacency query re-enters the streaming algebra.
 
+**How the escalation chooses its layout** (ruled 2026-08-10): the walker mints
+no new knob — it inherits `Materialize`'s pair. The organic form
+(`MaterializeWalkable()`) wraps whatever layout the source's story produced: a
+plain pipeline captures eagerly (a fresh capture defaults to preorder — there
+is no history to wait for; the *waiting* operator is Memoize, whose layout is
+pinned by the first treenumerator acquisition, and materializing a live memo
+inherits that pin); a completed buffer keeps its `NativeLayout`. Both layouts
+having walkable citizens means the organic form always succeeds without
+transposing, promising walkability but not a particular axis-cost profile. The deliberate form
+(`MaterializeWalkable(TreeTraversalStrategy)`) is the escape hatch for callers
+who know their query shape, riding `Materialize(strategy)`'s never-ignored
+guarantee with its transpose-from-the-buffer fallback. The choice is cost-only
+(the walkable twins are conformance-pinned to present the identical tree) and
+revisable at O(n) from the buffer. Near-term surface note: the two walkables
+have different child-enumerator types, so the concrete API is layout-named
+methods (the SimpleSerializer precedent) with the strategy-argument form as the
+convenience over them.
+
 ### Adapter asymmetry
 
 - **Walker → Treenumerable is free.** Any walker can emit a walk; adjacency is

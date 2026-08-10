@@ -512,8 +512,9 @@ var relevant = sourceTree
 
 // The documented escalation -- and the store choice is QUERY-SHAPED: this use
 // case is ancestry-heavy, so the preorder capture (subtree spans, O(1) ancestry
-// tests on ordinal handles) is the right walkable.
-var walkable = relevant.MaterializeWalkable();
+// tests on ordinal handles) is the right walkable. The strategy argument is the
+// deliberate form -- see "How the escalation chooses" below.
+var walkable = relevant.MaterializeWalkable(TreeTraversalStrategy.DepthFirst);
 
 // Handle acquisition: record position while streaming past -- one sweep, no
 // equality anywhere. (The no-node-equality pledge holds end to end.)
@@ -545,6 +546,32 @@ whole purpose is pointing back into the source structure · **Cost:** after
 acquisition, the classic auxiliary-tree build is O(k log k) comparisons plus the
 path walks — never O(tree). On preorder-store handles the constants collapse:
 ordinal sort IS preorder sort, and is-ancestor is span containment, O(1).
+
+**How the escalation chooses its layout** (ruled 2026-08-10): the walker
+escalation mints no new knob — it inherits `Materialize`'s, both forms.
+
+- **Organic** (`MaterializeWalkable()`): the walkable wraps whatever layout the
+  source's own story produced. On a plain pipeline, `Materialize` is *eager* —
+  there is no consumer history to wait for — and a fresh capture defaults to
+  preorder. The history-dependence belongs to **Memoize**, the operator that
+  waits: a live memo's layout is pinned by the first treenumerator acquisition
+  (a consumer who pulled BFT first pinned it level-order), and materializing
+  *that* memo inherits its pin. A completed buffer keeps its `NativeLayout`.
+  Because both layouts have walkable citizens, the organic form always succeeds
+  and never transposes; what it does not promise is a *particular* axis-cost
+  profile.
+- **Deliberate** (`MaterializeWalkable(TreeTraversalStrategy)`): the escape
+  hatch for callers who truly know their query shape, riding
+  `Materialize(strategy)`'s existing guarantee — the argument is never ignored,
+  a wrong-layout buffer is transposed *from the buffer* (O(n), source
+  untouched, at-most-once enumeration preserved), "the layout IS the
+  deliverable." `DepthFirst` → preorder walkable (subtree spans, cheap
+  ancestry); `BreadthFirst` → level-order walkable (contiguous sibling runs and
+  levels).
+
+The choice is cost-only — the cross-family pins prove both walkables present
+the identical tree — and revisable at O(n) from the buffer, so the knob is a
+tuning decision with an escape hatch, not a commitment.
 
 **The checklist — one use case, every part:**
 
