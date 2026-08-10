@@ -189,8 +189,8 @@ completed buffer keeps its `NativeLayout`. Both layouts having walkable
 citizens means the organic form always succeeds without transposing, promising
 walkability but not a particular axis-cost profile.
 
-**Materialize goes lazy** (ruled 2026-08-10, implementation pending — today's
-`Materialize` is eager and a fresh capture defaults to preorder): both forms
+**Materialize goes lazy** (ruled 2026-08-10, and LANDED on main the same day —
+see the operator surface map's Materialize row and MaterializeTests): both forms
 defer construction to first pull, under one law — *construction is uniformly
 lazy; the pin is a commitment made at the earliest moment it is free.*
 

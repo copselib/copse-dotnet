@@ -552,7 +552,7 @@ escalation mints no new knob — it inherits `Materialize`'s, both forms.
 
 - **Organic** (`MaterializeWalkable()`): the walkable wraps whatever layout the
   source's own story produced — and under the lazy-Materialize ruling
-  (WALKER_DESIGN.md §4, implementation pending) that story is one sentence:
+  (WALKER_DESIGN.md §4, landed on main 2026-08-10) that story is one sentence:
   **the first consumer pins the layout.** Both forms of `Materialize` defer
   construction to first pull; the organic form defers the pin too, since first
   pull is the earliest moment it is knowable. A completed buffer keeps its
