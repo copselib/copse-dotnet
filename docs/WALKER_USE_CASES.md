@@ -514,7 +514,7 @@ var relevant = sourceTree
 // case is ancestry-heavy, so the preorder capture (subtree spans, O(1) ancestry
 // tests on ordinal handles) is the right walkable. The strategy argument is the
 // deliberate form -- see "How the escalation chooses" below.
-var walkable = relevant.MaterializeWalkable(TreeTraversalStrategy.DepthFirst);
+var walkable = relevant.MaterializeWalkable(BufferLayout.Preorder);
 
 // Handle acquisition: record position while streaming past -- one sweep, no
 // equality anywhere. (The no-node-equality pledge holds end to end.)
@@ -562,16 +562,18 @@ escalation mints no new knob — it inherits `Materialize`'s, both forms.
   both layouts have walkable citizens, the organic form always succeeds and
   never transposes; what it does not promise is a *particular* axis-cost
   profile.
-- **Deliberate** (`MaterializeWalkable(TreeTraversalStrategy)`): the escape
+- **Deliberate** (`MaterializeWalkable(BufferLayout)`): the escape
   hatch for callers who truly know their query shape, riding
-  `Materialize(strategy)`'s existing guarantee — the argument is never ignored,
+  `Materialize(layout)`'s existing guarantee — the argument is never ignored,
   a wrong-layout buffer is transposed *from the buffer* (O(n), source
   untouched, at-most-once enumeration preserved), "the layout IS the
   deliverable." Under the lazy ruling: the pin lands at call (free — it pulls
   zero nodes, and protects native-capture odds on a shared live memo), the
-  O(n) construction lands at first pull. `DepthFirst` → preorder walkable
-  (subtree spans, cheap ancestry); `BreadthFirst` → level-order walkable
-  (contiguous sibling runs and levels).
+  O(n) construction lands at first pull. The parameter speaks STORAGE
+  vocabulary (retyped from `TreeTraversalStrategy` 2026-08-10 — the layout is
+  the deliverable, and it is also exactly what the walker caller reasons
+  about): `Preorder` buys subtree spans and cheap ancestry; `LevelOrder` buys
+  contiguous sibling runs and levels — the axis-cost table, named directly.
 
 The choice is cost-only — the cross-family pins prove both walkables present
 the identical tree — and revisable at O(n) from the buffer, so the knob is a

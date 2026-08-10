@@ -199,7 +199,7 @@ lazy; the pin is a commitment made at the earliest moment it is free.*
   everywhere, plain pipelines and live memos alike: **the first consumer pins
   the layout.** (Today's silent preorder guess, and its wart — a BFT-first
   consumer served cross-order forever — both disappear.)
-- `Materialize(strategy)`: construction at first pull, pin at call — the pin
+- `Materialize(layout)`: construction at first pull, pin at call — the pin
   is free at call time (the `Pin` helper acquires and disposes, pulling zero
   nodes), and pinning early preserves native-capture odds on a shared live
   memo that another consumer might pin differently before first pull. "The
@@ -219,14 +219,19 @@ lazy; the pin is a commitment made at the earliest moment it is free.*
   iteration; warmup absorbs it at steady state). Memoize stays a distinct
   mechanism: incremental growth with a live disposable feed, against
   Materialize's bulk capture at one deferred moment. The deliberate form
-(`MaterializeWalkable(TreeTraversalStrategy)`) is the escape hatch for callers
-who know their query shape, riding `Materialize(strategy)`'s never-ignored
-guarantee with its transpose-from-the-buffer fallback. The choice is cost-only
-(the walkable twins are conformance-pinned to present the identical tree) and
-revisable at O(n) from the buffer. Near-term surface note: the two walkables
-have different child-enumerator types, so the concrete API is layout-named
-methods (the SimpleSerializer precedent) with the strategy-argument form as the
-convenience over them.
+(`MaterializeWalkable(BufferLayout)`) is the escape hatch for callers
+who know their query shape, riding `Materialize(layout)`'s never-ignored
+guarantee with its transpose-from-the-buffer fallback. The parameter speaks
+STORAGE vocabulary — `BufferLayout`, retyped from `TreeTraversalStrategy` on
+main 2026-08-10 after the operator's opening conversion line gave the wrong
+vocabulary away — which suits the walker doubly: the layout is the deliverable,
+and the layout is what the walker caller actually reasons about (the axis-cost
+table is indexed by encoding, not by traversal dimension). The choice is
+cost-only (the walkable twins are conformance-pinned to present the identical
+tree) and revisable at O(n) from the buffer. Near-term surface note: the two
+walkables have different child-enumerator types, so the concrete API is
+layout-named methods (the SimpleSerializer precedent) with the layout-argument
+form as the convenience over them.
 
 ### Adapter asymmetry
 
