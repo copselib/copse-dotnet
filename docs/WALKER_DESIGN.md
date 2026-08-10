@@ -184,13 +184,41 @@ view is simultaneously how an adjacency query re-enters the streaming algebra.
 
 **How the escalation chooses its layout** (ruled 2026-08-10): the walker mints
 no new knob — it inherits `Materialize`'s pair. The organic form
-(`MaterializeWalkable()`) wraps whatever layout the source's story produced: a
-plain pipeline captures eagerly (a fresh capture defaults to preorder — there
-is no history to wait for; the *waiting* operator is Memoize, whose layout is
-pinned by the first treenumerator acquisition, and materializing a live memo
-inherits that pin); a completed buffer keeps its `NativeLayout`. Both layouts
-having walkable citizens means the organic form always succeeds without
-transposing, promising walkability but not a particular axis-cost profile. The deliberate form
+(`MaterializeWalkable()`) wraps whatever layout the source's story produced; a
+completed buffer keeps its `NativeLayout`. Both layouts having walkable
+citizens means the organic form always succeeds without transposing, promising
+walkability but not a particular axis-cost profile.
+
+**Materialize goes lazy** (ruled 2026-08-10, implementation pending — today's
+`Materialize` is eager and a fresh capture defaults to preorder): both forms
+defer construction to first pull, under one law — *construction is uniformly
+lazy; the pin is a commitment made at the earliest moment it is free.*
+
+- `Materialize()`: pin AND construction at first pull — first pull is the
+  earliest moment the pin is knowable. The organic rule becomes one sentence
+  everywhere, plain pipelines and live memos alike: **the first consumer pins
+  the layout.** (Today's silent preorder guess, and its wart — a BFT-first
+  consumer served cross-order forever — both disappear.)
+- `Materialize(strategy)`: construction at first pull, pin at call — the pin
+  is free at call time (the `Pin` helper acquires and disposes, pulling zero
+  nodes), and pinning early preserves native-capture odds on a shared live
+  memo that another consumer might pin differently before first pull. "The
+  argument is never ignored" lands at call; the O(n) lands at first use.
+- Walkable rider: treenumerator acquisitions pin their dimension; an
+  adjacency-first use (`GetParent`, `GetRootEnumerator`, …) names no dimension
+  and pins the walker default, preorder — the ancestry-cheap layout, the axis
+  the walker uniquely adds. In practice the realistic first act is the
+  handle-acquisition sweep, which pins its own dimension organically.
+- Accompanying moves: `ITreenumerableBuffer`'s non-disposability survives with
+  reworded justification ("holds only managed arrays once consumed; until
+  then, a pinned deferral" — an unconsumed lazy buffer is exactly as leaky as
+  the unconsumed pipeline the caller already had, since nothing opens until
+  first pull); timing of the at-most-once source enumeration moves to first
+  pull (release-notes flag); benchmark setups that materialize-then-measure
+  need auditing before the flip (capture cost moves into the first measured
+  iteration; warmup absorbs it at steady state). Memoize stays a distinct
+  mechanism: incremental growth with a live disposable feed, against
+  Materialize's bulk capture at one deferred moment. The deliberate form
 (`MaterializeWalkable(TreeTraversalStrategy)`) is the escape hatch for callers
 who know their query shape, riding `Materialize(strategy)`'s never-ignored
 guarantee with its transpose-from-the-buffer fallback. The choice is cost-only

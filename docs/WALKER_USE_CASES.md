@@ -551,23 +551,27 @@ ordinal sort IS preorder sort, and is-ancestor is span containment, O(1).
 escalation mints no new knob — it inherits `Materialize`'s, both forms.
 
 - **Organic** (`MaterializeWalkable()`): the walkable wraps whatever layout the
-  source's own story produced. On a plain pipeline, `Materialize` is *eager* —
-  there is no consumer history to wait for — and a fresh capture defaults to
-  preorder. The history-dependence belongs to **Memoize**, the operator that
-  waits: a live memo's layout is pinned by the first treenumerator acquisition
-  (a consumer who pulled BFT first pinned it level-order), and materializing
-  *that* memo inherits its pin. A completed buffer keeps its `NativeLayout`.
-  Because both layouts have walkable citizens, the organic form always succeeds
-  and never transposes; what it does not promise is a *particular* axis-cost
+  source's own story produced — and under the lazy-Materialize ruling
+  (WALKER_DESIGN.md §4, implementation pending) that story is one sentence:
+  **the first consumer pins the layout.** Both forms of `Materialize` defer
+  construction to first pull; the organic form defers the pin too, since first
+  pull is the earliest moment it is knowable. A completed buffer keeps its
+  `NativeLayout`; an adjacency-first use of the walkable (no dimension named)
+  pins the walker default, preorder — though the realistic first act is the
+  handle-acquisition sweep, which pins its own dimension organically. Because
+  both layouts have walkable citizens, the organic form always succeeds and
+  never transposes; what it does not promise is a *particular* axis-cost
   profile.
 - **Deliberate** (`MaterializeWalkable(TreeTraversalStrategy)`): the escape
   hatch for callers who truly know their query shape, riding
   `Materialize(strategy)`'s existing guarantee — the argument is never ignored,
   a wrong-layout buffer is transposed *from the buffer* (O(n), source
   untouched, at-most-once enumeration preserved), "the layout IS the
-  deliverable." `DepthFirst` → preorder walkable (subtree spans, cheap
-  ancestry); `BreadthFirst` → level-order walkable (contiguous sibling runs and
-  levels).
+  deliverable." Under the lazy ruling: the pin lands at call (free — it pulls
+  zero nodes, and protects native-capture odds on a shared live memo), the
+  O(n) construction lands at first pull. `DepthFirst` → preorder walkable
+  (subtree spans, cheap ancestry); `BreadthFirst` → level-order walkable
+  (contiguous sibling runs and levels).
 
 The choice is cost-only — the cross-family pins prove both walkables present
 the identical tree — and revisable at O(n) from the buffer, so the knob is a
