@@ -118,6 +118,13 @@ namespace Copse.Linq.Tests
 
       var materialized = UsingTree("a(b(d,e,f),c(g,h,i))", resources).Materialize();
 
+      // Materialize is deferred (2026-08-10): nothing opens at the call, so no resource exists
+      // yet -- an unconsumed result holds exactly what the unconsumed pipeline held.
+      Assert.AreEqual(0, resources.Count);
+
+      // The first pull runs the whole capture: the resource is acquired and released inside it.
+      materialized.PreorderTraversal().ToArray();
+
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
 

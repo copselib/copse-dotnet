@@ -6,9 +6,12 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Materialize is eager Memoize (Memoize + Consume), so these tests cover the EAGER surface:
-  // capture-at-call-time semantics and the consume policies. The shared replay machinery --
-  // dimension buffers, serving rule, pruning, concurrency -- is covered by MemoizeTests.
+  // Materialize is DEFERRED (2026-08-10, the lazy-Materialize law): construction is uniformly
+  // lazy -- the whole capture runs at the first pull -- and the pin is a commitment made at the
+  // earliest moment it is free: the organic overload's first consumer pins the layout at that
+  // first pull; the strategy overload's pin lands at the call (zero nodes pulled). These tests
+  // cover that surface plus the consume policies. The shared replay machinery -- dimension
+  // buffers, serving rule, pruning, concurrency -- is covered by MemoizeTests.
   [TestClass]
   public class MaterializeTests
   {
@@ -80,15 +83,19 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Materialize_captures_eagerly_at_the_call()
+    public void Materialize_defers_the_whole_capture_to_the_first_pull()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
 
       var materialized = counting.Materialize();
 
-      // The whole capture happened inside the call -- the source was enumerated once, before any
-      // replay exists. (Completeness is now the return type's contract, proven below: a partial
-      // capture could not serve full replays without re-touching the source.)
+      // Nothing opens at the call: an unconsumed result holds exactly what the unconsumed
+      // pipeline already held.
+      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
+
+      // The first pull runs the whole capture -- one source enumeration, in the dimension the
+      // first consumer asked for.
+      materialized.GetTraversal(TreeTraversalStrategy.DepthFirst, _ => NodeTraversalStrategies.TraverseAll).Count();
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
 
       // Replays ride the capture; the source is never touched again, in either dimension.
@@ -98,8 +105,27 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
     }
 
+    // The lazy-Materialize law's organic half: THE FIRST CONSUMER PINS THE LAYOUT. Under the
+    // eager regime a plain source always captured preorder; now a breadth-first-first consumer
+    // gets a level-order capture, and the other dimension replays cross-order from it.
     [TestMethod]
-    public void Materialize_completes_the_pinned_capture()
+    public void Materialize_first_consumer_pins_the_layout()
+    {
+      var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
+
+      var materialized = counting.Materialize();
+
+      materialized.GetTraversal(TreeTraversalStrategy.BreadthFirst, _ => NodeTraversalStrategies.TraverseAll).Count();
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "breadth-first-first captures level-order");
+
+      materialized.GetTraversal(TreeTraversalStrategy.DepthFirst, _ => NodeTraversalStrategies.TraverseAll).Count();
+      Assert.AreEqual(0, counting.DepthFirstEnumerations, "the other dimension replays cross-order from the one capture");
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+    }
+
+    [TestMethod]
+    public void Materialize_completes_the_pinned_capture_at_the_first_pull()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
       var memo = counting.Memoize();
@@ -110,10 +136,14 @@ namespace Copse.Linq.Tests
 
       var materialized = memo.Materialize();
 
-      Assert.AreSame(memo, materialized);
-      Assert.IsTrue(memo.IsComplete);
+      // The settle waits for the first pull; until then the memo's sunk work sits where it was.
+      Assert.IsFalse(memo.IsComplete);
 
-      // The sunk BFT work was finished; the DFT dimension was never opened.
+      materialized.GetTraversal(TreeTraversalStrategy.BreadthFirst, _ => NodeTraversalStrategies.TraverseAll).Count();
+
+      // The first pull completed the pinned capture IN BULK: the sunk BFT work was finished
+      // and the feed retired; the DFT dimension was never opened.
+      Assert.IsTrue(memo.IsComplete);
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
       Assert.AreEqual(1, counting.BreadthFirstEnumerations);
       Assert.AreEqual(9, memo.GetBufferedCount());
@@ -131,10 +161,17 @@ namespace Copse.Linq.Tests
 
       var materialized = memo.Materialize(TreeTraversalStrategy.DepthFirst);
 
-      // The layout guarantee: the strategy is never ignored. The pinned level-order capture
-      // completes (the one source enumeration -- at-most-once holds), then TRANSPOSES from the
-      // buffer into a new preorder-native capture; the source is untouched by the transpose.
+      // The layout guarantee: the strategy is never ignored, and the wrapper reports it from
+      // the call onward -- while the work waits for the first pull.
       Assert.AreNotSame(memo, materialized);
+      Assert.AreEqual(BufferLayout.Preorder, materialized.NativeLayout);
+      Assert.IsFalse(memo.IsComplete);
+
+      materialized.GetTraversal(TreeTraversalStrategy.DepthFirst, _ => NodeTraversalStrategies.TraverseAll).Count();
+
+      // The first pull's settle: the pinned level-order capture completes (the one source
+      // enumeration -- at-most-once holds), then TRANSPOSES from the buffer into a new
+      // preorder-native capture; the source is untouched by the transpose.
       Assert.IsTrue(memo.IsComplete);
       Assert.AreEqual(9, memo.GetBufferedCount());
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
@@ -158,10 +195,15 @@ namespace Copse.Linq.Tests
       var first = memo.Materialize(TreeTraversalStrategy.BreadthFirst);
       var again = first.Materialize(TreeTraversalStrategy.BreadthFirst);
 
-      Assert.AreSame(memo, first, "a fresh memo takes the declared layout as its pin");
+      // The wrapper reports the guaranteed layout from the call, so the compliant re-probe
+      // reuses it -- a capture is never re-captured -- and the pin pulled zero nodes.
+      Assert.AreEqual(BufferLayout.LevelOrder, first.NativeLayout);
       Assert.AreSame(first, again, "a compliant buffer is never re-captured");
+      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations, "the pin pulls zero nodes");
+
+      first.Consume(TreeTraversalStrategy.BreadthFirst);
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the settle fills the capture the call pinned");
     }
 
     // The both-layouts recipe for speed-over-space callers: materialize once, then materialize
@@ -174,40 +216,64 @@ namespace Copse.Linq.Tests
       var levelOrder = counting.Materialize(TreeTraversalStrategy.BreadthFirst);
       var preorder = levelOrder.Materialize(TreeTraversalStrategy.DepthFirst);
 
+      // Both deferrals stack without touching anything: the transpose's first pull forces the
+      // capture's first pull, one source enumeration total, buffer-to-buffer from there.
       Assert.AreNotSame(levelOrder, preorder);
-      Assert.AreEqual(0, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the transpose walks the buffer, never the source");
+      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations, "nothing opens before the first pull");
 
       CollectionAssert.AreEqual(
         Collect(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"), TreeTraversalStrategy.DepthFirst),
         Collect(preorder, TreeTraversalStrategy.DepthFirst));
+
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the transpose walks the buffer, never the source");
     }
 
+    // The lazy-Materialize law's strategy half: THE PIN LANDS AT THE CALL, because the call is
+    // when it is free -- so an intervening consumer of the shared memo cannot pin it the other
+    // way between the Materialize call and its first pull.
     [TestMethod]
-    public void Materialize_with_declared_strategy_pins_a_fresh_memo()
+    public void Materialize_with_declared_strategy_pins_the_shared_memo_at_the_call()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree("a(b(d,e,f),c(g,h,i))"));
 
       using var memo = counting.Memoize();
-      memo.Materialize(TreeTraversalStrategy.BreadthFirst);
+      var materialized = memo.Materialize(TreeTraversalStrategy.BreadthFirst);
 
+      Assert.IsFalse(memo.IsComplete, "the work waits for the first pull");
+      Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations, "the pin pulls zero nodes");
+
+      // The intervening consumer's depth-first drain rides the level-order capture the call
+      // pinned, cross-order -- it cannot re-pin the memo.
+      memo.Consume(TreeTraversalStrategy.DepthFirst);
+      Assert.AreEqual(0, counting.DepthFirstEnumerations);
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "the capture the call pinned is the one that fills");
+
+      // The settle then finds the memo already complete and compliant: no transpose.
+      materialized.Consume(TreeTraversalStrategy.BreadthFirst);
       Assert.IsTrue(memo.IsComplete);
       Assert.AreEqual(0, counting.DepthFirstEnumerations);
-      Assert.AreEqual(1, counting.BreadthFirstEnumerations, "a fresh memo takes the declared layout as its pin");
+      Assert.AreEqual(1, counting.BreadthFirstEnumerations);
     }
 
     // The buffer probes: Materialize never re-captures a capture. Probe order matters -- the
     // lazy buffer interface derives from the completed one, so it is tested first (a live memo
-    // must be consumed, not returned raw).
+    // must be settled, not returned raw).
     [TestMethod]
-    public void Materialize_consumes_a_live_memo_in_place()
+    public void Materialize_wraps_a_live_memo_and_completes_it_at_the_first_pull()
     {
       using var memo = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Memoize();
 
       var materialized = memo.Materialize();
 
-      Assert.AreSame(memo, materialized);
-      Assert.IsTrue(memo.IsComplete);
+      // The result is the non-disposable completion seam over the memo -- not the memo itself,
+      // whose disposal stays the caller's.
+      Assert.AreNotSame(memo, materialized);
+      Assert.IsFalse(memo.IsComplete);
+
+      materialized.Consume();
+
+      Assert.IsTrue(memo.IsComplete, "the first pull completes the memo's capture in bulk");
     }
 
     [TestMethod]

@@ -34,8 +34,11 @@ namespace Copse.Benchmarks
       _chainString = Enumerable.Range(0, ChainDepth).ToDegenerateTree().SerializeDepthFirstTree(value => value.ToString());
       // Deserialize has Defer semantics (every treenumerator acquisition re-parses), so the
       // Serialize rows serialize a settled buffer to keep measuring pure serializer work.
+      // Materialize is deferred (2026-08-10): the Consume settles each capture here, in setup.
       _forestTree = TreeSerializer.DeserializeDepthFirstTree(_forestString).Materialize();
       _chainTree = TreeSerializer.DeserializeDepthFirstTree(_chainString).Materialize();
+      _forestTree.Consume();
+      _chainTree.Consume();
     }
 
     [Benchmark]

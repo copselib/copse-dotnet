@@ -22,6 +22,11 @@ namespace Copse.Benchmarks
     {
       _DftCapture = CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.DepthFirst);
       _BftCapture = CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.BreadthFirst);
+
+      // Materialize is deferred (2026-08-10): settle the captures here so the timed rows keep
+      // measuring replay only.
+      _DftCapture.Consume(TreeTraversalStrategy.DepthFirst);
+      _BftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     // --- Second pass: replay a completed capture. Native rows ride the capture in its own
