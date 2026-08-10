@@ -74,6 +74,30 @@ optional interface the derived `GetAncestors` extension probes for
 (`TryGetNonEnumeratedCount` pattern) — minimal primitives, opportunistic fast
 paths.
 
+### The indexed child axis (ruled 2026-08-10, built — supersedes the enumerator pull)
+
+The child axis is INDEXED, not enumerated — the Silverlight/VisualTreeHelper
+shape (`GetChildAt(node, childIndex)` / `GetRootAt(rootIndex)`, probes returning
+`ChildResult` by value; 2016's `GetChildAt` name resurrected), minus that
+shape's finiteness assumption: there is deliberately **no `GetChildCount`** on
+the contract, because a probe is finite work per call whatever the fan-out while
+a count diverges on a generator-backed provider with an unbounded child group
+(counting is a derived extension under LINQ `Count()`'s divergence contract;
+finite providers keep cheap counts as concrete members). Consequences: **no
+adjacency call can allocate** — the measured lesson that put `TChildEnumerator`
+on the engine (interface-typed child enumerators heap-allocate per node and tank
+sweeps) is satisfied by construction; the third type parameter leaves the
+contract (`IWalkableTreenumerable<TValue, TNode>`), so both layout walkables
+share one interface, the organic escalation types cleanly with no facade, and
+the swap-up probe has a nameable target. Receipts that the shape was latent: the
+level-order store SPI already is it (`EnsureChildAvailable` +
+`GetFirstChildIndex`); the preorder walkable rides a lazy CSR child index (~2n
+ints, built in the same pass as its parent index — the honest-O(1)-indexer
+precedent, since span-hopping child k is the O(k) indexer the codebase already
+rejected as dishonest); and the address provider's native child operation is
+append-an-index. The engine's `IChildEnumerator` pull protocol is untouched —
+that is the hierarchical family's source adapter, a different job.
+
 ### Positions and steps
 
 The DAG branch ratified (edge, far-node) as the traversal atom because a stream
