@@ -47,40 +47,42 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Materialize with a GUARANTEED capture layout, deferred: the returned buffer's
-    /// native-replay dimension is <paramref name="strategy"/>, whatever the input -- the
-    /// argument is never ignored -- but the O(n) construction is pinned to the first pull. The
-    /// PIN lands NOW, because now is when it is free: a plain tree's capture layout is simply
-    /// recorded; a live memo's capture is created for the requested dimension at this call
-    /// (acquisition is the pin, zero nodes pulled), so an intervening consumer of a shared memo
-    /// cannot pin it the other way. A buffer already in the layout is returned as-is (a capture
-    /// is never re-captured); a mismatched or undecided one is TRANSPOSED -- from the buffer,
-    /// never from the source (buffer traversal is effect-free by contract, so at-most-once
-    /// holds), at the first pull, a NEW instance. A memo whose history had already pinned the
-    /// other layout completes its pinned capture first (the one source enumeration), then
-    /// transposes, all inside the first pull's settle. This stays the both-layouts recipe:
-    /// materialize once, then materialize THAT in the other dimension. Contrast
-    /// Consume(strategy), where the strategy is only a suggestion -- Materialize returns the
-    /// buffer, so the layout IS the deliverable.
+    /// Materialize with a GUARANTEED capture layout, deferred: the returned buffer's native
+    /// layout is <paramref name="layout"/>, whatever the input -- the argument is never
+    /// ignored -- but the O(n) construction is pinned to the first pull. The parameter speaks
+    /// STORAGE vocabulary (<see cref="BufferLayout"/>'s naming rule: a strategy is how you
+    /// WALK, a layout is how a capture is SHAPED -- and the layout is exactly this operator's
+    /// deliverable; until 2026-08-10 it took a TreeTraversalStrategy and opened by converting
+    /// it, the tell that it spoke the wrong vocabulary). The PIN lands NOW, because now is when
+    /// it is free: a plain tree's capture layout is simply recorded; a live memo's capture is
+    /// created for the layout's native dimension at this call (acquisition is the pin, zero
+    /// nodes pulled), so an intervening consumer of a shared memo cannot pin it the other way.
+    /// A buffer already in the layout is returned as-is (a capture is never re-captured); a
+    /// mismatched or undecided one is TRANSPOSED -- from the buffer, never from the source
+    /// (buffer traversal is effect-free by contract, so at-most-once holds), at the first pull,
+    /// a NEW instance. A memo whose history had already pinned the other layout completes its
+    /// pinned capture first (the one source enumeration), then transposes, all inside the first
+    /// pull's settle. This stays the both-layouts recipe: materialize once, then materialize
+    /// THAT in the other layout. Contrast Consume(strategy), which correctly keeps TRAVERSAL
+    /// vocabulary -- Consume walks; Materialize shapes, and returns the buffer, so the layout
+    /// IS the deliverable.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source, TreeTraversalStrategy strategy)
+    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source, BufferLayout layout)
     {
-      var requestedLayout = strategy == TreeTraversalStrategy.DepthFirst ? BufferLayout.Preorder : BufferLayout.LevelOrder;
-
       if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout);
+        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, layout);
 
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
       {
-        if (completedBuffer.NativeLayout == requestedLayout)
+        if (completedBuffer.NativeLayout == layout)
           return completedBuffer;
 
-        return requestedLayout == BufferLayout.Preorder
+        return layout == BufferLayout.Preorder
           ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(completedBuffer), BufferLayout.Preorder)
           : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(completedBuffer), BufferLayout.LevelOrder);
       }
 
-      return requestedLayout == BufferLayout.Preorder
+      return layout == BufferLayout.Preorder
         ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(source), BufferLayout.Preorder)
         : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(source), BufferLayout.LevelOrder);
     }

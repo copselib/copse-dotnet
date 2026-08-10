@@ -18,19 +18,19 @@ namespace Copse.Benchmarks
   {
     [Benchmark]
     public ITreenumerable<int> DftCapture_Triangle()
-      => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.DepthFirst), TreeTraversalStrategy.DepthFirst);
+      => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public ITreenumerable<int> BftCapture_Triangle()
-      => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.BreadthFirst), TreeTraversalStrategy.BreadthFirst);
+      => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
     public ITreenumerable<int> DftCapture_Chain()
-      => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(TreeTraversalStrategy.DepthFirst), TreeTraversalStrategy.DepthFirst);
+      => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public ITreenumerable<int> BftCapture_Chain()
-      => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(TreeTraversalStrategy.BreadthFirst), TreeTraversalStrategy.BreadthFirst);
+      => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
 
     private static ITreenumerable<int> ForceBuild(ITreenumerable<int> buffer, TreeTraversalStrategy strategy)
     {
