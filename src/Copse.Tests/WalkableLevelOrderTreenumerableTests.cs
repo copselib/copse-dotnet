@@ -9,6 +9,8 @@ namespace Copse.Tests
   // The level-order walkable's pins: WalkableTreenumerableTests' mirror over the dual encoding,
   // plus the cross-family pin -- the two walkable stores hold the SAME logical tree, so their
   // visit streams must agree with each other, not just with their own native treenumerables.
+  // The indexed child contract needs NO index build here: the encoding is already the
+  // VisualTreeHelper shape (contiguous child runs behind a first-child offset).
   [TestClass]
   public class WalkableLevelOrderTreenumerableTests
   {
@@ -34,24 +36,36 @@ namespace Copse.Tests
         childCounts: [1, 0, 0],
         rootCount: 2));
 
-    private static List<(int Node, int SiblingIndex)> Drain<TChildEnumerator>(TChildEnumerator childEnumerator)
-      where TChildEnumerator : IChildEnumerator<int>
+    private static List<(int Node, int SiblingIndex)> Children(
+      IWalkableTreenumerable<string, int> walkable,
+      int node)
     {
       var children = new List<(int, int)>();
 
-      using (childEnumerator)
+      for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = childEnumerator.MoveNext();
+        var childResult = walkable.GetChildAt(node, childIndex);
 
-        while (childResult.HasChild)
-        {
-          children.Add((childResult.Child.Node, childResult.Child.SiblingIndex));
+        if (!childResult.HasChild)
+          return children;
 
-          childResult = childEnumerator.MoveNext();
-        }
+        children.Add((childResult.Child.Node, childResult.Child.SiblingIndex));
       }
+    }
 
-      return children;
+    private static List<(int Node, int SiblingIndex)> Roots(IWalkableTreenumerable<string, int> walkable)
+    {
+      var roots = new List<(int, int)>();
+
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootResult = walkable.GetRootAt(rootIndex);
+
+        if (!rootResult.HasChild)
+          return roots;
+
+        roots.Add((rootResult.Child.Node, rootResult.Child.SiblingIndex));
+      }
     }
 
     private static List<(TreenumeratorMode Mode, string Node, int VisitCount, NodePosition Position)> DrainVisits(
@@ -81,35 +95,48 @@ namespace Copse.Tests
     }
 
     [TestMethod]
-    public void GetChildEnumerator_YieldsContiguousRunsInSiblingOrder()
+    public void GetChildAt_YieldsContiguousRunsInSiblingOrder()
     {
       var walkable = SingleTree();
 
       CollectionAssert.AreEqual(
         new List<(int, int)> { (1, 0), (2, 1) },
-        Drain(walkable.GetChildEnumerator(0)),
+        Children(walkable, 0),
         "a's children are b and e -- one contiguous run");
 
       CollectionAssert.AreEqual(
         new List<(int, int)> { (3, 0), (4, 1) },
-        Drain(walkable.GetChildEnumerator(1)),
+        Children(walkable, 1),
         "b's children are c and d");
 
-      Assert.AreEqual(0, Drain(walkable.GetChildEnumerator(3)).Count, "c is a leaf");
+      Assert.AreEqual(0, Children(walkable, 3).Count, "c is a leaf");
+      Assert.IsFalse(walkable.GetChildAt(0, 2).HasChild, "past the run's end");
+      Assert.IsFalse(walkable.GetChildAt(0, -1).HasChild);
     }
 
     [TestMethod]
-    public void GetRootEnumerator_YieldsTheVirtualForestRootsChildren()
+    public void GetChildCount_ProbesTheRun()
+    {
+      var walkable = SingleTree();
+
+      Assert.AreEqual(2, walkable.GetChildCount(0));
+      Assert.AreEqual(2, walkable.GetChildCount(1));
+      Assert.AreEqual(0, walkable.GetChildCount(2));
+      Assert.AreEqual(0, walkable.GetChildCount(4));
+    }
+
+    [TestMethod]
+    public void GetRootAt_YieldsTheVirtualForestRootsChildren()
     {
       CollectionAssert.AreEqual(
         new List<(int, int)> { (0, 0) },
-        Drain(SingleTree().GetRootEnumerator()));
+        Roots(SingleTree()));
 
       var forest = Forest();
 
       CollectionAssert.AreEqual(
         new List<(int, int)> { (0, 0), (1, 1) },
-        Drain(forest.GetRootEnumerator()),
+        Roots(forest),
         "roots are the leading entries, root ordinal == buffer index");
 
       Assert.IsFalse(forest.GetParent(1).HasParent, "the second root has no parent");
@@ -200,6 +227,24 @@ namespace Copse.Tests
       }
 
       CollectionAssert.AreEquivalent(preorderParents, levelOrderParents);
+    }
+
+    [TestMethod]
+    public void ChildAxis_AgreesWithThePreorderWalkable_ValueForValue()
+    {
+      // The indexed child axis, cross-family: child k of the same VALUE must be the same value
+      // through both encodings, whatever the ordinals underneath.
+      var preorderWalkable = new WalkablePreorderTreenumerable<string, PreorderArrayStore<string>>(
+        new PreorderArrayStore<string>(
+          ["a", "b", "c", "d", "e"],
+          [5, 3, 1, 1, 1]));
+      var levelOrderWalkable = SingleTree();
+
+      // a's child 1: e through both. b's child 0: c through both.
+      Assert.AreEqual("e", preorderWalkable.GetValue(preorderWalkable.GetChildAt(0, 1).Child.Node));
+      Assert.AreEqual("e", levelOrderWalkable.GetValue(levelOrderWalkable.GetChildAt(0, 1).Child.Node));
+      Assert.AreEqual("c", preorderWalkable.GetValue(preorderWalkable.GetChildAt(1, 0).Child.Node));
+      Assert.AreEqual("c", levelOrderWalkable.GetValue(levelOrderWalkable.GetChildAt(1, 0).Child.Node));
     }
   }
 }

@@ -9,18 +9,18 @@ namespace Copse.Treenumerables
   /// The walkable citizen of the flat family's level-order half:
   /// <see cref="WalkablePreorderTreenumerable{TValue, TStore}"/>'s structural dual, with the same
   /// ordinal handle and the same shape everywhere -- streaming delegates to the store
-  /// treenumerators (conformance-pinned), child pulls ride the store's own adjacency, the parent
-  /// axis rides a lazily built one-pass index.
+  /// treenumerators (conformance-pinned), the parent axis rides a lazily built one-pass index.
   ///
-  /// <para>The duality is in the axis costs: level order half-materializes the CHILD axis
-  /// (contiguous runs behind <c>GetFirstChildIndex</c> -- the pull needs no arithmetic over
-  /// subtree sizes), and its parent index build needs no stack, because child runs tile the
-  /// buffer in parent order so the parent sequence is monotone -- a two-cursor merge, against
-  /// the preorder build's open-span walk. What preorder makes contiguous (subtrees) level order
-  /// scatters, and vice versa (levels, sibling runs). Not thread-safe (PoC).</para>
+  /// <para>The duality is in the axis costs, and the indexed child contract makes it vivid: the
+  /// level-order encoding IS the VisualTreeHelper shape already -- <c>GetChildAt</c> is a bounds
+  /// probe plus an offset (<c>GetFirstChildIndex + childIndex</c>, contiguous runs), no index
+  /// build needed -- while its parent index build is a STACKLESS two-cursor merge (child runs
+  /// tile the buffer in parent order, so the parent sequence is monotone) against the preorder
+  /// build's open-span walk. What preorder makes contiguous (subtrees) level order scatters, and
+  /// vice versa (levels, sibling runs). Not thread-safe (PoC).</para>
   /// </summary>
   public sealed class WalkableLevelOrderTreenumerable<TValue, TStore>
-    : IWalkableTreenumerable<TValue, int, LevelOrderStoreChildEnumerator<TValue, TStore>>
+    : IWalkableTreenumerable<TValue, int>
     where TStore : ILevelOrderStore<TValue>
   {
     public WalkableLevelOrderTreenumerable(TStore store)
@@ -54,13 +54,35 @@ namespace Copse.Treenumerables
         : new ParentResult<int>(parentIndex);
     }
 
-    public LevelOrderStoreChildEnumerator<TValue, TStore> GetChildEnumerator(int node)
-      => new LevelOrderStoreChildEnumerator<TValue, TStore>(_Store, node);
+    public ChildResult<int> GetChildAt(int node, int childIndex)
+    {
+      if (childIndex < 0 || !_Store.EnsureChildAvailable(node, childIndex))
+        return default;
 
-    public LevelOrderStoreChildEnumerator<TValue, TStore> GetRootEnumerator()
-      => new LevelOrderStoreChildEnumerator<TValue, TStore>(
-        _Store,
-        LevelOrderStoreChildEnumerator<TValue, TStore>.VirtualRootParent);
+      // GetFirstChildIndex is meaningful once the parent has an available child, which the
+      // successful probe above just established.
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(node) + childIndex, childIndex));
+    }
+
+    public ChildResult<int> GetRootAt(int rootIndex)
+    {
+      if (rootIndex < 0 || !_Store.EnsureRootAvailable(rootIndex))
+        return default;
+
+      // Root ordinal k is buffer index k: the roots are the store's leading entries.
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
+    }
+
+    public int GetChildCount(int node)
+    {
+      // The store protocol speaks availability probes, not counts, so the count is the probe
+      // walked to its first miss -- each probe an O(1) read on a completed store.
+      var childCount = 0;
+      while (_Store.EnsureChildAvailable(node, childCount))
+        childCount++;
+
+      return childCount;
+    }
 
     // One pass in level order, no stack: the roots seed the index, then the parent cursor sweeps
     // every indexed node in order, writing itself under each of its children. The parent cursor
