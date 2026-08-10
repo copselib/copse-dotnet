@@ -486,6 +486,114 @@ over the axes is an open call the catalog flags but does not settle.
 
 ---
 
+## G. Capstone — the spanning subtree of a node set (every floor at once)
+
+### UC-32 Minimum spanning subtree of k nodes, over a filtered pipeline
+
+The end-to-end workflow that exercises every part of the design in one arc. Given a
+*derived* tree — a filtered pipeline, so the structure being walked exists nowhere
+but as composition — and k nodes of interest found in it, produce the **unique
+minimal subtree containing all of them**, as a treenumerable again, with
+provenance back to the source.
+
+(Terminology: on a tree this is the Steiner tree of the node set, and it is
+unique — the union of the paths from each target up to the targets' collective
+LCA — so "minimum" costs nothing. That uniqueness is exactly what does *not*
+survive the DAG, see the fence below.)
+
+What the calling code wants to write:
+
+```csharp
+// The order algebra half: the tree is DERIVED -- filtered with child promotion,
+// pruned at depth. It has no storage; it is a composition.
+var relevant = sourceTree
+  .Where(context => context.Node.IsRelevant)
+  .PruneAfter(context => context.Position.Depth == 5);
+
+// The documented escalation -- and the store choice is QUERY-SHAPED: this use
+// case is ancestry-heavy, so the preorder capture (subtree spans, O(1) ancestry
+// tests on ordinal handles) is the right walkable.
+var walkable = relevant.MaterializeWalkable();
+
+// Handle acquisition: record position while streaming past -- one sweep, no
+// equality anywhere. (The no-node-equality pledge holds end to end.)
+var targets = walkable
+  .GetDescendantsWithHandles()
+  .Where(pair => pair.Value.IsFlagged)
+  .Select(pair => pair.Handle)
+  .ToList();
+
+// The packaged query: k handles in, a treenumerable out.
+var spanningTree = walkable.GetSpanningSubtree(targets);
+```
+
+And its decomposition — every step is a catalog primitive:
+
+```csharp
+var spanningRoot = targets.Aggregate(walkable.GetLowestCommonAncestor);     // relations floor (UC-12, folded)
+
+var spanningRegion = targets
+  .Select(target => walkable.GetPathRegion(spanningRoot, target))           // path-as-region (UC-13's sibling)
+  .Aggregate((left, right) => left.Union(right));                           // region UNION -- the lens UC-20 presumed
+
+var spanningTree = spanningRegion.Walk(Order.DepthFirst);                   // order-commit: a treenumerable again
+var frozen = spanningRegion.ToTree();                                       // or reify -- provenance carried (UC-27)
+```
+
+**Layer:** all of them, deliberately · **Re-enters source?** Yes — the result's
+whole purpose is pointing back into the source structure · **Cost:** after
+acquisition, the classic auxiliary-tree build is O(k log k) comparisons plus the
+path walks — never O(tree). On preorder-store handles the constants collapse:
+ordinal sort IS preorder sort, and is-ancestor is span containment, O(1).
+
+**The checklist — one use case, every part:**
+
+| Step | Design machinery exercised |
+|---|---|
+| `Where` + `PruneAfter` upstream | The streaming operator algebra, untouched, feeding the walker a derived tree |
+| `MaterializeWalkable()` | The documented escalation; laziness policy; query-shaped store choice |
+| Handle acquisition sweep | Record-position-while-streaming; the no-equality pledge |
+| LCA fold | The relations floor; walker-only classics composing with plain `Aggregate` |
+| Path regions ∪ | The region floor; **union**, which UC-20 only presumed, now demanded |
+| `Walk(Order.DepthFirst)` | The walk floor; region + order = treenumerable; result re-enters the order algebra |
+| `ToTree()` with provenance | Reification; the interchange citizen; re-entry receipts |
+
+**The compressed variant — the contraction lens's first named consumer.** The
+auxiliary-tree of competitive-programming lore drops the pass-through nodes
+(degree-2 chain nodes on connecting paths), keeping only targets and their
+pairwise LCAs — at most 2k−1 nodes — with edges remembering the hop counts they
+elide:
+
+```csharp
+var compressed = spanningRegion.ContractPassThrough();   // lookthrough lens, priced honestly
+```
+
+Until now the lookthrough cost class (design doc §4) had no concrete tenant;
+this is it, and it arrives with its own justification for the buffer: a
+compressed spanning tree queried repeatedly is exactly the "reify when the lens
+stack goes lookthrough-heavy" case.
+
+**The address-provider bonus.** On the deferred-address walker, the compressed
+spanning *skeleton* is computable from handle arithmetic alone: sort the target
+addresses lexicographically, and the longest common prefixes of adjacent pairs
+ARE the internal nodes. No tree access until values are dereferenced — the XML
+twig-join literature does precisely this over Dewey IDs, which is prior art both
+for the algorithm and for the provider it runs on.
+
+**The DAG fence — sharper than the path-semantics canary.** The same words on a
+DAG — "minimum structure spanning k nodes" — name the **Steiner tree problem,
+which is NP-hard**. The tree case is linear precisely because the spanning
+subtree is unique; the diamond destroys uniqueness and with it tractability. So
+the operation is tree-only by *complexity class*, not by implementation
+laziness, and the API must say so. The polynomial DAG analog is a different
+operation with different words: the multi-terminal generalization of UC-20's
+between-region (⋃ of `Downstream(sᵢ)` ∩ ⋃ of `Upstream(tⱼ)`) — everything lying
+on any route among the set — which is honest, cheap, and *not* minimal. UC-08
+flagged names that silently change cost on the DAG; this one silently changes
+complexity class, the loudest fence in the catalog.
+
+---
+
 ## Tally and observations
 
 ### Layer distribution
@@ -500,7 +608,9 @@ over the axes is an open call the catalog flags but does not settle.
 library lives there), the region floor carries the DAG-native value, and the
 walk floor is the thinnest but owns the capabilities neither other floor can
 express (neighborhood-priced scans, UC-14/15/16/23). Provisional verdict: the
-tower stands; no invented floors.
+tower stands; no invented floors. UC-32 sits outside the table deliberately: it
+consumes at every floor in one arc — the capstone check that the floors
+*compose*, not merely that each is separately inhabited.
 
 ### Provenance tally
 
@@ -515,8 +625,10 @@ detached variant** — the design doc's lean, now with receipts.
    region-restricted scans only work cleanly because an edge is in
    `Downstream(a) ∩ Upstream(b)` iff it lies on an a→b path. Consistent with —
    and further evidence for — the DAG contract's edges-atomic ruling.
-2. **Region intersection (and presumably union/difference) is a lens** the
-   design doc's cost table did not list. O(1) per step over two memos.
+2. **Region intersection is a lens** the design doc's cost table did not list —
+   O(1) per step over two memos. Union is no longer "presumably": UC-32's
+   spanning region is a fold of path regions under ∪, so both combinators are
+   demanded by real call sites.
 3. **The oracle equivalence:** region-restricted scan ≡ prune-the-complement
    sweep (UC-23). Free conformance tests: the streaming spelling is the oracle
    for the walker spelling, in the DAG spike's builder+oracle tradition.
@@ -533,6 +645,20 @@ detached variant** — the design doc's lean, now with receipts.
    carry it.
 8. **The cursor question** (UC-31): interactive consumers want a
    position-holding object. In or out of v1?
+9. **The contraction lens has a tenant** (UC-32): `ContractPassThrough` — the
+   compressed auxiliary tree — is the first named consumer of the lookthrough
+   cost class, and it doubles as the motivating case for reify-when-
+   lookthrough-heavy.
+10. **A complexity-class fence, above the cost fences** (UC-32): spanning-of-a-
+   set is unique and linear on trees, NP-hard on DAGs (Steiner). UC-08 caught
+   names whose *cost* silently changes on the DAG; this catches a name whose
+   *complexity class* changes. The DAG gets a different operation with
+   different words (the multi-terminal between-region), never this name.
+11. **Handle arithmetic can precede tree access entirely** (UC-32 on the
+   address provider): the compressed spanning skeleton falls out of sorting
+   target addresses and taking adjacent longest-common-prefixes — the XML
+   twig-join technique over Dewey IDs — with the tree touched only to
+   dereference values.
 
 ### What the catalog did *not* find
 
