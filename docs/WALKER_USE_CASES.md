@@ -510,11 +510,14 @@ var relevant = sourceTree
   .Where(context => context.Node.IsRelevant)
   .PruneAfter(context => context.Position.Depth == 5);
 
-// The documented escalation -- and the store choice is QUERY-SHAPED: this use
-// case is ancestry-heavy, so the preorder capture (subtree spans, O(1) ancestry
-// tests on ordinal handles) is the right walkable. The strategy argument is the
-// deliberate form -- see "How the escalation chooses" below.
-var walkable = relevant.MaterializeWalkable(BufferLayout.Preorder);
+// The documented escalation, organic: under the lazy-Materialize law the first
+// consumer pins the layout, and this use case's first act -- the handle
+// acquisition sweep just below -- is preorder-shaped, so the ancestry-cheap
+// capture (subtree spans, O(1) ancestry on ordinal handles) arrives with
+// nobody choosing it. MaterializeWalkable(BufferLayout.Preorder) remains the
+// escape hatch for when the first act and the query mix disagree -- see "How
+// the escalation chooses" below.
+var walkable = relevant.MaterializeWalkable();
 
 // Handle acquisition: record position while streaming past -- one sweep, no
 // equality anywhere. (The no-node-equality pledge holds end to end.)
