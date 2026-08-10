@@ -1,153 +1,129 @@
+using Copse.Async;
 using Copse.Async.Stores;
 using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async.Stores;
 using Copse.Linq.Async.Treenumerables;
-using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Eagerly captures the source's current shape and returns the re-traversable capture:
-    /// Memoize with the laziness removed. Awaitable -&gt; carries the <c>Async</c> suffix.
-    /// Re-enumerating the result rides the in-memory capture -- cheap, still honoring dynamic
-    /// NodeTraversalStrategies, never suspending in practice (the awaited grows complete
-    /// synchronously over a finished capture) -- and never touches the source again.
+    /// The re-traversable capture of the source's shape, DEFERRED (2026-08-10; eager until
+    /// then): nothing is enumerated at the call. Construction is pinned to the first pull and
+    /// runs through the lazy store's grow seam -- the LeaffixScan/Invert cost shape,
+    /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
+    /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
+    /// construction is uniformly lazy; the pin is a commitment made at the earliest moment it
+    /// is free, which for this overload is the first pull). No longer awaitable, so the Async
+    /// suffix is gone. The source is enumerated AT MOST ONCE; both dimensions replay from the
+    /// one capture; an unconsumed result holds exactly what the unconsumed pipeline already
+    /// held, since nothing opens before the first pull.
     ///
-    /// <para>Idempotent on a capture: a live memo is consumed in place (finishing whichever
-    /// dimension is furthest along) and returned -- never wrapped; a completed
-    /// <see cref="IAsyncTreenumerableBuffer{TValue}"/> is returned as-is (you already hold the
-    /// ideal buffer -- re-capturing it would copy every node for nothing). The probe order
-    /// matters: the lazy interface derives from the completed one, so it is tested first. A
-    /// deferred capture (a buffer whose pinned build has not run yet) comes back still
-    /// deferred -- the build is pinned either way, so Materialize adds nothing. Disposal of the
-    /// returned buffer is vacuous once consumed (its feeds are already retired), so no
-    /// <c>await using</c> is required.</para>
+    /// <para>Idempotent on a capture (probe order matters: the lazy interface derives from the
+    /// completed one, so it is tested first): a live memo is wrapped so its one capture
+    /// COMPLETES IN BULK at the first pull -- inheriting whatever layout the memo's own history
+    /// pinned, and retiring the feed at the settle, which is what distinguishes the result from
+    /// the memo itself; a completed buffer is returned as-is (re-capturing would copy every
+    /// node for nothing). Disposal of the result is nothing after the settle and vacuously
+    /// nothing before it.</para>
     /// </summary>
-    public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source)
     {
       if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-      {
-        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
-        return lazyBuffer;
-      }
+        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
 
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
         return completedBuffer;
 
-      var buffer = source.Memoize();
-      await buffer.CompleteAsync().ConfigureAwait(false);
-      return buffer;
+      return new AsyncTreenumerableBuffer<TValue>(
+        AsyncTree.Lazy(firstDimension =>
+          firstDimension == TreeTraversalStrategy.BreadthFirst
+            ? DeferredLevelOrderCapture(source)
+            : DeferredPreorderCapture(source)),
+        nativeLayout: null); // decided by the first pull (the dimension dispatch above)
     }
 
     /// <summary>
-    /// Materialize with a GUARANTEED capture layout: the returned buffer's native-replay
-    /// dimension is <paramref name="strategy"/>, whatever the input -- the argument is never
-    /// ignored. A plain tree captures in that layout; a fresh memo pins it; a buffer already
-    /// in that layout is returned as-is (a capture is never re-captured); a buffer in the
-    /// OTHER layout is TRANSPOSED -- from the buffer, never from the source (buffer traversal
-    /// is effect-free by contract, so at-most-once holds; the transpose is O(n) work, which
-    /// this operator's name and return type already disclose -- and note a transposed result
-    /// is a NEW instance). A partially-pinned memo completes its pinned capture first (the one
-    /// source enumeration), then transposes. This is also the both-layouts recipe for
-    /// speed-over-space callers: materialize once, then materialize THAT in the other
-    /// dimension. Contrast Consume(strategy), where the strategy is only a suggestion --
-    /// Materialize returns the buffer, so the layout IS the deliverable.
+    /// Materialize with a GUARANTEED capture layout, deferred: the returned buffer's
+    /// native-replay dimension is <paramref name="strategy"/>, whatever the input -- the
+    /// argument is never ignored -- but the O(n) construction is pinned to the first pull. The
+    /// PIN lands NOW, because now is when it is free: a plain tree's capture layout is simply
+    /// recorded; a live memo's capture is created for the requested dimension at this call
+    /// (acquisition is the pin, zero nodes pulled), so an intervening consumer of a shared memo
+    /// cannot pin it the other way. A buffer already in the layout is returned as-is (a capture
+    /// is never re-captured); a mismatched or undecided one is TRANSPOSED -- from the buffer,
+    /// never from the source (buffer traversal is effect-free by contract, so at-most-once
+    /// holds), at the first pull, a NEW instance. A memo whose history had already pinned the
+    /// other layout completes its pinned capture first (the one source enumeration), then
+    /// transposes, all inside the first pull's settle. This stays the both-layouts recipe:
+    /// materialize once, then materialize THAT in the other dimension. Contrast
+    /// Consume(strategy), where the strategy is only a suggestion -- Materialize returns the
+    /// buffer, so the layout IS the deliverable.
     /// </summary>
-    public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncTreenumerable<TValue> source, TreeTraversalStrategy strategy)
-    {
-      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-      {
-        await PinAsync(lazyBuffer, strategy).ConfigureAwait(false);
-        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
-        return await WithNativeLayoutAsync(lazyBuffer, strategy).ConfigureAwait(false);
-      }
-
-      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
-        return await WithNativeLayoutAsync(completedBuffer, strategy).ConfigureAwait(false);
-
-      var buffer = source.Memoize();
-      await PinAsync(buffer, strategy).ConfigureAwait(false);
-      await buffer.CompleteAsync().ConfigureAwait(false);
-      return buffer;
-    }
-
-    // Pin a fresh lazy buffer's capture layout: ACQUIRING a treenumerator in the requested
-    // dimension is the pin (the capture is created for that dimension); no nodes are pulled,
-    // and it is harmless when a pin already exists. The organic pin, used wherever a strategy
-    // names the layout a fresh capture should take.
-    private static async ValueTask PinAsync<TValue>(IAsyncMemoizeTreenumerableBuffer<TValue> buffer, TreeTraversalStrategy strategy)
-    {
-      var treenumerator = buffer.GetAsyncTreenumerator(strategy);
-      await treenumerator.DisposeAsync().ConfigureAwait(false);
-    }
-
-    // The layout guarantee's back half: reuse a buffer that already complies (recognized via
-    // the internal layout tag); otherwise TRANSPOSE from the buffer -- one cross-order walk of
-    // the completed capture into the requested layout's arrays, the source untouched.
-    // Implementations the library does not recognize transpose conservatively.
-    private static async ValueTask<IAsyncTreenumerableBuffer<TValue>> WithNativeLayoutAsync<TValue>(
-      IAsyncTreenumerableBuffer<TValue> buffer,
-      TreeTraversalStrategy strategy)
+    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source, TreeTraversalStrategy strategy)
     {
       var requestedLayout = strategy == TreeTraversalStrategy.DepthFirst ? BufferLayout.Preorder : BufferLayout.LevelOrder;
 
-      if (buffer.NativeLayout == requestedLayout)
-        return buffer;
+      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
+        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout);
 
-      if (strategy == TreeTraversalStrategy.DepthFirst)
+      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
       {
-        var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(buffer).ConfigureAwait(false);
+        if (completedBuffer.NativeLayout == requestedLayout)
+          return completedBuffer;
 
-        return new AsyncTreenumerableBuffer<TValue>(
-          new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
-          BufferLayout.Preorder);
+        return requestedLayout == BufferLayout.Preorder
+          ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(completedBuffer), BufferLayout.Preorder)
+          : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(completedBuffer), BufferLayout.LevelOrder);
       }
 
-      var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(buffer).ConfigureAwait(false);
-
-      return new AsyncTreenumerableBuffer<TValue>(
-        new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
-        BufferLayout.LevelOrder);
+      return requestedLayout == BufferLayout.Preorder
+        ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(source), BufferLayout.Preorder)
+        : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(source), BufferLayout.LevelOrder);
     }
 
     /// <summary>
-    /// Eager upgrades for single-dimension sources: capture the whole tree now, hand back the
-    /// full citizen. The same buffer probes apply -- a narrow source that is secretly a capture
-    /// is consumed in place or returned as-is, never re-captured.
+    /// The single-dimension upgrades, deferred like the composite: the capture layout is FORCED
+    /// by the source's one affordable dimension (a depth-first-only source can only be consumed
+    /// depth-first, so the capture is preorder) -- known at the call, reported by
+    /// <c>NativeLayout</c> immediately, paid at the first pull. The same buffer probes apply: a
+    /// narrow source that is secretly a capture is wrapped (memo) or returned as-is (buffer),
+    /// never re-captured.
     /// </summary>
-    public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
     {
       if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-      {
-        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
-        return lazyBuffer;
-      }
+        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
 
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
         return completedBuffer;
 
-      var buffer = source.Memoize();
-      await buffer.CompleteAsync().ConfigureAwait(false);
-      return buffer;
+      return new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(source), BufferLayout.Preorder);
     }
 
-    public static async ValueTask<IAsyncTreenumerableBuffer<TValue>> MaterializeAsync<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
     {
       if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-      {
-        await lazyBuffer.CompleteAsync().ConfigureAwait(false);
-        return lazyBuffer;
-      }
+        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
 
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
         return completedBuffer;
 
-      var buffer = source.Memoize();
-      await buffer.CompleteAsync().ConfigureAwait(false);
-      return buffer;
+      return new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(source), BufferLayout.LevelOrder);
     }
+
+    // The deferral seam both layouts share (the LeaffixScan/Invert pattern): a lazy store whose
+    // awaited build -- ONE capture walk of the source -- runs through the grow seam on the
+    // first replay pull, both dimensions replaying from the completed store thereafter.
+    private static IAsyncTreenumerable<TValue> DeferredPreorderCapture<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
+      => new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(
+        new AsyncLazyPreorderStore<TValue>(() => AsyncPreorderCapture.CaptureFromAsync(source)));
+
+    private static IAsyncTreenumerable<TValue> DeferredLevelOrderCapture<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
+      => new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(
+        new AsyncLazyLevelOrderStore<TValue>(() => AsyncLevelOrderCapture.CaptureFromAsync(source)));
   }
 }

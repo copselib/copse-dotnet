@@ -175,7 +175,7 @@ namespace Copse.Linq
       IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
-      var capture = await source.MaterializeAsync().ConfigureAwait(false);
+      var capture = source.Materialize();
 
       return await BuildLeaffixDispatchAsync(capture, nodeSurvey).ConfigureAwait(false);
     }

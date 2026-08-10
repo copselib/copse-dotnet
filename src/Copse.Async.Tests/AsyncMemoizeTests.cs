@@ -45,11 +45,11 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
-    public async Task MaterializeAsync_CompletesCapture_AndReplays()
+    public async Task Materialize_CapturesOnFirstPull_AndReplays()
     {
       foreach (var tree in Trees)
       {
-        var buffer = await Async(tree).MaterializeAsync();
+        var buffer = Async(tree).Materialize();
 
         CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(buffer.PreorderTraversal()), $"Preorder {tree}");
         CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(buffer.LevelOrderTraversal()), $"LevelOrder {tree}");

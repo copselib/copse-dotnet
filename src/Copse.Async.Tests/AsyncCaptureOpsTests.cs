@@ -168,7 +168,7 @@ namespace Copse.Async.Tests
     {
       foreach (var tree in Trees)
       {
-        var buffer = await Async(tree).MaterializeAsync();
+        var buffer = Async(tree).Materialize();
         var mirrored = buffer.Invert();
 
         var sync = Sync(tree).Materialize().Invert();

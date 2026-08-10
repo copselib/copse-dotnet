@@ -198,7 +198,7 @@ namespace Copse.Linq
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
-      var capture = await source.MaterializeAsync().ConfigureAwait(false);
+      var capture = source.Materialize();
 
       return await BuildRootfixDispatchAsync(capture, rootFamilySurvey, survey).ConfigureAwait(false);
     }

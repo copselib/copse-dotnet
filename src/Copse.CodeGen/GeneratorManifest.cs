@@ -297,6 +297,16 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/Buffers/MemoizeBreadthFirstSourceTreenumerable.g.cs",
         "AsyncMemoizeBreadthFirstSourceTreenumerable", "MemoizeBreadthFirstSourceTreenumerable", "Copse.Linq.Treenumerables"),
 
+      // The lazy-Materialize settle pair (2026-08-10): the memo-completing buffer and its
+      // first-pull settle treenumerator.
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMaterializeTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/MaterializeTreenumerable.g.cs",
+        "AsyncMaterializeTreenumerable", "MaterializeTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMaterializeTreenumerator.cs",
+        "Copse.Linq/Treenumerables/Buffers/MaterializeTreenumerator.g.cs",
+        "AsyncMaterializeTreenumerator", "MaterializeTreenumerator", "Copse.Linq.Treenumerables"),
+
       // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
       // memoize cluster.
       new("Copse.Linq.Async/Treenumerables/Buffers/AsyncTreenumerableBuffer.cs",

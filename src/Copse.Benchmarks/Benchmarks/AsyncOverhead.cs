@@ -234,7 +234,7 @@ namespace Copse.Benchmarks
     [Benchmark]
     public async ValueTask Async()
     {
-      var buffer = await AsyncOverheadSources.GetAsyncBinaryTree(Depth).MaterializeAsync();
+      var buffer = AsyncOverheadSources.GetAsyncBinaryTree(Depth).Materialize();
       await buffer.ConsumeAsync();
     }
   }
