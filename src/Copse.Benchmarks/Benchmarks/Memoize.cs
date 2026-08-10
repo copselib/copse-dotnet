@@ -20,8 +20,8 @@ namespace Copse.Benchmarks
     [GlobalSetup]
     public void Setup()
     {
-      _DftCapture = CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.DepthFirst);
-      _BftCapture = CanonicalTrees.MegaTriangleTree().Materialize(TreeTraversalStrategy.BreadthFirst);
+      _DftCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder);
+      _BftCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder);
 
       // Materialize is deferred (2026-08-10): settle the captures here so the timed rows keep
       // measuring replay only.
