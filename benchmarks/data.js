@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786468480025,
+  "lastUpdate": 1786468480508,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -141415,6 +141415,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
             "value": 109077743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988544,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 2012,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4e1307b4986c32c277e8d1e38042d8b7a8bb8faa",
+          "message": "TakeSubtreesWhere -- the subgraph selection cluster's tree restriction, with benchmarks\n\nThe matched subtrees re-rooted as the result forest: match depth compresses to\nzero, descendants keep their sibling indices with depth shifted, and the roots\ntake the matches' source preorder order. OUTERMOST MATCH WINS, as a rule -- the\nin-subtree flag: inside a match the predicate never fires, because a tree cannot\nshare substructure, so nested matches suppress rather than absorb. (The dag\nanalog, TakeSubgraphsWhere on experimental/dag, gets the same semantics\nemergently from induced in-degree -- there the rule is arithmetic; here it must\nbe stated. The dag operator is the general form; this is its restriction.) The\nWhere suffix marks the predicate, per the TakeNodesWhile/Until precedent --\n\"take the subtrees where...\" -- and it filters everywhere, not a prefix.\n\nThe cost classes follow the dimension theorem: a matched subtree is one\ncontiguous segment of the depth-first visit stream, so the D-narrow arm is an\nO(1)-state pass-through wrapper -- no capture, fully lazy. The result's\nbreadth-first dimension cannot stream (matches start at different source depths,\nso result level k interleaves source levels -- the reorder wall), so the\ncomposite arm builds a RESULT-sized preorder store from one depth-first walk\n(buffer disclosure) and the breadth-first-only arm Materializes first, the\ndisclosure rule's escalation written once. Predicates are arity-split value |\npositional over source labels, per the grammar.\n\nBattery: expected forests pinned as serialized trees over both traversal\ndimensions (positions, renumbering, and visit streams all under test), nested\nand chained matches, forest sources, the streamed-equals-buffered visit-stream\npin, the disclosure-rule equivalence, async parity, and composition pinned as\nbehaves-like-the-equivalent-plain-forest. Benchmarks cover both cost classes on\nthe triangle and the chain.\n\n24,481 green across the solution.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-06T05:06:33Z",
+          "tree_id": "64d69c505724d943caa00486b0c5693e84571c6d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4e1307b4986c32c277e8d1e38042d8b7a8bb8faa"
+        },
+        "date": 1786468480412,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 16903639,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 54734648,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 54734744,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 50353296,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 54908906,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 54909002,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 92323162,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 92323238,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 62939536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 62939590,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 125186,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 47396898,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 158331,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 50334461,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 47569454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 331483,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 1046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93375000,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 109078324,
             "unit": "bytes"
           },
           {
