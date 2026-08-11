@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786468474766,
+  "lastUpdate": 1786468475238,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -101832,6 +101832,168 @@ window.BENCHMARK_DATA = {
             "value": 154154270.2,
             "unit": "ns",
             "range": "± 933116.7582169619"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "distinct": true,
+          "id": "4e1307b4986c32c277e8d1e38042d8b7a8bb8faa",
+          "message": "TakeSubtreesWhere -- the subgraph selection cluster's tree restriction, with benchmarks\n\nThe matched subtrees re-rooted as the result forest: match depth compresses to\nzero, descendants keep their sibling indices with depth shifted, and the roots\ntake the matches' source preorder order. OUTERMOST MATCH WINS, as a rule -- the\nin-subtree flag: inside a match the predicate never fires, because a tree cannot\nshare substructure, so nested matches suppress rather than absorb. (The dag\nanalog, TakeSubgraphsWhere on experimental/dag, gets the same semantics\nemergently from induced in-degree -- there the rule is arithmetic; here it must\nbe stated. The dag operator is the general form; this is its restriction.) The\nWhere suffix marks the predicate, per the TakeNodesWhile/Until precedent --\n\"take the subtrees where...\" -- and it filters everywhere, not a prefix.\n\nThe cost classes follow the dimension theorem: a matched subtree is one\ncontiguous segment of the depth-first visit stream, so the D-narrow arm is an\nO(1)-state pass-through wrapper -- no capture, fully lazy. The result's\nbreadth-first dimension cannot stream (matches start at different source depths,\nso result level k interleaves source levels -- the reorder wall), so the\ncomposite arm builds a RESULT-sized preorder store from one depth-first walk\n(buffer disclosure) and the breadth-first-only arm Materializes first, the\ndisclosure rule's escalation written once. Predicates are arity-split value |\npositional over source labels, per the grammar.\n\nBattery: expected forests pinned as serialized trees over both traversal\ndimensions (positions, renumbering, and visit streams all under test), nested\nand chained matches, forest sources, the streamed-equals-buffered visit-stream\npin, the disclosure-rule equivalence, async parity, and composition pinned as\nbehaves-like-the-equivalent-plain-forest. Benchmarks cover both cost classes on\nthe triangle and the chain.\n\n24,481 green across the solution.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-06T05:06:33Z",
+          "tree_id": "64d69c505724d943caa00486b0c5693e84571c6d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4e1307b4986c32c277e8d1e38042d8b7a8bb8faa"
+        },
+        "date": 1786468475144,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 81200091.43956044,
+            "unit": "ns",
+            "range": "± 684337.4055098145"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 92081294.64102563,
+            "unit": "ns",
+            "range": "± 365848.7362908402"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 57908170.116071425,
+            "unit": "ns",
+            "range": "± 508746.21910672286"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 65072103.64761905,
+            "unit": "ns",
+            "range": "± 199880.9691722377"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 32679289.808035713,
+            "unit": "ns",
+            "range": "± 208641.35677838945"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 44779064.96153845,
+            "unit": "ns",
+            "range": "± 133074.8236403898"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 18598292.833333332,
+            "unit": "ns",
+            "range": "± 330038.01897251414"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 21652526.79017857,
+            "unit": "ns",
+            "range": "± 196080.10905147757"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 32811517.6875,
+            "unit": "ns",
+            "range": "± 101918.62954932259"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 50777491.27272727,
+            "unit": "ns",
+            "range": "± 108858.437865712"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 33345073.240000002,
+            "unit": "ns",
+            "range": "± 553469.8186593705"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 23386809.460416667,
+            "unit": "ns",
+            "range": "± 386598.41476576723"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 70865318.15306123,
+            "unit": "ns",
+            "range": "± 525590.1215429717"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 86893620.66666666,
+            "unit": "ns",
+            "range": "± 495150.89355367626"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 13201749.338169644,
+            "unit": "ns",
+            "range": "± 56345.287691576494"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 84614757.53846154,
+            "unit": "ns",
+            "range": "± 762751.4605000763"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 106378999.26666667,
+            "unit": "ns",
+            "range": "± 968161.2654122858"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 121105197.42857142,
+            "unit": "ns",
+            "range": "± 419902.98463918606"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 94066268.82666665,
+            "unit": "ns",
+            "range": "± 388678.80824789766"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 62266448.09142858,
+            "unit": "ns",
+            "range": "± 1611235.3478260578"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 127663066.18333334,
+            "unit": "ns",
+            "range": "± 879757.9973940756"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 69453497.02857143,
+            "unit": "ns",
+            "range": "± 592227.3526417247"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 131178108.31666666,
+            "unit": "ns",
+            "range": "± 1762740.7074634882"
           }
         ]
       }
