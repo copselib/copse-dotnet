@@ -44,7 +44,14 @@ namespace Copse.Treenumerables
       => new PreorderStoreBreadthFirstTreenumerator<TValue, TStore>(_Store);
 
     public TValue GetValue(int node)
-      => _Store.GetValue(node);
+    {
+      // The store contract: a grow call precedes every read (a deferred or still-growing store
+      // may not have built yet -- ordinal handles are guessable ints, so the deref cannot assume
+      // the probe machinery ran first).
+      _Store.EnsureBuffered(node);
+
+      return _Store.GetValue(node);
+    }
 
     public ParentResult<int> GetParent(int node)
     {

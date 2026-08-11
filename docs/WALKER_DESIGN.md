@@ -98,6 +98,31 @@ rejected as dishonest); and the address provider's native child operation is
 append-an-index. The engine's `IChildEnumerator` pull protocol is untouched —
 that is the hierarchical family's source adapter, a different job.
 
+### The finiteness law, in the type system (ruled 2026-08-10, built)
+
+*The walker's true requirement is adjacency, not materialization* — and that law
+bakes into the types as the ORTHOGONALITY of two capabilities the library
+already had. `IWalkableTreenumerable` says **adjacency** (you can navigate; no
+finiteness claim — a native-adjacency walker may serve an infinite structure).
+`ITreenumerableBuffer` says **capture** (owned, in-memory, finite, effect-free
+replay). Their named intersection, `IWalkableTreenumerableBuffer`, is the
+interchange citizen — and it is what the finite-izing escalation
+(`MaterializeWalkable`, deferred per the lazy-Materialize law, preorder per the
+adjacency-first rider) returns, so the signature itself says "adjacency was
+manufactured AND the structure was captured." Native-adjacency providers
+(calculated trees, object graphs, the address-walker) implement the walkable
+interface alone: **the type's silence about buffer-ness is the infinity
+permission.** Termination-hungry operations (a height, a whole-structure reify)
+may constrain on the intersection, making "diverges on infinite trees" a compile
+error — the traversal-dimension split's discipline, extended to the finiteness
+axis. As with `ITreenumerableBuffer`'s effect-free clause, the capability is
+declared, not proven: an implementation over an infinite structure is out of
+contract, not merely exotic. (Mechanical note: the intersection lives in
+Copse.Linq and its concrete citizen is a wrapper, for the same
+dependency-direction reason `TreenumerableBuffer` is one. The capability
+lattice — {dimensions} × {adjacency} × {capture} — mints interfaces only for
+cells with citizens, per the dimension split's own restraint.)
+
 ### Positions and steps
 
 The DAG branch ratified (edge, far-node) as the traversal atom because a stream
