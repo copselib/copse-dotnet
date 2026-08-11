@@ -519,16 +519,20 @@ var relevant = sourceTree
 // the escalation chooses" below.
 var walkable = relevant.MaterializeWalkable();
 
-// Handle acquisition: the ROWID SCAN -- every (handle, value) row of the labeling,
-// so predicates over values can pick out handles. Equality never appears in any
-// signature: the predicate is consumer code, and an outside-supplied target list
-// becomes a consumer-side set INSIDE the lambda, built with whatever comparer the
-// consumer likes. (Handles are opaque claim tickets: walkable-local, held not
-// interpreted, passed back to the walkable that minted them.)
+// Handle acquisition: the ROWID SCAN. Iterates HANDLE-SPACE (on a store: 0..n-1) and
+// derefs each -- every (handle, value) row of the labeling -- so predicates over
+// values can pick out handles. The direction is the point: handles are enumerated,
+// never computed from values, which is why equality appears in no signature -- the
+// predicate is consumer code, and an outside-supplied target list becomes a
+// consumer-side set INSIDE the lambda, built with whatever comparer the consumer
+// likes. (Handles are opaque claim tickets: walkable-local, held not interpreted,
+// passed back to the walkable that minted them. Naming ruled 2026-08-10: if the thing
+// is a handle, call it a handle -- GetHandles() yields all handles, WithValues is the
+// pair convenience, the pair is HandleAndValue.)
 var targets = walkable
-  .GetNodesWithValues()
+  .GetHandlesWithValues()
   .Where(pair => pair.Value.IsFlagged)
-  .Select(pair => pair.Node)
+  .Select(pair => pair.Handle)
   .ToList();
 
 // The packaged query: k handles in, a treenumerable out.
