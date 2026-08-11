@@ -519,30 +519,71 @@ var relevant = sourceTree
 // the escalation chooses" below.
 var walkable = relevant.MaterializeWalkable();
 
-// Handle acquisition: record position while streaming past -- one sweep, no
-// equality anywhere. (The no-node-equality pledge holds end to end.)
+// Handle acquisition: the ROWID SCAN -- every (handle, value) row of the labeling,
+// so predicates over values can pick out handles. Equality never appears in any
+// signature: the predicate is consumer code, and an outside-supplied target list
+// becomes a consumer-side set INSIDE the lambda, built with whatever comparer the
+// consumer likes. (Handles are opaque claim tickets: walkable-local, held not
+// interpreted, passed back to the walkable that minted them.)
 var targets = walkable
-  .GetDescendantsWithHandles()
+  .GetNodesWithValues()
   .Where(pair => pair.Value.IsFlagged)
-  .Select(pair => pair.Handle)
+  .Select(pair => pair.Node)
   .ToList();
 
 // The packaged query: k handles in, a treenumerable out.
 var spanningTree = walkable.GetSpanningSubtree(targets);
 ```
 
-And its decomposition — every step is a catalog primitive:
+And its decomposition (revised by the 2026-08-10 walkthrough — the original union-fold
+spelling survives below as the region-algebra equivalent):
 
 ```csharp
-var spanningRoot = targets.Aggregate(walkable.GetLowestCommonAncestor);     // relations floor (UC-12, folded)
+// 1. The upward fold: climb from each target to the collective LCA -- and RECORD the
+//    climbs, because the visited handles ARE the spanning skeleton's node set. The
+//    membership memo arrives as a BYPRODUCT of the fold; no extra pass exists.
+//    (Preorder-store receipts: presorted targets collapse the whole fold to
+//    LCA(first, last), and is-ancestor is O(1) span containment.)
+var spanningRoot = targets.Aggregate(walkable.GetLowestCommonAncestor);
 
-var spanningRegion = targets
-  .Select(target => walkable.GetPathRegion(spanningRoot, target))           // path-as-region (UC-13's sibling)
-  .Aggregate((left, right) => left.Union(right));                           // region UNION -- the lens UC-20 presumed
+// 2. The view: three lenses over the SAME walkable -- no copy, no capture.
+//      re-root    : GetRootAt(0) answers spanningRoot
+//      clamp      : GetParent(spanningRoot) answers nothing
+//      membership : child k of n survives iff it leads toward a target
+var spanning = walkable.ReRoot(spanningRoot).WhereReachable(targets);   // strawman spelling
 
-var spanningTree = spanningRegion.Walk(Order.DepthFirst);                   // order-commit: a treenumerable again
-var frozen = spanningRegion.ToTree();                                       // or reify -- provenance carried (UC-27)
+// 3. There is no step 3. The view IS a walkable, and a walkable IS a treenumerable --
+//    the ladder's free direction. "A treenumerable is a bottled walk": a region and a
+//    committed order, sealed behind the factory contract; the view just bottles new
+//    ingredients over old terrain.
+ITreenumerable<Entity> result = spanning;
+
+// The explicit alternative ending: reify with provenance (UC-27) when you want a
+// frozen copy whose handles map back -- view vs. record, the laziness policy's pair,
+// the caller's choice.
+var frozen = spanning.ToTree();
 ```
+
+Region-algebra equivalent of step 2 (the provider-agnostic spelling; ∪ still demanded):
+`targets.Select(t => walkable.GetPathRegion(spanningRoot, t)).Aggregate((l, r) => l.Union(r))`.
+
+**The membership predicate is the memoized lens class, by law.** "Leads toward a
+target" is a fact about the child's SUBTREE, not the child — and non-local predicates
+need stored descendant-knowledge. Where it lives is the parent-information law's
+mirror: in the **record** (preorder spans: binary search over sorted targets, zero
+memo), in the **handle** (address prefixes: arithmetic), in the **function** (a
+computed tree climbs from the target), or in a **memo** (the fold's recorded climbs,
+O(Σ depth), already paid). Local predicates (the PruneAfter lens) stay in the free
+class; the boundary between the classes is locality. The view relabels sibling
+indexes (view-local positions, source handles — the streaming Where's own relabeling
+rule applied to adjacency), and "view" never meant zero memory: it means memory
+proportional to the REGION, source untouched.
+
+**The one build dependency: the `Walk()` adapter** — a generic treenumerator driven
+off any walkable's own answers. The PruneAfter lens borrowed its stream half from the
+streaming operator; re-root + membership has no operator twin, so the view's
+treenumerable citizenship is served by the adapter — the same machine as the
+constant-space walkable-native engine, arriving with two jobs.
 
 **Layer:** all of them, deliberately · **Re-enters source?** Yes — the result's
 whole purpose is pointing back into the source structure · **Cost:** after
@@ -588,11 +629,11 @@ tuning decision with an escape hatch, not a commitment.
 |---|---|
 | `Where` + `PruneAfter` upstream | The streaming operator algebra, untouched, feeding the walker a derived tree |
 | `MaterializeWalkable()` | The documented escalation; laziness policy; query-shaped store choice |
-| Handle acquisition sweep | Record-position-while-streaming; the no-equality pledge |
-| LCA fold | The relations floor; walker-only classics composing with plain `Aggregate` |
-| Path regions ∪ | The region floor; **union**, which UC-20 only presumed, now demanded |
-| `Walk(Order.DepthFirst)` | The walk floor; region + order = treenumerable; result re-enters the order algebra |
-| `ToTree()` with provenance | Reification; the interchange citizen; re-entry receipts |
+| Handle acquisition (the rowid scan) | Value-space → handle-space bridge; predicates are consumer code, equality in no signature; handles = opaque claim tickets |
+| LCA fold | The relations floor; plain `Aggregate` as the algebra — and the climbs recorded ARE the membership memo, free |
+| The three-lens view (re-root, clamp, membership) | The region floor's direct spelling (∪ of path regions = the equivalent algebra spelling); membership = the memoized lens class, priced by the descendant-information law |
+| The free upcast | The ladder's free direction: view IS walkable IS treenumerable ("a bottled walk"); streaming served by the `Walk()` adapter — the one build dependency |
+| `ToTree()` with provenance | The alternative ending: reification, the interchange citizen, re-entry receipts — view vs. record, caller's choice |
 
 **The compressed variant — the contraction lens's first named consumer.** The
 auxiliary-tree of competitive-programming lore drops the pass-through nodes
