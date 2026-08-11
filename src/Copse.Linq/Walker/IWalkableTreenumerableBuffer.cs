@@ -16,8 +16,8 @@ namespace Copse.Linq.Treenumerables
   // Like ITreenumerableBuffer itself, a declared capability with stated laws, not a proof: an
   // implementation over an infinite structure is out of contract, not merely exotic.
   // Sync-only for the walker PoC; the async twin arrives when the walker crosses colors.
-  public interface IWalkableTreenumerableBuffer<TValue, TNode>
-    : IWalkableTreenumerable<TValue, TNode>, ITreenumerableBuffer<TValue>
+  public interface IWalkableTreenumerableBuffer<TValue, THandle>
+    : IWalkableTreenumerable<TValue, THandle>, ITreenumerableBuffer<TValue>
   {
   }
 }

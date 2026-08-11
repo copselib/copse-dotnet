@@ -16,9 +16,9 @@ namespace Copse.Linq
     /// build. Diverges on an infinite walkable, by the caller's choice -- the LINQ Count()
     /// divergence contract, same as every whole-structure consumer.
     /// </summary>
-    public static IEnumerable<TNode> GetHandles<TValue, TNode>(this IWalkableTreenumerable<TValue, TNode> source)
+    public static IEnumerable<THandle> GetHandles<TValue, THandle>(this IWalkableTreenumerable<TValue, THandle> source)
     {
-      var pendingFrames = new Stack<(TNode Handle, int ChildIndex)>();
+      var pendingFrames = new Stack<(THandle Handle, int ChildIndex)>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -50,13 +50,13 @@ namespace Copse.Linq
     /// The rowid scan: every (handle, value) row of the labeling function, so predicates over
     /// values can pick out handles -- the bridge from value-space (what the consumer knows) to
     /// handle-space (what the walkable speaks). Same unspecified order and divergence contract
-    /// as <see cref="GetHandles{TValue, TNode}"/>.
+    /// as <see cref="GetHandles{TValue, THandle}"/>.
     /// </summary>
-    public static IEnumerable<HandleAndValue<TNode, TValue>> GetHandlesWithValues<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source)
+    public static IEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source)
     {
       foreach (var handle in source.GetHandles())
-        yield return new HandleAndValue<TNode, TValue>(handle, source.GetValue(handle));
+        yield return new HandleAndValue<THandle, TValue>(handle, source.GetValue(handle));
     }
   }
 }

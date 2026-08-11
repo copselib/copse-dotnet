@@ -14,11 +14,11 @@ namespace Copse.Linq.Experimental
     // so the axis spelling isn't locked in by shipping; the region and walk floors are not
     // scaffolded yet.
 
-    public static IEnumerable<TNode> GetAncestors<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static IEnumerable<THandle> GetAncestors<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
-      var parentResult = source.GetParent(node);
+      var parentResult = source.GetParent(handle);
 
       while (parentResult.HasParent)
       {
@@ -28,22 +28,22 @@ namespace Copse.Linq.Experimental
       }
     }
 
-    public static IEnumerable<TNode> GetAncestorsAndSelf<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static IEnumerable<THandle> GetAncestorsAndSelf<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
-      yield return node;
+      yield return handle;
 
-      foreach (var ancestor in source.GetAncestors(node))
+      foreach (var ancestor in source.GetAncestors(handle))
         yield return ancestor;
     }
 
-    public static TNode GetRoot<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static THandle GetRoot<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
-      var root = node;
-      var parentResult = source.GetParent(node);
+      var root = handle;
+      var parentResult = source.GetParent(handle);
 
       while (parentResult.HasParent)
       {
@@ -56,12 +56,12 @@ namespace Copse.Linq.Experimental
     }
 
     // The number of proper ancestors. O(depth) -- contrast a height, which is a subtree sweep.
-    public static int GetDepth<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static int GetDepth<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
       var depth = 0;
-      var parentResult = source.GetParent(node);
+      var parentResult = source.GetParent(handle);
 
       while (parentResult.HasParent)
       {
@@ -73,13 +73,13 @@ namespace Copse.Linq.Experimental
       return depth;
     }
 
-    public static IEnumerable<NodeAndSiblingIndex<TNode>> GetChildren<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static IEnumerable<NodeAndSiblingIndex<THandle>> GetChildren<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
       for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = source.GetChildAt(node, childIndex);
+        var childResult = source.GetChildAt(handle, childIndex);
 
         if (!childResult.HasChild)
           yield break;
@@ -88,8 +88,8 @@ namespace Copse.Linq.Experimental
       }
     }
 
-    public static IEnumerable<NodeAndSiblingIndex<TNode>> GetRootNodes<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source)
+    public static IEnumerable<NodeAndSiblingIndex<THandle>> GetRootNodes<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source)
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -107,13 +107,13 @@ namespace Copse.Linq.Experimental
     // unbounded child group. This walks the probe to the first miss -- the LINQ Count()
     // contract, divergent on infinite sequences by the caller's choice. Finite providers offer
     // cheap counts as members of their concrete types.
-    public static int GetChildCount<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
-      TNode node)
+    public static int GetChildCount<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      THandle handle)
     {
       var childCount = 0;
 
-      while (source.GetChildAt(node, childCount).HasChild)
+      while (source.GetChildAt(handle, childCount).HasChild)
         childCount++;
 
       return childCount;
@@ -123,8 +123,8 @@ namespace Copse.Linq.Experimental
     // nothing, exists purely to steer the static type back to the streaming surface mid-chain.
     // The swap UP is MaterializeWalkable's probe ladder -- free where the capability survives,
     // a documented capture where it does not.
-    public static ITreenumerable<TValue> AsTreenumerable<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source)
+    public static ITreenumerable<TValue> AsTreenumerable<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source)
       => source;
   }
 }

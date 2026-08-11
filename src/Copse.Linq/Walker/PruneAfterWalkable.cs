@@ -8,17 +8,17 @@ namespace Copse.Linq.Treenumerables
   // half is the shipped streaming operator, delegated wholesale (the composition lattice inside
   // it keeps collapsing what it always collapsed, unaware walkables exist), and the ADJACENCY
   // half is one wrapped probe: a pruned-after node hands out no children. GetParent, GetValue,
-  // and GetRootAt delegate untouched -- prune-after keeps the matched node and its ancestry,
+  // and GetRootAt delegate untouched -- prune-after keeps the matched handle and its ancestry,
   // and roots always survive. Lenses compose by stacking (no pairwise lens types, no lattice:
   // adjacency probes are neighborhood-priced, so there is nothing to collapse).
   //
   // Handle stance (lens semantics): the lens restricts what it HANDS OUT, not what arithmetic
   // can name -- a guessed handle below a pruned boundary still answers with the source's
   // adjacency. Handles obtained from THIS walkable's probes never cross the boundary.
-  internal sealed class PruneAfterWalkable<TValue, TNode> : IWalkableTreenumerable<TValue, TNode>
+  internal sealed class PruneAfterWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>
   {
     public PruneAfterWalkable(
-      IWalkableTreenumerable<TValue, TNode> source,
+      IWalkableTreenumerable<TValue, THandle> source,
       Func<TValue, bool> predicate,
       ITreenumerable<TValue> prunedStream)
     {
@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
       _PrunedStream = prunedStream;
     }
 
-    private readonly IWalkableTreenumerable<TValue, TNode> _Source;
+    private readonly IWalkableTreenumerable<TValue, THandle> _Source;
     private readonly Func<TValue, bool> _Predicate;
     private readonly ITreenumerable<TValue> _PrunedStream;
 
@@ -35,15 +35,15 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _PrunedStream.GetBreadthFirstTreenumerator();
 
-    public TValue GetValue(TNode node) => _Source.GetValue(node);
+    public TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public ParentResult<TNode> GetParent(TNode node) => _Source.GetParent(node);
+    public ParentResult<THandle> GetParent(THandle handle) => _Source.GetParent(handle);
 
-    public ChildResult<TNode> GetChildAt(TNode node, int childIndex)
-      => _Predicate(_Source.GetValue(node))
+    public ChildResult<THandle> GetChildAt(THandle handle, int childIndex)
+      => _Predicate(_Source.GetValue(handle))
         ? default
-        : _Source.GetChildAt(node, childIndex);
+        : _Source.GetChildAt(handle, childIndex);
 
-    public ChildResult<TNode> GetRootAt(int rootIndex) => _Source.GetRootAt(rootIndex);
+    public ChildResult<THandle> GetRootAt(int rootIndex) => _Source.GetRootAt(rootIndex);
   }
 }

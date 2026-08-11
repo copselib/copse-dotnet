@@ -39,29 +39,29 @@ namespace Copse.Treenumerables
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
       => new LevelOrderStoreBreadthFirstTreenumerator<TValue, TStore>(_Store);
 
-    public TValue GetValue(int node)
-      => _Store.GetValue(node);
+    public TValue GetValue(int handle)
+      => _Store.GetValue(handle);
 
-    public ParentResult<int> GetParent(int node)
+    public ParentResult<int> GetParent(int handle)
     {
       if (_ParentIndexes == null)
         _ParentIndexes = BuildParentIndexes();
 
-      var parentIndex = _ParentIndexes[node];
+      var parentIndex = _ParentIndexes[handle];
 
       return parentIndex == NoParent
         ? default
         : new ParentResult<int>(parentIndex);
     }
 
-    public ChildResult<int> GetChildAt(int node, int childIndex)
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
     {
-      if (childIndex < 0 || !_Store.EnsureChildAvailable(node, childIndex))
+      if (childIndex < 0 || !_Store.EnsureChildAvailable(handle, childIndex))
         return default;
 
       // GetFirstChildIndex is meaningful once the parent has an available child, which the
       // successful probe above just established.
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(node) + childIndex, childIndex));
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
     }
 
     public ChildResult<int> GetRootAt(int rootIndex)
@@ -73,19 +73,19 @@ namespace Copse.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
     }
 
-    public int GetChildCount(int node)
+    public int GetChildCount(int handle)
     {
       // The store protocol speaks availability probes, not counts, so the count is the probe
       // walked to its first miss -- each probe an O(1) read on a completed store.
       var childCount = 0;
-      while (_Store.EnsureChildAvailable(node, childCount))
+      while (_Store.EnsureChildAvailable(handle, childCount))
         childCount++;
 
       return childCount;
     }
 
     // One pass in level order, no stack: the roots seed the index, then the parent cursor sweeps
-    // every indexed node in order, writing itself under each of its children. The parent cursor
+    // every indexed handle in order, writing itself under each of its children. The parent cursor
     // can never overtake the growth it causes until the tree is exhausted, and the store's own
     // GetFirstChildIndex stays the authority on where each child run lands.
     private int[] BuildParentIndexes()

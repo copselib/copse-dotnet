@@ -18,14 +18,14 @@ namespace Copse.Linq
     /// is not stored on a walker, so a positional predicate would price an O(depth) climb per
     /// probe -- it arrives when a caller needs it, with that cost documented.)
     /// </summary>
-    public static IWalkableTreenumerable<TValue, TNode> PruneAfter<TValue, TNode>(
-      this IWalkableTreenumerable<TValue, TNode> source,
+    public static IWalkableTreenumerable<TValue, THandle> PruneAfter<TValue, THandle>(
+      this IWalkableTreenumerable<TValue, THandle> source,
       Func<TValue, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return new PruneAfterWalkable<TValue, TNode>(
+      return new PruneAfterWalkable<TValue, THandle>(
         source,
         predicate,
         ((ITreenumerable<TValue>)source).PruneAfter(predicate));

@@ -24,11 +24,11 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Walkable.GetBreadthFirstTreenumerator();
 
-    public TValue GetValue(int node) => _Walkable.GetValue(node);
+    public TValue GetValue(int handle) => _Walkable.GetValue(handle);
 
-    public ParentResult<int> GetParent(int node) => _Walkable.GetParent(node);
+    public ParentResult<int> GetParent(int handle) => _Walkable.GetParent(handle);
 
-    public ChildResult<int> GetChildAt(int node, int childIndex) => _Walkable.GetChildAt(node, childIndex);
+    public ChildResult<int> GetChildAt(int handle, int childIndex) => _Walkable.GetChildAt(handle, childIndex);
 
     public ChildResult<int> GetRootAt(int rootIndex) => _Walkable.GetRootAt(rootIndex);
   }

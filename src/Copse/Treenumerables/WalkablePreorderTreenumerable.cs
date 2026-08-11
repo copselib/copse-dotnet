@@ -6,8 +6,8 @@ namespace Copse.Treenumerables
 {
   /// <summary>
   /// The walkable citizen of the flat family (PoC): any <see cref="IPreorderStore{TValue}"/>
-  /// becomes an <see cref="IWalkableTreenumerable{TValue, TNode}"/> with the ordinal (preorder
-  /// index) as the node handle -- handle equality is index equality, so the library's
+  /// becomes an <see cref="IWalkableTreenumerable{TValue, THandle}"/> with the ordinal (preorder
+  /// index) as the handle -- handle equality is index equality, so the library's
   /// no-node-equality pledge holds with nothing asked of <typeparamref name="TValue"/>.
   ///
   /// <para>Streaming delegates to the same store treenumerators as
@@ -43,33 +43,33 @@ namespace Copse.Treenumerables
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
       => new PreorderStoreBreadthFirstTreenumerator<TValue, TStore>(_Store);
 
-    public TValue GetValue(int node)
+    public TValue GetValue(int handle)
     {
       // The store contract: a grow call precedes every read (a deferred or still-growing store
       // may not have built yet -- ordinal handles are guessable ints, so the deref cannot assume
       // the probe machinery ran first).
-      _Store.EnsureBuffered(node);
+      _Store.EnsureBuffered(handle);
 
-      return _Store.GetValue(node);
+      return _Store.GetValue(handle);
     }
 
-    public ParentResult<int> GetParent(int node)
+    public ParentResult<int> GetParent(int handle)
     {
       EnsureAdjacencyIndexes();
 
-      var parentIndex = _ParentIndexes[node];
+      var parentIndex = _ParentIndexes[handle];
 
       return parentIndex == NoParent
         ? default
         : new ParentResult<int>(parentIndex);
     }
 
-    public ChildResult<int> GetChildAt(int node, int childIndex)
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
     {
       EnsureAdjacencyIndexes();
 
-      var childStart = _ChildIndexStarts[node];
-      var childCount = _ChildIndexStarts[node + 1] - childStart;
+      var childStart = _ChildIndexStarts[handle];
+      var childCount = _ChildIndexStarts[handle + 1] - childStart;
 
       if (childIndex < 0 || childIndex >= childCount)
         return default;
@@ -87,11 +87,11 @@ namespace Copse.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
     }
 
-    public int GetChildCount(int node)
+    public int GetChildCount(int handle)
     {
       EnsureAdjacencyIndexes();
 
-      return _ChildIndexStarts[node + 1] - _ChildIndexStarts[node];
+      return _ChildIndexStarts[handle + 1] - _ChildIndexStarts[handle];
     }
 
     private void EnsureAdjacencyIndexes()

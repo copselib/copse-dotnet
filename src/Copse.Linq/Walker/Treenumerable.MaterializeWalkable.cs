@@ -10,7 +10,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The walker escalation -- the FINITE-IZING act, and the type says so: the return is the
-    /// intersection <see cref="IWalkableTreenumerableBuffer{TValue, TNode}"/>, adjacency
+    /// intersection <see cref="IWalkableTreenumerableBuffer{TValue, THandle}"/>, adjacency
     /// manufactured AND the structure captured (docs/WALKER_DESIGN.md, the finiteness law).
     /// Deferred per the lazy-Materialize law: nothing is enumerated at the call -- the capture
     /// (one depth-first walk into preorder arrays) runs through the lazy store's grow seam at
