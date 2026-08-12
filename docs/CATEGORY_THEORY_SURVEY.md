@@ -115,7 +115,7 @@ converged independently.)
 
 | Member / operation | Shape | Laws & status |
 |---|---|---|
-| `GetValue` | `extract` | comonad laws: pending the duplicate/extend surface |
+| `GetValue` | `extract` | **comonad laws PINNED** (2026-08-12, `WalkerComonadLawTests` — extract participates in all three: `extend(extract) ≡ id`, extract-after-extend recovers the observer, co-associativity; laws are joint equations, so this row was "pending" only until Extend existed to be the other party). `duplicate` is now a derived one-liner — `w.Extend((w0, h) => h)`, the diagonal labeling — its laws corollaries of the pinned extend laws; an explicit pin is optional polish |
 | `GetParent` / `GetChildAt` / `GetRootAt` | the co-algebraic decoration (tree-structured position space); by-value probes, closed over handle-space with `GetValue` the only exit | closure/one-way-door: architectural (no value→handle member exists — the pledge by construction) |
 | `GetHandles` / `GetHandlesWithValues` | `duplicate` flattened (the tree of foci, poured out as rows of the labeling) | order deliberately unspecified (the set is the promise): documented |
 | Axes (`GetAncestors`, `GetDepth`, …) | co-Kleisli queries (functions from a focus) | composition via LINQ (the walker's operator algebra is LINQ, by design) |
