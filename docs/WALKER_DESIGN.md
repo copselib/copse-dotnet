@@ -399,3 +399,45 @@ afterward?* — turning the provenance instinct into evidence.
   scalars — to be validated by the catalog, not assumed.
 - Which order-commit choices the walk layer offers (depth-first, level-order,
   topological), and how their price columns are surfaced.
+
+### The GetRootAt finding (2026-08-12, Jason's diagnosis — the contract re-architecture's motivating smell)
+
+`GetRootAt(int rootIndex)` is `GetChildAt` **with the parent parameter erased,
+because the parent is the unfocused stance `∅`** — the one stance the comonad
+work proved cannot be a focus (extract has no value there). The interface doc's
+own phrase — "roots are the children of the virtual forest-root position" — is
+the confession: the contract dresses `∅` up as a node so the member can pretend
+to be adjacency, down to the return type handing each root a sibling index in
+the virtual root's child group.
+
+Jason's sharper formulation: **the member compensates for the walkable having no
+focus.** Which makes `IWalkableTreenumerable` itself a cofree-style citizen: it
+carries a FROZEN implicit focus (`∅`, the virtual forest root) baked into the
+representation, and `GetRootAt` is the adjacency probe from that frozen stance —
+the exact move (freeze a focus into the representation rather than carry it as
+data) the Store presentation exists to escape. The comonadic machinery never
+touches it: `TreeCursor`, `Extend`, `Duplicate` are all handle-parameterized.
+Its real clients are the protocol side — the Walk adapter (stream
+reconstruction needs a starting frontier), the `GetRootCursor` door, and
+`SubtreeWalkable`, which must *rewrite* it to re-root (the tell that it is
+carrier-extent state, not adjacency).
+
+The decomposition this implies, for the pending contract re-architecture:
+
+- **Terrain** — `GetValue` / `GetParent` / `GetChildAt`: labeling + adjacency
+  given a focus. The comonad's home; cursors and `Extend` type against this
+  alone.
+- **Extent** — the root frontier: which stances the source grants at the door.
+  The stream half already knows it (streams start at the roots); `GetRootAt`
+  duplicates that knowledge in probe form.
+- Today's `IWalkableTreenumerable` = terrain ∩ extent ∩ stream, recomposed;
+  the Walk adapter generalizes to `Walk(terrain, frontier)` with the walkable's
+  stream = `Walk(terrain, extent)`; `SubtreeWalkable` decomposes into a
+  parent-severing terrain lens + the frontier `{root}` — no member rewriting.
+
+**Payoff beyond hygiene:** pure terrains with no extent become legal comonad
+hosts — Collatz-style computed adjacency, infinite grids: adjacency everywhere,
+no enumerable root list, no honest `GetRootAt`. Under the split they carry
+cursors, `Extend`, and `Duplicate` without inventing an entry ("walkable-alone
+is infinity permission," taken to its conclusion). Timing per the standing
+lean: ride the long migration + nomenclature wave, not the comonad arc.
