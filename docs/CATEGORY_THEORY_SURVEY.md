@@ -39,6 +39,17 @@ semantics, the serializer's re-parse disclosure) and why effectful sources (`Tre
 readers) carry special documentation: they are the managed strain points of the
 representation's assumption.
 
+**The identity axiom (named 2026-08-12, during review).** The no-node-equality pledge is
+the *negative* half of a principle whose positive half organizes this whole survey: **in
+Copse, identity is positional, never valuational** — values are labels, position is who
+you are. Who leans on it: the set ops hardest (alignment IS identity there), the
+positional operator flavors, the conformance quotient itself, and the walker's handles
+(positional identity made portable — ordinals are positions in an encoding, addresses are
+position-chains). Where it pays: every failure this audit found is the same collision —
+positional identity meeting a reshaping that moves positions (Δ-associativity, the
+SelectMany forest attachment, positional-Where's non-composition, the walk incoherence).
+The audit is, in effect, a map of where the axiom holds for free and where it charges.
+
 ## 2. The shape taxonomy
 
 | Shape | Definition (working level) | Laws owed |
