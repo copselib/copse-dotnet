@@ -1,5 +1,6 @@
 using Copse;
 using Copse.SimpleSerializer;
+using Copse.Treenumerables;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
@@ -144,6 +145,20 @@ namespace Copse.Linq.Tests
       Assert.AreEqual("c", thirdRoot.Cursor.Value);
 
       Assert.IsFalse(walkable.GetRootCursor(3).HasCursor, "past the last root: no cursor, never a cursor standing nowhere");
+    }
+
+    // The boundary case that forced the carrier split: the empty forest inhabits the
+    // walkable type (terrain may be empty) but can never yield a comonad value (a cursor
+    // must stand on an actual node). Both doors refuse honestly -- the root door in its
+    // result type, the handle door by never having issued a handle to ask with.
+    [TestMethod]
+    public void TheEmptyForest_GrantsNoCursor()
+    {
+      var empty = Tree.Empty<string>().MaterializeWalkable();
+
+      Assert.IsFalse(empty.GetRootCursor().HasCursor, "the root door refuses in the result type");
+      Assert.IsFalse(empty.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
+      Assert.IsFalse(empty.GetRootAt(0).HasChild, "no probe succeeds");
     }
 
     // ---------------------------------------------------------------------- helpers
