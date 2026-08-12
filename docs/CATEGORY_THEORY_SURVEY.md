@@ -70,7 +70,8 @@ it; no direct semantic pin), UNPINNED (owed, untested).
 | `TakeNodesUntil/While`, `TakeTrees`, `SkipTrees`, `TakeLast/SkipLastTrees` | **order-sensitive truncations** — operations on the *walk*, not the tree (the monad is order-free; these are stream-level by nature) | per-op semantics; no monad laws owed. Note: these are walk-floor citizens named before the walk floor existed |
 | `Union` / `Intersection` / `Subtract` / `SymmetricDifference` | zip / monoidal | associativity, `Empty` identity, commutativity claims: **UNPINNED** — prime phase-2 targets (any failure = bug or documented deviation) |
 | `StructuralMerge` | zip family (general lockstep) | associativity: UNPINNED |
-| `Do` / `Hide` | effect landing — **deliberately outside the algebra** ("never composes and prevents composition across it by definition"; the window materializes the pane) | the non-law is documented and pinned (`DoLandingCompositionTests`) — an example of a *deviation done right* |
+| `Do` | **effectful map (Kleisli into the effect layer)** — the operator that REFINES the equivalence relation: the survey's laws hold modulo visit-stream equivalence, and effects are exactly what that quotient cannot see, so collapse across `Do` fails *by theorem*, not by fiat ("the window materializes the pane" — an observer invalidates optimizations that were only valid up to observational equivalence) | in the finer (effect-trace) setting Do owes real laws, both UNPINNED and testable: `Do(a).Do(b)` ≡ `Do(a then b)` (adjacent observers merge, order preserved); `Do(noop)` ≡ id; effects-per-drain = the cold contract extended to the effect layer (documented). Landing idiom pinned (`DoLandingCompositionTests`). *(Reclassified 2026-08-12 from "deviation done right" — the non-composition is a theorem about quotient refinement, which is better than a documented deviation.)* |
+| `Hide` | **opaque identity** — a representation morphism (identity modulo the quotient) whose purpose is refusing to advertise its concrete type, so the lattice's composite-first probes miss and stacked behavior is forced (the tests' isolation tool) | identity law ≡ id modulo quotient: *implicit* (its uses in the composition batteries depend on it); distinct shape from `Do` — split from the shared row 2026-08-12 |
 | `RootfixScan` | scan-extend (inherited-attribute evaluation — Knuth's attribute grammars: inherited = rootfix) | cross-tier coherence `Scan(boundary, fold)` ≡ fold-encoded `Dispatch(boundary)`: **PINNED** (`CrossTierCoherenceTests`) |
 | `LeaffixScan` / `LeaffixDispatch` | scan-extend, upward (synthesized attributes = leaffix); dispatch = the sibling-complete survey tier | same coherence family: **PINNED**; the seat rules and boundary instruments are the operational shadow of extend's neighborhood being order-restricted |
 | `RootfixDispatch` | scan-extend, downward survey tier | coherence: **PINNED**; full-participation/boundary rules documented |
@@ -137,6 +138,10 @@ Concrete, testable now, in rough value order:
 5. **Walker comonad laws** once the duplicate/extend surface exists; until then, the
    oracle-equivalence family (each lens vs its streaming twin) is the walker's law suite
    and grows with each lens.
+6. **Do's laws in the effect-trace setting** (from the 2026-08-12 reclassification):
+   `Do(a).Do(b)` ≡ `Do(a then b)` and `Do(noop)` ≡ id — cheap, and they turn the
+   "never composes" doctrine into a bounded claim: Do refuses *coarse-quotient* collapse
+   while obeying its own finer laws.
 
 ## 6. Phase 3 — law-driven specs for the two missing definers
 
