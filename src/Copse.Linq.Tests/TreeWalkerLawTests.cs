@@ -6,16 +6,16 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // The comonad on its reified carrier: TreeCursor is the focused pair as one type, so the
+  // The comonad on its reified carrier: TreeWalker is the focused pair as one type, so the
   // laws that WalkerComonadLawTests pins against (walkable, handle) conventions become TYPED
-  // IDENTITIES here -- cursor.Duplicate().Value is the cursor itself, struct-equal, no
+  // IDENTITIES here -- walker.Duplicate().Value is the walker itself, struct-equal, no
   // stream-draining needed. (Extend's deep laws -- co-associativity over neighborhood
-  // observers -- are inherited: cursor.Extend delegates to the walkable Extend those tests
+  // observers -- are inherited: walker.Extend delegates to the walkable Extend those tests
   // pin; this suite pins what the CARRIER adds: the counit as an equality, steps commuting
-  // with duplicate, the observer receiving a genuine cursor, and the doors' no-unfocused
+  // with duplicate, the observer receiving a genuine walker, and the doors' no-unfocused
   // invariant.)
   [TestClass]
-  public class TreeCursorLawTests
+  public class TreeWalkerLawTests
   {
     private static readonly string[] Trees =
     {
@@ -38,14 +38,14 @@ namespace Copse.Linq.Tests
         var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(walkable.GetValue(handle), walkable.CursorAt(handle).Value, $"extract [{tree}]");
+          Assert.AreEqual(walkable.GetValue(handle), walkable.WalkerAt(handle).Value, $"extract [{tree}]");
       }
     }
 
     // The counit, as a typed identity: duplicating and extracting is a no-op, at EVERY focus
     // -- not just the root, which is the understanding this carrier exists to make literal.
     [TestMethod]
-    public void Counit_ExtractAfterDuplicate_IsTheCursorItself()
+    public void Counit_ExtractAfterDuplicate_IsTheWalkerItself()
     {
       foreach (var tree in Trees)
       {
@@ -53,14 +53,14 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var cursor = walkable.CursorAt(handle);
+          var walker = walkable.WalkerAt(handle);
 
-          Assert.AreEqual(cursor, cursor.Duplicate().Value, $"extract∘duplicate ≡ id [{tree}]");
+          Assert.AreEqual(walker, walker.Duplicate().Value, $"extract∘duplicate ≡ id [{tree}]");
         }
       }
     }
 
-    // The Store comonad's peek/seek coherence: stepping the duplicated cursor and extracting
+    // The Store comonad's peek/seek coherence: stepping the duplicated walker and extracting
     // equals stepping the original -- duplicate commutes with navigation, which is what "the
     // labels ARE the refocusings" means operationally.
     [TestMethod]
@@ -72,22 +72,22 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var cursor = walkable.CursorAt(handle);
-          var duplicated = cursor.Duplicate();
+          var walker = walkable.WalkerAt(handle);
+          var duplicated = walker.Duplicate();
 
-          var stepped = cursor.MoveToChild(0);
+          var stepped = walker.MoveToChild(0);
           var steppedDuplicated = duplicated.MoveToChild(0);
 
-          Assert.AreEqual(stepped.HasCursor, steppedDuplicated.HasCursor, $"child step parity [{tree}]");
-          if (stepped.HasCursor)
-            Assert.AreEqual(stepped.Cursor, steppedDuplicated.Cursor.Value, $"duplicate commutes with child step [{tree}]");
+          Assert.AreEqual(stepped.HasWalker, steppedDuplicated.HasWalker, $"child step parity [{tree}]");
+          if (stepped.HasWalker)
+            Assert.AreEqual(stepped.Walker, steppedDuplicated.Walker.Value, $"duplicate commutes with child step [{tree}]");
 
-          var upStepped = cursor.MoveToParent();
+          var upStepped = walker.MoveToParent();
           var upSteppedDuplicated = duplicated.MoveToParent();
 
-          Assert.AreEqual(upStepped.HasCursor, upSteppedDuplicated.HasCursor, $"parent step parity [{tree}]");
-          if (upStepped.HasCursor)
-            Assert.AreEqual(upStepped.Cursor, upSteppedDuplicated.Cursor.Value, $"duplicate commutes with parent step [{tree}]");
+          Assert.AreEqual(upStepped.HasWalker, upSteppedDuplicated.HasWalker, $"parent step parity [{tree}]");
+          if (upStepped.HasWalker)
+            Assert.AreEqual(upStepped.Walker, upSteppedDuplicated.Walker.Value, $"duplicate commutes with parent step [{tree}]");
         }
       }
     }
@@ -101,19 +101,19 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var cursor = walkable.CursorAt(handle);
-          var extended = cursor.Extend(focus => focus.Value + "@" + Depth(focus));
+          var walker = walkable.WalkerAt(handle);
+          var extended = walker.Extend(focus => focus.Value + "@" + Depth(focus));
 
-          Assert.AreEqual(cursor.Value + "@" + Depth(cursor), extended.Value, $"extract∘extend [{tree}]");
+          Assert.AreEqual(walker.Value + "@" + Depth(walker), extended.Value, $"extract∘extend [{tree}]");
         }
       }
     }
 
-    // The vantage is bidirectional -- the Store presentation, pinned on the carrier: a cursor
+    // The vantage is bidirectional -- the Store presentation, pinned on the carrier: a walker
     // below a root can always climb, and sees the same parent the terrain reports. (The
     // severed presentation lives in Subtrees(); its labels' roots cannot climb.)
     [TestMethod]
-    public void TheCursorSeesUp()
+    public void TheWalkerSeesUp()
     {
       foreach (var tree in Trees)
       {
@@ -122,11 +122,11 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           var parentResult = walkable.GetParent(handle);
-          var stepped = walkable.CursorAt(handle).MoveToParent();
+          var stepped = walkable.WalkerAt(handle).MoveToParent();
 
-          Assert.AreEqual(parentResult.HasParent, stepped.HasCursor, $"up-step parity [{tree}]");
+          Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
-            Assert.AreEqual(walkable.GetValue(parentResult.Parent), stepped.Cursor.Value, $"up-step value [{tree}]");
+            Assert.AreEqual(walkable.GetValue(parentResult.Parent), stepped.Walker.Value, $"up-step value [{tree}]");
         }
       }
     }
@@ -136,42 +136,42 @@ namespace Copse.Linq.Tests
     {
       var walkable = W("a,b(d),c(e(f))");
 
-      var firstRoot = walkable.GetRootCursor();
-      Assert.IsTrue(firstRoot.HasCursor);
-      Assert.AreEqual("a", firstRoot.Cursor.Value);
+      var firstRoot = walkable.GetRootWalker();
+      Assert.IsTrue(firstRoot.HasWalker);
+      Assert.AreEqual("a", firstRoot.Walker.Value);
 
-      var thirdRoot = walkable.GetRootCursor(2);
-      Assert.IsTrue(thirdRoot.HasCursor);
-      Assert.AreEqual("c", thirdRoot.Cursor.Value);
+      var thirdRoot = walkable.GetRootWalker(2);
+      Assert.IsTrue(thirdRoot.HasWalker);
+      Assert.AreEqual("c", thirdRoot.Walker.Value);
 
-      Assert.IsFalse(walkable.GetRootCursor(3).HasCursor, "past the last root: no cursor, never a cursor standing nowhere");
+      Assert.IsFalse(walkable.GetRootWalker(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
     }
 
     // The boundary case that forced the carrier split: the empty forest inhabits the
-    // walkable type (terrain may be empty) but can never yield a comonad value (a cursor
+    // walkable type (terrain may be empty) but can never yield a comonad value (a walker
     // must stand on an actual node). Both doors refuse honestly -- the root door in its
     // result type, the handle door by never having issued a handle to ask with.
     [TestMethod]
-    public void TheEmptyForest_GrantsNoCursor()
+    public void TheEmptyForest_GrantsNoWalker()
     {
       var empty = Tree.Empty<string>().MaterializeWalkable();
 
-      Assert.IsFalse(empty.GetRootCursor().HasCursor, "the root door refuses in the result type");
+      Assert.IsFalse(empty.GetRootWalker().HasWalker, "the root door refuses in the result type");
       Assert.IsFalse(empty.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
       Assert.IsFalse(empty.GetRootAt(0).HasChild, "no probe succeeds");
     }
 
     // ---------------------------------------------------------------------- helpers
 
-    private static int Depth(TreeCursor<string, int> cursor)
+    private static int Depth(TreeWalker<string, int> walker)
     {
       var depth = 0;
-      var stepped = cursor.MoveToParent();
+      var stepped = walker.MoveToParent();
 
-      while (stepped.HasCursor)
+      while (stepped.HasWalker)
       {
         depth++;
-        stepped = stepped.Cursor.MoveToParent();
+        stepped = stepped.Walker.MoveToParent();
       }
 
       return depth;
