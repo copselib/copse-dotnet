@@ -441,3 +441,65 @@ no enumerable root list, no honest `GetRootAt`. Under the split they carry
 cursors, `Extend`, and `Duplicate` without inventing an entry ("walkable-alone
 is infinity permission," taken to its conclusion). Timing per the standing
 lean: ride the long migration + nomenclature wave, not the comonad arc.
+
+### The navigation-price spectrum (2026-08-12, the triple-focus dialogue — recorded so nobody re-derives it)
+
+Two facts, separately true, that spent an afternoon wearing each other's
+clothes:
+
+1. **Information: a vantage determines everything.** Every neighborhood fact —
+   including "what is my slot in my group" — is computable from `(walkable,
+   handle)`: parent via one probe, slot via a sibling scan comparing handles
+   (legal under the provider's-own-terms clause). The comonad is never missing
+   information; "stuck" in the depth-first-successor walkthrough was a PRICE,
+   not a wall.
+2. **Cost: where you pay is an engineering ladder.** Path memory has five
+   homes — the engine's stack (treenumerators), the cursor's path (zipper),
+   store arithmetic (level-order slots are O(1) arithmetic; preorder needs a
+   run-search or one aux pass), the on-demand scan, and **the labels**: a
+   sweep-stamped address labeling (`WithAddresses` — the probes already hand
+   out sibling indexes at every pull, `ChildResult` carries them; the observer
+   form cannot stamp its own slot, THAT is the scan). Address labels make
+   stackless depth-first successor walks possible over parent probes — the
+   constant-space-engines idea, reached from the comonad side. Full addresses
+   are the root-path fold of slots: **addresses are rootfix output**.
+
+The ladder, with what each rung buys:
+
+    lean cursor (2 words)   observation only; slots on demand (O(siblings))
+    + slot                  O(1) sibling-stepping AT the focus level (incl.
+                            root level via GetRootAt(slot+1) — the ∅-as-
+                            address-component unification); up-steps degrade
+                            one level up (the ParentResult asymmetry, again)
+    + full path (zipper)    O(1) everything; O(depth) per cursor — wrong cost
+                            for duplicate's n labels, right for interactive
+                            walking; = the Dewey address, "parent = truncation"
+    address labels          O(n) once by sweep; navigation free forever
+
+**And the filtering caveat (Jason's, same dialogue):** every rung above "lean"
+caches SHAPE facts, and reshaping moves them — `Where`'s child promotion
+changes parents, compresses depths, renumbers every surviving sibling. This is
+the positional-Where theorem from the categorical survey wearing navigation
+clothes ("positions are extend-flavored observations of the CURRENT shape;
+reshaping invalidates them"), and the house already ratified the resolution
+for labels: composition order declares the coordinate system (`WithAddresses`
+then filter = source-coordinate provenance, a feature; filter then stamp =
+current-shape addresses). For NAVIGATION the consequence is harder: address-
+driven walks only work on the shape they were stamped on — reshape means
+restamp (O(n)) or lens the adjacency itself, and adjacency lenses have a cost
+cliff exactly at promotion (`PruneAfter` cuts subtrees, cheap, shipped;
+`Where` must splice grandchildren through filtered nodes per probe — memoized-
+closure territory). Note who is immune: the LEAN cursor, which caches nothing
+and recomputes every fact from the current terrain — the filtering objection
+is one more argument for the two-word carrier.
+
+**Ruling-shaped conclusion (lean, unratified):** the comonad carrier stays two
+words. Laws never consult a slot, and a slot-carrying cursor breaks the free
+counit — duplicate's observer cannot reproduce the cached slot without the
+scan, so `Duplicate().Value == cursor` would decay from struct identity to
+observational equality, surrendering the exact sharpness the Store presentation
+was chosen for. The child index belongs to the navigation citizens: a rich
+stance type (cursor + path) for interactive walking, or sweep-stamped labels
+for walk-forever structures — each declaring which SHAPE its cached facts
+describe. Observation and motion are different citizens with different
+luggage — the day's theme, priced.
