@@ -16,6 +16,13 @@ namespace Copse.Linq.Treenumerables
   // Like ITreenumerableBuffer itself, a declared capability with stated laws, not a proof: an
   // implementation over an infinite structure is out of contract, not merely exotic.
   // Sync-only for the walker PoC; the async twin arrives when the walker crosses colors.
+  //
+  // SCHEDULED TO DISSOLVE (buffer re-parenting, RATIFIED 2026-08-12 -- WALKER_DESIGN.md):
+  // ITreenumerableBuffer will implement the walkable contract directly ("captures are never
+  // address-poor"), at which point this intersection IS ITreenumerableBuffer and the type
+  // retires. Blocked behind the terrain/extent ruling and the async contract-family port
+  // (ITreenumerableBuffer is generated from an async source; the walkable contract must
+  // cross colors first). Until then this remains MaterializeWalkable's honest return type.
   public interface IWalkableTreenumerableBuffer<TValue, THandle>
     : IWalkableTreenumerable<TValue, THandle>, ITreenumerableBuffer<TValue>
   {

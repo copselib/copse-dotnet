@@ -97,7 +97,7 @@ namespace Copse.Linq.Tests
       var walkableOnly = new WalkablePreorderTreenumerable<string, PreorderArrayStore<string>>(
         new PreorderArrayStore<string>(["a", "b", "c"], [3, 1, 1]));
 
-      Assert.IsFalse(walkableOnly is ITreenumerableBuffer<string>);
+      Assert.IsFalse((object)walkableOnly is ITreenumerableBuffer<string>);
       Assert.IsTrue(
         TreeSerializer.DeserializeDepthFirstTree(ToyTree).MaterializeWalkable() is ITreenumerableBuffer<string>,
         "the escalation's result wears both");

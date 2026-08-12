@@ -416,16 +416,16 @@ carries a FROZEN implicit focus (`∅`, the virtual forest root) baked into the
 representation, and `GetRootAt` is the adjacency probe from that frozen stance —
 the exact move (freeze a focus into the representation rather than carry it as
 data) the Store presentation exists to escape. The comonadic machinery never
-touches it: `TreeCursor`, `Extend`, `Duplicate` are all handle-parameterized.
+touches it: `TreeWalker`, `Extend`, `Duplicate` are all handle-parameterized.
 Its real clients are the protocol side — the Walk adapter (stream
-reconstruction needs a starting frontier), the `GetRootCursor` door, and
+reconstruction needs a starting frontier), the `GetRootWalker` door, and
 `SubtreeWalkable`, which must *rewrite* it to re-root (the tell that it is
 carrier-extent state, not adjacency).
 
 The decomposition this implies, for the pending contract re-architecture:
 
 - **Terrain** — `GetValue` / `GetParent` / `GetChildAt`: labeling + adjacency
-  given a focus. The comonad's home; cursors and `Extend` type against this
+  given a focus. The comonad's home; walkers and `Extend` type against this
   alone.
 - **Extent** — the root frontier: which stances the source grants at the door.
   The stream half already knows it (streams start at the roots); `GetRootAt`
@@ -438,7 +438,7 @@ The decomposition this implies, for the pending contract re-architecture:
 **Payoff beyond hygiene:** pure terrains with no extent become legal comonad
 hosts — Collatz-style computed adjacency, infinite grids: adjacency everywhere,
 no enumerable root list, no honest `GetRootAt`. Under the split they carry
-cursors, `Extend`, and `Duplicate` without inventing an entry ("walkable-alone
+walkers, `Extend`, and `Duplicate` without inventing an entry ("walkable-alone
 is infinity permission," taken to its conclusion). Timing per the standing
 lean: ride the long migration + nomenclature wave, not the comonad arc.
 
@@ -454,7 +454,7 @@ clothes:
    information; "stuck" in the depth-first-successor walkthrough was a PRICE,
    not a wall.
 2. **Cost: where you pay is an engineering ladder.** Path memory has five
-   homes — the engine's stack (treenumerators), the cursor's path (zipper),
+   homes — the engine's stack (treenumerators), the walker's path (zipper),
    store arithmetic (level-order slots are O(1) arithmetic; preorder needs a
    run-search or one aux pass), the on-demand scan, and **the labels**: a
    sweep-stamped address labeling (`WithAddresses` — the probes already hand
@@ -466,12 +466,12 @@ clothes:
 
 The ladder, with what each rung buys:
 
-    lean cursor (2 words)   observation only; slots on demand (O(siblings))
+    lean walker (2 words)   observation only; slots on demand (O(siblings))
     + slot                  O(1) sibling-stepping AT the focus level (incl.
                             root level via GetRootAt(slot+1) — the ∅-as-
                             address-component unification); up-steps degrade
                             one level up (the ParentResult asymmetry, again)
-    + full path (zipper)    O(1) everything; O(depth) per cursor — wrong cost
+    + full path (zipper)    O(1) everything; O(depth) per walker — wrong cost
                             for duplicate's n labels, right for interactive
                             walking; = the Dewey address, "parent = truncation"
     address labels          O(n) once by sweep; navigation free forever
@@ -489,17 +489,17 @@ driven walks only work on the shape they were stamped on — reshape means
 restamp (O(n)) or lens the adjacency itself, and adjacency lenses have a cost
 cliff exactly at promotion (`PruneAfter` cuts subtrees, cheap, shipped;
 `Where` must splice grandchildren through filtered nodes per probe — memoized-
-closure territory). Note who is immune: the LEAN cursor, which caches nothing
+closure territory). Note who is immune: the LEAN walker, which caches nothing
 and recomputes every fact from the current terrain — the filtering objection
 is one more argument for the two-word carrier.
 
 **Ruling-shaped conclusion (lean, unratified):** the comonad carrier stays two
-words. Laws never consult a slot, and a slot-carrying cursor breaks the free
+words. Laws never consult a slot, and a slot-carrying walker breaks the free
 counit — duplicate's observer cannot reproduce the cached slot without the
-scan, so `Duplicate().Value == cursor` would decay from struct identity to
+scan, so `Duplicate().Value == walker` would decay from struct identity to
 observational equality, surrendering the exact sharpness the Store presentation
 was chosen for. The child index belongs to the navigation citizens: a rich
-stance type (cursor + path) for interactive walking, or sweep-stamped labels
+stance type (walker + path) for interactive walking, or sweep-stamped labels
 for walk-forever structures — each declaring which SHAPE its cached facts
 describe. Observation and motion are different citizens with different
 luggage — the day's theme, priced.

@@ -9,7 +9,7 @@ namespace Copse.Linq.Walker
   // The Walk() adapter -- the tower's named build dependency, and a thin composition over the
   // EXISTING hierarchical engine: a walkable's indexed child probe IS a child pull
   // (GetChildAt(parent, k) returns the engine's ChildResult directly), so driving the engine
-  // from adjacency needs only this cursor struct, a roots iterator, and a labeling. Serves
+  // from adjacency needs only this frame struct, a roots iterator, and a labeling. Serves
   // every view that has no streaming-operator twin to delegate to (Extend below; the future
   // region lenses), and its conformance is pinned by the comonad law suite: walking a store
   // walkable through the adapter reproduces the store's native visit streams (the
@@ -47,7 +47,7 @@ namespace Copse.Linq.Walker
     }
   }
 
-  // The cursor the engine drives: one handle, one advancing child index -- the indexed probe
+  // The frame the engine drives: one handle, one advancing child index -- the indexed probe
   // is the pull, so MoveNext is a single delegation. By-value result, no allocation, nothing
   // held between pulls.
   internal struct WalkableChildEnumerator<TValue, THandle> : IChildEnumerator<THandle>
