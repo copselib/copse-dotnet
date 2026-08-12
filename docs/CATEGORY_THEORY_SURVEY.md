@@ -162,7 +162,20 @@ conformance batteries exist as cited. §3's attributions stand.
 **The one deferred item — walker comonad laws** — is blocked on the `Extend`/duplicate
 surface and moves to §6 as part of that build's acceptance criteria; until then the
 oracle-equivalence family (each lens vs its streaming twin) is the walker's law suite and
-grows with each lens.
+grows with each lens. *(Resolved 2026-08-12 by phase 3 part B — kept for the record.)*
+
+**Approved-for-later (review disclosure, 2026-08-12): set-op invariants currently
+untested.** Disclosed during the Union review as below-the-line calls; the review promoted
+them to sanctioned backlog:
+
+- **Idempotence**: `t ∪ t ≡ t` and `t ∩ t ≡ t`, up to projection (both sides of every
+  merged node present, values equal). One test apiece.
+- **Self-subtraction**: `t − t ≡ Empty`. One test.
+- **Distributivity**: `∩ over ∪` and kin — *statement work needed before pinning*: the
+  nested `MergeNode` types require the same canonicalization machinery as the
+  associativity test, and it is genuinely unclear whether positional-overlay semantics
+  owes these laws at all. Investigate the statement first; a principled non-law is an
+  acceptable outcome (the Δ-associativity precedent).
 
 ## 6. Phase 3 — law-driven specs for the two missing definers
 
