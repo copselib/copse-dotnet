@@ -63,25 +63,25 @@ it; no direct semantic pin), UNPINNED (owed, untested).
 
 | Operator | Shape | Laws & status |
 |---|---|---|
-| `Select` | functor map | composition: *implicit* (the collapse lattice merges consecutive Selects — `CompositionTests` pin the collapsed ≡ stacked behavior, which IS the law, empirically); identity: UNPINNED |
-| `Where` (value flavor) | local reshaping; bind-candidate under the *promote* Empty rule | predicate merge `Where(p).Where(q)` ≡ `Where(p∧q)`: *implicit* (composition driver); interchange with Select (licenses `SelectThenWhere`): *implicit*; bind-derivability: pending §6 |
+| `Select` | functor map | identity AND composition: **PINNED** (`CategoricalLawTests`, 2026-08-12 — composition pinned semantically with the stacked side forced via `Hide`, separately from the collapse behavior `CompositionTests` pins) |
+| `Where` (value flavor) | local reshaping; bind-candidate under the *promote* Empty rule | predicate merge `Where(p).Where(q)` ≡ `Where(p∧q)`: **PINNED** (`CategoricalLawTests`, Hide-forced); interchange with Select (licenses `SelectThenWhere`): **PINNED** (same); bind-derivability: pending §6 |
 | `Where` (positional flavor) | reshaping over the position-decorated tree | deliberately non-composing with its own kind (each layer sees its input's labels — LINQ's indexed-Where rule, documented) |
-| `PruneBefore` / `PruneAfter` | local reshapings; bind-candidates (*vanish* rule / *slotless-leaf* rule) | prune-over-prune predicate merge: *implicit* (in-tier composition, TIER SEAL 2026-08-04); bind-derivability: pending §6 |
+| `PruneBefore` / `PruneAfter` | local reshapings; bind-candidates (*vanish* rule / *slotless-leaf* rule) | prune-over-prune merge (OR-disjunction), both operators: **PINNED** (`CategoricalLawTests`, Hide-forced — the in-tier composition of TIER SEAL 2026-08-04 now has its licensing law named); bind-derivability: pending §6 |
 | `TakeNodesUntil/While`, `TakeTrees`, `SkipTrees`, `TakeLast/SkipLastTrees` | **order-sensitive truncations** — operations on the *walk*, not the tree (the monad is order-free; these are stream-level by nature) | per-op semantics; no monad laws owed. Note: these are walk-floor citizens named before the walk floor existed |
-| `Union` / `Intersection` / `Subtract` / `SymmetricDifference` | zip / monoidal | associativity, `Empty` identity, commutativity claims: **UNPINNED** — prime phase-2 targets (any failure = bug or documented deviation) |
-| `StructuralMerge` | zip family (general lockstep) | associativity: UNPINNED |
-| `Do` | **effectful map (Kleisli into the effect layer)** — the operator that REFINES the equivalence relation: the survey's laws hold modulo visit-stream equivalence, and effects are exactly what that quotient cannot see, so collapse across `Do` fails *by theorem*, not by fiat ("the window materializes the pane" — an observer invalidates optimizations that were only valid up to observational equivalence) | in the finer (effect-trace) setting Do owes real laws, both UNPINNED and testable: `Do(a).Do(b)` ≡ `Do(a then b)` (adjacent observers merge, order preserved); `Do(noop)` ≡ id; effects-per-drain = the cold contract extended to the effect layer (documented). Landing idiom pinned (`DoLandingCompositionTests`). *(Reclassified 2026-08-12 from "deviation done right" — the non-composition is a theorem about quotient refinement, which is better than a documented deviation.)* |
+| `Union` / `Intersection` / `Subtract` / `SymmetricDifference` | zip / monoidal | Union `Empty` identities both sides + associativity up to reassociation: **PINNED** (`CategoricalLawTests`); Intersection `Empty`-annihilation both sides: **PINNED**; Subtract right-identity + left-annihilator: **PINNED**; SymmetricDifference laws + commutativity claims: UNPINNED (remaining) |
+| `StructuralMerge` | zip family — and Union IS the structural merge ("the engine behind the other set ops") | associativity: **PINNED** via Union's law |
+| `Do` | **effectful map (Kleisli into the effect layer)** — the operator that REFINES the equivalence relation: the survey's laws hold modulo visit-stream equivalence, and effects are exactly what that quotient cannot see, so collapse across `Do` fails *by theorem*, not by fiat ("the window materializes the pane" — an observer invalidates optimizations that were only valid up to observational equivalence) | in the finer (effect-trace) setting: `Do(a).Do(b)` ≡ `Do(a then b)` (adjacent observers merge, order preserved — pinned on streams AND effect traces) and `Do(noop)` ≡ id: **PINNED** (`CategoricalLawTests`, 2026-08-12); effects-per-drain = the cold contract extended to the effect layer (documented). Landing idiom pinned (`DoLandingCompositionTests`). *(Reclassified 2026-08-12 from "deviation done right" — the non-composition is a theorem about quotient refinement, which is better than a documented deviation.)* |
 | `Hide` | **opaque identity** — a representation morphism (identity modulo the quotient) whose purpose is refusing to advertise its concrete type, so the lattice's composite-first probes miss and stacked behavior is forced (the tests' isolation tool) | identity law ≡ id modulo quotient: *implicit* (its uses in the composition batteries depend on it); distinct shape from `Do` — split from the shared row 2026-08-12 |
 | `RootfixScan` | scan-extend (inherited-attribute evaluation — Knuth's attribute grammars: inherited = rootfix) | cross-tier coherence `Scan(boundary, fold)` ≡ fold-encoded `Dispatch(boundary)`: **PINNED** (`CrossTierCoherenceTests`) |
 | `LeaffixScan` / `LeaffixDispatch` | scan-extend, upward (synthesized attributes = leaffix); dispatch = the sibling-complete survey tier | same coherence family: **PINNED**; the seat rules and boundary instruments are the operational shadow of extend's neighborhood being order-restricted |
 | `RootfixDispatch` | scan-extend, downward survey tier | coherence: **PINNED**; full-participation/boundary rules documented |
 | `RootfixAggregate` / `LeaffixAggregate` | fold ∘ scan-extend | derivability from scan + leaves: *implicit* by construction |
-| `Invert` | **natural transformation** (value-independent) | subsumption `Invert` ≡ `OrderChildrenByDescending`(source sibling index): **PINNED** (`OrderChildrenByTests`); involution `Invert∘Invert ≡ id`: UNPINNED; naturality `Invert∘Select(f)` ≡ `Select(f)∘Invert`: UNPINNED |
+| `Invert` | **natural transformation** (value-independent) | subsumption `Invert` ≡ `OrderChildrenByDescending`(source sibling index): **PINNED** (`OrderChildrenByTests`); involution `Invert∘Invert ≡ id` AND naturality `Invert∘Select(f)` ≡ `Select(f)∘Invert`: **PINNED** (`CategoricalLawTests`, 2026-08-12) |
 | `OrderChildrenBy` | key-driven structure map (not natural — depends on values through the key) | stability documented; subsumption law shared with Invert: **PINNED** |
 | `Memoize` / `Materialize` | **representation morphisms** — identities modulo the quotient (tabulation-adjacent) | replay ≡ source: **PINNED** (conformance batteries; memo replays and serializer round-trips ride `VisitStreamConformance`) — the surface's strongest law, already enforced |
 | `Consume`, `AnyNodes`/`AllNodes`/`CountNodes`/`CountTrees`, traversal enumerables, `GetLeaves`/`GetLevels`/`GetBranches` | folds / drains | fold-respects-structure: *implicit* via conformance of the streams they consume |
 | `ToFormattedLines` / `ToFormattedString` | fold to rendering | golden-pinned (`FormattedLinesTests`) |
-| `ToDegenerateTree` / `ToTrivialForest` | **embeddings** — two functors List → Tree (the chain and the flat forest) | functoriality: UNPINNED (cheap) |
+| `ToDegenerateTree` / `ToTrivialForest` | **embeddings** — two functors List → Tree (the chain and the flat forest) | functoriality: **PINNED** (`CategoricalLawTests`) |
 | `Tree.Empty` | the monad zero | zero laws: pending bind (§6) |
 | `Tree.Defer` / `Lazy` / `Using` | thunk-layer citizens (call-by-name / call-by-need / bracketed resource) | the representation's purity conditions — documented as contracts |
 | Serializer (De/Serialize) | representation morphisms (encode/decode) | round-trip ≡ id modulo quotient: **PINNED** (round-trip conformance) |
@@ -121,27 +121,29 @@ walkable the machine side. "Two halves of the same whole," under its literature 
 representations (`() → stream` vs `handle → answer`), which is why one direction costs
 O(n) once and the other is free.
 
-## 5. Phase 2 — the law-test backlog
+## 5. Phase 2 — the law tests
 
-Concrete, testable now, in rough value order:
+**First wave LANDED 2026-08-12 (`CategoricalLawTests`, 16 tests, all green on first run —
+zero deviations found):** functor identity + composition (stacked side Hide-forced); the
+licensing squares (Where predicate merge, Select/Where interchange, both prune
+OR-merges — the collapse lattice's licenses now named and semantically pinned); Invert
+involution + naturality; Union `Empty` identities + associativity up to reassociation
+(three-way merges flattened to a canonical per-node description); Intersection
+annihilation; Subtract identities; both Do laws (streams AND effect traces, the traces
+covering both drains — the per-drain contract exercised); embedding functoriality. The
+technique of record: force the stacked side through `Hide` so each law is tested against
+the genuinely stacked pipeline rather than the collapse it licenses.
 
-1. **Set-op monoid laws** — `Union` associativity, `Empty` as identity, commutativity
-   claims. Any failure is a caught bug or a deviation to document.
-2. **Invert involution** (`Invert∘Invert ≡ id`) and **naturality**
-   (`Invert∘Select(f)` ≡ `Select(f)∘Invert`). Cheap, satisfying.
-3. **The licensing squares** — state the interchange laws the collapse lattice *relies
-   on* as named semantic pins (`Select`/`Select` composition, `Where` predicate merge,
-   `Select`/`Where` interchange, prune merges): today they are pinned only through the
-   collapsed-vs-stacked behavioral tests; naming them makes future lattice work
-   spec-driven rather than empirical.
-4. **Functor identity** for `Select`; functoriality of the two List→Tree embeddings.
-5. **Walker comonad laws** once the duplicate/extend surface exists; until then, the
+Remaining:
+
+1. **SymmetricDifference laws** and any commutativity claims (Union commutativity up to
+   swap, if claimed).
+2. **Walker comonad laws** once the duplicate/extend surface exists; until then, the
    oracle-equivalence family (each lens vs its streaming twin) is the walker's law suite
    and grows with each lens.
-6. **Do's laws in the effect-trace setting** (from the 2026-08-12 reclassification):
-   `Do(a).Do(b)` ≡ `Do(a then b)` and `Do(noop)` ≡ id — cheap, and they turn the
-   "never composes" doctrine into a bounded claim: Do refuses *coarse-quotient* collapse
-   while obeying its own finer laws.
+3. **Pin-attribution spot-checks** — confirm the cited pre-existing tests
+   (`CrossTierCoherenceTests`, conformance batteries) assert exactly the laws §3
+   attributes to them.
 
 ## 6. Phase 3 — law-driven specs for the two missing definers
 
