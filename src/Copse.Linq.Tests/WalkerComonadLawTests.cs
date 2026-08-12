@@ -138,6 +138,58 @@ namespace Copse.Linq.Tests
       }
     }
 
+    // The upward twin, completing the pair: LeaffixScan is extend of the SUBTREE fold
+    // (synthesized attributes, where the rootfix coherence above is the inherited ones).
+    // The decided leaffix shape: value(n) = nodeAcc(edgeReduce(children's accumulations), n),
+    // edgeReduce a left-fold from the first child; value(leaf) = nodeAcc(seed, leaf).
+    [TestMethod]
+    public void Coherence_LeaffixScan_IsExtendOfTheSubtreeFold()
+    {
+      const string seed = "•";
+      Func<string, string, string> edgeAccumulator = (left, right) => left + "|" + right;
+      Func<string, string, string> nodeAccumulator = (accumulate, value) => accumulate + value;
+
+      foreach (var tree in Trees)
+      {
+        var viaScan = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .LeaffixScan(seed, edgeAccumulator, nodeAccumulator)
+          .Select(result => result.Accumulate);
+
+        var viaExtend = W(tree).Extend((source, handle) => SubtreeFold(source, handle, seed, edgeAccumulator, nodeAccumulator));
+
+        AssertEquivalent(viaScan, viaExtend, $"leaffix ≡ extend(subtree fold) [{tree}]");
+      }
+    }
+
+    private static string SubtreeFold(
+      IWalkableTreenumerable<string, int> source,
+      int handle,
+      string seed,
+      Func<string, string, string> edgeAccumulator,
+      Func<string, string, string> nodeAccumulator)
+    {
+      var childAccumulations = new List<string>();
+
+      for (var childIndex = 0; ; childIndex++)
+      {
+        var childResult = source.GetChildAt(handle, childIndex);
+
+        if (!childResult.HasChild)
+          break;
+
+        childAccumulations.Add(SubtreeFold(source, childResult.Child.Node, seed, edgeAccumulator, nodeAccumulator));
+      }
+
+      if (childAccumulations.Count == 0)
+        return nodeAccumulator(seed, source.GetValue(handle));
+
+      var reduced = childAccumulations[0];
+      for (var siblingIndex = 1; siblingIndex < childAccumulations.Count; siblingIndex++)
+        reduced = edgeAccumulator(reduced, childAccumulations[siblingIndex]);
+
+      return nodeAccumulator(reduced, source.GetValue(handle));
+    }
+
     // ---------------------------------------------------------------------- helpers
 
     private static int Depth(IWalkableTreenumerable<string, int> source, int handle)
