@@ -109,8 +109,8 @@ converged independently.)
 | Axes (`GetAncestors`, `GetDepth`, …) | co-Kleisli queries (functions from a focus) | composition via LINQ (the walker's operator algebra is LINQ, by design) |
 | `PruneAfter` lens (and future lenses) | reshaping pair-citizen: order half = the streaming operator, adjacency half = a wrapped probe | oracle equivalence lens-stream ≡ operator-stream: **PINNED** (`PruneAfterLensTests`) — the walker's own coherence family |
 | `MaterializeWalkable` | **tabulate** (play the stream once, build the accessor) | probe idempotence pinned; tabulate∘sequence laws pending the Walk adapter |
-| `Walk()` adapter (unbuilt) | **sequence** (read the accessor in a committed order → a stream) | the tabulate/sequence pair's laws land here; also serves lens stream-halves and the constant-space engine |
-| `Extend` (unbuilt) | the comonad's defining operation — neighborhood-aware relabel | Store comonad laws as the spec, before code (§6) |
+| `Walk()` adapter (**BUILT 2026-08-12**, internal `WalkerWalk` — a thin composition over the existing hierarchical engine, since the indexed child probe IS a child pull) | **sequence** (read the accessor in a committed order → a stream) | conformance certified by `Extend(extract) ≡ id` — the adapter's streams equal the store treenumerators' (the degenerate-tower pin, executable) |
+| `Extend` (**BUILT 2026-08-12**) | the comonad's defining operation — neighborhood-aware relabel; shape and handles untouched | **Store comonad laws PINNED** (`WalkerComonadLawTests`): `Extend(extract) ≡ id`; extract∘extend recovers the observer; co-associativity over genuinely neighborhood-dependent second observations. Plus the promised coherence law: **`RootfixScan(seed, fold)` ≡ `Extend`(root-path fold)** — the scan tier's cross-tenancy certified against the true comonadic operation |
 | Re-root / membership (region lenses, unbuilt) | non-local reshapings — genuinely outside both the monad and the comonad proper; the seam family | descendant-information law prices them; laws per-lens |
 
 **The pairing.** A labeled tree is the cofree comonad over its branching functor; a
@@ -170,11 +170,20 @@ promote" was wrong about the boundary (promote-at-k=0 is lawful) and right about
 mechanism (erasure-meets-attachment is where the algebra breaks). `ExpandNode`/`Graft`
 adoption waits on the ruling.
 
-**`Extend` (the comonad's co-bind).** Spec = the Store comonad laws. The operator: relabel
-every node by an arbitrary function of its focus (depth, parent's value, subtree
-aggregate — things streaming `Select` cannot see). The scans then become the theorem
-`extend` restricted to order-factoring folds, and the coherence family extends to:
-scan-extend agrees with true extend wherever both apply.
+**`Extend` (the comonad's co-bind) — BUILT AND LAW-CERTIFIED 2026-08-12.** The spec was
+the Store comonad laws, and the build passed them on the first run
+(`WalkerComonadLawTests`): `Extend(extract) ≡ id` (which simultaneously certifies the
+Walk adapter against the store treenumerators — the degenerate-tower pin, executable at
+last); extract-after-extend recovers the observer; co-associativity, exercised on a
+genuinely neighborhood-dependent second observation (the second observer consults the
+first extension's parent values). And the promised coherence theorem landed:
+**`RootfixScan(seed, fold)` ≡ `Extend`(root-path fold)** — the scan tier's cross-tenancy
+is no longer a classification, it is a pinned equation between the streaming tier's
+restricted extend and the true one. Implementation shape: `Extend` is an
+adjacency-delegating relabel whose streaming half is the Walk adapter (`WalkerWalk`) —
+itself a thin composition over the existing hierarchical engine, because the walkable's
+indexed child probe IS a child pull. The deferred walker-comonad item from §5 is
+resolved.
 
 ## 7. The open classification: the treenumerator as machine
 
