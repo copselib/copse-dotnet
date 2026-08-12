@@ -154,18 +154,21 @@ grows with each lens.
 
 ## 6. Phase 3 — law-driven specs for the two missing definers
 
-**`SelectMany` (the monad's bind).** The central design question — where do the children
-of a replaced node attach — is the **Empty-graft rule**, and the candidate rules *are*
-existing operators: `f(v) = Empty` with children *vanishing* is `PruneBefore`; with
-children *promoted* it is `Where`; with slot/attachment-point semantics, a *slotless leaf*
-is `PruneAfter`. One bind gets one rule, so **associativity arbitrates**: choose the
-graft-and-Empty semantics that satisfies the monad laws and maximizes the reshaping trio's
-derivability; whatever loses stays primitive with the reason documented. (Suggestive
-alignment: `Where` is the library's hardest operator, and *promote* is the graft rule
-whose associativity is most delicate — operational difficulty and law delicacy pointing at
-the same place.) `ExpandNode`/`Graft` are adopted or retired by this design. CLAUDE.md's
-own `Where` documentation ("fundamentally different from `SkipDescendants`, which would
-remove `d` and `e` too") is the two Empty rules stated operationally, years early.
+**`SelectMany` (the monad's bind) — VERIFICATION EXECUTED 2026-08-12, finding recorded.**
+The semantics were already decided (SELECTMANY_DESIGN.md, 2026-07-04: root-graft
+substitution, promote at k = 0, children under the LAST root at k ≥ 2 — the k ≥ 2 case
+flagged there as "asserted, not yet proven"). Phase 3 ran the verification via a
+reference-model oracle grounded against the shipped `Where` and `Select`
+(`SelectManyLawVerificationTests`): **identities PASS; the tree-valued fragment (k ≤ 1)
+PASSES associativity — a lawful monad-with-zero whose theorems include
+`Where ≡ SelectMany(Return-or-Empty)`; the forest-valued case (k ≥ 2) FAILS
+associativity**, counterexample pinned — "under the last root" is not stable under
+composition because a later bind can erase the attachment root. Decision now with the
+design-holder (see the design doc's addendum): restrict to the lawful tree-valued core,
+or design slot-inheritance semantics and re-verify. Prediction post-mortem: "vanish beats
+promote" was wrong about the boundary (promote-at-k=0 is lawful) and right about the
+mechanism (erasure-meets-attachment is where the algebra breaks). `ExpandNode`/`Graft`
+adoption waits on the ruling.
 
 **`Extend` (the comonad's co-bind).** Spec = the Store comonad laws. The operator: relabel
 every node by an arbitrary function of its focus (depth, parent's value, subtree

@@ -80,7 +80,48 @@ holds live f-treenumerators across its frontier.
 
 ---
 
-*Decided 2026-07-04. History: root-graft-after was Jason's original instinct, held for
-years; the promotion alternative arose from Where's forest behavior a few months back
-and was eliminated here by the right-identity counterexample; before/after was settled
-by streaming mechanics + precedent.*
+## VERIFICATION ADDENDUM (2026-08-12) — implementation note 2 executed; the flagged case FAILS
+
+The categorical audit's phase 3 (docs/CATEGORY_THEORY_SURVEY.md §6) ran the monad-law
+verification this document asked for, via a reference-model oracle grounded against the
+shipped operators (`SelectManyLawVerificationTests`: bind restricted to {Return, Empty}
+reproduces the real `Where` byte-for-byte; bind of Return-composed reproduces the real
+`Select`). Results:
+
+- **Left identity, right identity: PASS.**
+- **Associativity over the TREE-VALUED fragment (k ≤ 1 — Empty or a single tree,
+  including empties on generated values and expansion-of-expansion): PASS** across the
+  corpus. The Return/Empty boundary plus the Data.Tree interior is a lawful
+  monad-with-zero.
+- **Associativity with FOREST-VALUED selectors (k ≥ 2): FAILS** — the exact case this
+  document flagged as "asserted, not yet proven." Pinned counterexample
+  (`Finding_ForestValuedSelectors_BreakAssociativity_TheCounterexample`):
+  `a(b(d,e),c(f,g))` under f = {b→∅, c→(c1, c2(c3)), v→v1(v2)} then g = {…2→∅, …3→two
+  roots, v→vx} yields `…c3R, f1x, g1x` left-associated but `…c3R(f1x, g1x)`
+  right-associated. **Mechanism: "under the last root" is not stable under composition,
+  because a later bind can erase the root you attached to** — left-associated the children
+  were attached to c2 and then promoted out of it by g; right-associated the composite
+  selector had already erased c2, so attachment fell to c3R. No fixed-root attachment rule
+  survives downstream erasure; the continuity argument that chose last-root does not
+  survive the laws. The failure is structural, not a tuning error.
+
+**Options for the decision-holder** (the 2026-07-04 decision is amended only by its own
+stated criterion — lawfulness):
+
+1. **Restrict bind to tree-valued selectors** (k ≤ 1): the verified-lawful core, keeping
+   `Where ≡ SelectMany(Return-or-Empty)` and `Select ≡ SelectMany(Return∘g)` as theorems.
+   Wrinkle: the library has no tree-not-forest type (every `ITreenumerable` is a forest),
+   so the restriction is a documented contract or a shaped API (e.g., selector returns a
+   `Return`-family builder), not a type-system fact.
+2. **Slot semantics**: expansions carry an explicit attachment marker that survives
+   erasure by an inheritance rule — the "slotted" idea from the Empty-graft discussions;
+   requires designing slot inheritance and re-running this verification.
+3. **Ship k ≥ 2 as a documented non-law** — rejected by default: bind is the monad's
+   definer and CLAUDE.md demands the laws; a non-associative bind is a contradiction, not
+   a deviation.
+
+Prediction post-mortem (audit record): the running "vanish beats promote" prediction was
+**wrong about the boundary** — promote-at-k=0 is in the lawful fragment — and **right
+about the mechanism** — the failure occurs where promotion (a later bind erasing a root)
+meets attachment. The fork's true verdict: the *boundary rules* are fine; the *forest
+attachment* is what resists algebra.
