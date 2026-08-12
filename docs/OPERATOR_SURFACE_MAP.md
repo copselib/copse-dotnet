@@ -146,6 +146,20 @@ per-traversal re-capture exists anywhere** (every capture op is `Tree.Lazy`-pinn
 6. *(FIXED 2026-07-13)* `Materialize` now probes before memoizing: a live memo is consumed
    in place (the aliasing is by design and documented in the XML docs); a completed buffer
    is returned as-is instead of being wrapped in a fresh memo and copied node-by-node.
+7. **FLAGGED 2026-08-12 (ruling pending): `TakeNodesUntil`/`TakeNodesWhile`'s composite
+   (F) overload manufactures incoherent citizens.** The categorical survey's
+   drawing/reading litmus classified these as WALK-level truncations: with O(1) state each
+   dimension truncates its own encounter order, so the F result's DFT and BFT streams
+   describe DIFFERENT trees (toy: `TakeNodesUntil(c)` over `a(b(d,e),c(f,g))` — the DFT
+   reading has {a,b,d,e}, the BFT reading {a,b}; no single tree yields both). The narrow
+   D/B overloads are innocent — one truncated walk is a coherent narrow citizen. Options
+   on the table: (a) chop the pair entirely; (b) delete only the F overload — the
+   dimension split's own medicine, since a truncated walk affords exactly its own
+   dimension; (c) re-home the semantics on the walker side, where "walk from here until
+   you encounter" is a natural cursor/walk-tier verb; (d) keep F with a pinned
+   documented-incoherence test (a coherence detector comparing the trees the two
+   dimensions describe). Note: the pair sits in the queued periphery composition wave —
+   that work should PAUSE pending this ruling.
 
 ## 2. Flat-family dependency map
 
