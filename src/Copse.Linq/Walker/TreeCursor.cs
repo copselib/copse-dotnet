@@ -1,4 +1,5 @@
 using Copse;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -83,5 +84,15 @@ namespace Copse.Linq
     /// identity, which is the definition. <c>cursor.Duplicate().Value</c> is the cursor
     /// itself: the counit, readable in the types.</summary>
     public TreeCursor<TreeCursor<TValue, THandle>, THandle> Duplicate() => Extend(cursor => cursor);
+
+    /// <summary>The reverse door: the treenumerable this stance denotes -- the subtree rooted
+    /// at the focus, as a severed re-rooted view sharing the source's handles. Identical to
+    /// the label <see cref="Treenumerable.Subtrees{TValue, THandle}"/> stamps at this focus
+    /// (pinned). The round trip tree → root cursor → <c>Subtree()</c> recovers the tree; the
+    /// other round trip, cursor → <c>Subtree()</c> → root cursor, lands at the same focus but
+    /// FORGETS the upward context (severance is the cofree forgetting -- deliberate, and the
+    /// reason the two round trips are not symmetric).</summary>
+    public IWalkableTreenumerable<TValue, THandle> Subtree()
+      => new SubtreeWalkable<TValue, THandle>(_Walkable, Focus);
   }
 }

@@ -161,6 +161,37 @@ namespace Copse.Linq.Tests
       }
     }
 
+    // The reverse door and its round-trip laws: a cursor's Subtree() is exactly the label
+    // duplicate stamps at its focus, and tree → root cursor → Subtree() recovers the tree
+    // (the counit in interchange clothing). The other round trip (cursor → Subtree() →
+    // root cursor) deliberately forgets upward context -- severance -- so only this
+    // direction is an identity.
+    [TestMethod]
+    public void TheReverseDoor_ACursorsSubtree_IsDuplicatesLabel()
+    {
+      foreach (var (tree, rootTrees) in Forests)
+      {
+        var walkable = W(tree);
+        var subtrees = walkable.Subtrees();
+
+        foreach (var handle in walkable.GetHandles())
+        {
+          AssertEquivalent(
+            subtrees.GetValue(handle),
+            walkable.CursorAt(handle).Subtree(),
+            $"cursor.Subtree() ≡ duplicate's label [{tree}]");
+        }
+
+        for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
+        {
+          AssertEquivalent(
+            TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
+            walkable.GetRootCursor(rootIndex).Cursor.Subtree(),
+            $"tree → root cursor → Subtree() round trip [{tree}]");
+        }
+      }
+    }
+
     // ---------------------------------------------------------------------- helpers
 
     private static IEnumerable<int> Descendants(IWalkableTreenumerable<string, int> source, int handle)
