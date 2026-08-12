@@ -503,3 +503,40 @@ stance type (cursor + path) for interactive walking, or sweep-stamped labels
 for walk-forever structures — each declaring which SHAPE its cached facts
 describe. Observation and motion are different citizens with different
 luggage — the day's theme, priced.
+
+### Buffer re-parenting (RATIFIED DIRECTION, 2026-08-12 — Jason)
+
+`ITreenumerableBuffer` should implement `IWalkableTreenumerable` — whatever
+that contract turns out to be post-split — rather than `ITreenumerable`
+directly. The one-way collapse made structural: **captures are never
+address-poor.** A buffer is a tabulated position space; refusing to answer
+adjacency was always an omission, not a boundary. (The two-way collapse —
+walkable ⟹ buffer — stays vetoed: computed terrains (Collatz) and external
+structures (DOM, VisualTreeHelper, the 2016 library's live trees) are the
+buffer-free comonad hosts the finiteness law protects.)
+
+Consequences, collected now so the re-architecture inherits them:
+
+- **Nothing is lost.** The walkable extends `ITreenumerable`, so the chain
+  `ITreenumerableBuffer : IWalkableTreenumerable<T, ordinal> :
+  ITreenumerable<T>` keeps every current buffer capability.
+- **The intersection type dissolves.** `IWalkableTreenumerableBuffer` was PoC
+  scaffolding for exactly this; when every buffer is walkable, the
+  intersection IS `ITreenumerableBuffer`.
+- **`MaterializeWalkable` collapses into `Materialize`.** Its whole job was
+  producing the intersection; the operator surface shrinks by one.
+- **Memo buffers answer probes by pull-through.** The grow-precedes-read
+  machinery (`EnsureBuffered`/`EnsureChildAvailable`) already treats a probe
+  as demand on a partial store; an incomplete capture's adjacency forces
+  enumeration exactly as far as the probe reaches.
+- **Handles pin to ordinals** — and the ordinal width must ride the long
+  migration (coordinate: buffer handles are positions, and positions are
+  going wide).
+- **The async color needs the walkable contract ported** (codegen
+  single-source). The groundwork was laid deliberately: the probe result
+  structs are by-value/no-`out` precisely so the shapes stay legal for
+  await-strip transcription (`ParentResult`'s own doc says so). Cost is a
+  contract-family port, not a redesign.
+- **Sequencing:** terrain/extent ruling first ("whatever that contract turns
+  out to be"), then re-parent; index machinery stays lazy (pay on first
+  probe, zero if never probed).
