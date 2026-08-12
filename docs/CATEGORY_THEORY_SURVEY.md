@@ -51,7 +51,7 @@ representation's assumption.
 | **Zip / monoidal** | lockstep co-traversal of two sources | associativity; identity (`Empty`); commutativity where claimed |
 | **Natural transformation** | value-independent structure map | naturality: commutes with `Select` |
 | **Reshaping (local)** | structure change driven by per-value decisions | bind-derivability under a chosen Empty/graft rule (§6); interchange with `Select` |
-| **Reshaping (non-local / order-sensitive)** | structure change driven by identity, position, or traversal order | outside bind by nature; laws are per-operation |
+| **Reshaping (non-local / order-sensitive)** | structure change driven by identity, position, or traversal order. **The litmus test (2026-08-12): can the operation be defined as before-drawing → after-drawing without mentioning encounter order?** Yes → a tree transformation (order-words referring to the drawing's own structure — sibling order, root order — are fine: both traversals agree on them). No — the definition needs "until"/"while"/"encounter" → a *walk* transformation: each dimension modifies its own itinerary, the result's DFT and BFT can disagree about which nodes exist, and no single tree produces both answers | outside bind by nature (bind's raw materials are the drawing; everything it builds is a drawing); laws are per-operation |
 | **Co-Kleisli query** | a function *from* a focus (walkable + handle) | composition via the Store comonad |
 | **Representation morphism** | change how the same tree is carried (capture, encode, decode) | **identity modulo the quotient** — the strongest law on the surface |
 | **Machine / coalgebra** | the treenumerator itself: a stateful dialogue | bisimulation as equality; precise home §7 |
