@@ -196,6 +196,61 @@ namespace Copse.Linq.Tests
       }
     }
 
+    [TestMethod]
+    public void Union_Commutativity_UpToSwap()
+    {
+      foreach (var left in Trees)
+      foreach (var right in new[] { "a(b)", "a,x", "a(b(c),z)" })
+        AssertEquivalent(
+          T(left).Union(T(right)).Select(merged => CanonicalPair(merged.HasLeft, merged.Left, merged.HasRight, merged.Right)),
+          T(right).Union(T(left)).Select(merged => CanonicalPair(merged.HasRight, merged.Right, merged.HasLeft, merged.Left)),
+          $"∪ commutativity [{left} | {right}]");
+    }
+
+    [TestMethod]
+    public void Intersection_Commutativity_UpToSwap()
+    {
+      foreach (var left in Trees)
+      foreach (var right in new[] { "a(b)", "a,x", "a(b(c),z)" })
+        AssertEquivalent(
+          T(left).Intersection(T(right)).Select(merged => CanonicalPair(merged.HasLeft, merged.Left, merged.HasRight, merged.Right)),
+          T(right).Intersection(T(left)).Select(merged => CanonicalPair(merged.HasRight, merged.Right, merged.HasLeft, merged.Left)),
+          $"∩ commutativity [{left} | {right}]");
+    }
+
+    [TestMethod]
+    public void SymmetricDifference_EmptyIsIdentity_BothSides()
+    {
+      foreach (var tree in Trees)
+      {
+        AssertEquivalent(
+          T(tree),
+          T(tree).SymmetricDifference(Tree.Empty<string>()).Select(merged => merged.Left),
+          $"t Δ Empty ≡ t [{tree}]");
+
+        AssertEquivalent(
+          T(tree),
+          Tree.Empty<string>().SymmetricDifference(T(tree)).Select(merged => merged.Right),
+          $"Empty Δ t ≡ t [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void SymmetricDifference_Commutativity_UpToSwap()
+    {
+      foreach (var left in Trees)
+      foreach (var right in new[] { "a(b)", "a,x", "a(b(c),z)" })
+        AssertEquivalent(
+          T(left).SymmetricDifference(T(right)).Select(merged => CanonicalPair(merged.HasLeft, merged.Left, merged.HasRight, merged.Right)),
+          T(right).SymmetricDifference(T(left)).Select(merged => CanonicalPair(merged.HasRight, merged.Right, merged.HasLeft, merged.Left)),
+          $"Δ commutativity [{left} | {right}]");
+    }
+
+    // Deliberately ABSENT: SymmetricDifference associativity. Tree-Δ is Union.Where(!both) --
+    // the PROMOTE reshaping rule -- and promotion shifts positions, so the set-theoretic xor
+    // law does not transfer to positional merges. A documented non-law, like positional
+    // Where's non-composition (see the survey's SymmetricDifference row).
+
     // ------------------------------------------------------------------ effect laws
 
     [TestMethod]
@@ -258,6 +313,9 @@ namespace Copse.Linq.Tests
     private static string Canonical(
       bool hasFirst, string first, bool hasSecond, string second, bool hasThird, string third)
       => $"{(hasFirst ? first : "∅")}|{(hasSecond ? second : "∅")}|{(hasThird ? third : "∅")}";
+
+    private static string CanonicalPair(bool hasFirst, string first, bool hasSecond, string second)
+      => $"{(hasFirst ? first : "∅")}|{(hasSecond ? second : "∅")}";
 
     private static void AssertEquivalent<TValue>(
       ITreenumerable<TValue> expected,

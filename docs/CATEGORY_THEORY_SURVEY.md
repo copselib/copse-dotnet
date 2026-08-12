@@ -68,7 +68,7 @@ it; no direct semantic pin), UNPINNED (owed, untested).
 | `Where` (positional flavor) | reshaping over the position-decorated tree | deliberately non-composing with its own kind (each layer sees its input's labels — LINQ's indexed-Where rule, documented) |
 | `PruneBefore` / `PruneAfter` | local reshapings; bind-candidates (*vanish* rule / *slotless-leaf* rule) | prune-over-prune merge (OR-disjunction), both operators: **PINNED** (`CategoricalLawTests`, Hide-forced — the in-tier composition of TIER SEAL 2026-08-04 now has its licensing law named); bind-derivability: pending §6 |
 | `TakeNodesUntil/While`, `TakeTrees`, `SkipTrees`, `TakeLast/SkipLastTrees` | **order-sensitive truncations** — operations on the *walk*, not the tree (the monad is order-free; these are stream-level by nature) | per-op semantics; no monad laws owed. Note: these are walk-floor citizens named before the walk floor existed |
-| `Union` / `Intersection` / `Subtract` / `SymmetricDifference` | zip / monoidal | Union `Empty` identities both sides + associativity up to reassociation: **PINNED** (`CategoricalLawTests`); Intersection `Empty`-annihilation both sides: **PINNED**; Subtract right-identity + left-annihilator: **PINNED**; SymmetricDifference laws + commutativity claims: UNPINNED (remaining) |
+| `Union` / `Intersection` / `Subtract` / `SymmetricDifference` | zip / monoidal — **and the family REDUCES to one primitive** (discovered in the phase-2 close, 2026-08-12): `Intersection = Union.PruneBefore(!both)` (the *vanish* rule), `SymmetricDifference = Union.Where(!both)` and `Subtract = Union.Where(!HasRight).Select(.Left)` (the *promote* rule) — the Empty-graft fork of §6 is already living in the shipped set ops, one derived operator per rule | Union `Empty` identities + associativity up to reassociation + commutativity up to swap: **PINNED** (`CategoricalLawTests`); Intersection annihilation + commutativity up to swap: **PINNED**; Subtract right-identity + left-annihilator: **PINNED**; SymmetricDifference `Empty` identities both sides + commutativity up to swap: **PINNED**. **Non-law, documented:** Δ-associativity is NOT owed — tree-Δ rides the promote rule, promotion shifts positions, the set-theoretic xor law does not transfer to positional merges (same class as positional Where's non-composition) |
 | `StructuralMerge` | zip family — and Union IS the structural merge ("the engine behind the other set ops") | associativity: **PINNED** via Union's law |
 | `Do` | **effectful map (Kleisli into the effect layer)** — the operator that REFINES the equivalence relation: the survey's laws hold modulo visit-stream equivalence, and effects are exactly what that quotient cannot see, so collapse across `Do` fails *by theorem*, not by fiat ("the window materializes the pane" — an observer invalidates optimizations that were only valid up to observational equivalence) | in the finer (effect-trace) setting: `Do(a).Do(b)` ≡ `Do(a then b)` (adjacent observers merge, order preserved — pinned on streams AND effect traces) and `Do(noop)` ≡ id: **PINNED** (`CategoricalLawTests`, 2026-08-12); effects-per-drain = the cold contract extended to the effect layer (documented). Landing idiom pinned (`DoLandingCompositionTests`). *(Reclassified 2026-08-12 from "deviation done right" — the non-composition is a theorem about quotient refinement, which is better than a documented deviation.)* |
 | `Hide` | **opaque identity** — a representation morphism (identity modulo the quotient) whose purpose is refusing to advertise its concrete type, so the lattice's composite-first probes miss and stacked behavior is forced (the tests' isolation tool) | identity law ≡ id modulo quotient: *implicit* (its uses in the composition batteries depend on it); distinct shape from `Do` — split from the shared row 2026-08-12 |
@@ -134,16 +134,23 @@ covering both drains — the per-drain contract exercised); embedding functorial
 technique of record: force the stacked side through `Hide` so each law is tested against
 the genuinely stacked pipeline rather than the collapse it licenses.
 
-Remaining:
+**Second wave landed same day — PHASE 2 COMPLETE (20 laws, all green, zero deviations
+across both waves):** Union/Intersection/SymmetricDifference commutativity up to swap;
+SymmetricDifference `Empty` identities; Δ-associativity documented as a principled non-law
+(promotion shifts positions). The close also produced the reduction discovery recorded in
+§3's set-op row: the derived set ops are Union composed with the two reshaping rules —
+the §6 Empty-graft fork already ships, one operator per rule.
 
-1. **SymmetricDifference laws** and any commutativity claims (Union commutativity up to
-   swap, if claimed).
-2. **Walker comonad laws** once the duplicate/extend surface exists; until then, the
-   oracle-equivalence family (each lens vs its streaming twin) is the walker's law suite
-   and grows with each lens.
-3. **Pin-attribution spot-checks** — confirm the cited pre-existing tests
-   (`CrossTierCoherenceTests`, conformance batteries) assert exactly the laws §3
-   attributes to them.
+**Pin-attribution spot-checks: CONFIRMED (2026-08-12).** `CrossTierCoherenceTests` holds
+five Scan ≡ fold-shaped-Dispatch pins across the flavor grid;
+`OrderChildrenByTests.Invert_IsOrderChildrenByDescendingSiblingIndex` is the subsumption
+law; `DoLandingCompositionTests`, `VisitStreamConformance`, and the flat-family/contract
+conformance batteries exist as cited. §3's attributions stand.
+
+**The one deferred item — walker comonad laws** — is blocked on the `Extend`/duplicate
+surface and moves to §6 as part of that build's acceptance criteria; until then the
+oracle-equivalence family (each lens vs its streaming twin) is the walker's law suite and
+grows with each lens.
 
 ## 6. Phase 3 — law-driven specs for the two missing definers
 
