@@ -44,13 +44,11 @@ namespace Copse.Linq.Tests
       //    second test) is an axis-cost ELECTION, never a requirement.
       var walkable = relevant.Materialize();
 
-      // 3. Handle acquisition: handles are enumerated and predicated in CONSUMER code --
-      //    equality appears in no library signature (the pledge).
+      // 3. Handle acquisition: the front door, one line -- FindHandles folds the rowid idiom
+      //    in, and the pledge holds (the predicate is consumer code; the library compares
+      //    nothing).
       var interesting = new HashSet<string> { "h", "i", "g" };
-      var targets = walkable.GetHandlesWithValues()
-        .Where(row => interesting.Contains(row.Value))
-        .Select(row => row.Handle)
-        .ToList();
+      var targets = walkable.FindHandles(value => interesting.Contains(value)).ToList();
 
       Assert.AreEqual(3, targets.Count, "acquisition found the targets");
 
@@ -94,10 +92,7 @@ namespace Copse.Linq.Tests
         .Materialize(BufferLayout.Preorder);
 
       var interesting = new HashSet<string> { "h", "e" };
-      var targets = walkable.GetHandlesWithValues()
-        .Where(row => interesting.Contains(row.Value))
-        .Select(row => row.Handle)
-        .ToList();
+      var targets = walkable.FindHandles(value => interesting.Contains(value)).ToList();
 
       var lca = targets.Aggregate((left, right) => LowestCommonAncestor(walkable, left, right));
 

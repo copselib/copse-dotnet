@@ -75,7 +75,9 @@ Layer: sequence · Re-enters: yes · Cost: O(1) (indexed); O(n) scan (keyed)
 
 `GetChildAt(handle, k)` — the strawman name survived verbatim. Keyed access
 (`GetChildrenByKey`) is deliberately NOT a library member: value search is consumer code
-(the no-node-equality pledge), spelled as a predicate over `GetHandlesWithValues()`.
+(the no-node-equality pledge), spelled as `FindHandles(predicate)` — the acquisition front
+door (shipped 2026-08-14, the capstone review's first remedy) — or its result-typed
+singular `FindHandle` (the miss is a fact, never a defaulted handle).
 
 ### UC-05 Sibling navigation — PRICED
 
@@ -307,12 +309,12 @@ var relevant = sourceTree
 //    axis-cost ELECTION for callers who want to name the profile, never a requirement:
 var walkable = relevant.Materialize();
 
-// 3. Handle acquisition: the rowid scan. Handles are enumerated, never computed from
-//    values — the predicate is consumer code, equality in no library signature:
-var targets = walkable.GetHandlesWithValues()
-  .Where(row => interesting.Contains(row.Value.Key))
-  .Select(row => row.Handle)
-  .ToList();
+// 3. Handle acquisition: the front door, one line — FindHandles folds the rowid idiom in
+//    (handles enumerated, never computed from values; the predicate is consumer code,
+//    equality in no library signature). The singular FindHandle is result-typed: ordinal
+//    handles start at zero, so FirstOrDefault's miss masquerades as the root — the
+//    sentinel trap the result struct exists to close.
+var targets = walkable.FindHandles(value => interesting.Contains(value.Key)).ToList();
 
 // 4. The LCA fold over the targets — HAND today (UC-12's climb), the axis wave's best
 //    justification; on preorder ordinals it will collapse to span arithmetic:

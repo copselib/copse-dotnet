@@ -228,6 +228,25 @@ withdrawn with the split, 2026-08-13; see §1a.)*
   grow-precedes-read pattern. Details folded into the §2 memo row (probe-cost
   disclosure, disposal interaction, `Complete()` as the distinction's end); the one new
   ruling owed is OPEN-6.
+- **The ergonomics review (2026-08-14, the capstone read-through).** Jason's finding: the
+  acquisition block interrogates every reader the same four ways — *why materialize? why
+  GetHandlesWithValues? what are handles for? do they belong to the pipeline or the
+  capture?* Each answer was assigned the home where the question fires: (1) the
+  "why materialize" answer is a SIGNPOST on both Core composites' docs (streams have no
+  addresses; navigation lives on the capture; the O(n) is disclosed, never hidden) —
+  landed; (2) the acquisition idiom became sugar — `FindHandles(predicate)` plural and
+  the result-typed singular `FindHandle` (the **sentinel-collision clause**: ordinal
+  handles start at zero, so `FirstOrDefault`'s miss masquerades as the root; the miss
+  must be a fact, pinned by test) — landed; (3) the claim-ticket language already lives
+  on the contract — sufficient; (4) handle-to-capture binding is contractual, not typed —
+  see the declined ruling below. Remaining from the review: a getting-started walkthrough
+  so the scenario test stops doubling as the front-door document.
+- **CONSIDERED AND DECLINED: branded handles.** A per-capture handle type (each capture
+  minting its own) would make cross-capture handle misuse a compile error instead of a
+  documented clause — the one reader-question the type system cannot currently answer.
+  Declined: the generic-parameter tax lands on every signature in the walker tier for a
+  mistake the per-capture clause documents and ordinary use rarely invites. Recorded so
+  the next person who feels this itch finds the reasoning, not a blank.
 
 ## 8. The walker crosses colors (EXECUTED 2026-08-14 — commits 998a764 + 01b3aaf; OPEN-7/8/10 as proposed, OPEN-9 deferral stands)
 

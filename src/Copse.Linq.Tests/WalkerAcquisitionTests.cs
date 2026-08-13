@@ -76,5 +76,35 @@ namespace Copse.Linq.Tests
         new[] { "a", "b", "c", "d", "e" },
         levelOrder.GetHandlesWithValues().Select(pair => pair.Value).ToList());
     }
+
+    // The acquisition front door (the capstone review's first remedy, 2026-08-14): the rowid
+    // idiom folded into one call, plural and singular -- and the singular is result-typed
+    // BECAUSE the miss is otherwise unrepresentable: ordinal handle spaces start at zero, so
+    // FirstOrDefault() on a miss hands you a REAL node. Both facts pinned.
+    [TestMethod]
+    public void FindHandles_IsTheRowidIdiom_AndTheSingularMakesTheMissAFact()
+    {
+      var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
+
+      // Plural: matches the hand-rolled idiom exactly.
+      CollectionAssert.AreEquivalent(
+        walkable.GetHandlesWithValues().Where(row => row.Value == "d" || row.Value == "c").Select(row => row.Handle).ToList(),
+        walkable.FindHandles(value => value == "d" || value == "c").ToList());
+
+      // Singular, hit: the handle, as a fact.
+      var hit = walkable.FindHandle(value => value == "e");
+      Assert.IsTrue(hit.HasHandle);
+      Assert.AreEqual("e", walkable.GetValue(hit.Handle));
+
+      // Singular, miss: HasHandle false -- an honest miss.
+      Assert.IsFalse(walkable.FindHandle(value => value == "zzz").HasHandle);
+
+      // THE SENTINEL TRAP, demonstrated: FirstOrDefault on a missed plural search returns
+      // default(int) = 0 -- which is a real handle (the first preorder node). This is why
+      // the singular form exists and why its result struct is not a convenience.
+      var trap = walkable.FindHandles(value => value == "zzz").FirstOrDefault();
+      Assert.AreEqual(0, trap);
+      Assert.AreEqual("a", walkable.GetValue(trap), "the miss masquerades as the root");
+    }
   }
 }

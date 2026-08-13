@@ -160,6 +160,14 @@ namespace Copse.CodeGen
       new("Copse.Async/Walker/AsyncWalkableTreenumerable.WalkerAt.cs",
         "Copse/Walker/WalkableTreenumerable.WalkerAt.g.cs",
         "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkableTreenumerable.FindHandles.cs",
+        "Copse/Walker/WalkableTreenumerable.FindHandles.g.cs",
+        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+      // HandleResult: identity-named per-color like ChildResult (no async members; the color
+      // split is the namespace).
+      new("Copse.Async/Walker/HandleResult.cs",
+        "Copse/Walker/HandleResult.g.cs",
+        "HandleResult", "HandleResult", "Copse"),
 
       // The walkable contract family (docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker
