@@ -295,65 +295,80 @@ invariant (the doors are result-typed; the empty forest grants no walker).
 
 ## G. Capstone — the spanning subtree of k nodes (UC-32) — **SHIPPED** (`SpanningSubtree`, 2026-08-14)
 
-The capstone is now an operation:
+The capstone is an operation. The consumer's whole arc is one call:
+
+```csharp
+var walkable = sourceTree
+  .Where(context => context.Node.IsRelevant)     // the streaming algebra upstream, untouched
+  .Materialize();                                 // the escalation: adjacency lives on the capture
+
+var spanning = walkable.SpanningSubtree(
+  walkable.FindHandles(value => interesting.Contains(value.Key)));
+
+if (spanning.HasWalker)
+  Render(spanning.Walker.Subtree());              // the walker stands at the spanning root
+```
 
 ```csharp
 TreeWalkerResult<TValue, int> SpanningSubtree<TValue, THandle>(
   this IWalkableTreenumerable<TValue, THandle> source, IEnumerable<THandle> targets)
 ```
 
-— the walker at the spanning root, over a fresh O(kept) capture (its own handle space, per
-the per-capture clause). Result-typed twice: no targets and disjoint trees are honest
-misses; one target is the node alone. `SpanningSubtreeScenarioTests` pins the whole
-semantic surface AND keeps the decomposed arc below running, so the composition claim
-stays executable. The floor-by-floor walkthrough the operation distills:
+Result-typed because the operation is partial exactly twice, and each miss is a fact:
+**no targets** (the spanning subtree of ∅ is ∅ — guarded where the semantics live, never a
+seedless fold's vocabulary-free exception) and **disjoint trees** (targets in different
+trees of a forest have no common ancestor). One target is not a miss: the node alone. The
+result stands on a **new O(kept) capture** — its handles are that capture's own ordinals,
+not the source's (the per-capture clause, pinned by test: the spanning root is ordinal
+zero *there*). Violations stay loud on the exception channel — result types are for
+misses, never for faults (the two-channel doctrine).
+
+### The decomposition — every floor, kept executable
+
+`SpanningSubtreeScenarioTests` keeps the floor-by-floor arc running as its own test, so
+"the operation is a composition of shipped pieces" remains a claim the suite proves:
 
 ```csharp
-// 1. The streaming algebra feeds the walker a derived tree (untouched, as designed):
-var relevant = sourceTree
-  .Where(context => context.Node.IsRelevant)
-  .PruneAfter(context => context.Position.Depth == 5);
-
-// 2. The escalation — now just Materialize (the alias retired with the buffer re-parent).
-//    Organic: no layout needed — laziness means the first act pins it, and this arc's
-//    first act (the probe below) settles preorder. Materialize(BufferLayout) remains the
-//    axis-cost ELECTION for callers who want to name the profile, never a requirement:
+// 1. Streaming algebra feeds the walker a derived tree; 2. organic Materialize (the
+//    first act pins the layout; the declared form is an axis-cost ELECTION, never a
+//    requirement); 3. FindHandles — the acquisition front door:
 var walkable = relevant.Materialize();
+var targets = walkable.FindHandles(value => interesting.Contains(value)).ToList();
 
-// 3. Handle acquisition: the front door, one line — FindHandles folds the rowid idiom in
-//    (handles enumerated, never computed from values; the predicate is consumer code,
-//    equality in no library signature). The singular FindHandle is result-typed: ordinal
-//    handles start at zero, so FirstOrDefault's miss masquerades as the root — the
-//    sentinel trap the result struct exists to close.
-var targets = walkable.FindHandles(value => interesting.Contains(value.Key)).ToList();
-
-// 4. The LCA fold, WALKER-FIRST and RESULT-TYPED (the review's rules: one lift at the
-//    boundary and the whole fold lives in the comonad; operations that can miss carry the
-//    miss in their type — LCA is partial on forests, and an int-returning form has no
-//    honest miss at all). HAND today; the axis wave's spec, with span arithmetic as the
-//    preorder fast path. Edge cardinalities: k = 0 guards before the fold (the spanning
-//    subtree of ∅ is ∅); k = 1 folds to itself with zero LCA calls.
+// 4. The LCA fold, WALKER-FIRST and RESULT-TYPED: one lift at the boundary, the whole
+//    fold lives in the comonad, and the disjoint-trees miss is a fact — an int-returning
+//    LCA has no honest miss at all (throw, -1, or 0-which-is-the-root). The helper is
+//    hand-rolled today (private in the operation, mirrored in the test) — the axis
+//    wave's first promotion candidate, with span arithmetic as the preorder fast path:
 var lca = targets
-  .Select(walkable.WalkerAt)
-  .Aggregate((a, b) => a.LowestCommonAncestor(b).Walker);   // unwrap: same tree by construction
+  .Select(handle => walkable.WalkerAt(handle))
+  .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);  // hand helper; same tree by construction
 
-// 5. Re-root at the LCA — the region floor's shipped lens; never left the comonad:
+// 4½. The kept-set: the climbs RECORD the paths (each stops at the first already-kept
+//    ancestor — shared segments walked once). Coordinates, because a SET is storage:
+var keptHandles = new HashSet<int> { lca.Focus };
+foreach (var target in targets)
+  foreach (var pathHandle in PathToAncestor(walkable.WalkerAt(target), lca.Focus))
+    keptHandles.Add(pathHandle);
+
+// 5. Re-root at the LCA — the severed lens; never left the comonad:
 var spanning = lca.Subtree();
 
-// 6. The membership clamp — THE HANDLE-DECORATED STREAM (the walkthrough's finding):
-//    Extend stamps every node with its own (handle, value) pair, PruneBefore cuts
-//    off-path subtrees in HANDLE-space (membership is downward-closed, so prune
-//    semantics are exactly right), Select projects back. The climbs recorded in step 4
-//    ARE the membership memo — the original checklist's claim, now executable.
+// 6. The membership clamp — THE HANDLE-DECORATED STREAM: Extend stamps every node with
+//    its own (handle, value) pair, PruneBefore cuts off-path subtrees in HANDLE-space
+//    (membership is downward-closed, so prune semantics are exactly right), Select
+//    projects back. The future membership LENS makes this adjacency-side and zero-copy;
+//    the semantics are fixed here:
 var clamped = spanning
   .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
   .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
   .Select(pair => pair.Value);
 ```
 
-Steps 1–3, 5 are green; 4 is HAND; 6 is the remaining region-floor design (membership =
-the memoized lens class, priced by the descendant-information law). The free upcast at
-the end never went away: the view is walkable is treenumerable — "a bottled walk."
+All six steps are green. What remains of the capstone is convenience, not capability: the
+LCA's promotion to a public axis (ergonomics) and the membership lens (performance). The
+free upcast at the end never went away: the view is walkable is treenumerable — "a
+bottled walk."
 
 ---
 
