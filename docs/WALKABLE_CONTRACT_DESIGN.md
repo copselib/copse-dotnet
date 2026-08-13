@@ -5,9 +5,12 @@ contract crossed colors. Step 2: the re-parent landed — every capture walkable
 demand via two incremental-scan adjacency engines, the adjacency-oracle battery and the
 provider-parameterized law suites green, full suite 24,543. **The compiler forced step 3's
 dissolution early** (CS0695: the intersection interface cannot coexist with the re-parent),
-so `IWalkableTreenumerableBuffer` and its wrapper are already deleted and
-`MaterializeWalkable` is already `Materialize(BufferLayout.Preorder)` — only the alias
-rename remains of step 3. **OPEN-6 resolved by precedent**: the memo stores already throw
+so `IWalkableTreenumerableBuffer` and its wrapper are already deleted; **step 3 COMPLETED
+same day**: the `MaterializeWalkable` alias is deleted (call sites speak
+`Materialize(BufferLayout.Preorder)`), the walkable PoC classes retired to `internal`
+(OPEN-4; their `Copse.Tests` suites ride the existing IVT), and the walkable-only lattice
+cell's citizens are now the LENS VIEWS (a `Subtrees()` label affords adjacency, owns
+nothing). Survey §4 and the surface map's Materialize row updated. **OPEN-6 resolved by precedent**: the memo stores already throw
 `ObjectDisposedException` on past-frontier pulls (the replay rule); probes inherit it
 through the same `Ensure` calls — nothing was decided, only discovered. Deviation note:
 the dimension-dispatched buffer's probes settle by one extra O(n) recapture (rare path,

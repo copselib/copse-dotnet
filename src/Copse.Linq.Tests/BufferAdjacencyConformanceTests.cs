@@ -52,7 +52,6 @@ namespace Copse.Linq.Tests
       new Provider("Materialize(Preorder)", tree => tree.Materialize(BufferLayout.Preorder), BufferLayout.Preorder),
       new Provider("Materialize(LevelOrder)", tree => tree.Materialize(BufferLayout.LevelOrder), BufferLayout.LevelOrder),
       new Provider("Materialize() organic, probe-settled", tree => tree.Materialize(), BufferLayout.Preorder),
-      new Provider("MaterializeWalkable()", tree => tree.MaterializeWalkable(), BufferLayout.Preorder),
       new Provider("Memoize() fresh -- mid-race pull-through", tree => tree.Memoize(), BufferLayout.Preorder),
       new Provider("Memoize() breadth-first-primed", tree =>
       {

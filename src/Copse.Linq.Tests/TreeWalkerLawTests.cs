@@ -153,7 +153,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var provider in new[]
       {
-        Tree.Empty<string>().MaterializeWalkable(),
+        Tree.Empty<string>().Materialize(BufferLayout.Preorder),
         Tree.Empty<string>().Materialize(BufferLayout.LevelOrder),
         Tree.Empty<string>().Memoize(),
       })

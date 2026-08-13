@@ -20,7 +20,7 @@ namespace Copse.Linq.Tests
     public void PruneAfterLens_ShedsChildrenAtMatchedNodes_KeepsEverythingElse()
     {
       var lensed = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
-        .MaterializeWalkable()
+        .Materialize(BufferLayout.Preorder)
         .PruneAfter(value => value == "b");
 
       // b survives with its ancestry and hands out no children; the rest is untouched.
@@ -36,7 +36,7 @@ namespace Copse.Linq.Tests
     public void PruneAfterLens_OrderHalf_MatchesTheStreamingOracle_BothDimensions()
     {
       var lensed = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
-        .MaterializeWalkable()
+        .Materialize(BufferLayout.Preorder)
         .PruneAfter(value => value == "b");
 
       var oracle = TreeSerializer.DeserializeDepthFirstTree(ToyTree).PruneAfter(value => value == "b");
@@ -57,7 +57,7 @@ namespace Copse.Linq.Tests
       // which the streaming tier's light tier merges in-tier as it always has -- the lattice
       // at work UNDER the lens, unaware walkables exist.
       var stacked = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
-        .MaterializeWalkable()
+        .Materialize(BufferLayout.Preorder)
         .PruneAfter(value => value == "b")
         .PruneAfter(value => value == "c");
 

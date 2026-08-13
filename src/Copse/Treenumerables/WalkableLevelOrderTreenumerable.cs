@@ -19,7 +19,7 @@ namespace Copse.Treenumerables
   /// build's open-span walk. What preorder makes contiguous (subtrees) level order scatters, and
   /// vice versa (levels, sibling runs). Not thread-safe (PoC).</para>
   /// </summary>
-  public sealed class WalkableLevelOrderTreenumerable<TValue, TStore>
+  internal sealed class WalkableLevelOrderTreenumerable<TValue, TStore>
     : IWalkableTreenumerable<TValue, int>
     where TStore : ILevelOrderStore<TValue>
   {

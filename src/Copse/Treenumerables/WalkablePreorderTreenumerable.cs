@@ -19,7 +19,7 @@ namespace Copse.Treenumerables
   /// of docs/WALKER_DESIGN.md, which, being an index over the whole store, forces a
   /// still-growing store to complete first. Not thread-safe (PoC).</para>
   /// </summary>
-  public sealed class WalkablePreorderTreenumerable<TValue, TStore>
+  internal sealed class WalkablePreorderTreenumerable<TValue, TStore>
     : IWalkableTreenumerable<TValue, int>
     where TStore : IPreorderStore<TValue>
   {

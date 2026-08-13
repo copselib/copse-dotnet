@@ -32,7 +32,7 @@ namespace Copse.Linq.Tests
     // The hand-pinned interior expectations speak preorder ordinals, so W stays the preorder
     // provider; every law-shaped test rides the full provider fan-out below.
     private static IWalkableTreenumerable<string, int> W(string tree)
-      => TreeSerializer.DeserializeDepthFirstTree(tree).MaterializeWalkable();
+      => TreeSerializer.DeserializeDepthFirstTree(tree).Materialize(BufferLayout.Preorder);
 
     private static IEnumerable<(string Tree, string[] RootTrees, IWalkableTreenumerable<string, int> Walkable)> AllWalkables()
       => Forests.SelectMany(forest => WalkerLawProviders.Walkables(forest.Tree).Select(walkable => (forest.Tree, forest.RootTrees, walkable)));
@@ -125,7 +125,7 @@ namespace Copse.Linq.Tests
       }
     }
 
-    // Interior labels pinned by hand against the preorder ordinal handles MaterializeWalkable
+    // Interior labels pinned by hand against the preorder ordinal handles the preorder capture
     // assigns (the walkable buffer's guessable-int contract), so the counit tests cannot be
     // green by mutual bug: these expectations were written from the drawings, not the code.
     [TestMethod]

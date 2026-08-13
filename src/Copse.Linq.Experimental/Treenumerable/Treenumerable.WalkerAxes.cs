@@ -121,7 +121,7 @@ namespace Copse.Linq.Experimental
 
     // The swap-down verb of the walker/treenumerable pair (the AsEnumerable precedent): does
     // nothing, exists purely to steer the static type back to the streaming surface mid-chain.
-    // The swap UP is MaterializeWalkable's probe ladder -- free where the capability survives,
+    // The swap UP is Materialize's probe ladder (the walker escalation collapsed into it) -- free where the capability survives,
     // a documented capture where it does not.
     public static ITreenumerable<TValue> AsTreenumerable<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)

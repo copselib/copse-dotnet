@@ -9,20 +9,21 @@ using System.Collections.Generic;
 namespace Copse.Linq.Tests
 {
   // The finite-izing escalation after the buffer re-parent (docs/WALKABLE_CONTRACT_DESIGN.md):
-  // MaterializeWalkable is a declared-preorder Materialize, and the intersection the PoC once
-  // spelled as a separate interface is now ITreenumerableBuffer itself -- every capture is
-  // walkable ("captures are never address-poor"), deferred per the lazy-Materialize law;
-  // native-adjacency walkables still implement the walkable interface alone. The toy tree is
+  // Materialize(BufferLayout.Preorder) IS the walker escalation -- every capture is walkable
+  // ("captures are never address-poor"), the intersection the PoC once spelled as a separate
+  // interface is ITreenumerableBuffer itself, and the erstwhile MaterializeWalkable alias is
+  // gone (OPEN-3's collapse, completed). Deferred per the lazy-Materialize law; lens views and
+  // native-adjacency providers still implement the walkable interface alone. The toy tree is
   // the UC-32 walkthrough's: a(b(d,e),c(f,g)), preorder ordinals a=0 b=1 d=2 e=3 c=4 f=5 g=6.
   [TestClass]
-  public class MaterializeWalkableTests
+  public class MaterializeAdjacencyTests
   {
     private const string ToyTree = "a(b(d,e),c(f,g))";
 
     [TestMethod]
-    public void MaterializeWalkable_ToyTree_AdjacencyPinned()
+    public void Materialize_ToyTree_AdjacencyPinned()
     {
-      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).MaterializeWalkable();
+      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder);
 
       Assert.AreEqual(BufferLayout.Preorder, walkable.NativeLayout, "the walker default: the ancestry-cheap capture");
 
@@ -45,11 +46,11 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void MaterializeWalkable_DefersTheCaptureToTheFirstPull()
+    public void Materialize_DefersTheCaptureToTheFirstPull()
     {
       var counting = new CountingSource(TreeSerializer.DeserializeDepthFirstTree(ToyTree));
 
-      var walkable = counting.MaterializeWalkable();
+      var walkable = counting.Materialize(BufferLayout.Preorder);
 
       // Nothing opens at the call -- the lazy-Materialize law reaches the walker escalation.
       Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
@@ -67,17 +68,17 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void MaterializeWalkable_IsIdempotentOnTheIntersection()
+    public void Materialize_IsIdempotentOnACompliantCapture()
     {
-      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).MaterializeWalkable();
+      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder);
 
-      Assert.AreSame(walkable, walkable.MaterializeWalkable(), "an intersection citizen is never re-captured");
+      Assert.AreSame(walkable, walkable.Materialize(BufferLayout.Preorder), "a compliant capture is never re-captured");
     }
 
     [TestMethod]
-    public void MaterializeWalkable_VisitStream_MatchesTheSource_BothDimensions()
+    public void Materialize_VisitStream_MatchesTheSource_BothDimensions()
     {
-      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).MaterializeWalkable();
+      var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder);
 
       CollectionAssert.AreEqual(
         DrainVisits(TreeSerializer.DeserializeDepthFirstTree(ToyTree).GetDepthFirstTreenumerator()),
@@ -91,16 +92,19 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheFinitenessLaw_WalkableAloneMakesNoCaptureClaim()
     {
-      // The lattice's walkable-only cell: a store walkable affords adjacency but wears no
-      // buffer marker (the interfaces are orthogonal; the intersection is a separate, deliberate
-      // citizen). A native-adjacency provider over an infinite structure would sit in this cell
-      // too -- the type's silence about buffer-ness is the infinity permission.
-      var walkableOnly = new WalkablePreorderTreenumerable<string, PreorderArrayStore<string>>(
-        new PreorderArrayStore<string>(["a", "b", "c"], [3, 1, 1]));
+      // The lattice's walkable-only cell, post-re-parent: LENS VIEWS are its citizens -- a
+      // Subtrees() label affords adjacency but wears no buffer marker (it is a severed VIEW
+      // over someone else's store, owning nothing). A native-adjacency provider over an
+      // infinite structure would sit in this cell too -- the type's silence about buffer-ness
+      // is the infinity permission.
+      var walkableOnly = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
+        .Materialize(BufferLayout.Preorder)
+        .Subtrees()
+        .GetValue(0);
 
-      Assert.IsFalse((object)walkableOnly is ITreenumerableBuffer<string>);
+      Assert.IsFalse(walkableOnly is ITreenumerableBuffer<string>);
       Assert.IsTrue(
-        TreeSerializer.DeserializeDepthFirstTree(ToyTree).MaterializeWalkable() is ITreenumerableBuffer<string>,
+        TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder) is ITreenumerableBuffer<string>,
         "the escalation's result wears both");
     }
 
