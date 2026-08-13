@@ -610,10 +610,10 @@ var relevant = sourceTree
 // consumer pins the layout, and this use case's first act -- the handle
 // acquisition sweep just below -- is preorder-shaped, so the ancestry-cheap
 // capture (subtree spans, O(1) ancestry on ordinal handles) arrives with
-// nobody choosing it. MaterializeWalkable(BufferLayout.Preorder) remains the
+// nobody choosing it. Materialize(BufferLayout.Preorder) remains the
 // escape hatch for when the first act and the query mix disagree -- see "How
 // the escalation chooses" below.
-var walkable = relevant.MaterializeWalkable();
+var walkable = relevant.Materialize();
 
 // Handle acquisition: the ROWID SCAN. Iterates HANDLE-SPACE (on a store: 0..n-1) and
 // derefs each -- every (handle, value) row of the labeling -- so predicates over
@@ -692,9 +692,9 @@ path walks — never O(tree). On preorder-store handles the constants collapse:
 ordinal sort IS preorder sort, and is-ancestor is span containment, O(1).
 
 **How the escalation chooses its layout** (ruled 2026-08-10): the walker
-escalation mints no new knob — it inherits `Materialize`'s, both forms.
+escalation mints no new knob — it inherits `Materialize`'s, both forms — and since the buffer re-parent (2026-08-13) it IS `Materialize`: the alias was retired, the escalation and the capture are one operator.
 
-- **Organic** (`MaterializeWalkable()`): the walkable wraps whatever layout the
+- **Organic** (`Materialize()`): the walkable wraps whatever layout the
   source's own story produced — and under the lazy-Materialize ruling
   (WALKER_DESIGN.md §4, landed on main 2026-08-10) that story is one sentence:
   **the first consumer pins the layout.** Both forms of `Materialize` defer
@@ -706,7 +706,7 @@ escalation mints no new knob — it inherits `Materialize`'s, both forms.
   both layouts have walkable citizens, the organic form always succeeds and
   never transposes; what it does not promise is a *particular* axis-cost
   profile.
-- **Deliberate** (`MaterializeWalkable(BufferLayout)`): the escape
+- **Deliberate** (`Materialize(BufferLayout)`): the escape
   hatch for callers who truly know their query shape, riding
   `Materialize(layout)`'s existing guarantee — the argument is never ignored,
   a wrong-layout buffer is transposed *from the buffer* (O(n), source
@@ -728,7 +728,7 @@ tuning decision with an escape hatch, not a commitment.
 | Step | Design machinery exercised |
 |---|---|
 | `Where` + `PruneAfter` upstream | The streaming operator algebra, untouched, feeding the walker a derived tree |
-| `MaterializeWalkable()` | The documented escalation; laziness policy; query-shaped store choice |
+| `Materialize()` | The documented escalation; laziness policy; query-shaped store choice |
 | Handle acquisition (the rowid scan) | Value-space → handle-space bridge; predicates are consumer code, equality in no signature; handles = opaque claim tickets |
 | LCA fold | The relations floor; plain `Aggregate` as the algebra — and the climbs recorded ARE the membership memo, free |
 | The three-lens view (re-root, clamp, membership) | The region floor's direct spelling (∪ of path regions = the equivalent algebra spelling); membership = the memoized lens class, priced by the descendant-information law |
