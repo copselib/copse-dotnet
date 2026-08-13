@@ -126,17 +126,17 @@ namespace Copse.CodeGen
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
       // ChildResult: the child-enumerator protocol's read struct, per-color beside its
       // contract (IChildEnumerator / IAsyncChildEnumerator), identity-named like the reads.
-      new("Copse.Async/ChildResult.cs",
-        "Copse/ChildResult.g.cs",
+      new("Copse.Core.Async/ChildResult.cs",
+        "Copse.Core/ChildResult.g.cs",
         "ChildResult", "ChildResult", "Copse"),
       // The walkable contract family (docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker
       // tier's sync PoC files demote to twins.
-      new("Copse.Async/ParentResult.cs",
-        "Copse/ParentResult.g.cs",
+      new("Copse.Core.Async/ParentResult.cs",
+        "Copse.Core/ParentResult.g.cs",
         "ParentResult", "ParentResult", "Copse"),
-      new("Copse.Async/IAsyncWalkableTreenumerable.cs",
-        "Copse/IWalkableTreenumerable.g.cs",
+      new("Copse.Core.Async/IAsyncWalkableTreenumerable.cs",
+        "Copse.Core/IWalkableTreenumerable.g.cs",
         "IAsyncWalkableTreenumerable", "IWalkableTreenumerable", "Copse"),
 
       // The store SPIs, reads, and completed array stores: each color owns its own (decided
