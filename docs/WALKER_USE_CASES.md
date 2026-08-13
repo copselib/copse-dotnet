@@ -301,8 +301,11 @@ var relevant = sourceTree
   .Where(context => context.Node.IsRelevant)
   .PruneAfter(context => context.Position.Depth == 5);
 
-// 2. The escalation — now just Materialize (the alias retired with the buffer re-parent):
-var walkable = relevant.Materialize(BufferLayout.Preorder);
+// 2. The escalation — now just Materialize (the alias retired with the buffer re-parent).
+//    Organic: no layout needed — laziness means the first act pins it, and this arc's
+//    first act (the probe below) settles preorder. Materialize(BufferLayout) remains the
+//    axis-cost ELECTION for callers who want to name the profile, never a requirement:
+var walkable = relevant.Materialize();
 
 // 3. Handle acquisition: the rowid scan. Handles are enumerated, never computed from
 //    values — the predicate is consumer code, equality in no library signature:
