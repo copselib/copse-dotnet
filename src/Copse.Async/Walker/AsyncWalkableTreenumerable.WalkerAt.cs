@@ -1,8 +1,8 @@
-using Copse;
+using System.Threading.Tasks;
 
-namespace Copse.Linq
+namespace Copse.Async
 {
-  public static partial class Treenumerable
+  public static partial class AsyncWalkableTreenumerable
   {
     /// <summary>
     /// Enter the comonadic view: a walker standing at <paramref name="handle"/>. Choosing a
@@ -10,25 +10,26 @@ namespace Copse.Linq
     /// (<see cref="GetHandles{TValue, THandle}"/>) or from the root door below, never from
     /// value search -- and there is deliberately no door that produces an unfocused walker.
     /// The handle is presumed to be one this walkable issued (the foreign-handle clause).
+    /// Pure construction: no probe fires here.
     /// </summary>
-    public static TreeWalker<TValue, THandle> WalkerAt<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static AsyncTreeWalker<TValue, THandle> WalkerAt<TValue, THandle>(
+      this IAsyncWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
-      => new TreeWalker<TValue, THandle>(source, handle);
+      => new AsyncTreeWalker<TValue, THandle>(source, handle);
 
     /// <summary>
     /// The root door: a walker standing at root <paramref name="rootIndex"/>, or an empty
     /// result past the last root. Result-typed because the probe can miss (a forest may have
     /// fewer roots, or none) -- the no-unfocused-walker invariant, kept at the door.
     /// </summary>
-    public static TreeWalkerResult<TValue, THandle> GetRootWalker<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> GetRootWalkerAsync<TValue, THandle>(
+      this IAsyncWalkableTreenumerable<TValue, THandle> source,
       int rootIndex = 0)
     {
-      var rootResult = source.GetRootAt(rootIndex);
+      var rootResult = await source.GetRootAtAsync(rootIndex).ConfigureAwait(false);
 
       return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(source, rootResult.Child.Node))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(source, rootResult.Child.Node))
         : default;
     }
   }

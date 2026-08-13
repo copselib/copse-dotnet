@@ -129,6 +129,38 @@ namespace Copse.CodeGen
       new("Copse.Core.Async/ChildResult.cs",
         "Copse.Core/ChildResult.g.cs",
         "ChildResult", "ChildResult", "Copse"),
+      // The walker core (WALKABLE_CONTRACT_DESIGN.md §8b): the comonad's carrier, its result
+      // struct, the Walk adapter, the extend/severed-view machinery, and the extension
+      // surface -- authored async, generated into the base Copse project (the walker ships
+      // with the engine and factories, not the operators; only the lens family stays Linq).
+      new("Copse.Async/Walker/AsyncTreeWalkerResult.cs",
+        "Copse/Walker/TreeWalkerResult.g.cs",
+        "AsyncTreeWalkerResult", "TreeWalkerResult", "Copse"),
+      new("Copse.Async/Walker/AsyncTreeWalker.cs",
+        "Copse/Walker/TreeWalker.g.cs",
+        "AsyncTreeWalker", "TreeWalker", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkerWalk.cs",
+        "Copse/Walker/WalkerWalk.g.cs",
+        "AsyncWalkerWalk", "WalkerWalk", "Copse"),
+      new("Copse.Async/Walker/AsyncExtendWalkable.cs",
+        "Copse/Walker/ExtendWalkable.g.cs",
+        "AsyncExtendWalkable", "ExtendWalkable", "Copse"),
+      new("Copse.Async/Walker/AsyncSubtreeWalkable.cs",
+        "Copse/Walker/SubtreeWalkable.g.cs",
+        "AsyncSubtreeWalkable", "SubtreeWalkable", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkableTreenumerable.Extend.cs",
+        "Copse/Walker/WalkableTreenumerable.Extend.g.cs",
+        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkableTreenumerable.Subtrees.cs",
+        "Copse/Walker/WalkableTreenumerable.Subtrees.g.cs",
+        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkableTreenumerable.GetHandles.cs",
+        "Copse/Walker/WalkableTreenumerable.GetHandles.g.cs",
+        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+      new("Copse.Async/Walker/AsyncWalkableTreenumerable.WalkerAt.cs",
+        "Copse/Walker/WalkableTreenumerable.WalkerAt.g.cs",
+        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse"),
+
       // The walkable contract family (docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker
       // tier's sync PoC files demote to twins.

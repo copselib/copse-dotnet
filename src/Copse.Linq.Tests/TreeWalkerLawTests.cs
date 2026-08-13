@@ -9,7 +9,7 @@ namespace Copse.Linq.Tests
 {
   // The comonad on its reified carrier: TreeWalker is the focused pair as one type, so the
   // laws that WalkerComonadLawTests pins against (walkable, handle) conventions become TYPED
-  // IDENTITIES here -- walker.Duplicate().Value is the walker itself, struct-equal, no
+  // IDENTITIES here -- walker.Duplicate().GetValue() is the walker itself, struct-equal, no
   // stream-draining needed. (Extend's deep laws -- co-associativity over neighborhood
   // observers -- are inherited: walker.Extend delegates to the walkable Extend those tests
   // pin; this suite pins what the CARRIER adds: the counit as an equality, steps commuting
@@ -38,7 +38,7 @@ namespace Copse.Linq.Tests
       {
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(walkable.GetValue(handle), walkable.WalkerAt(handle).Value, $"extract [{tree}]");
+          Assert.AreEqual(walkable.GetValue(handle), walkable.WalkerAt(handle).GetValue(), $"extract [{tree}]");
       }
     }
 
@@ -54,7 +54,7 @@ namespace Copse.Linq.Tests
         {
           var walker = walkable.WalkerAt(handle);
 
-          Assert.AreEqual(walker, walker.Duplicate().Value, $"extract∘duplicate ≡ id [{tree}]");
+          Assert.AreEqual(walker, walker.Duplicate().GetValue(), $"extract∘duplicate ≡ id [{tree}]");
         }
       }
     }
@@ -78,14 +78,14 @@ namespace Copse.Linq.Tests
 
           Assert.AreEqual(stepped.HasWalker, steppedDuplicated.HasWalker, $"child step parity [{tree}]");
           if (stepped.HasWalker)
-            Assert.AreEqual(stepped.Walker, steppedDuplicated.Walker.Value, $"duplicate commutes with child step [{tree}]");
+            Assert.AreEqual(stepped.Walker, steppedDuplicated.Walker.GetValue(), $"duplicate commutes with child step [{tree}]");
 
           var upStepped = walker.MoveToParent();
           var upSteppedDuplicated = duplicated.MoveToParent();
 
           Assert.AreEqual(upStepped.HasWalker, upSteppedDuplicated.HasWalker, $"parent step parity [{tree}]");
           if (upStepped.HasWalker)
-            Assert.AreEqual(upStepped.Walker, upSteppedDuplicated.Walker.Value, $"duplicate commutes with parent step [{tree}]");
+            Assert.AreEqual(upStepped.Walker, upSteppedDuplicated.Walker.GetValue(), $"duplicate commutes with parent step [{tree}]");
         }
       }
     }
@@ -99,9 +99,9 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           var walker = walkable.WalkerAt(handle);
-          var extended = walker.Extend(focus => focus.Value + "@" + Depth(focus));
+          var extended = walker.Extend(focus => focus.GetValue() + "@" + Depth(focus));
 
-          Assert.AreEqual(walker.Value + "@" + Depth(walker), extended.Value, $"extract∘extend [{tree}]");
+          Assert.AreEqual(walker.GetValue() + "@" + Depth(walker), extended.GetValue(), $"extract∘extend [{tree}]");
         }
       }
     }
@@ -122,7 +122,7 @@ namespace Copse.Linq.Tests
 
           Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
-            Assert.AreEqual(walkable.GetValue(parentResult.Parent), stepped.Walker.Value, $"up-step value [{tree}]");
+            Assert.AreEqual(walkable.GetValue(parentResult.Parent), stepped.Walker.GetValue(), $"up-step value [{tree}]");
         }
       }
     }
@@ -134,11 +134,11 @@ namespace Copse.Linq.Tests
       {
         var firstRoot = walkable.GetRootWalker();
         Assert.IsTrue(firstRoot.HasWalker);
-        Assert.AreEqual("a", firstRoot.Walker.Value);
+        Assert.AreEqual("a", firstRoot.Walker.GetValue());
 
         var thirdRoot = walkable.GetRootWalker(2);
         Assert.IsTrue(thirdRoot.HasWalker);
-        Assert.AreEqual("c", thirdRoot.Walker.Value);
+        Assert.AreEqual("c", thirdRoot.Walker.GetValue());
 
         Assert.IsFalse(walkable.GetRootWalker(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
       }
