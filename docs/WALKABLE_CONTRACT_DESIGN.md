@@ -229,7 +229,22 @@ withdrawn with the split, 2026-08-13; see §1a.)*
   disclosure, disposal interaction, `Complete()` as the distinction's end); the one new
   ruling owed is OPEN-6.
 
-## 8. The walker crosses colors (PROPOSED 2026-08-14 — the item-4 design; nothing built until the OPENs below are ruled)
+## 8. The walker crosses colors (EXECUTED 2026-08-14 — commits 998a764 + 01b3aaf; OPEN-7/8/10 as proposed, OPEN-9 deferral stands)
+
+> **Execution record:** 8a landed (contract family in the Core pair; `NodeAndSiblingIndex`
+> to Vocabulary under its charter — "the value types the Core contracts speak"; namespaces
+> held per the substrate practice, zero consumer churn). 8b landed (nine async sources in
+> `Copse.Async/Walker`, sync twins generated into `Copse/Walker` — base-package citizens;
+> the hand-written `Copse.Linq/Walker` core retired; the lens family stays Linq-side;
+> `HandleAndValue` to Vocabulary as the walk's node type). OPEN-10 resolved at ZERO
+> transcriber cost — the ValueTask regex is text-level and already collapses observer
+> arrows, and the `new ValueTask<T>(x)` unwrap existed; async `Extend` takes async
+> observers. The Walk adapter resolves labels DURING the pull (the engine's node is the
+> `HandleAndValue` pair, its map the sync `.Value` read) — the shape that lets an async
+> observer label an engine whose map arrow is synchronous. One deliberate sync surface
+> change: `TreeWalker.Value` became `GetValue()` (a probe is a method; the async source is
+> the truth). Async mechanics suite: `AsyncTreeWalkerLawTests`, first-run green. Full
+> suite 24,532.
 
 The last thing keeping the walker tier PoC-grade: its eleven operator files are
 hand-written sync in `Copse.Linq/Walker/`, outside the codegen single-sourcing every
