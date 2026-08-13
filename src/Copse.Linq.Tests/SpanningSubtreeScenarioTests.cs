@@ -52,19 +52,25 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(3, targets.Count, "acquisition found the targets");
 
-      // 4. The LCA fold, climbing -- and the climbs RECORD the paths: the kept-set (every
-      //    node on a target-to-LCA path) falls out of the same walks that find the LCA.
-      var lca = targets.Aggregate((left, right) => LowestCommonAncestor(walkable, left, right));
+      // 4. The LCA fold, WALKER-FIRST (the review's rule: one lift at the boundary, the
+      //    whole fold lives in the comonad; the result-typed LCA makes the disjoint-trees
+      //    miss a fact, so this line cannot mint a poisoned handle -- fix partiality at the
+      //    source, keep the doors trusting). Unwrap is safe here: one tree.
+      var lca = targets
+        .Select(handle => walkable.WalkerAt(handle))
+        .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);
 
-      Assert.AreEqual("a", walkable.GetValue(lca), "the three targets' LCA");
+      Assert.AreEqual("a", lca.GetValue(), "the three targets' LCA");
 
-      var keptHandles = new HashSet<int> { lca };
+      //    The climbs RECORD the paths: the kept-set (every node on a target-to-LCA path)
+      //    falls out of the same walks -- coordinates again, because a SET is storage.
+      var keptHandles = new HashSet<int> { lca.Focus };
       foreach (var target in targets)
-        foreach (var pathHandle in PathToAncestor(walkable, target, lca))
+        foreach (var pathHandle in PathToAncestor(walkable.WalkerAt(target), lca.Focus))
           keptHandles.Add(pathHandle);
 
-      // 5. Re-root at the LCA: the region floor's shipped lens, handles shared.
-      var spanning = walkable.WalkerAt(lca).Subtree();
+      // 5. Re-root at the LCA -- never left the comonad.
+      var spanning = lca.Subtree();
 
       // 6. The membership clamp -- the handle-decorated stream: Extend stamps every node
       //    with its own (handle, value) pair, PruneBefore cuts whole subtrees whose root
@@ -94,16 +100,18 @@ namespace Copse.Linq.Tests
       var interesting = new HashSet<string> { "h", "e" };
       var targets = walkable.FindHandles(value => interesting.Contains(value)).ToList();
 
-      var lca = targets.Aggregate((left, right) => LowestCommonAncestor(walkable, left, right));
+      var lca = targets
+        .Select(handle => walkable.WalkerAt(handle))
+        .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);
 
-      Assert.AreEqual("b", walkable.GetValue(lca), "the LCA is mid-tree");
+      Assert.AreEqual("b", lca.GetValue(), "the LCA is mid-tree");
 
-      var keptHandles = new HashSet<int> { lca };
+      var keptHandles = new HashSet<int> { lca.Focus };
       foreach (var target in targets)
-        foreach (var pathHandle in PathToAncestor(walkable, target, lca))
+        foreach (var pathHandle in PathToAncestor(walkable.WalkerAt(target), lca.Focus))
           keptHandles.Add(pathHandle);
 
-      var clamped = walkable.WalkerAt(lca).Subtree()
+      var clamped = lca.Subtree()
         .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
@@ -114,16 +122,72 @@ namespace Copse.Linq.Tests
         "the spanning subtree of a mid-tree cluster");
     }
 
-    // ---------------------------------------------------------------- the hand-rolled axes
-    // These two helpers ARE the axis wave's spec, in its target dialect: LowestCommonAncestor
-    // and the ancestor path, by climbing, comparing handles only (the provider's-own-terms
-    // clause -- values are never compared by anything below the consumer's own predicate).
+    // The edge cardinalities, pinned (the review's k = 0 finding): the spanning subtree of
+    // NO nodes is the empty forest -- the honest arc guards before the fold, because the
+    // seedless Aggregate's own miss is a vocabulary-free LINQ exception. One node folds to
+    // itself with zero LCA calls, and its spanning subtree is just the node.
+    [TestMethod]
+    public void TheCapstone_EdgeCardinalities_ZeroTargetsGuards_OneTargetIsItself()
+    {
+      var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
-    private static int LowestCommonAncestor(IWalkableTreenumerable<string, int> walkable, int first, int second)
+      // k = 0: acquisition misses; the guard fires where the semantics live, not inside LINQ.
+      var none = walkable.FindHandles(value => value == "zzz").ToList();
+      Assert.AreEqual(0, none.Count, "no targets -- the arc must not reach the fold");
+
+      // k = 1: the fold is a no-op and the clamp keeps exactly the node.
+      var single = walkable.FindHandles(value => value == "d")
+        .Select(handle => walkable.WalkerAt(handle))
+        .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);
+
+      Assert.AreEqual("d", single.GetValue(), "one target folds to itself, zero LCA calls");
+
+      var keptHandles = new HashSet<int> { single.Focus };
+
+      var clamped = single.Subtree()
+        .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
+        .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
+        .Select(pair => pair.Value);
+
+      CollectionAssert.AreEqual(
+        DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("d")),
+        DrainScheduleOrder(clamped),
+        "the spanning subtree of one node is the node");
+    }
+
+    // The review's forest finding, pinned: LCA is PARTIAL on forests -- two stances in
+    // disjoint trees have no common ancestor, and the miss is a fact in the result type
+    // (the old handle-space helper minted the default walker here and marched on).
+    [TestMethod]
+    public void TheLcaMiss_DisjointTreesInAForest_IsAFact()
+    {
+      var forest = TreeSerializer.DeserializeDepthFirstTree("a(b),c(d)").Materialize(BufferLayout.Preorder);
+
+      var b = forest.FindHandle(value => value == "b");
+      var d = forest.FindHandle(value => value == "d");
+      Assert.IsTrue(b.HasHandle && d.HasHandle);
+
+      var miss = LowestCommonAncestor(forest.WalkerAt(b.Handle), forest.WalkerAt(d.Handle));
+
+      Assert.IsFalse(miss.HasWalker, "disjoint trees: no common ancestor, and the type says so");
+    }
+
+    // ---------------------------------------------------------------- the hand-rolled axes
+    // These helpers ARE the axis wave's spec, in its target dialect after the review:
+    // WALKER-FIRST (stances in, stance out -- the co-Kleisli shape) and RESULT-TYPED where
+    // the operation can miss (the disjoint-trees case: an int-returning LCA has no honest
+    // miss at all -- throw, -1, or 0-which-is-the-root; the result struct makes the miss a
+    // fact and the default-walker poison unrepresentable). Handle comparisons only (the
+    // provider's-own-terms clause). One thing the spec helpers CANNOT express that the real
+    // in-library extension will: the same-terrain check -- walkers hold their terrain
+    // privately, so only code in the walker's own assembly can ReferenceEquals two terrains.
+
+    private static TreeWalkerResult<string, int> LowestCommonAncestor(TreeWalker<string, int> first, TreeWalker<string, int> second)
     {
       var firstPath = new HashSet<int>();
+      var stance = first;
 
-      for (var stance = walkable.WalkerAt(first); ; )
+      while (true)
       {
         firstPath.Add(stance.Focus);
 
@@ -134,21 +198,34 @@ namespace Copse.Linq.Tests
         stance = up.Walker;
       }
 
-      var candidate = walkable.WalkerAt(second);
-      while (!firstPath.Contains(candidate.Focus))
-        candidate = candidate.MoveToParent().Walker;
+      var candidate = second;
 
-      return candidate.Focus;
+      while (!firstPath.Contains(candidate.Focus))
+      {
+        var up = candidate.MoveToParent();
+        if (!up.HasWalker)
+          return default;   // disjoint trees: an honest miss, never a default walker
+
+        candidate = up.Walker;
+      }
+
+      return new TreeWalkerResult<string, int>(candidate);
     }
 
-    private static IEnumerable<int> PathToAncestor(IWalkableTreenumerable<string, int> walkable, int descendant, int ancestor)
+    private static IEnumerable<int> PathToAncestor(TreeWalker<string, int> descendant, int ancestorFocus)
     {
-      var stance = walkable.WalkerAt(descendant);
+      var stance = descendant;
 
-      while (stance.Focus != ancestor)
+      while (stance.Focus != ancestorFocus)
       {
         yield return stance.Focus;
-        stance = stance.MoveToParent().Walker;
+
+        var up = stance.MoveToParent();
+        if (!up.HasWalker)
+          throw new System.InvalidOperationException(
+            "the given focus is not an ancestor of the starting stance -- a poisoned handle would have walked past a root here");
+
+        stance = up.Walker;
       }
     }
 

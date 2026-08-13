@@ -316,12 +316,18 @@ var walkable = relevant.Materialize();
 //    sentinel trap the result struct exists to close.
 var targets = walkable.FindHandles(value => interesting.Contains(value.Key)).ToList();
 
-// 4. The LCA fold over the targets — HAND today (UC-12's climb), the axis wave's best
-//    justification; on preorder ordinals it will collapse to span arithmetic:
-var lca = targets.Aggregate((a, b) => LowestCommonAncestor(walkable, a, b));
+// 4. The LCA fold, WALKER-FIRST and RESULT-TYPED (the review's rules: one lift at the
+//    boundary and the whole fold lives in the comonad; operations that can miss carry the
+//    miss in their type — LCA is partial on forests, and an int-returning form has no
+//    honest miss at all). HAND today; the axis wave's spec, with span arithmetic as the
+//    preorder fast path. Edge cardinalities: k = 0 guards before the fold (the spanning
+//    subtree of ∅ is ∅); k = 1 folds to itself with zero LCA calls.
+var lca = targets
+  .Select(walkable.WalkerAt)
+  .Aggregate((a, b) => a.LowestCommonAncestor(b).Walker);   // unwrap: same tree by construction
 
-// 5. Re-root at the LCA — the region floor's shipped lens:
-var spanning = walkable.WalkerAt(lca).Subtree();
+// 5. Re-root at the LCA — the region floor's shipped lens; never left the comonad:
+var spanning = lca.Subtree();
 
 // 6. The membership clamp — THE HANDLE-DECORATED STREAM (the walkthrough's finding):
 //    Extend stamps every node with its own (handle, value) pair, PruneBefore cuts
