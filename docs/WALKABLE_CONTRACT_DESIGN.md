@@ -248,7 +248,7 @@ withdrawn with the split, 2026-08-13; see §1a.)*
   mistake the per-capture clause documents and ordinary use rarely invites. Recorded so
   the next person who feels this itch finds the reasoning, not a blank.
 
-## 8. The walker crosses colors (EXECUTED 2026-08-14 — commits 998a764 + 01b3aaf; OPEN-7/8/10 as proposed, OPEN-9 deferral stands)
+## 8. The walker crosses colors (EXECUTED 2026-08-14 — commits 998a764 + 01b3aaf; OPEN-7/8/10 as proposed, OPEN-9 deferral stands. **LOCATION HALF SUPERSEDED BY §9** — the `Copse/Walker` and `Copse.Async/Walker` paths below record the state this section built; the placement pass then moved the carrier to Core and the tier to Linq, and those folders no longer exist)
 
 > **Execution record:** 8a landed (contract family in the Core pair; `NodeAndSiblingIndex`
 > to Vocabulary under its charter — "the value types the Core contracts speak"; namespaces
