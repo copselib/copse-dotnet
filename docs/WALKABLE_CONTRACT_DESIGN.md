@@ -1,7 +1,19 @@
 # Walkable Contract Design: terrain, extent, and the buffer re-parent
 
-**Status:** DESIGN — nothing here is built; the codegen is not touched until every OPEN
-below is ruled. Companions: [WALKER_DESIGN.md](WALKER_DESIGN.md) (the findings this design
+**Status:** EXECUTED through step 2 (2026-08-13, commits 5f13931 + f575615). Step 1: the
+contract crossed colors. Step 2: the re-parent landed — every capture walkable, probes as
+demand via two incremental-scan adjacency engines, the adjacency-oracle battery and the
+provider-parameterized law suites green, full suite 24,543. **The compiler forced step 3's
+dissolution early** (CS0695: the intersection interface cannot coexist with the re-parent),
+so `IWalkableTreenumerableBuffer` and its wrapper are already deleted and
+`MaterializeWalkable` is already `Materialize(BufferLayout.Preorder)` — only the alias
+rename remains of step 3. **OPEN-6 resolved by precedent**: the memo stores already throw
+`ObjectDisposedException` on past-frontier pulls (the replay rule); probes inherit it
+through the same `Ensure` calls — nothing was decided, only discovered. Deviation note:
+the dimension-dispatched buffer's probes settle by one extra O(n) recapture (rare path,
+paid once, layout-respecting); zero-copy would need the capture builders to expose their
+stores — queued as a perf follow-up, with the settle's preorder pin on undecided layouts
+mirroring the fresh-memo rule. Companions: [WALKER_DESIGN.md](WALKER_DESIGN.md) (the findings this design
 executes), [CATEGORY_THEORY_SURVEY.md](CATEGORY_THEORY_SURVEY.md) §4 (the comonad the
 contracts serve).
 **Branch:** `experimental/walker`
