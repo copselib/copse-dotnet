@@ -291,7 +291,7 @@ The strawman imagined a mutable cursor; what shipped is an immutable STANCE — 
 return new walkers, the comonad is pure, and "no unfocused cursor" is a constructor
 invariant (the doors are result-typed; the empty forest grants no walker).
 
-## G. Capstone — the spanning subtree of k nodes (UC-32) — PARTIAL
+## G. Capstone — the spanning subtree of k nodes (UC-32) — **RUNNING** (`SpanningSubtreeScenarioTests`, 2026-08-14)
 
 One arc, every floor. Today's spelling, floor by floor:
 
@@ -321,8 +321,15 @@ var lca = targets.Aggregate((a, b) => LowestCommonAncestor(walkable, a, b));
 // 5. Re-root at the LCA — the region floor's shipped lens:
 var spanning = walkable.WalkerAt(lca).Subtree();
 
-// 6. The membership clamp — the region floor's UNSHIPPED half. Today: consumer-side
-//    (prune subtrees containing no target); the region set-algebra makes it a lens.
+// 6. The membership clamp — THE HANDLE-DECORATED STREAM (the walkthrough's finding):
+//    Extend stamps every node with its own (handle, value) pair, PruneBefore cuts
+//    off-path subtrees in HANDLE-space (membership is downward-closed, so prune
+//    semantics are exactly right), Select projects back. The climbs recorded in step 4
+//    ARE the membership memo — the original checklist's claim, now executable.
+var clamped = spanning
+  .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
+  .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
+  .Select(pair => pair.Value);
 ```
 
 Steps 1–3, 5 are green; 4 is HAND; 6 is the remaining region-floor design (membership =
@@ -341,6 +348,10 @@ the end never went away: the view is walkable is treenumerable — "a bottled wa
 
 Provenance-by-default: shipped as the handle-sharing discipline (views never re-address).
 Every reification case except the deliberate snapshot (UC-28) wants its way back in, and
-gets it for free. The capstone composes through four of its six steps; its two gaps (the
-LCA arithmetic, the membership clamp) are the axis wave and the region algebra — the two
-named next workstreams, each with its spec sitting in this file.
+gets it for free. The capstone RUNS through all six steps
+(`SpanningSubtreeScenarioTests` — three targets spanning the root, and a mid-tree
+cluster): the membership clamp turned out to be expressible by composition (the
+handle-decorated stream), so both former gaps re-scope from capability to convenience —
+the LCA arithmetic is the axis wave's ergonomics, the membership lens is the region
+algebra's performance sugar (adjacency-side pruning without the decorate/project round
+trip). Each wave's spec sits in this file; neither blocks anything.
