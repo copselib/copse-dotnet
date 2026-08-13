@@ -23,47 +23,42 @@ The three ratified decisions this design implements:
 
 ## 1. The contract family (sync shapes; async twins in §3)
 
-### 1a. Terrain — the comonad's home (PROPOSED, name OPEN-1)
+### 1a. The walkable stays whole — the terrain split WITHDRAWN (Jason, 2026-08-13)
+
+The first draft minted a terrain supertype (`ITreeTerrain`: the three
+handle-parameterized probes) above the composite. **Withdrawn on review**, on two grounds:
+
+1. **The motivating smell dissolved with the carrier.** "`GetRootAt` compensates for the
+   walkable having no focus" was diagnosed while the walkable was auditioning as the
+   comonad carrier — the frozen-`∅` reading offended because the type was half-pretending
+   to be a comonad value. Once `TreeWalker` took the carrier role, the walkable is
+   unapologetically a SOURCE — terrain, entry, stream — and a source having an entry probe
+   is the job description, not a smell. The "children of the virtual forest-root" reading
+   survives as understanding (`GetRootAt` is the protocol door), not as an indictment.
+2. **The restraint rule forbids the mint.** The advertised citizens for terrain-alone
+   evaporate under audit: Collatz has a root (1) and can implement the composite honestly;
+   external structures (DOM, visual trees) have roots; infinite sources stream lazily. The
+   genuinely-rootless citizen (an infinite grid with no origin) is hypothetical, and the
+   capability lattice mints interfaces only for cells with citizens. If that citizen ever
+   arrives, inserting a supertype above `IWalkableTreenumerable` is a compatible change
+   *then* — deferral costs nothing.
+
+So the contract is today's, unchanged and whole:
 
 ```csharp
-// Copse (core-adjacent, color-generated) — the s → a of the Store comonad
-public interface ITreeTerrain<TValue, THandle>
+public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>
 {
   TValue GetValue(THandle handle);
   ParentResult<THandle> GetParent(THandle handle);
   ChildResult<THandle> GetChildAt(THandle handle, int childIndex);
+  ChildResult<THandle> GetRootAt(int rootIndex);
 }
 ```
 
-Everything handle-parameterized; no entry, no stream, no finiteness claim. **Citizens that
-need exactly this and nothing more:** `TreeWalker` (all of its members consume only these
-three probes — `Subtree()` included, since the severed view is terrain-plus-frontier),
-`Extend`'s observers, and the rootless sources the finiteness law protects (Collatz-style
-computed adjacency, infinite grids, external structures with no enumerable root list) —
-sources that today **cannot implement the walkable contract at all** because they cannot
-honestly answer `GetRootAt`. Minting terrain is justified by the capability-lattice
-restraint rule: the cell has citizens.
+`TreeWalker` and `Extend` keep their current signatures (typed to the walkable). The
+WALKER_DESIGN.md GetRootAt finding gets a resolution addendum pointing here.
 
-### 1b. The composite — walkable = terrain + extent + stream (PROPOSED)
-
-```csharp
-public interface IWalkableTreenumerable<TValue, THandle>
-  : ITreeTerrain<TValue, THandle>, ITreenumerable<TValue>
-{
-  ChildResult<THandle> GetRootAt(int rootIndex);   // the extent
-}
-```
-
-- **No separate extent interface.** The restraint rule again: no known citizen affords
-  extent without stream or stream without extent (a source that can enumerate its roots can
-  stream, and vice versa — the stream *starts* at the roots). `GetRootAt` stays a member of
-  the composite; the smell is healed by the seam being *visible* (terrain above, extent
-  below), not by minting an interface for an empty cell.
-- The composite's meaning is unchanged: everything that is an `IWalkableTreenumerable`
-  today remains one, with the same four members. The split inserts terrain *above*; no
-  implementer changes shape.
-
-### 1c. The buffer re-parent (RATIFIED; handle clause OPEN-2)
+### 1b. The buffer re-parent (RATIFIED; handle clause OPEN-2)
 
 ```csharp
 public interface ITreenumerableBuffer<TValue>
@@ -112,17 +107,12 @@ for speed; crossing colors means authoring the async sources and demoting the sy
 to `.g.cs` twins.
 
 ```csharp
-// Copse.Async — the async terrain (transcribes to ITreeTerrain by await-strip)
-public interface IAsyncTreeTerrain<TValue, THandle>
+// Copse.Async — transcribes to IWalkableTreenumerable by await-strip
+public interface IAsyncWalkableTreenumerable<TValue, THandle> : IAsyncTreenumerable<TValue>
 {
   ValueTask<TValue> GetValueAsync(THandle handle);
   ValueTask<ParentResult<THandle>> GetParentAsync(THandle handle);
   ValueTask<ChildResult<THandle>> GetChildAtAsync(THandle handle, int childIndex);
-}
-
-public interface IAsyncWalkableTreenumerable<TValue, THandle>
-  : IAsyncTreeTerrain<TValue, THandle>, IAsyncTreenumerable<TValue>
-{
   ValueTask<ChildResult<THandle>> GetRootAtAsync(int rootIndex);
 }
 
@@ -160,8 +150,9 @@ public interface IAsyncTreenumerableBuffer<TValue>
 
 ## 5. Execution order (once the OPENs are ruled)
 
-1. Terrain interface + async sources + manifest entries; sync PoC files demoted to twins.
-   Full suite green (pure insertion — no behavior change).
+1. The contract crosses colors: `IAsyncWalkableTreenumerable` + async `ParentResult` +
+   manifest entries; the hand-written sync PoC files demote to `.g.cs` twins. Full suite
+   green (pure representation change — no behavior, no signature drift).
 2. Buffer re-parent in the async sources; probe implementations on the concrete buffers;
    regeneration; adjacency battery lands. Full suite green.
 3. Dissolutions: intersection interface, wrapper, `MaterializeWalkable` → `Materialize`;
@@ -171,9 +162,9 @@ public interface IAsyncTreenumerableBuffer<TValue>
 
 ## 6. The OPEN ledger — rulings owed before code
 
-- **OPEN-1 (naming):** the terrain interface — `ITreeTerrain` (the dialogue's own word;
-  honest about NOT being a treenumerable) vs `ITreeAdjacency` vs keeping the walker-family
-  grammar some other way. Proposal: `ITreeTerrain`.
+*(OPEN-1 and OPEN-6 — the terrain interface and the TreeWalker retype — were withdrawn
+with the split, 2026-08-13; see §1a.)*
+
 - **OPEN-2 (handle clause):** ratify the layout-instability clause — buffer handles are
   per-capture layout ordinals, never portable across captures/layouts.
 - **OPEN-3 (the collapse):** `MaterializeWalkable` → `Materialize` is a breaking rename
@@ -182,8 +173,3 @@ public interface IAsyncTreenumerableBuffer<TValue>
   retire to internal vs stay public. Proposal: internal.
 - **OPEN-5 (async shapes):** `ValueTask` probes, `Async` suffix, no CT (edges-only).
   Confirm the member shapes in §3.
-- **OPEN-6 (TreeWalker retype):** `TreeWalker` and `Extend`'s observer signatures retype
-  from `IWalkableTreenumerable` to the terrain interface (the comonad types against
-  terrain alone; rootless sources become carriers). Note: `Extend`-on-a-walkable keeps
-  returning a walkable (its stream half needs the extent); a future terrain-level extend
-  would return terrain. Proposal: retype in step 1.

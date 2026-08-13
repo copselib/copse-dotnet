@@ -400,7 +400,17 @@ afterward?* — turning the provenance instinct into evidence.
 - Which order-commit choices the walk layer offers (depth-first, level-order,
   topological), and how their price columns are surfaced.
 
-### The GetRootAt finding (2026-08-12, Jason's diagnosis — the contract re-architecture's motivating smell)
+### The GetRootAt finding (2026-08-12, Jason's diagnosis — RESOLVED 2026-08-13, split withdrawn)
+
+> **Resolution (Jason, 2026-08-13; details in WALKABLE_CONTRACT_DESIGN.md §1a):** the
+> smell dissolved with the carrier. It was diagnosed while the walkable was auditioning
+> as the comonad carrier — once `TreeWalker` took that role, the walkable is
+> unapologetically a SOURCE, and a source having an entry probe is the job description.
+> The terrain/extent split is withdrawn under the capability-lattice restraint rule
+> (terrain-alone has no actual citizen — Collatz has a root, external structures have
+> roots, infinite sources stream lazily); if a genuinely rootless terrain citizen ever
+> arrives, a supertype inserts compatibly then. The analysis below stands as
+> understanding — `GetRootAt` IS the protocol door — it just stopped being an indictment.
 
 `GetRootAt(int rootIndex)` is `GetChildAt` **with the parent parameter erased,
 because the parent is the unfocused stance `∅`** — the one stance the comonad
