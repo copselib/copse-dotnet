@@ -151,8 +151,11 @@ public interface IAsyncTreenumerableBuffer<TValue>
 ## 5. Execution order (once the OPENs are ruled)
 
 1. The contract crosses colors: `IAsyncWalkableTreenumerable` + async `ParentResult` +
-   manifest entries; the hand-written sync PoC files demote to `.g.cs` twins. Full suite
-   green (pure representation change — no behavior, no signature drift).
+   manifest entries; the hand-written sync contract and struct demote to `.g.cs` twins.
+   (The walkable PoC *classes* stay hand-written sync in this step — their machinery is
+   being absorbed and internalized in step 2, and authoring async sources for classes
+   about to be restructured is churn; they cross colors in their final shape.) Full
+   suite green (pure representation change — no behavior, no signature drift).
 2. Buffer re-parent in the async sources; probe implementations on the concrete buffers;
    regeneration; adjacency battery lands. Full suite green.
 3. Dissolutions: intersection interface, wrapper, `MaterializeWalkable` → `Materialize`;
@@ -160,24 +163,37 @@ public interface IAsyncTreenumerableBuffer<TValue>
 4. Coordination notes to the long-migration branch (handle width) recorded in memory and
    the migration's own docs when it lands.
 
-## 6. The OPEN ledger — rulings owed before code
+## 6. The OPEN ledger — RULED 2026-08-13 (one deferral)
 
-*(OPEN-1 and OPEN-6 — the terrain interface and the TreeWalker retype — were withdrawn
-with the split, 2026-08-13; see §1a.)*
+*(OPEN-1 and OPEN-6-the-first — the terrain interface and the TreeWalker retype — were
+withdrawn with the split, 2026-08-13; see §1a.)*
 
-- **OPEN-2 (handle clause):** ratify the layout-instability clause — buffer handles are
-  per-capture layout ordinals, never portable across captures/layouts.
-- **OPEN-3 (the collapse):** `MaterializeWalkable` → `Materialize` is a breaking rename
-  (alpha; release-notes flag). Confirm.
-- **OPEN-4 (PoC classes):** `WalkablePreorderTreenumerable`/`WalkableLevelOrderTreenumerable`
-  retire to internal vs stay public. Proposal: internal.
-- **OPEN-5 (async shapes):** `ValueTask` probes, `Async` suffix, no CT (edges-only).
-  Confirm the member shapes in §3.
-- **OPEN-6 (disposed-memo probe failure):** how does a past-frontier probe fail on a
-  memo whose feed was retired by disposal? Proposal: **throw** — a retired-feed probe is
-  a lifecycle error, not a "no such node" fact; a `HasChild == false` miss would lie
-  (the node may exist in the unenumerated source). The buffered region stays fully
+- **OPEN-2 — RATIFIED.** The layout-instability clause, with Jason's precision: handle
+  spaces are **per-capture** — two captures of the same tree (or the same tree under two
+  layouts) are foreign to each other; handles never travel between captures. (Handles
+  were never treenumerator state at all — they live entirely outside the traversal
+  protocol.)
+- **OPEN-3 — CONFIRMED**, breaking rename, release-notes flag. Jason's discoverability
+  caveat ("`Materialize` doesn't advertise that you get a walkable") is honored at the
+  doc level: `Materialize`'s XML doc leads with the adjacency affordance ("captures are
+  never address-poor"), and the return type shows the walkable members in IntelliSense.
+  The name stays honest — walkability is a property of what materialization produces.
+- **OPEN-4 — CONFIRMED**, internal. ("Happy to see stuff get deleted.")
+- **OPEN-5 — CONFIRMED** as drafted in §3. Spawned a backlog item, recorded below.
+- **OPEN-6 (disposed-memo probe failure) — DEFERRED**; must be ruled before step 2's
+  memo probes build. Standing proposal: throw — and the revisit framing is that .NET
+  already has the idiom for exactly this, `ObjectDisposedException` (a retired-feed
+  probe is a lifecycle error; the miss would lie). The buffered region stays fully
   walkable either way.
+
+### Backlog spawned by the review (not this workstream)
+
+- **`MaterializeAsync` — the color bridge** (Jason, OPEN-5 discussion): async-pull into
+  a synchronous buffer (`MoveNextAsync` feeding a sync flat store). Neither color can
+  host it — `Copse.Linq.Async` does not reference `Copse.Linq` — so it is a citizen of
+  a small both-colors bridge package, on the `SimpleSerializer` precedent (the one
+  both-colors package). Would also finally fill the "no sync→async adapter exists" gap
+  from the package-shape findings, in the async→sync direction.
 
 ## 7. Review rulings (2026-08-13, conversation)
 
