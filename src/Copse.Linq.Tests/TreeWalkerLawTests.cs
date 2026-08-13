@@ -1,6 +1,7 @@
 using Copse;
 using Copse.SimpleSerializer;
 using Copse.Treenumerables;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
@@ -27,15 +28,14 @@ namespace Copse.Linq.Tests
       "a,b(d),c(e(f))",
     };
 
-    private static IWalkableTreenumerable<string, int> W(string tree)
-      => TreeSerializer.DeserializeDepthFirstTree(tree).MaterializeWalkable();
+    private static IEnumerable<(string Tree, IWalkableTreenumerable<string, int> Walkable)> AllWalkables()
+      => Trees.SelectMany(tree => WalkerLawProviders.Walkables(tree).Select(walkable => (tree, walkable)));
 
     [TestMethod]
     public void Extract_IsTheValueAtTheFocus()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
           Assert.AreEqual(walkable.GetValue(handle), walkable.WalkerAt(handle).Value, $"extract [{tree}]");
@@ -47,9 +47,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Counit_ExtractAfterDuplicate_IsTheWalkerItself()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
         {
@@ -66,9 +65,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Duplicate_CommutesWithSteps()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
         {
@@ -95,9 +93,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Extend_ExtractRecoversTheObserver()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
         {
@@ -115,9 +112,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheWalkerSeesUp()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         foreach (var handle in walkable.GetHandles())
         {
@@ -134,17 +130,18 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheDoors_KeepTheNoUnfocusedInvariant()
     {
-      var walkable = W("a,b(d),c(e(f))");
+      foreach (var walkable in WalkerLawProviders.Walkables("a,b(d),c(e(f))"))
+      {
+        var firstRoot = walkable.GetRootWalker();
+        Assert.IsTrue(firstRoot.HasWalker);
+        Assert.AreEqual("a", firstRoot.Walker.Value);
 
-      var firstRoot = walkable.GetRootWalker();
-      Assert.IsTrue(firstRoot.HasWalker);
-      Assert.AreEqual("a", firstRoot.Walker.Value);
+        var thirdRoot = walkable.GetRootWalker(2);
+        Assert.IsTrue(thirdRoot.HasWalker);
+        Assert.AreEqual("c", thirdRoot.Walker.Value);
 
-      var thirdRoot = walkable.GetRootWalker(2);
-      Assert.IsTrue(thirdRoot.HasWalker);
-      Assert.AreEqual("c", thirdRoot.Walker.Value);
-
-      Assert.IsFalse(walkable.GetRootWalker(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
+        Assert.IsFalse(walkable.GetRootWalker(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
+      }
     }
 
     // The boundary case that forced the carrier split: the empty forest inhabits the
@@ -154,11 +151,17 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheEmptyForest_GrantsNoWalker()
     {
-      var empty = Tree.Empty<string>().MaterializeWalkable();
-
-      Assert.IsFalse(empty.GetRootWalker().HasWalker, "the root door refuses in the result type");
-      Assert.IsFalse(empty.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
-      Assert.IsFalse(empty.GetRootAt(0).HasChild, "no probe succeeds");
+      foreach (var provider in new[]
+      {
+        Tree.Empty<string>().MaterializeWalkable(),
+        Tree.Empty<string>().Materialize(BufferLayout.LevelOrder),
+        Tree.Empty<string>().Memoize(),
+      })
+      {
+        Assert.IsFalse(provider.GetRootWalker().HasWalker, "the root door refuses in the result type");
+        Assert.IsFalse(provider.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
+        Assert.IsFalse(provider.GetRootAt(0).HasChild, "no probe succeeds");
+      }
     }
 
     // ---------------------------------------------------------------------- helpers

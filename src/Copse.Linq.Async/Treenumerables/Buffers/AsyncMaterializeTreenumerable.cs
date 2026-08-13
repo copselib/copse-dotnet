@@ -1,3 +1,4 @@
+using Copse.Async;
 using Copse.Async.Stores;
 using Copse.Async.Treenumerables;
 using Copse.Core;
@@ -99,7 +100,8 @@ namespace Copse.Linq.Async.Treenumerables
 
         _Settled = new AsyncTreenumerableBuffer<TValue>(
           new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
-          BufferLayout.Preorder);
+          BufferLayout.Preorder,
+          new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore));
 
         return _Settled;
       }
@@ -108,9 +110,25 @@ namespace Copse.Linq.Async.Treenumerables
 
       _Settled = new AsyncTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
-        BufferLayout.LevelOrder);
+        BufferLayout.LevelOrder,
+        new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore));
 
       return _Settled;
     }
+
+    // The adjacency half rides the settle: probing IS consumption, so a probe on an unsettled
+    // instance completes the memo's capture exactly as the first stream pull would, then
+    // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
+    public async ValueTask<TValue> GetValueAsync(int handle)
+      => await (await SettleAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
+
+    public async ValueTask<ParentResult<int>> GetParentAsync(int handle)
+      => await (await SettleAsync().ConfigureAwait(false)).GetParentAsync(handle).ConfigureAwait(false);
+
+    public async ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
+      => await (await SettleAsync().ConfigureAwait(false)).GetChildAtAsync(handle, childIndex).ConfigureAwait(false);
+
+    public async ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex)
+      => await (await SettleAsync().ConfigureAwait(false)).GetRootAtAsync(rootIndex).ConfigureAwait(false);
   }
 }

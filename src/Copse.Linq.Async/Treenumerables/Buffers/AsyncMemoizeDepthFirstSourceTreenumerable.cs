@@ -1,3 +1,4 @@
+using Copse.Async;
 using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
@@ -42,5 +43,23 @@ namespace Copse.Linq.Async.Treenumerables
         new AsyncMemoizePreorderStore<TValue>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
+
+    // The adjacency half: probes ride the one preorder capture through the replay Handle --
+    // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
+    private IAsyncAdjacencyProbes<TValue> _AdjacencyProbes;
+
+    private IAsyncAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+      => _AdjacencyProbes ?? (_AdjacencyProbes
+        = new AsyncPreorderAdjacencyIndex<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
+          new AsyncMemoizePreorderStore<TValue>.Handle(_Buffer)));
+
+    public ValueTask<TValue> GetValueAsync(int handle) => EnsureAdjacencyProbes().GetValueAsync(handle);
+
+    public ValueTask<ParentResult<int>> GetParentAsync(int handle) => EnsureAdjacencyProbes().GetParentAsync(handle);
+
+    public ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
+      => EnsureAdjacencyProbes().GetChildAtAsync(handle, childIndex);
+
+    public ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex) => EnsureAdjacencyProbes().GetRootAtAsync(rootIndex);
   }
 }

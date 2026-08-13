@@ -101,7 +101,8 @@ namespace Copse.Linq.Treenumerables
 
         _Settled = new TreenumerableBuffer<TValue>(
           new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(preorderStore),
-          BufferLayout.Preorder);
+          BufferLayout.Preorder,
+          new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore));
 
         return _Settled;
       }
@@ -110,9 +111,25 @@ namespace Copse.Linq.Treenumerables
 
       _Settled = new TreenumerableBuffer<TValue>(
         new LevelOrderTreenumerable<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore),
-        BufferLayout.LevelOrder);
+        BufferLayout.LevelOrder,
+        new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore));
 
       return _Settled;
     }
+
+    // The adjacency half rides the settle: probing IS consumption, so a probe on an unsettled
+    // instance completes the memo's capture exactly as the first stream pull would, then
+    // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
+    public TValue GetValue(int handle)
+      => (Settle()).GetValue(handle);
+
+    public ParentResult<int> GetParent(int handle)
+      => (Settle()).GetParent(handle);
+
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
+      => (Settle()).GetChildAt(handle, childIndex);
+
+    public ChildResult<int> GetRootAt(int rootIndex)
+      => (Settle()).GetRootAt(rootIndex);
   }
 }

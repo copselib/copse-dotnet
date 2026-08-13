@@ -29,15 +29,19 @@ namespace Copse.Linq.Tests
       ("a,b(d),c(e(f))", new[] { "a", "b(d)", "c(e(f))" }),
     };
 
+    // The hand-pinned interior expectations speak preorder ordinals, so W stays the preorder
+    // provider; every law-shaped test rides the full provider fan-out below.
     private static IWalkableTreenumerable<string, int> W(string tree)
       => TreeSerializer.DeserializeDepthFirstTree(tree).MaterializeWalkable();
+
+    private static IEnumerable<(string Tree, string[] RootTrees, IWalkableTreenumerable<string, int> Walkable)> AllWalkables()
+      => Forests.SelectMany(forest => WalkerLawProviders.Walkables(forest.Tree).Select(walkable => (forest.Tree, forest.RootTrees, walkable)));
 
     [TestMethod]
     public void Counit_TheSubtreeAtARoot_IsThatRootsWholeTree()
     {
-      foreach (var (tree, rootTrees) in Forests)
+      foreach (var (tree, rootTrees, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
@@ -55,9 +59,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Counit_EveryLabelsRootValue_IsTheOriginalValue()
     {
-      foreach (var (tree, _) in Forests)
+      foreach (var (tree, _, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         foreach (var handle in walkable.GetHandles())
@@ -78,9 +81,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Severance_IsExactlyAtTheRoot()
     {
-      foreach (var (tree, _) in Forests)
+      foreach (var (tree, _, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         foreach (var handle in walkable.GetHandles())
@@ -104,9 +106,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void CoAssociativity_ASubtreeOfASubtree_IsTheDeeperSubtree()
     {
-      foreach (var (tree, _) in Forests)
+      foreach (var (tree, _, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         foreach (var handle in walkable.GetHandles())
@@ -151,9 +152,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheOuterShape_IsTheSourceShape()
     {
-      foreach (var (tree, _) in Forests)
+      foreach (var (tree, _, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         AssertSameShape(walkable.GetDepthFirstTreenumerator(), subtrees.GetDepthFirstTreenumerator(), $"depth-first [{tree}]");
@@ -169,9 +169,8 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void TheReverseDoor_AWalkersSubtree_IsDuplicatesLabel()
     {
-      foreach (var (tree, rootTrees) in Forests)
+      foreach (var (tree, rootTrees, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var subtrees = walkable.Subtrees();
 
         foreach (var handle in walkable.GetHandles())

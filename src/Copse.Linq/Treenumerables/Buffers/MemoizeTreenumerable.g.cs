@@ -98,6 +98,37 @@ namespace Copse.Linq.Treenumerables
       return _DepthFirstCapture;
     }
 
+    // The adjacency half (the buffer re-parent): probes ride the one capture through the same
+    // Handle the replays use, so a probe on a growing memo is demand (grow-precedes-read pulls
+    // the feed exactly as far as the answer needs) and a probe that must pull past a retired
+    // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
+    // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
+    private IAdjacencyProbes<TValue> _AdjacencyProbes;
+
+    private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+    {
+      if (_AdjacencyProbes != null)
+        return _AdjacencyProbes;
+
+      if (_BreadthFirstCapture != null)
+        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
+          new MemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
+      else
+        _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
+          new MemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
+
+      return _AdjacencyProbes;
+    }
+
+    public TValue GetValue(int handle) => EnsureAdjacencyProbes().GetValue(handle);
+
+    public ParentResult<int> GetParent(int handle) => EnsureAdjacencyProbes().GetParent(handle);
+
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
+      => EnsureAdjacencyProbes().GetChildAt(handle, childIndex);
+
+    public ChildResult<int> GetRootAt(int rootIndex) => EnsureAdjacencyProbes().GetRootAt(rootIndex);
+
     private MemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
     {
       if (_BreadthFirstCapture == null)

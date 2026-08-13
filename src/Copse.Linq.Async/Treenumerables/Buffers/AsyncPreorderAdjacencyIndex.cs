@@ -1,0 +1,145 @@
+using Copse.Async;
+using Copse.Async.Stores;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The preorder adjacency engine: the walker PoC's one-pass index build (open-span stack ->
+  // parents; discovery order -> child lists; stack-empty points -> roots), restructured as an
+  // INCREMENTAL SCAN so one engine serves completed captures and growing memos alike. The scan
+  // cursor advances one node at a time, each advance demanding exactly one more buffered node
+  // (grow-precedes-read), and every probe extends the scan only as far as its answer needs --
+  // the span-bounded promise of the walkable contract, by construction. On a completed store
+  // the same scan just never suspends, and probes behind the cursor are O(1) list reads.
+  //
+  // The pop rule tolerates growth: an open span's size reads 0 until the store grows past its
+  // close, so an ancestor of the frontier simply stays on the stack ("topSize > 0" gates the
+  // pop) and is re-checked when the scan resumes -- the parent recorded for each node is the
+  // stack top at its scan moment, which is correct whether or not the enclosing spans have
+  // closed yet. Single-threaded by contract, like the memo feeds it may drive.
+  internal sealed class AsyncPreorderAdjacencyIndex<TValue, TStore> : IAsyncAdjacencyProbes<TValue>
+    where TStore : IAsyncPreorderStore<TValue>
+  {
+    public AsyncPreorderAdjacencyIndex(TStore store)
+    {
+      _Store = store;
+    }
+
+    private const int NoParent = -1;
+
+    private readonly TStore _Store;
+
+    private readonly List<int> _ParentIndexes = new List<int>();
+    private readonly List<List<int>> _ChildIndexes = new List<List<int>>();
+    private readonly List<int> _RootIndexes = new List<int>();
+    private readonly List<int> _OpenSpanStack = new List<int>();
+    private int _ScanCursor;
+    private bool _Exhausted;
+
+    public async ValueTask<TValue> GetValueAsync(int handle)
+    {
+      await _Store.EnsureBufferedAsync(handle).ConfigureAwait(false);
+      return _Store.GetValue(handle);
+    }
+
+    public async ValueTask<ParentResult<int>> GetParentAsync(int handle)
+    {
+      while (_ScanCursor <= handle)
+      {
+        if (!await ScanForwardAsync().ConfigureAwait(false))
+          return default;
+      }
+
+      var parentIndex = _ParentIndexes[handle];
+
+      return parentIndex == NoParent
+        ? default
+        : new ParentResult<int>(parentIndex);
+    }
+
+    public async ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
+    {
+      if (childIndex < 0)
+        return default;
+
+      while (_ScanCursor <= handle)
+      {
+        if (!await ScanForwardAsync().ConfigureAwait(false))
+          return default;
+      }
+
+      while (_ChildIndexes[handle].Count <= childIndex)
+      {
+        // No further children can appear once the handle's span has closed behind the scan.
+        var subtreeSize = _Store.GetSubtreeSize(handle);
+
+        if (subtreeSize > 0 && _ScanCursor >= handle + subtreeSize)
+          return default;
+
+        if (!await ScanForwardAsync().ConfigureAwait(false))
+          return default;
+      }
+
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[handle][childIndex], childIndex));
+    }
+
+    public async ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex)
+    {
+      if (rootIndex < 0)
+        return default;
+
+      while (_RootIndexes.Count <= rootIndex)
+      {
+        if (!await ScanForwardAsync().ConfigureAwait(false))
+          return default;
+      }
+
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
+    }
+
+    // Advance the scan by one node: demand it from the store, settle which open spans have
+    // closed behind the cursor, and record the node's parent, its slot in that parent's child
+    // list, and (at stack-empty points) its roothood. False iff the feed exhausted first.
+    private async ValueTask<bool> ScanForwardAsync()
+    {
+      if (_Exhausted)
+        return false;
+
+      if (!await _Store.EnsureBufferedAsync(_ScanCursor).ConfigureAwait(false))
+      {
+        _Exhausted = true;
+        return false;
+      }
+
+      while (_OpenSpanStack.Count > 0)
+      {
+        var openSpanStart = _OpenSpanStack[_OpenSpanStack.Count - 1];
+        var openSpanSize = _Store.GetSubtreeSize(openSpanStart);
+
+        if (openSpanSize > 0 && openSpanStart + openSpanSize <= _ScanCursor)
+          _OpenSpanStack.RemoveAt(_OpenSpanStack.Count - 1);
+        else
+          break;
+      }
+
+      if (_OpenSpanStack.Count == 0)
+      {
+        _ParentIndexes.Add(NoParent);
+        _RootIndexes.Add(_ScanCursor);
+      }
+      else
+      {
+        var parentIndex = _OpenSpanStack[_OpenSpanStack.Count - 1];
+        _ParentIndexes.Add(parentIndex);
+        _ChildIndexes[parentIndex].Add(_ScanCursor);
+      }
+
+      _ChildIndexes.Add(new List<int>());
+      _OpenSpanStack.Add(_ScanCursor);
+      _ScanCursor++;
+
+      return true;
+    }
+  }
+}

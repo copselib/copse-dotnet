@@ -41,5 +41,23 @@ namespace Copse.Linq.Treenumerables
         new MemoizeLevelOrderStore<TValue>.Handle(_Buffer));
 
     public void Dispose() => _Buffer.Dispose();
+
+    // The adjacency half: probes ride the one level-order capture through the replay Handle --
+    // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
+    private IAdjacencyProbes<TValue> _AdjacencyProbes;
+
+    private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+      => _AdjacencyProbes ?? (_AdjacencyProbes
+        = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
+          new MemoizeLevelOrderStore<TValue>.Handle(_Buffer)));
+
+    public TValue GetValue(int handle) => EnsureAdjacencyProbes().GetValue(handle);
+
+    public ParentResult<int> GetParent(int handle) => EnsureAdjacencyProbes().GetParent(handle);
+
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
+      => EnsureAdjacencyProbes().GetChildAt(handle, childIndex);
+
+    public ChildResult<int> GetRootAt(int rootIndex) => EnsureAdjacencyProbes().GetRootAt(rootIndex);
   }
 }

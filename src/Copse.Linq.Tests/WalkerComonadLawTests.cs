@@ -29,15 +29,14 @@ namespace Copse.Linq.Tests
       "a,b(d),c(e(f))",
     };
 
-    private static IWalkableTreenumerable<string, int> W(string tree)
-      => TreeSerializer.DeserializeDepthFirstTree(tree).MaterializeWalkable();
+    private static IEnumerable<(string Tree, IWalkableTreenumerable<string, int> Walkable)> AllWalkables()
+      => Trees.SelectMany(tree => WalkerLawProviders.Walkables(tree).Select(walkable => (tree, walkable)));
 
     [TestMethod]
     public void ComonadLaw_ExtendOfExtract_IsIdentity_AndCertifiesTheWalkAdapter()
     {
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var extended = walkable.Extend((source, handle) => source.GetValue(handle));
 
         // Streams: the extended citizen's walk-adapter streams must equal the source's
@@ -59,9 +58,8 @@ namespace Copse.Linq.Tests
       Func<IWalkableTreenumerable<string, int>, int, string> observer =
         (source, handle) => $"{source.GetValue(handle)}@{Depth(source, handle)}";
 
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
         var extended = walkable.Extend(observer);
 
         foreach (var handle in walkable.GetHandles())
@@ -86,9 +84,8 @@ namespace Copse.Linq.Tests
           return $"{source.GetValue(handle)}<{parentLabel}";
         };
 
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
-        var walkable = W(tree);
 
         var stepwise = walkable.Extend(g).Extend(f);
         var composed = walkable.Extend((source, handle) => f(source.Extend(g), handle));
@@ -110,13 +107,13 @@ namespace Copse.Linq.Tests
       const string seed = "•";
       Func<string, string, string> fold = (accumulate, value) => accumulate + value;
 
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
         var viaScan = TreeSerializer.DeserializeDepthFirstTree(tree)
           .RootfixScan(seed, fold)
           .Select(result => result.Accumulate);
 
-        var viaExtend = W(tree).Extend((source, handle) =>
+        var viaExtend = walkable.Extend((source, handle) =>
         {
           var path = new List<string> { source.GetValue(handle) };
           var parentResult = source.GetParent(handle);
@@ -149,13 +146,13 @@ namespace Copse.Linq.Tests
       Func<string, string, string> edgeAccumulator = (left, right) => left + "|" + right;
       Func<string, string, string> nodeAccumulator = (accumulate, value) => accumulate + value;
 
-      foreach (var tree in Trees)
+      foreach (var (tree, walkable) in AllWalkables())
       {
         var viaScan = TreeSerializer.DeserializeDepthFirstTree(tree)
           .LeaffixScan(seed, edgeAccumulator, nodeAccumulator)
           .Select(result => result.Accumulate);
 
-        var viaExtend = W(tree).Extend((source, handle) => SubtreeFold(source, handle, seed, edgeAccumulator, nodeAccumulator));
+        var viaExtend = walkable.Extend((source, handle) => SubtreeFold(source, handle, seed, edgeAccumulator, nodeAccumulator));
 
         AssertEquivalent(viaScan, viaExtend, $"leaffix ≡ extend(subtree fold) [{tree}]");
       }

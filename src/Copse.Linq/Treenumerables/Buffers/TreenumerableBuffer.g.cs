@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerableBuffer.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Stores;
 using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
@@ -15,15 +16,33 @@ namespace Copse.Linq.Treenumerables
   // The inner may build lazily on first acquisition; "completed" is about there being no live
   // feed to retire, not about eagerness. (The flat-store treenumerable is in Copse and cannot
   // implement this Copse.Linq interface directly, hence the wrapper.)
+  //
+  // The adjacency half (the buffer re-parent): construction sites that hold the store pass an
+  // adjacency engine over it, and probes delegate. The dimension-dispatched case (layout
+  // undecided until the first pull -- the inner is an opaque lazy build, no store in hand)
+  // has no engine; its first PROBE settles by capturing the inner into a preorder store and
+  // probing that -- one extra O(n) capture, paid once, only on the rare undecided path, and
+  // only if anyone probes at all. The stream half is untouched by the settle (replays keep
+  // riding the inner), and NativeLayout keeps reporting the stream side's truth.
   internal sealed class TreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>
   {
     public TreenumerableBuffer(ITreenumerable<TValue> capture, BufferLayout? nativeLayout)
+      : this(capture, nativeLayout, null)
+    {
+    }
+
+    public TreenumerableBuffer(
+      ITreenumerable<TValue> capture,
+      BufferLayout? nativeLayout,
+      IAdjacencyProbes<TValue> adjacencyProbes)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
+      _AdjacencyProbes = adjacencyProbes;
     }
 
     private readonly ITreenumerable<TValue> _Capture;
+    private IAdjacencyProbes<TValue> _AdjacencyProbes;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
@@ -32,5 +51,42 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _Capture.GetDepthFirstTreenumerator();
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Capture.GetBreadthFirstTreenumerator();
+
+    public TValue GetValue(int handle)
+      => (EnsureAdjacencyProbes()).GetValue(handle);
+
+    public ParentResult<int> GetParent(int handle)
+      => (EnsureAdjacencyProbes()).GetParent(handle);
+
+    public ChildResult<int> GetChildAt(int handle, int childIndex)
+      => (EnsureAdjacencyProbes()).GetChildAt(handle, childIndex);
+
+    public ChildResult<int> GetRootAt(int rootIndex)
+      => (EnsureAdjacencyProbes()).GetRootAt(rootIndex);
+
+    // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
+    // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
+    // ordinals; the undecided case settles preorder (probing is consumption; the fresh-memo
+    // pin rule's shape).
+    private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+    {
+      if (_AdjacencyProbes != null)
+        return _AdjacencyProbes;
+
+      if (NativeLayout == BufferLayout.LevelOrder)
+      {
+        var levelOrderStore = LevelOrderCapture.CaptureFrom(_Capture);
+
+        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore);
+
+        return _AdjacencyProbes;
+      }
+
+      var preorderStore = PreorderCapture.CaptureFrom(_Capture);
+
+      _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore);
+
+      return _AdjacencyProbes;
+    }
   }
 }

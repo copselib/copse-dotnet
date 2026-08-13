@@ -8,10 +8,11 @@ using System.Collections.Generic;
 
 namespace Copse.Linq.Tests
 {
-  // The finite-izing escalation and the finiteness law's type-system shape
-  // (docs/WALKER_DESIGN.md): MaterializeWalkable returns the INTERSECTION
-  // (IWalkableTreenumerableBuffer = walkable AND buffer), deferred per the lazy-Materialize
-  // law; native-adjacency walkables implement the walkable interface alone. The toy tree is
+  // The finite-izing escalation after the buffer re-parent (docs/WALKABLE_CONTRACT_DESIGN.md):
+  // MaterializeWalkable is a declared-preorder Materialize, and the intersection the PoC once
+  // spelled as a separate interface is now ITreenumerableBuffer itself -- every capture is
+  // walkable ("captures are never address-poor"), deferred per the lazy-Materialize law;
+  // native-adjacency walkables still implement the walkable interface alone. The toy tree is
   // the UC-32 walkthrough's: a(b(d,e),c(f,g)), preorder ordinals a=0 b=1 d=2 e=3 c=4 f=5 g=6.
   [TestClass]
   public class MaterializeWalkableTests
