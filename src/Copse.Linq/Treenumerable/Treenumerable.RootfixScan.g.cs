@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.RootfixScan.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
 using System;
@@ -32,7 +33,7 @@ namespace Copse.Linq
       this ITreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => TreenumerableFactory.Create(
+      => Tree.Create(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetBreadthFirstTreenumerator,
           PairingAccumulator(accumulator),
@@ -46,7 +47,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => TreenumerableFactory.CreateDepthFirst(
+      => Tree.CreateDepthFirst(
         () => new RootfixScanDepthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetDepthFirstTreenumerator,
           PairingAccumulator(accumulator),
@@ -56,7 +57,7 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => TreenumerableFactory.CreateBreadthFirst(
+      => Tree.CreateBreadthFirst(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetBreadthFirstTreenumerator,
           PairingAccumulator(accumulator),
@@ -103,7 +104,7 @@ namespace Copse.Linq
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       // The engines still park a sentinel seed, but under this form it is NEVER READ: the wrapped
       // accumulator routes every root to the selector off the sentinel's POSITION alone.
-      => TreenumerableFactory.Create(
+      => Tree.Create(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetBreadthFirstTreenumerator,
           PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
@@ -117,7 +118,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => TreenumerableFactory.CreateDepthFirst(
+      => Tree.CreateDepthFirst(
         () => new RootfixScanDepthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetDepthFirstTreenumerator,
           PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
@@ -127,7 +128,7 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => TreenumerableFactory.CreateBreadthFirst(
+      => Tree.CreateBreadthFirst(
         () => new RootfixScanBreadthFirstTreenumerator<TNode, ScanResult<TNode, TAccumulate>>(
           source.GetBreadthFirstTreenumerator,
           PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),

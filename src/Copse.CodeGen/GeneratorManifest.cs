@@ -390,9 +390,6 @@ namespace Copse.CodeGen
         "AsyncLazyLevelOrderStore", "LazyLevelOrderStore", "Copse.Linq.Stores"),
 
       // The fluent-layer construction machinery (Copse.Linq is generated from Copse.Linq.Async).
-      new("Copse.Linq.Async/AsyncTreenumerableFactory.cs",
-        "Copse.Linq/TreenumerableFactory.g.cs",
-        "AsyncTreenumerableFactory", "TreenumerableFactory", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/AsyncHideTreenumerable.cs",
         "Copse.Linq/Treenumerables/HideTreenumerable.g.cs",

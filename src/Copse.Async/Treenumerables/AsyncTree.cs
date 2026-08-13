@@ -169,5 +169,27 @@ namespace Copse.Async.Treenumerables
 
     public static IAsyncTreenumerable<TNode> Empty<TNode>()
       => AsyncEmptyTreenumerable<TNode>.Instance;
+
+    // The carrier intro -- the monad's Return, made literal: a treenumerable IS (a pair of)
+    // treenumerator factories, and Create wraps them in the delegating carrier. Absorbed
+    // from TreenumerableFactory 2026-08-14 (the architecture sweep's one-word-one-meaning
+    // consolidation: Tree is the ONE creation surface -- sources for consumers, the carrier
+    // intro for operator internals). The single-dimension forms are the factories behind
+    // the narrow operator overloads (TRAVERSAL_DIMENSION_SPLIT.md): a chain over a narrow
+    // source stays narrow.
+    public static IAsyncTreenumerable<TNode> Create<TNode>(
+      Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory,
+      Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)
+      => new AsyncDelegatingTreenumerable<TNode>(
+        breadthFirstTreenumeratorFactory,
+        depthFirstTreenumeratorFactory);
+
+    public static IAsyncDepthFirstTreenumerable<TNode> CreateDepthFirst<TNode>(
+      Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)
+      => new AsyncDelegatingDepthFirstTreenumerable<TNode>(depthFirstTreenumeratorFactory);
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> CreateBreadthFirst<TNode>(
+      Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
+      => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
   }
 }

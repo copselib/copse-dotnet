@@ -1,3 +1,4 @@
+using Copse.Async.Treenumerables;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using Copse.Linq.Treenumerators;
@@ -13,7 +14,7 @@ namespace Copse.Linq
     public static IAsyncTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IAsyncTreenumerable<TLeft> leftTreenumerable,
       IAsyncTreenumerable<TRight> rightTreenumerable)
-      => AsyncTreenumerableFactory.Create(
+      => AsyncTree.Create(
         () => new AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetAsyncBreadthFirstTreenumerator,
           rightTreenumerable.GetAsyncBreadthFirstTreenumerator),
@@ -24,7 +25,7 @@ namespace Copse.Linq
     public static IAsyncDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IAsyncDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncDepthFirstTreenumerable<TRight> rightTreenumerable)
-      => AsyncTreenumerableFactory.CreateDepthFirst(
+      => AsyncTree.CreateDepthFirst(
         () => new AsyncStructuralMergeDepthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetAsyncDepthFirstTreenumerator,
           rightTreenumerable.GetAsyncDepthFirstTreenumerator));
@@ -32,7 +33,7 @@ namespace Copse.Linq
     public static IAsyncBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IAsyncBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncBreadthFirstTreenumerable<TRight> rightTreenumerable)
-      => AsyncTreenumerableFactory.CreateBreadthFirst(
+      => AsyncTree.CreateBreadthFirst(
         () => new AsyncStructuralMergeBreadthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetAsyncBreadthFirstTreenumerator,
           rightTreenumerable.GetAsyncBreadthFirstTreenumerator));

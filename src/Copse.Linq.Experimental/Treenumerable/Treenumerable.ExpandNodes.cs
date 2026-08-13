@@ -1,3 +1,4 @@
+using Copse.Treenumerables;
 ﻿using Copse.Core;
 using Copse.Linq.Experimental.Treenumerators.ExpandNodes;
 using System;
@@ -33,7 +34,7 @@ namespace Copse.Linq.Experimental
       Func<NodeContext<TSource>, bool> predicate,
       Func<NodeContext<TSource>, ITreenumerable<TExpandedNode>> nodeExpander,
       Func<NodeContext<TSource>, NodeContext<TExpandedNode>, TResult> selector)
-      => TreenumerableFactory.Create(
+      => Tree.Create(
         () => throw new NotImplementedException(),
         () => new ExpandNodesDepthFirstTreenumerator<TSource, TExpandedNode, TResult>(() => source.GetDepthFirstTreenumerator(), predicate, nodeExpander, selector));
   }

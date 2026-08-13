@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.Do.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
 using System;
@@ -22,7 +23,7 @@ namespace Copse.Linq
         return source;
 
       return
-        TreenumerableFactory
+        Tree
         .Create(
           () => new DoTreenumerator<TNode>(source.GetBreadthFirstTreenumerator, onNext),
           () => new DoTreenumerator<TNode>(source.GetDepthFirstTreenumerator, onNext));
@@ -36,7 +37,7 @@ namespace Copse.Linq
         return source;
 
       return
-        TreenumerableFactory.CreateDepthFirst(
+        Tree.CreateDepthFirst(
           () => new DoTreenumerator<TNode>(source.GetDepthFirstTreenumerator, onNext));
     }
 
@@ -48,7 +49,7 @@ namespace Copse.Linq
         return source;
 
       return
-        TreenumerableFactory.CreateBreadthFirst(
+        Tree.CreateBreadthFirst(
           () => new DoTreenumerator<TNode>(source.GetBreadthFirstTreenumerator, onNext));
     }
   }

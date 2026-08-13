@@ -1,3 +1,4 @@
+using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
@@ -19,7 +20,7 @@ namespace Copse.Linq
         return source;
 
       return
-        AsyncTreenumerableFactory
+        AsyncTree
         .Create(
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext),
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
@@ -33,7 +34,7 @@ namespace Copse.Linq
         return source;
 
       return
-        AsyncTreenumerableFactory.CreateDepthFirst(
+        AsyncTree.CreateDepthFirst(
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
     }
 
@@ -45,7 +46,7 @@ namespace Copse.Linq
         return source;
 
       return
-        AsyncTreenumerableFactory.CreateBreadthFirst(
+        AsyncTree.CreateBreadthFirst(
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator, onNext));
     }
   }

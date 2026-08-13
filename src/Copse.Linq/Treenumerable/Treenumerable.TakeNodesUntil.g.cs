@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.TakeNodesUntil.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
 using System;
@@ -57,7 +58,7 @@ namespace Copse.Linq
       ITreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)
-      => TreenumerableFactory.Create(
+      => Tree.Create(
         () => new TakeNodesUntilTreenumerator<TNode>(
           source.GetBreadthFirstTreenumerator,
           predicate,
@@ -71,7 +72,7 @@ namespace Copse.Linq
       IDepthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)
-      => TreenumerableFactory.CreateDepthFirst(
+      => Tree.CreateDepthFirst(
         () => new TakeNodesUntilTreenumerator<TNode>(
           source.GetDepthFirstTreenumerator,
           predicate,
@@ -81,7 +82,7 @@ namespace Copse.Linq
       IBreadthFirstTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate,
       bool keepFinalNode)
-      => TreenumerableFactory.CreateBreadthFirst(
+      => Tree.CreateBreadthFirst(
         () => new TakeNodesUntilTreenumerator<TNode>(
           source.GetBreadthFirstTreenumerator,
           predicate,

@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.Union.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
 
@@ -16,7 +17,7 @@ namespace Copse.Linq
     public static ITreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this ITreenumerable<TLeft> leftTreenumerable,
       ITreenumerable<TRight> rightTreenumerable)
-      => TreenumerableFactory.Create(
+      => Tree.Create(
         () => new StructuralMergeBreadthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetBreadthFirstTreenumerator,
           rightTreenumerable.GetBreadthFirstTreenumerator),
@@ -27,7 +28,7 @@ namespace Copse.Linq
     public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IDepthFirstTreenumerable<TRight> rightTreenumerable)
-      => TreenumerableFactory.CreateDepthFirst(
+      => Tree.CreateDepthFirst(
         () => new StructuralMergeDepthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetDepthFirstTreenumerator,
           rightTreenumerable.GetDepthFirstTreenumerator));
@@ -35,7 +36,7 @@ namespace Copse.Linq
     public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IBreadthFirstTreenumerable<TRight> rightTreenumerable)
-      => TreenumerableFactory.CreateBreadthFirst(
+      => Tree.CreateBreadthFirst(
         () => new StructuralMergeBreadthFirstTreenumerator<TLeft, TRight>(
           leftTreenumerable.GetBreadthFirstTreenumerator,
           rightTreenumerable.GetBreadthFirstTreenumerator));

@@ -2,6 +2,7 @@
 //   Generated from AsyncTreenumerable.Hide.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
 
@@ -22,12 +23,12 @@ namespace Copse.Linq
 
     public static IDepthFirstTreenumerable<TNode> Hide<TNode>(
       this IDepthFirstTreenumerable<TNode> source)
-      => TreenumerableFactory.CreateDepthFirst(
+      => Tree.CreateDepthFirst(
         () => new HideTreenumerator<TNode>(source.GetDepthFirstTreenumerator));
 
     public static IBreadthFirstTreenumerable<TNode> Hide<TNode>(
       this IBreadthFirstTreenumerable<TNode> source)
-      => TreenumerableFactory.CreateBreadthFirst(
+      => Tree.CreateBreadthFirst(
         () => new HideTreenumerator<TNode>(source.GetBreadthFirstTreenumerator));
   }
 }

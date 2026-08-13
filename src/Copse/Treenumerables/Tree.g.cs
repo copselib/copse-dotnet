@@ -149,5 +149,27 @@ namespace Copse.Treenumerables
 
     public static ITreenumerable<TNode> Empty<TNode>()
       => EmptyTreenumerable<TNode>.Instance;
+
+    // The carrier intro -- the monad's Return, made literal: a treenumerable IS (a pair of)
+    // treenumerator factories, and Create wraps them in the delegating carrier. Absorbed
+    // from TreenumerableFactory 2026-08-14 (the architecture sweep's one-word-one-meaning
+    // consolidation: Tree is the ONE creation surface -- sources for consumers, the carrier
+    // intro for operator internals). The single-dimension forms are the factories behind
+    // the narrow operator overloads (TRAVERSAL_DIMENSION_SPLIT.md): a chain over a narrow
+    // source stays narrow.
+    public static ITreenumerable<TNode> Create<TNode>(
+      Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory,
+      Func<ITreenumerator<TNode>> depthFirstTreenumeratorFactory)
+      => new DelegatingTreenumerable<TNode>(
+        breadthFirstTreenumeratorFactory,
+        depthFirstTreenumeratorFactory);
+
+    public static IDepthFirstTreenumerable<TNode> CreateDepthFirst<TNode>(
+      Func<ITreenumerator<TNode>> depthFirstTreenumeratorFactory)
+      => new DelegatingDepthFirstTreenumerable<TNode>(depthFirstTreenumeratorFactory);
+
+    public static IBreadthFirstTreenumerable<TNode> CreateBreadthFirst<TNode>(
+      Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
+      => new DelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
   }
 }
