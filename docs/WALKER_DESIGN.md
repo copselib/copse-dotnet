@@ -1,8 +1,14 @@
 # Walker Design: The Adjacency Half
 
-**Status:** Experimental — design conversation captured, no code yet.
+**Status:** BUILT and superseded-in-part (original: design conversation, 2026-08-10; the
+walker tier now ships — `TreeWalker` with pinned comonad laws, `Extend`/`Subtrees`/the
+lens family, and the buffer re-parent that made every capture walkable). This document is
+the design HISTORY plus the findings ledger; the living contract design is
+[WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md), and the categorical story is
+[CATEGORY_THEORY_SURVEY.md](CATEGORY_THEORY_SURVEY.md) §4. Sections describing superseded
+shapes carry inline notes.
 **Branch:** `experimental/walker`
-**Date:** 2026-08-10
+**Date:** 2026-08-10 (status updated 2026-08-13)
 **Prior art:** [jasonmcboyd/Treenumerable](https://github.com/jasonmcboyd/Treenumerable) (2016), the precursor library whose `ITreeWalker<T>` is the direct ancestor of this design. See [issue #16](https://github.com/jasonmcboyd/Treenumerable/issues/16) (September 2016) for the moment the streaming model that became Copse split off from it.
 
 ---
@@ -98,7 +104,16 @@ rejected as dishonest); and the address provider's native child operation is
 append-an-index. The engine's `IChildEnumerator` pull protocol is untouched —
 that is the hierarchical family's source adapter, a different job.
 
-### The finiteness law, in the type system (ruled 2026-08-10, built)
+### The finiteness law, in the type system (ruled 2026-08-10, built — SUPERSEDED IN SHAPE 2026-08-13)
+
+> **Superseded note (the buffer re-parent, WALKABLE_CONTRACT_DESIGN.md):** the law
+> survives; its spelling changed. `ITreenumerableBuffer` now IMPLEMENTS
+> `IWalkableTreenumerable<TValue, int>` ("captures are never address-poor"), so the named
+> intersection below (`IWalkableTreenumerableBuffer`) is DELETED — the intersection IS
+> `ITreenumerableBuffer` itself — and `MaterializeWalkable` collapsed into
+> `Materialize(BufferLayout.Preorder)`. The walkable-only cell keeps its citizens, now the
+> honest ones: LENS VIEWS (a `Subtrees()` label affords adjacency, owns nothing) and
+> future native-adjacency providers. The infinity permission stands unchanged.
 
 *The walker's true requirement is adjacency, not materialization* — and that law
 bakes into the types as the ORTHOGONALITY of two capabilities the library
