@@ -89,7 +89,7 @@ public interface ITreenumerableBuffer<TValue>
 | Implementer | Probe strategy |
 |---|---|
 | `TreenumerableBuffer` / `MaterializeTreenumerable` (completed captures) | The lazy index machinery the walker PoC already built: preorder store → CSR child index + parent index (~2n ints, one pass, built on first probe); level-order store → child arithmetic native, parent index via the stackless two-cursor merge. Zero cost if never probed. |
-| Memoize buffers (live feed) | **Pull-through**: a probe is demand — `EnsureBuffered`/`EnsureChildAvailable` force the source exactly as far as the probe reaches (grow-precedes-read already speaks this). A probe past the frontier of an incomplete memo advances the frontier. |
+| Memoize buffers (live feed) | **Pull-through**: a probe is demand — `EnsureBuffered`/`EnsureChildAvailable` force the source exactly as far as the probe reaches (grow-precedes-read already speaks this; the pattern is already shipped and law-tested — `MaterializeWalkable` today IS a walkable over a growing store, `WalkablePreorderTreenumerable` + `LazyPreorderStore`). `Memoize`'s signature is unchanged — `IMemoizeTreenumerableBuffer` becomes walkable transitively. **Probe-cost disclosure (review 2026-08-13):** upward probes NEVER force — parents precede children in both layouts, so a held handle's ancestry is always already buffered. Downward probes force span-bounded enumeration, layout-shaped: `GetChildAt` on a preorder memo may complete the node's subtree span to answer "no such child" (level-order: one level ahead, cheap); `GetRootAt(k)` on preorder may finish k−1 root subtrees (level-order: leading entries, cheap). The memo's existing bargain (cross-dimension pulls force the same way), inside the laziness policy: documented, not hidden. **Disposal interaction:** disposing retires the feed — the buffered region stays fully walkable; probes past the frontier can no longer race and fail (HOW they fail is OPEN-6). `Complete()` ends the distinction: a completed memo probes like any capture. |
 | `AsyncMaterializeTreenumerable` (lazy declared-layout capture) | Probe forces the capture (the completion seam already exists for the stream side; adjacency rides the same `CompleteAsync`). |
 | Computed / external terrains | Unchanged — terrain (or walkable) implementers by hand, never buffers. |
 
@@ -173,3 +173,27 @@ with the split, 2026-08-13; see §1a.)*
   retire to internal vs stay public. Proposal: internal.
 - **OPEN-5 (async shapes):** `ValueTask` probes, `Async` suffix, no CT (edges-only).
   Confirm the member shapes in §3.
+- **OPEN-6 (disposed-memo probe failure):** how does a past-frontier probe fail on a
+  memo whose feed was retired by disposal? Proposal: **throw** — a retired-feed probe is
+  a lifecycle error, not a "no such node" fact; a `HasChild == false` miss would lie
+  (the node may exist in the unenumerated source). The buffered region stays fully
+  walkable either way.
+
+## 7. Review rulings (2026-08-13, conversation)
+
+- **The up-navigation slot question is a NON-ISSUE for this design** (Jason's ruling):
+  knowing an ancestor's child index would only guarantee resuming enumeration of the
+  grandparent's child group mid-stream — an enumerator-flavored guarantee the walker
+  never made and by design refuses (stances carry no enumeration state; that was the
+  cursor/enumerator split). Nothing on the walker's promised surface (`Value`,
+  `MoveToParent`, `MoveToChild`, `Extend`, `Duplicate`, `Subtree`) consults a slot, and
+  the comonad laws never mention one. The analysis survives as the navigation-price
+  spectrum (WALKER_DESIGN.md) — the price sheet for a sibling-step or walk-forever
+  feature if one is ever proposed; footnote: buffer layout-ordinals would make such a
+  feature near-free on captures (level-order slots are arithmetic) while computed
+  terrains pay the scan. Gates nothing here.
+- **Memoize under the re-parent** — signature unchanged, walkable transitively, probes
+  are demand; the racing-enumerator semantics Jason anticipated are the shipped
+  grow-precedes-read pattern. Details folded into the §2 memo row (probe-cost
+  disclosure, disposal interaction, `Complete()` as the distinction's end); the one new
+  ruling owed is OPEN-6.
