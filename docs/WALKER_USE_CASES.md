@@ -293,9 +293,20 @@ The strawman imagined a mutable cursor; what shipped is an immutable STANCE — 
 return new walkers, the comonad is pure, and "no unfocused cursor" is a constructor
 invariant (the doors are result-typed; the empty forest grants no walker).
 
-## G. Capstone — the spanning subtree of k nodes (UC-32) — **RUNNING** (`SpanningSubtreeScenarioTests`, 2026-08-14)
+## G. Capstone — the spanning subtree of k nodes (UC-32) — **SHIPPED** (`SpanningSubtree`, 2026-08-14)
 
-One arc, every floor. Today's spelling, floor by floor:
+The capstone is now an operation:
+
+```csharp
+TreeWalkerResult<TValue, int> SpanningSubtree<TValue, THandle>(
+  this IWalkableTreenumerable<TValue, THandle> source, IEnumerable<THandle> targets)
+```
+
+— the walker at the spanning root, over a fresh O(kept) capture (its own handle space, per
+the per-capture clause). Result-typed twice: no targets and disjoint trees are honest
+misses; one target is the node alone. `SpanningSubtreeScenarioTests` pins the whole
+semantic surface AND keeps the decomposed arc below running, so the composition claim
+stays executable. The floor-by-floor walkthrough the operation distills:
 
 ```csharp
 // 1. The streaming algebra feeds the walker a derived tree (untouched, as designed):
