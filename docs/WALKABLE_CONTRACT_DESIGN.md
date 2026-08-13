@@ -228,3 +228,94 @@ withdrawn with the split, 2026-08-13; see §1a.)*
   grow-precedes-read pattern. Details folded into the §2 memo row (probe-cost
   disclosure, disposal interaction, `Complete()` as the distinction's end); the one new
   ruling owed is OPEN-6.
+
+## 8. The walker crosses colors (PROPOSED 2026-08-14 — the item-4 design; nothing built until the OPENs below are ruled)
+
+The last thing keeping the walker tier PoC-grade: its eleven operator files are
+hand-written sync in `Copse.Linq/Walker/`, outside the codegen single-sourcing every
+other color-flavored citizen lives under. Two of Jason's instincts shaped this design in
+review: "TreeWalker is fundamental enough that it might deserve an interface in
+Copse.Core" and "it doesn't belong in Copse.Linq — otherwise we duplicate it for the
+async tier."
+
+**The duplication concern is answered by codegen, not shared placement** — the async
+tier is authored once (`AsyncTreeWalker` etc. in the async color) and the sync twins are
+generated, replacing today's hand-written files: one source, two colors, the house
+mechanism. And `Copse.Linq.Traversal` cannot host the walker: that project is the
+color-NEUTRAL Linq substrate (`BufferLayout` lives there because both colors speak it),
+while `TreeWalker` is color-flavored to the bone — its terrain field is the sync
+walkable contract, its async twin has different member shapes. But the instincts land
+on two real re-homings, along the RUNG axis:
+
+### 8a. The contract goes to Core (PROPOSED — OPEN-7)
+
+`IWalkableTreenumerable` + `ParentResult`/`ChildResult` move to the
+`Copse.Core`/`Copse.Core.Async` pair. The walkable contract extends `ITreenumerable`,
+is the fourth rung of the capability ladder, and is implemented by every buffer in the
+library — it sits in the concrete `Copse` project only because the PoC put it there. By
+the same logic that homes `ITreenumerable` in Core, the walkable rung belongs beside it.
+(Mechanics: the async sources move projects and the manifest rows re-point; the
+transcription is unchanged.)
+
+### 8b. The walker core sinks a rung (PROPOSED — OPEN-8)
+
+Dependency audit: `TreeWalker`, `TreeWalkerResult`, `Extend`/`ExtendWalkable`,
+`Subtrees`/`SubtreeWalkable`, `WalkerWalk`, the doors (`WalkerAt`/`GetRootWalker`), and
+`GetHandles` consume only the walkable contract and the hierarchical engine — both
+`Copse`-level (contract Core-bound per 8a). Only the LENS family (`PruneAfterWalkable`
+and future Select/PruneBefore lenses) needs `Copse.Linq`'s operator machinery. So the
+walker core is authored in `Copse.Async` and generated into `Copse` — base-package
+citizens, which is Jason's "fundamental enough" instinct landing as PACKAGE PLACEMENT:
+the walker ships with the engine and the factories, not with the operators. The lens
+family stays a `Copse.Linq.Async` → `Copse.Linq` pair.
+
+### 8c. `ITreeWalker` is deferred pending a second citizen (PROPOSED — OPEN-9)
+
+Three findings from the interface review: (1) interface-typed walkers box — the
+measured lesson; the interface may exist only as a generic CONSTRAINT (the
+`TChildEnumerator` discipline), never a field or return type; (2) the self-type
+problem — `Extend`/`Duplicate` return "your own kind," which C# interfaces cannot
+express cleanly, so any `ITreeWalker` would carry `Value` + step verbs only: a
+navigation interface, not the comonad's; (3) `DagWalker` is NOT its citizen — dag steps
+are edge-atomic (in-edge groups), and the collapse law makes the dag walker a SIBLING
+contract, not an implementer. The restraint rule therefore holds: today `TreeWalker`
+has one implementation and no polymorphic consumer; the interface is minted when the
+second citizen (the rich navigation stance from the spectrum, or an address-walker)
+arrives, with the constraint-only design recorded here so it is ready.
+
+### 8d. Async member shapes (PROPOSED — OPEN-10)
+
+```csharp
+public readonly struct AsyncTreeWalker<TValue, THandle>
+{
+  public THandle Focus { get; }                                    // unchanged: data, not I/O
+  ValueTask<TValue> GetValueAsync();                               // extract -- a property cannot await
+  ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync();
+  ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex);
+  AsyncTreeWalker<TResult, THandle> Extend<TResult>(...);          // observer arrow: OPEN-10
+  IAsyncWalkableTreenumerable<TValue, THandle> Subtree();          // view construction: no I/O
+}
+```
+
+- **OPEN-10, the observer arrow**: does async `Extend` take sync observers only
+  (`Func<walker, TResult>` — transcribes cleanly; observers that probe must block, which
+  async observers exist to avoid) or async observers
+  (`Func<walker, ValueTask<TResult>>` — honest, but the sync transcription must
+  collapse the arrow, a new transcriber capability)? Lean: async observers, since an
+  observer's whole purpose is probing and probes are async in that color; the
+  transcriber grows the arrow-collapse rule once, the way it grew the Renames table.
+- Steps and extract are `ValueTask` (probes are pulls; completed captures answer
+  synchronously); no CancellationToken (edges-only); `Duplicate` stays
+  `Extend(walker => walker)`; the no-unfocused invariant and result-struct family
+  transfer verbatim.
+
+### Execution order (once OPEN-7..10 are ruled)
+
+1. 8a — contract family to the Core pair; manifest re-points; pure move, suite green.
+2. 8b — walker core authored async in `Copse.Async`, sync twins generated into `Copse`;
+   the hand-written `Copse.Linq/Walker` core files retire; lens pair stays put. The law
+   suites re-run unchanged (they speak the public surface).
+3. 8d — the async walker surface ships with its own law suite (the async twin of
+   `TreeWalkerLawTests`, over async providers).
+4. Docs: survey §4 notes the walker tier is single-sourced; CLAUDE.md's project map
+   gains the walker's placement.
