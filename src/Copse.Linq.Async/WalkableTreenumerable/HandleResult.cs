@@ -1,4 +1,5 @@
-namespace Copse.Async
+using Copse.Async;
+namespace Copse.Linq
 {
   /// <summary>
   /// The result of a single-handle search: whether a match was found and, if so, its handle.

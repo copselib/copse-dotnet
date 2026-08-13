@@ -1,8 +1,9 @@
+using Copse.Async;
 using Copse.Core.Async;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Linq.Async.Treenumerables
 {
   // The re-rooted view -- the region floor's first lens, and the label type of the cofree
   // duplicate (Subtrees): the source seen with one node as the sole root, upward sight severed

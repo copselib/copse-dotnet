@@ -2,8 +2,9 @@
 //   Generated from AsyncWalkableTreenumerable.Subtrees.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 
-namespace Copse
+namespace Copse.Linq
 {
   public static partial class WalkableTreenumerable
   {

@@ -3,7 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 
-namespace Copse
+namespace Copse.Linq
 {
   public static partial class WalkableTreenumerable
   {

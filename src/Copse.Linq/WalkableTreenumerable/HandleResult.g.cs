@@ -2,7 +2,7 @@
 //   Generated from HandleResult.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-namespace Copse
+namespace Copse.Linq
 {
   /// <summary>
   /// The result of a single-handle search: whether a match was found and, if so, its handle.

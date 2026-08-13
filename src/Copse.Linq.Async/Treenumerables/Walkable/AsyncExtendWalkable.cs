@@ -1,8 +1,9 @@
+using Copse.Async;
 using Copse.Core.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Linq.Async.Treenumerables
 {
   // The comonad's defining operation, made concrete: a relabeling of the SAME shape where
   // every node's new value is an arbitrary observation of its focus -- the observer receives

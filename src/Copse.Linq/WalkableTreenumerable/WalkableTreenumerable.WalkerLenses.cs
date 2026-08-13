@@ -5,7 +5,7 @@ using System;
 
 namespace Copse.Linq
 {
-  public static partial class Treenumerable
+  public static partial class WalkableTreenumerable
   {
     /// <summary>
     /// The restriction lens: <c>PruneAfter</c> over a WALKABLE stays walkable. Same semantics

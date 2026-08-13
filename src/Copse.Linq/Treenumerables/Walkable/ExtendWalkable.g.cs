@@ -5,7 +5,7 @@
 using Copse.Core;
 using System;
 
-namespace Copse
+namespace Copse.Linq.Treenumerables
 {
   // The comonad's defining operation, made concrete: a relabeling of the SAME shape where
   // every node's new value is an arbitrary observation of its focus -- the observer receives

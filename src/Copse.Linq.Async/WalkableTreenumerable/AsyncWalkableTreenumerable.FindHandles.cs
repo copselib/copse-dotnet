@@ -1,9 +1,10 @@
+using Copse.Async;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse.Linq
 {
   public static partial class AsyncWalkableTreenumerable
   {

@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Copse
+namespace Copse.Linq
 {
   public static partial class WalkableTreenumerable
   {

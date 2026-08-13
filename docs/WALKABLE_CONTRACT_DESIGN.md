@@ -353,3 +353,41 @@ public readonly struct AsyncTreeWalker<TValue, THandle>
    `TreeWalkerLawTests`, over async providers).
 4. Docs: survey §4 notes the walker tier is single-sourced; CLAUDE.md's project map
    gains the walker's placement.
+
+## 9. The placement pass (RATIFIED and EXECUTED 2026-08-14 — the architecture review)
+
+Jason's solution-architecture review re-ruled §8's placement half and landed on the
+design's cleanest statement: **carriers in Core, algebras in Linq, for both tenants** —
+the comonad placed exactly as the monad always was.
+
+- **`TreeWalker` + `TreeWalkerResult` → the Core pair** (Jason: "we don't need the
+  interface [OPEN-9's deferred `ITreeWalker`] — maybe we just put the TreeWalker there").
+  Core now holds both tenants' carriers: `ITreenumerable` (monad) and `TreeWalker`
+  (comonad), beside the contracts they consume. The comonad members that could not come
+  along — `Extend`, `Duplicate`, `Subtree`, whose results are walkables and walkables
+  STREAM, which needs the Walk adapter above Core — became Linq extensions: the same
+  split `Select`/`Where` have always had from `ITreenumerable`. The constructor went
+  PUBLIC (construction IS the trust-based door; `WalkerAt` stays as discoverable sugar)
+  and the terrain field became the public `Walkable` property (a vantage is focus ×
+  terrain; the operator tier builds from the pair).
+- **The rest of the walker tier → `Copse.Linq(.Async)`** (Jason's charter argument:
+  operator-dedicated machinery lives WITH its operators, the `Where`-treenumerator
+  precedent; and nothing in the base project depended on the tier). New layout:
+  `Copse.Linq/WalkableTreenumerable/` = the extension partials as
+  `static partial class WalkableTreenumerable` (Extend, Subtrees, Get*/Find*, doors,
+  lenses, SpanningSubtree, and the carrier's extracted comonad members);
+  `Copse.Linq/Treenumerables/Walkable/` = the machinery (`ExtendWalkable`,
+  `SubtreeWalkable`, `WalkerWalk`, `PruneAfterWalkable`). The singular/plural folder
+  convention (extensions/types) now spans both receiver families.
+- **`HandleResult` stays Linq** — Jason's ruling completed the results rule: *results
+  live beside the operation that speaks them* (`ChildResult`/`ParentResult` contract-
+  spoken → Core; `TreeWalkerResult` step-spoken → Core with its carrier; `HandleResult`
+  `FindHandle`-spoken → Linq).
+- §8b's location half is thereby REVISED (base-package placement retracted; the
+  fundamentality instinct belonged to the contract, which 8a honored, and now to the
+  carrier, which Core holds); its single-sourcing half stands unchanged — every file
+  above remains authored async, generated sync.
+
+Deferred from the same review, still open: folding `TreenumerableFactory` into `Tree`
+down in `Copse` (the carrier-intro is operator infrastructure with no Linq dependency;
+"one word one meaning"), and the `Extensions/` vs `EnumerableExtensions/` folder diff.

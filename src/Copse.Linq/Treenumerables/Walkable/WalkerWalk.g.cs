@@ -7,7 +7,7 @@ using Copse.Core;
 using System;
 using System.Collections.Generic;
 
-namespace Copse
+namespace Copse.Linq.Treenumerables
 {
   // The Walk() adapter -- the tower's named build dependency, and a thin composition over the
   // EXISTING hierarchical engine: a walkable's indexed child probe IS a child pull, so driving
