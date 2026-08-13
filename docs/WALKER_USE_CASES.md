@@ -1,7 +1,11 @@
 # Walker Use-Case Catalog
 
-**Status:** Working document — the evidence-gathering step ruled in
-[WALKER_DESIGN.md](WALKER_DESIGN.md) §7. Call sites first, contract second.
+**Status:** Design history + status sweep. The mocks below are the ORIGINAL strawman
+(2026-08-10, the evidence-gathering step ruled in [WALKER_DESIGN.md](WALKER_DESIGN.md) §7 —
+call sites first, contract second); the **2026-08-14 status sweep** immediately below maps
+every use case onto the SHIPPED surface — what is expressible today, in what spelling, and
+what each gap is waiting on. The living contract is
+[WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md).
 **Branch:** `experimental/walker`
 
 Every entry mocks up *the calling code we would want to write*, then classifies it:
@@ -27,6 +31,98 @@ Harvest sources:
    problem's real queries, re-asked walker-shaped.
 3. XPath's axis list as a completeness checklist.
 4. Walker-only classics no stream can serve.
+
+---
+
+## The 2026-08-14 status sweep — the catalog re-walked against the shipped surface
+
+The headline finding first, because it is the tower's strongest validation: **the walk
+floor shipped with ZERO new operators.** "Copse algebra applied mid-structure" — the
+floor's entire design promise — turned out to be `walker.Subtree()` composed with the
+existing streaming algebra: the reverse door produces a walkable treenumerable, and every
+operator, scan, and traversal already works on it. Section C below (the floor's charter
+use cases) is green today by composition alone. The sequence floor's primitives all
+shipped (probes, walkers, `GetHandles`); what it lacks is exactly the 2016 library's
+*sugar* — the axis-extension wave, for which the 29 extensions below remain the spec. The
+region floor has one lens (the severed subtree view); its set algebra and the DAG side are
+still design.
+
+### The strawman → shipped spelling map
+
+| Strawman | Shipped |
+|---|---|
+| `tree.GetWalker()` | Any capture: `tree.Materialize(BufferLayout.Preorder)` — the buffer re-parent made every capture walkable ("captures are never address-poor"), so there is no separate walker-acquisition step |
+| axes as walker methods taking a handle | The four probes on `IWalkableTreenumerable` + `TreeWalker` step verbs; derived axes = the pending sugar wave |
+| `.Walk(Order.X)` | The walkable IS a treenumerable (both dimensions, always); mid-structure walks are `walker.Subtree()` then any consumption |
+| `.ToTree()` reify | `Materialize` |
+| `.Nodes` (unordered set) | `GetHandles()` / `GetHandlesWithValues()` (order deliberately unspecified — the set is the promise) |
+| `Upstream(n)` / `Downstream(n)` regions | Downward: `walker.Subtree()` (the severed view). Upward: the climb (hand); region algebra pending. DAG closures: the dag branch's design |
+| cursor `At(n)` | `walkable.WalkerAt(handle)`; the root door `GetRootWalker(k)` |
+
+### Verdicts, per use case
+
+Legend: **SHIPPED** (the spelling exists) · **COMPOSED** (green today by composing shipped
+pieces) · **HAND** (green today via a short loop over shipped probes; the sugar belongs to
+the axis wave) · **AXES** (awaits the axis wave proper) · **PRICED** (awaits a navigation
+citizen per WALKER_DESIGN's navigation-price spectrum) · **SAMPLE** (the contract supports
+it; the sample provider is unbuilt) · **DAG** (dag-branch territory, unbuilt there).
+
+| UC | Verdict | Today's spelling / the gap |
+|---|---|---|
+| 01 ancestors | HAND | climb via `MoveToParent()` loop; `GetAncestors` sugar pending |
+| 02 root | HAND | climb to the last stance |
+| 03 single-step | SHIPPED | `GetParent`/`GetChildAt` probes; `MoveToParent`/`MoveToChild`; the `Has*` flags are the result structs |
+| 04 indexed child | SHIPPED | `GetChildAt(handle, k)` — the strawman name even survived; by-key = consumer predicate over `GetHandlesWithValues` (the pledge keeps value search consumer-side) |
+| 05 siblings | PRICED | needs the slot — the spectrum's ladder; HAND meanwhile (parent + child sweep) |
+| 06 descendants | COMPOSED | `walker.Subtree().GetHandles()` or any traversal of the severed view |
+| 07 leaves under | COMPOSED | `walker.Subtree().GetLeaves()` |
+| 08 branches | AXES | the path-semantics canary — still owed its loud name |
+| 09 measures | HAND/COMPOSED | depth = climb count; height/size = `Subtree()` + scans; degree = probe sweep |
+| 10 traversals | COMPOSED | `Subtree()` + `PreorderTraversal`/`LevelOrderTraversal` |
+| 11 is-ancestor | HAND | climb comparing handles (provider's-own-terms equality) |
+| 12 LCA | HAND | climb + handle set; the address-walker would make it arithmetic (spectrum) |
+| 13 distance/path | HAND | two climbs + the LCA |
+| 14 aggregate one subtree | **COMPOSED** | `walker.Subtree().LeaffixScan(seed, edge, node)` — the walk floor's thesis, one line |
+| 15 rootfix mid-tree | COMPOSED | climb to fold the prefix seed (hand), then `Subtree().RootfixScan(prefixSeed, fold)` — the designed shape, verbatim |
+| 16 prune in region | COMPOSED | `Subtree().PruneBefore(...)`, `.Where(...)`, anything |
+| 17–24 DAG closures | DAG | await the dag walkable contract; the tree-side machinery those designs analogized from is now proven |
+| 25 stream→store→walker | SHIPPED, better | the documented materialization became a *property of capture itself* — `Materialize` IS the walkable |
+| 26 degenerate tower | SHIPPED | the Walk adapter's conformance pin (`Extend(extract) ≡ id` certifies it against the store treenumerators) |
+| 27 frozen-then-back | SHIPPED | views share the source's handles (Extend/Subtree delegate them untouched); the per-capture clause bounds the promise |
+| 28 detached snapshot | SHIPPED | a fresh `Materialize` is the detachment |
+| 29 Collatz | SAMPLE | the contract supports it (root = 1, adjacency computable); `Copse.Trees` sample unbuilt |
+| 30 file system | SAMPLE | external-adjacency adapter unbuilt |
+| 31 cursor | **SHIPPED** | `TreeWalker` — the strawman's mutable cursor became an immutable stance (better: steps return new walkers, the comonad is pure) |
+| 32 capstone | PARTIAL | acquisition ✓ (`GetHandlesWithValues`), re-root ✓ (`Subtree()`), view stack ✓ (lens + `Extend`); the LCA/spanning arithmetic is HAND until the axis wave |
+
+```csharp
+// UC-31, shipped -- the cursor is TreeWalker: stances are values, steps are maybes
+var walkable = tree.Materialize(BufferLayout.Preorder);
+var walker = walkable.GetRootWalker().Walker;
+var child = walker.MoveToChild(0);
+if (child.HasWalker)
+  Process(child.Walker.GetValue());          // walker itself is unmoved -- no mutation, ever
+
+// UC-14, shipped by composition -- Leaffix over Descendants(n), the walk floor's thesis:
+var subtreeAccumulations = walker.Subtree().LeaffixScan(seed, edgeAccumulator, nodeAccumulator);
+
+// UC-27, shipped -- analyze a label, jump back to the source: views share the handle space
+var label = walkable.Subtrees().GetValue(handle);
+var backHome = walkable.WalkerAt(handle);
+```
+
+### The re-tally
+
+The original tally asked whether every floor was inhabited; the sweep asks whether every
+floor got BUILT. Sequence: primitives shipped, sugar pending (the axis wave — the 2016
+list below is its spec, each row now implementable as a short extension over probes or a
+`Subtree()` composition). Walk: **shipped by composition, no operators minted** — the
+strongest possible version of "the walker needs no operator algebra of its own." Region:
+one lens shipped (the severed view, which doubles as duplicate's label type); the region
+set-algebra and the DAG closures remain design. Provenance-by-default: shipped as the
+handle-sharing discipline (views never re-address). The capstone composes further than
+designed in three of its four floors; its remaining hand-rolled arithmetic is the axis
+wave's best justification.
 
 ---
 
