@@ -78,13 +78,13 @@ namespace Copse.Linq
           return completedBuffer;
 
         return layout == BufferLayout.Preorder
-          ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(completedBuffer), BufferLayout.Preorder)
-          : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(completedBuffer), BufferLayout.LevelOrder);
+          ? PreorderCaptureBuffer(completedBuffer)
+          : LevelOrderCaptureBuffer(completedBuffer);
       }
 
       return layout == BufferLayout.Preorder
-        ? new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(source), BufferLayout.Preorder)
-        : new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(source), BufferLayout.LevelOrder);
+        ? PreorderCaptureBuffer(source)
+        : LevelOrderCaptureBuffer(source);
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ namespace Copse.Linq
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
         return completedBuffer;
 
-      return new AsyncTreenumerableBuffer<TValue>(DeferredPreorderCapture(source), BufferLayout.Preorder);
+      return PreorderCaptureBuffer(source);
     }
 
     public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
@@ -114,12 +114,37 @@ namespace Copse.Linq
       if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
         return completedBuffer;
 
-      return new AsyncTreenumerableBuffer<TValue>(DeferredLevelOrderCapture(source), BufferLayout.LevelOrder);
+      return LevelOrderCaptureBuffer(source);
     }
 
     // The deferral seam both layouts share (the LeaffixScan/Invert pattern): a lazy store whose
     // awaited build -- ONE capture walk of the source -- runs through the grow seam on the
     // first replay pull, both dimensions replaying from the completed store thereafter.
+    // The declared-layout builders share ONE lazy store between the stream half and the
+    // adjacency probes -- probes attach at construction, so the settle path (which would
+    // re-capture the buffer's own capture from its visit stream) never runs for a
+    // Materialize-built buffer. The organic overload cannot pre-attach (its layout is
+    // decided by the first pull's dimension), so it keeps the settle.
+    private static AsyncTreenumerableBuffer<TValue> PreorderCaptureBuffer<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
+    {
+      var lazyStore = new AsyncLazyPreorderStore<TValue>(() => AsyncPreorderCapture.CaptureFromAsync(source));
+
+      return new AsyncTreenumerableBuffer<TValue>(
+        new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(lazyStore),
+        BufferLayout.Preorder,
+        new AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>>(lazyStore));
+    }
+
+    private static AsyncTreenumerableBuffer<TValue> LevelOrderCaptureBuffer<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
+    {
+      var lazyStore = new AsyncLazyLevelOrderStore<TValue>(() => AsyncLevelOrderCapture.CaptureFromAsync(source));
+
+      return new AsyncTreenumerableBuffer<TValue>(
+        new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(lazyStore),
+        BufferLayout.LevelOrder,
+        new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>>(lazyStore));
+    }
+
     private static IAsyncTreenumerable<TValue> DeferredPreorderCapture<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
       => new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(
         new AsyncLazyPreorderStore<TValue>(() => AsyncPreorderCapture.CaptureFromAsync(source)));

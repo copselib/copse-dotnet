@@ -1,5 +1,6 @@
 using Copse.Async;
 using Copse.Async.Stores;
+using Copse.Linq.Async.Stores;
 using Copse.Core;
 using Copse.Core.Async;
 using System.Threading.Tasks;
@@ -75,11 +76,23 @@ namespace Copse.Linq.Async.Treenumerables
     // // across an await) when a consumer arrives.
     // internal bool TryGetPreorderStore(out PreorderArrayStore<TValue> store)
     // {
-    //   if (NativeLayout != BufferLayout.LevelOrder
-    //     && EnsureAdjacencyProbes() is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> preorderIndex)
+    //   if (NativeLayout != BufferLayout.LevelOrder)
     //   {
-    //     store = preorderIndex.Store;
-    //     return true;
+    //     var adjacencyProbes = EnsureAdjacencyProbes();
+    //
+    //     if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
+    //     {
+    //       store = arrayIndex.Store;
+    //       return true;
+    //     }
+    //
+    //     // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
+    //     // forcing hands over the same arrays the stream half built or will build.
+    //     if (adjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyIndex)
+    //     {
+    //       store = lazyIndex.Store.EnsureBuiltStore();
+    //       return true;
+    //     }
     //   }
     //
     //   store = default;
