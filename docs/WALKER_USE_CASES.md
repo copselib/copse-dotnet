@@ -75,9 +75,10 @@ Layer: sequence · Re-enters: yes · Cost: O(1) (indexed); O(n) scan (keyed)
 
 `GetChildAt(handle, k)` — the strawman name survived verbatim. Keyed access
 (`GetChildrenByKey`) is deliberately NOT a library member: value search is consumer code
-(the no-node-equality pledge), spelled as `FindHandles(predicate)` — the acquisition front
-door (shipped 2026-08-14, the capstone review's first remedy) — or its result-typed
-singular `FindHandle` (the miss is a fact, never a defaulted handle).
+(the no-node-equality pledge), spelled as consumer LINQ over `GetHandlesWithValues` —
+the search law (OPERATOR_SURFACE_MAP.md §0; the brief `FindHandles`/`FindHandle` sugar
+was retired the day it was reviewed). A search's honest miss is the empty sequence —
+and never `FirstOrDefault` over ordinal handles: the miss masquerades as the root.
 
 ### UC-05 Sibling navigation — PRICED
 
@@ -303,7 +304,9 @@ var walkable = sourceTree
   .Materialize();                                 // the escalation: adjacency lives on the capture
 
 var spanning = walkable.SpanningSubtree(
-  walkable.FindHandles(value => interesting.Contains(value.Key)));
+  walkable.GetHandlesWithValues()                  // the rowid idiom: rows in, value
+    .Where(row => interesting.Contains(row.Value.Key))  // predicate, handles out (the
+    .Select(row => row.Handle));                   // search law -- searches are consumer LINQ)
 
 if (spanning.HasWalker)
   Render(spanning.Walker.Subtree());              // the walker stands at the spanning root
@@ -331,9 +334,12 @@ misses, never for faults (the two-channel doctrine).
 ```csharp
 // 1. Streaming algebra feeds the walker a derived tree; 2. organic Materialize (the
 //    first act pins the layout; the declared form is an axis-cost ELECTION, never a
-//    requirement); 3. FindHandles — the acquisition front door:
+//    requirement); 3. acquisition — the rowid idiom, consumer LINQ per the search law:
 var walkable = relevant.Materialize();
-var targets = walkable.FindHandles(value => interesting.Contains(value)).ToList();
+var targets = walkable.GetHandlesWithValues()
+  .Where(row => interesting.Contains(row.Value))
+  .Select(row => row.Handle)
+  .ToList();
 
 // 4. The LCA fold, WALKER-FIRST and RESULT-TYPED: one lift at the boundary, the whole
 //    fold lives in the comonad, and the disjoint-trees miss is a fact — an int-returning

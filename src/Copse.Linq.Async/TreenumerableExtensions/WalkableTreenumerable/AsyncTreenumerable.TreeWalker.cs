@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncWalkableTreenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// Co-bind on the carrier: relabel the whole terrain by an observation of every focus,

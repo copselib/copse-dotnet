@@ -388,6 +388,46 @@ the comonad placed exactly as the monad always was.
   carrier, which Core holds); its single-sourcing half stands unchanged — every file
   above remains authored async, generated sync.
 
-Deferred from the same review, still open: folding `TreenumerableFactory` into `Tree`
-down in `Copse` (the carrier-intro is operator infrastructure with no Linq dependency;
-"one word one meaning"), and the `Extensions/` vs `EnumerableExtensions/` folder diff.
+Deferred from the same review, both since LANDED (2026-08-14): `TreenumerableFactory`
+folded into `Tree` down in `Copse` (the carrier-intro is operator infrastructure with no
+Linq dependency; "one word one meaning"), and the vague `Extensions/` folders renamed to
+their receivers' names (`TreenumeratorExtensions/`, `ListExtensions/`).
+
+## 10. The naming grammar, the search law, and the one extension class (RULED + EXECUTED 2026-08-14)
+
+The naming-conventions review (Jason-driven, same day as §9) produced three rulings; the
+canonical grammar statement lives in OPERATOR_SURFACE_MAP.md ("Naming grammar" section) —
+this is the walker-arc record of what changed and why.
+
+- **The search law — `Find` retired, both arities.** `FindHandles`/`FindHandle` (§7's
+  acquisition sugar) and `HandleResult` deleted: both were `GetHandlesWithValues` plus
+  consumer LINQ — the "do our thing, then call LINQ" shape the surface refuses. The law:
+  *searches are not surface; the library exposes total enumerations and probes, and LINQ
+  owns the rest.* An extension earns surface only if it needs information per-element LINQ
+  cannot reach (child-lookahead, depth, traversal semantics, receiver-recovery).
+  `GetHandlesWithValues` stays as the one earned exception (receiver-recovery: a value
+  predicate mid-chain cannot reach the probe without naming the receiver twice). A
+  search's honest miss is the **empty sequence** — result structs belong to operations
+  whose answer-arity the structure fixes (steps, LCA, the spanning root); a missed search
+  flows typed through result-typed consumers (`SpanningSubtree` of an empty search). The
+  sentinel trap outlives the singular as a pinned WARNING (never `FirstOrDefault` over
+  ordinal handles — the miss masquerades as the root). The results rule loses a citizen
+  with its speaker: `HandleResult` was `FindHandle`-spoken, and died with it.
+- **Overload-unity, upgraded to structure.** First ruled as: same-name cross-tier
+  overloads (the lens family) share one static class, so betterness picks the specific
+  receiver from ONE candidate set — same-namespace placement resolves identically today,
+  but a class move would SILENTLY fall back to the streaming overload (it compiles; the
+  lens's pair-citizenship just vanishes). Then Jason upgraded the rule from a per-method
+  judgment to a structural invariant: **one extension class per color** —
+  `static partial class Treenumerable` / `AsyncTreenumerable` — for BOTH receiver tiers.
+  `WalkableTreenumerable`/`AsyncWalkableTreenumerable` (the classes) are gone; the class
+  name follows the `Enumerable`/`Queryable` idiom (the class is not named `*Extensions`;
+  the folder is). Resolution is now closed under refactoring: every extension, every
+  tier, one candidate set, forever.
+- **The folder shape.** `Copse.Linq(.Async)/TreenumerableExtensions/` holds receiver-tier
+  subfolders `Treenumerable/` and `WalkableTreenumerable/` (tier readability stays in the
+  tree; the class unifies). This supersedes §9's "singular/plural folder convention"
+  clause — extension folders now all wear the explicit `*Extensions` suffix
+  (`TreenumerableExtensions/`, `TreenumeratorExtensions/`, `EnumerableExtensions/`,
+  `ListExtensions/`), which also retires the one-letter `Treenumerable/` vs
+  `Treenumerables/` near-collision. Namespaces held (`Copse.Linq`); zero call-site churn.

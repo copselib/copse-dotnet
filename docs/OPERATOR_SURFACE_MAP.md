@@ -14,6 +14,37 @@
 > fixed, delete the flag and update the operator's row. Bump "last verified" whenever a
 > full re-check happens; keep entries free of line numbers (files and shapes, not lines).
 
+## 0. Naming grammar (ratified 2026-08-14)
+
+The surface's prefixes are a grammar, not a habit. Five families, two minor conventions,
+one law — new surface must name itself by these:
+
+| Prefix | Meaning | The test |
+|---|---|---|
+| *(none)* | **The algebra** — transformations and operators, LINQ's verb/noun tradition (`Select`…`Extend`, `Subtrees`, `SpanningSubtree`, `Materialize`) | returns an algebra citizen; miss-ability is typed (result structs), never named (`Try*` does not exist here) |
+| `Get` | **Deterministic retrieval** — accessors, total enumerations, indexed access (`GetLeaves`, `GetHandles`, `GetRootWalker`, the probes) | the result is fully determined by structure + index; misses are *bounds* misses (result-typed), never semantic |
+| `Take`/`Skip` | **Selection reshapings** — LINQ heritage (`TakeTrees`, `TakeNodesUntil`) | positional/conditional selection; same kind in and out |
+| `To` | **Representation conversion, eager** (`ToFormattedLines`, `ToDegenerateTree`) | name, return shape, and cost agree — the honest-eager rule |
+| `Move` | **Walker steps** — stance verbs, result-typed (`MoveToParent`, `MoveToChild`) | mutates nothing; returns the stepped stance or a typed miss |
+
+Suffix `At` = trust-based indexed access (`WalkerAt`, `GetChildAt` — which correctly
+composes both rules: retrieval, by index). Machinery/type naming is the
+[Mechanism]+[Axis]+[Tier] grammar (LAZINESS_AND_BUFFERING_POLICY.md).
+
+**The search law** (`Find` deliberately absent — retired 2026-08-14 the day it was
+introduced): *searches are not surface.* An extension earns a place only if it needs
+information per-element LINQ cannot reach (child-lookahead, depth, traversal semantics,
+receiver-recovery); a predicate search is consumer LINQ over `GetHandlesWithValues` (the
+one receiver-recovery exception), and its honest miss is the **empty sequence** — flow it
+into a result-typed consumer to keep the miss typed. Never `FirstOrDefault` over ordinal
+handles: handle 0 is the root, and the miss masquerades as it.
+
+**One extension class per color** (`Treenumerable` / `AsyncTreenumerable`, the
+`Enumerable`-idiom name — the folder wears the `*Extensions` suffix, the class does not):
+both receiver tiers, one static class, so overload resolution across tiers is ONE
+candidate set and betterness always picks the specific receiver — closed under
+refactoring, the silent-fallback hazard structurally impossible.
+
 ## 1. Operator surface — what returns what, what buffers when
 
 Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =

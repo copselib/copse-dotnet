@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncWalkableTreenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// Enter the comonadic view: a walker standing at <paramref name="handle"/>. Choosing a

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncWalkableTreenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// The tree of subtrees: every node relabeled with the subtree rooted at it, shape

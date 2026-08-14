@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Copse.Linq
 {
-  public static partial class WalkableTreenumerable
+  public static partial class Treenumerable
   {
     /// <summary>
     /// The capstone, distilled (UC-32): the minimum spanning subtree of the target nodes --

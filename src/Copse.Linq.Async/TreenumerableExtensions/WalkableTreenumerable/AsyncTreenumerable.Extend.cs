@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncWalkableTreenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// The comonad's co-bind (docs/CATEGORY_THEORY_SURVEY.md §6): relabel every node by an

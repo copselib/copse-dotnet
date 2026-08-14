@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncWalkableTreenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// Every handle the walkable's terrain reaches from its roots, in DELIBERATELY UNSPECIFIED
