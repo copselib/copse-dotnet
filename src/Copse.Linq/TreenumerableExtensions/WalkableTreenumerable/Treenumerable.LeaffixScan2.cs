@@ -41,11 +41,61 @@ namespace Copse.Linq
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       var surveyed = new LazyPreorderStore<ScanResult<TSource, TAccumulate>>(
-        () => WalkerLeaffix(source, seed, edgeAccumulator, nodeAccumulator));
+        // The receiver-smart split (Materialize's `is` idiom, one level deeper): a
+        // preorder-settled concrete buffer hands over its raw store and the fold is span
+        // arithmetic -- no probes, no child index, not even the incumbent's positions
+        // build. Any other walkable capture (a memo, a foreign implementation) takes the
+        // probe fold: the same algorithm in the public vocabulary.
+        () => source is TreenumerableBuffer<TSource> concreteBuffer && concreteBuffer.TryGetPreorderStore(out var store)
+          ? SpanLeaffix(store, seed, edgeAccumulator, nodeAccumulator)
+          : WalkerLeaffix(source, seed, edgeAccumulator, nodeAccumulator));
 
       return new TreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
         new PreorderTreenumerable<ScanResult<TSource, TAccumulate>, LazyPreorderStore<ScanResult<TSource, TAccumulate>>>(surveyed),
         BufferLayout.Preorder);
+    }
+
+    // The fast path: the same reverse-ordinal fold as raw span arithmetic over the store's
+    // own facts (Count / GetValue / GetSubtreeSize). Children need no index in preorder --
+    // the first child is handle + 1, each next sibling is a subtree-size hop, and the
+    // node's span end fences the walk. This is the incumbent's engine minus its child-index
+    // and positions builds, reading the skeleton the receiver already owns.
+    private static PreorderArrayStore<ScanResult<TSource, TAccumulate>> SpanLeaffix<TSource, TAccumulate>(
+      PreorderArrayStore<TSource> store,
+      TAccumulate seed,
+      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+    {
+      var nodeCount = store.Count;
+
+      var accumulates = new TAccumulate[nodeCount];
+      var subtreeSizes = new int[nodeCount];
+      var results = new ScanResult<TSource, TAccumulate>[nodeCount];
+
+      for (var handle = nodeCount - 1; handle >= 0; handle--)
+      {
+        var subtreeSize = store.GetSubtreeSize(handle);
+        var reduced = seed;
+
+        if (subtreeSize > 1)
+        {
+          var spanEnd = handle + subtreeSize;
+          var child = handle + 1;
+
+          reduced = accumulates[child];
+
+          for (child += store.GetSubtreeSize(child); child < spanEnd; child += store.GetSubtreeSize(child))
+            reduced = edgeAccumulator(reduced, accumulates[child]);
+        }
+
+        var node = store.GetValue(handle);
+
+        accumulates[handle] = nodeAccumulator(reduced, node);
+        subtreeSizes[handle] = subtreeSize;
+        results[handle] = new ScanResult<TSource, TAccumulate>(node, accumulates[handle]);
+      }
+
+      return new PreorderArrayStore<ScanResult<TSource, TAccumulate>>(results, subtreeSizes);
     }
 
     // The whole fold, in walker vocabulary: stand at each handle in reverse preorder

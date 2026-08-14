@@ -32,6 +32,11 @@ namespace Copse.Linq.Treenumerables
 
     private readonly TStore _Store;
 
+    // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
+    // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
+    // fast path's door (the LeaffixScan2 experiment, 2026-08-14).
+    internal TStore Store => _Store;
+
     private readonly List<int> _ParentIndexes = new List<int>();
     private readonly List<List<int>> _ChildIndexes = new List<List<int>>();
     private readonly List<int> _RootIndexes = new List<int>();

@@ -68,6 +68,24 @@ namespace Copse.Linq.Treenumerables
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
     // ordinals; the undecided case settles preorder (probing is consumption; the fresh-memo
     // pin rule's shape).
+    // The bulk-fold fast path's door (the LeaffixScan2 experiment, 2026-08-14): a
+    // preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
+    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Sync-only for
+    // now: the async Ensure is awaited, so the async seam needs an async shape (no out
+    // across an await) when a consumer arrives.
+    internal bool TryGetPreorderStore(out PreorderArrayStore<TValue> store)
+    {
+      if (NativeLayout != BufferLayout.LevelOrder
+        && EnsureAdjacencyProbes() is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> preorderIndex)
+      {
+        store = preorderIndex.Store;
+        return true;
+      }
+
+      store = default;
+      return false;
+    }
+
     private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
     {
       if (_AdjacencyProbes != null)

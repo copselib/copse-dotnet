@@ -30,6 +30,7 @@ namespace Copse.Linq.Tests
     private static string Edge(string left, string right) => $"{left},{right}";
     private static string Node(string accumulate, string node) => $"{node}[{accumulate}]";
 
+    // The Materialize receiver is the concrete buffer, so this pins the SPAN fast path.
     [TestMethod]
     public void LeaffixScan2_MatchesTheIncumbent_BothDimensions()
     {
@@ -47,6 +48,25 @@ namespace Copse.Linq.Tests
             reimplementation.GetTraversal(strategy).Select(Describe).ToList(),
             $"{tree} ({strategy})");
         }
+      }
+    }
+
+    // A memo buffer is NOT the concrete TreenumerableBuffer, so this pins the WALKER
+    // fallback -- the same fold in the public probe vocabulary, over pull-through probes.
+    [TestMethod]
+    public void LeaffixScan2_WalkerFallback_MatchesTheIncumbent()
+    {
+      foreach (var tree in Trees)
+      {
+        using var memo = TreeSerializer.DeserializeDepthFirstTree(tree).Memoize();
+
+        var incumbent = memo.LeaffixScan("~", Edge, Node);
+        var reimplementation = memo.LeaffixScan2("~", Edge, Node);
+
+        CollectionAssert.AreEqual(
+          incumbent.GetTraversal(TreeTraversalStrategy.DepthFirst).Select(Describe).ToList(),
+          reimplementation.GetTraversal(TreeTraversalStrategy.DepthFirst).Select(Describe).ToList(),
+          tree);
       }
     }
 
