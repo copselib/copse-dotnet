@@ -105,14 +105,36 @@ namespace Copse.Linq
 
     private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      // 1. Capture flat preorder arrays (value + subtree size per node) from one awaited
-      //    depth-first walk of the source -- the flat family's shared encode.
+      // The receiver sniff (the 2026-08-14 experiment's collapse), at the ACQUISITION seam
+      // so every overload funnelling here gets it: a source that is already a
+      // preorder-affording capture hands over its skeleton (the concrete buffer's raw
+      // store, or the public probes for a foreign walkable -- no second capture either
+      // way); everything else pays the one capture the mirror always owed.
+      if (source is IAsyncTreenumerableBuffer<TNode> buffer && AffordsInPlaceFold(buffer))
+      {
+        if (buffer is AsyncTreenumerableBuffer<TNode> concreteBuffer)
+        {
+          var (hasStore, store) = await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false);
+
+          if (hasStore)
+            return MirrorEmit(store);
+        }
+
+        return await WalkerMirrorAsync(buffer).ConfigureAwait(false);
+      }
+
       var capture = await AsyncPreorderCapture.CaptureFromAsync(source).ConfigureAwait(false);
 
-      // 2. Emit the mirror. Pushing roots/children in forward order makes them pop in reverse,
-      //    which is exactly the mirror's preorder. Each subtree keeps its size; only ordering
-      //    changes. This zero-key LIFO emit stays specialized to Invert (it has CI benchmark
-      //    rows); the generalized sort-each-group emission belongs to OrderChildrenBy.
+      return MirrorEmit(capture);
+    }
+
+    // The mirror's emit over flat preorder arrays (value + subtree size per node). Pushing
+    // roots/children in forward order makes them pop in reverse, which is exactly the
+    // mirror's preorder. Each subtree keeps its size; only ordering changes. This zero-key
+    // LIFO emit stays specialized to Invert (it has CI benchmark rows); the generalized
+    // sort-each-group emission belongs to OrderChildrenBy.
+    private static AsyncPreorderArrayStore<TNode> MirrorEmit<TNode>(AsyncPreorderArrayStore<TNode> capture)
+    {
       var count = capture.Count;
       var mirroredValues = new TNode[count];
       var mirroredSubtreeSizes = new int[count];
@@ -135,6 +157,70 @@ namespace Copse.Linq
 
         for (var child = index + 1; child < end; child += capture.GetSubtreeSize(child))
           stack.Push(child);
+      }
+
+      return new AsyncPreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);
+    }
+
+    // The public-vocabulary mirror for a walkable capture that is not the concrete buffer
+    // (a memo: its pull-through probes complete it exactly once, with no second skeleton):
+    // pass one computes subtree sizes bottom-up (the leaffix recurrence), pass two is the
+    // same LIFO emit with stances and steps in place of span hops.
+    private static async ValueTask<AsyncPreorderArrayStore<TNode>> WalkerMirrorAsync<TNode>(IAsyncTreenumerableBuffer<TNode> buffer)
+    {
+      var nodeCount = 0;
+      await foreach (var _ in buffer.GetHandles().ConfigureAwait(false))
+        nodeCount++;
+
+      var subtreeSizes = new int[nodeCount];
+
+      for (var handle = nodeCount - 1; handle >= 0; handle--)
+      {
+        var stance = buffer.GetTreeWalkerAt(handle);
+
+        var subtreeSize = 1;
+        var step = await stance.MoveToChildAsync(0).ConfigureAwait(false);
+
+        for (var childIndex = 1; step.HasWalker; childIndex++)
+        {
+          subtreeSize += subtreeSizes[step.Walker.Focus];
+          step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+        }
+
+        subtreeSizes[handle] = subtreeSize;
+      }
+
+      var mirroredValues = new TNode[nodeCount];
+      var mirroredSubtreeSizes = new int[nodeCount];
+      var stack = new Stack<int>();
+
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var root = await buffer.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+        if (!root.HasChild)
+          break;
+
+        stack.Push(root.Child.Node);
+      }
+
+      var output = 0;
+
+      while (stack.Count > 0)
+      {
+        var handle = stack.Pop();
+        var stance = buffer.GetTreeWalkerAt(handle);
+
+        mirroredValues[output] = await stance.GetValueAsync().ConfigureAwait(false);
+        mirroredSubtreeSizes[output] = subtreeSizes[handle];
+        output++;
+
+        var step = await stance.MoveToChildAsync(0).ConfigureAwait(false);
+
+        for (var childIndex = 1; step.HasWalker; childIndex++)
+        {
+          stack.Push(step.Walker.Focus);
+          step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+        }
       }
 
       return new AsyncPreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);

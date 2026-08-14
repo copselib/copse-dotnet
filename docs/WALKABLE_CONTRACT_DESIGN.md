@@ -451,3 +451,44 @@ this is the walker-arc record of what changed and why.
   (`TreenumerableExtensions/`, `TreenumeratorExtensions/`, `EnumerableExtensions/`,
   `ListExtensions/`), which also retires the one-letter `Treenumerable/` vs
   `Treenumerables/` near-collision. Namespaces held (`Copse.Linq`); zero call-site churn.
+
+## 11. The receiver-smart collapse — the tier's load-bearing proof (EXPERIMENT + COLLAPSE, 2026-08-14)
+
+Jason's challenge ("prove TreeWalker provides real value: reimplement a buffering
+operator over it, as readable and as fast") ran as a three-part experiment
+(`LeaffixScan2`/`3`, `Invert2` — all since retired) and collapsed into the shipped
+operators the same day. The findings, in the order his skepticism forced them:
+
+- **The incumbents were secretly adjacency algorithms already.** LeaffixScan's engine is a
+  raw capture + child-index build + reverse-ordinal fold on private arrays; Invert even
+  had a dedicated buffer overload and a span-arithmetic emit — but both re-captured a
+  buffer receiver from its own visit stream, because pre-seam there was no path from a
+  buffer to the arrays it stands on. The walker tier is that private engine's vocabulary
+  made public, not a new capability.
+- **The seams** (all internal; zero changes to `TreeWalker`, the walkable contract, or the
+  store types): `PreorderAdjacencyIndex.Store`, the buffer's `TryGetPreorderStoreAsync`
+  (tuple-shaped — `out` cannot cross an `await`; the async spelling of the try-pattern),
+  `LazyPreorderStore.EnsureBuiltStore`, and **probes-at-birth** (Materialize's
+  declared-layout buffers share ONE lazy store between the stream half and the adjacency
+  index, so the settle's double capture survives only on the undecided organic path).
+- **The shipped shape** (this section's deliverable): `LeaffixScan` (seed flavor) and
+  `Invert` sniff their receiver — the `Materialize` / LINQ-`Count` idiom. A
+  preorder-affording capture folds in place: the concrete buffer hands its raw store to a
+  span algorithm (no probes, no child-index build, no positions build); a foreign
+  walkable (a memo) folds through the public probes, completing exactly once with no
+  second skeleton; level-order captures and true streams take the engine. Guard:
+  `AffordsInPlaceFold` — a concrete buffer settles itself preorder from any
+  non-level-order state; a foreign walkable is fold-safe only when already preorder.
+  In-place results carry probes at birth. Measured: 3.0–4.6x on buffer receivers, stream
+  parity (the engines are unchanged); `ReceiverSmartOperatorTests` pins every receiver
+  shape against the engine oracle.
+- **The verdict on the tier**, precisely: the *walkable receiver* is where the win lives
+  (don't re-buffer what's already buffered); the *store door* is the wholesale fast lane
+  (internal for now — Jason's ruling: the first real external consumer names the public
+  signature; his standing signal — he might collapse the contract into the store surface
+  then — is answered in the memory record: the memo, infinity permission, the lens
+  family, and THandle genericity all stand on the probe contract); the *walker struct* is
+  the readable public spelling (the probe folds read as stances and steps) and the
+  consumer-facing cursor. Remaining rollout candidates: OrderChildrenBy (the sort-each-group
+  emit is the mirror's generalization), the dispatch/bypass flavors (need a positions
+  pass), and the missing node-count affordance on completed captures.

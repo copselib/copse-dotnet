@@ -68,37 +68,27 @@ namespace Copse.Linq.Async.Treenumerables
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
     // ordinals; the undecided case settles preorder (probing is consumption; the fresh-memo
     // pin rule's shape).
-    // codegen: begin sync-only
-    // // The bulk-fold fast path's door (the LeaffixScan2 experiment, 2026-08-14): a
-    // // preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
-    // // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Sync-only for
-    // // now: the async Ensure is awaited, so the async seam needs an async shape (no out
-    // // across an await) when a consumer arrives.
-    // internal bool TryGetPreorderStore(out PreorderArrayStore<TValue> store)
-    // {
-    //   if (NativeLayout != BufferLayout.LevelOrder)
-    //   {
-    //     var adjacencyProbes = EnsureAdjacencyProbes();
-    //
-    //     if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
-    //     {
-    //       store = arrayIndex.Store;
-    //       return true;
-    //     }
-    //
-    //     // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
-    //     // forcing hands over the same arrays the stream half built or will build.
-    //     if (adjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyIndex)
-    //     {
-    //       store = lazyIndex.Store.EnsureBuiltStore();
-    //       return true;
-    //     }
-    //   }
-    //
-    //   store = default;
-    //   return false;
-    // }
-    // codegen: end sync-only
+    // The bulk-fold fast path's door (the receiver-smart operators: LeaffixScan, Invert):
+    // a preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
+    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Tuple-shaped
+    // because `out` cannot cross an `await` -- the async spelling of the try-pattern.
+    internal async ValueTask<(bool HasStore, AsyncPreorderArrayStore<TValue> Store)> TryGetPreorderStoreAsync()
+    {
+      if (NativeLayout == BufferLayout.LevelOrder)
+        return (false, default);
+
+      var adjacencyProbes = await EnsureAdjacencyProbesAsync().ConfigureAwait(false);
+
+      if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>> arrayIndex)
+        return (true, arrayIndex.Store);
+
+      // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
+      // forcing hands over the same arrays the stream half built or will build.
+      if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyIndex)
+        return (true, await lazyIndex.Store.EnsureBuiltStoreAsync().ConfigureAwait(false));
+
+      return (false, default);
+    }
 
     private async ValueTask<IAsyncAdjacencyProbes<TValue>> EnsureAdjacencyProbesAsync()
     {

@@ -69,34 +69,26 @@ namespace Copse.Linq.Treenumerables
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
     // ordinals; the undecided case settles preorder (probing is consumption; the fresh-memo
     // pin rule's shape).
-    // The bulk-fold fast path's door (the LeaffixScan2 experiment, 2026-08-14): a
-    // preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
-    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Sync-only for
-    // now: the async Ensure is awaited, so the async seam needs an async shape (no out
-    // across an await) when a consumer arrives.
-    internal bool TryGetPreorderStore(out PreorderArrayStore<TValue> store)
+    // The bulk-fold fast path's door (the receiver-smart operators: LeaffixScan, Invert):
+    // a preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
+    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Tuple-shaped
+    // because `out` cannot cross an `await` -- the async spelling of the try-pattern.
+    internal (bool HasStore, PreorderArrayStore<TValue> Store) TryGetPreorderStore()
     {
-      if (NativeLayout != BufferLayout.LevelOrder)
-      {
-        var adjacencyProbes = EnsureAdjacencyProbes();
+      if (NativeLayout == BufferLayout.LevelOrder)
+        return (false, default);
 
-        if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
-        {
-          store = arrayIndex.Store;
-          return true;
-        }
+      var adjacencyProbes = EnsureAdjacencyProbes();
 
-        // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
-        // forcing hands over the same arrays the stream half built or will build.
-        if (adjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyIndex)
-        {
-          store = lazyIndex.Store.EnsureBuiltStore();
-          return true;
-        }
-      }
+      if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
+        return (true, arrayIndex.Store);
 
-      store = default;
-      return false;
+      // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
+      // forcing hands over the same arrays the stream half built or will build.
+      if (adjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyIndex)
+        return (true, lazyIndex.Store.EnsureBuiltStore());
+
+      return (false, default);
     }
 
     private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
