@@ -163,14 +163,9 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/WalkableTreenumerable/AsyncWalkableTreenumerable.TreeWalker.cs",
         "Copse.Linq/WalkableTreenumerable/WalkableTreenumerable.TreeWalker.g.cs",
         "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse.Linq"),
-      new("Copse.Linq.Async/WalkableTreenumerable/AsyncWalkableTreenumerable.FindHandles.cs",
-        "Copse.Linq/WalkableTreenumerable/WalkableTreenumerable.FindHandles.g.cs",
-        "AsyncWalkableTreenumerable", "WalkableTreenumerable", "Copse.Linq"),
-      // HandleResult: identity-named per-color like ChildResult (no async members; the color
-      // split is the namespace).
-      new("Copse.Linq.Async/WalkableTreenumerable/HandleResult.cs",
-        "Copse.Linq/WalkableTreenumerable/HandleResult.g.cs",
-        "HandleResult", "HandleResult", "Copse.Linq"),
+      // FindHandles/FindHandle and HandleResult retired 2026-08-14 under the search law
+      // (naming grammar): searches are not surface -- GetHandles/GetHandlesWithValues plus
+      // consumer LINQ express them, and a search's honest miss is the empty sequence.
 
       // The walkable contract family (docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker

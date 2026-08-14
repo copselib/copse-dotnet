@@ -5,13 +5,19 @@ using System;
 
 namespace Copse.Linq
 {
-  public static partial class WalkableTreenumerable
+  public static partial class Treenumerable
   {
     /// <summary>
     /// The restriction lens: <c>PruneAfter</c> over a WALKABLE stays walkable. Same semantics
     /// and predicate flavor as the streaming overload (keeps each matching node, sheds its
     /// subtree), resolved STATICALLY by the receiver's type -- no probes, the dimension-split
-    /// discipline. A pair citizen: the order half IS the streaming operator applied to the
+    /// discipline. Lives in THIS class, not <c>WalkableTreenumerable</c>, by the overload-unity
+    /// rule: same-name cross-tier overloads share one static class, so betterness picks the
+    /// specific receiver from ONE candidate set -- same-namespace placement would resolve
+    /// identically today, but a future class move would SILENTLY fall back to the streaming
+    /// overload (it compiles; the lens's pair-citizenship just vanishes). Same-class placement
+    /// makes that hazard structurally impossible. Walkable-ONLY names stay in
+    /// <c>WalkableTreenumerable</c>. A pair citizen: the order half IS the streaming operator applied to the
     /// source (the composition lattice inside it keeps working -- a stacked lens's stream half
     /// is prune-over-prune, which the light tier merges in-tier as always); the adjacency half
     /// wraps one probe. O(1) per probe. (The positional flavor is deliberately absent: depth

@@ -77,32 +77,37 @@ namespace Copse.Linq.Tests
         levelOrder.GetHandlesWithValues().Select(pair => pair.Value).ToList());
     }
 
-    // The acquisition front door (the capstone review's first remedy, 2026-08-14): the rowid
-    // idiom folded into one call, plural and singular -- and the singular is result-typed
-    // BECAUSE the miss is otherwise unrepresentable: ordinal handle spaces start at zero, so
-    // FirstOrDefault() on a miss hands you a REAL node. Both facts pinned.
+    // The search law (naming grammar, 2026-08-14): searches are not surface. FindHandles and
+    // the result-typed FindHandle were retired the day they were reviewed -- both were
+    // GetHandlesWithValues plus consumer LINQ, the "do our thing, then call LINQ" shape the
+    // surface refuses. A search's honest miss is the EMPTY SEQUENCE; downstream result-typed
+    // consumers (SpanningSubtree of an empty search) carry the miss without a singular wrapper.
     [TestMethod]
-    public void FindHandles_IsTheRowidIdiom_AndTheSingularMakesTheMissAFact()
+    public void SearchesAreConsumerLinq_AndTheEmptySequenceIsTheMiss()
     {
       var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
-      // Plural: matches the hand-rolled idiom exactly.
+      // The rowid idiom, spelled honestly: rows in, value predicate, handles out.
+      var hits = walkable.GetHandlesWithValues()
+        .Where(row => row.Value == "d" || row.Value == "c")
+        .Select(row => row.Handle)
+        .ToList();
+
       CollectionAssert.AreEquivalent(
-        walkable.GetHandlesWithValues().Where(row => row.Value == "d" || row.Value == "c").Select(row => row.Handle).ToList(),
-        walkable.FindHandles(value => value == "d" || value == "c").ToList());
+        new[] { "d", "c" },
+        hits.Select(walkable.GetValue).ToList());
 
-      // Singular, hit: the handle, as a fact.
-      var hit = walkable.FindHandle(value => value == "e");
-      Assert.IsTrue(hit.HasHandle);
-      Assert.AreEqual("e", walkable.GetValue(hit.Handle));
+      // A missed search is an empty sequence -- the miss, spoken natively.
+      Assert.AreEqual(0, walkable.GetHandlesWithValues().Count(row => row.Value == "zzz"));
 
-      // Singular, miss: HasHandle false -- an honest miss.
-      Assert.IsFalse(walkable.FindHandle(value => value == "zzz").HasHandle);
-
-      // THE SENTINEL TRAP, demonstrated: FirstOrDefault on a missed plural search returns
-      // default(int) = 0 -- which is a real handle (the first preorder node). This is why
-      // the singular form exists and why its result struct is not a convenience.
-      var trap = walkable.FindHandles(value => value == "zzz").FirstOrDefault();
+      // THE SENTINEL TRAP, pinned as a warning: FirstOrDefault on a missed search returns
+      // default(int) = 0 -- a REAL handle (the first preorder node). Never FirstOrDefault
+      // over ordinal handles; test emptiness, or flow the plural into a result-typed
+      // consumer and let the miss stay typed.
+      var trap = walkable.GetHandlesWithValues()
+        .Where(row => row.Value == "zzz")
+        .Select(row => row.Handle)
+        .FirstOrDefault();
       Assert.AreEqual(0, trap);
       Assert.AreEqual("a", walkable.GetValue(trap), "the miss masquerades as the root");
     }
