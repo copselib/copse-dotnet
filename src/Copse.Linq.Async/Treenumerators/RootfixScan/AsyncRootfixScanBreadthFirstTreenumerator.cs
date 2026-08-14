@@ -51,7 +51,7 @@ namespace Copse.Linq.Async
       // Strategies on the very first MoveNext apply to no node (this wrapper is still parked at
       // the pre-enumeration forest root, whose contractual Mode is SchedulingNode) -- the engine
       // ignores them, and so must the skip bookkeeping, or a SkipNode-driving consumer (e.g.
-      // LevelOrderTraversal) drains the still-empty level buffer.
+      // GetLevelOrderTraversal) drains the still-empty level buffer.
       if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot)
       {
         if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))

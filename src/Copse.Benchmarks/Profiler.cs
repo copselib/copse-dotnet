@@ -11,7 +11,7 @@ namespace Copse.Benchmarks
 
       return
         tree
-        .LevelOrderTraversal()
+        .GetLevelOrderTraversal()
         .Count();
     }
   }

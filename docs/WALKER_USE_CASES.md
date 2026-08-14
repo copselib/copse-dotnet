@@ -128,7 +128,7 @@ depth is O(depth), height is O(subtree) — no design can make both cheap.
 Layer: walk · Re-enters: no · Cost: O(subtree)
 
 ```csharp
-walker.Subtree().PreorderTraversal();     // or LevelOrderTraversal, or the visit stream
+walker.Subtree().GetPreorderTraversal();     // or GetLevelOrderTraversal, or the visit stream
 ```
 
 ## B. Relations between nodes — the walker-only classics

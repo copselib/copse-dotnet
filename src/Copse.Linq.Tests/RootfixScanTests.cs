@@ -50,7 +50,7 @@ namespace Copse.Linq.Tests
         var expectedTreeNodes =
           TreeSerializer
           .DeserializeDepthFirstTree(expectedTreeData)
-          .PreorderTraversal()
+          .GetPreorderTraversal()
           .ToArray();
 
         var cross =
@@ -230,7 +230,7 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(expected, actual);
     }
 
-    // Regression: PreorderTraversal/LevelOrderTraversal drive with SkipNode on EVERY MoveNext --
+    // Regression: GetPreorderTraversal/GetLevelOrderTraversal drive with SkipNode on EVERY MoveNext --
     // including the first one, while the scan is still parked at the pre-enumeration forest root
     // (whose contractual Mode is SchedulingNode). The skip bookkeeping used to treat that first
     // call as a real skip and pop the seed sentinel: "Stack empty" on any non-empty tree.
@@ -245,11 +245,11 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "sa", "sab", "sabc", "sad", "se", "sef" },
-        scan.PreorderTraversal().ToArray());
+        scan.GetPreorderTraversal().ToArray());
 
       CollectionAssert.AreEqual(
         new[] { "sa", "se", "sab", "sad", "sef", "sabc" },
-        scan.LevelOrderTraversal().ToArray());
+        scan.GetLevelOrderTraversal().ToArray());
     }
   }
 }

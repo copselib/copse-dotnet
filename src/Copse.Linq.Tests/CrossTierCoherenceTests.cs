@@ -32,7 +32,7 @@ namespace Copse.Linq.Tests
     }
 
     private static string[] Pairings(ITreenumerable<ScanResult<string, string>> results) =>
-      results.PreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Accumulate}").ToArray();
+      results.GetPreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Accumulate}").ToArray();
 
     [TestMethod]
     public void SeedFlavor_ScanIsTheFoldShapedDispatch()

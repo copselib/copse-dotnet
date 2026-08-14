@@ -33,8 +33,8 @@ namespace Copse.Async.Tests
         // Two replays per dimension: the second rides the capture.
         for (var i = 0; i < 2; i++)
         {
-          CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(memo.PreorderTraversal()), $"Preorder#{i} {tree}");
-          CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(memo.LevelOrderTraversal()), $"LevelOrder#{i} {tree}");
+          CollectionAssert.AreEqual(Sync(tree).GetPreorderTraversal().ToList(), await ToList(memo.GetPreorderTraversal()), $"Preorder#{i} {tree}");
+          CollectionAssert.AreEqual(Sync(tree).GetLevelOrderTraversal().ToList(), await ToList(memo.GetLevelOrderTraversal()), $"LevelOrder#{i} {tree}");
         }
 
         // The first replay's dimension completed the capture, so the second dimension rides it
@@ -51,8 +51,8 @@ namespace Copse.Async.Tests
       {
         var buffer = Async(tree).Materialize();
 
-        CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(buffer.PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(buffer.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetPreorderTraversal().ToList(), await ToList(buffer.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetLevelOrderTraversal().ToList(), await ToList(buffer.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -63,8 +63,8 @@ namespace Copse.Async.Tests
       {
         var memo = new YieldingAsyncSource<string>(Sync(tree)).Memoize();
 
-        CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(memo.LevelOrderTraversal()), $"LevelOrder {tree}");
-        CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(memo.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetLevelOrderTraversal().ToList(), await ToList(memo.GetLevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetPreorderTraversal().ToList(), await ToList(memo.GetPreorderTraversal()), $"Preorder {tree}");
       }
     }
 

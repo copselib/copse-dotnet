@@ -185,14 +185,14 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a,b")
         .LeaffixScan("s", (left, right) => left + right, (accumulate, node) => node + accumulate)
         .Select(pairing => pairing.Accumulate)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       var selectorFlavor = TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .LeaffixScan(_ => "s", (left, right) => left + right, (accumulate, node) => node + accumulate)
         .Select(pairing => pairing.Accumulate)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { "as", "bs" }, seedFlavor, "the virtual fringe's arrival folds through the node accumulator");

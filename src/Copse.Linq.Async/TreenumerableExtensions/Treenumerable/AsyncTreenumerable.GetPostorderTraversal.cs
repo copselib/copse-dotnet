@@ -9,7 +9,7 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>The tree's node values in postorder (children before their parent), as a lazy async sequence.</summary>
-    public static async IAsyncEnumerable<TNode> PostorderTraversal<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public static async IAsyncEnumerable<TNode> GetPostorderTraversal<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       if (source == null)
         yield break;

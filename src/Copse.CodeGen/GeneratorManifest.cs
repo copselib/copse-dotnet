@@ -586,8 +586,8 @@ namespace Copse.CodeGen
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.LeaffixScan.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.LevelOrderTraversal.cs",
-        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.LevelOrderTraversal.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetLevelOrderTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetLevelOrderTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.Materialize.cs",
@@ -602,12 +602,12 @@ namespace Copse.CodeGen
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.OrderChildrenBy.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PostorderTraversal.cs",
-        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.PostorderTraversal.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetPostorderTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetPostorderTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PreorderTraversal.cs",
-        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.PreorderTraversal.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetPreorderTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetPreorderTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PruneAfter.cs",

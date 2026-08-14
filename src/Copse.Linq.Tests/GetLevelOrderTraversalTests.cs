@@ -8,19 +8,19 @@ using System.Reflection;
 namespace Copse.Linq.Tests
 {
   [TestClass]
-  public class PostorderTraversalTests
+  public class GetLevelOrderTraversalTests
   {
     public static IEnumerable<object[]> GetTestData()
     {
       yield return new object[] { "", Array.Empty<string>() };
       yield return new object[] { "a", new[] { "a" } };
-      yield return new object[] { "a(c),b", new[] { "c", "a", "b" } };
-      yield return new object[] { "a(b(c))", new[] { "c", "b", "a" } };
-      yield return new object[] { "a(b,c)", new[] { "b", "c", "a" } };
-      yield return new object[] { "a(c,d),b(e,f)", new[] { "c", "d", "a", "e", "f", "b" } };
-      yield return new object[] { "a,b(c)", new[] { "a", "c", "b" } };
-      yield return new object[] { "a(d(f)),b(e),c", new[] { "f", "d", "a", "e", "b", "c" } };
-      yield return new object[] { "a,b(d),c(e(f))", new[] { "a", "d", "b", "f", "e", "c" } };
+      yield return new object[] { "a(c),b", new[] { "a", "b", "c" } };
+      yield return new object[] { "a(b(c))", new[] { "a", "b", "c" } };
+      yield return new object[] { "a(b,c)", new[] { "a", "b", "c" } };
+      yield return new object[] { "a(c,d),b(e,f)", new[] { "a", "b", "c", "d", "e", "f" } };
+      yield return new object[] { "a,b(c)", new[] { "a", "b", "c" } };
+      yield return new object[] { "a(d(f)),b(e),c", new[] { "a", "b", "c", "d", "e", "f" } };
+      yield return new object[] { "a,b(d),c(e(f))", new[] { "a", "b", "c", "d", "e", "f" } };
       yield return new object[] { "a,b,c", new[] { "a", "b", "c" } };
     }
 
@@ -31,7 +31,7 @@ namespace Copse.Linq.Tests
 
     [TestMethod]
     [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-    public void PostorderTraversal(
+    public void GetLevelOrderTraversal(
       string treeString,
       string[] expectedResults)
     {
@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
       // Act
       var actual =
         treenumerable
-        .PostorderTraversal()
+        .GetLevelOrderTraversal()
         .ToArray();
 
       // Assert

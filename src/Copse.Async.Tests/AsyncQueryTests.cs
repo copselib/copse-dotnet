@@ -62,9 +62,9 @@ namespace Copse.Async.Tests
     {
       foreach (var tree in Trees)
       {
-        CollectionAssert.AreEqual(Sync(tree).PreorderTraversal().ToList(), await ToList(Async(tree).PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(Sync(tree).PostorderTraversal().ToList(), await ToList(Async(tree).PostorderTraversal()), $"Postorder {tree}");
-        CollectionAssert.AreEqual(Sync(tree).LevelOrderTraversal().ToList(), await ToList(Async(tree).LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetPreorderTraversal().ToList(), await ToList(Async(tree).GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetPostorderTraversal().ToList(), await ToList(Async(tree).GetPostorderTraversal()), $"Postorder {tree}");
+        CollectionAssert.AreEqual(Sync(tree).GetLevelOrderTraversal().ToList(), await ToList(Async(tree).GetLevelOrderTraversal()), $"LevelOrder {tree}");
 
         CollectionAssert.AreEqual(Sync(tree).GetLeaves().ToList(), await ToList(Async(tree).GetLeaves()), $"GetLeaves-dft {tree}");
         CollectionAssert.AreEqual(
@@ -141,23 +141,23 @@ namespace Copse.Async.Tests
         for (var count = 0; count <= 4; count++)
         {
           CollectionAssert.AreEqual(
-            await ToList(Sync(tree).SkipTrees(count).PreorderTraversal()),
-            await ToList(Async(tree).SkipTrees(count).PreorderTraversal()),
+            await ToList(Sync(tree).SkipTrees(count).GetPreorderTraversal()),
+            await ToList(Async(tree).SkipTrees(count).GetPreorderTraversal()),
             $"SkipTrees {tree} {count}");
 
           CollectionAssert.AreEqual(
-            await ToList(Sync(tree).TakeTrees(count).PreorderTraversal()),
-            await ToList(Async(tree).TakeTrees(count).PreorderTraversal()),
+            await ToList(Sync(tree).TakeTrees(count).GetPreorderTraversal()),
+            await ToList(Async(tree).TakeTrees(count).GetPreorderTraversal()),
             $"TakeTrees {tree} {count}");
 
           CollectionAssert.AreEqual(
-            await ToList(Sync(tree).SkipLastTrees(count).PreorderTraversal()),
-            await ToList((await Async(tree).SkipLastTreesAsync(count)).PreorderTraversal()),
+            await ToList(Sync(tree).SkipLastTrees(count).GetPreorderTraversal()),
+            await ToList((await Async(tree).SkipLastTreesAsync(count)).GetPreorderTraversal()),
             $"SkipLastTrees {tree} {count}");
 
           CollectionAssert.AreEqual(
-            await ToList(Sync(tree).TakeLastTrees(count).PreorderTraversal()),
-            await ToList((await Async(tree).TakeLastTreesAsync(count)).PreorderTraversal()),
+            await ToList(Sync(tree).TakeLastTrees(count).GetPreorderTraversal()),
+            await ToList((await Async(tree).TakeLastTreesAsync(count)).GetPreorderTraversal()),
             $"TakeLastTrees {tree} {count}");
         }
     }
@@ -181,7 +181,7 @@ namespace Copse.Async.Tests
       }
     }
 
-    // Sync PreorderTraversal returns IEnumerable; bridge it to the async ToList helper.
+    // Sync GetPreorderTraversal returns IEnumerable; bridge it to the async ToList helper.
     private static Task<List<string>> ToList(IEnumerable<string> source) => Task.FromResult(source.ToList());
 
     private static async Task<List<T>> ToList<T>(IAsyncEnumerable<T> source)

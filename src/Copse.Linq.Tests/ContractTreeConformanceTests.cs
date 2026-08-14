@@ -109,9 +109,9 @@ namespace Copse.Linq.Tests
         var contract = ContractTree.Parse(tree);
 
         Assert.AreEqual(engine.CountNodes(), contract.CountNodes(), $"CountNodes over {tree}");
-        CollectionAssert.AreEqual(engine.PreorderTraversal().ToArray(), contract.PreorderTraversal().ToArray(), $"Preorder over {tree}");
-        CollectionAssert.AreEqual(engine.PostorderTraversal().ToArray(), contract.PostorderTraversal().ToArray(), $"Postorder over {tree}");
-        CollectionAssert.AreEqual(engine.LevelOrderTraversal().ToArray(), contract.LevelOrderTraversal().ToArray(), $"LevelOrder over {tree}");
+        CollectionAssert.AreEqual(engine.GetPreorderTraversal().ToArray(), contract.GetPreorderTraversal().ToArray(), $"Preorder over {tree}");
+        CollectionAssert.AreEqual(engine.GetPostorderTraversal().ToArray(), contract.GetPostorderTraversal().ToArray(), $"Postorder over {tree}");
+        CollectionAssert.AreEqual(engine.GetLevelOrderTraversal().ToArray(), contract.GetLevelOrderTraversal().ToArray(), $"LevelOrder over {tree}");
         CollectionAssert.AreEqual(engine.GetLeaves().ToArray(), contract.GetLeaves().ToArray(), $"GetLeaves over {tree}");
         CollectionAssert.AreEqual(
           engine.GetLevels().Select(level => string.Join("|", level)).ToArray(),

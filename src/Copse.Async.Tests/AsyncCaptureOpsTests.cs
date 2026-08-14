@@ -44,8 +44,8 @@ namespace Copse.Async.Tests
           (left, right) => left + "|" + right,
           (accumulate, node) => node + "|" + accumulate);
 
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -66,8 +66,8 @@ namespace Copse.Async.Tests
 
         // Breadth-first pulled FIRST pins the level-order layout; the depth-first replay then
         // rides the same capture (the reverse pin order of the test above).
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
       }
     }
 
@@ -79,8 +79,8 @@ namespace Copse.Async.Tests
         var sync = Sync(tree).LeaffixDispatch(node => node, ConcatSurvey);
         var async = Async(tree).LeaffixDispatch(node => node, ConcatSurvey);
 
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -97,11 +97,11 @@ namespace Copse.Async.Tests
       {
         var sync = Sync(tree)
           .RootfixDispatch("s", Survey)
-          .PreorderTraversal()
+          .GetPreorderTraversal()
           .Select(dn => dn.Accumulate + dn.Node)
           .ToList();
 
-        var async = (await ToList(Async(tree).RootfixDispatch("s", Survey).PreorderTraversal()))
+        var async = (await ToList(Async(tree).RootfixDispatch("s", Survey).GetPreorderTraversal()))
           .Select(dn => dn.Accumulate + dn.Node)
           .ToList();
 
@@ -118,8 +118,8 @@ namespace Copse.Async.Tests
         var sync = Sync(tree).OrderChildrenByDescending(node => node);
         var async = Async(tree).OrderChildrenByDescending(node => node);
 
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -131,8 +131,8 @@ namespace Copse.Async.Tests
         var sync = Sync(tree).Invert();
         var async = Async(tree).Invert();
 
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -146,8 +146,8 @@ namespace Copse.Async.Tests
 
         // Breadth-first pulled FIRST pins the memoized streaming mirror; the depth-first
         // replay then rides the same capture (the reverse pin order of the test above).
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(async.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
       }
     }
 
@@ -159,7 +159,7 @@ namespace Copse.Async.Tests
         var sync = ((IBreadthFirstTreenumerable<string>)Sync(tree)).Invert();
         var async = ((IAsyncBreadthFirstTreenumerable<string>)Async(tree)).Invert();
 
-        CollectionAssert.AreEqual(sync.LevelOrderTraversal().ToList(), await ToList(async.LevelOrderTraversal()), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 
@@ -173,7 +173,7 @@ namespace Copse.Async.Tests
 
         var sync = Sync(tree).Materialize().Invert();
 
-        CollectionAssert.AreEqual(sync.PreorderTraversal().ToList(), await ToList(mirrored.PreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(mirrored.GetPreorderTraversal()), $"Preorder {tree}");
       }
     }
 

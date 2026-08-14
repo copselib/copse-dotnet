@@ -60,22 +60,22 @@ namespace Copse.Linq.Tests
       var composedDepthFirst = StreamDepthFirst("a(b(d,e,f),c)")
         .Where(n => n != "b")
         .Where(n => n != "e")
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       var stackedDepthFirst = Tree.DeferDepthFirst(() => StreamDepthFirst("a(b(d,e,f),c)").Where(n => n != "b"))
         .Where(n => n != "e")
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(stackedDepthFirst, composedDepthFirst, "depth-first");
 
       var composedBreadthFirst = StreamBreadthFirst("a(b(d,e,f),c)")
         .Where(n => n != "b")
         .Where(n => n != "e")
-        .LevelOrderTraversal().ToArray();
+        .GetLevelOrderTraversal().ToArray();
 
       var stackedBreadthFirst = Tree.DeferBreadthFirst(() => StreamBreadthFirst("a(b(d,e,f),c)").Where(n => n != "b"))
         .Where(n => n != "e")
-        .LevelOrderTraversal().ToArray();
+        .GetLevelOrderTraversal().ToArray();
 
       CollectionAssert.AreEqual(stackedBreadthFirst, composedBreadthFirst, "breadth-first");
     }
@@ -97,7 +97,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "a12", "b12", "c12" },
-        depthFirst.PreorderTraversal().ToArray());
+        depthFirst.GetPreorderTraversal().ToArray());
     }
 
     [TestMethod]
@@ -111,9 +111,9 @@ namespace Copse.Linq.Tests
 
       var stacked = Tree.DeferDepthFirst(() => StreamDepthFirst("a(b(d,e),c)").Select(n => n + "!"))
         .PruneAfter(n => n == "b!")
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
-      CollectionAssert.AreEqual(stacked, composed.PreorderTraversal().ToArray());
+      CollectionAssert.AreEqual(stacked, composed.GetPreorderTraversal().ToArray());
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
-        depthFirst.PreorderTraversal().ToArray());
+        depthFirst.GetPreorderTraversal().ToArray());
     }
 
     // The tier seal, narrow half (boundary ruling 2026-08-04): rejecting operators stack
@@ -161,7 +161,7 @@ namespace Copse.Linq.Tests
       var labeled = StreamDepthFirst("a(b(c))")
         .Where(n => n != "b")
         .Select((n, position) => $"{n}@{position.Depth}")
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
@@ -179,7 +179,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "a@0.0", "b@1.0", "d@1.1" },
-        composed.PreorderTraversal().ToArray());
+        composed.GetPreorderTraversal().ToArray());
     }
 
     // A composite-width chain continued through a narrow-typed receiver: the narrow overload
@@ -200,7 +200,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "a", "d", "c" },
-        continued.PreorderTraversal().ToArray());
+        continued.GetPreorderTraversal().ToArray());
     }
 
     // Narrow composed chains against the engine oracle, over the conformance corpus: the same

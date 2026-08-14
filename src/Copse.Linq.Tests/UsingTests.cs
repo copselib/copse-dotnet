@@ -43,7 +43,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      UsingTree("a(b,c)", resources).PreorderTraversal().ToArray();
+      UsingTree("a(b,c)", resources).GetPreorderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -83,8 +83,8 @@ namespace Copse.Linq.Tests
       var resources = new List<TestResource>();
       var tree = UsingTree("a(b,c)", resources);
 
-      tree.PreorderTraversal().ToArray();
-      tree.LevelOrderTraversal().ToArray();
+      tree.GetPreorderTraversal().ToArray();
+      tree.GetLevelOrderTraversal().ToArray();
 
       Assert.AreEqual(2, resources.Count);
       Assert.IsTrue(resources.All(resource => resource.DisposeCount == 1));
@@ -123,14 +123,14 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, resources.Count);
 
       // The first pull runs the whole capture: the resource is acquired and released inside it.
-      materialized.PreorderTraversal().ToArray();
+      materialized.GetPreorderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
 
       // Replays ride the capture; the source (and its resource) is never touched again.
-      materialized.PreorderTraversal().ToArray();
-      materialized.LevelOrderTraversal().ToArray();
+      materialized.GetPreorderTraversal().ToArray();
+      materialized.GetLevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -174,13 +174,13 @@ namespace Copse.Linq.Tests
           _ => TreeSerializer.DeserializeDepthFirstTree(tree));
 
         CollectionAssert.AreEqual(
-          direct.PreorderTraversal().ToArray(),
-          wrapped.PreorderTraversal().ToArray(),
+          direct.GetPreorderTraversal().ToArray(),
+          wrapped.GetPreorderTraversal().ToArray(),
           $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
-          direct.LevelOrderTraversal().ToArray(),
-          wrapped.LevelOrderTraversal().ToArray(),
+          direct.GetLevelOrderTraversal().ToArray(),
+          wrapped.GetLevelOrderTraversal().ToArray(),
           $"LevelOrder mismatch for {tree}");
       }
     }
@@ -202,7 +202,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, resources.Count); // lazy: nothing acquired at composition
 
-      tree.PreorderTraversal().ToArray();
+      tree.GetPreorderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -217,7 +217,7 @@ namespace Copse.Linq.Tests
         () => { var r = new TestResource(); resources.Add(r); return r; },
         _ => TreeSerializer.DeserializeBreadthFirstTree("a;b,c"));
 
-      tree.LevelOrderTraversal().ToArray();
+      tree.GetLevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, resources.Count);
       Assert.AreEqual(1, resources[0].DisposeCount);
@@ -229,14 +229,14 @@ namespace Copse.Linq.Tests
       var depthFirstCalls = 0;
       IDepthFirstTreenumerable<string> dft = Tree.DeferDepthFirst(() => { depthFirstCalls++; return TreeSerializer.DeserializeDepthFirstTree("a(b,c)"); });
 
-      dft.PreorderTraversal().ToArray();
-      dft.PreorderTraversal().ToArray();
+      dft.GetPreorderTraversal().ToArray();
+      dft.GetPreorderTraversal().ToArray();
       Assert.AreEqual(2, depthFirstCalls);
 
       var breadthFirstCalls = 0;
       IBreadthFirstTreenumerable<string> bft = Tree.DeferBreadthFirst(() => { breadthFirstCalls++; return TreeSerializer.DeserializeBreadthFirstTree("a;b,c"); });
 
-      bft.LevelOrderTraversal().ToArray();
+      bft.GetLevelOrderTraversal().ToArray();
       Assert.AreEqual(1, breadthFirstCalls);
     }
   }

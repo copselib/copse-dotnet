@@ -61,7 +61,7 @@ namespace Copse.Linq.Treenumerators
       // Strategies on the very first MoveNext apply to no node (the inner is still parked at the
       // pre-enumeration forest root, whose contractual Mode is SchedulingNode) -- the engine
       // ignores them, and so must the skip bookkeeping, or a SkipNode-driving consumer (e.g.
-      // PreorderTraversal) pops the seed sentinel as if it were a scheduled node.
+      // GetPreorderTraversal) pops the seed sentinel as if it were a scheduled node.
       if (InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         && !InnerTreenumerator.Position.IsForestRoot
         && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))

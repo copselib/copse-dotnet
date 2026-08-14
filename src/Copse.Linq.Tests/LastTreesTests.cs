@@ -27,7 +27,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "b", "d", "c", "e", "f" },
-        forest.TakeLastTrees(2).PreorderTraversal().ToList());
+        forest.TakeLastTrees(2).GetPreorderTraversal().ToList());
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(
         new[] { "a" },
-        forest.SkipLastTrees(2).PreorderTraversal().ToList());
+        forest.SkipLastTrees(2).GetPreorderTraversal().ToList());
     }
 
     [TestMethod]
@@ -74,13 +74,13 @@ namespace Copse.Linq.Tests
           var expected = Full(forest).TakeLastTrees(count);
 
           CollectionAssert.AreEqual(
-            expected.PreorderTraversal().ToList(),
-            ((IDepthFirstTreenumerable<string>)Full(forest)).TakeLastTrees(count).PreorderTraversal().ToList(),
+            expected.GetPreorderTraversal().ToList(),
+            ((IDepthFirstTreenumerable<string>)Full(forest)).TakeLastTrees(count).GetPreorderTraversal().ToList(),
             $"depth-first narrow disagrees for {forest} taking {count}");
 
           CollectionAssert.AreEqual(
-            expected.LevelOrderTraversal().ToList(),
-            ((IBreadthFirstTreenumerable<string>)Full(forest)).TakeLastTrees(count).LevelOrderTraversal().ToList(),
+            expected.GetLevelOrderTraversal().ToList(),
+            ((IBreadthFirstTreenumerable<string>)Full(forest)).TakeLastTrees(count).GetLevelOrderTraversal().ToList(),
             $"breadth-first narrow disagrees for {forest} taking {count}");
         }
     }
@@ -94,13 +94,13 @@ namespace Copse.Linq.Tests
           var expected = Full(forest).SkipLastTrees(count);
 
           CollectionAssert.AreEqual(
-            expected.PreorderTraversal().ToList(),
-            ((IDepthFirstTreenumerable<string>)Full(forest)).SkipLastTrees(count).PreorderTraversal().ToList(),
+            expected.GetPreorderTraversal().ToList(),
+            ((IDepthFirstTreenumerable<string>)Full(forest)).SkipLastTrees(count).GetPreorderTraversal().ToList(),
             $"depth-first narrow disagrees for {forest} skipping {count}");
 
           CollectionAssert.AreEqual(
-            expected.LevelOrderTraversal().ToList(),
-            ((IBreadthFirstTreenumerable<string>)Full(forest)).SkipLastTrees(count).LevelOrderTraversal().ToList(),
+            expected.GetLevelOrderTraversal().ToList(),
+            ((IBreadthFirstTreenumerable<string>)Full(forest)).SkipLastTrees(count).GetLevelOrderTraversal().ToList(),
             $"breadth-first narrow disagrees for {forest} skipping {count}");
         }
     }

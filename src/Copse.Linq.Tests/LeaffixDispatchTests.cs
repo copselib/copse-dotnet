@@ -194,7 +194,7 @@ namespace Copse.Linq.Tests
             return $"{parent}{lastChild}[{children.Count}]";
           })
         .Select(pairing => pairing.Accumulate)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       // b's children are the leaves c,d -> "bd[2]"; a's children are b's survey and the leaf e,
@@ -225,7 +225,7 @@ namespace Copse.Linq.Tests
             return count;
           })
         .Select(pairing => pairing.Accumulate)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       // Leaves c,d,e count 1 each; b = c+d = 2; a = b+e = 3.
@@ -243,7 +243,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a(b(c,d))")
         .LeaffixDispatch(node => node, ConcatSurvey)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 

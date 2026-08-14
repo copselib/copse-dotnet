@@ -167,7 +167,7 @@ namespace Copse.Linq.Tests
             foreach (var member in members)
               member.Dispatch(arrival);
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       // The virtual root's family {a} first, then a's {b,c}, then b's {d}; leaves head no family.
@@ -192,10 +192,10 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, surveyCount); // deferred: nothing runs until the first pull
 
-      dispatch.PreorderTraversal().ToArray();
+      dispatch.GetPreorderTraversal().ToArray();
       Assert.AreEqual(2, surveyCount); // the virtual root's family {a} and a's {b,c}
 
-      dispatch.LevelOrderTraversal().ToArray(); // cross-dimension replay rides the same capture
+      dispatch.GetLevelOrderTraversal().ToArray(); // cross-dimension replay rides the same capture
       Assert.AreEqual(2, surveyCount);
     }
 
@@ -216,7 +216,7 @@ namespace Copse.Linq.Tests
           });
 
       var exception = Assert.ThrowsException<InvalidOperationException>(
-        () => dispatch.PreorderTraversal().ToArray());
+        () => dispatch.GetPreorderTraversal().ToArray());
 
       StringAssert.Contains(exception.Message, "without dispatching");
     }
@@ -240,7 +240,7 @@ namespace Copse.Linq.Tests
           });
 
       var exception = Assert.ThrowsException<InvalidOperationException>(
-        () => dispatch.PreorderTraversal().ToArray());
+        () => dispatch.GetPreorderTraversal().ToArray());
 
       StringAssert.Contains(exception.Message, "twice");
     }
@@ -260,7 +260,7 @@ namespace Copse.Linq.Tests
             foreach (var member in members)
               member.Dispatch(arrival + member.Node);
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(node => $"{node.Accumulate}{node.Node}")
         .ToArray();
 
@@ -283,7 +283,7 @@ namespace Copse.Linq.Tests
             foreach (var member in members)
               member.Dispatch(arrival * 10 + ++memberOrdinal);
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(node => $"{node.Node}:{node.Accumulate}")
         .ToArray();
 
@@ -326,7 +326,7 @@ namespace Copse.Linq.Tests
             for (var index = 1; index < children.Count; index++)
               children[index].Dispatch(arrival + children[index].Node);
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       Assert.AreEqual(3, surveyedParents, "the virtual root's family, a's, and c's");
@@ -352,7 +352,7 @@ namespace Copse.Linq.Tests
             foreach (var member in members)
               member.Dispatch(arrival + lastMemberLetter);
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
@@ -384,7 +384,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .RootfixDispatch(10, proportionSurvey)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
@@ -392,7 +392,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .RootfixDispatch(_ => 10, proportionSurvey)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
@@ -411,7 +411,7 @@ namespace Copse.Linq.Tests
           "s",
           (arrival, members) => members[0].Dispatch(arrival));
 
-      Assert.ThrowsException<InvalidOperationException>(() => dispatch.PreorderTraversal().ToArray());
+      Assert.ThrowsException<InvalidOperationException>(() => dispatch.GetPreorderTraversal().ToArray());
     }
   }
 }

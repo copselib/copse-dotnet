@@ -19,7 +19,7 @@ namespace Copse.Linq.Tests
       var actual =
         treenumerable
         .Select(visit => (char)('a' + visit))
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       // Assert
@@ -40,7 +40,7 @@ namespace Copse.Linq.Tests
       var actual =
         treenumerable
         .Select(visit => (char)('a' + visit))
-        .LevelOrderTraversal()
+        .GetLevelOrderTraversal()
         .ToArray();
 
       // Assert

@@ -120,7 +120,7 @@ namespace Copse.Linq.Tests
         var allTreeNodes =
           TreeSerializer
           .DeserializeDepthFirstTree(treeString)
-          .PreorderTraversal()
+          .GetPreorderTraversal()
           .ToArray();
 
         var allTreeNodeAndTraversalStrategyPairs =
@@ -163,7 +163,7 @@ namespace Copse.Linq.Tests
       var nodes =
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray()
         .AsSpan();
 

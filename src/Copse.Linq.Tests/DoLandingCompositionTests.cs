@@ -43,7 +43,7 @@ namespace Copse.Linq.Tests
         .Materialize();
 
     private static decimal[] LandedPreorder(ITreenumerable<Entity> corpus) =>
-      corpus.PreorderTraversal().Select(e => e.Landed).ToArray();
+      corpus.GetPreorderTraversal().Select(e => e.Landed).ToArray();
 
     // The canonical landing effect: once per node, at scheduling.
     private static System.Action<NodeVisit<ScanResult<Entity, decimal>>> Land() =>
@@ -62,7 +62,7 @@ namespace Copse.Linq.Tests
         .RootfixScan(100m, (arrived, e) => arrived + e.Weight)
         .Do(Land())
         .Select(pairing => pairing.Node)
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { 110m, 115m, 116m, 117m, 114m }, LandedPreorder(corpus));
     }
@@ -78,7 +78,7 @@ namespace Copse.Linq.Tests
         .RootfixScan(root => 100m, (arrived, e) => arrived + e.Weight)
         .Do(Land())
         .Select(pairing => pairing.Node)
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { 100m, 105m, 106m, 107m, 104m }, LandedPreorder(corpus),
         "roots land the selector's return directly; children fold from it");
@@ -93,7 +93,7 @@ namespace Copse.Linq.Tests
         .LeaffixScan(0m, (left, right) => left + right, (accumulate, e) => accumulate + e.Weight)
         .Do(Land())
         .Select(pairing => pairing.Node)
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       // Subtree sums: d=1, e=2, b=5+1+2=8, c=4, a=10+8+4=22.
       CollectionAssert.AreEqual(new[] { 22m, 8m, 1m, 2m, 4m }, LandedPreorder(corpus));
@@ -120,7 +120,7 @@ namespace Copse.Linq.Tests
         .RootfixDispatch(9_000m, AllocateByWeight)
         .Do(Land())
         .Select(pairing => pairing.Node)
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       // The virtual family hands the sole root the whole budget; b/c split 9000 by 5:4;
       // d/e split b's 5000 by 1:2.
@@ -148,7 +148,7 @@ namespace Copse.Linq.Tests
         .LeaffixDispatch(leaf => leaf.Weight, RollUp)
         .Do(Land())
         .Select(pairing => pairing.Node)
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { 22m, 8m, 1m, 2m, 4m }, LandedPreorder(corpus));
     }
@@ -171,7 +171,7 @@ namespace Copse.Linq.Tests
         .RootfixScan(100m, (arrived, e) => arrived + e.Weight)
         .Select(pairing => { selectorCalls++; return pairing.Node; });  // impure: the anti-pattern
 
-      landing.PreorderTraversal().ToArray();
+      landing.GetPreorderTraversal().ToArray();
       var valueDrainCalls = selectorCalls;
 
       selectorCalls = 0;
@@ -203,15 +203,15 @@ namespace Copse.Linq.Tests
         })
         .Select(pairing => pairing.Node);
 
-      landing.PreorderTraversal().ToArray();
-      landing.LevelOrderTraversal().ToArray();
+      landing.GetPreorderTraversal().ToArray();
+      landing.GetLevelOrderTraversal().ToArray();
       Assert.AreEqual(10, landings, "per drain: two traversals of five nodes each");
 
       landings = 0;
       var pinned = landing.Materialize();
-      pinned.PreorderTraversal().ToArray();
-      pinned.LevelOrderTraversal().ToArray();
-      pinned.PreorderTraversal().ToArray();
+      pinned.GetPreorderTraversal().ToArray();
+      pinned.GetLevelOrderTraversal().ToArray();
+      pinned.GetPreorderTraversal().ToArray();
       Assert.AreEqual(5, landings, "the pin: one full traversal at the capture, replays are replays");
     }
   }

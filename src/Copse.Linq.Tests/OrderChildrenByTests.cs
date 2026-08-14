@@ -100,14 +100,14 @@ namespace Copse.Linq.Tests
       var ascending =
         TreeSerializer.DeserializeDepthFirstTree("ax,ay,b")
         .OrderChildrenBy(node => node[0])
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "ax", "ay", "b" }, ascending);
 
       var descending =
         TreeSerializer.DeserializeDepthFirstTree("ax,ay,b")
         .OrderChildrenByDescending(node => node[0])
-        .PreorderTraversal().ToArray();
+        .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "b", "ax", "ay" }, descending);
     }
@@ -121,13 +121,13 @@ namespace Copse.Linq.Tests
         new[] { "a", "B" },
         TreeSerializer.DeserializeDepthFirstTree("B,a")
           .OrderChildrenBy(node => node)
-          .PreorderTraversal().ToArray());
+          .GetPreorderTraversal().ToArray());
 
       CollectionAssert.AreEqual(
         new[] { "B", "a" },
         TreeSerializer.DeserializeDepthFirstTree("B,a")
           .OrderChildrenBy(node => node, StringComparer.Ordinal)
-          .PreorderTraversal().ToArray());
+          .GetPreorderTraversal().ToArray());
     }
 
     [TestMethod]
@@ -145,8 +145,8 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, seenSiblingIndexesByNode.Count); // deferred: nothing runs until the first pull
 
-      ordered.PreorderTraversal().ToArray();
-      ordered.LevelOrderTraversal().ToArray(); // cross-dimension replay rides the same capture
+      ordered.GetPreorderTraversal().ToArray();
+      ordered.GetLevelOrderTraversal().ToArray(); // cross-dimension replay rides the same capture
 
       Assert.AreEqual(0, seenSiblingIndexesByNode["b"]); // SOURCE positions, pre-ordering
       Assert.AreEqual(1, seenSiblingIndexesByNode["a"]);

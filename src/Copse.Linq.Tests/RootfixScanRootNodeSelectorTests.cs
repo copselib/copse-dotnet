@@ -94,7 +94,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .RootfixScan("s", Accumulator)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
@@ -102,7 +102,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree("a,b")
         .RootfixScan(_ => "s", Accumulator)
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .Select(pairing => pairing.Accumulate)
         .ToArray();
 
@@ -127,7 +127,7 @@ namespace Copse.Linq.Tests
             accumulatorInvocations++;
             return accumulate + node;
           })
-        .PreorderTraversal()
+        .GetPreorderTraversal()
         .ToArray();
 
       Assert.AreEqual(4, accumulatorInvocations);

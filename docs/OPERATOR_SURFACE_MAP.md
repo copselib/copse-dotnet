@@ -83,8 +83,8 @@ Dims key: **F** = `ITreenumerable`, **D** = `IDepthFirstTreenumerable`, **B** =
 
 | Operator | Source dims | Returns | Behavior | Notes |
 |---|---|---|---|---|
-| PreorderTraversal / LevelOrderTraversal | D / B | IEnumerable | streams | O(1)–O(depth) |
-| PostorderTraversal | D | IEnumerable | streams | O(depth) pending path |
+| GetPreorderTraversal / GetLevelOrderTraversal | D / B | IEnumerable | streams | O(1)–O(depth) |
+| GetPostorderTraversal | D | IEnumerable | streams | O(depth) pending path |
 | GetRoots / GetLeaves | D (GetLeaves also B, F) | IEnumerable | streams | O(1) |
 | GetLevels | B only | IEnumerable\<TNode[]\> | streams per level | O(width) reused deque; one array alloc per level |
 | GetBranches | D only | IEnumerable\<TNode[]\> | streams per branch | O(depth); array per yield |

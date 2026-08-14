@@ -23,7 +23,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(0, invocations);
 
-      lazyTree.PreorderTraversal().ToArray();
+      lazyTree.GetPreorderTraversal().ToArray();
 
       Assert.AreEqual(1, invocations);
     }
@@ -39,9 +39,9 @@ namespace Copse.Linq.Tests
         return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
-      lazyTree.PreorderTraversal().ToArray();
-      lazyTree.PreorderTraversal().ToArray();
-      lazyTree.LevelOrderTraversal().ToArray();
+      lazyTree.GetPreorderTraversal().ToArray();
+      lazyTree.GetPreorderTraversal().ToArray();
+      lazyTree.GetLevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, invocations);
     }
@@ -55,8 +55,8 @@ namespace Copse.Linq.Tests
       var lazyTree = Tree.Lazy(
         () => TreeSerializer.DeserializeDepthFirstTree(built++ == 0 ? "a(b,c)" : "x"));
 
-      var breadthFirst = lazyTree.LevelOrderTraversal().ToArray();
-      var depthFirst = lazyTree.PreorderTraversal().ToArray();
+      var breadthFirst = lazyTree.GetLevelOrderTraversal().ToArray();
+      var depthFirst = lazyTree.GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { "a", "b", "c" }, breadthFirst);
       CollectionAssert.AreEqual(new[] { "a", "b", "c" }, depthFirst);
@@ -73,8 +73,8 @@ namespace Copse.Linq.Tests
         return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
-      lazyTree.LevelOrderTraversal().ToArray();
-      lazyTree.PreorderTraversal().ToArray();
+      lazyTree.GetLevelOrderTraversal().ToArray();
+      lazyTree.GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { TreeTraversalStrategy.BreadthFirst }, observedDimensions);
     }
@@ -90,8 +90,8 @@ namespace Copse.Linq.Tests
         return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
-      lazyTree.PreorderTraversal().ToArray();
-      lazyTree.LevelOrderTraversal().ToArray();
+      lazyTree.GetPreorderTraversal().ToArray();
+      lazyTree.GetLevelOrderTraversal().ToArray();
 
       CollectionAssert.AreEqual(new[] { TreeTraversalStrategy.DepthFirst }, observedDimensions);
     }
@@ -107,13 +107,13 @@ namespace Copse.Linq.Tests
         var direct = TreeSerializer.DeserializeDepthFirstTree(tree);
 
         CollectionAssert.AreEqual(
-          direct.PreorderTraversal().ToArray(),
-          lazyTree.PreorderTraversal().ToArray(),
+          direct.GetPreorderTraversal().ToArray(),
+          lazyTree.GetPreorderTraversal().ToArray(),
           $"Preorder mismatch for {tree}");
 
         CollectionAssert.AreEqual(
-          direct.LevelOrderTraversal().ToArray(),
-          lazyTree.LevelOrderTraversal().ToArray(),
+          direct.GetLevelOrderTraversal().ToArray(),
+          lazyTree.GetLevelOrderTraversal().ToArray(),
           $"LevelOrder mismatch for {tree}");
       }
     }
@@ -136,10 +136,10 @@ namespace Copse.Linq.Tests
         return TreeSerializer.DeserializeDepthFirstTree("a(b,c)");
       });
 
-      lazyDepthFirstTree.PreorderTraversal().ToArray();
-      lazyDepthFirstTree.PreorderTraversal().ToArray();
-      lazyBreadthFirstTree.LevelOrderTraversal().ToArray();
-      lazyBreadthFirstTree.LevelOrderTraversal().ToArray();
+      lazyDepthFirstTree.GetPreorderTraversal().ToArray();
+      lazyDepthFirstTree.GetPreorderTraversal().ToArray();
+      lazyBreadthFirstTree.GetLevelOrderTraversal().ToArray();
+      lazyBreadthFirstTree.GetLevelOrderTraversal().ToArray();
 
       Assert.AreEqual(1, depthFirstInvocations);
       Assert.AreEqual(1, breadthFirstInvocations);

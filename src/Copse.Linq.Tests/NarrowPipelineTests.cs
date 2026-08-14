@@ -136,9 +136,9 @@ namespace Copse.Linq.Tests
         Assert.AreEqual(engine.CountNodes(), StreamBreadthFirst(tree).CountNodes(), $"BFT CountNodes {tree}");
         Assert.AreEqual(engine.CountTrees(), StreamDepthFirst(tree).CountTrees(), $"CountTrees {tree}");
         CollectionAssert.AreEqual(engine.GetLeaves().ToArray(), StreamDepthFirst(tree).GetLeaves().ToArray(), $"GetLeaves {tree}");
-        CollectionAssert.AreEqual(engine.PreorderTraversal().ToArray(), StreamDepthFirst(tree).PreorderTraversal().ToArray(), $"Preorder {tree}");
-        CollectionAssert.AreEqual(engine.PostorderTraversal().ToArray(), StreamDepthFirst(tree).PostorderTraversal().ToArray(), $"Postorder {tree}");
-        CollectionAssert.AreEqual(engine.LevelOrderTraversal().ToArray(), StreamBreadthFirst(tree).LevelOrderTraversal().ToArray(), $"LevelOrder {tree}");
+        CollectionAssert.AreEqual(engine.GetPreorderTraversal().ToArray(), StreamDepthFirst(tree).GetPreorderTraversal().ToArray(), $"Preorder {tree}");
+        CollectionAssert.AreEqual(engine.GetPostorderTraversal().ToArray(), StreamDepthFirst(tree).GetPostorderTraversal().ToArray(), $"Postorder {tree}");
+        CollectionAssert.AreEqual(engine.GetLevelOrderTraversal().ToArray(), StreamBreadthFirst(tree).GetLevelOrderTraversal().ToArray(), $"LevelOrder {tree}");
         CollectionAssert.AreEqual(
           engine.GetLevels().Select(level => string.Join("~", level)).ToArray(),
           StreamBreadthFirst(tree).GetLevels().Select(level => string.Join("~", level)).ToArray(),
@@ -241,7 +241,7 @@ namespace Copse.Linq.Tests
         // Oracle: the depth-first leaves re-sequenced into level order (corpus values are
         // unique per tree).
         var leafSet = new System.Collections.Generic.HashSet<string>(engine.GetLeaves());
-        var expected = engine.LevelOrderTraversal().Where(leafSet.Contains).ToArray();
+        var expected = engine.GetLevelOrderTraversal().Where(leafSet.Contains).ToArray();
 
         CollectionAssert.AreEqual(expected, StreamBreadthFirst(tree).GetLeaves().ToArray(), $"BFT GetLeaves {tree}");
         CollectionAssert.AreEqual(expected, ((IBreadthFirstTreenumerable<string>)engine).GetLeaves().ToArray(), $"BFT GetLeaves over full tree {tree}");

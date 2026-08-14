@@ -11,18 +11,18 @@ namespace Copse.Benchmarks
   {
     [Benchmark]
     public void Chain() =>
-      CanonicalTrees.MegaChainTree().PostorderTraversal().Consume();
+      CanonicalTrees.MegaChainTree().GetPostorderTraversal().Consume();
 
     [Benchmark]
     public void Forest() =>
-      CanonicalTrees.MegaForest().PostorderTraversal().Consume();
+      CanonicalTrees.MegaForest().GetPostorderTraversal().Consume();
 
     [Benchmark]
     public void Binary() =>
-      CanonicalTrees.MegaBinaryTree().PostorderTraversal().Consume();
+      CanonicalTrees.MegaBinaryTree().GetPostorderTraversal().Consume();
 
     [Benchmark]
     public void Triangle() =>
-      CanonicalTrees.MegaTriangleTree().PostorderTraversal().Consume();
+      CanonicalTrees.MegaTriangleTree().GetPostorderTraversal().Consume();
   }
 }
