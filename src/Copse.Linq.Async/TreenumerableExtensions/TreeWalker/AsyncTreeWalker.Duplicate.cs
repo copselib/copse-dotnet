@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncTreenumerable
+  public static partial class AsyncTreeWalker
   {
     /// <summary>Duplicate: the tree of walkers, still standing at this focus -- extend of
     /// the identity, which is the definition. Duplicating and extracting recovers the

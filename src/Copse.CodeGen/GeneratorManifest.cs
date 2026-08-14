@@ -162,15 +162,15 @@ namespace Copse.CodeGen
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
       // The walker-receiver extensions (the comonad's algebra) live in their receiver's
       // subfolder, one operator per file, same one-class partial as everything else.
-      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreenumerable.Extend.cs",
-        "Copse.Linq/TreenumerableExtensions/TreeWalker/Treenumerable.Extend.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
-      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreenumerable.Duplicate.cs",
-        "Copse.Linq/TreenumerableExtensions/TreeWalker/Treenumerable.Duplicate.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
-      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreenumerable.Subtree.cs",
-        "Copse.Linq/TreenumerableExtensions/TreeWalker/Treenumerable.Subtree.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreeWalker.Extend.cs",
+        "Copse.Linq/TreenumerableExtensions/TreeWalker/TreeWalker.Extend.g.cs",
+        "AsyncTreeWalker", "TreeWalker", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreeWalker.Duplicate.cs",
+        "Copse.Linq/TreenumerableExtensions/TreeWalker/TreeWalker.Duplicate.g.cs",
+        "AsyncTreeWalker", "TreeWalker", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/TreeWalker/AsyncTreeWalker.Subtree.cs",
+        "Copse.Linq/TreenumerableExtensions/TreeWalker/TreeWalker.Subtree.g.cs",
+        "AsyncTreeWalker", "TreeWalker", "Copse.Linq"),
       // FindHandles/FindHandle and HandleResult retired 2026-08-14 under the search law
       // (naming grammar): searches are not surface -- GetHandles/GetHandlesWithValues plus
       // consumer LINQ express them, and a search's honest miss is the empty sequence.

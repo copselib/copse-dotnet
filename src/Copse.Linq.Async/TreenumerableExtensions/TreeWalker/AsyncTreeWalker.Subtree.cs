@@ -3,7 +3,7 @@ using Copse.Linq.Async.Treenumerables;
 
 namespace Copse.Linq
 {
-  public static partial class AsyncTreenumerable
+  public static partial class AsyncTreeWalker
   {
     /// <summary>The reverse door: the treenumerable this stance denotes -- the subtree
     /// rooted at the focus, as a severed re-rooted view sharing the source's handles.
