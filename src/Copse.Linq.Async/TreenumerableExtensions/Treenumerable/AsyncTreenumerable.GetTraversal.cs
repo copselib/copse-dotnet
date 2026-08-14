@@ -10,61 +10,6 @@ namespace Copse.Linq
 {
   public static partial class AsyncTreenumerable
   {
-    /// <summary>
-    /// The full depth-first visit stream (every scheduling/visiting visit), with a per-node
-    /// strategy selector. Value flavor primary; the positional flavor is the arity-split (the
-    /// Select/Where grammar, swept family-wide 2026-08-05).
-    /// </summary>
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
-      this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
-    }
-
-    /// <summary>The positional flavor: the node's value and its position.</summary>
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
-      this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
-    }
-
-    /// <summary>The full breadth-first visit stream, with a per-node strategy selector.</summary>
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
-      this IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
-    }
-
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
-      this IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
-    }
-
-    /// <summary>The full depth-first visit stream (TraverseAll).</summary>
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
-      this IAsyncDepthFirstTreenumerable<TNode> source,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncDepthFirstTreenumerator, cancellationToken);
-    }
-
-    /// <summary>The full breadth-first visit stream (TraverseAll).</summary>
-    public static IAsyncEnumerable<NodeVisit<TNode>> GetBreadthFirstTraversal<TNode>(
-      this IAsyncBreadthFirstTreenumerable<TNode> source,
-      CancellationToken cancellationToken = default)
-    {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, cancellationToken);
-    }
-
     /// <summary>The full visit stream in the given dimension, with a per-node strategy selector.</summary>
     public static IAsyncEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -75,6 +20,7 @@ namespace Copse.Linq
       return EnumerateTraversalAsync(() => source.GetAsyncTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
     }
 
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static IAsyncEnumerable<NodeVisit<TNode>> GetTraversal<TNode>(
       this IAsyncTreenumerable<TNode> source,
       TreeTraversalStrategy treeTraversalStrategy,
@@ -93,6 +39,9 @@ namespace Copse.Linq
       return EnumerateTraversalAsync(() => source.GetAsyncTreenumerator(treeTraversalStrategy), cancellationToken);
     }
 
+    // The traversal core the whole Get*Traversal family drives through (the dimension-specific
+    // files share these via the partial): pull under the consumer's per-node strategy, refresh
+    // the strategy at each scheduling visit, TraverseAll between.
     private static async IAsyncEnumerable<NodeVisit<TNode>> EnumerateTraversalAsync<TNode>(
       Func<IAsyncTreenumerator<TNode>> treenumeratorFactory,
       Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,

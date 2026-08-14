@@ -554,8 +554,14 @@ namespace Copse.CodeGen
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetRoots.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
-      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetTraversals.cs",
-        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetTraversals.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetDepthFirstTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetDepthFirstTraversal.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetBreadthFirstTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetBreadthFirstTraversal.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetTraversal.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.GetTraversal.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.GetTreenumerator.cs",
