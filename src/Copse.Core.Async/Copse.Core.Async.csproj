@@ -12,6 +12,13 @@
     <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Family IVT (the store-policy precedent, 2026-08-14): the walker's Terrain field is
+         internal so consumers meet ONE navigation spelling; the comonad extensions in the
+         operator tier are the sanctioned readers. Lockstep packaging makes this skew-safe. -->
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
+  </ItemGroup>
+
   <!-- netstandard2.1 and net8.0 have IAsyncEnumerable/IAsyncDisposable/ValueTask in-box; net48 and
        netstandard2.0 get them from the Microsoft polyfill (System.Threading.Tasks.Extensions rides
        along transitively). -->

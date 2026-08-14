@@ -45,11 +45,12 @@ namespace Copse
       Focus = focus;
     }
 
-    /// <summary>The terrain this walker stands on. Exposed (the Core move) because the
-    /// comonad's operator surface -- co-bind, duplicate, the severed view -- lives in the
-    /// operator tier and is built FROM the pair; a vantage is focus × terrain, and both
-    /// halves are readable.</summary>
-    public readonly ITreeTerrain<TValue, THandle> Terrain;
+    /// <summary>The terrain this walker stands on. INTERNAL (the door-only design): consumers
+    /// meet exactly one navigation spelling -- the walker's own members -- and never the SPI
+    /// behind it; the comonad's operator surface (co-bind, duplicate, the severed view) reads
+    /// this half through the family IVT. A vantage is focus × terrain; the focus is public
+    /// identity, the terrain is bound physics.</summary>
+    internal readonly ITreeTerrain<TValue, THandle> Terrain;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;
