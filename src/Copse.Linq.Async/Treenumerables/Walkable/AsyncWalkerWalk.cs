@@ -24,23 +24,23 @@ namespace Copse.Linq.Async.Treenumerables
     // A walk over the walkable's own labeling: the identity relabeling. (Callers holding a
     // walkable rarely need this -- the walkable IS a treenumerable -- but views built from
     // adjacency alone get their streaming half here.)
-    internal static IAsyncTreenumerable<TValue> Create<TValue, THandle>(IAsyncWalkableTreenumerable<TValue, THandle> walkable)
+    internal static IAsyncTreenumerable<TValue> Create<TValue, THandle>(IAsyncTreeTerrain<TValue, THandle> walkable)
       => Create(walkable, (source, handle) => source.GetValueAsync(handle));
 
     // A walk under a DIFFERENT labeling of the same shape -- Extend's streaming half: the
     // engine drives the walkable's adjacency, and every emitted handle is labeled through
     // the given observer.
     internal static IAsyncTreenumerable<TResult> Create<TValue, THandle, TResult>(
-      IAsyncWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> labeling)
+      IAsyncTreeTerrain<TValue, THandle> walkable,
+      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> labeling)
       => new AsyncTreenumerable<TResult, HandleAndValue<THandle, TResult>, AsyncWalkableChildEnumerator<TValue, THandle, TResult>>(
         context => new AsyncWalkableChildEnumerator<TValue, THandle, TResult>(walkable, labeling, context.Node.Handle),
         labeledNode => labeledNode.Value,
         Roots(walkable, labeling));
 
     private static async IAsyncEnumerable<HandleAndValue<THandle, TResult>> Roots<TValue, THandle, TResult>(
-      IAsyncWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> labeling)
+      IAsyncTreeTerrain<TValue, THandle> walkable,
+      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> labeling)
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -63,8 +63,8 @@ namespace Copse.Linq.Async.Treenumerables
   internal struct AsyncWalkableChildEnumerator<TValue, THandle, TResult> : IAsyncChildEnumerator<HandleAndValue<THandle, TResult>>
   {
     public AsyncWalkableChildEnumerator(
-      IAsyncWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> labeling,
+      IAsyncTreeTerrain<TValue, THandle> walkable,
+      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> labeling,
       THandle parentHandle)
     {
       _Walkable = walkable;
@@ -73,8 +73,8 @@ namespace Copse.Linq.Async.Treenumerables
       _NextChildIndex = 0;
     }
 
-    private readonly IAsyncWalkableTreenumerable<TValue, THandle> _Walkable;
-    private readonly Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> _Labeling;
+    private readonly IAsyncTreeTerrain<TValue, THandle> _Walkable;
+    private readonly Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> _Labeling;
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 

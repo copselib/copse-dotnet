@@ -166,7 +166,7 @@ namespace Copse.CodeGen
         ["IAsyncTreenumerableBuffer"] = "ITreenumerableBuffer",
         ["IAsyncMemoizeTreenumerableBuffer"] = "IMemoizeTreenumerableBuffer",
         ["IAsyncWalkableTreenumerable"] = "IWalkableTreenumerable",
-        ["IAsyncAdjacencyProbes"] = "IAdjacencyProbes",
+        ["IAsyncTreeTerrain"] = "ITreeTerrain",
         ["AsyncRefCountDisposable"] = "RefCountDisposable",
         ["AsyncDisposable"] = "Disposable",
         ["GetAsyncTreenumerator"] = "GetTreenumerator",

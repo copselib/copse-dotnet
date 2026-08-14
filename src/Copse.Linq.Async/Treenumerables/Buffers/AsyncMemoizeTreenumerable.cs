@@ -102,9 +102,9 @@ namespace Copse.Linq.Async.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private IAsyncAdjacencyProbes<TValue> _AdjacencyProbes;
+    private IAsyncTreeTerrain<TValue, int> _AdjacencyProbes;
 
-    private IAsyncAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+    private IAsyncTreeTerrain<TValue, int> EnsureAdjacencyProbes()
     {
       if (_AdjacencyProbes != null)
         return _AdjacencyProbes;
@@ -127,6 +127,18 @@ namespace Copse.Linq.Async.Treenumerables
       => EnsureAdjacencyProbes().TryGetChildAtAsync(handle, childIndex);
 
     public ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAtAsync(rootIndex);
+
+    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // pull-through index directly; probes stay demand.
+    public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
+    {
+      var terrain = EnsureAdjacencyProbes();
+      var rootResult = await terrain.TryGetRootAtAsync(0).ConfigureAwait(false);
+
+      return rootResult.HasChild
+        ? new AsyncTreeWalkerResult<TValue, int>(new AsyncTreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        : default;
+    }
 
     private AsyncMemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
     {

@@ -42,25 +42,23 @@ namespace Copse.Async
   /// source is DEMAND -- it may pull the underlying feed just far enough to answer (the
   /// grow-precedes-read protocol); a completed source answers immediately.</para>
   /// </summary>
-  public interface IAsyncWalkableTreenumerable<TValue, THandle> : IAsyncTreenumerable<TValue>
+  // STAGE A of the walker factory design (docs/WALKER_FACTORY_DESIGN.md): the charter --
+  // ITreenumerable is an enumerator factory; IWalkableTreenumerable is a TREE WALKER
+  // factory. The four probes now live on IAsyncTreeTerrain (the provider SPI this contract
+  // inherits); the door below is the contract's own affordance. Stage C removes the
+  // terrain inheritance from this PUBLIC contract (the probes stay SPI-reachable for
+  // providers; consumers keep only the door and the walker it manufactures).
+  public interface IAsyncWalkableTreenumerable<TValue, THandle>
+    : IAsyncTreenumerable<TValue>, IAsyncTreeTerrain<TValue, THandle>
   {
-    /// <summary>Resolves a handle to its surfaced value (the interface form of the engine's
-    /// handle-to-value map; the identity when the value is its own handle).</summary>
-    ValueTask<TValue> GetValueAsync(THandle handle);
-
-    /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root. Never
-    /// forces a growing source -- parents precede children in both layouts, so a held handle's
-    /// ancestry is always already available.</summary>
-    ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle);
-
-    /// <summary>Indexed downward probe: the node's child at <paramref name="childIndex"/> in
-    /// sibling order, or <c>HasChild</c> false past the last child. On a growing source this is
-    /// demand, and may force enumeration up to the span needed to answer honestly.</summary>
-    ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex);
-
-    /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
-    /// sibling order, or <c>HasChild</c> false past the last root. The walker's entry point when
-    /// no handle is in hand yet.</summary>
-    ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex);
+    /// <summary>
+    /// The door: a walker standing at the first root, or an empty result for the empty
+    /// forest (the honest miss; the no-unfocused-walker invariant kept at the door). The
+    /// factory binds the walker's TERRAIN at birth -- the best physics this source affords
+    /// (a capture hands its adjacency index, a memo its pull-through, a lens its rewritten
+    /// view) -- and then exits the story: the walkable appears in no navigation call path,
+    /// exactly as <c>IEnumerable</c> after <c>GetEnumerator</c>.
+    /// </summary>
+    ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAsync();
   }
 }

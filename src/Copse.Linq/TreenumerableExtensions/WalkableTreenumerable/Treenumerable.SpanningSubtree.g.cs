@@ -81,7 +81,7 @@ namespace Copse.Linq
     // The handle-decorated stream's stamp, as a named observer so both colors read the same:
     // every node paired with its own handle, the membership clamp's coordinate system.
     private static HandleAndValue<THandle, TValue> PairHandleWithValue<TValue, THandle>(
-      IWalkableTreenumerable<TValue, THandle> terrain,
+      ITreeTerrain<TValue, THandle> terrain,
       THandle handle)
       => new HandleAndValue<THandle, TValue>(handle, terrain.GetValue(handle));
 

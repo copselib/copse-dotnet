@@ -21,7 +21,7 @@ namespace Copse.Linq
       this TreeWalker<TValue, THandle> walker,
       Func<TreeWalker<TValue, THandle>, TResult> observer)
       => new TreeWalker<TResult, THandle>(
-        walker.Walkable.Extend<TValue, THandle, TResult>(
+        walker.Terrain.Extend<TValue, THandle, TResult>(
           (source, handle) => observer(new TreeWalker<TValue, THandle>(source, handle))),
         walker.Focus);
   }

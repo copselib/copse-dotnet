@@ -39,9 +39,9 @@ namespace Copse
     // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
     // walkers. The invariant's content survives untouched: a handle is always supplied;
     // only `default` remains the invalid inhabitant.
-    public TreeWalker(IWalkableTreenumerable<TValue, THandle> walkable, THandle focus)
+    public TreeWalker(ITreeTerrain<TValue, THandle> terrain, THandle focus)
     {
-      Walkable = walkable;
+      Terrain = terrain;
       Focus = focus;
     }
 
@@ -49,23 +49,23 @@ namespace Copse
     /// comonad's operator surface -- co-bind, duplicate, the severed view -- lives in the
     /// operator tier and is built FROM the pair; a vantage is focus × terrain, and both
     /// halves are readable.</summary>
-    public readonly IWalkableTreenumerable<TValue, THandle> Walkable;
+    public readonly ITreeTerrain<TValue, THandle> Terrain;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;
 
     /// <summary>Extract: the value at the focus. Always valid -- a walker cannot be unfocused.
     /// (A probe, hence a method: on a growing source the read is demand.)</summary>
-    public TValue GetValue() => Walkable.GetValue(Focus);
+    public TValue GetValue() => Terrain.GetValue(Focus);
 
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public TreeWalkerResult<TValue, THandle> MoveToParent()
     {
-      var parentResult = Walkable.TryGetParent(Focus);
+      var parentResult = Terrain.TryGetParent(Focus);
 
       return parentResult.HasParent
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Walkable, parentResult.Parent))
+        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Terrain, parentResult.Parent))
         : default;
     }
 
@@ -73,10 +73,10 @@ namespace Copse
     /// order, or an empty result past the last child.</summary>
     public TreeWalkerResult<TValue, THandle> MoveToChild(int childIndex)
     {
-      var childResult = Walkable.TryGetChildAt(Focus, childIndex);
+      var childResult = Terrain.TryGetChildAt(Focus, childIndex);
 
       return childResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Walkable, childResult.Child.Node))
+        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Terrain, childResult.Child.Node))
         : default;
     }
 

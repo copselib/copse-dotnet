@@ -16,16 +16,16 @@ namespace Copse.Linq.Async.Treenumerables
   internal sealed class AsyncExtendWalkable<TValue, THandle, TResult> : IAsyncWalkableTreenumerable<TResult, THandle>
   {
     public AsyncExtendWalkable(
-      IAsyncWalkableTreenumerable<TValue, THandle> source,
-      Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> observer)
+      IAsyncTreeTerrain<TValue, THandle> source,
+      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> observer)
     {
       _Source = source;
       _Observer = observer;
       _Walk = AsyncWalkerWalk.Create(source, observer);
     }
 
-    private readonly IAsyncWalkableTreenumerable<TValue, THandle> _Source;
-    private readonly Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> _Observer;
+    private readonly IAsyncTreeTerrain<TValue, THandle> _Source;
+    private readonly Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> _Observer;
     private readonly IAsyncTreenumerable<TResult> _Walk;
 
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
@@ -39,5 +39,15 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
 
     public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
+
+    // The door (walker factory design, Stage A): the relabeled view is its own terrain.
+    public async ValueTask<AsyncTreeWalkerResult<TResult, THandle>> TryGetTreeWalkerAsync()
+    {
+      var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
+
+      return rootResult.HasChild
+        ? new AsyncTreeWalkerResult<TResult, THandle>(new AsyncTreeWalker<TResult, THandle>(this, rootResult.Child.Node))
+        : default;
+    }
   }
 }

@@ -44,9 +44,9 @@ namespace Copse.Linq.Treenumerables
 
     // The adjacency half: probes ride the one level-order capture through the replay Handle --
     // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
-    private IAdjacencyProbes<TValue> _AdjacencyProbes;
+    private ITreeTerrain<TValue, int> _AdjacencyProbes;
 
-    private IAdjacencyProbes<TValue> EnsureAdjacencyProbes()
+    private ITreeTerrain<TValue, int> EnsureAdjacencyProbes()
       => _AdjacencyProbes ?? (_AdjacencyProbes
         = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
           new MemoizeLevelOrderStore<TValue>.Handle(_Buffer)));
@@ -59,5 +59,17 @@ namespace Copse.Linq.Treenumerables
       => EnsureAdjacencyProbes().TryGetChildAt(handle, childIndex);
 
     public ChildResult<int> TryGetRootAt(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAt(rootIndex);
+
+    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // pull-through index directly; probes stay demand.
+    public TreeWalkerResult<TValue, int> TryGetTreeWalker()
+    {
+      var terrain = EnsureAdjacencyProbes();
+      var rootResult = terrain.TryGetRootAt(0);
+
+      return rootResult.HasChild
+        ? new TreeWalkerResult<TValue, int>(new TreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        : default;
+    }
   }
 }

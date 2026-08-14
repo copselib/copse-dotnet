@@ -18,16 +18,16 @@ namespace Copse.Linq.Treenumerables
   internal sealed class ExtendWalkable<TValue, THandle, TResult> : IWalkableTreenumerable<TResult, THandle>
   {
     public ExtendWalkable(
-      IWalkableTreenumerable<TValue, THandle> source,
-      Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> observer)
+      ITreeTerrain<TValue, THandle> source,
+      Func<ITreeTerrain<TValue, THandle>, THandle, TResult> observer)
     {
       _Source = source;
       _Observer = observer;
       _Walk = WalkerWalk.Create(source, observer);
     }
 
-    private readonly IWalkableTreenumerable<TValue, THandle> _Source;
-    private readonly Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> _Observer;
+    private readonly ITreeTerrain<TValue, THandle> _Source;
+    private readonly Func<ITreeTerrain<TValue, THandle>, THandle, TResult> _Observer;
     private readonly ITreenumerable<TResult> _Walk;
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();
@@ -41,5 +41,15 @@ namespace Copse.Linq.Treenumerables
     public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
     public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
+
+    // The door (walker factory design, Stage A): the relabeled view is its own terrain.
+    public TreeWalkerResult<TResult, THandle> TryGetTreeWalker()
+    {
+      var rootResult = TryGetRootAt(0);
+
+      return rootResult.HasChild
+        ? new TreeWalkerResult<TResult, THandle>(new TreeWalker<TResult, THandle>(this, rootResult.Child.Node))
+        : default;
+    }
   }
 }

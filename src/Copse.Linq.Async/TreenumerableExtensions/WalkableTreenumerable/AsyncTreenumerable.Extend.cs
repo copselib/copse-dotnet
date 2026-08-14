@@ -22,8 +22,8 @@ namespace Copse.Linq
     /// after extend recovers the observer; and extend co-associates.</para>
     /// </summary>
     public static IAsyncWalkableTreenumerable<TResult, THandle> Extend<TValue, THandle, TResult>(
-      this IAsyncWalkableTreenumerable<TValue, THandle> source,
-      Func<IAsyncWalkableTreenumerable<TValue, THandle>, THandle, ValueTask<TResult>> observer)
+      this IAsyncTreeTerrain<TValue, THandle> source,
+      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> observer)
       => new AsyncExtendWalkable<TValue, THandle, TResult>(source, observer);
   }
 }

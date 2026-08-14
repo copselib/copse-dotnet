@@ -1,0 +1,44 @@
+using Copse.Core;
+using System.Threading.Tasks;
+
+namespace Copse.Async
+{
+  /// <summary>
+  /// The terrain SPI: the four adjacency questions a tree walker's steps are answered by.
+  /// PROVIDER-SIDE surface (docs/WALKER_FACTORY_DESIGN.md §2) -- implementations carry the
+  /// tricks (a preorder index answers children by span arithmetic, a level-order index by
+  /// group offsets, a memo by demand, a foreign adapter by its native pointers), consumers
+  /// never meet it: the consumer surface is <c>TreeWalker</c>, whose factory door binds a
+  /// terrain at birth. This is the §1a terrain split of WALKABLE_CONTRACT_DESIGN.md,
+  /// resurrected in its corrected role -- not a supertype consumers meet, but the SPI
+  /// standing behind the walker; §1a's own withdrawal clause predicted the re-insertion
+  /// "when the citizen arrives," and the citizens are every adjacency engine, lens view,
+  /// and pull-through in the tier.
+  ///
+  /// <para><typeparamref name="THandle"/> is the provider's handle type (ordinals for
+  /// store-backed terrains); handles are compared by the provider on its own terms, and the
+  /// no-node-equality pledge holds -- <typeparamref name="TValue"/> is never compared.
+  /// Probes on a growing terrain are DEMAND (forced exactly as far as the answer needs);
+  /// upward probes never force; a probe past a retired feed surfaces the store's own
+  /// lifecycle behavior (ObjectDisposedException -- the memo replay rule, inherited). The
+  /// child axis is INDEXED, never counted: a count diverges on unbounded fan-out, a probe
+  /// is finite work whatever the fan-out. Roots are the virtual forest-root's child group,
+  /// which is why they are indexed like any other child group.</para>
+  /// </summary>
+  public interface IAsyncTreeTerrain<TValue, THandle>
+  {
+    /// <summary>Resolves a handle to its surfaced value (extract's raw material).</summary>
+    ValueTask<TValue> GetValueAsync(THandle handle);
+
+    /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root.</summary>
+    ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle);
+
+    /// <summary>Indexed downward probe: the child at <paramref name="childIndex"/> in
+    /// sibling order, or <c>HasChild</c> false past the last child.</summary>
+    ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex);
+
+    /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
+    /// sibling order, or <c>HasChild</c> false past the last root.</summary>
+    ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex);
+  }
+}

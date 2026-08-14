@@ -34,7 +34,7 @@ namespace Copse.Linq.Async.Treenumerables
     public AsyncTreenumerableBuffer(
       IAsyncTreenumerable<TValue> capture,
       BufferLayout? nativeLayout,
-      IAsyncAdjacencyProbes<TValue> adjacencyProbes)
+      IAsyncTreeTerrain<TValue, int> adjacencyProbes)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
@@ -42,7 +42,7 @@ namespace Copse.Linq.Async.Treenumerables
     }
 
     private readonly IAsyncTreenumerable<TValue> _Capture;
-    private IAsyncAdjacencyProbes<TValue> _AdjacencyProbes;
+    private IAsyncTreeTerrain<TValue, int> _AdjacencyProbes;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
@@ -63,6 +63,19 @@ namespace Copse.Linq.Async.Treenumerables
 
     public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
       => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+
+    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // adjacency INDEX directly, so navigation never routes through this wrapper (one
+    // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
+    public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
+    {
+      var terrain = await EnsureAdjacencyProbesAsync().ConfigureAwait(false);
+      var rootResult = await terrain.TryGetRootAtAsync(0).ConfigureAwait(false);
+
+      return rootResult.HasChild
+        ? new AsyncTreeWalkerResult<TValue, int>(new AsyncTreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        : default;
+    }
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
@@ -90,7 +103,7 @@ namespace Copse.Linq.Async.Treenumerables
       return (false, default);
     }
 
-    private async ValueTask<IAsyncAdjacencyProbes<TValue>> EnsureAdjacencyProbesAsync()
+    private async ValueTask<IAsyncTreeTerrain<TValue, int>> EnsureAdjacencyProbesAsync()
     {
       if (_AdjacencyProbes != null)
         return _AdjacencyProbes;

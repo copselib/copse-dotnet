@@ -20,14 +20,14 @@ namespace Copse.Linq.Async.Treenumerables
   // by blind delegation, unspecified like any foreign-handle probe.
   internal sealed class AsyncSubtreeWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>
   {
-    public AsyncSubtreeWalkable(IAsyncWalkableTreenumerable<TValue, THandle> source, THandle root)
+    public AsyncSubtreeWalkable(IAsyncTreeTerrain<TValue, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = AsyncWalkerWalk.Create(this);
     }
 
-    private readonly IAsyncWalkableTreenumerable<TValue, THandle> _Source;
+    private readonly IAsyncTreeTerrain<TValue, THandle> _Source;
     private readonly THandle _Root;
     private readonly IAsyncTreenumerable<TValue> _Walk;
 
@@ -48,5 +48,11 @@ namespace Copse.Linq.Async.Treenumerables
       => rootIndex == 0
         ? new ValueTask<ChildResult<THandle>>(new ChildResult<THandle>(new NodeAndSiblingIndex<THandle>(_Root, 0)))
         : default;
+
+    // The door (walker factory design, Stage A): the severed view has exactly one root --
+    // the walker stands there, never missing.
+    public ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalkerResult<TValue, THandle>>(
+        new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(this, _Root)));
   }
 }

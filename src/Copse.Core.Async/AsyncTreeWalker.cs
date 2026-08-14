@@ -36,9 +36,9 @@ namespace Copse.Async
     // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
     // walkers. The invariant's content survives untouched: a handle is always supplied;
     // only `default` remains the invalid inhabitant.
-    public AsyncTreeWalker(IAsyncWalkableTreenumerable<TValue, THandle> walkable, THandle focus)
+    public AsyncTreeWalker(IAsyncTreeTerrain<TValue, THandle> terrain, THandle focus)
     {
-      Walkable = walkable;
+      Terrain = terrain;
       Focus = focus;
     }
 
@@ -46,23 +46,23 @@ namespace Copse.Async
     /// comonad's operator surface -- co-bind, duplicate, the severed view -- lives in the
     /// operator tier and is built FROM the pair; a vantage is focus × terrain, and both
     /// halves are readable.</summary>
-    public readonly IAsyncWalkableTreenumerable<TValue, THandle> Walkable;
+    public readonly IAsyncTreeTerrain<TValue, THandle> Terrain;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;
 
     /// <summary>Extract: the value at the focus. Always valid -- a walker cannot be unfocused.
     /// (A probe, hence a method: on a growing source the read is demand.)</summary>
-    public ValueTask<TValue> GetValueAsync() => Walkable.GetValueAsync(Focus);
+    public ValueTask<TValue> GetValueAsync() => Terrain.GetValueAsync(Focus);
 
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()
     {
-      var parentResult = await Walkable.TryGetParentAsync(Focus).ConfigureAwait(false);
+      var parentResult = await Terrain.TryGetParentAsync(Focus).ConfigureAwait(false);
 
       return parentResult.HasParent
-        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Walkable, parentResult.Parent))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Terrain, parentResult.Parent))
         : default;
     }
 
@@ -70,10 +70,10 @@ namespace Copse.Async
     /// order, or an empty result past the last child.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex)
     {
-      var childResult = await Walkable.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
+      var childResult = await Terrain.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
 
       return childResult.HasChild
-        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Walkable, childResult.Child.Node))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Terrain, childResult.Child.Node))
         : default;
     }
 

@@ -26,23 +26,23 @@ namespace Copse.Linq.Treenumerables
     // A walk over the walkable's own labeling: the identity relabeling. (Callers holding a
     // walkable rarely need this -- the walkable IS a treenumerable -- but views built from
     // adjacency alone get their streaming half here.)
-    internal static ITreenumerable<TValue> Create<TValue, THandle>(IWalkableTreenumerable<TValue, THandle> walkable)
+    internal static ITreenumerable<TValue> Create<TValue, THandle>(ITreeTerrain<TValue, THandle> walkable)
       => Create(walkable, (source, handle) => source.GetValue(handle));
 
     // A walk under a DIFFERENT labeling of the same shape -- Extend's streaming half: the
     // engine drives the walkable's adjacency, and every emitted handle is labeled through
     // the given observer.
     internal static ITreenumerable<TResult> Create<TValue, THandle, TResult>(
-      IWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> labeling)
+      ITreeTerrain<TValue, THandle> walkable,
+      Func<ITreeTerrain<TValue, THandle>, THandle, TResult> labeling)
       => new Treenumerable<TResult, HandleAndValue<THandle, TResult>, WalkableChildEnumerator<TValue, THandle, TResult>>(
         context => new WalkableChildEnumerator<TValue, THandle, TResult>(walkable, labeling, context.Node.Handle),
         labeledNode => labeledNode.Value,
         Roots(walkable, labeling));
 
     private static IEnumerable<HandleAndValue<THandle, TResult>> Roots<TValue, THandle, TResult>(
-      IWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> labeling)
+      ITreeTerrain<TValue, THandle> walkable,
+      Func<ITreeTerrain<TValue, THandle>, THandle, TResult> labeling)
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -65,8 +65,8 @@ namespace Copse.Linq.Treenumerables
   internal struct WalkableChildEnumerator<TValue, THandle, TResult> : IChildEnumerator<HandleAndValue<THandle, TResult>>
   {
     public WalkableChildEnumerator(
-      IWalkableTreenumerable<TValue, THandle> walkable,
-      Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> labeling,
+      ITreeTerrain<TValue, THandle> walkable,
+      Func<ITreeTerrain<TValue, THandle>, THandle, TResult> labeling,
       THandle parentHandle)
     {
       _Walkable = walkable;
@@ -75,8 +75,8 @@ namespace Copse.Linq.Treenumerables
       _NextChildIndex = 0;
     }
 
-    private readonly IWalkableTreenumerable<TValue, THandle> _Walkable;
-    private readonly Func<IWalkableTreenumerable<TValue, THandle>, THandle, TResult> _Labeling;
+    private readonly ITreeTerrain<TValue, THandle> _Walkable;
+    private readonly Func<ITreeTerrain<TValue, THandle>, THandle, TResult> _Labeling;
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 

@@ -22,14 +22,14 @@ namespace Copse.Linq.Treenumerables
   // by blind delegation, unspecified like any foreign-handle probe.
   internal sealed class SubtreeWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>
   {
-    public SubtreeWalkable(IWalkableTreenumerable<TValue, THandle> source, THandle root)
+    public SubtreeWalkable(ITreeTerrain<TValue, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = WalkerWalk.Create(this);
     }
 
-    private readonly IWalkableTreenumerable<TValue, THandle> _Source;
+    private readonly ITreeTerrain<TValue, THandle> _Source;
     private readonly THandle _Root;
     private readonly ITreenumerable<TValue> _Walk;
 
@@ -50,5 +50,10 @@ namespace Copse.Linq.Treenumerables
       => rootIndex == 0
         ? new ChildResult<THandle>(new NodeAndSiblingIndex<THandle>(_Root, 0))
         : default;
+
+    // The door (walker factory design, Stage A): the severed view has exactly one root --
+    // the walker stands there, never missing.
+    public TreeWalkerResult<TValue, THandle> TryGetTreeWalker()
+      => new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(this, _Root));
   }
 }

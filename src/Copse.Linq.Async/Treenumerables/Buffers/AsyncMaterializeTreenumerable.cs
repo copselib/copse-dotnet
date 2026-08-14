@@ -119,6 +119,11 @@ namespace Copse.Linq.Async.Treenumerables
     // The adjacency half rides the settle: probing IS consumption, so a probe on an unsettled
     // instance completes the memo's capture exactly as the first stream pull would, then
     // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
+    // The door (walker factory design, Stage A): the settled capture manufactures the walker,
+    // so the stance rides the settled terrain directly.
+    public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
+      => await (await SettleAsync().ConfigureAwait(false)).TryGetTreeWalkerAsync().ConfigureAwait(false);
+
     public async ValueTask<TValue> GetValueAsync(int handle)
       => await (await SettleAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
 

@@ -77,6 +77,25 @@ namespace Copse.Linq.Tests
         levelOrder.GetHandlesWithValues().Select(pair => pair.Value).ToList());
     }
 
+    // The contract's door (walker factory design, Stage A): every citizen manufactures a
+    // walker standing at the first root, with the terrain bound at birth; the empty forest
+    // is the honest miss, kept at the door.
+    [TestMethod]
+    public void TheDoor_EveryCitizen_AndTheEmptyForestMiss()
+    {
+      foreach (var walkable in WalkerLawProviders.Walkables("a(b,c)"))
+      {
+        var door = walkable.TryGetTreeWalker();
+
+        Assert.IsTrue(door.HasWalker);
+        Assert.AreEqual("a", door.Walker.GetValue(), "the door stands at the first root");
+        Assert.AreEqual("b", door.Walker.MoveToChild(0).Walker.GetValue(), "and the stance navigates");
+      }
+
+      var empty = TreeSerializer.DeserializeDepthFirstTree("a").Where(context => false).Materialize(BufferLayout.Preorder);
+      Assert.IsFalse(empty.TryGetTreeWalker().HasWalker, "the empty forest misses at the door");
+    }
+
     // The search law (naming grammar, 2026-08-14): searches are not surface. FindHandles and
     // the result-typed FindHandle were retired the day they were reviewed -- both were
     // GetHandlesWithValues plus consumer LINQ, the "do our thing, then call LINQ" shape the
