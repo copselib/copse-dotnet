@@ -492,3 +492,36 @@ operators the same day. The findings, in the order his skepticism forced them:
   consumer-facing cursor. Remaining rollout candidates: OrderChildrenBy (the sort-each-group
   emit is the mirror's generalization), the dispatch/bypass flavors (need a positions
   pass), and the missing node-count affordance on completed captures.
+
+## 12. The store policy and the skeleton's admission (RULED 2026-08-14)
+
+The foundation restatement lives in CATEGORY_THEORY_SURVEY.md §10; this is the contract-side
+record of its rulings:
+
+- **Contracts are public; encodings are family-internal.** The store SPI interfaces
+  (`IPreorderStore` et al.) and the flat wrappers stay public — the provider story is
+  shipped fact (SimpleSerializer implements four stores across the assembly line), and a
+  badly-implemented provider contract is the irreducible risk of ANY SPI, managed by
+  validity predicates and batteries, not accessibility. The CONCRETE array stores and
+  their unvalidated ctors are the family's encodings: they go internal at the pre-beta
+  signature pass, with family IVT (`Copse` → `Copse.Linq`, plus the async pair) — Jason's
+  ruling: IVT is normally tests-only, but the lockstep package family makes it skew-safe
+  and this is the case for it. Sleeper payoff: the long migration's width change stops
+  being a public break on the store ctors.
+- **Wholesale access hands capability, never memory**: the read-only store struct
+  (`Count`/`GetValue`/`GetSubtreeSize`) is the exposure shape — the arrays never escape.
+  The seams already conform (`TryGetPreorderStoreAsync` hands the struct); a future
+  SIMD-shaped consumer escalates to `ReadOnlySpan` accessors, which keep the no-mutation
+  guarantee at full speed.
+- **The skeleton is a lawful carrier**: `WalkerLawProviders` admits a skeleton-direct
+  terrain (raw store rewrapped with nothing else, `PreorderSkeletonValidity`-checked on
+  entry) to every walker/comonad law suite, so the span schedules are certified as
+  extends. The validity predicate is code in TestUtils, with its own negative pins — it is
+  the definition of what a skeleton provider owes.
+- **The DAG dual is sketched** (recorded in the dag workstream's memory for the branch's
+  resumption): spans become CSR + the in-edge transpose; the topo scans are the Sourcefix/
+  Sinkfix schedules; phase 2b's materialized-result ruling makes receiver-smartness the
+  common case there; DAG Transpose is an O(1) index swap on a skeleton carrying both
+  directions; schedules are CLASS-RESTRICTED on DAGs (overlapping closures — the
+  scan/dispatch tier keeps O(V+E), the general closure observer is the path-semantics
+  canary); the validity predicate grows a transpose-consistency leg.

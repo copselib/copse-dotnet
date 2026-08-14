@@ -264,3 +264,54 @@ branch's friction is the field's, not the design's.
 - Whether the licensing squares (§5.3), once named, suggest lattice collapses not yet
   built — the lattice was discovered empirically; the laws may know more than the
   implementation does.
+
+## 10. The foundation, restated: representations and schedules (2026-08-14)
+
+Jason's correction, after the receiver-smart experiments: **the comonad was never
+adjacency-bound.** Store's peek is total — a vantage is (terrain, focus) where the terrain
+answers for *every* position — and the shipped walkable `Extend` observer receives
+`(source, handle)`, the whole terrain, which is why the leaffix coherence pin could exist
+at all. The restatement grounds the comonad one level up from any particular vocabulary,
+phrased carrier-neutrally so the DAG branch instantiates it unchanged:
+
+**One comonad, over focused terrain. Many terrain *representations*. Extend has many
+*schedules*, one per representation — and the laws bind them all.**
+
+- **Representations** (tree instance): the probe contract (structure as questions), the
+  preorder skeleton (structure as span arithmetic — `(values[], subtreeSizes[])`, reified
+  by the store types), the lens views (structure as rewritten answers), the memo
+  (structure arriving on demand). Each carries a **validity predicate**, and the laws are
+  *conditional on it*: probes owe the adjacency protocol (the conformance battery);
+  skeletons owe the span arithmetic (`PreorderSkeletonValidity`, the predicate as code).
+  The family's encodings are checked by the batteries; providers own theirs — this is the
+  same trust shape as any provider contract, now specified.
+- **Schedules** (tree instance): call-by-need label rewrite (`ExtendWalkable`), the
+  streaming engine (the dispatch pass), the span fold (the skeleton's — fastest, available
+  only where the representation affords it), and naive per-node observation (the
+  reference, which the law tests run). On trees every subtree-fold extend has an O(n)
+  schedule, because closures are laminar. **On DAGs schedules are class-restricted**
+  (closures overlap): the scan/dispatch tier — exactly-once and survey slots, semiring
+  shapes — keeps O(V+E); the general closure observer is the path-semantics canary. A
+  foundation that didn't say this would be the leak.
+- **The squares**: the coherence pins are naturality statements — extend commutes with
+  change of representation and change of schedule. `LeaffixScan ≡ Extend(subtree fold)`
+  was the first (spec ≡ stream schedule); `ReceiverSmartOperatorTests` added spec ≡ span
+  schedule per receiver shape; the DAG branch's oracle-equivalence pins (region-scan ≡
+  prune-the-complement) are the same theorem discovered independently.
+- **The carrier**: `TreeWalker` is the focused pair — the honest type of "a place in a
+  tree," the human-facing cursor, and the observer's vantage. It adds no power (carriers
+  never do); the algebra's home is the terrain. The Store-vs-cofree distinction (does a
+  vantage see up, or only its cone) is orthogonal to representation and survives
+  unchanged.
+- **Admission**: the skeleton is a lawful carrier representation, not an implementation
+  detail — the law fan-out (`WalkerLawProviders`) runs every suite over a skeleton-direct
+  terrain (the raw store rewrapped with nothing else, validity-checked on the way in), so
+  the span schedules are certified *as extends*.
+- **Exposure policy** (Jason, 2026-08-14): *contracts are public; encodings are
+  family-internal.* The store SPI interfaces and flat wrappers are the provider story
+  (SimpleSerializer is its shipped proof) and stay public, guarded by validity predicates
+  and the battery. The concrete array stores and their unvalidated ctors are the family's
+  encodings: internal at the pre-beta signature pass (family IVT — the lockstep packages
+  make it skew-safe; the long migration collects the freedom). Wholesale access hands the
+  read-only store struct, never arrays; a SIMD-shaped future escalates to `ReadOnlySpan`
+  accessors, preserving no-mutation at full speed.
