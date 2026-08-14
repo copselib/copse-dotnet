@@ -19,12 +19,15 @@ namespace Copse.Linq.Treenumerables
   {
     public PruneAfterWalkable(
       IWalkableTreenumerable<TValue, THandle> source,
-      Func<TValue, bool> predicate,
-      ITreenumerable<TValue> prunedStream)
+      Func<TValue, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
-      _PrunedStream = prunedStream;
+      // Via the streaming EXTENSION, not a direct treenumerable construction, so the
+      // composition lattice inside PruneAfter keeps collapsing what it always collapsed.
+      // The upcast picks the streaming overload deliberately -- on the walkable receiver
+      // this constructor's own caller would win betterness and recurse.
+      _PrunedStream = ((ITreenumerable<TValue>)source).PruneAfter(predicate);
     }
 
     private readonly IWalkableTreenumerable<TValue, THandle> _Source;

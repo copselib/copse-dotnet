@@ -1,4 +1,3 @@
-using Copse;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 using System;
@@ -31,10 +30,7 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      return new PruneAfterWalkable<TValue, THandle>(
-        source,
-        predicate,
-        ((ITreenumerable<TValue>)source).PruneAfter(predicate));
+      return new PruneAfterWalkable<TValue, THandle>(source, predicate);
     }
   }
 }
