@@ -13,7 +13,7 @@ namespace Copse.Linq.Tests
   // one the PoC built on -- so each law runs over both declared capture layouts (different
   // handle SPACES; the laws are handle-agnostic), a fresh memo whose probes drive the
   // capture mid-race (the pull-through case), and -- the foundation restatement's
-  // admission (2026-08-14) -- the SKELETON-DIRECT terrain: a walkable whose only substance
+  // admission (2026-08-14) -- the SKELETON-DIRECT topology: a walkable whose only substance
   // is the raw preorder store, validity-checked on the way in. The skeleton is a lawful
   // carrier representation, not an implementation detail; admitting it here certifies the
   // span schedules as extends rather than only via operator conformance.
@@ -29,7 +29,7 @@ namespace Copse.Linq.Tests
 
     // The raw store, rewrapped with nothing else: the stream half decodes the store, the
     // probes ride an adjacency index over the SAME store (probes-at-birth), and no part of
-    // the original pipeline survives into the terrain. The store passes the validity
+    // the original pipeline survives into the topology. The store passes the validity
     // predicate first -- the laws are conditional on representation validity, so the
     // fan-out enforces the condition it depends on.
     private static IWalkableTreenumerable<string, int> SkeletonDirect(string tree)

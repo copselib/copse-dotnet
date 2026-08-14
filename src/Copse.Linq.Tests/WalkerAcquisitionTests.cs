@@ -82,7 +82,7 @@ namespace Copse.Linq.Tests
     }
 
     // The contract's door (walker factory design, Stage A): every citizen manufactures a
-    // walker standing at the first root, with the terrain bound at birth; the empty forest
+    // walker standing at the first root, with the topology bound at birth; the empty forest
     // is the honest miss, kept at the door.
     [TestMethod]
     public void TheDoor_EveryCitizen_AndTheEmptyForestMiss()

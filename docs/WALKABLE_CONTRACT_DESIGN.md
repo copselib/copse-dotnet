@@ -1,4 +1,4 @@
-# Walkable Contract Design: terrain, extent, and the buffer re-parent
+# Walkable Contract Design: topology, extent, and the buffer re-parent
 
 **Status:** EXECUTED through step 2 (2026-08-13, commits 5f13931 + f575615). Step 1: the
 contract crossed colors. Step 2: the re-parent landed — every capture walkable, probes as
@@ -26,11 +26,11 @@ The three ratified decisions this design implements:
 
 1. **Buffer re-parenting** (2026-08-12): `ITreenumerableBuffer` implements the walkable
    contract — *captures are never address-poor*. Two-way collapse vetoed (computed and
-   external terrains stay buffer-free comonad hosts).
+   external topologies stay buffer-free comonad hosts).
 2. **The GetRootAt finding** (2026-08-12): `GetRootAt` is `GetChildAt` with the parent
-   erased because the parent is the unfocused stance — extent, not terrain. The comonadic
+   erased because the parent is the unfocused stance — extent, not topology. The comonadic
    machinery never touches it; its clients are all protocol-side.
-3. **The TreeWalker carrier** (2026-08-12): the comonad lives on `TreeWalker` (terrain +
+3. **The TreeWalker carrier** (2026-08-12): the comonad lives on `TreeWalker` (topology +
    valid focus); the walkable never carries a focus; entry is partial at the doors, life
    inside is total.
 
@@ -38,19 +38,19 @@ The three ratified decisions this design implements:
 
 ## 1. The contract family (sync shapes; async twins in §3)
 
-### 1a. The walkable stays whole — the terrain split WITHDRAWN (Jason, 2026-08-13)
+### 1a. The walkable stays whole — the topology split WITHDRAWN (Jason, 2026-08-13)
 
-The first draft minted a terrain supertype (`ITreeTerrain`: the three
+The first draft minted a topology supertype (`ITreeTopology`: the three
 handle-parameterized probes) above the composite. **Withdrawn on review**, on two grounds:
 
 1. **The motivating smell dissolved with the carrier.** "`GetRootAt` compensates for the
    walkable having no focus" was diagnosed while the walkable was auditioning as the
    comonad carrier — the frozen-`∅` reading offended because the type was half-pretending
    to be a comonad value. Once `TreeWalker` took the carrier role, the walkable is
-   unapologetically a SOURCE — terrain, entry, stream — and a source having an entry probe
+   unapologetically a SOURCE — topology, entry, stream — and a source having an entry probe
    is the job description, not a smell. The "children of the virtual forest-root" reading
    survives as understanding (`GetRootAt` is the protocol door), not as an indictment.
-2. **The restraint rule forbids the mint.** The advertised citizens for terrain-alone
+2. **The restraint rule forbids the mint.** The advertised citizens for topology-alone
    evaporate under audit: Collatz has a root (1) and can implement the composite honestly;
    external structures (DOM, visual trees) have roots; infinite sources stream lazily. The
    genuinely-rootless citizen (an infinite grid with no origin) is hypothetical, and the
@@ -106,7 +106,7 @@ public interface ITreenumerableBuffer<TValue>
 | `TreenumerableBuffer` / `MaterializeTreenumerable` (completed captures) | The lazy index machinery the walker PoC already built: preorder store → CSR child index + parent index (~2n ints, one pass, built on first probe); level-order store → child arithmetic native, parent index via the stackless two-cursor merge. Zero cost if never probed. |
 | Memoize buffers (live feed) | **Pull-through**: a probe is demand — `EnsureBuffered`/`EnsureChildAvailable` force the source exactly as far as the probe reaches (grow-precedes-read already speaks this; the pattern is already shipped and law-tested — `MaterializeWalkable` today IS a walkable over a growing store, `WalkablePreorderTreenumerable` + `LazyPreorderStore`). `Memoize`'s signature is unchanged — `IMemoizeTreenumerableBuffer` becomes walkable transitively. **Probe-cost disclosure (review 2026-08-13):** upward probes NEVER force — parents precede children in both layouts, so a held handle's ancestry is always already buffered. Downward probes force span-bounded enumeration, layout-shaped: `GetChildAt` on a preorder memo may complete the node's subtree span to answer "no such child" (level-order: one level ahead, cheap); `GetRootAt(k)` on preorder may finish k−1 root subtrees (level-order: leading entries, cheap). The memo's existing bargain (cross-dimension pulls force the same way), inside the laziness policy: documented, not hidden. **Disposal interaction:** disposing retires the feed — the buffered region stays fully walkable; probes past the frontier can no longer race and fail (HOW they fail is OPEN-6). `Complete()` ends the distinction: a completed memo probes like any capture. |
 | `AsyncMaterializeTreenumerable` (lazy declared-layout capture) | Probe forces the capture (the completion seam already exists for the stream side; adjacency rides the same `CompleteAsync`). |
-| Computed / external terrains | Unchanged — terrain (or walkable) implementers by hand, never buffers. |
+| Computed / external topologies | Unchanged — topology (or walkable) implementers by hand, never buffers. |
 
 The PoC classes `WalkablePreorderTreenumerable` / `WalkableLevelOrderTreenumerable`
 (OPEN-4): their index machinery is absorbed into the buffer implementations as shared
@@ -161,7 +161,7 @@ public interface IAsyncTreenumerableBuffer<TValue>
   exactly as far as the probe (no over-materialization); a probe behind it reads without
   touching the source.
 - Lattice pins updated: the walkable-only cell keeps its citizen (a raw store walkable or
-  computed terrain); the "wears both" pin retargets `Materialize`'s result.
+  computed topology); the "wears both" pin retargets `Materialize`'s result.
 
 ## 5. Execution order (once the OPENs are ruled)
 
@@ -180,7 +180,7 @@ public interface IAsyncTreenumerableBuffer<TValue>
 
 ## 6. The OPEN ledger — RULED 2026-08-13 (one deferral)
 
-*(OPEN-1 and OPEN-6-the-first — the terrain interface and the TreeWalker retype — were
+*(OPEN-1 and OPEN-6-the-first — the topology interface and the TreeWalker retype — were
 withdrawn with the split, 2026-08-13; see §1a.)*
 
 - **OPEN-2 — RATIFIED.** The layout-instability clause, with Jason's precision: handle
@@ -222,7 +222,7 @@ withdrawn with the split, 2026-08-13; see §1a.)*
   spectrum (WALKER_DESIGN.md) — the price sheet for a sibling-step or walk-forever
   feature if one is ever proposed; footnote: buffer layout-ordinals would make such a
   feature near-free on captures (level-order slots are arithmetic) while computed
-  terrains pay the scan. Gates nothing here.
+  topologies pay the scan. Gates nothing here.
 - **Memoize under the re-parent** — signature unchanged, walkable transitively, probes
   are demand; the racing-enumerator semantics Jason anticipated are the shipped
   grow-precedes-read pattern. Details folded into the §2 memo row (probe-cost
@@ -277,7 +277,7 @@ tier is authored once (`AsyncTreeWalker` etc. in the async color) and the sync t
 generated, replacing today's hand-written files: one source, two colors, the house
 mechanism. And `Copse.Linq.Traversal` cannot host the walker: that project is the
 color-NEUTRAL Linq substrate (`BufferLayout` lives there because both colors speak it),
-while `TreeWalker` is color-flavored to the bone — its terrain field is the sync
+while `TreeWalker` is color-flavored to the bone — its topology field is the sync
 walkable contract, its async twin has different member shapes. But the instincts land
 on two real re-homings, along the RUNG axis:
 
@@ -368,8 +368,8 @@ the comonad placed exactly as the monad always was.
   STREAM, which needs the Walk adapter above Core — became Linq extensions: the same
   split `Select`/`Where` have always had from `ITreenumerable`. The constructor went
   PUBLIC (construction IS the trust-based door; `WalkerAt` stays as discoverable sugar)
-  and the terrain field became the public `Walkable` property (a vantage is focus ×
-  terrain; the operator tier builds from the pair).
+  and the topology field became the public `Walkable` property (a vantage is focus ×
+  topology; the operator tier builds from the pair).
 - **The rest of the walker tier → `Copse.Linq(.Async)`** (Jason's charter argument:
   operator-dedicated machinery lives WITH its operators, the `Where`-treenumerator
   precedent; and nothing in the base project depended on the tier). New layout:
@@ -514,7 +514,7 @@ record of its rulings:
   SIMD-shaped consumer escalates to `ReadOnlySpan` accessors, which keep the no-mutation
   guarantee at full speed.
 - **The skeleton is a lawful carrier**: `WalkerLawProviders` admits a skeleton-direct
-  terrain (raw store rewrapped with nothing else, `PreorderSkeletonValidity`-checked on
+  topology (raw store rewrapped with nothing else, `PreorderSkeletonValidity`-checked on
   entry) to every walker/comonad law suite, so the span schedules are certified as
   extends. The validity predicate is code in TestUtils, with its own negative pins — it is
   the definition of what a skeleton provider owes.

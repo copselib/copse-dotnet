@@ -47,12 +47,12 @@ namespace Copse
   /// </summary>
   // STAGE A of the walker factory design (docs/WALKER_FACTORY_DESIGN.md): the charter --
   // ITreenumerable is an enumerator factory; IWalkableTreenumerable is a TREE WALKER
-  // factory. The four probes now live on IAsyncTreeTerrain (the provider SPI this contract
+  // factory. The four probes now live on IAsyncTreeTopology (the provider SPI this contract
   // inherits); the door below is the contract's own affordance. Stage C removes the
-  // terrain inheritance from this PUBLIC contract (the probes stay SPI-reachable for
+  // topology inheritance from this PUBLIC contract (the probes stay SPI-reachable for
   // providers; consumers keep only the door and the walker it manufactures).
   public interface IWalkableTreenumerable<TValue, THandle>
-    : ITreenumerable<TValue>, ITreeTerrain<TValue, THandle>
+    : ITreenumerable<TValue>, ITreeTopology<TValue, THandle>
   {
     /// <summary>
     /// The door: a walker standing at the first root, or an empty result for the empty

@@ -52,7 +52,7 @@ namespace Copse.Linq.Treenumerables
 
     public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
-    // The door (walker factory design, Stage A): the lens IS its own terrain -- the walker
+    // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
     public TreeWalkerResult<TValue, THandle> TryGetTreeWalker()
     {

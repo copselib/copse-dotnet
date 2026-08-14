@@ -71,7 +71,7 @@ namespace Copse.Linq
       }
 
       var clamped = spanningRoot.Subtree()
-        .Extend((terrain, handle) => PairHandleWithValue(terrain, handle))
+        .Extend((topology, handle) => PairHandleWithValue(topology, handle))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
 
@@ -81,15 +81,15 @@ namespace Copse.Linq
     // The handle-decorated stream's stamp, as a named observer so both colors read the same:
     // every node paired with its own handle, the membership clamp's coordinate system.
     private static HandleAndValue<THandle, TValue> PairHandleWithValue<TValue, THandle>(
-      ITreeTerrain<TValue, THandle> terrain,
+      ITreeTopology<TValue, THandle> topology,
       THandle handle)
-      => new HandleAndValue<THandle, TValue>(handle, terrain.GetValue(handle));
+      => new HandleAndValue<THandle, TValue>(handle, topology.GetValue(handle));
 
     // The binary LCA, walker-first and result-typed (the axis wave will promote this to a
     // public extension; the spanning fold is its first consumer): collect one stance's
     // root path into a handle set, climb the other until the first membership hit. The
-    // miss -- disjoint trees -- is a fact, never a default walker. Same-terrain is
-    // presumed (the walkers' terrain is private even to this assembly; the check becomes
+    // miss -- disjoint trees -- is a fact, never a default walker. Same-topology is
+    // presumed (the walkers' topology is private even to this assembly; the check becomes
     // possible when the axis wave lands in the walker's own assembly).
     private static TreeWalkerResult<TValue, THandle> LowestCommonAncestor<TValue, THandle>(
       TreeWalker<TValue, THandle> first,

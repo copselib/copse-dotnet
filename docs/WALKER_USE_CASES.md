@@ -66,7 +66,7 @@ previous walker was the root. Sugar pending.
 Layer: sequence · Re-enters: yes (continuously) · Cost: O(1) per step
 
 The walker is the one consumer spelling (Stage B): `MoveToParent()`/`MoveToChild(k)` steps,
-`At(handle)` re-entry; the probes are provider SPI (`ITreeTerrain`), behind the door. The `Has*` questions are the result structs (`ParentResult.HasParent`,
+`At(handle)` re-entry; the probes are provider SPI (`ITreeTopology`), behind the door. The `Has*` questions are the result structs (`ParentResult.HasParent`,
 `TreeWalkerResult.HasWalker`, `ChildResult.HasChild`) — the Try is built into the shape.
 
 ### UC-04 Indexed and keyed child access — SHIPPED / consumer-side
@@ -367,7 +367,7 @@ var spanning = lca.Subtree();
 //    projects back. The future membership LENS makes this adjacency-side and zero-copy;
 //    the semantics are fixed here:
 var clamped = spanning
-  .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
+  .Extend((topology, handle) => new HandleAndValue<int, string>(handle, topology.GetValue(handle)))
   .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
   .Select(pair => pair.Value);
 ```

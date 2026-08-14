@@ -107,7 +107,7 @@ namespace Copse.Linq.Tests
     }
 
     // The vantage is bidirectional -- the Store presentation, pinned on the carrier: a walker
-    // below a root can always climb, and sees the same parent the terrain reports. (The
+    // below a root can always climb, and sees the same parent the topology reports. (The
     // severed presentation lives in Subtrees(); its labels' roots cannot climb.)
     [TestMethod]
     public void TheWalkerSeesUp()
@@ -145,7 +145,7 @@ namespace Copse.Linq.Tests
     }
 
     // The boundary case that forced the carrier split: the empty forest inhabits the
-    // walkable type (terrain may be empty) but can never yield a comonad value (a walker
+    // walkable type (topology may be empty) but can never yield a comonad value (a walker
     // must stand on an actual node). Both doors refuse honestly -- the root door in its
     // result type, the handle door by never having issued a handle to ask with.
     [TestMethod]

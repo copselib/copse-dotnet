@@ -22,14 +22,14 @@ namespace Copse.Linq.Treenumerables
   // by blind delegation, unspecified like any foreign-handle probe.
   internal sealed class SubtreeWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>
   {
-    public SubtreeWalkable(ITreeTerrain<TValue, THandle> source, THandle root)
+    public SubtreeWalkable(ITreeTopology<TValue, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = WalkerWalk.Create(this);
     }
 
-    private readonly ITreeTerrain<TValue, THandle> _Source;
+    private readonly ITreeTopology<TValue, THandle> _Source;
     private readonly THandle _Root;
     private readonly ITreenumerable<TValue> _Walk;
 

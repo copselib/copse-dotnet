@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerables
     public TreenumerableBuffer(
       ITreenumerable<TValue> capture,
       BufferLayout? nativeLayout,
-      ITreeTerrain<TValue, int> adjacencyProbes)
+      ITreeTopology<TValue, int> adjacencyProbes)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
@@ -43,7 +43,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     private readonly ITreenumerable<TValue> _Capture;
-    private ITreeTerrain<TValue, int> _AdjacencyProbes;
+    private ITreeTopology<TValue, int> _AdjacencyProbes;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
@@ -65,16 +65,16 @@ namespace Copse.Linq.Treenumerables
     public ChildResult<int> TryGetRootAt(int rootIndex)
       => (EnsureAdjacencyProbes()).TryGetRootAt(rootIndex);
 
-    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
     {
-      var terrain = EnsureAdjacencyProbes();
-      var rootResult = terrain.TryGetRootAt(0);
+      var topology = EnsureAdjacencyProbes();
+      var rootResult = topology.TryGetRootAt(0);
 
       return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, int>(new TreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        ? new TreeWalkerResult<TValue, int>(new TreeWalker<TValue, int>(topology, rootResult.Child.Node))
         : default;
     }
 
@@ -104,7 +104,7 @@ namespace Copse.Linq.Treenumerables
       return (false, default);
     }
 
-    private ITreeTerrain<TValue, int> EnsureAdjacencyProbes()
+    private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
     {
       if (_AdjacencyProbes != null)
         return _AdjacencyProbes;

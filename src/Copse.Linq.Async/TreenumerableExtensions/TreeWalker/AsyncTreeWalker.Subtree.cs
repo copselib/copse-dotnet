@@ -14,6 +14,6 @@ namespace Copse.Linq
     /// two round trips are not symmetric).</summary>
     public static IAsyncWalkableTreenumerable<TValue, THandle> Subtree<TValue, THandle>(
       this AsyncTreeWalker<TValue, THandle> walker)
-      => new AsyncSubtreeWalkable<TValue, THandle>(walker.Terrain, walker.Focus);
+      => new AsyncSubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
   }
 }

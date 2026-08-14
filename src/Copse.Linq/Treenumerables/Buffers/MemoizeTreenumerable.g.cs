@@ -103,9 +103,9 @@ namespace Copse.Linq.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private ITreeTerrain<TValue, int> _AdjacencyProbes;
+    private ITreeTopology<TValue, int> _AdjacencyProbes;
 
-    private ITreeTerrain<TValue, int> EnsureAdjacencyProbes()
+    private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
     {
       if (_AdjacencyProbes != null)
         return _AdjacencyProbes;
@@ -129,15 +129,15 @@ namespace Copse.Linq.Treenumerables
 
     public ChildResult<int> TryGetRootAt(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAt(rootIndex);
 
-    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
     {
-      var terrain = EnsureAdjacencyProbes();
-      var rootResult = terrain.TryGetRootAt(0);
+      var topology = EnsureAdjacencyProbes();
+      var rootResult = topology.TryGetRootAt(0);
 
       return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, int>(new TreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        ? new TreeWalkerResult<TValue, int>(new TreeWalker<TValue, int>(topology, rootResult.Child.Node))
         : default;
     }
 

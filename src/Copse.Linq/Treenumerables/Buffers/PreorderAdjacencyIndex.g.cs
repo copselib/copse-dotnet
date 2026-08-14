@@ -20,7 +20,7 @@ namespace Copse.Linq.Treenumerables
   // pop) and is re-checked when the scan resumes -- the parent recorded for each node is the
   // stack top at its scan moment, which is correct whether or not the enclosing spans have
   // closed yet. Single-threaded by contract, like the memo feeds it may drive.
-  internal sealed class PreorderAdjacencyIndex<TValue, TStore> : ITreeTerrain<TValue, int>
+  internal sealed class PreorderAdjacencyIndex<TValue, TStore> : ITreeTopology<TValue, int>
     where TStore : IPreorderStore<TValue>
   {
     public PreorderAdjacencyIndex(TStore store)

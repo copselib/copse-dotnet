@@ -130,7 +130,7 @@ namespace Copse.Linq.Tests
       var spanning = lca.Subtree();
 
       var clamped = spanning
-        .Extend((terrain, handle) => new HandleAndValue<int, string>(handle, terrain.GetValue(handle)))
+        .Extend((topology, handle) => new HandleAndValue<int, string>(handle, topology.GetValue(handle)))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
 

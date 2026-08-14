@@ -8,7 +8,7 @@ namespace Copse.Linq
   public static partial class AsyncTreeWalker
   {
     /// <summary>
-    /// Co-bind on the carrier: relabel the whole terrain by an observation of every focus,
+    /// Co-bind on the carrier: relabel the whole topology by an observation of every focus,
     /// and keep standing where you are. The observer receives a walker, so it can extract,
     /// step, and extend -- anything a vantage affords. An extension rather than a struct
     /// member by the carriers-in-Core/algebras-in-Linq split: the result is a walkable,
@@ -19,7 +19,7 @@ namespace Copse.Linq
       this AsyncTreeWalker<TValue, THandle> walker,
       Func<AsyncTreeWalker<TValue, THandle>, ValueTask<TResult>> observer)
       => new AsyncTreeWalker<TResult, THandle>(
-        walker.Terrain.Extend<TValue, THandle, TResult>(
+        walker.Topology.Extend<TValue, THandle, TResult>(
           (source, handle) => observer(new AsyncTreeWalker<TValue, THandle>(source, handle))),
         walker.Focus);
   }

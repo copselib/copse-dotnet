@@ -46,9 +46,9 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The adjacency half: probes ride the one preorder capture through the replay Handle --
     // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
-    private IAsyncTreeTerrain<TValue, int> _AdjacencyProbes;
+    private IAsyncTreeTopology<TValue, int> _AdjacencyProbes;
 
-    private IAsyncTreeTerrain<TValue, int> EnsureAdjacencyProbes()
+    private IAsyncTreeTopology<TValue, int> EnsureAdjacencyProbes()
       => _AdjacencyProbes ?? (_AdjacencyProbes
         = new AsyncPreorderAdjacencyIndex<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
           new AsyncMemoizePreorderStore<TValue>.Handle(_Buffer)));
@@ -62,15 +62,15 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAtAsync(rootIndex);
 
-    // The door (walker factory design, Stage A): terrain-at-birth -- the walker holds the
+    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
     public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
     {
-      var terrain = EnsureAdjacencyProbes();
-      var rootResult = await terrain.TryGetRootAtAsync(0).ConfigureAwait(false);
+      var topology = EnsureAdjacencyProbes();
+      var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
 
       return rootResult.HasChild
-        ? new AsyncTreeWalkerResult<TValue, int>(new AsyncTreeWalker<TValue, int>(terrain, rootResult.Child.Node))
+        ? new AsyncTreeWalkerResult<TValue, int>(new AsyncTreeWalker<TValue, int>(topology, rootResult.Child.Node))
         : default;
     }
   }

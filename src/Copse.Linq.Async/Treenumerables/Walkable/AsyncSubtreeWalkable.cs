@@ -20,14 +20,14 @@ namespace Copse.Linq.Async.Treenumerables
   // by blind delegation, unspecified like any foreign-handle probe.
   internal sealed class AsyncSubtreeWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>
   {
-    public AsyncSubtreeWalkable(IAsyncTreeTerrain<TValue, THandle> source, THandle root)
+    public AsyncSubtreeWalkable(IAsyncTreeTopology<TValue, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = AsyncWalkerWalk.Create(this);
     }
 
-    private readonly IAsyncTreeTerrain<TValue, THandle> _Source;
+    private readonly IAsyncTreeTopology<TValue, THandle> _Source;
     private readonly THandle _Root;
     private readonly IAsyncTreenumerable<TValue> _Walk;
 

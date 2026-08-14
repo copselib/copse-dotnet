@@ -50,7 +50,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
-    // The door (walker factory design, Stage A): the lens IS its own terrain -- the walker
+    // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAsync()
     {

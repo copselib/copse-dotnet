@@ -35,7 +35,7 @@ namespace Copse.Linq.Tests
 
     private sealed class Provider
     {
-      public Provider(string name, Func<ITreenumerable<string>, ITreeTerrain<string, int>> create, BufferLayout handleSpace)
+      public Provider(string name, Func<ITreenumerable<string>, ITreeTopology<string, int>> create, BufferLayout handleSpace)
       {
         Name = name;
         Create = create;
@@ -43,7 +43,7 @@ namespace Copse.Linq.Tests
       }
 
       public string Name { get; }
-      public Func<ITreenumerable<string>, ITreeTerrain<string, int>> Create { get; }
+      public Func<ITreenumerable<string>, ITreeTopology<string, int>> Create { get; }
       public BufferLayout HandleSpace { get; }
     }
 

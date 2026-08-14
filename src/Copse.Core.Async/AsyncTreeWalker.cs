@@ -6,7 +6,7 @@ namespace Copse.Async
   /// The focused pair, reified: a walkable plus a VALID focus -- the carrier of the
   /// full-context (Store) comonad, the type whose instances are what
   /// docs/CATEGORY_THEORY_SURVEY.md §4 calls "the whole tree, seen from here." Two words of
-  /// data, by value, nothing owned: many walkers share one terrain, and stepping never
+  /// data, by value, nothing owned: many walkers share one topology, and stepping never
   /// mutates -- every move returns a NEW walker (the comonad is pure; a stance is a value,
   /// not a machine).
   ///
@@ -36,43 +36,43 @@ namespace Copse.Async
     // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
     // walkers. The invariant's content survives untouched: a handle is always supplied;
     // only `default` remains the invalid inhabitant.
-    public AsyncTreeWalker(IAsyncTreeTerrain<TValue, THandle> terrain, THandle focus)
+    public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology, THandle focus)
     {
-      Terrain = terrain;
+      Topology = topology;
       Focus = focus;
     }
 
-    /// <summary>The terrain this walker stands on. INTERNAL (the door-only design): consumers
+    /// <summary>The topology this walker stands on. INTERNAL (the door-only design): consumers
     /// meet exactly one navigation spelling -- the walker's own members -- and never the SPI
     /// behind it; the comonad's operator surface (co-bind, duplicate, the severed view) reads
-    /// this half through the family IVT. A vantage is focus × terrain; the focus is public
-    /// identity, the terrain is bound physics.</summary>
-    internal readonly IAsyncTreeTerrain<TValue, THandle> Terrain;
+    /// this half through the family IVT. A vantage is focus × topology; the focus is public
+    /// identity, the topology is bound physics.</summary>
+    internal readonly IAsyncTreeTopology<TValue, THandle> Topology;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;
 
     /// <summary>Extract: the value at the focus. Always valid -- a walker cannot be unfocused.
     /// (A probe, hence a method: on a growing source the read is demand.)</summary>
-    public ValueTask<TValue> GetValueAsync() => Terrain.GetValueAsync(Focus);
+    public ValueTask<TValue> GetValueAsync() => Topology.GetValueAsync(Focus);
 
-    /// <summary>The jump: a sibling stance on the SAME terrain, standing at
+    /// <summary>The jump: a sibling stance on the SAME topology, standing at
     /// <paramref name="handle"/> -- re-entry for stored handles through a vantage already
-    /// held (the trust door, addressed: the handle is presumed the terrain's own, the
+    /// held (the trust door, addressed: the handle is presumed the topology's own, the
     /// foreign-handle clause applies, and no probe fires). Receipt (Stage B, the
     /// acquisition migrations): handle re-entry is how recorded identity becomes a stance
     /// again once the walkable is door-only.</summary>
     public AsyncTreeWalker<TValue, THandle> At(THandle handle)
-      => new AsyncTreeWalker<TValue, THandle>(Terrain, handle);
+      => new AsyncTreeWalker<TValue, THandle>(Topology, handle);
 
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()
     {
-      var parentResult = await Terrain.TryGetParentAsync(Focus).ConfigureAwait(false);
+      var parentResult = await Topology.TryGetParentAsync(Focus).ConfigureAwait(false);
 
       return parentResult.HasParent
-        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Terrain, parentResult.Parent))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Topology, parentResult.Parent))
         : default;
     }
 
@@ -80,10 +80,10 @@ namespace Copse.Async
     /// order, or an empty result past the last child.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex)
     {
-      var childResult = await Terrain.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
+      var childResult = await Topology.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
 
       return childResult.HasChild
-        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Terrain, childResult.Child.Node))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Topology, childResult.Child.Node))
         : default;
     }
 

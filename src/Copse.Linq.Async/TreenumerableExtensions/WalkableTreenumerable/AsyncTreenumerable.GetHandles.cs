@@ -7,7 +7,7 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Every handle the walkable's terrain reaches from its roots, in DELIBERATELY UNSPECIFIED
+    /// Every handle the walkable's topology reaches from its roots, in DELIBERATELY UNSPECIFIED
     /// order -- the SET is the promise (handles are positional identity made portable; recording
     /// them while consuming is the sanctioned acquisition path, since the library never searches
     /// by value). A stance walk (Stage B): doors and steps only -- the walk stands at every

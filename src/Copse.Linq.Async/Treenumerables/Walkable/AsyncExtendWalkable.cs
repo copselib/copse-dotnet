@@ -16,16 +16,16 @@ namespace Copse.Linq.Async.Treenumerables
   internal sealed class AsyncExtendWalkable<TValue, THandle, TResult> : IAsyncWalkableTreenumerable<TResult, THandle>
   {
     public AsyncExtendWalkable(
-      IAsyncTreeTerrain<TValue, THandle> source,
-      Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> observer)
+      IAsyncTreeTopology<TValue, THandle> source,
+      Func<IAsyncTreeTopology<TValue, THandle>, THandle, ValueTask<TResult>> observer)
     {
       _Source = source;
       _Observer = observer;
       _Walk = AsyncWalkerWalk.Create(source, observer);
     }
 
-    private readonly IAsyncTreeTerrain<TValue, THandle> _Source;
-    private readonly Func<IAsyncTreeTerrain<TValue, THandle>, THandle, ValueTask<TResult>> _Observer;
+    private readonly IAsyncTreeTopology<TValue, THandle> _Source;
+    private readonly Func<IAsyncTreeTopology<TValue, THandle>, THandle, ValueTask<TResult>> _Observer;
     private readonly IAsyncTreenumerable<TResult> _Walk;
 
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
@@ -40,7 +40,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
-    // The door (walker factory design, Stage A): the relabeled view is its own terrain.
+    // The door (walker factory design, Stage A): the relabeled view is its own topology.
     public async ValueTask<AsyncTreeWalkerResult<TResult, THandle>> TryGetTreeWalkerAsync()
     {
       var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);

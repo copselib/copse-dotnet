@@ -55,7 +55,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void ComonadLaw_ExtractAfterExtend_RecoversTheObserver()
     {
-      Func<ITreeTerrain<string, int>, int, string> observer =
+      Func<ITreeTopology<string, int>, int, string> observer =
         (source, handle) => $"{source.GetValue(handle)}@{Depth(source, handle)}";
 
       foreach (var (tree, walkable) in AllWalkables())
@@ -73,10 +73,10 @@ namespace Copse.Linq.Tests
       // g: an observation of the source (value plus depth); f: an observation of the
       // g-extended tree (consults the parent's g-value -- a genuinely neighborhood-dependent
       // second observation, so the law is exercised on real co-Kleisli composition).
-      Func<ITreeTerrain<string, int>, int, string> g =
+      Func<ITreeTopology<string, int>, int, string> g =
         (source, handle) => $"{source.GetValue(handle)}@{Depth(source, handle)}";
 
-      Func<ITreeTerrain<string, int>, int, string> f =
+      Func<ITreeTopology<string, int>, int, string> f =
         (source, handle) =>
         {
           var parentResult = source.TryGetParent(handle);
@@ -159,7 +159,7 @@ namespace Copse.Linq.Tests
     }
 
     private static string SubtreeFold(
-      ITreeTerrain<string, int> source,
+      ITreeTopology<string, int> source,
       int handle,
       string seed,
       Func<string, string, string> edgeAccumulator,
@@ -189,7 +189,7 @@ namespace Copse.Linq.Tests
 
     // ---------------------------------------------------------------------- helpers
 
-    private static int Depth(ITreeTerrain<string, int> source, int handle)
+    private static int Depth(ITreeTopology<string, int> source, int handle)
     {
       var depth = 0;
       var parentResult = source.TryGetParent(handle);
