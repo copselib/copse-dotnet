@@ -15,8 +15,8 @@ namespace Copse.Linq.Treenumerables
   internal interface IAdjacencyProbes<TValue>
   {
     TValue GetValue(int handle);
-    ParentResult<int> GetParent(int handle);
-    ChildResult<int> GetChildAt(int handle, int childIndex);
-    ChildResult<int> GetRootAt(int rootIndex);
+    ParentResult<int> TryGetParent(int handle);
+    ChildResult<int> TryGetChildAt(int handle, int childIndex);
+    ChildResult<int> TryGetRootAt(int rootIndex);
   }
 }

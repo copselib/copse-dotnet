@@ -35,7 +35,7 @@ namespace Copse.Async
   /// position (the pre-enumeration convention, reused as the walker's starting position above all
   /// roots), which is why they are indexed like any other child group -- the entry probe is the
   /// protocol door, and a source having one is the job description, not a smell (the resolved
-  /// GetRootAt finding, WALKER_DESIGN.md).</para>
+  /// TryGetRootAt finding, WALKER_DESIGN.md).</para>
   ///
   /// <para>Adjacency answers are relative to a STABLE topology: implementations must not mutate
   /// their source, and callers must not navigate across a mutation of it. A probe on a growing
@@ -51,16 +51,16 @@ namespace Copse.Async
     /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root. Never
     /// forces a growing source -- parents precede children in both layouts, so a held handle's
     /// ancestry is always already available.</summary>
-    ValueTask<ParentResult<THandle>> GetParentAsync(THandle handle);
+    ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle);
 
     /// <summary>Indexed downward probe: the node's child at <paramref name="childIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last child. On a growing source this is
     /// demand, and may force enumeration up to the span needed to answer honestly.</summary>
-    ValueTask<ChildResult<THandle>> GetChildAtAsync(THandle handle, int childIndex);
+    ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex);
 
     /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last root. The walker's entry point when
     /// no handle is in hand yet.</summary>
-    ValueTask<ChildResult<THandle>> GetRootAtAsync(int rootIndex);
+    ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex);
   }
 }

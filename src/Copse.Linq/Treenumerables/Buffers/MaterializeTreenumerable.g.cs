@@ -123,13 +123,13 @@ namespace Copse.Linq.Treenumerables
     public TValue GetValue(int handle)
       => (Settle()).GetValue(handle);
 
-    public ParentResult<int> GetParent(int handle)
-      => (Settle()).GetParent(handle);
+    public ParentResult<int> TryGetParent(int handle)
+      => (Settle()).TryGetParent(handle);
 
-    public ChildResult<int> GetChildAt(int handle, int childIndex)
-      => (Settle()).GetChildAt(handle, childIndex);
+    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
+      => (Settle()).TryGetChildAt(handle, childIndex);
 
-    public ChildResult<int> GetRootAt(int rootIndex)
-      => (Settle()).GetRootAt(rootIndex);
+    public ChildResult<int> TryGetRootAt(int rootIndex)
+      => (Settle()).TryGetRootAt(rootIndex);
   }
 }

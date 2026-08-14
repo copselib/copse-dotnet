@@ -40,7 +40,7 @@ namespace Copse.Linq.Treenumerables
       return _Store.GetValue(handle);
     }
 
-    public ParentResult<int> GetParent(int handle)
+    public ParentResult<int> TryGetParent(int handle)
     {
       if (!ExtendParentIndexes(handle))
         return default;
@@ -52,7 +52,7 @@ namespace Copse.Linq.Treenumerables
         : new ParentResult<int>(parentIndex);
     }
 
-    public ChildResult<int> GetChildAt(int handle, int childIndex)
+    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
     {
       if (childIndex < 0 || !_Store.EnsureChildAvailable(handle, childIndex))
         return default;
@@ -62,7 +62,7 @@ namespace Copse.Linq.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
     }
 
-    public ChildResult<int> GetRootAt(int rootIndex)
+    public ChildResult<int> TryGetRootAt(int rootIndex)
     {
       if (rootIndex < 0 || !_Store.EnsureRootAvailable(rootIndex))
         return default;

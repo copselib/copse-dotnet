@@ -37,14 +37,14 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<TValue> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
 
-    public ValueTask<ParentResult<THandle>> GetParentAsync(THandle handle)
+    public ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)
         ? default
-        : _Source.GetParentAsync(handle);
+        : _Source.TryGetParentAsync(handle);
 
-    public ValueTask<ChildResult<THandle>> GetChildAtAsync(THandle handle, int childIndex) => _Source.GetChildAtAsync(handle, childIndex);
+    public ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
 
-    public ValueTask<ChildResult<THandle>> GetRootAtAsync(int rootIndex)
+    public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex)
       => rootIndex == 0
         ? new ValueTask<ChildResult<THandle>>(new ChildResult<THandle>(new NodeAndSiblingIndex<THandle>(_Root, 0)))
         : default;

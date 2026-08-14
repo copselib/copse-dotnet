@@ -22,7 +22,7 @@ namespace Copse.Linq
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = source.GetRootAt(rootIndex);
+        var rootResult = source.TryGetRootAt(rootIndex);
 
         if (!rootResult.HasChild)
           break;
@@ -38,31 +38,13 @@ namespace Copse.Linq
 
         for (var childIndex = 0; ; childIndex++)
         {
-          var childResult = source.GetChildAt(current, childIndex);
+          var childResult = source.TryGetChildAt(current, childIndex);
 
           if (!childResult.HasChild)
             break;
 
           pending.Push(childResult.Child.Node);
         }
-      }
-    }
-
-    /// <summary>
-    /// The acquisition scan: every handle paired with the value it labels, in the same
-    /// deliberately unspecified order as <see cref="GetHandles{TValue, THandle}"/>. The rows
-    /// let value predicates pick out handles -- consumer-side, preserving the
-    /// no-node-equality pledge (the library compares nothing; the consumer's predicate is the
-    /// consumer's business).
-    /// </summary>
-    public static IEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source)
-    {
-      foreach (var handle in source.GetHandles())
-      {
-        var value = source.GetValue(handle);
-
-        yield return new HandleAndValue<THandle, TValue>(handle, value);
       }
     }
   }

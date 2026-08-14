@@ -39,14 +39,14 @@ namespace Copse.Linq.Treenumerables
 
     public TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public ParentResult<THandle> GetParent(THandle handle)
+    public ParentResult<THandle> TryGetParent(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)
         ? default
-        : _Source.GetParent(handle);
+        : _Source.TryGetParent(handle);
 
-    public ChildResult<THandle> GetChildAt(THandle handle, int childIndex) => _Source.GetChildAt(handle, childIndex);
+    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
-    public ChildResult<THandle> GetRootAt(int rootIndex)
+    public ChildResult<THandle> TryGetRootAt(int rootIndex)
       => rootIndex == 0
         ? new ChildResult<THandle>(new NodeAndSiblingIndex<THandle>(_Root, 0))
         : default;

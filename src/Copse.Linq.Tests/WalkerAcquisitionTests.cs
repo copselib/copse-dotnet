@@ -57,8 +57,8 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { 2, 6 }, targets);
 
       // The point of keeping handles: jump straight in. d's parent is b; g's parent is c.
-      Assert.AreEqual(1, walkable.GetParent(targets[0]).Parent);
-      Assert.AreEqual(4, walkable.GetParent(targets[1]).Parent);
+      Assert.AreEqual(1, walkable.TryGetParent(targets[0]).Parent);
+      Assert.AreEqual(4, walkable.TryGetParent(targets[1]).Parent);
     }
 
     [TestMethod]

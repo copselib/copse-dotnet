@@ -36,10 +36,10 @@ namespace Copse.Linq.Treenumerables
 
     public TResult GetValue(THandle handle) => _Observer(_Source, handle);
 
-    public ParentResult<THandle> GetParent(THandle handle) => _Source.GetParent(handle);
+    public ParentResult<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 
-    public ChildResult<THandle> GetChildAt(THandle handle, int childIndex) => _Source.GetChildAt(handle, childIndex);
+    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
-    public ChildResult<THandle> GetRootAt(int rootIndex) => _Source.GetRootAt(rootIndex);
+    public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
   }
 }

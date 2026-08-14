@@ -46,7 +46,7 @@ namespace Copse.Linq.Tests
 
         for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
         {
-          var rootHandle = walkable.GetRootAt(rootIndex).Child.Node;
+          var rootHandle = walkable.TryGetRootAt(rootIndex).Child.Node;
 
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
@@ -69,11 +69,11 @@ namespace Copse.Linq.Tests
 
           Assert.AreEqual(walkable.GetValue(handle), label.GetValue(handle), $"map(extract)∘duplicate [{tree}]");
 
-          var labelRoot = label.GetRootAt(0);
+          var labelRoot = label.TryGetRootAt(0);
           Assert.IsTrue(labelRoot.HasChild, $"label has a root [{tree}]");
           Assert.AreEqual(handle, labelRoot.Child.Node, $"the label's root is its node [{tree}]");
           Assert.AreEqual(0, labelRoot.Child.SiblingIndex, $"the label's root re-roots to sibling 0 [{tree}]");
-          Assert.IsFalse(label.GetRootAt(1).HasChild, $"a subtree is single-rooted [{tree}]");
+          Assert.IsFalse(label.TryGetRootAt(1).HasChild, $"a subtree is single-rooted [{tree}]");
         }
       }
     }
@@ -89,12 +89,12 @@ namespace Copse.Linq.Tests
         {
           var label = subtrees.GetValue(handle);
 
-          Assert.IsFalse(label.GetParent(handle).HasParent, $"the label's root is parentless [{tree}]");
+          Assert.IsFalse(label.TryGetParent(handle).HasParent, $"the label's root is parentless [{tree}]");
 
           foreach (var descendant in Descendants(walkable, handle).Where(d => d != handle))
           {
-            var viaLabel = label.GetParent(descendant);
-            var viaSource = walkable.GetParent(descendant);
+            var viaLabel = label.TryGetParent(descendant);
+            var viaSource = walkable.TryGetParent(descendant);
 
             Assert.IsTrue(viaLabel.HasParent, $"descendants keep their parents [{tree}]");
             Assert.AreEqual(viaSource.Parent, viaLabel.Parent, $"descendant parents delegate [{tree}]");
@@ -177,7 +177,7 @@ namespace Copse.Linq.Tests
         {
           AssertEquivalent(
             subtrees.GetValue(handle),
-            walkable.WalkerAt(handle).Subtree(),
+            walkable.GetTreeWalkerAt(handle).Subtree(),
             $"walker.Subtree() ≡ duplicate's label [{tree}]");
         }
 
@@ -185,7 +185,7 @@ namespace Copse.Linq.Tests
         {
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
-            walkable.GetRootWalker(rootIndex).Walker.Subtree(),
+            walkable.TryGetTreeWalkerAtRootIndex(rootIndex).Walker.Subtree(),
             $"tree → root walker → Subtree() round trip [{tree}]");
         }
       }
@@ -205,7 +205,7 @@ namespace Copse.Linq.Tests
 
         for (var childIndex = 0; ; childIndex++)
         {
-          var childResult = source.GetChildAt(current, childIndex);
+          var childResult = source.TryGetChildAt(current, childIndex);
 
           if (!childResult.HasChild)
             break;
@@ -231,7 +231,7 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(source.Position, outer.Position, $"position {context}");
 
           var label = outer.Node;
-          Assert.AreEqual(source.Node, label.GetValue(label.GetRootAt(0).Child.Node), $"label root value {context}");
+          Assert.AreEqual(source.Node, label.GetValue(label.TryGetRootAt(0).Child.Node), $"label root value {context}");
         }
 
         Assert.IsFalse(outer.MoveNext(NodeTraversalStrategies.TraverseAll), $"outer ran long {context}");

@@ -87,13 +87,13 @@ namespace Copse.Linq.Tests
           // Roots: every ordinal, then the first miss.
           for (var rootIndex = 0; rootIndex < model.Roots.Count; rootIndex++)
           {
-            var rootResult = walkable.GetRootAt(rootIndex);
+            var rootResult = walkable.TryGetRootAt(rootIndex);
             Assert.IsTrue(rootResult.HasChild, $"root {rootIndex} exists — {context}");
             Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Child.Node, $"root {rootIndex} — {context}");
             Assert.AreEqual(rootIndex, rootResult.Child.SiblingIndex, $"root {rootIndex} sibling — {context}");
           }
 
-          Assert.IsFalse(walkable.GetRootAt(model.Roots.Count).HasChild, $"past the last root — {context}");
+          Assert.IsFalse(walkable.TryGetRootAt(model.Roots.Count).HasChild, $"past the last root — {context}");
 
           foreach (var node in model.Nodes)
           {
@@ -101,7 +101,7 @@ namespace Copse.Linq.Tests
 
             Assert.AreEqual(node.Value, walkable.GetValue(handle), $"value @{handle} — {context}");
 
-            var parentResult = walkable.GetParent(handle);
+            var parentResult = walkable.TryGetParent(handle);
             if (node.Parent == null)
             {
               Assert.IsFalse(parentResult.HasParent, $"root has no parent @{handle} — {context}");
@@ -114,13 +114,13 @@ namespace Copse.Linq.Tests
 
             for (var childIndex = 0; childIndex < node.Children.Count; childIndex++)
             {
-              var childResult = walkable.GetChildAt(handle, childIndex);
+              var childResult = walkable.TryGetChildAt(handle, childIndex);
               Assert.IsTrue(childResult.HasChild, $"child {childIndex} exists @{handle} — {context}");
               Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Child.Node, $"child {childIndex} @{handle} — {context}");
               Assert.AreEqual(childIndex, childResult.Child.SiblingIndex, $"child {childIndex} sibling @{handle} — {context}");
             }
 
-            Assert.IsFalse(walkable.GetChildAt(handle, node.Children.Count).HasChild, $"past the last child @{handle} — {context}");
+            Assert.IsFalse(walkable.TryGetChildAt(handle, node.Children.Count).HasChild, $"past the last child @{handle} — {context}");
           }
         }
       }

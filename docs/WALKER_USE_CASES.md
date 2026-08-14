@@ -43,7 +43,7 @@ Layer: sequence · Re-enters: no · Cost: O(depth)
 
 ```csharp
 // Today, by hand — the climb. The axis wave's GetAncestors makes this an extension.
-var stance = walkable.WalkerAt(handle).MoveToParent();
+var stance = walkable.GetTreeWalkerAt(handle).MoveToParent();
 while (stance.HasWalker)
 {
   breadcrumbs.Add(stance.Walker.GetValue());
@@ -51,7 +51,7 @@ while (stance.HasWalker)
 }
 ```
 
-`AndSelf` variants: start from `WalkerAt(handle)` itself. (The 2016 grammar had both
+`AndSelf` variants: start from `GetTreeWalkerAt(handle)` itself. (The 2016 grammar had both
 `AndSelf` twins and an `ExcludeOption` enum — the wave picks ONE idiom.)
 
 ### UC-02 Find the root (`GetRoot`) — HAND
@@ -65,7 +65,7 @@ previous walker was the root. Sugar pending.
 
 Layer: sequence · Re-enters: yes (continuously) · Cost: O(1) per step
 
-`GetParent`/`GetChildAt` probes on the walkable; `MoveToParent()`/`MoveToChild(k)` on the
+`TryGetParent`/`TryGetChildAt` probes on the walkable; `MoveToParent()`/`MoveToChild(k)` on the
 walker. The `Has*` questions are the result structs (`ParentResult.HasParent`,
 `TreeWalkerResult.HasWalker`, `ChildResult.HasChild`) — the Try is built into the shape.
 
@@ -73,7 +73,8 @@ walker. The `Has*` questions are the result structs (`ParentResult.HasParent`,
 
 Layer: sequence · Re-enters: yes · Cost: O(1) (indexed); O(n) scan (keyed)
 
-`GetChildAt(handle, k)` — the strawman name survived verbatim. Keyed access
+`TryGetChildAt(handle, k)` — the strawman's `GetChildAt`, wearing the Try law's prefix
+since 2026-08-14 (the miss is expected and typed). Keyed access
 (`GetChildrenByKey`) is deliberately NOT a library member: value search is consumer code
 (the no-node-equality pledge), spelled as consumer LINQ over `GetHandlesWithValues` —
 the search law (OPERATOR_SURFACE_MAP.md §0; the brief `FindHandles`/`FindHandle` sugar
@@ -119,7 +120,7 @@ verb the DAG side has to shout.
 Layer: sequence (folds) · Re-enters: no · Cost: O(depth) / O(subtree) / O(k)
 
 Depth = the climb, counted. Height/size = `Subtree()` + a scan or `CountNodes`. Degree =
-probe `GetChildAt(h, k)` to the first miss. The catalog's original asymmetry note stands:
+probe `TryGetChildAt(h, k)` to the first miss. The catalog's original asymmetry note stands:
 depth is O(depth), height is O(subtree) — no design can make both cheap.
 
 ### UC-10 The classic traversals from a node — COMPOSED
@@ -148,14 +149,14 @@ Layer: sequence · Cost: O(depth₁ + depth₂)
 ```csharp
 // Climb one path into a set, climb the other until the first membership hit.
 var seen = new HashSet<int>();
-for (var s = walkable.WalkerAt(a); ; )
+for (var s = walkable.GetTreeWalkerAt(a); ; )
 {
   seen.Add(s.Focus);
   var up = s.MoveToParent();
   if (!up.HasWalker) break;
   s = up.Walker;
 }
-var lca = walkable.WalkerAt(b);
+var lca = walkable.GetTreeWalkerAt(b);
 while (!seen.Contains(lca.Focus))
   lca = lca.MoveToParent().Walker;        // guaranteed to land: roots are in `seen`… same tree
 ```
@@ -251,7 +252,7 @@ Layer: region → sequence → back · Re-enters: THE POINT · Cost: O(1) per re
 
 ```csharp
 var label = walkable.Subtrees().GetValue(handle);   // analyze the severed view…
-var backHome = walkable.WalkerAt(handle);           // …and stand in the source: same handles
+var backHome = walkable.GetTreeWalkerAt(handle);           // …and stand in the source: same handles
 ```
 
 Views never re-address — `Extend` and `Subtree` delegate handles untouched. The
@@ -284,7 +285,7 @@ family. An adapter, not a capture; re-enters continuously.
 Layer: sequence · Re-enters: continuously · Cost: O(1) per step
 
 ```csharp
-var walker = walkable.GetRootWalker().Walker;
+var walker = walkable.TryGetTreeWalkerAtRootIndex().Walker;
 var child = walker.MoveToChild(0);
 if (child.HasWalker)
   Process(child.Walker.GetValue());   // walker itself is unmoved
@@ -347,14 +348,14 @@ var targets = walkable.GetHandlesWithValues()
 //    hand-rolled today (private in the operation, mirrored in the test) — the axis
 //    wave's first promotion candidate, with span arithmetic as the preorder fast path:
 var lca = targets
-  .Select(handle => walkable.WalkerAt(handle))
+  .Select(handle => walkable.GetTreeWalkerAt(handle))
   .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);  // hand helper; same tree by construction
 
 // 4½. The kept-set: the climbs RECORD the paths (each stops at the first already-kept
 //    ancestor — shared segments walked once). Coordinates, because a SET is storage:
 var keptHandles = new HashSet<int> { lca.Focus };
 foreach (var target in targets)
-  foreach (var pathHandle in PathToAncestor(walkable.WalkerAt(target), lca.Focus))
+  foreach (var pathHandle in PathToAncestor(walkable.GetTreeWalkerAt(target), lca.Focus))
     keptHandles.Add(pathHandle);
 
 // 5. Re-root at the LCA — the severed lens; never left the comonad:

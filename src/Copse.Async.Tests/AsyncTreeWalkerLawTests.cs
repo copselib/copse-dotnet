@@ -38,7 +38,7 @@ namespace Copse.Async.Tests
         await foreach (var handle in walkable.GetHandles())
           Assert.AreEqual(
             await walkable.GetValueAsync(handle),
-            await walkable.WalkerAt(handle).GetValueAsync(),
+            await walkable.GetTreeWalkerAt(handle).GetValueAsync(),
             $"extract [{tree}]");
       }
     }
@@ -52,7 +52,7 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.WalkerAt(handle);
+          var walker = walkable.GetTreeWalkerAt(handle);
 
           Assert.AreEqual(walker, await walker.Duplicate().GetValueAsync(), $"extract∘duplicate ≡ id [{tree}]");
         }
@@ -68,8 +68,8 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var parentResult = await walkable.GetParentAsync(handle);
-          var stepped = await walkable.WalkerAt(handle).MoveToParentAsync();
+          var parentResult = await walkable.TryGetParentAsync(handle);
+          var stepped = await walkable.GetTreeWalkerAt(handle).MoveToParentAsync();
 
           Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
@@ -92,7 +92,7 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.WalkerAt(handle);
+          var walker = walkable.GetTreeWalkerAt(handle);
           var extended = walker.Extend(async focus => await focus.GetValueAsync().ConfigureAwait(false) + "@" + focus.Focus);
 
           Assert.AreEqual(
@@ -108,14 +108,14 @@ namespace Copse.Async.Tests
     {
       var forest = W("a,b,c");
 
-      var firstRoot = await forest.GetRootWalkerAsync();
+      var firstRoot = await forest.TryGetTreeWalkerAtRootIndexAsync();
       Assert.IsTrue(firstRoot.HasWalker);
       Assert.AreEqual("a", await firstRoot.Walker.GetValueAsync());
 
-      Assert.IsFalse((await forest.GetRootWalkerAsync(3)).HasWalker, "past the last root: no walker");
+      Assert.IsFalse((await forest.TryGetTreeWalkerAtRootIndexAsync(3)).HasWalker, "past the last root: no walker");
 
       var empty = AsyncTree.Empty<string>().Memoize();
-      Assert.IsFalse((await empty.GetRootWalkerAsync()).HasWalker, "the empty forest grants no walker");
+      Assert.IsFalse((await empty.TryGetTreeWalkerAtRootIndexAsync()).HasWalker, "the empty forest grants no walker");
     }
 
     [TestMethod]
@@ -125,13 +125,13 @@ namespace Copse.Async.Tests
 
       await foreach (var handle in walkable.GetHandles())
       {
-        var subtree = walkable.WalkerAt(handle).Subtree();
+        var subtree = walkable.GetTreeWalkerAt(handle).Subtree();
 
-        var subtreeRoot = await subtree.GetRootWalkerAsync();
+        var subtreeRoot = await subtree.TryGetTreeWalkerAtRootIndexAsync();
         Assert.IsTrue(subtreeRoot.HasWalker);
         Assert.AreEqual(handle, subtreeRoot.Walker.Focus, "the subtree stands at the focus");
 
-        Assert.IsFalse((await subtree.GetParentAsync(handle)).HasParent, "severed at the root");
+        Assert.IsFalse((await subtree.TryGetParentAsync(handle)).HasParent, "severed at the root");
       }
     }
   }

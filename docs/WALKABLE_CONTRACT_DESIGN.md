@@ -424,6 +424,26 @@ this is the walker-arc record of what changed and why.
   name follows the `Enumerable`/`Queryable` idiom (the class is not named `*Extensions`;
   the folder is). Resolution is now closed under refactoring: every extension, every
   tier, one candidate set, forever.
+- **The Try law (Jason's, superseding this section's first grammar draft — RULED + SWEPT
+  same day).** My "`Get` returns data, never a citizen" law was falsified by the oldest
+  contract in the library: `GetDepthFirstTreenumerator` mints an object and wears `Get`,
+  the `GetEnumerator` sense. The grammar that survives: **`Get` = acquisition or read;
+  `TryGet` = acquisition whose miss is typed** (the result struct is the async spelling of
+  the BCL try-pattern — `out` cannot cross an `await`); bare `Get` that can fail THROWS
+  (violation channel) — the prefix pair encodes the two-channel doctrine. Swept: contract
+  probes `GetParent`/`GetChildAt`/`GetRootAt` → `TryGetParent`/`TryGetChildAt`/
+  `TryGetRootAt` (Core, both colors, all implementers); `WalkerAt` → `GetTreeWalkerAt`
+  (walker acquisition named like treenumerator acquisition; bare Get — trust door, no
+  probe fires, no typed miss); `GetRootWalker` → `TryGetTreeWalkerAtRootIndex` (the name
+  spells RootIndex because when `THandle` is `int` only names keep root-ordinal and handle
+  apart); `GetValue` stays bare (forged handle = violation, throws). `Move*` stays
+  unmarked on `IEnumerator.MoveNext`'s precedent (partial movement, unmarked since the
+  BCL's beginning) — Jason's pragmatic ruling; a full Try-everything-that-fails-gracefully
+  pass was considered and deferred. The one-op-one-file pass also split the doors file and
+  gave `GetHandlesWithValues` its own file; the walker-receiver extensions got their own
+  class (`TreeWalker`/`AsyncTreeWalker`) under the refined one-class rule: **one static
+  class per receiver-CONVERTIBILITY family** (the walker converts to neither interface, so
+  cross-resolution is impossible and the class wears the receiver's name).
 - **The folder shape.** `Copse.Linq(.Async)/TreenumerableExtensions/` holds receiver-tier
   subfolders `Treenumerable/` and `WalkableTreenumerable/` (tier readability stays in the
   tree; the class unifies). This supersedes §9's "singular/plural folder convention"

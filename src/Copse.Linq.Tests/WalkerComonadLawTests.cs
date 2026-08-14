@@ -47,7 +47,7 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           Assert.AreEqual(walkable.GetValue(handle), extended.GetValue(handle));
-          Assert.AreEqual(walkable.GetParent(handle).HasParent, extended.GetParent(handle).HasParent);
+          Assert.AreEqual(walkable.TryGetParent(handle).HasParent, extended.TryGetParent(handle).HasParent);
         }
       }
     }
@@ -79,7 +79,7 @@ namespace Copse.Linq.Tests
       Func<IWalkableTreenumerable<string, int>, int, string> f =
         (source, handle) =>
         {
-          var parentResult = source.GetParent(handle);
+          var parentResult = source.TryGetParent(handle);
           var parentLabel = parentResult.HasParent ? source.GetValue(parentResult.Parent) : "⊤";
           return $"{source.GetValue(handle)}<{parentLabel}";
         };
@@ -116,12 +116,12 @@ namespace Copse.Linq.Tests
         var viaExtend = walkable.Extend((source, handle) =>
         {
           var path = new List<string> { source.GetValue(handle) };
-          var parentResult = source.GetParent(handle);
+          var parentResult = source.TryGetParent(handle);
 
           while (parentResult.HasParent)
           {
             path.Add(source.GetValue(parentResult.Parent));
-            parentResult = source.GetParent(parentResult.Parent);
+            parentResult = source.TryGetParent(parentResult.Parent);
           }
 
           var accumulate = seed;
@@ -169,7 +169,7 @@ namespace Copse.Linq.Tests
 
       for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = source.GetChildAt(handle, childIndex);
+        var childResult = source.TryGetChildAt(handle, childIndex);
 
         if (!childResult.HasChild)
           break;
@@ -192,12 +192,12 @@ namespace Copse.Linq.Tests
     private static int Depth(IWalkableTreenumerable<string, int> source, int handle)
     {
       var depth = 0;
-      var parentResult = source.GetParent(handle);
+      var parentResult = source.TryGetParent(handle);
 
       while (parentResult.HasParent)
       {
         depth++;
-        parentResult = source.GetParent(parentResult.Parent);
+        parentResult = source.TryGetParent(parentResult.Parent);
       }
 
       return depth;

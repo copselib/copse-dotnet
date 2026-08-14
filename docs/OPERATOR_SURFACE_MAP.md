@@ -21,15 +21,16 @@ one law — new surface must name itself by these:
 
 | Prefix | Meaning | The test |
 |---|---|---|
-| *(none)* | **The algebra** — transformations and operators, LINQ's verb/noun tradition (`Select`…`Extend`, `Subtrees`, `SpanningSubtree`, `Materialize`) | returns an algebra citizen; miss-ability is typed (result structs), never named (`Try*` does not exist here) |
-| `Get` | **Deterministic retrieval** — accessors, total enumerations, indexed access (`GetLeaves`, `GetHandles`, `GetRootWalker`, the probes) | the result is fully determined by structure + index; misses are *bounds* misses (result-typed), never semantic |
+| *(none)* | **The algebra** — transformations and operators, LINQ's verb/noun tradition (`Select`…`Extend`, `Subtrees`, `SpanningSubtree`, `Materialize`) | returns an algebra citizen; partiality is typed in the result (`Try` never fuses with algebra names — the BCL has no `TrySelect`) |
+| `Get` | **Acquisition or read** — the `GetEnumerator` sense: reads (`GetValue`, `GetLeaves`, `GetHandles`) AND minting doors (`GetDepthFirstTreenumerator`, `GetTreeWalkerAt`) | bare `Get` is total or THROWING — if it can fail, failure is a violation (malformed question, exception channel), never a typed miss |
+| `TryGet` | **Acquisition whose miss is typed** (`TryGetParent`, `TryGetChildAt`, `TryGetRootAt`, `TryGetTreeWalkerAtRootIndex`) | the miss is an expected "no" carried in a result struct — the async spelling of the BCL try-pattern (`out` cannot cross an `await`); `TryGet` ⇔ result-typed miss is the TWO-CHANNEL DOCTRINE in the name |
 | `Take`/`Skip` | **Selection reshapings** — LINQ heritage (`TakeTrees`, `TakeNodesUntil`) | positional/conditional selection; same kind in and out |
 | `To` | **Representation conversion, eager** (`ToFormattedLines`, `ToDegenerateTree`) | name, return shape, and cost agree — the honest-eager rule |
-| `Move` | **Walker steps** — stance verbs, result-typed (`MoveToParent`, `MoveToChild`) | mutates nothing; returns the stepped stance or a typed miss |
+| `Move` | **Walker steps** — stance verbs, result-typed (`MoveToParent`, `MoveToChild`) | partial but unmarked, on `IEnumerator.MoveNext`'s precedent (the BCL's original unmarked-partial movement verb; ruled pragmatic 2026-08-14 — a full Try-everything pass was considered and deferred) |
 
-Suffix `At` = trust-based indexed access (`WalkerAt`, `GetChildAt` — which correctly
-composes both rules: retrieval, by index). Machinery/type naming is the
-[Mechanism]+[Axis]+[Tier] grammar (LAZINESS_AND_BUFFERING_POLICY.md).
+Suffix `At` = indexed/addressed access (`GetTreeWalkerAt` by handle, `TryGetChildAt` by
+index). Machinery/type naming is the [Mechanism]+[Axis]+[Tier] grammar
+(LAZINESS_AND_BUFFERING_POLICY.md).
 
 **The search law** (`Find` deliberately absent — retired 2026-08-14 the day it was
 introduced): *searches are not surface.* An extension earns a place only if it needs

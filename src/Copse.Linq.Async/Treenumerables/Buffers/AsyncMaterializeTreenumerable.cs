@@ -122,13 +122,13 @@ namespace Copse.Linq.Async.Treenumerables
     public async ValueTask<TValue> GetValueAsync(int handle)
       => await (await SettleAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
 
-    public async ValueTask<ParentResult<int>> GetParentAsync(int handle)
-      => await (await SettleAsync().ConfigureAwait(false)).GetParentAsync(handle).ConfigureAwait(false);
+    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
+      => await (await SettleAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);
 
-    public async ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
-      => await (await SettleAsync().ConfigureAwait(false)).GetChildAtAsync(handle, childIndex).ConfigureAwait(false);
+    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+      => await (await SettleAsync().ConfigureAwait(false)).TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 
-    public async ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex)
-      => await (await SettleAsync().ConfigureAwait(false)).GetRootAtAsync(rootIndex).ConfigureAwait(false);
+    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
+      => await (await SettleAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
   }
 }

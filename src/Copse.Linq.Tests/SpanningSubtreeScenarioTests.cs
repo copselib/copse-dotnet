@@ -117,14 +117,14 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(3, targets.Count, "acquisition found the targets");
 
       var lca = targets
-        .Select(handle => walkable.WalkerAt(handle))
+        .Select(handle => walkable.GetTreeWalkerAt(handle))
         .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);
 
       Assert.AreEqual("a", lca.GetValue(), "the three targets' LCA");
 
       var keptHandles = new HashSet<int> { lca.Focus };
       foreach (var target in targets)
-        foreach (var pathHandle in PathToAncestor(walkable.WalkerAt(target), lca.Focus))
+        foreach (var pathHandle in PathToAncestor(walkable.GetTreeWalkerAt(target), lca.Focus))
           keptHandles.Add(pathHandle);
 
       var spanning = lca.Subtree();

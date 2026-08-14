@@ -33,7 +33,7 @@ namespace Copse.Linq
       this IWalkableTreenumerable<TValue, THandle> source,
       IEnumerable<THandle> targets)
     {
-      var targetWalkers = targets.Select(handle => source.WalkerAt(handle)).ToList();
+      var targetWalkers = targets.Select(handle => source.GetTreeWalkerAt(handle)).ToList();
 
       if (targetWalkers.Count == 0)
         return default;
@@ -72,7 +72,7 @@ namespace Copse.Linq
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
 
-      return clamped.Materialize(BufferLayout.Preorder).GetRootWalker();
+      return clamped.Materialize(BufferLayout.Preorder).TryGetTreeWalkerAtRootIndex();
     }
 
     // The binary LCA, walker-first and result-typed (the axis wave will promote this to a

@@ -54,14 +54,14 @@ namespace Copse.Linq.Async.Treenumerables
     public async ValueTask<TValue> GetValueAsync(int handle)
       => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
 
-    public async ValueTask<ParentResult<int>> GetParentAsync(int handle)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).GetParentAsync(handle).ConfigureAwait(false);
+    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
+      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);
 
-    public async ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).GetChildAtAsync(handle, childIndex).ConfigureAwait(false);
+    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 
-    public async ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).GetRootAtAsync(rootIndex).ConfigureAwait(false);
+    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
+      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order

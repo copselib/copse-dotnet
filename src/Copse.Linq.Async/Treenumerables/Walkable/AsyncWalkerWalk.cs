@@ -44,7 +44,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = await walkable.GetRootAtAsync(rootIndex).ConfigureAwait(false);
+        var rootResult = await walkable.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
         if (!rootResult.HasChild)
           yield break;
@@ -87,7 +87,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     private async ValueTask<ChildResult<HandleAndValue<THandle, TResult>>> PullAsync(int childIndex)
     {
-      var childResult = await _Walkable.GetChildAtAsync(_ParentHandle, childIndex).ConfigureAwait(false);
+      var childResult = await _Walkable.TryGetChildAtAsync(_ParentHandle, childIndex).ConfigureAwait(false);
 
       if (!childResult.HasChild)
         return default;

@@ -157,8 +157,14 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetHandles.cs",
         "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetHandles.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
-      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.WalkerAt.cs",
-        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.WalkerAt.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetHandlesWithValues.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetHandlesWithValues.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetTreeWalkerAt.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetTreeWalkerAt.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.TryGetTreeWalkerAtRootIndex.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.TryGetTreeWalkerAtRootIndex.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
       // The walker-receiver extensions (the comonad's algebra) live in their receiver's
       // subfolder, one operator per file, same one-class partial as everything else.

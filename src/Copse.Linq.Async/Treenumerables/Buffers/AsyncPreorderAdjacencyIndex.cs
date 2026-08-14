@@ -43,7 +43,7 @@ namespace Copse.Linq.Async.Treenumerables
       return _Store.GetValue(handle);
     }
 
-    public async ValueTask<ParentResult<int>> GetParentAsync(int handle)
+    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
     {
       while (_ScanCursor <= handle)
       {
@@ -58,7 +58,7 @@ namespace Copse.Linq.Async.Treenumerables
         : new ParentResult<int>(parentIndex);
     }
 
-    public async ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
+    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
     {
       if (childIndex < 0)
         return default;
@@ -84,7 +84,7 @@ namespace Copse.Linq.Async.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[handle][childIndex], childIndex));
     }
 
-    public async ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex)
+    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
     {
       if (rootIndex < 0)
         return default;

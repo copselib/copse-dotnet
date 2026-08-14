@@ -34,10 +34,10 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<TResult> GetValueAsync(THandle handle) => _Observer(_Source, handle);
 
-    public ValueTask<ParentResult<THandle>> GetParentAsync(THandle handle) => _Source.GetParentAsync(handle);
+    public ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
-    public ValueTask<ChildResult<THandle>> GetChildAtAsync(THandle handle, int childIndex) => _Source.GetChildAtAsync(handle, childIndex);
+    public ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
 
-    public ValueTask<ChildResult<THandle>> GetRootAtAsync(int rootIndex) => _Source.GetRootAtAsync(rootIndex);
+    public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
   }
 }

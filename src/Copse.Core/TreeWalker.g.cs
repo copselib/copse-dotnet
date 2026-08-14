@@ -17,7 +17,7 @@ namespace Copse
   /// is traversal-protocol state (the forest-root convention, the treenumerator's
   /// before-first stance) and deliberately has no walker spelling -- extract must always
   /// have a value to return, so the unfocused state is not a member of the carrier. Every
-  /// creation path (the <c>WalkerAt</c>/<c>GetRootWalker</c> doors, the step results,
+  /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
   /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
   /// <c>default</c> instances anyway; per the <see cref="ChildResult{TNode}"/> convention,
   /// that value is invalid and must not be used.</para>
@@ -35,7 +35,7 @@ namespace Copse
   public readonly struct TreeWalker<TValue, THandle>
   {
     // PUBLIC by design (the Core move, 2026-08-14): construction IS the trust-based door --
-    // WalkerAt was always just this call -- and the comonad's operator surface (Extend,
+    // GetTreeWalkerAt was always just this call -- and the comonad's operator surface (Extend,
     // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
     // walkers. The invariant's content survives untouched: a handle is always supplied;
     // only `default` remains the invalid inhabitant.
@@ -62,7 +62,7 @@ namespace Copse
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public TreeWalkerResult<TValue, THandle> MoveToParent()
     {
-      var parentResult = Walkable.GetParent(Focus);
+      var parentResult = Walkable.TryGetParent(Focus);
 
       return parentResult.HasParent
         ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Walkable, parentResult.Parent))
@@ -73,7 +73,7 @@ namespace Copse
     /// order, or an empty result past the last child.</summary>
     public TreeWalkerResult<TValue, THandle> MoveToChild(int childIndex)
     {
-      var childResult = Walkable.GetChildAt(Focus, childIndex);
+      var childResult = Walkable.TryGetChildAt(Focus, childIndex);
 
       return childResult.HasChild
         ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Walkable, childResult.Child.Node))

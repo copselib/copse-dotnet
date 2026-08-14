@@ -53,11 +53,11 @@ namespace Copse.Linq.Treenumerables
 
     public TValue GetValue(int handle) => EnsureAdjacencyProbes().GetValue(handle);
 
-    public ParentResult<int> GetParent(int handle) => EnsureAdjacencyProbes().GetParent(handle);
+    public ParentResult<int> TryGetParent(int handle) => EnsureAdjacencyProbes().TryGetParent(handle);
 
-    public ChildResult<int> GetChildAt(int handle, int childIndex)
-      => EnsureAdjacencyProbes().GetChildAt(handle, childIndex);
+    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
+      => EnsureAdjacencyProbes().TryGetChildAt(handle, childIndex);
 
-    public ChildResult<int> GetRootAt(int rootIndex) => EnsureAdjacencyProbes().GetRootAt(rootIndex);
+    public ChildResult<int> TryGetRootAt(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAt(rootIndex);
   }
 }

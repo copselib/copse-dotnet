@@ -46,7 +46,7 @@ namespace Copse.Linq.Treenumerables
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = walkable.GetRootAt(rootIndex);
+        var rootResult = walkable.TryGetRootAt(rootIndex);
 
         if (!rootResult.HasChild)
           yield break;
@@ -89,7 +89,7 @@ namespace Copse.Linq.Treenumerables
 
     private ChildResult<HandleAndValue<THandle, TResult>> Pull(int childIndex)
     {
-      var childResult = _Walkable.GetChildAt(_ParentHandle, childIndex);
+      var childResult = _Walkable.TryGetChildAt(_ParentHandle, childIndex);
 
       if (!childResult.HasChild)
         return default;

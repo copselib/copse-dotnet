@@ -45,7 +45,7 @@ namespace Copse.Linq.Treenumerables
       return _Store.GetValue(handle);
     }
 
-    public ParentResult<int> GetParent(int handle)
+    public ParentResult<int> TryGetParent(int handle)
     {
       while (_ScanCursor <= handle)
       {
@@ -60,7 +60,7 @@ namespace Copse.Linq.Treenumerables
         : new ParentResult<int>(parentIndex);
     }
 
-    public ChildResult<int> GetChildAt(int handle, int childIndex)
+    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
     {
       if (childIndex < 0)
         return default;
@@ -86,7 +86,7 @@ namespace Copse.Linq.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[handle][childIndex], childIndex));
     }
 
-    public ChildResult<int> GetRootAt(int rootIndex)
+    public ChildResult<int> TryGetRootAt(int rootIndex)
     {
       if (rootIndex < 0)
         return default;

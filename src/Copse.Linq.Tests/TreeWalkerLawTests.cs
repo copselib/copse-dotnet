@@ -38,7 +38,7 @@ namespace Copse.Linq.Tests
       {
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(walkable.GetValue(handle), walkable.WalkerAt(handle).GetValue(), $"extract [{tree}]");
+          Assert.AreEqual(walkable.GetValue(handle), walkable.GetTreeWalkerAt(handle).GetValue(), $"extract [{tree}]");
       }
     }
 
@@ -52,7 +52,7 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.WalkerAt(handle);
+          var walker = walkable.GetTreeWalkerAt(handle);
 
           Assert.AreEqual(walker, walker.Duplicate().GetValue(), $"extract∘duplicate ≡ id [{tree}]");
         }
@@ -70,7 +70,7 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.WalkerAt(handle);
+          var walker = walkable.GetTreeWalkerAt(handle);
           var duplicated = walker.Duplicate();
 
           var stepped = walker.MoveToChild(0);
@@ -98,7 +98,7 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.WalkerAt(handle);
+          var walker = walkable.GetTreeWalkerAt(handle);
           var extended = walker.Extend(focus => focus.GetValue() + "@" + Depth(focus));
 
           Assert.AreEqual(walker.GetValue() + "@" + Depth(walker), extended.GetValue(), $"extract∘extend [{tree}]");
@@ -117,8 +117,8 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var parentResult = walkable.GetParent(handle);
-          var stepped = walkable.WalkerAt(handle).MoveToParent();
+          var parentResult = walkable.TryGetParent(handle);
+          var stepped = walkable.GetTreeWalkerAt(handle).MoveToParent();
 
           Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
@@ -132,15 +132,15 @@ namespace Copse.Linq.Tests
     {
       foreach (var walkable in WalkerLawProviders.Walkables("a,b(d),c(e(f))"))
       {
-        var firstRoot = walkable.GetRootWalker();
+        var firstRoot = walkable.TryGetTreeWalkerAtRootIndex();
         Assert.IsTrue(firstRoot.HasWalker);
         Assert.AreEqual("a", firstRoot.Walker.GetValue());
 
-        var thirdRoot = walkable.GetRootWalker(2);
+        var thirdRoot = walkable.TryGetTreeWalkerAtRootIndex(2);
         Assert.IsTrue(thirdRoot.HasWalker);
         Assert.AreEqual("c", thirdRoot.Walker.GetValue());
 
-        Assert.IsFalse(walkable.GetRootWalker(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
+        Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
       }
     }
 
@@ -158,9 +158,9 @@ namespace Copse.Linq.Tests
         Tree.Empty<string>().Memoize(),
       })
       {
-        Assert.IsFalse(provider.GetRootWalker().HasWalker, "the root door refuses in the result type");
+        Assert.IsFalse(provider.TryGetTreeWalkerAtRootIndex().HasWalker, "the root door refuses in the result type");
         Assert.IsFalse(provider.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
-        Assert.IsFalse(provider.GetRootAt(0).HasChild, "no probe succeeds");
+        Assert.IsFalse(provider.TryGetRootAt(0).HasChild, "no probe succeeds");
       }
     }
 

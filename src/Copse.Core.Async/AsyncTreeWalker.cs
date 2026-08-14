@@ -14,7 +14,7 @@ namespace Copse.Async
   /// is traversal-protocol state (the forest-root convention, the treenumerator's
   /// before-first stance) and deliberately has no walker spelling -- extract must always
   /// have a value to return, so the unfocused state is not a member of the carrier. Every
-  /// creation path (the <c>WalkerAt</c>/<c>GetRootWalker</c> doors, the step results,
+  /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
   /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
   /// <c>default</c> instances anyway; per the <see cref="ChildResult{TNode}"/> convention,
   /// that value is invalid and must not be used.</para>
@@ -32,7 +32,7 @@ namespace Copse.Async
   public readonly struct AsyncTreeWalker<TValue, THandle>
   {
     // PUBLIC by design (the Core move, 2026-08-14): construction IS the trust-based door --
-    // WalkerAt was always just this call -- and the comonad's operator surface (Extend,
+    // GetTreeWalkerAt was always just this call -- and the comonad's operator surface (Extend,
     // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
     // walkers. The invariant's content survives untouched: a handle is always supplied;
     // only `default` remains the invalid inhabitant.
@@ -59,7 +59,7 @@ namespace Copse.Async
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()
     {
-      var parentResult = await Walkable.GetParentAsync(Focus).ConfigureAwait(false);
+      var parentResult = await Walkable.TryGetParentAsync(Focus).ConfigureAwait(false);
 
       return parentResult.HasParent
         ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Walkable, parentResult.Parent))
@@ -70,7 +70,7 @@ namespace Copse.Async
     /// order, or an empty result past the last child.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex)
     {
-      var childResult = await Walkable.GetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
+      var childResult = await Walkable.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
 
       return childResult.HasChild
         ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Walkable, childResult.Child.Node))

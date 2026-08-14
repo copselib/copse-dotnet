@@ -32,17 +32,17 @@ namespace Copse.Linq.Tests
       Assert.AreEqual("d", walkable.GetValue(2));
       Assert.AreEqual("c", walkable.GetValue(4));
 
-      Assert.IsFalse(walkable.GetParent(0).HasParent);
-      Assert.AreEqual(1, walkable.GetParent(2).Parent, "d's parent is b");
-      Assert.AreEqual(4, walkable.GetParent(6).Parent, "g's parent is c");
+      Assert.IsFalse(walkable.TryGetParent(0).HasParent);
+      Assert.AreEqual(1, walkable.TryGetParent(2).Parent, "d's parent is b");
+      Assert.AreEqual(4, walkable.TryGetParent(6).Parent, "g's parent is c");
 
-      Assert.AreEqual(1, walkable.GetChildAt(0, 0).Child.Node, "a's child 0 is b");
-      Assert.AreEqual(4, walkable.GetChildAt(0, 1).Child.Node, "a's child 1 is c");
-      Assert.AreEqual(5, walkable.GetChildAt(4, 0).Child.Node, "c's child 0 is f");
-      Assert.IsFalse(walkable.GetChildAt(0, 2).HasChild);
+      Assert.AreEqual(1, walkable.TryGetChildAt(0, 0).Child.Node, "a's child 0 is b");
+      Assert.AreEqual(4, walkable.TryGetChildAt(0, 1).Child.Node, "a's child 1 is c");
+      Assert.AreEqual(5, walkable.TryGetChildAt(4, 0).Child.Node, "c's child 0 is f");
+      Assert.IsFalse(walkable.TryGetChildAt(0, 2).HasChild);
 
-      Assert.AreEqual(0, walkable.GetRootAt(0).Child.Node);
-      Assert.IsFalse(walkable.GetRootAt(1).HasChild);
+      Assert.AreEqual(0, walkable.TryGetRootAt(0).Child.Node);
+      Assert.IsFalse(walkable.TryGetRootAt(1).HasChild);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
 
       // The first adjacency call settles: one depth-first capture walk, handles minted.
-      Assert.AreEqual(1, walkable.GetParent(2).Parent);
+      Assert.AreEqual(1, walkable.TryGetParent(2).Parent);
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
 

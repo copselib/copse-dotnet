@@ -13,8 +13,8 @@ namespace Copse.Linq.Async.Treenumerables
   internal interface IAsyncAdjacencyProbes<TValue>
   {
     ValueTask<TValue> GetValueAsync(int handle);
-    ValueTask<ParentResult<int>> GetParentAsync(int handle);
-    ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex);
-    ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex);
+    ValueTask<ParentResult<int>> TryGetParentAsync(int handle);
+    ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex);
+    ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex);
   }
 }

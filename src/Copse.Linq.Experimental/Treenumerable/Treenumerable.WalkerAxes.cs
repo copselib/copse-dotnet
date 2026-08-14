@@ -18,13 +18,13 @@ namespace Copse.Linq.Experimental
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
-      var parentResult = source.GetParent(handle);
+      var parentResult = source.TryGetParent(handle);
 
       while (parentResult.HasParent)
       {
         yield return parentResult.Parent;
 
-        parentResult = source.GetParent(parentResult.Parent);
+        parentResult = source.TryGetParent(parentResult.Parent);
       }
     }
 
@@ -43,13 +43,13 @@ namespace Copse.Linq.Experimental
       THandle handle)
     {
       var root = handle;
-      var parentResult = source.GetParent(handle);
+      var parentResult = source.TryGetParent(handle);
 
       while (parentResult.HasParent)
       {
         root = parentResult.Parent;
 
-        parentResult = source.GetParent(root);
+        parentResult = source.TryGetParent(root);
       }
 
       return root;
@@ -61,13 +61,13 @@ namespace Copse.Linq.Experimental
       THandle handle)
     {
       var depth = 0;
-      var parentResult = source.GetParent(handle);
+      var parentResult = source.TryGetParent(handle);
 
       while (parentResult.HasParent)
       {
         depth++;
 
-        parentResult = source.GetParent(parentResult.Parent);
+        parentResult = source.TryGetParent(parentResult.Parent);
       }
 
       return depth;
@@ -79,7 +79,7 @@ namespace Copse.Linq.Experimental
     {
       for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = source.GetChildAt(handle, childIndex);
+        var childResult = source.TryGetChildAt(handle, childIndex);
 
         if (!childResult.HasChild)
           yield break;
@@ -93,7 +93,7 @@ namespace Copse.Linq.Experimental
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = source.GetRootAt(rootIndex);
+        var rootResult = source.TryGetRootAt(rootIndex);
 
         if (!rootResult.HasChild)
           yield break;
@@ -113,7 +113,7 @@ namespace Copse.Linq.Experimental
     {
       var childCount = 0;
 
-      while (source.GetChildAt(handle, childCount).HasChild)
+      while (source.TryGetChildAt(handle, childCount).HasChild)
         childCount++;
 
       return childCount;

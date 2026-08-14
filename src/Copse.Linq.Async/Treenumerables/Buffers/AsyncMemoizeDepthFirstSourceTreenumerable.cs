@@ -55,11 +55,11 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<TValue> GetValueAsync(int handle) => EnsureAdjacencyProbes().GetValueAsync(handle);
 
-    public ValueTask<ParentResult<int>> GetParentAsync(int handle) => EnsureAdjacencyProbes().GetParentAsync(handle);
+    public ValueTask<ParentResult<int>> TryGetParentAsync(int handle) => EnsureAdjacencyProbes().TryGetParentAsync(handle);
 
-    public ValueTask<ChildResult<int>> GetChildAtAsync(int handle, int childIndex)
-      => EnsureAdjacencyProbes().GetChildAtAsync(handle, childIndex);
+    public ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+      => EnsureAdjacencyProbes().TryGetChildAtAsync(handle, childIndex);
 
-    public ValueTask<ChildResult<int>> GetRootAtAsync(int rootIndex) => EnsureAdjacencyProbes().GetRootAtAsync(rootIndex);
+    public ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAtAsync(rootIndex);
   }
 }
