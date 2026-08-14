@@ -125,3 +125,20 @@ relocation · every capability member. Settled by the first migration that needs
 `IDagnumerable` + `TryGetDagWalker()`; the terrain SPI's dual speaks CSR rows and
 arrival groups; Sourcefix/Sinkfix schedules unchanged; the receipts methodology carries
 over verbatim. Nothing in this design is tree-shaped except the tree instance.
+
+## 9. The receipts ledger (running)
+
+**2026-08-14 — Stage B, first migrations: `LeaffixScan`'s and `Invert`'s in-place folds
+rewritten in pure stance vocabulary.** One depth-first walk of doors + steps + extract per
+operator: no handle arithmetic, no handle-space enumeration (`GetHandles` gone), no
+re-entry (`GetTreeWalkerAt` gone), no sizes prepass (the mirror's two passes became one).
+The walk assigns its own preorder numbering, so the receiver's handle space is never
+assumed — which DISSOLVED the `AffordsInPlaceFold` guard: any capture now folds in place,
+whatever its layout (a level-order buffer or memo folds through its own probes instead of
+paying the engine's re-capture; conformance rows verify against the engine oracle).
+
+**Receipt: ZERO new walker features were needed.** Door family + steps + extract are
+fold-complete for structural work; ordinal indexing was only ever speed, and the concrete
+span path owns speed. First evidence for the surface-discovery engine: the walker's
+starting surface is algorithmically sufficient, and future members must earn entry on
+ergonomics or price, not capability.

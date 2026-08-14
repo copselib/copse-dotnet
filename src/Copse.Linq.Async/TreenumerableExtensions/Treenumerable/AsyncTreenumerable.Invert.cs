@@ -106,11 +106,12 @@ namespace Copse.Linq
     private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildMirrorAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
       // The receiver sniff (the 2026-08-14 experiment's collapse), at the ACQUISITION seam
-      // so every overload funnelling here gets it: a source that is already a
-      // preorder-affording capture hands over its skeleton (the concrete buffer's raw
-      // store, or the public probes for a foreign walkable -- no second capture either
-      // way); everything else pays the one capture the mirror always owed.
-      if (source is IAsyncTreenumerableBuffer<TNode> buffer && AffordsInPlaceFold(buffer))
+      // so every overload funnelling here gets it: ANY capture hands over its skeleton (the
+      // concrete buffer's raw store, or the stance walk for every other capture -- no
+      // second capture either way, no layout condition since Stage B's stance mirror
+      // assigns its own numbering); everything else pays the one capture the mirror always
+      // owed.
+      if (source is IAsyncTreenumerableBuffer<TNode> buffer)
       {
         if (buffer is AsyncTreenumerableBuffer<TNode> concreteBuffer)
         {
@@ -162,68 +163,66 @@ namespace Copse.Linq
       return new AsyncPreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);
     }
 
-    // The public-vocabulary mirror for a walkable capture that is not the concrete buffer
-    // (a memo: its pull-through probes complete it exactly once, with no second skeleton):
-    // pass one computes subtree sizes bottom-up (the leaffix recurrence), pass two is the
-    // same LIFO emit with stances and steps in place of span hops.
+    // The mirror in PURE STANCE VOCABULARY (Stage B's migration): one LIFO walk of doors +
+    // steps + extract -- no handle arithmetic, no handle-space enumeration, no re-entry, no
+    // sizes prepass. Pushing roots and children in forward order makes them pop in reverse
+    // (the mirror's preorder); a close marker under each node's children fences its span,
+    // so sizes fall out of the output cursor. The walk assumes nothing about the receiver's
+    // handle space -- any walkable capture mirrors in place, whatever its layout. Receipt
+    // for the ledger: zero new walker features needed.
     private static async ValueTask<AsyncPreorderArrayStore<TNode>> WalkerMirrorAsync<TNode>(IAsyncTreenumerableBuffer<TNode> buffer)
     {
-      var nodeCount = 0;
-      await foreach (var _ in buffer.GetHandles().ConfigureAwait(false))
-        nodeCount++;
+      var mirroredValues = new List<TNode>();
+      var mirroredSubtreeSizes = new List<int>();
 
-      var subtreeSizes = new int[nodeCount];
+      // CloseIndex < 0 marks an emit entry (the walker is live); otherwise the entry closes
+      // the span opened at CloseIndex.
+      var stack = new Stack<(AsyncTreeWalker<TNode, int> Walker, int CloseIndex)>();
 
-      for (var handle = nodeCount - 1; handle >= 0; handle--)
-      {
-        var stance = buffer.GetTreeWalkerAt(handle);
-
-        var subtreeSize = 1;
-        var step = await stance.MoveToChildAsync(0).ConfigureAwait(false);
-
-        for (var childIndex = 1; step.HasWalker; childIndex++)
-        {
-          subtreeSize += subtreeSizes[step.Walker.Focus];
-          step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
-        }
-
-        subtreeSizes[handle] = subtreeSize;
-      }
-
-      var mirroredValues = new TNode[nodeCount];
-      var mirroredSubtreeSizes = new int[nodeCount];
-      var stack = new Stack<int>();
+      var rootStances = new List<AsyncTreeWalker<TNode, int>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var root = await buffer.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
-        if (!root.HasChild)
+        var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
+
+        if (!rootStance.HasWalker)
           break;
 
-        stack.Push(root.Child.Node);
+        rootStances.Add(rootStance.Walker);
       }
 
-      var output = 0;
+      foreach (var rootStance in rootStances)
+        stack.Push((rootStance, -1));
 
       while (stack.Count > 0)
       {
-        var handle = stack.Pop();
-        var stance = buffer.GetTreeWalkerAt(handle);
+        var (stance, closeIndex) = stack.Pop();
 
-        mirroredValues[output] = await stance.GetValueAsync().ConfigureAwait(false);
-        mirroredSubtreeSizes[output] = subtreeSizes[handle];
-        output++;
-
-        var step = await stance.MoveToChildAsync(0).ConfigureAwait(false);
-
-        for (var childIndex = 1; step.HasWalker; childIndex++)
+        if (closeIndex >= 0)
         {
-          stack.Push(step.Walker.Focus);
-          step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+          mirroredSubtreeSizes[closeIndex] = mirroredValues.Count - closeIndex;
+          continue;
+        }
+
+        var outputIndex = mirroredValues.Count;
+
+        mirroredValues.Add(await stance.GetValueAsync().ConfigureAwait(false));
+        mirroredSubtreeSizes.Add(0);
+
+        stack.Push((default, outputIndex));
+
+        for (var childIndex = 0; ; childIndex++)
+        {
+          var step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+
+          if (!step.HasWalker)
+            break;
+
+          stack.Push((step.Walker, -1));
         }
       }
 
-      return new AsyncPreorderArrayStore<TNode>(mirroredValues, mirroredSubtreeSizes);
+      return new AsyncPreorderArrayStore<TNode>(mirroredValues.ToArray(), mirroredSubtreeSizes.ToArray());
     }
   }
 }

@@ -6,6 +6,7 @@ using Copse.Core.Async;
 using Copse.Linq.Async.Stores;
 using Copse.Linq.Async.Treenumerables;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Copse.Linq
@@ -57,26 +58,19 @@ namespace Copse.Linq
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       // The receiver sniff (the Materialize / LINQ-Count idiom; the 2026-08-14 experiment's
-      // collapse): a source that is already a preorder-affording capture folds IN PLACE over
-      // its own skeleton -- no second capture. Everything else takes the streaming engine.
-      // A level-order capture streams (its ordinals are not preorder; the engine's
-      // cross-decode consumes it correctly). Only the seed flavor folds in place: the
-      // bypass/positional flavors need per-node positions, which the engine derives and the
-      // in-place fold deliberately does not.
-      if (source is IAsyncTreenumerableBuffer<TSource> buffer && AffordsInPlaceFold(buffer))
+      // collapse): ANY capture folds IN PLACE over its own adjacency -- no second capture,
+      // no layout condition (Stage B's stance fold assigns its own preorder numbering, so
+      // the receiver's handle space is never assumed; the old preorder-only guard died with
+      // the migration). A concrete preorder buffer takes the span fast path inside; every
+      // other capture takes the walker fold. True streams take the engine. Only the seed
+      // flavor folds in place: the bypass/positional flavors need per-node positions, which
+      // the engine derives and the in-place fold deliberately does not.
+      if (source is IAsyncTreenumerableBuffer<TSource> buffer)
         return InPlaceLeaffixScan(buffer, seed, edgeAccumulator, nodeAccumulator);
 
       return new AsyncTreenumerableBuffer<ScanResult<TSource, TAccumulate>>(
         AsyncTree.Lazy(() => PreorderDispatch(source, FullSurvey(SeededDualFoldSurvey(seed, edgeAccumulator, nodeAccumulator)))), BufferLayout.Preorder);
     }
-
-    // A concrete buffer can settle itself preorder from any non-level-order state; a foreign
-    // walkable capture (a memo) is only fold-safe when its handles are ALREADY preorder
-    // ordinals -- an undecided one goes to the engine rather than guessing.
-    private static bool AffordsInPlaceFold<TValue>(IAsyncTreenumerableBuffer<TValue> buffer)
-      => buffer is AsyncTreenumerableBuffer<TValue>
-        ? buffer.NativeLayout != BufferLayout.LevelOrder
-        : buffer.NativeLayout == BufferLayout.Preorder;
 
     // The in-place regime: the fold runs over the receiver's own adjacency at the result's
     // first pull -- the concrete buffer hands its raw store (span arithmetic; no probes, no
@@ -157,49 +151,75 @@ namespace Copse.Linq
       return new AsyncPreorderArrayStore<ScanResult<TSource, TAccumulate>>(results, subtreeSizes);
     }
 
-    // The same fold in the public walker vocabulary, for a walkable capture that is not the
-    // concrete buffer: stand at each handle in reverse preorder, step through the children
-    // reducing their finished accumulations, fold the node in.
+    // The same fold in PURE STANCE VOCABULARY (Stage B's first migration, the receipts
+    // methodology's first entry): one depth-first walk of doors + steps + extract, no handle
+    // arithmetic, no handle-space enumeration, no re-entry. The walk assigns its own
+    // preorder numbering (a node's output index at first visit; its span closed when its
+    // frame pops), so the fold makes NO assumption about the receiver's handle space at all
+    // -- any walkable capture folds in place, whatever its layout. Receipt for the ledger:
+    // ZERO new walker features were needed; door + steps + extract are fold-complete, and
+    // ordinal indexing was only ever speed, which the concrete span path already owns.
     private static async ValueTask<AsyncPreorderArrayStore<ScanResult<TSource, TAccumulate>>> WalkerLeaffixAsync<TSource, TAccumulate>(
       IAsyncTreenumerableBuffer<TSource> buffer,
       TAccumulate seed,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
-      var nodeCount = 0;
-      await foreach (var _ in buffer.GetHandles().ConfigureAwait(false))
-        nodeCount++;
+      var results = new List<ScanResult<TSource, TAccumulate>>();
+      var subtreeSizes = new List<int>();
+      var frames = new Stack<(AsyncTreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
-      var accumulates = new TAccumulate[nodeCount];
-      var subtreeSizes = new int[nodeCount];
-      var results = new ScanResult<TSource, TAccumulate>[nodeCount];
-
-      for (var handle = nodeCount - 1; handle >= 0; handle--)
+      for (var rootIndex = 0; ; rootIndex++)
       {
-        var stance = buffer.GetTreeWalkerAt(handle);
+        var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
 
-        var reduced = seed;
-        var subtreeSize = 1;
-        var step = await stance.MoveToChildAsync(0).ConfigureAwait(false);
+        if (!rootStance.HasWalker)
+          break;
 
-        for (var childIndex = 1; step.HasWalker; childIndex++)
+        frames.Push(await OpenLeaffixFrameAsync(rootStance.Walker, results, subtreeSizes).ConfigureAwait(false));
+
+        while (frames.Count > 0)
         {
-          var child = step.Walker.Focus;
+          var frame = frames.Pop();
+          var step = await frame.Walker.MoveToChildAsync(frame.ChildIndex).ConfigureAwait(false);
 
-          reduced = childIndex == 1 ? accumulates[child] : edgeAccumulator(reduced, accumulates[child]);
-          subtreeSize += subtreeSizes[child];
+          if (step.HasWalker)
+          {
+            frames.Push((frame.Walker, frame.Value, frame.ChildIndex + 1, frame.Folded, frame.Reduced, frame.OutputIndex));
+            frames.Push(await OpenLeaffixFrameAsync(step.Walker, results, subtreeSizes).ConfigureAwait(false));
+            continue;
+          }
 
-          step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+          // The frame closes: every child's accumulation has folded in; the seed stands in
+          // at the fringe (the virtual fringe's arrival, participating through the fold).
+          var accumulate = nodeAccumulator(frame.Folded ? frame.Reduced : seed, frame.Value);
+
+          results[frame.OutputIndex] = new ScanResult<TSource, TAccumulate>(frame.Value, accumulate);
+          subtreeSizes[frame.OutputIndex] = results.Count - frame.OutputIndex;
+
+          if (frames.Count > 0)
+          {
+            var parent = frames.Pop();
+            frames.Push((parent.Walker, parent.Value, parent.ChildIndex, true,
+              parent.Folded ? edgeAccumulator(parent.Reduced, accumulate) : accumulate, parent.OutputIndex));
+          }
         }
-
-        var node = await stance.GetValueAsync().ConfigureAwait(false);
-
-        accumulates[handle] = nodeAccumulator(reduced, node);
-        subtreeSizes[handle] = subtreeSize;
-        results[handle] = new ScanResult<TSource, TAccumulate>(node, accumulates[handle]);
       }
 
-      return new AsyncPreorderArrayStore<ScanResult<TSource, TAccumulate>>(results, subtreeSizes);
+      return new AsyncPreorderArrayStore<ScanResult<TSource, TAccumulate>>(results.ToArray(), subtreeSizes.ToArray());
+    }
+
+    private static async ValueTask<(AsyncTreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)> OpenLeaffixFrameAsync<TSource, TAccumulate>(
+      AsyncTreeWalker<TSource, int> walker,
+      List<ScanResult<TSource, TAccumulate>> results,
+      List<int> subtreeSizes)
+    {
+      var outputIndex = results.Count;
+
+      results.Add(default);
+      subtreeSizes.Add(0);
+
+      return (walker, await walker.GetValueAsync().ConfigureAwait(false), 0, false, default, outputIndex);
     }
 
     /// <summary>
