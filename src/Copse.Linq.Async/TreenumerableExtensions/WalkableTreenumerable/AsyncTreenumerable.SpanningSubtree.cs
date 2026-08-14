@@ -1,11 +1,12 @@
 using Copse;
-using Copse.Core;
+using Copse.Async;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
-  public static partial class Treenumerable
+  public static partial class AsyncTreenumerable
   {
     /// <summary>
     /// The capstone, distilled (UC-32): the minimum spanning subtree of the target nodes --
@@ -27,10 +28,10 @@ namespace Copse.Linq
     /// semantics are exactly right -- and Select projects back), and one Materialize. A
     /// future membership LENS makes the clamp adjacency-side and this zero-copy; the
     /// semantics are fixed here. Target handles are presumed to be the source's own (the
-    /// foreign-handle clause). Sync-only for now, like the lens family it lives beside.</para>
+    /// foreign-handle clause).</para>
     /// </summary>
-    public static TreeWalkerResult<TValue, int> SpanningSubtree<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static async ValueTask<AsyncTreeWalkerResult<TValue, int>> SpanningSubtreeAsync<TValue, THandle>(
+      this IAsyncWalkableTreenumerable<TValue, THandle> source,
       IEnumerable<THandle> targets)
     {
       var targetWalkers = targets.Select(handle => source.GetTreeWalkerAt(handle)).ToList();
@@ -38,11 +39,11 @@ namespace Copse.Linq
       if (targetWalkers.Count == 0)
         return default;
 
-      var spanningRootResult = new TreeWalkerResult<TValue, THandle>(targetWalkers[0]);
+      var spanningRootResult = new AsyncTreeWalkerResult<TValue, THandle>(targetWalkers[0]);
 
       for (var index = 1; index < targetWalkers.Count; index++)
       {
-        spanningRootResult = LowestCommonAncestor(spanningRootResult.Walker, targetWalkers[index]);
+        spanningRootResult = await LowestCommonAncestorAsync(spanningRootResult.Walker, targetWalkers[index]).ConfigureAwait(false);
 
         if (!spanningRootResult.HasWalker)
           return default;
@@ -63,17 +64,24 @@ namespace Copse.Linq
         while (!keptHandles.Contains(stance.Focus))
         {
           keptHandles.Add(stance.Focus);
-          stance = stance.MoveToParent().Walker;
+          stance = (await stance.MoveToParentAsync().ConfigureAwait(false)).Walker;
         }
       }
 
       var clamped = spanningRoot.Subtree()
-        .Extend((terrain, handle) => new HandleAndValue<THandle, TValue>(handle, terrain.GetValue(handle)))
+        .Extend((terrain, handle) => PairHandleWithValueAsync(terrain, handle))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
 
-      return clamped.Materialize(BufferLayout.Preorder).TryGetTreeWalkerAtRootIndex();
+      return await clamped.Materialize(BufferLayout.Preorder).TryGetTreeWalkerAtRootIndexAsync().ConfigureAwait(false);
     }
+
+    // The handle-decorated stream's stamp, as a named observer so both colors read the same:
+    // every node paired with its own handle, the membership clamp's coordinate system.
+    private static async ValueTask<HandleAndValue<THandle, TValue>> PairHandleWithValueAsync<TValue, THandle>(
+      IAsyncWalkableTreenumerable<TValue, THandle> terrain,
+      THandle handle)
+      => new HandleAndValue<THandle, TValue>(handle, await terrain.GetValueAsync(handle).ConfigureAwait(false));
 
     // The binary LCA, walker-first and result-typed (the axis wave will promote this to a
     // public extension; the spanning fold is its first consumer): collect one stance's
@@ -81,9 +89,9 @@ namespace Copse.Linq
     // miss -- disjoint trees -- is a fact, never a default walker. Same-terrain is
     // presumed (the walkers' terrain is private even to this assembly; the check becomes
     // possible when the axis wave lands in the walker's own assembly).
-    private static TreeWalkerResult<TValue, THandle> LowestCommonAncestor<TValue, THandle>(
-      TreeWalker<TValue, THandle> first,
-      TreeWalker<TValue, THandle> second)
+    private static async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> LowestCommonAncestorAsync<TValue, THandle>(
+      AsyncTreeWalker<TValue, THandle> first,
+      AsyncTreeWalker<TValue, THandle> second)
     {
       var firstRootPath = new HashSet<THandle>();
       var stance = first;
@@ -92,7 +100,7 @@ namespace Copse.Linq
       {
         firstRootPath.Add(stance.Focus);
 
-        var up = stance.MoveToParent();
+        var up = await stance.MoveToParentAsync().ConfigureAwait(false);
         if (!up.HasWalker)
           break;
 
@@ -103,14 +111,14 @@ namespace Copse.Linq
 
       while (!firstRootPath.Contains(candidate.Focus))
       {
-        var up = candidate.MoveToParent();
+        var up = await candidate.MoveToParentAsync().ConfigureAwait(false);
         if (!up.HasWalker)
           return default;
 
         candidate = up.Walker;
       }
 
-      return new TreeWalkerResult<TValue, THandle>(candidate);
+      return new AsyncTreeWalkerResult<TValue, THandle>(candidate);
     }
   }
 }

@@ -1,8 +1,9 @@
-using Copse;
-using Copse.Core;
+using Copse.Async;
+using Copse.Core.Async;
 using System;
+using System.Threading.Tasks;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Async.Treenumerables
 {
   // The restriction LENS's first citizen: PruneAfter over a walkable, as a PAIR -- the ORDER
   // half is the shipped streaming operator, delegated wholesale (the composition lattice inside
@@ -15,10 +16,10 @@ namespace Copse.Linq.Treenumerables
   // Handle stance (lens semantics): the lens restricts what it HANDS OUT, not what arithmetic
   // can name -- a guessed handle below a pruned boundary still answers with the source's
   // adjacency. Handles obtained from THIS walkable's probes never cross the boundary.
-  internal sealed class PruneAfterWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>
+  internal sealed class AsyncPruneAfterWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>
   {
-    public PruneAfterWalkable(
-      IWalkableTreenumerable<TValue, THandle> source,
+    public AsyncPruneAfterWalkable(
+      IAsyncWalkableTreenumerable<TValue, THandle> source,
       Func<TValue, bool> predicate)
     {
       _Source = source;
@@ -27,26 +28,26 @@ namespace Copse.Linq.Treenumerables
       // composition lattice inside PruneAfter keeps collapsing what it always collapsed.
       // The upcast picks the streaming overload deliberately -- on the walkable receiver
       // this constructor's own caller would win betterness and recurse.
-      _PrunedStream = ((ITreenumerable<TValue>)source).PruneAfter(predicate);
+      _PrunedStream = ((IAsyncTreenumerable<TValue>)source).PruneAfter(predicate);
     }
 
-    private readonly IWalkableTreenumerable<TValue, THandle> _Source;
+    private readonly IAsyncWalkableTreenumerable<TValue, THandle> _Source;
     private readonly Func<TValue, bool> _Predicate;
-    private readonly ITreenumerable<TValue> _PrunedStream;
+    private readonly IAsyncTreenumerable<TValue> _PrunedStream;
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _PrunedStream.GetDepthFirstTreenumerator();
+    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator() => _PrunedStream.GetAsyncDepthFirstTreenumerator();
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _PrunedStream.GetBreadthFirstTreenumerator();
+    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _PrunedStream.GetAsyncBreadthFirstTreenumerator();
 
-    public TValue GetValue(THandle handle) => _Source.GetValue(handle);
+    public ValueTask<TValue> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
 
-    public ParentResult<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
+    public ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
-    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex)
-      => _Predicate(_Source.GetValue(handle))
+    public async ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex)
+      => _Predicate(await _Source.GetValueAsync(handle).ConfigureAwait(false))
         ? default
-        : _Source.TryGetChildAt(handle, childIndex);
+        : await _Source.TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 
-    public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
+    public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
   }
 }

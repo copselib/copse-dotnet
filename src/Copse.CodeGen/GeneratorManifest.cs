@@ -148,6 +148,18 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/Walkable/AsyncSubtreeWalkable.cs",
         "Copse.Linq/Treenumerables/Walkable/SubtreeWalkable.g.cs",
         "AsyncSubtreeWalkable", "SubtreeWalkable", "Copse.Linq.Treenumerables"),
+      // The lens family + SpanningSubtree crossed colors 2026-08-14 (they were the walker
+      // arc's last sync-only hand files, authored during the capstone review before the
+      // section-8 crossing; the async sources are now the edit surface).
+      new("Copse.Linq.Async/Treenumerables/Walkable/AsyncPruneAfterWalkable.cs",
+        "Copse.Linq/Treenumerables/Walkable/PruneAfterWalkable.g.cs",
+        "AsyncPruneAfterWalkable", "PruneAfterWalkable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.PruneAfter.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.PruneAfter.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.SpanningSubtree.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.SpanningSubtree.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
       new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.Extend.cs",
         "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.Extend.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
