@@ -56,9 +56,13 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(new[] { 2, 6 }, targets);
 
-      // The point of keeping handles: jump straight in. d's parent is b; g's parent is c.
-      Assert.AreEqual(1, walkable.TryGetParent(targets[0]).Parent);
-      Assert.AreEqual(4, walkable.TryGetParent(targets[1]).Parent);
+      // The point of keeping handles: jump straight in -- the walker spelling (Stage B):
+      // a stored handle becomes a stance again through a vantage already held (the jump),
+      // and navigation speaks steps, never probes. d's parent is b; g's parent is c.
+      var stance = walkable.TryGetTreeWalker().Walker;
+
+      Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Walker.GetValue());
+      Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Walker.GetValue());
     }
 
     [TestMethod]

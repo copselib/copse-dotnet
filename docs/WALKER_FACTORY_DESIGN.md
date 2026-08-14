@@ -142,3 +142,15 @@ fold-complete for structural work; ordinal indexing was only ever speed, and the
 span path owns speed. First evidence for the surface-discovery engine: the walker's
 starting surface is algorithmically sufficient, and future members must earn entry on
 ergonomics or price, not capability.
+
+**2026-08-14 — Stage B complete: the acquisition scans go pure-stance, and the jump lands.**
+`GetHandles`/`GetHandlesWithValues` rewritten as stance walks (doors + steps; a row is
+where the walk stood and what it extracted there); the battery's provider identity retyped
+to `ITreeTerrain` (SPI conformance names its subject); the capstone acquisition test speaks
+the consumer spelling end to end. **Receipt #2: `At(handle)` — the jump** — a sibling
+stance on the same terrain, the trust door addressed: stored handles re-enter through a
+vantage already held, which is what re-entry must be once the walkable is door-only. The
+door machinery clause is ratified in place (`TryGetTreeWalkerAtRootIndex` probes the root
+group; doors may touch terrain — consumers never need to). Production-side, nothing
+outside the SPI's citizens and the door machinery speaks a probe; the law suites' remaining
+probe calls are SPI-coherence checks that retype mechanically at Stage C's cut.

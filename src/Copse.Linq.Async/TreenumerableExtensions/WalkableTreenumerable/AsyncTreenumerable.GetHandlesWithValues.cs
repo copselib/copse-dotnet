@@ -1,7 +1,6 @@
 using Copse.Async;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
@@ -14,16 +13,39 @@ namespace Copse.Linq
     /// no-node-equality pledge (the library compares nothing; the consumer's predicate is the
     /// consumer's business). The search law's one earned exception: without the pairing, a
     /// value predicate mid-chain cannot reach the receiver's probe without naming it twice.
+    /// A stance walk (Stage B): each row is where the walk stood and what it extracted there.
     /// </summary>
     public static async IAsyncEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      await foreach (var handle in source.GetHandles().ConfigureAwait(false))
-      {
-        var value = await source.GetValueAsync(handle).ConfigureAwait(false);
+      var pending = new Stack<AsyncTreeWalker<TValue, THandle>>();
 
-        yield return new HandleAndValue<THandle, TValue>(handle, value);
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootStance = await source.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
+
+        if (!rootStance.HasWalker)
+          break;
+
+        pending.Push(rootStance.Walker);
+      }
+
+      while (pending.Count > 0)
+      {
+        var stance = pending.Pop();
+
+        yield return new HandleAndValue<THandle, TValue>(stance.Focus, await stance.GetValueAsync().ConfigureAwait(false));
+
+        for (var childIndex = 0; ; childIndex++)
+        {
+          var step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+
+          if (!step.HasWalker)
+            break;
+
+          pending.Push(step.Walker);
+        }
       }
     }
   }

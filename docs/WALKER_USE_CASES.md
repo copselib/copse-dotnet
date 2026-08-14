@@ -65,8 +65,8 @@ previous walker was the root. Sugar pending.
 
 Layer: sequence · Re-enters: yes (continuously) · Cost: O(1) per step
 
-`TryGetParent`/`TryGetChildAt` probes on the walkable; `MoveToParent()`/`MoveToChild(k)` on the
-walker. The `Has*` questions are the result structs (`ParentResult.HasParent`,
+The walker is the one consumer spelling (Stage B): `MoveToParent()`/`MoveToChild(k)` steps,
+`At(handle)` re-entry; the probes are provider SPI (`ITreeTerrain`), behind the door. The `Has*` questions are the result structs (`ParentResult.HasParent`,
 `TreeWalkerResult.HasWalker`, `ChildResult.HasChild`) — the Try is built into the shape.
 
 ### UC-04 Indexed and keyed child access — SHIPPED / consumer-side

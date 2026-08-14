@@ -56,6 +56,15 @@ namespace Copse.Async
     /// (A probe, hence a method: on a growing source the read is demand.)</summary>
     public ValueTask<TValue> GetValueAsync() => Terrain.GetValueAsync(Focus);
 
+    /// <summary>The jump: a sibling stance on the SAME terrain, standing at
+    /// <paramref name="handle"/> -- re-entry for stored handles through a vantage already
+    /// held (the trust door, addressed: the handle is presumed the terrain's own, the
+    /// foreign-handle clause applies, and no probe fires). Receipt (Stage B, the
+    /// acquisition migrations): handle re-entry is how recorded identity becomes a stance
+    /// again once the walkable is door-only.</summary>
+    public AsyncTreeWalker<TValue, THandle> At(THandle handle)
+      => new AsyncTreeWalker<TValue, THandle>(Terrain, handle);
+
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()

@@ -13,6 +13,9 @@ namespace Copse.Linq
     /// because the int here is a root ordinal, not a handle -- the door that takes a handle
     /// is <see cref="GetTreeWalkerAt{TValue, THandle}"/>, and when <c>THandle</c> is
     /// <c>int</c> only the names keep the two questions apart. The no-unfocused-walker
+    /// DOOR MACHINERY CLAUSE (Stage B): doors may touch the terrain -- this one probes the
+    /// root group directly; consumers never need to, and post-Stage-C this body reaches the
+    /// terrain through the walker seam rather than the contract.
     /// invariant, kept at the door.
     /// </summary>
     public static async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAtRootIndexAsync<TValue, THandle>(

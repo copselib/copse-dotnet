@@ -10,39 +10,39 @@ namespace Copse.Linq
     /// Every handle the walkable's terrain reaches from its roots, in DELIBERATELY UNSPECIFIED
     /// order -- the SET is the promise (handles are positional identity made portable; recording
     /// them while consuming is the sanctioned acquisition path, since the library never searches
-    /// by value). An explicit-stack sweep over the indexed probes; on a growing source each
-    /// probe is demand.
+    /// by value). A stance walk (Stage B): doors and steps only -- the walk stands at every
+    /// node and records where it stood; on a growing source each step is demand.
     /// </summary>
     public static async IAsyncEnumerable<THandle> GetHandles<TValue, THandle>(
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      var pending = new Stack<THandle>();
+      var pending = new Stack<AsyncTreeWalker<TValue, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = await source.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+        var rootStance = await source.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
 
-        if (!rootResult.HasChild)
+        if (!rootStance.HasWalker)
           break;
 
-        pending.Push(rootResult.Child.Node);
+        pending.Push(rootStance.Walker);
       }
 
       while (pending.Count > 0)
       {
-        var current = pending.Pop();
+        var stance = pending.Pop();
 
-        yield return current;
+        yield return stance.Focus;
 
         for (var childIndex = 0; ; childIndex++)
         {
-          var childResult = await source.TryGetChildAtAsync(current, childIndex).ConfigureAwait(false);
+          var step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
 
-          if (!childResult.HasChild)
+          if (!step.HasWalker)
             break;
 
-          pending.Push(childResult.Child.Node);
+          pending.Push(step.Walker);
         }
       }
     }

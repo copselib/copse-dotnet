@@ -15,15 +15,38 @@ namespace Copse.Linq
     /// no-node-equality pledge (the library compares nothing; the consumer's predicate is the
     /// consumer's business). The search law's one earned exception: without the pairing, a
     /// value predicate mid-chain cannot reach the receiver's probe without naming it twice.
+    /// A stance walk (Stage B): each row is where the walk stood and what it extracted there.
     /// </summary>
     public static IEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
     {
-      foreach (var handle in source.GetHandles())
-      {
-        var value = source.GetValue(handle);
+      var pending = new Stack<TreeWalker<TValue, THandle>>();
 
-        yield return new HandleAndValue<THandle, TValue>(handle, value);
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootStance = source.TryGetTreeWalkerAtRootIndex(rootIndex);
+
+        if (!rootStance.HasWalker)
+          break;
+
+        pending.Push(rootStance.Walker);
+      }
+
+      while (pending.Count > 0)
+      {
+        var stance = pending.Pop();
+
+        yield return new HandleAndValue<THandle, TValue>(stance.Focus, stance.GetValue());
+
+        for (var childIndex = 0; ; childIndex++)
+        {
+          var step = stance.MoveToChild(childIndex);
+
+          if (!step.HasWalker)
+            break;
+
+          pending.Push(step.Walker);
+        }
       }
     }
   }

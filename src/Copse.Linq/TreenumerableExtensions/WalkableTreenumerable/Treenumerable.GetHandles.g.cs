@@ -12,38 +12,38 @@ namespace Copse.Linq
     /// Every handle the walkable's terrain reaches from its roots, in DELIBERATELY UNSPECIFIED
     /// order -- the SET is the promise (handles are positional identity made portable; recording
     /// them while consuming is the sanctioned acquisition path, since the library never searches
-    /// by value). An explicit-stack sweep over the indexed probes; on a growing source each
-    /// probe is demand.
+    /// by value). A stance walk (Stage B): doors and steps only -- the walk stands at every
+    /// node and records where it stood; on a growing source each step is demand.
     /// </summary>
     public static IEnumerable<THandle> GetHandles<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
     {
-      var pending = new Stack<THandle>();
+      var pending = new Stack<TreeWalker<TValue, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = source.TryGetRootAt(rootIndex);
+        var rootStance = source.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootResult.HasChild)
+        if (!rootStance.HasWalker)
           break;
 
-        pending.Push(rootResult.Child.Node);
+        pending.Push(rootStance.Walker);
       }
 
       while (pending.Count > 0)
       {
-        var current = pending.Pop();
+        var stance = pending.Pop();
 
-        yield return current;
+        yield return stance.Focus;
 
         for (var childIndex = 0; ; childIndex++)
         {
-          var childResult = source.TryGetChildAt(current, childIndex);
+          var step = stance.MoveToChild(childIndex);
 
-          if (!childResult.HasChild)
+          if (!step.HasWalker)
             break;
 
-          pending.Push(childResult.Child.Node);
+          pending.Push(step.Walker);
         }
       }
     }
