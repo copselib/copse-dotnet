@@ -6,9 +6,6 @@
     <Description>The color-neutral mechanics for Copse, shared by the sync and async families: chunked ref-access collections and disposable lifecycle utilities. Tree-free; references neither family's traversal contracts.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Copse.Tests" />

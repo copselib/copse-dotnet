@@ -80,7 +80,7 @@ through the span paths — the tiering the receiver-smart measurements establish
 
 ## 4. The algebra drops to topology altitude
 
-Lenses and `Extend` are TERRAIN TRANSFORMERS: topology in, topology out.
+Lenses and `Extend` are TOPOLOGY TRANSFORMERS: topology in, topology out.
 
 - `SubtreeTopology(topology, root)` — the severed view (two answers rewritten).
 - `PruneAfterTopology(topology, predicate)` — the restriction lens's adjacency half.

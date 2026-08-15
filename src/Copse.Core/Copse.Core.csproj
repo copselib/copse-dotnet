@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Family IVT (the store-policy precedent, 2026-08-14): the walker's Terrain field is
+    <!-- Family IVT (the store-policy precedent, 2026-08-14): the walker's Topology field is
          internal so consumers meet ONE navigation spelling; the comonad extensions in the
          operator tier are the sanctioned readers. Lockstep packaging makes this skew-safe. -->
     <InternalsVisibleTo Include="Copse.Linq" />

@@ -58,7 +58,7 @@ namespace Copse
     /// <summary>
     /// The door: a walker standing at the first root, or an empty result for the empty
     /// forest (the honest miss; the no-unfocused-walker invariant kept at the door). The
-    /// factory binds the walker's TERRAIN at birth -- the best physics this source affords
+    /// factory binds the walker's TOPOLOGY at birth -- the best physics this source affords
     /// (a capture hands its adjacency index, a memo its pull-through, a lens its rewritten
     /// view) -- and then exits the story: the walkable appears in no navigation call path,
     /// exactly as <c>IEnumerable</c> after <c>GetEnumerator</c>.

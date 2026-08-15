@@ -23,13 +23,14 @@ namespace Copse.Linq.Treenumerables
   // returns a compliant buffer as-is instead of re-capturing -- so an implementation whose
   // traversal has observable effects is out of contract, not merely exotic.
   //
-  // WALKABLE (the buffer re-parent, design-docs/WALKABLE_CONTRACT_DESIGN.md, ratified 2026-08-12):
-  // captures are never address-poor -- a buffer is a tabulated position space, so it answers
-  // the adjacency probes with ORDINAL handles: the node's index in the capture's flat
-  // encoding. Handle spaces are PER-CAPTURE (two captures of the same tree, or the same tree
-  // under two layouts, are foreign to each other). On a still-growing capture a probe is
-  // demand -- it forces the feed exactly as far as the answer needs; upward probes never
-  // force (parents precede children in both layouts). A probe that must pull past a retired
+  // WALKABLE (the buffer re-parent, design-docs/WALKABLE_CONTRACT_DESIGN.md 2026-08-12; the
+  // door-only cut, design-docs/WALKER_FACTORY_DESIGN.md Stage C 2026-08-15): captures are
+  // never address-poor -- a buffer is a tabulated position space, and its door binds a
+  // topology whose handles are ORDINALS: the node's index in the capture's flat encoding.
+  // Handle spaces are PER-CAPTURE (two captures of the same tree, or the same tree under
+  // two layouts, are foreign to each other). On a still-growing capture a walker's step is
+  // demand -- it forces the feed exactly as far as the answer needs; steps upward never
+  // force (parents precede children in both layouts). A step that must pull past a retired
   // feed gets ObjectDisposedException, the same rule replays already live by; the buffered
   // region stays fully walkable.
   public interface ITreenumerableBuffer<TValue> : IWalkableTreenumerable<TValue, int>

@@ -87,7 +87,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
   see design-docs/ASYNC_CODEGEN.md.)
 - **Copse.Primitives** - Tree-free, color-neutral mechanics both families build on: the
   chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted
-  `Copse.Disposables` algebra. References Vocabulary only.
+  `Copse.Disposables` algebra. References nothing.
 - **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
   engines (`DepthFirstPathState`, `BreadthFirstPathState`, …) plus the value types it
   consumes (`NodeContext`, `NodeAndSiblingIndex`). References Vocabulary + Primitives.
@@ -105,7 +105,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
 - **Copse.Linq.Experimental** - Unpackaged, untested parking lot for half-baked ideas and
   possible future surface (`ExpandNodes`, `Graft`, the tree tokenizers — demoted 2026-07-15,
   sync-only, so the token shape isn't locked in by shipping).
-- **Copse.Trees** - Sample trees (Collatz, Triangle, etc.).
+- **Copse.Trees** - Sample trees (Triangle, CompleteBinary, Deep).
 - **Copse.SimpleSerializer** - Header-free text serialization: layout-named methods over the flat
   family (lazy string deserialize → full tree; forward-only reader deserialize → narrow tree).
 - **Copse.TestUtils** - Test utilities, plus `EngineTree`/`PreorderTree` — the engine-backed

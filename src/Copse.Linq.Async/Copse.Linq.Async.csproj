@@ -4,7 +4,7 @@
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>13</LangVersion>
     <IsPackable>true</IsPackable>
-    <Description>Async LINQ-style tree operators for Copse: the full Copse.Linq surface (Where, Select, set operations, aggregation, Memoize/Materialize, serial tokenizers, and more) over awaited pulls. The codegen source of truth the synchronous Copse.Linq package is generated from.</Description>
+    <Description>Async LINQ-style tree operators for Copse: the full Copse.Linq surface (Where, Select, set operations, aggregation, Memoize/Materialize, tree-walker navigation, and more) over awaited pulls. The codegen source of truth the synchronous Copse.Linq package is generated from.</Description>
   </PropertyGroup>
 
   <ItemGroup>

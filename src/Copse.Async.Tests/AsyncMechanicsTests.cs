@@ -39,7 +39,6 @@ namespace Copse.Async.Tests
 
     private static int[] ChildrenOf(int node) => Tree.TryGetValue(node, out var c) ? c : Array.Empty<int>();
 
-    private static readonly Func<NodeContext<int>, bool> KeepNot3 = nc => nc.Node != 3;
     private static readonly Func<int, bool> KeepNot3Value = n => n != 3;
 
     private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.SelectWhereResult<int>> KeepNot3Result =
