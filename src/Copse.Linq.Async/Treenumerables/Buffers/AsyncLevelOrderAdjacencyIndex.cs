@@ -26,6 +26,12 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly TStore _Store;
 
+    // The reclaim seam (2026-08-15): the store, and whether any probe has advanced the
+    // index -- re-seating over the built array store is free only while untouched.
+    internal TStore Store => _Store;
+
+    internal bool ScanUntouched => !_RootsSeeded && _ParentIndexes.Count == 0;
+
     private readonly List<int> _ParentIndexes = new List<int>();
     private bool _RootsSeeded;
     private int _ParentCursor;

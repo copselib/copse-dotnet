@@ -99,7 +99,10 @@ namespace Copse.Linq.Treenumerables
     private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
     {
       if (_AdjacencyProbes != null)
+      {
+        UpgradeAdjacencyProbes();
         return _AdjacencyProbes;
+      }
 
       if (NativeLayout == BufferLayout.LevelOrder)
       {
@@ -115,6 +118,32 @@ namespace Copse.Linq.Treenumerables
       _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore);
 
       return _AdjacencyProbes;
+    }
+
+    // The probes-at-birth reclaim (2026-08-15, the history-bench finding): a birth-bound
+    // index rides the LAZY store and pays a delegation on every probe forever, where the
+    // old settle's index rode the raw array store directly. Once the stream half has run
+    // the one-shot build -- the common order: pull first, probe later -- and no probe has
+    // advanced the index's scan, re-seat the index over the BUILT array store: the
+    // settle-index's direct arithmetic, with none of its double capture. A scan already in
+    // progress keeps its index (correct, merely indirect). Walkers minted after the
+    // upgrade carry the fast index for life (topology-at-birth binds at door time).
+    private void UpgradeAdjacencyProbes()
+    {
+      if (_AdjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyPreorder
+        && lazyPreorder.ScanUntouched
+        && lazyPreorder.Store.IsBuilt)
+      {
+        _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
+        return;
+      }
+
+      if (_AdjacencyProbes is LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>> lazyLevelOrder
+        && lazyLevelOrder.ScanUntouched
+        && lazyLevelOrder.Store.IsBuilt)
+      {
+        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
+      }
     }
   }
 }

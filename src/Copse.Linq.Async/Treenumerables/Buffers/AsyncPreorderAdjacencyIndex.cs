@@ -35,6 +35,9 @@ namespace Copse.Linq.Async.Treenumerables
     // fast path's door (the LeaffixScan2 experiment, 2026-08-14).
     internal TStore Store => _Store;
 
+    // The reclaim seam: true iff no probe has advanced the scan -- re-seating is free.
+    internal bool ScanUntouched => _ScanCursor == 0;
+
     private readonly List<int> _ParentIndexes = new List<int>();
     private readonly List<List<int>> _ChildIndexes = new List<List<int>>();
     private readonly List<int> _RootIndexes = new List<int>();

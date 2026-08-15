@@ -40,6 +40,12 @@ namespace Copse.Linq.Stores
       return _Store;
     }
 
+    // The reclaim seam (2026-08-15): non-forcing build-state facts, so the buffer can
+    // re-seat a birth-bound index over the built array store once the one-shot build ran.
+    internal bool IsBuilt => _Build == null;
+
+    internal PreorderArrayStore<TValue> BuiltStore => _Store;
+
     private void EnsureBuilt()
     {
       if (_Build == null)

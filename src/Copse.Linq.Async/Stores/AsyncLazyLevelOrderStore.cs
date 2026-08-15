@@ -26,6 +26,12 @@ namespace Copse.Linq.Async.Stores
     private Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> _Build;
     private AsyncLevelOrderArrayStore<TValue> _Store;
 
+    // The reclaim seam (2026-08-15): non-forcing build-state facts, so the buffer can
+    // re-seat a birth-bound index over the built array store once the one-shot build ran.
+    internal bool IsBuilt => _Build == null;
+
+    internal AsyncLevelOrderArrayStore<TValue> BuiltStore => _Store;
+
     private async ValueTask EnsureBuiltAsync()
     {
       if (_Build == null)
