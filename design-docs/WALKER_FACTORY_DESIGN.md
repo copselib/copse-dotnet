@@ -169,3 +169,66 @@ topology, Core→tests IVT) — the coherence checks now say what they always me
 steps against raw topology answers. BREAKING, release-notes flag: consumers who probed a
 walkable now navigate through the walker; providers implement `ITreeTopology` plus the
 door.
+
+## 10. Open question for the signature pass: the minting contract (2026-08-15)
+
+Raised by Jason at the pre-merge review of the Core→Linq family IVT, and converged in
+dialogue to a three-dial decision. Record of the arc:
+
+**The ownership observation.** The topology is semantically the WALKABLE's property — the
+tree's adjacency structure; the walker only carries a binding of it (vantage = focus ×
+topology). Every one of the IVT's four reads (`DoorTopology`, walker-`Extend`,
+walker-`Subtree`, the root-crossing in `TryGetTreeWalkerAtRootIndex`) is a CONSTRUCTION
+site reaching back through the walker for the walkable's topology — the walker is merely
+the only thing that publicly moves. The IVT compensates for ownership living in one place
+and reachability in another.
+
+**The sharp fact that started it.** The contract is currently unimplementable outside the
+family: `ITreeTopology` is public SPI, but `TreeWalker`'s ctor is internal and no public
+mint exists — a foreign provider (the DOM adapter) can implement the SPI and can never
+write the door. The ecosystem is closed in fact while the two-audience documentation reads
+open. The IVT is the family's private bridge over that gap.
+
+**The minting contract, split (Jason's framing: "I won't give you the topology, but I'll
+build something with the topology for you"):**
+
+- **Inbound (topology in, walker out) — verdict: pure win.** A Core mint
+  (`TreeWalker.Over(topology, focus)` / `TryOverRoot(topology)`) exposes nothing: only
+  someone already HOLDING a topology can call it, and nothing public hands one out. Solves
+  the foreign-provider door and every lens door (a lens IS a topology; it mints over
+  itself). No leak in any direction.
+- **Outbound (walker applies builders to its hidden topology) — verdict: cannot be both
+  public and sealed.** Any recipe/transformer/CPS spelling must hand the builder the
+  topology object, and a builder can keep it (`Apply((t, _) => t)` is extraction verbatim;
+  a typed transformer can stash the argument). A structurally sealed build-for-me needs a
+  CLOSED recipe vocabulary, which drags the lens family into Core — the placement wall.
+  The honest options are exactly two: the IVT (the hard seal — "only the family's
+  builders receive the topology" is precisely what IVT says; the current design is the
+  honest spelling of that rule, not a hack) or a CPS window (`walker.Apply(recipe)` — a
+  soft seal of pure ceremony).
+
+**The paternalism resolution (Jason).** The seal protects nothing but the autocomplete
+list. `ITreeTopology` exposes four read-only probes; every implementer is `internal
+sealed` (the cast to reach a store cannot be NAMED outside the family); store accessors
+are internal and wholesale access is read-only-struct-capped regardless. Topology-holding
+was never dangerous — only casual probe DISCOVERABILITY was the two-spellings concern,
+and that is ergonomics, not safety. The outbound dial is therefore low-stakes.
+
+**The three dials for the signature pass** (independent; decide jointly with the store
+try-door question — they are the same question at two rungs):
+
+1. **The mint** — `TreeWalker.Over`/`TryOverRoot` in Core. Inbound-only, leak-free, opens
+   the ecosystem. Recommended regardless of the other dials.
+2. **`walker.TryAtRootIndex(k)`** — the jump's sibling for the virtual-root child axis
+   (roots are not connected by parent/child steps; this is the one navigation the walker
+   cannot express today). Moves no topology; kills the root-crossing IVT read.
+3. **The outbound seal** — keep the family IVT (hard seal, lens construction stays
+   in-family) OR add the `Apply` window and delete the IVT (open lens construction,
+   ceremony seal). Pure taste; safety is layered elsewhere.
+
+Related rulings recorded elsewhere the same day: `Extend`-on-the-contract examined and
+rejected (solves neither the mint nor most extraction sites; re-runs the placement wall;
+DIM unavailable on net48). The sentinel completion is CLOSED — not happening absent
+something extremely compelling (ergonomics over academic correctness; the survey's
+"materialized as a seed, not as a node" is the permanent account) — so the door's shape
+has no live design question hanging over these dials.
