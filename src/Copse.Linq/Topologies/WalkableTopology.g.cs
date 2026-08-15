@@ -6,14 +6,16 @@ using System;
 
 namespace Copse.Linq.Topologies
 {
-  // The door's topology, deferred (Stage C): the walkable no longer exposes its topology,
-  // so machinery that must build lazily over "whatever topology this walkable's door will
-  // bind" holds THIS -- the door is knocked once, at the first probe, and the bound
-  // topology answers everything after. The empty forest needs no special citizen: its
-  // door misses, so the result-typed probes miss honestly (no roots, no parents, no
-  // children) and the one probe that MUST produce a value (GetValue) throws -- on an empty
-  // forest every handle is forged, so the ask is a violation, not a miss (the two-channel
-  // doctrine).
+  // The walkable's topology, reconstituted lazily -- WalkerTopology's deferred sibling.
+  // The pair names its sources: WalkerTopology answers from a walker already in hand; THIS
+  // answers for a walkable whose door has not been knocked yet. Machinery that must build
+  // lazily over "whatever topology this walkable's door will bind" holds this: the knock
+  // happens once, at the first probe (Tree.Lazy semantics -- call-by-need, cached, never
+  // re-knocked), and every answer after flows through the walker the knock produced. The
+  // empty forest needs no special citizen: its door misses, so the result-typed probes
+  // miss honestly (no roots, no parents, no children) and the one probe that MUST produce
+  // a value (GetValue) throws -- on an empty forest every handle is forged, so the ask is
+  // a violation, not a miss (the two-channel doctrine).
   internal sealed class WalkableTopology<TValue, THandle> : ITreeTopology<TValue, THandle>
   {
     public WalkableTopology(IWalkableTreenumerable<TValue, THandle> source)
