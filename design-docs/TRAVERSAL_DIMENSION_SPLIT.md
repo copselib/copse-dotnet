@@ -125,7 +125,15 @@ so there is nothing to be silent *about*.
 IDepthFirstTreenumerable<T>    — GetDepthFirstTreenumerator()
 IBreadthFirstTreenumerable<T>  — GetBreadthFirstTreenumerator()
 ITreenumerable<T> : IDepthFirstTreenumerable<T>, IBreadthFirstTreenumerable<T>   // pure composite
+IWalkableTreenumerable<T,H> : ITreenumerable<T>  — TryGetTreeWalker()  // the third rung (2026-08-15)
 ```
+
+The ladder grew a third rung with the walker tier: narrow (one traversal dimension) →
+composite (both) → **walkable** (both, plus adjacency through the walker's door —
+design-docs/WALKER_FACTORY_DESIGN.md). A capture now purchases adjacency along with the
+second dimension: `Memoize`/`Materialize` return buffers that are walkable
+(`ITreenumerableBuffer<T> : IWalkableTreenumerable<T,int>`), so "memoization is what
+purchases the other dimension" reads "…and the adjacency axis" since the re-parent.
 
 - **Zero disruption by construction**: `ITreenumerable` as a pure composite means every
   existing tree, operator, and test keeps its exact typing. Escape hatch: if the split

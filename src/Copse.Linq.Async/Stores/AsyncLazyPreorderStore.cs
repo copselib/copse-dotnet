@@ -30,7 +30,7 @@ namespace Copse.Linq.Async.Stores
     private Func<ValueTask<AsyncPreorderArrayStore<TValue>>> _Build;
     private AsyncPreorderArrayStore<TValue> _Store;
 
-    // The bulk-fold seam's forcing door (the LeaffixScan2 experiment): hand the built array
+    // The bulk-fold seam's forcing door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan): hand the built array
     // store over -- whole-tree algorithms read raw arithmetic, not per-probe dispatch.
     internal async ValueTask<AsyncPreorderArrayStore<TValue>> EnsureBuiltStoreAsync()
     {

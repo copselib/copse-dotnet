@@ -34,7 +34,7 @@ namespace Copse.Linq.Treenumerables
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
     // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
-    // fast path's door (the LeaffixScan2 experiment, 2026-08-14).
+    // fast path's door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan).
     internal TStore Store => _Store;
 
     // The reclaim seam: true iff no probe has advanced the scan -- re-seating is free.

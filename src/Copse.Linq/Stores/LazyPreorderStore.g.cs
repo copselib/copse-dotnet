@@ -32,7 +32,7 @@ namespace Copse.Linq.Stores
     private Func<PreorderArrayStore<TValue>> _Build;
     private PreorderArrayStore<TValue> _Store;
 
-    // The bulk-fold seam's forcing door (the LeaffixScan2 experiment): hand the built array
+    // The bulk-fold seam's forcing door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan): hand the built array
     // store over -- whole-tree algorithms read raw arithmetic, not per-probe dispatch.
     internal PreorderArrayStore<TValue> EnsureBuiltStore()
     {

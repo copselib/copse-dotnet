@@ -103,21 +103,21 @@ namespace Copse.Linq.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private ITreeTopology<TValue, int> _AdjacencyProbes;
+    private ITreeTopology<TValue, int> _Topology;
 
-    private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
+    private ITreeTopology<TValue, int> EnsureTopology()
     {
-      if (_AdjacencyProbes != null)
-        return _AdjacencyProbes;
+      if (_Topology != null)
+        return _Topology;
 
       if (_BreadthFirstCapture != null)
-        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
+        _Topology = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
           new MemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
       else
-        _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
+        _Topology = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
           new MemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
 
-      return _AdjacencyProbes;
+      return _Topology;
     }
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.
@@ -126,7 +126,7 @@ namespace Copse.Linq.Treenumerables
     // pull-through index directly; probes stay demand.
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
     {
-      var topology = EnsureAdjacencyProbes();
+      var topology = EnsureTopology();
       var rootResult = topology.TryGetRootAt(0);
 
       return rootResult.HasChild

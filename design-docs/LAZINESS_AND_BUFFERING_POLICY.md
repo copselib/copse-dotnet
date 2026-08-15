@@ -41,6 +41,13 @@ whole tree), never by implementation convenience.
 - **`Memoize`** → the one power tool: a live, incrementally-growing, *disposable* capture
   (`IMemoizeTreenumerableBuffer`) for expensive or huge sources — you asked for it, you own
   it.
+- Returns `IWalkableTreenumerable` (the walker-tier lenses: `Extend`, `Subtrees`,
+  `PruneAfter`) → **it streams AND navigates lazily**; a lens view holds nothing, answers
+  per-question. Returns `TreeWalker`/`TreeWalkerResult` → a vantage over an existing
+  topology, nothing captured — with the ONE disclosure-by-doc exception:
+  `SpanningSubtree(targets)` captures O(kept) at the call (the result-type can't say so;
+  its docs and the surface map row do — the same amendment rule as enumerable/scalar
+  returns).
 
 ## The rules
 

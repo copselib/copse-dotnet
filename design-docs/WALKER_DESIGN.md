@@ -3,10 +3,13 @@
 **Status:** BUILT and superseded-in-part (original: design conversation, 2026-08-10; the
 walker tier now ships — `TreeWalker` with pinned comonad laws, `Extend`/`Subtrees`/the
 lens family, and the buffer re-parent that made every capture walkable). This document is
-the design HISTORY plus the findings ledger; the living contract design is
-[WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md), and the categorical story is
-[CATEGORY_THEORY_SURVEY.md](CATEGORY_THEORY_SURVEY.md) §4. Sections describing superseded
-shapes carry inline notes.
+the design HISTORY plus the findings ledger; **the living contract design is
+[WALKER_FACTORY_DESIGN.md](WALKER_FACTORY_DESIGN.md)** (the door-only charter, executed
+through Stage C 2026-08-15 — walkable = `ITreenumerable` + `TryGetTreeWalker()`, probes =
+`ITreeTopology` provider SPI); [WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md)
+is the pre-cut contract record it superseded, and the categorical story is
+[CATEGORY_THEORY_SURVEY.md](CATEGORY_THEORY_SURVEY.md) §4 and §11. Sections describing
+superseded shapes carry inline notes.
 **Branch:** `experimental/walker`
 **Date:** 2026-08-10 (status updated 2026-08-13)
 **Prior art:** [jasonmcboyd/Treenumerable](https://github.com/jasonmcboyd/Treenumerable) (2016), the precursor library whose `ITreeWalker<T>` is the direct ancestor of this design. See [issue #16](https://github.com/jasonmcboyd/Treenumerable/issues/16) (September 2016) for the moment the streaming model that became Copse split off from it.
@@ -239,6 +242,13 @@ column, same as lenses.
 
 ### The buffer is the walker tier's Memoize
 
+> **Superseded spellings (2026-08-15):** this section predates the alias collapse and the
+> door-only cut — `MaterializeWalkable()` below is today's `Materialize(BufferLayout)`
+> (WALKABLE_CONTRACT_DESIGN.md OPEN-3), the probe spellings are the `ITreeTopology` SPI
+> behind the door, and `GetRootEnumerator` never shipped (roots answer through
+> `TryGetTreeWalkerAtRootIndex`). The tier-generic laziness argument is what this section
+> is kept for; it stands.
+
 The laziness policy — *compose without materialization when possible, documented
 when not* — is tier-generic. Lens composition is the default; when a stack goes
 lookthrough-heavy or a view will be queried repeatedly, reify once and get
@@ -415,7 +425,15 @@ afterward?* — turning the provenance instinct into evidence.
 - Which order-commit choices the walk layer offers (depth-first, level-order,
   topological), and how their price columns are surfaced.
 
-### The GetRootAt finding (2026-08-12, Jason's diagnosis — RESOLVED 2026-08-13, split withdrawn)
+### The GetRootAt finding (2026-08-12, Jason's diagnosis — RESOLVED 2026-08-13, split withdrawn; **the split later SHIPPED**, 2026-08-15)
+
+> **Second resolution (2026-08-15, superseding the withdrawal below):** the split's own
+> hedge fired. The citizens arrived — every adjacency engine, lens view, and pull-through
+> in the tier — and the terrain half shipped as the `ITreeTopology` provider SPI behind
+> the walker (renamed terrain → topology, the comonad's invariant subject; see
+> [WALKER_FACTORY_DESIGN.md](WALKER_FACTORY_DESIGN.md)). The decomposition sketched below
+> is therefore neither pending nor withdrawn: it is the shipped shape, in its correct role
+> (provider SPI behind the walker, not consumer supertype).
 
 > **Resolution (Jason, 2026-08-13; details in WALKABLE_CONTRACT_DESIGN.md §1a):** the
 > smell dissolved with the carrier. It was diagnosed while the walkable was auditioning

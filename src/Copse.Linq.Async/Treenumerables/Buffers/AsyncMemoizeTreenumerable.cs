@@ -102,21 +102,21 @@ namespace Copse.Linq.Async.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private IAsyncTreeTopology<TValue, int> _AdjacencyProbes;
+    private IAsyncTreeTopology<TValue, int> _Topology;
 
-    private IAsyncTreeTopology<TValue, int> EnsureAdjacencyProbes()
+    private IAsyncTreeTopology<TValue, int> EnsureTopology()
     {
-      if (_AdjacencyProbes != null)
-        return _AdjacencyProbes;
+      if (_Topology != null)
+        return _Topology;
 
       if (_BreadthFirstCapture != null)
-        _AdjacencyProbes = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
+        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
           new AsyncMemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
       else
-        _AdjacencyProbes = new AsyncPreorderAdjacencyIndex<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
+        _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
           new AsyncMemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
 
-      return _AdjacencyProbes;
+      return _Topology;
     }
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.
@@ -125,7 +125,7 @@ namespace Copse.Linq.Async.Treenumerables
     // pull-through index directly; probes stay demand.
     public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
     {
-      var topology = EnsureAdjacencyProbes();
+      var topology = EnsureTopology();
       var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
 
       return rootResult.HasChild

@@ -1,5 +1,13 @@
 # Walkable Contract Design: topology, extent, and the buffer re-parent
 
+> **SUPERSEDED as the living contract (2026-08-15):** the walkable's shape changed again
+> after this document's execution — the door-only cut. The living contract design is
+> [WALKER_FACTORY_DESIGN.md](WALKER_FACTORY_DESIGN.md): `IWalkableTreenumerable` =
+> `ITreenumerable` + `TryGetTreeWalker()` alone; the four probes this document put on the
+> contract are now the `ITreeTopology` provider SPI. This document remains the record of
+> the re-parent and the rulings that led there (§1a's withdrawn split was later resurrected
+> as that SPI — its own hedge predicted the re-insertion).
+
 **Status:** EXECUTED through step 2 (2026-08-13, commits 5f13931 + f575615). Step 1: the
 contract crossed colors. Step 2: the re-parent landed — every capture walkable, probes as
 demand via two incremental-scan adjacency engines, the adjacency-oracle battery and the
@@ -300,7 +308,8 @@ transcription is unchanged.)
 ### 8b. The walker core sinks a rung (PROPOSED — OPEN-8)
 
 Dependency audit: `TreeWalker`, `TreeWalkerResult`, `Extend`/`ExtendWalkable`,
-`Subtrees`/`SubtreeWalkable`, `WalkerWalk`, the doors (`WalkerAt`/`GetRootWalker`), and
+`Subtrees`/`SubtreeWalkable`, `WalkerWalk`, the doors (`WalkerAt`/`GetRootWalker` — later
+renamed `GetTreeWalkerAt`/`TryGetTreeWalkerAtRootIndex`, §10), and
 `GetHandles` consume only the walkable contract and the hierarchical engine — both
 `Copse`-level (contract Core-bound per 8a). Only the LENS family (`PruneAfterWalkable`
 and future Select/PruneBefore lenses) needs `Copse.Linq`'s operator machinery. So the
@@ -373,7 +382,9 @@ the comonad placed exactly as the monad always was.
   along — `Extend`, `Duplicate`, `Subtree`, whose results are walkables and walkables
   STREAM, which needs the Walk adapter above Core — became Linq extensions: the same
   split `Select`/`Where` have always had from `ITreenumerable`. The constructor went
-  PUBLIC (construction IS the trust-based door; `WalkerAt` stays as discoverable sugar)
+  PUBLIC (construction IS the trust-based door; `WalkerAt` stays as discoverable sugar —
+  both later reversed: the ctor went internal at the Stage C cut and `WalkerAt` is
+  `GetTreeWalkerAt`, §10 / WALKER_FACTORY_DESIGN.md)
   and the topology field became the public `Walkable` property (a vantage is focus ×
   topology; the operator tier builds from the pair).
 - **The rest of the walker tier → `Copse.Linq(.Async)`** (Jason's charter argument:

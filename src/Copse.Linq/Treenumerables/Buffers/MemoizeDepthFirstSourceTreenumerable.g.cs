@@ -47,10 +47,10 @@ namespace Copse.Linq.Treenumerables
 
     // The adjacency half: probes ride the one preorder capture through the replay Handle --
     // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
-    private ITreeTopology<TValue, int> _AdjacencyProbes;
+    private ITreeTopology<TValue, int> _Topology;
 
-    private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
-      => _AdjacencyProbes ?? (_AdjacencyProbes
+    private ITreeTopology<TValue, int> EnsureTopology()
+      => _Topology ?? (_Topology
         = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
           new MemoizePreorderStore<TValue>.Handle(_Buffer)));
 
@@ -60,7 +60,7 @@ namespace Copse.Linq.Treenumerables
     // pull-through index directly; probes stay demand.
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
     {
-      var topology = EnsureAdjacencyProbes();
+      var topology = EnsureTopology();
       var rootResult = topology.TryGetRootAt(0);
 
       return rootResult.HasChild

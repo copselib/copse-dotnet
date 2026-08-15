@@ -13,6 +13,11 @@
 
 **Operators audited: 52** (47 in `Copse.Linq/Treenumerable`, counting overload families as one
 operator; 5 in `Copse.Linq.Experimental`, two of which are stubs and one commented out).
+*(Scope note, 2026-08-15: the count is the STREAMING tier as of 2026-07-05 — the walker
+tier that shipped after this audit (Extend/Subtrees/the lenses/SpanningSubtree/the doors
+and acquisition scans) is inventoried in OPERATOR_SURFACE_MAP.md's walker-tier table, not
+here; its operators consume the walker's door, not a traversal dimension, so this audit's
+dimension taxonomy does not apply to them.)*
 
 ### Verdict counts
 

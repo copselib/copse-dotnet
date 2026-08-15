@@ -1,9 +1,12 @@
 # Tree Capability Interfaces (design note)
 
-> **Status: DESIGN ONLY — not implemented.** Captures a direction discussed 2026-06-23.
-> This is a large undertaking to do correctly; it is deferred until the current
-> tree-snapshot / serialization work (`PreorderTree`, `Materialize`, flat `Deserialize`)
-> is shored up. Nothing here is committed to in code yet.
+> **Status: DESIGN ONLY as written — but the navigation lattice has since SHIPPED in a
+> different shape (2026-08-15):** the parent/child/root navigation capabilities sketched
+> here (`IParentNavigableTree` and kin) exist today as the `ITreeTopology` provider SPI
+> behind `IWalkableTreenumerable`'s walker door — one SPI with typed misses rather than an
+> interface per capability (design-docs/WALKER_FACTORY_DESIGN.md). This note is retained
+> as the 2026-06-23 direction; read it as prehistory of the walker tier, not as an open
+> design.
 >
 > **See also:** [TRAVERSAL_DIMENSION_SPLIT.md](TRAVERSAL_DIMENSION_SPLIT.md) (2026-07-04)
 > — a new, orthogonal axis discovered during the serialization redesign: splitting

@@ -38,11 +38,11 @@ namespace Copse.Linq.Async.Treenumerables
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
-      _AdjacencyProbes = adjacencyProbes;
+      _Topology = adjacencyProbes;
     }
 
     private readonly IAsyncTreenumerable<TValue> _Capture;
-    private IAsyncTreeTopology<TValue, int> _AdjacencyProbes;
+    private IAsyncTreeTopology<TValue, int> _Topology;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
@@ -61,7 +61,7 @@ namespace Copse.Linq.Async.Treenumerables
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
     public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
     {
-      var topology = await EnsureAdjacencyProbesAsync().ConfigureAwait(false);
+      var topology = await EnsureTopologyAsync().ConfigureAwait(false);
       var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
 
       return rootResult.HasChild
@@ -82,7 +82,7 @@ namespace Copse.Linq.Async.Treenumerables
       if (NativeLayout == BufferLayout.LevelOrder)
         return (false, default);
 
-      var adjacencyProbes = await EnsureAdjacencyProbesAsync().ConfigureAwait(false);
+      var adjacencyProbes = await EnsureTopologyAsync().ConfigureAwait(false);
 
       if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>> arrayIndex)
         return (true, arrayIndex.Store);
@@ -95,28 +95,28 @@ namespace Copse.Linq.Async.Treenumerables
       return (false, default);
     }
 
-    private async ValueTask<IAsyncTreeTopology<TValue, int>> EnsureAdjacencyProbesAsync()
+    private async ValueTask<IAsyncTreeTopology<TValue, int>> EnsureTopologyAsync()
     {
-      if (_AdjacencyProbes != null)
+      if (_Topology != null)
       {
-        UpgradeAdjacencyProbes();
-        return _AdjacencyProbes;
+        UpgradeTopology();
+        return _Topology;
       }
 
       if (NativeLayout == BufferLayout.LevelOrder)
       {
         var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-        _AdjacencyProbes = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore);
+        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore);
 
-        return _AdjacencyProbes;
+        return _Topology;
       }
 
       var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-      _AdjacencyProbes = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore);
+      _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore);
 
-      return _AdjacencyProbes;
+      return _Topology;
     }
 
     // The probes-at-birth reclaim (2026-08-15, the history-bench finding): a birth-bound
@@ -127,21 +127,21 @@ namespace Copse.Linq.Async.Treenumerables
     // settle-index's direct arithmetic, with none of its double capture. A scan already in
     // progress keeps its index (correct, merely indirect). Walkers minted after the
     // upgrade carry the fast index for life (topology-at-birth binds at door time).
-    private void UpgradeAdjacencyProbes()
+    private void UpgradeTopology()
     {
-      if (_AdjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyPreorder
+      if (_Topology is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyPreorder
         && lazyPreorder.ScanUntouched
         && lazyPreorder.Store.IsBuilt)
       {
-        _AdjacencyProbes = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
+        _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
         return;
       }
 
-      if (_AdjacencyProbes is AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>> lazyLevelOrder
+      if (_Topology is AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>> lazyLevelOrder
         && lazyLevelOrder.ScanUntouched
         && lazyLevelOrder.Store.IsBuilt)
       {
-        _AdjacencyProbes = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
+        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
       }
     }
   }

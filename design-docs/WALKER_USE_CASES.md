@@ -8,7 +8,9 @@ pressure-tested the contract before it existed) is design history, preserved in 
 through commit `e02a31f`; the analysis it produced — layers, costs, provenance — survives
 here, re-spelled.
 **Branch:** `experimental/walker` · **Living contract:**
-[WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md)
+[WALKER_FACTORY_DESIGN.md](WALKER_FACTORY_DESIGN.md) (the door-only charter, Stage C
+2026-08-15; [WALKABLE_CONTRACT_DESIGN.md](WALKABLE_CONTRACT_DESIGN.md) is its pre-cut
+predecessor)
 
 **Classification axes** (per entry): **Layer** — which floor of the region → walk →
 sequence tower the call consumes at. **Re-enters?** — whether the code wants to jump back
@@ -252,7 +254,7 @@ pinned executable as `Extend(extract) ≡ id` (the Walk adapter's conformance ce
 Layer: region → sequence → back · Re-enters: THE POINT · Cost: O(1) per re-entry
 
 ```csharp
-var label = walkable.Subtrees().GetValue(handle);   // analyze the severed view…
+var label = walkable.Subtrees().GetTreeWalkerAt(handle).GetValue();   // analyze the severed view…
 var backHome = walkable.GetTreeWalkerAt(handle);           // …and stand in the source: same handles
 ```
 

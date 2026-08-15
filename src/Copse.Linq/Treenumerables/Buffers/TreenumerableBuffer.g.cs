@@ -39,11 +39,11 @@ namespace Copse.Linq.Treenumerables
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
-      _AdjacencyProbes = adjacencyProbes;
+      _Topology = adjacencyProbes;
     }
 
     private readonly ITreenumerable<TValue> _Capture;
-    private ITreeTopology<TValue, int> _AdjacencyProbes;
+    private ITreeTopology<TValue, int> _Topology;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
@@ -62,7 +62,7 @@ namespace Copse.Linq.Treenumerables
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
     {
-      var topology = EnsureAdjacencyProbes();
+      var topology = EnsureTopology();
       var rootResult = topology.TryGetRootAt(0);
 
       return rootResult.HasChild
@@ -83,7 +83,7 @@ namespace Copse.Linq.Treenumerables
       if (NativeLayout == BufferLayout.LevelOrder)
         return (false, default);
 
-      var adjacencyProbes = EnsureAdjacencyProbes();
+      var adjacencyProbes = EnsureTopology();
 
       if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
         return (true, arrayIndex.Store);
@@ -96,28 +96,28 @@ namespace Copse.Linq.Treenumerables
       return (false, default);
     }
 
-    private ITreeTopology<TValue, int> EnsureAdjacencyProbes()
+    private ITreeTopology<TValue, int> EnsureTopology()
     {
-      if (_AdjacencyProbes != null)
+      if (_Topology != null)
       {
-        UpgradeAdjacencyProbes();
-        return _AdjacencyProbes;
+        UpgradeTopology();
+        return _Topology;
       }
 
       if (NativeLayout == BufferLayout.LevelOrder)
       {
         var levelOrderStore = LevelOrderCapture.CaptureFrom(_Capture);
 
-        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore);
+        _Topology = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore);
 
-        return _AdjacencyProbes;
+        return _Topology;
       }
 
       var preorderStore = PreorderCapture.CaptureFrom(_Capture);
 
-      _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore);
+      _Topology = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore);
 
-      return _AdjacencyProbes;
+      return _Topology;
     }
 
     // The probes-at-birth reclaim (2026-08-15, the history-bench finding): a birth-bound
@@ -128,21 +128,21 @@ namespace Copse.Linq.Treenumerables
     // settle-index's direct arithmetic, with none of its double capture. A scan already in
     // progress keeps its index (correct, merely indirect). Walkers minted after the
     // upgrade carry the fast index for life (topology-at-birth binds at door time).
-    private void UpgradeAdjacencyProbes()
+    private void UpgradeTopology()
     {
-      if (_AdjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyPreorder
+      if (_Topology is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyPreorder
         && lazyPreorder.ScanUntouched
         && lazyPreorder.Store.IsBuilt)
       {
-        _AdjacencyProbes = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
+        _Topology = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
         return;
       }
 
-      if (_AdjacencyProbes is LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>> lazyLevelOrder
+      if (_Topology is LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>> lazyLevelOrder
         && lazyLevelOrder.ScanUntouched
         && lazyLevelOrder.Store.IsBuilt)
       {
-        _AdjacencyProbes = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
+        _Topology = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
       }
     }
   }

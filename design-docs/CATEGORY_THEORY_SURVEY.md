@@ -107,9 +107,11 @@ be lawless.
 
 ## 4. Inventory — the walker tier
 
-The comonad is the **focused pair** (walkable, handle) — the **Store comonad**,
-`Store s a = (s → a, s)` with `s = THandle` and the adjacency probes as the decoration
-that makes the position space tree-structured. (The codebase named its flat backings
+The comonad is the **focused pair** (topology, handle) — the **Store comonad**,
+`Store s a = (s → a, s)` with `s = THandle` and the `ITreeTopology` probes as the
+decoration that makes the position space tree-structured. (Post-cut precision, 2026-08-15:
+the walkable is the *factory* that binds the topology at the door — the carrier's terrain
+half is the topology itself, internal behind the walker; see §11 for the full account.) (The codebase named its flat backings
 "stores" years before this identification; Store-the-class and Store-the-comonad
 converged independently.)
 
