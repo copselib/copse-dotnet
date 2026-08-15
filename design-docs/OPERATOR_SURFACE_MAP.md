@@ -106,7 +106,7 @@ is the seam everything below rides: the four adjacency probes are provider SPI
 
 | Operator | Receiver | Returns | Behavior | Notes |
 |---|---|---|---|---|
-| Extend(observer) | IWalkableTreenumerable | IWalkableTreenumerable\<TResult, THandle\> | lazy (lens view) | comonadic co-bind: the observer receives THE WALKER at every node (vantage as value, 2026-08-15 — Stage C's honest type); result is a topology transformer over a deferred door knock (`DoorTopology`); stream half derived through the Walk adapter |
+| Extend(observer) | IWalkableTreenumerable | IWalkableTreenumerable\<TResult, THandle\> | lazy (lens view) | comonadic co-bind: the observer receives THE WALKER at every node (vantage as value, 2026-08-15 — Stage C's honest type); result is a topology transformer over a deferred door knock (`WalkableTopology`); stream half derived through the Walk adapter |
 | Extend(observer) | TreeWalker | TreeWalker\<TResult, THandle\> | lazy | the same co-bind at the focused presentation; constructs the extend lens directly (walker in, walker out — co-Kleisli composition's working form) |
 | Subtrees() | IWalkableTreenumerable | walkable-of-walkables | lazy (lens views) | the cofree duplicate in the severed presentation: labels = re-rooted subtree views sharing source handles (`SubtreeWalkable` — exactly two answers rewritten); laws pinned by `SubtreesLawTests` incl. hand-pinned interior labels; SelectMany's waiting coherence oracle (graft ↔ Subtrees) |
 | Subtree() | TreeWalker | IWalkableTreenumerable | lazy (lens view) | the severed re-rooted view at the focus — the walker-side spelling of the same lens |
@@ -281,7 +281,9 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)PreorderAdjacencyIndex<TStore>   the ordinal topology over a preorder store
 │    (span-arithmetic probes; ScanUntouched seam for the probes-at-birth reclaim)
 ├─ (Async)LevelOrderAdjacencyIndex<TStore> its level-order dual (two-cursor parent merge)
-├─ (Async)DoorTopology (Copse.Linq.Topologies — pure topologies, not treenumerables)
+├─ (Async)WalkableTopology (né DoorTopology, renamed 2026-08-15 — the pair names its SOURCES:
+│    WalkerTopology from a walker, WalkableTopology from a walkable; Copse.Linq.Topologies,
+│    pure topologies, not treenumerables)
 │    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
 │    at first probe; empty forest = honest misses; post-re-plumb it reconstitutes from the
 │    door's walker, never extracts

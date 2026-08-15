@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
     {
       // Stage C: the walkable no longer exposes its topology; the lens's adjacency half
       // reaches it through the deferred door (knocked once, at the first probe).
-      _Source = new DoorTopology<TValue, THandle>(source);
+      _Source = new WalkableTopology<TValue, THandle>(source);
       _Predicate = predicate;
       // Via the streaming EXTENSION, not a direct treenumerable construction, so the
       // composition lattice inside PruneAfter keeps collapsing what it always collapsed.

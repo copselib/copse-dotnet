@@ -158,7 +158,7 @@ probe calls are SPI-coherence checks that retype mechanically at Stage C's cut.
 **2026-08-15 — Stage C executed: the cut.** `IWalkableTreenumerable` is the charter's
 one-member factory — the topology inheritance and probes are gone from the public
 contract. The walker's constructor went internal (the doors and the jump are the only
-mints). `DoorTopology` landed as the deferral seam — "the topology this walkable's door
+mints). `WalkableTopology` landed as the deferral seam — "the topology this walkable's door
 will bind," knocked once at the first probe — which let `Extend` and the lens ctors stay
 lazy and sync-shaped with no empty-forest special case (the empty door misses honestly
 everywhere; pinned). The handle doors rewired to door-then-jump; the probe-suppliers
@@ -177,7 +177,7 @@ dialogue to a three-dial decision. Record of the arc:
 
 **The ownership observation.** The topology is semantically the WALKABLE's property — the
 tree's adjacency structure; the walker only carries a binding of it (vantage = focus ×
-topology). Every one of the IVT's four reads (`DoorTopology`, walker-`Extend`,
+topology). Every one of the IVT's four reads (`WalkableTopology`, walker-`Extend`,
 walker-`Subtree`, the root-crossing in `TryGetTreeWalkerAtRootIndex`) is a CONSTRUCTION
 site reaching back through the walker for the walkable's topology — the walker is merely
 the only thing that publicly moves. The IVT compensates for ownership living in one place
@@ -245,7 +245,7 @@ PRIVATE simultaneously, and the compile-error census decided the rest. Outcome:
   precedent) plus the public ctor covered everything. No CPS window, no `Apply`, no seal
   to choose: **all four Core IVTs are deleted** and `Topology` is `private` — tighter than
   the `internal` the discussion started from.
-- **`WalkerTopology`** (with `DoorTopology`, both now in `Copse.Linq.Topologies` — they
+- **`WalkerTopology`** (with `WalkableTopology`, both now in `Copse.Linq.Topologies` — they
   are topologies, not treenumerables, so they left the `Treenumerables` namespace): the
   SPI reconstituted from a vantage, every answer a public walker step. The lens builders
   and the door-deferral consume it; the operator tier holds no access a third party lacks.

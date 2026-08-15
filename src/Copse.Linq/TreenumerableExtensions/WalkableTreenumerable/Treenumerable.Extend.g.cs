@@ -31,7 +31,7 @@ namespace Copse.Linq
       // topology this walkable's door will hand over" -- deferred, knocked once at the
       // first pull or probe. The empty forest needs no special case: the door topology
       // misses honestly everywhere.
-      => new ExtendWalkable<TValue, THandle, TResult>(new DoorTopology<TValue, THandle>(source), observer);
+      => new ExtendWalkable<TValue, THandle, TResult>(new WalkableTopology<TValue, THandle>(source), observer);
 
     // The topology-receiver form: the algebra at SPI altitude, for machinery that already
     // holds a topology (the lens compositions, the clamp).

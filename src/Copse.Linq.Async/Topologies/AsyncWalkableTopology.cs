@@ -12,9 +12,9 @@ namespace Copse.Linq.Async.Topologies
   // children) and the one probe that MUST produce a value (GetValue) throws -- on an empty
   // forest every handle is forged, so the ask is a violation, not a miss (the two-channel
   // doctrine).
-  internal sealed class AsyncDoorTopology<TValue, THandle> : IAsyncTreeTopology<TValue, THandle>
+  internal sealed class AsyncWalkableTopology<TValue, THandle> : IAsyncTreeTopology<TValue, THandle>
   {
-    public AsyncDoorTopology(IAsyncWalkableTreenumerable<TValue, THandle> source)
+    public AsyncWalkableTopology(IAsyncWalkableTreenumerable<TValue, THandle> source)
     {
       _Source = source;
     }
