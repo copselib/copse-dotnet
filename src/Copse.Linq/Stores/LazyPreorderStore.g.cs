@@ -21,7 +21,7 @@ namespace Copse.Linq.Stores
   // a grow call precedes every read, so the store is always built by the time they run.
   // Single-threaded by contract, like every treenumerator in the library.
   //
-  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
+  // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
   internal sealed class LazyPreorderStore<TValue> : IPreorderStore<TValue>
   {
     public LazyPreorderStore(Func<PreorderArrayStore<TValue>> build)

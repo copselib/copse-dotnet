@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Phase 2 of the categorical audit (docs/CATEGORY_THEORY_SURVEY.md): the laws each shape
+  // Phase 2 of the categorical audit (design-docs/CATEGORY_THEORY_SURVEY.md): the laws each shape
   // owes, pinned SEMANTICALLY -- every equivalence is asserted modulo visit-stream equality
   // (both dimensions), the survey's quotient. Where a law licenses a lattice collapse, the
   // stacked side is forced through Hide (the opaque identity) so the law is tested against

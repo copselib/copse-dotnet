@@ -15,12 +15,12 @@ namespace Copse.Linq
     /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
-    /// PAIRING (docs/SCANRESULT_DESIGN.md): a tree of <c>ScanResult</c>s, each node's value
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>ScanResult</c>s, each node's value
     /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
     /// Deferred; streams with O(depth)/O(width) state.
     ///
     /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
-    /// SEAT RULE's minimal basis (docs/SCANRESULT_DESIGN.md, ratified 2026-08-04): a callback
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md, ratified 2026-08-04): a callback
     /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
     /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
     /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
@@ -66,7 +66,7 @@ namespace Copse.Linq
     /// <summary>
     /// The per-root flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a different
     /// spelling of it (THE NORTH STAR, 2026-08-05: boundary flavors mean the same thing on
-    /// both tiers -- docs/SCANRESULT_DESIGN.md): every root's ACCUMULATION is
+    /// both tiers -- design-docs/SCANRESULT_DESIGN.md): every root's ACCUMULATION is
     /// <paramref name="rootNodeSelector"/>'s return, set DIRECTLY -- the fold fires only at
     /// non-roots -- exactly as RootfixDispatch's selector sets each root's arrival directly,
     /// bypassing the survey. Set each tree's starting value explicitly (known per-root

@@ -6,7 +6,7 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The reified operator chain (docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
+  // The reified operator chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
   // holding the Kleisli-composed result of every composed operator, so value-lambda chains of any
   // length and order collapse to ONE layer over the source. Plain operators
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);

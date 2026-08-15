@@ -9,7 +9,7 @@ using System.Linq;
 namespace Copse.Linq.Tests
 {
   // Phase 3, part B of the categorical audit: the Store comonad's laws, pinned against the
-  // real Extend (docs/CATEGORY_THEORY_SURVEY.md §4/§6). The focused pair (walkable, handle)
+  // real Extend (design-docs/CATEGORY_THEORY_SURVEY.md §4/§6). The focused pair (walkable, handle)
   // is the comonad; extract = GetValue; Extend = the neighborhood-aware relabel. The first
   // law doubles as the Walk adapter's conformance pin: Extend(extract) streams the source's
   // own visit streams through the engine-driven adapter, so equality certifies the adapter

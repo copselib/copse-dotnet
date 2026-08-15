@@ -6,7 +6,7 @@ namespace Copse.Linq
 {
   /// <summary>
   /// One child of a surveyed node, read-side: its context and its completed accumulation --
-  /// DispatchTarget's dual (docs/SCANRESULT_DESIGN.md): where the rootfix survey WRITES what
+  /// DispatchTarget's dual (design-docs/SCANRESULT_DESIGN.md): where the rootfix survey WRITES what
   /// flows down through a target, the leaffix survey READS what flowed up through a source.
   /// Carries the full <see cref="Context"/> per the position ruling: callback-context types
   /// carry coordinates (immediate, consumed in place, never stale); traveling values do not.

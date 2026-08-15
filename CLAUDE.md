@@ -26,15 +26,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan — the fold tier), sibling-complete surveys (RootfixDispatch/LeaffixDispatch — the dispatch tier)
 - Set operations: Union(), Intersection(), Subtract(), SymmetricDifference()
 - Transformation: Invert() (mirror), Memoize()/Materialize(), pretty printing
-- (SelectMany is designed but not yet implemented — see docs/SELECTMANY_DESIGN.md.)
+- (SelectMany is designed but not yet implemented — see design-docs/SELECTMANY_DESIGN.md.)
 
 #### Performance Optimizations:
 
 - Custom RefSemiDeque<T> / RefAppendOnlyList<T> with ref semantics for zero-copy state management
 - Lazy evaluation - operations compose without materialization when possible; when an
   operator materializes (or might), its return type and docs say so. The policy is
-  docs/LAZINESS_AND_BUFFERING_POLICY.md; the per-operator register is
-  docs/OPERATOR_SURFACE_MAP.md — a **living inventory**: update its rows in the same commit
+  design-docs/LAZINESS_AND_BUFFERING_POLICY.md; the per-operator register is
+  design-docs/OPERATOR_SURFACE_MAP.md — a **living inventory**: update its rows in the same commit
   as any operator/store/decoder change
 - Struct-based nodes to minimize allocations; the flat family decodes via span/index arithmetic
   (no per-node child enumerators), which measured faster than the engine on replay/deserialize
@@ -84,7 +84,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
 - **Copse.Core** - The sync traversal contracts: `ITreenumerable<T>` and its two
   single-dimension parents, `ITreenumerator<T>`. References Vocabulary. (`Copse.Core.Async`
   is its async twin, also over Vocabulary; the async stack mirrors the sync one from there —
-  see docs/ASYNC_CODEGEN.md.)
+  see design-docs/ASYNC_CODEGEN.md.)
 - **Copse.Primitives** - Tree-free, color-neutral mechanics both families build on: the
   chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted
   `Copse.Disposables` algebra. References Vocabulary only.
@@ -132,7 +132,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
   What `Materialize`/`LeaffixScan`/`Invert` return.
 - **IMemoizeTreenumerableBuffer<T>** - `ITreenumerableBuffer<T>` still backed by a **live
   source feed**: the incrementally-growing capture `Memoize` returns (the type cites its
-  operator — the machinery naming grammar, see docs/LAZINESS_AND_BUFFERING_POLICY.md). Adds
+  operator — the machinery naming grammar, see design-docs/LAZINESS_AND_BUFFERING_POLICY.md). Adds
   `IsComplete`/`GetBufferedCount()`/`Complete()` and `IDisposable` (disposing retires the
   feed). Because it *is* an `ITreenumerableBuffer` it composes anywhere a capture is
   expected, but the fluent surface sees only the non-disposable base, so the caller keeps
@@ -147,7 +147,7 @@ interface, so asking it for the other dimension is a compile error rather than a
 buffering. `Memoize`/`Materialize` are the explicit escalation back to the full composite. Most
 operators are `ITreenumerable`-only; the streaming spine (~Select, Where, prune/take, the
 aggregates, set ops) has narrow overloads that preserve the dimension. See
-docs/TRAVERSAL_DIMENSION_SPLIT.md and docs/OPERATOR_DIMENSION_AUDIT.md.
+design-docs/TRAVERSAL_DIMENSION_SPLIT.md and design-docs/OPERATOR_DIMENSION_AUDIT.md.
 
 ### Two families of concrete treenumerables
 
@@ -269,7 +269,7 @@ Original:  a(b[0], c[1], d[2])     After filtering c:  a(b[0], d[1])
 > potential simpler replacement and **rejected** (correct full drop-in, but ~par on size and a
 > performance regression). The write-up is worth reading before reworking `Where` — it captures the
 > `Where`-as-visit-stream-splicing model and why the DFT approach does **not** generalize to BFT
-> (the Θ(N) reorder wall). See [docs/DFT_WHERE_EXTRACTION_SPIKE.md](docs/DFT_WHERE_EXTRACTION_SPIKE.md)
+> (the Θ(N) reorder wall). See [design-docs/DFT_WHERE_EXTRACTION_SPIKE.md](design-docs/DFT_WHERE_EXTRACTION_SPIKE.md)
 > (branch `spike-dft-extraction`).
 
 ---

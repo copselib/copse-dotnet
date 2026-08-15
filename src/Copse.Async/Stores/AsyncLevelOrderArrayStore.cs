@@ -9,7 +9,7 @@ namespace Copse.Async.Stores
   // answer with completed results, the reads are plain array access. Each color owns its own:
   // the sync twin is generated from this file.
   //
-  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x completed x no feed.
+  // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x completed x no feed.
   public readonly struct AsyncLevelOrderArrayStore<TValue> : IAsyncLevelOrderStore<TValue>
   {
     public AsyncLevelOrderArrayStore(TValue[] values, int[] firstChildIndices, int[] childCounts, int rootCount)

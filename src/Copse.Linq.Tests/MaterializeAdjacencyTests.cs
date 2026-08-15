@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Copse.Linq.Tests
 {
-  // The finite-izing escalation after the buffer re-parent (docs/WALKABLE_CONTRACT_DESIGN.md):
+  // The finite-izing escalation after the buffer re-parent (design-docs/WALKABLE_CONTRACT_DESIGN.md):
   // Materialize(BufferLayout.Preorder) IS the walker escalation -- every capture is walkable
   // ("captures are never address-poor"), the intersection the PoC once spelled as a separate
   // interface is ITreenumerableBuffer itself, and the erstwhile MaterializeWalkable alias is

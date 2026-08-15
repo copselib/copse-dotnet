@@ -8,7 +8,7 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// The comonad's co-bind (docs/CATEGORY_THEORY_SURVEY.md §6): relabel every node by an
+    /// The comonad's co-bind (design-docs/CATEGORY_THEORY_SURVEY.md §6): relabel every node by an
     /// arbitrary OBSERVATION of its focus. The observer receives the walkable and the handle,
     /// so it can consult anything reachable from that vantage -- depth, ancestor values,
     /// subtree facts -- which is exactly what streaming <c>Select</c> cannot see. The shape

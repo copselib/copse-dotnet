@@ -20,7 +20,7 @@ namespace Copse.Linq.Async.Treenumerables
   // returns a compliant buffer as-is instead of re-capturing -- so an implementation whose
   // traversal has observable effects is out of contract, not merely exotic.
   //
-  // WALKABLE (the buffer re-parent, docs/WALKABLE_CONTRACT_DESIGN.md, ratified 2026-08-12):
+  // WALKABLE (the buffer re-parent, design-docs/WALKABLE_CONTRACT_DESIGN.md, ratified 2026-08-12):
   // captures are never address-poor -- a buffer is a tabulated position space, so it answers
   // the adjacency probes with ORDINAL handles: the node's index in the capture's flat
   // encoding. Handle spaces are PER-CAPTURE (two captures of the same tree, or the same tree

@@ -12,7 +12,7 @@ namespace Copse.Core.Async
   /// CAPTURE: <c>Materialize()</c> returns a buffer that is also an
   /// <see cref="Copse.Async.IAsyncWalkableTreenumerable{TValue, THandle}"/>, and handles, walkers, and the
   /// probe surface start there. The escalation is deliberate -- the O(n) is disclosed, never
-  /// hidden. See docs/WALKABLE_CONTRACT_DESIGN.md.</para>
+  /// hidden. See design-docs/WALKABLE_CONTRACT_DESIGN.md.</para>
   /// </summary>
   public interface IAsyncTreenumerable<TNode>
     : IAsyncDepthFirstTreenumerable<TNode>,

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // The adjacency-oracle battery (docs/WALKABLE_CONTRACT_DESIGN.md §4): after the buffer
+  // The adjacency-oracle battery (design-docs/WALKABLE_CONTRACT_DESIGN.md §4): after the buffer
   // re-parent, every capture answers the four walkable probes, and every answer must agree
   // with an INDEPENDENT model of the tree -- reconstructed here from the depth-first visit
   // stream's positions (the conformance-anchored truth, a different code path from the

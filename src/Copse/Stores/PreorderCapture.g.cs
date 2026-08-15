@@ -12,7 +12,7 @@ namespace Copse.Stores
   // source, captured into a completed preorder store. (The store treenumerators are the DECODE
   // direction; together they make the flat family self-contained in this layer.) This is the
   // capture loop that Invert, OrderChildrenBy, benchmarks, and tests each re-derived -- see
-  // docs/OPERATOR_SURFACE_MAP.md section 3 -- hoisted to its one home.
+  // design-docs/OPERATOR_SURFACE_MAP.md section 3 -- hoisted to its one home.
   //
   // Nodes are appended on their SCHEDULING visit; the open-node stack backfills each subtree
   // size when depth retreats (subtreeSizes[i] == 0 marks a still-open node until then).

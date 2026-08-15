@@ -10,7 +10,7 @@ namespace Copse.Async.Stores
   // dimensions). Each color owns its own: the sync twin is generated from this file, so the two
   // never share an assembly and the neutral layer stays store-free.
   //
-  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): preorder x completed x no feed.
+  // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x completed x no feed.
   public readonly struct AsyncPreorderArrayStore<TValue> : IAsyncPreorderStore<TValue>
   {
     public AsyncPreorderArrayStore(TValue[] values, int[] subtreeSizes)

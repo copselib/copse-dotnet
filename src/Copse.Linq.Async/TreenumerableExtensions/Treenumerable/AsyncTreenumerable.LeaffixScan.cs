@@ -15,7 +15,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The fold tier of the leaffix pair -- RootfixScan's TRUE DUAL (reshaped 2026-08-05,
-    /// docs/SCANRESULT_DESIGN.md THE NORTH STAR): flow reversal flips the upstream
+    /// design-docs/SCANRESULT_DESIGN.md THE NORTH STAR): flow reversal flips the upstream
     /// multiplicity (one parent down, n children up), so the upward fold decomposes into two
     /// callbacks -- <paramref name="edgeAccumulator"/> reduces the children's COMPLETED
     /// accumulations in sibling order (left-fold from the first child, firing k-1 times, so

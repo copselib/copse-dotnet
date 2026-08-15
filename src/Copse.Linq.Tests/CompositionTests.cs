@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Pins for docs/OPERATOR_COMPOSITION_DESIGN.md: composition must be observably invisible (identical
+  // Pins for design-docs/OPERATOR_COMPOSITION_DESIGN.md: composition must be observably invisible (identical
   // visit streams, identical per-lambda order) and must actually HAPPEN (collapsed layers,
   // once-per-node selector evaluation). The force-stacked controls: the positional Where
   // overload never composes with its own kind, and Tree.Defer's delegating wrapper is not

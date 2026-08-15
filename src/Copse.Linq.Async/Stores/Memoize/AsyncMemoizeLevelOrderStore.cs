@@ -40,7 +40,7 @@ namespace Copse.Linq.Async.Stores
   //
   // Single-threaded by contract, like every treenumerator in the library.
   //
-  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
+  // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
   internal sealed class AsyncMemoizeLevelOrderStore<TValue> : IAsyncDisposable
   {
     public AsyncMemoizeLevelOrderStore(Func<IAsyncTreenumerator<TValue>> feedFactory)

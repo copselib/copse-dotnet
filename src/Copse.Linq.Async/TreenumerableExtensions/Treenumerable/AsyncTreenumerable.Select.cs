@@ -12,7 +12,7 @@ namespace Copse.Linq
     /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
-    /// the projection-carrying filter driver (docs/OPERATOR_COMPOSITION_DESIGN.md).
+    /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
     ///
     /// <para>THE SELECTOR MUST BE PURE -- its invocation count is deliberately UNSPECIFIED
     /// along two axes: COMPOSITION (a following Where fuses to once per tested node, where
@@ -25,7 +25,7 @@ namespace Copse.Linq
     /// composition barrier with the exact per-visit contract: to LAND aggregation results on
     /// mutable nodes, use the landing idiom -- <c>.Do(visit =&gt; { if (visit.Mode ==
     /// TreenumeratorMode.SchedulingNode) ... })</c>, deterministically once per scheduled
-    /// node under every composition and every consumer (docs/SCANRESULT_DESIGN.md, THE
+    /// node under every composition and every consumer (design-docs/SCANRESULT_DESIGN.md, THE
     /// DEMOTION).</para>
     /// </summary>
     public static IAsyncTreenumerable<TResult> Select<TSource, TResult>(

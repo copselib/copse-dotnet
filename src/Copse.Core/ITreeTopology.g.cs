@@ -8,7 +8,7 @@ namespace Copse
 {
   /// <summary>
   /// The topology SPI: the four adjacency questions a tree walker's steps are answered by.
-  /// PROVIDER-SIDE surface (docs/WALKER_FACTORY_DESIGN.md §2) -- implementations carry the
+  /// PROVIDER-SIDE surface (design-docs/WALKER_FACTORY_DESIGN.md §2) -- implementations carry the
   /// tricks (a preorder index answers children by span arithmetic, a level-order index by
   /// group offsets, a memo by demand, a foreign adapter by its native pointers), consumers
   /// never meet it: the consumer surface is <c>TreeWalker</c>, whose factory door binds a

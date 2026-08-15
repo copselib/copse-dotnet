@@ -9,7 +9,7 @@ namespace Copse.Linq.Tests
 {
   // UC-32, the capstone, as an OPERATION: SpanningSubtree(targets) -- the minimum spanning
   // subtree of k nodes, returned as a walker standing at the spanning root over a fresh
-  // O(kept) capture (docs/WALKER_USE_CASES.md §G). The suite pins the operation's whole
+  // O(kept) capture (design-docs/WALKER_USE_CASES.md §G). The suite pins the operation's whole
   // semantic surface -- the happy paths, both honest misses (no targets; disjoint trees),
   // and the k = 1 degenerate -- and keeps the DECOMPOSED arc as its own test: the
   // floor-by-floor walkthrough that proves the operation is a composition of shipped

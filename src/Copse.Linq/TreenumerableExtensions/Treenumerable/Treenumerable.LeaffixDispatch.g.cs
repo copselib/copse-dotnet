@@ -22,7 +22,7 @@ namespace Copse.Linq
     /// <paramref name="survey"/>, which sees the node together with ALL of its children at
     /// once through the no-copy <see cref="DispatchSources{TSource, TAccumulate}"/> view: one
     /// READ-handle per child carrying its context and completed accumulation --
-    /// <c>DispatchTargets</c>' dual (docs/SCANRESULT_DESIGN.md), with the same honestly-O(1)
+    /// <c>DispatchTargets</c>' dual (design-docs/SCANRESULT_DESIGN.md), with the same honestly-O(1)
     /// Count and indexer off the builds' shared child-index. Sibling-complete visibility is
     /// the point -- median of children, top-k, anything that must compare children to each
     /// other; a fold that only needs one child at a time belongs to LeaffixScan (sugar over
@@ -67,7 +67,7 @@ namespace Copse.Linq
     /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
     /// visit.Node.Accumulate; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
-    /// (docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's

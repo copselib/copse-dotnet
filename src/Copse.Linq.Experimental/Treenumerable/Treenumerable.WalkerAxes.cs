@@ -5,7 +5,7 @@ namespace Copse.Linq.Experimental
 {
   public static partial class Treenumerable
   {
-    // The sequence floor of the walker tower (docs/WALKER_DESIGN.md): axes yield lazy sequences of
+    // The sequence floor of the walker tower (design-docs/WALKER_DESIGN.md): axes yield lazy sequences of
     // HANDLES, so ordinary LINQ is the walker's operator algebra -- no operator algebra of its own.
     // Values resolve through GetValue. Names follow the 2016 ITreeWalker surface (GetAncestors,
     // GetChildren, ...), whose extensions these resurrect, over the indexed child contract (the

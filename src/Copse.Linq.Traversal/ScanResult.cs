@@ -1,6 +1,6 @@
 namespace Copse.Linq
 {
-  // The aggregation family's canonical pairing (docs/SCANRESULT_DESIGN.md): a source node with
+  // The aggregation family's canonical pairing (design-docs/SCANRESULT_DESIGN.md): a source node with
   // the value the pass assigned to it. WHICH value is tier-shaped, and the asymmetry is forced
   // (the audit's input/output row): FOLDS record their OUTPUT (the node's accumulation --
   // RootfixScan seed⊕...⊕node, leaffix rollups), while the rootfix SURVEY records its INPUT --

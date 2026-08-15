@@ -15,7 +15,7 @@ namespace Copse.Linq
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
     /// sequence -- one <see cref="ScanResult{TSource, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
-    /// docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape, 2026-08-05 -- the
+    /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape, 2026-08-05 -- the
     /// NodeContext-flavored map-then-combine signatures are retired). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
     /// accumulations in sibling order (first child as the start),

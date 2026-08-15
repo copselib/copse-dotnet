@@ -9,7 +9,7 @@ namespace Copse.Linq
     /// <summary>
     /// The tree of subtrees: every node relabeled with the subtree rooted at it, shape
     /// untouched. This is the comonad's <c>duplicate</c> in its COFREE presentation
-    /// (docs/CATEGORY_THEORY_SURVEY.md §4) -- on <c>a(b,c)</c> the labels are <c>a(b,c)</c>,
+    /// (design-docs/CATEGORY_THEORY_SURVEY.md §4) -- on <c>a(b,c)</c> the labels are <c>a(b,c)</c>,
     /// <c>b</c>, <c>c</c>: extract the root's label and the whole tree comes back. Each label
     /// is a severed, re-rooted VIEW sharing the source's handles -- two fields, no copying,
     /// built lazily per pull -- so the tree of subtrees costs O(1) per label where reifying

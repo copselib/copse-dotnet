@@ -8,7 +8,7 @@ namespace Copse
   /// <summary>
   /// The focused pair, reified: a walkable plus a VALID focus -- the carrier of the
   /// full-context (Store) comonad, the type whose instances are what
-  /// docs/CATEGORY_THEORY_SURVEY.md §4 calls "the whole tree, seen from here." Two words of
+  /// design-docs/CATEGORY_THEORY_SURVEY.md §4 calls "the whole tree, seen from here." Two words of
   /// data, by value, nothing owned: many walkers share one topology, and stepping never
   /// mutates -- every move returns a NEW walker (the comonad is pure; a stance is a value,
   /// not a machine).

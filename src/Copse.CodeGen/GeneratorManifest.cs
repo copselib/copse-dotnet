@@ -196,7 +196,7 @@ namespace Copse.CodeGen
       // (naming grammar): searches are not surface -- GetHandles/GetHandlesWithValues plus
       // consumer LINQ express them, and a search's honest miss is the empty sequence.
 
-      // The walkable contract family (docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
+      // The walkable contract family (design-docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker
       // tier's sync PoC files demote to twins.
       new("Copse.Core.Async/ParentResult.cs",

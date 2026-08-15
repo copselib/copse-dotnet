@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Copse.Linq.Tests
 {
-  // The walker law suites' provider fan-out (docs/WALKABLE_CONTRACT_DESIGN.md §4): the
+  // The walker law suites' provider fan-out (design-docs/WALKABLE_CONTRACT_DESIGN.md §4): the
   // comonad laws must hold for every citizen claiming the walkable contract, not just the
   // one the PoC built on -- so each law runs over both declared capture layouts (different
   // handle SPACES; the laws are handle-agnostic), a fresh memo whose probes drive the

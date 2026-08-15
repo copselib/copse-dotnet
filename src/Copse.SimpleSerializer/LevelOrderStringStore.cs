@@ -24,7 +24,7 @@ namespace Copse.SimpleSerializer
   // parse-once replay is the caller's explicit Materialize/Memoize escalation. Single-threaded
   // by contract.
   //
-  // Taxonomy (docs/STORE_FAMILY_REVIEW.md): level-order x growing x text-parse feed.
+  // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x text-parse feed.
   internal sealed class LevelOrderStringStore<TValue> : ILevelOrderStore<TValue>
   {
     public LevelOrderStringStore(string tree, SpanMap<TValue> map)

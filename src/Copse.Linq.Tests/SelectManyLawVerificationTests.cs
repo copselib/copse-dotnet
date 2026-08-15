@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // Phase 3, part A of the categorical audit (docs/CATEGORY_THEORY_SURVEY.md §6): executable
+  // Phase 3, part A of the categorical audit (design-docs/CATEGORY_THEORY_SURVEY.md §6): executable
   // verification of the monad laws for SELECTMANY_DESIGN.md's DECIDED semantics -- root-graft
   // substitution (k = 1: children under the expansion root after its own children, the
   // Data.Tree order; k = 0: promotion into the vacated slot, Where's rule; k >= 2: children

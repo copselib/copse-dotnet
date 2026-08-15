@@ -11,7 +11,7 @@ namespace Copse.Linq
     /// The root-to-leaf accumulations (RootfixScan, then the leaves), as a lazy async sequence --
     /// one <see cref="ScanResult{TSource, TAccumulate}"/> per leaf: the leaf's value paired with
     /// the fold of the accumulator down its root-to-leaf path (the canonical pairing,
-    /// docs/SCANRESULT_DESIGN.md -- project <c>.Accumulate</c> when only values are wanted).
+    /// design-docs/SCANRESULT_DESIGN.md -- project <c>.Accumulate</c> when only values are wanted).
     /// </summary>
     public static IAsyncEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,

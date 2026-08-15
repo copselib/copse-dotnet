@@ -56,7 +56,7 @@ namespace Copse.Linq
     ///
     /// <para>The result pairs every source value with what ARRIVED at it
     /// (<see cref="ScanResult{TSource, TDispatch}"/>, the family's canonical pairing --
-    /// docs/SCANRESULT_DESIGN.md) in the source tree's shape. NOTE the deliberate contrast
+    /// design-docs/SCANRESULT_DESIGN.md) in the source tree's shape. NOTE the deliberate contrast
     /// with the fold tiers: a fold records its OUTPUT, while this survey records its INPUT --
     /// a node's pairing is what its family's survey dispatched to it -- because the survey's
     /// outputs are edge-grained and land as the MEMBERS' arrivals; a survey has no
@@ -65,7 +65,7 @@ namespace Copse.Linq
     /// -- <c>.Do(visit =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode)
     /// visit.Node.Node.Amount = visit.Node.Accumulate; }).Select(pairing =&gt;
     /// pairing.Node)</c> -- effects fire per drain (the re-enumeration contract);
-    /// Materialize/Memoize is the consumer's pin (docs/SCANRESULT_DESIGN.md, the demotion
+    /// Materialize/Memoize is the consumer's pin (design-docs/SCANRESULT_DESIGN.md, the demotion
     /// record).</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> for LeaffixDispatch's

@@ -82,7 +82,7 @@ holds live f-treenumerators across its frontier.
 
 ## VERIFICATION ADDENDUM (2026-08-12) — implementation note 2 executed; the flagged case FAILS
 
-The categorical audit's phase 3 (docs/CATEGORY_THEORY_SURVEY.md §6) ran the monad-law
+The categorical audit's phase 3 (design-docs/CATEGORY_THEORY_SURVEY.md §6) ran the monad-law
 verification this document asked for, via a reference-model oracle grounded against the
 shipped operators (`SelectManyLawVerificationTests`: bind restricted to {Return, Empty}
 reproduces the real `Where` byte-for-byte; bind of Return-composed reproduces the real

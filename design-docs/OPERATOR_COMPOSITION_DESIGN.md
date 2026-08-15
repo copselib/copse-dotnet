@@ -231,7 +231,7 @@ make this cell permanently moot.
   overloads also probe the composite recipe surface first: a composite-width wrapper
   arriving through a narrow-typed receiver keeps composing on its own representation, and
   its successor keeps both dimensions. The twins are GENERATED, not hand-mirrored
-  (2026-07-18, `CompositeToNarrow` in Copse.CodeGen; see docs/ASYNC_CODEGEN.md): the
+  (2026-07-18, `CompositeToNarrow` in Copse.CodeGen; see design-docs/ASYNC_CODEGEN.md): the
   dimension axis, like the color axis, cannot be abstracted by C# generics — the successor
   type constructor is what varies — so a change to a wrapper is made once, in the
   composite-width async file, and fans out to five generated twins (narrow async ×2,

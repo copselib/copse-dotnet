@@ -9,7 +9,7 @@ namespace Copse.Linq.Tests
 {
   // The cofree duplicate's laws, pinned nodewise against Subtrees() -- the comonad's
   // duplicate in the presentation where every label is the subtree rooted at its node
-  // (docs/CATEGORY_THEORY_SURVEY.md §4; the Store presentation's laws live in
+  // (design-docs/CATEGORY_THEORY_SURVEY.md §4; the Store presentation's laws live in
   // WalkerComonadLawTests). The counits: the subtree at a root is that root's whole tree
   // (extract after duplicate), and every label's root value is the original value (map
   // extract after duplicate). Co-associativity: a subtree of a subtree is the deeper

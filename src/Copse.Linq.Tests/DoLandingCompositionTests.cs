@@ -7,7 +7,7 @@ using System.Linq;
 namespace Copse.Linq.Tests
 {
   // THE LANDING COMPOSITION (the Do-quartet demotion record, 2026-08-04 --
-  // docs/SCANRESULT_DESIGN.md): mutable-node workloads are served by composition, not by
+  // design-docs/SCANRESULT_DESIGN.md): mutable-node workloads are served by composition, not by
   // dedicated operators:
   //
   //   pure aggregation  .  Do(scheduling-filtered landing)  .  Select(.Node)

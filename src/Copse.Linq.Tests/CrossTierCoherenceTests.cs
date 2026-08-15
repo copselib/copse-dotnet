@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Copse.Linq.Tests
 {
-  // THE NORTH STAR (ratified 2026-08-05 -- docs/SCANRESULT_DESIGN.md): a scan is the
+  // THE NORTH STAR (ratified 2026-08-05 -- design-docs/SCANRESULT_DESIGN.md): a scan is the
   // fold-shaped dispatch, so for EVERY boundary flavor,
   //
   //   Scan(boundary, fold)  ==  Dispatch(boundary, (a, dts) => { foreach dt: dt.Dispatch(fold(a, dt.Node)); })

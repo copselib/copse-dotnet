@@ -12,7 +12,7 @@ namespace Copse
   /// the traversal-dimension split established -- narrow (one traversal dimension) to composite
   /// (both) to walkable (both, plus adjacency) -- so "can this source be navigated" is a
   /// compile-time fact, and asking a deferred pipeline for adjacency is a compile error rather than
-  /// a hidden materialization. See docs/WALKER_DESIGN.md and docs/WALKABLE_CONTRACT_DESIGN.md.
+  /// a hidden materialization. See design-docs/WALKER_DESIGN.md and design-docs/WALKABLE_CONTRACT_DESIGN.md.
   ///
   /// <para><typeparamref name="THandle"/> is the HANDLE type -- an ordinal for a store-backed
   /// source, the value itself for a source whose value is its own handle. Handles are compared by
@@ -45,7 +45,7 @@ namespace Copse
   /// source is DEMAND -- it may pull the underlying feed just far enough to answer (the
   /// grow-precedes-read protocol); a completed source answers immediately.</para>
   /// </summary>
-  // THE CHARTER, final form (Stage C of docs/WALKER_FACTORY_DESIGN.md, the cut):
+  // THE CHARTER, final form (Stage C of design-docs/WALKER_FACTORY_DESIGN.md, the cut):
   // ITreenumerable is an enumerator factory; IWalkableTreenumerable is a TREE WALKER
   // factory. One member. The probes live on IAsyncTreeTopology -- the provider SPI, which
   // this contract no longer exposes to consumers: the walker is the entire public

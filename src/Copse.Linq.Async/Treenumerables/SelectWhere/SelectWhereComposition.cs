@@ -3,7 +3,7 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The composition algebra, written once (docs/OPERATOR_COMPOSITION_DESIGN.md, "the result
+  // The composition algebra, written once (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result
   // monad"): every way two adjacent arrows compose into one, named [inner]Then[outer] in
   // execution order. The algebra is dimension-blind -- arrows never touch a treenumerator --
   // so the composite-width wrappers and both narrow-width (single-dimension) wrappers compose

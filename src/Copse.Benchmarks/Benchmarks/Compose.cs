@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
-  // The cross-operator composition sentinel (docs/OPERATOR_COMPOSITION_DESIGN.md): mixed
+  // The cross-operator composition sentinel (design-docs/OPERATOR_COMPOSITION_DESIGN.md): mixed
   // Select/Where chains collapse to ONE SelectWhereTreenumerable, and these rows watch that
   // machinery -- the general Compose path, the composed law closure, and FuncResultSelector
   // chains under both drivers. (Projection-only composition -- the light fast path -- is
