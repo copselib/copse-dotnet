@@ -12,10 +12,12 @@
     <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
   </ItemGroup>
 
-  <!-- No InternalsVisibleTo (2026-08-15, the seed-what-breaks re-plumb): the walker's
-       topology is PRIVATE, the constructor and MoveToRoot are public, and the operator
-       tier consumes only the public surface; the family machinery holds no access a
-       third party lacks. -->
+  <!-- No InternalsVisibleTo (2026-08-15): the seal lives at the SUBSTRATE boundary, not
+       here -- TreeWalker.Topology is public (the vantage's bound-physics half; a topology
+       navigates relative to any handle, a walker relative to its focus -- the signatures
+       carry the frame), and what stays hidden is the STORE behind each topology
+       (implementations sealed, accessors internal, wholesale views read-only). The
+       operator tier and third parties hold identical access. -->
 
   <!-- netstandard2.1 and net8.0 have IAsyncEnumerable/IAsyncDisposable/ValueTask in-box; net48 and
        netstandard2.0 get them from the Microsoft polyfill (System.Threading.Tasks.Extensions rides

@@ -285,3 +285,34 @@ twenty lines the internal adapter already automated):
 - `WalkerWalk` deleted; the frame struct moved down as `(Async)TopologyChildEnumerator`
   beside the engine it serves. The walk floor of the tower cost the codebase one struct
   and one public factory method, total.
+
+### §10 third addendum — the frame-of-reference ruling (the same night, Jason's review)
+
+Reviewing the re-plumb, Jason found `WalkerTopology` "a little silly" — a wrapper around a
+walker wrapping a topology, imitating a topology by step-dance. The interrogation that
+followed ended the hiding games entirely:
+
+- **The checkmate question**: making the walker castable to `ITreeTopology` (the explicit-
+  impl proposal) admits topology-holding is safe — "and if that's the case, why are we
+  playing these games to hide it from the consumer?" The safety rationale had dissolved at
+  the paternalism resolution; everything since had served only its ergonomic shadow.
+- **The frame-of-reference principle (Jason, ratified)**: TreeWalker does NOT implement
+  `ITreeTopology` — the two types are distinguished by their signatures' frame. *A topology
+  navigates relative to ANY handle, and its method signatures reflect that. A walker
+  navigates relative to its FOCUS, and its signatures reflect that.* Same physics, two
+  frames; neither impersonates the other.
+- **The substrate principle (Jason, verbatim)**: "The topology didn't need to be hidden;
+  the topology's substrate did — and we're doing that. We never expose the store outside
+  the topology." The seal lives at the topology/STORE boundary (implementations sealed,
+  accessors internal, wholesale views read-only), not at walker/topology. Every torn-down
+  mechanism of the evening — the IVT, the wrapper, the explicit-impl proposal — was the
+  seal enforced one layer too high.
+
+Executed: `TreeWalker.Topology` is a PUBLIC readonly field (the vantage's bound-physics
+half; XML doc carries both principles); `WalkerTopology` deleted (an eager bridge from a
+vantage in hand is just the property read); `WalkableTopology` keeps the deferral role and
+resolves to the door walker's property; the counit closure fix reverted (labels mint over
+the same topology reference natively); the c5f9c2d internalization ruling formally
+REVERSED, with the paternalism resolution as justification. What survives untouched:
+the public ctor mint, `MoveToRoot`, `Tree.FromTopology`, zero IVTs, the foreign-provider
+pin, the Topologies namespace.

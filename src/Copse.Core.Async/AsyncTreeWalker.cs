@@ -47,11 +47,16 @@ namespace Copse.Async
       Focus = focus;
     }
 
-    /// <summary>The topology this walker stands on. PRIVATE (the 2026-08-15 seed-what-breaks
-    /// experiment): consumers meet exactly one navigation spelling -- the walker's own
-    /// members -- and never the SPI behind it. A vantage is focus × topology; the focus is
-    /// public identity, the topology is bound physics.</summary>
-    private readonly IAsyncTreeTopology<TValue, THandle> Topology;
+    /// <summary>The topology this walker stands on -- the bound-physics half of the vantage
+    /// (a vantage is focus × topology), PUBLIC (2026-08-15, the frame-of-reference ruling
+    /// that ended the hiding games: topology-holding is safe by construction -- probes are
+    /// read-only, implementations sealed inside the family, stores capped at read-only
+    /// views -- so the only question was ergonomic, and the two surfaces answer it by
+    /// their SIGNATURES: a topology navigates relative to ANY handle, so its methods take
+    /// one; a walker navigates relative to its FOCUS, so its methods don't. Same physics,
+    /// two frames -- neither impersonates the other, and this property hands builders and
+    /// providers the frame-free half).</summary>
+    public readonly IAsyncTreeTopology<TValue, THandle> Topology;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;

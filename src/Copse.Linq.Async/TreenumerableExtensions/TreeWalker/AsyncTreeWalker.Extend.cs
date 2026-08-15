@@ -1,5 +1,4 @@
 using Copse.Async;
-using Copse.Linq.Async.Topologies;
 using Copse.Linq.Async.Treenumerables;
 using System;
 using System.Threading.Tasks;
@@ -21,12 +20,8 @@ namespace Copse.Linq
       Func<AsyncTreeWalker<TValue, THandle>, ValueTask<TResult>> observer)
       => new AsyncTreeWalker<TResult, THandle>(
         new AsyncExtendWalkable<TValue, THandle, TResult>(
-          new AsyncWalkerTopology<TValue, THandle>(walker),
-          // The observer labels through the ORIGINAL walker, not the reconstituted topology:
-          // labels are At-stances on the source, so the counit's struct identity
-          // (Duplicate().GetValue() == the walker itself) survives the re-plumb -- the
-          // wrapper serves adjacency and streaming, where identity never matters.
-          (boundTopology, handle) => observer(walker.At(handle))),
+          walker.Topology,
+          (topology, handle) => observer(new AsyncTreeWalker<TValue, THandle>(topology, handle))),
         walker.Focus);
   }
 }

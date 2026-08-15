@@ -2,7 +2,6 @@
 //   Generated from AsyncTreeWalker.Extend.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Linq.Topologies;
 using Copse.Linq.Treenumerables;
 using System;
 
@@ -23,12 +22,8 @@ namespace Copse.Linq
       Func<TreeWalker<TValue, THandle>, TResult> observer)
       => new TreeWalker<TResult, THandle>(
         new ExtendWalkable<TValue, THandle, TResult>(
-          new WalkerTopology<TValue, THandle>(walker),
-          // The observer labels through the ORIGINAL walker, not the reconstituted topology:
-          // labels are At-stances on the source, so the counit's struct identity
-          // (Duplicate().GetValue() == the walker itself) survives the re-plumb -- the
-          // wrapper serves adjacency and streaming, where identity never matters.
-          (boundTopology, handle) => observer(walker.At(handle))),
+          walker.Topology,
+          (topology, handle) => observer(new TreeWalker<TValue, THandle>(topology, handle))),
         walker.Focus);
   }
 }

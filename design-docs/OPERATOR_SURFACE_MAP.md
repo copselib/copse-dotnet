@@ -282,15 +282,15 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)PreorderAdjacencyIndex<TStore>   the ordinal topology over a preorder store
 │    (span-arithmetic probes; ScanUntouched seam for the probes-at-birth reclaim)
 ├─ (Async)LevelOrderAdjacencyIndex<TStore> its level-order dual (two-cursor parent merge)
-├─ (Async)WalkableTopology (né DoorTopology, renamed 2026-08-15 — the pair names its SOURCES:
-│    WalkerTopology from a walker, WalkableTopology from a walkable; Copse.Linq.Topologies,
-│    pure topologies, not treenumerables)
+├─ (Async)WalkableTopology (né DoorTopology, renamed 2026-08-15; Copse.Linq.Topologies —
+│    a pure topology, not a treenumerable)
 │    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
-│    at first probe; empty forest = honest misses; post-re-plumb it reconstitutes from the
-│    door's walker, never extracts
-├─ (Async)WalkerTopology (Copse.Linq.Topologies; 2026-08-15, the seed-what-breaks re-plumb)
-│    the SPI reconstituted from a vantage — every answer a public walker step (At + the
-│    three Moves); the bridge that let the operator tier drop the Core family IVT entirely
+│    at first probe (Tree.Lazy semantics); empty forest = honest misses, GetValue throws
+│    (the two-channel doctrine); resolves to the door walker's public Topology
+│    (WalkerTopology, its short-lived eager sibling, RETIRED same day by the
+│    frame-of-reference ruling: TreeWalker.Topology went public — the seal lives at the
+│    SUBSTRATE boundary, store behind topology, never at walker/topology — so an eager
+│    bridge from a vantage in hand is just the property read)
 ├─ (Async)ExtendWalkable / SubtreeWalkable / PruneAfterWalkable   the lens family — each
 │    is its own topology (topology transformers; severed door never misses)
 └─ WalkerWalk RETIRED 2026-08-15 → public Tree.FromTopology (Copse; frame struct =

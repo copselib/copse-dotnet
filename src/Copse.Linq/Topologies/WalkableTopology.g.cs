@@ -34,9 +34,9 @@ namespace Copse.Linq.Topologies
 
       var door = _Source.TryGetTreeWalker();
 
-      // The re-plumb (2026-08-15): the bound topology is reconstituted from the walker's
-      // public steps, never extracted -- the door yields a vantage, and the vantage is enough.
-      _Topology = door.HasWalker ? new WalkerTopology<TValue, THandle>(door.Walker) : null;
+      // The door yields a vantage; its public Topology property is the bound physics
+      // (the frame-of-reference ruling, 2026-08-15).
+      _Topology = door.HasWalker ? door.Walker.Topology : null;
       _Resolved = true;
 
       return _Topology;
