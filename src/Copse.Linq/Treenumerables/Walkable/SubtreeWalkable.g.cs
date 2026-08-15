@@ -2,6 +2,7 @@
 //   Generated from AsyncSubtreeWalkable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using System.Collections.Generic;
 
@@ -26,7 +27,7 @@ namespace Copse.Linq.Treenumerables
     {
       _Source = source;
       _Root = root;
-      _Walk = WalkerWalk.Create(this);
+      _Walk = Tree.FromTopology(this);
     }
 
     private readonly ITreeTopology<TValue, THandle> _Source;

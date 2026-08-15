@@ -265,3 +265,23 @@ PRIVATE simultaneously, and the compile-error census decided the rest. Outcome:
 - Rejected en route, recorded above: `Extend` on the contract; a named static mint
   (`Over`) — sugar the ctor already spells; a `TryOverRoot` helper — waits for a
   provider receipt.
+
+### §10 second addendum — Tree.FromTopology (same evening)
+
+Jason's placement question ("does WalkerWalk belong here? Could this be Tree.FromTopology?")
+found the TreenumerableFactory pattern repeating: WalkerWalk had ZERO Linq dependencies —
+Copse-level machinery marooned in the operator tier, exactly the maroon the 2026-08-14
+sweep folded into Tree. Executed public, on the receipt the foreign-provider pin had just
+written (the test hand-rolled a child enumerator + engine tree for its streaming half —
+twenty lines the internal adapter already automated):
+
+- **`Tree.FromTopology(topology)`** — the Walk adapter on the one creation surface, PUBLIC.
+  The open-ecosystem story completes: implement `ITreeTopology` over a native structure and
+  BOTH halves of `IWalkableTreenumerable` are one line each — the door through the public
+  `TreeWalker` mint, the streams through `FromTopology`.
+- The labeled overload DIED: `ExtendWalkable` is a topology whose `GetValue` IS the
+  observation, so it self-feeds (`FromTopology(this)`) — the labeling arrow resolves
+  during the pull as its own probe. `SubtreeWalkable` already self-fed; now both lenses do.
+- `WalkerWalk` deleted; the frame struct moved down as `(Async)TopologyChildEnumerator`
+  beside the engine it serves. The walk floor of the tower cost the codebase one struct
+  and one public factory method, total.

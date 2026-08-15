@@ -2,6 +2,7 @@ using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using System;
+using System.Collections.Generic;
 
 namespace Copse.Async.Treenumerables
 {
@@ -191,5 +192,38 @@ namespace Copse.Async.Treenumerables
     public static IAsyncBreadthFirstTreenumerable<TNode> CreateBreadthFirst<TNode>(
       Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
+
+    // The Walk adapter, public (2026-08-15; absorbed from the operator tier's WalkerWalk the
+    // day the ecosystem opened): a topology's indexed child probe IS a child pull, so the
+    // hierarchical engine can drive any ITreeTopology directly -- this frame-struct
+    // composition is the whole adapter, and it affords BOTH dimensions. The third-party
+    // story this completes: implement the SPI over your native structure and the streaming
+    // half of IWalkableTreenumerable is one delegation (the walker half is one construction
+    // -- the public TreeWalker mint). Labels resolve DURING the pull through GetValue, so
+    // a view whose GetValue is an observation (the Extend lens) streams its own labeling
+    // for free by walking itself. Conformance is the law suites' degenerate-tower pin:
+    // walking a store-backed topology reproduces the store's native visit streams.
+    public static IAsyncTreenumerable<TValue> FromTopology<TValue, THandle>(
+      IAsyncTreeTopology<TValue, THandle> topology)
+      => new AsyncTreenumerable<TValue, HandleAndValue<THandle, TValue>, AsyncTopologyChildEnumerator<TValue, THandle>>(
+        nodeContext => new AsyncTopologyChildEnumerator<TValue, THandle>(topology, nodeContext.Node.Handle),
+        labeledNode => labeledNode.Value,
+        RootsFrom(topology));
+
+    private static async IAsyncEnumerable<HandleAndValue<THandle, TValue>> RootsFrom<TValue, THandle>(
+      IAsyncTreeTopology<TValue, THandle> topology)
+    {
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootResult = await topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+
+        if (!rootResult.HasChild)
+          yield break;
+
+        var value = await topology.GetValueAsync(rootResult.Child.Node).ConfigureAwait(false);
+
+        yield return new HandleAndValue<THandle, TValue>(rootResult.Child.Node, value);
+      }
+    }
   }
 }

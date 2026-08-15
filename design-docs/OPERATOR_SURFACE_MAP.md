@@ -119,6 +119,7 @@ is the seam everything below rides: the four adjacency probes are provider SPI
 
 | Factory | Behavior |
 |---|---|
+| Tree.FromTopology(topology) | **PUBLIC 2026-08-15** (absorbed the operator tier's internal WalkerWalk, the day the ecosystem opened): the Walk adapter on the one creation surface — the engine drives any `ITreeTopology`'s indexed child probe as a pull, labels resolving during it, both dimensions afforded. The third-party payoff: implement the SPI, and `IWalkableTreenumerable`'s streaming half is one delegation (the walker half is the public `TreeWalker` mint). Lenses self-feed (`FromTopology(this)` — an Extend view's GetValue IS the observation, so no labeled overload exists). Conformance = the degenerate-tower pin |
 | Tree.Defer / DeferDepthFirst / DeferBreadthFirst | factory re-runs **per acquisition** (call-by-name — that's Defer's contract) |
 | Tree.Lazy / LazyDepthFirst / LazyBreadthFirst (+ dimension-observing form) | factory runs **once**, pinned for both dimensions (call-by-need); the deferral seam every capture op rides |
 | Tree.Using (× dims) | resource per acquisition; treenumerator Dispose is the release point |
@@ -292,8 +293,9 @@ ADDED 2026-08-14/15, the walker workstream)
 │    three Moves); the bridge that let the operator tier drop the Core family IVT entirely
 ├─ (Async)ExtendWalkable / SubtreeWalkable / PruneAfterWalkable   the lens family — each
 │    is its own topology (topology transformers; severed door never misses)
-└─ (Async)WalkerWalk                       the Walk adapter: a topology's streaming half,
-     so every lens view is a full treenumerable citizen
+└─ WalkerWalk RETIRED 2026-08-15 → public Tree.FromTopology (Copse; frame struct =
+     (Async)TopologyChildEnumerator beside the engine): the Walk adapter joined the one
+     creation surface; lens views self-feed through it
 
 Outside the family, on purpose:
 └─ TestUtils PreorderTree — same (values[], subtreeSizes[]) encoding but rides the DFS/BFS

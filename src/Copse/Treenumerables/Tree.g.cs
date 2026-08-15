@@ -5,6 +5,7 @@
 using Copse.Treenumerators;
 using Copse.Core;
 using System;
+using System.Collections.Generic;
 
 namespace Copse.Treenumerables
 {
@@ -171,5 +172,38 @@ namespace Copse.Treenumerables
     public static IBreadthFirstTreenumerable<TNode> CreateBreadthFirst<TNode>(
       Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new DelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
+
+    // The Walk adapter, public (2026-08-15; absorbed from the operator tier's WalkerWalk the
+    // day the ecosystem opened): a topology's indexed child probe IS a child pull, so the
+    // hierarchical engine can drive any ITreeTopology directly -- this frame-struct
+    // composition is the whole adapter, and it affords BOTH dimensions. The third-party
+    // story this completes: implement the SPI over your native structure and the streaming
+    // half of IWalkableTreenumerable is one delegation (the walker half is one construction
+    // -- the public TreeWalker mint). Labels resolve DURING the pull through GetValue, so
+    // a view whose GetValue is an observation (the Extend lens) streams its own labeling
+    // for free by walking itself. Conformance is the law suites' degenerate-tower pin:
+    // walking a store-backed topology reproduces the store's native visit streams.
+    public static ITreenumerable<TValue> FromTopology<TValue, THandle>(
+      ITreeTopology<TValue, THandle> topology)
+      => new Treenumerable<TValue, HandleAndValue<THandle, TValue>, TopologyChildEnumerator<TValue, THandle>>(
+        nodeContext => new TopologyChildEnumerator<TValue, THandle>(topology, nodeContext.Node.Handle),
+        labeledNode => labeledNode.Value,
+        RootsFrom(topology));
+
+    private static IEnumerable<HandleAndValue<THandle, TValue>> RootsFrom<TValue, THandle>(
+      ITreeTopology<TValue, THandle> topology)
+    {
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootResult = topology.TryGetRootAt(rootIndex);
+
+        if (!rootResult.HasChild)
+          yield break;
+
+        var value = topology.GetValue(rootResult.Child.Node);
+
+        yield return new HandleAndValue<THandle, TValue>(rootResult.Child.Node, value);
+      }
+    }
   }
 }

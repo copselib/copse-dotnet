@@ -2,6 +2,7 @@
 //   Generated from AsyncExtendWalkable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Treenumerables;
 using Copse.Core;
 using System;
 
@@ -23,7 +24,10 @@ namespace Copse.Linq.Treenumerables
     {
       _Source = source;
       _Observer = observer;
-      _Walk = WalkerWalk.Create(source, observer);
+      // Self-feed: this view IS a topology whose GetValue is the observation, so walking
+      // itself streams the relabeling -- the labeling arrow Tree.FromTopology resolves
+      // during each pull is exactly the observer (the reason no labeled overload exists).
+      _Walk = Tree.FromTopology(this);
     }
 
     private readonly ITreeTopology<TValue, THandle> _Source;

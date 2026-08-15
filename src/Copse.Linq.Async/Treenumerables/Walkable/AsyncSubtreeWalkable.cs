@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Async.Treenumerables;
 using Copse.Core.Async;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       _Source = source;
       _Root = root;
-      _Walk = AsyncWalkerWalk.Create(this);
+      _Walk = AsyncTree.FromTopology(this);
     }
 
     private readonly IAsyncTreeTopology<TValue, THandle> _Source;

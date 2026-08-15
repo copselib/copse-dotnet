@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Async.Treenumerables;
 using Copse.Core.Async;
 using System;
 using System.Threading.Tasks;
@@ -21,7 +22,10 @@ namespace Copse.Linq.Async.Treenumerables
     {
       _Source = source;
       _Observer = observer;
-      _Walk = AsyncWalkerWalk.Create(source, observer);
+      // Self-feed: this view IS a topology whose GetValue is the observation, so walking
+      // itself streams the relabeling -- the labeling arrow Tree.FromTopology resolves
+      // during each pull is exactly the observer (the reason no labeled overload exists).
+      _Walk = AsyncTree.FromTopology(this);
     }
 
     private readonly IAsyncTreeTopology<TValue, THandle> _Source;

@@ -36,8 +36,16 @@ namespace Copse.Tests
         ["d"] = "b",
       };
 
-      private readonly ITreenumerable<string> _Streaming = new Treenumerable<string, DictionaryChildren>(
-        nodeContext => new DictionaryChildren(Children[nodeContext.Node]), new[] { "a" });
+      // The streaming half, for free: the provider IS a topology, and Tree.FromTopology
+      // walks any topology with the engine (2026-08-15 -- the second half of the
+      // open-ecosystem story; before it, this test hand-rolled a child enumerator and an
+      // engine tree to stream, twenty lines of boilerplate the factory replaces).
+      private readonly ITreenumerable<string> _Streaming;
+
+      public FamilyFreeTree()
+      {
+        _Streaming = Tree.FromTopology(this);
+      }
 
       public ITreenumerator<string> GetDepthFirstTreenumerator() => _Streaming.GetDepthFirstTreenumerator();
 
@@ -64,25 +72,6 @@ namespace Copse.Tests
 
       public ChildResult<string> TryGetRootAt(int rootIndex)
         => rootIndex == 0 ? new ChildResult<string>(new NodeAndSiblingIndex<string>("a", 0)) : default;
-    }
-
-    private struct DictionaryChildren : IChildEnumerator<string>
-    {
-      private readonly string[] _Children;
-      private int _Index;
-
-      public DictionaryChildren(string[] children)
-      {
-        _Children = children;
-        _Index = 0;
-      }
-
-      public ChildResult<string> MoveNext()
-        => _Index < _Children.Length
-          ? new ChildResult<string>(new NodeAndSiblingIndex<string>(_Children[_Index], _Index++))
-          : default;
-
-      public void Dispose() { }
     }
 
     [TestMethod]
