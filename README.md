@@ -69,13 +69,13 @@ without materialization when possible — the streaming operators stay lazy end-
 an operation does capture the tree (or might), its return type and docs say so:
 
 ```csharp
-int[] preOrder = tree.PreorderTraversal().ToArray();  // [1, 2, 4, 5, 3, 6, 7]
+int[] preOrder = tree.GetPreorderTraversal().ToArray();  // [1, 2, 4, 5, 3, 6, 7]
 int[] leaves   = tree.GetLeaves().ToArray();           // [4, 5, 6, 7]
 
 // Select transforms values while preserving tree structure
 int[] doubled  = tree
     .Select(node => node * 2)
-    .PreorderTraversal()
+    .GetPreorderTraversal()
     .ToArray();                                        // [2, 4, 8, 10, 6, 12, 14]
 
 // PruneBefore removes a node and its descendants when the predicate is true
@@ -93,20 +93,21 @@ ancestor — unlike `IEnumerable.Where`, which is a flat element filter:
 // 4 and 6 are also removed but have no children, so they simply vanish.
 int[] filtered = tree
     .Where(node => node % 2 != 0)
-    .PreorderTraversal()
+    .GetPreorderTraversal()
     .ToArray();
 // Result tree: 1(5, 3(7))  =>  [1, 5, 3, 7]
 ```
 
-**`LeaffixAggregate`** folds bottom-up, one value per root: every node's accumulation starts
-at the node selector (its own contribution), then each child's completed accumulation is
-folded in, one child at a time in sibling order:
+**`LeaffixAggregate`** folds bottom-up, one value per root: each family's completed child
+accumulations are reduced pairwise (the edge accumulator), then the node folds itself in
+once (the node accumulator); leaves fold against the seed:
 
 ```csharp
 int subtreeSum = tree
     .LeaffixAggregate(
-        nodeContext => nodeContext.Node,
-        (accumulate, childAccumulate) => accumulate + childAccumulate)
+        0,                                                   // seed: what arrives at a leaf
+        (accumulate, childAccumulate) => accumulate + childAccumulate,
+        (accumulate, node) => accumulate + node)
     .First()
     .Accumulate;   // results are ScanResults: the root's value paired with its fold
 // 28  (1 + 2 + 3 + 4 + 5 + 6 + 7)
@@ -116,10 +117,11 @@ int subtreeSum = tree
 
 | Package | Description |
 |---|---|
-| `Copse.Core` | Interfaces, enums, and position types (`ITreenumerable<T>`, `NodePosition`, `NodeTraversalStrategies`, …) |
+| `Copse.Core` | Interfaces, enums, and position types (`ITreenumerable<T>`, `IWalkableTreenumerable<T,H>`, `TreeWalker`, `NodePosition`, …) |
 | `Copse` | Depth-first and breadth-first traversal engine |
-| `Copse.Linq` | LINQ-style tree operations (`Where`, `Select`, `GetLeaves`, `PruneBefore`, `LeaffixAggregate`, `Union`, …) |
+| `Copse.Linq` | LINQ-style tree operations (`Where`, `Select`, `GetLeaves`, `PruneBefore`, `LeaffixAggregate`, `Union`, tree-walker navigation, …) |
 | `Copse.SimpleSerializer` | Text-format tree serialization for debugging and testing |
+| `Copse.Core.Async` / `Copse.Async` / `Copse.Linq.Async` | The async family — the same surface over awaited pulls (these are the codegen sources the sync packages are generated from) |
 
 ## Documentation
 

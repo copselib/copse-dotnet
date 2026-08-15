@@ -11,6 +11,14 @@
     <!-- Nothing ships unless a project explicitly opts in. -->
     <IsPackable>false</IsPackable>
 
+    <!-- LangVersion is DELIBERATELY not set here (2026-08-15). The async projects pin 13
+         (single-target sources, modern C#); the multi-target sync projects stay unpinned so
+         each TFM gets its default, which makes the net48/netstandard2.0 legs compile as
+         C# 7.3 and thereby ENFORCE that the codegen transform emits 7.3-compatible twins.
+         Pinning 13 family-wide would silently remove that enforcement: the old legs would
+         accept modern syntax and fail only at runtime or never. The generated code's
+         downlevel compatibility is guarded by the build itself; keep it that way. -->
+
     <!-- Shared package metadata. -->
     <Authors>Jason Boyd</Authors>
     <Copyright>Copyright (c) 2023-2026 Jason Boyd</Copyright>

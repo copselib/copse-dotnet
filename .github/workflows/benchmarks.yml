@@ -489,8 +489,12 @@ jobs:
           # Feature branches: fork Bencher's branch from MAIN's population, cloning main's
           # per-testbed thresholds, so every branch upload is COMPARED against main -- the
           # branch-vs-main answer the dashboard (main-only by design) never gives. Reset on
-          # each run so the comparison is always against current main, never stale branch
-          # history. Main itself needs no start point.
+          # each RUN so the comparison is always against current main, never stale branch
+          # history -- but only on the run's FIRST upload: --start-point-reset replaces the
+          # Bencher branch head, so carrying it into the per-family loop would orphan every
+          # previously-uploaded family's data and alerts each iteration (observed 2026-08-15:
+          # only the last family survived on the branch view). Subsequent uploads append to
+          # the head the first one minted. Main itself needs no start point.
           START_POINT_ARGS=""
           if [ "$GITHUB_REF_NAME" != "main" ]; then
             START_POINT_ARGS="--start-point main --start-point-clone-thresholds --start-point-reset"
@@ -537,6 +541,7 @@ jobs:
               --threshold-max-sample-size 64 \
               --threshold-upper-boundary 0.98 \
               --thresholds-reset
+            START_POINT_ARGS=""
           done
           # Note: no --error-on-alert flag, so an alert is reported but does NOT fail the build
           # during the trial. Add --error-on-alert once you trust the thresholds and want
