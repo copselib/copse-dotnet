@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Linq.Async.Topologies;
 using Copse.Linq.Async.Treenumerables;
 using System;
 using System.Threading.Tasks;

@@ -112,7 +112,7 @@ is the seam everything below rides: the four adjacency probes are provider SPI
 | Subtree() | TreeWalker | IWalkableTreenumerable | lazy (lens view) | the severed re-rooted view at the focus — the walker-side spelling of the same lens |
 | Duplicate() | TreeWalker | TreeWalker\<TreeWalker, THandle\> | lazy | `Extend(focus => focus)` — extend of the identity, the definition; one line |
 | GetTreeWalkerAt(handle) | IWalkableTreenumerable | **TreeWalker** (bare) | O(1) | the TRUST door: door-then-jump (`walker.At(handle)`); pure construction, cannot fail — a forged handle detonates at the first probe (per-capture clause); stored handles re-enter here |
-| TryGetTreeWalkerAtRootIndex(k) | IWalkableTreenumerable | TreeWalkerResult | O(1), honest miss | door + the walker-seam root probe; RootIndex spelled out so ordinal-vs-handle stays visible when THandle = int |
+| TryGetTreeWalkerAtRootIndex(k) | IWalkableTreenumerable | TreeWalkerResult | O(1), honest miss | door + `MoveToRoot(k)` (the walker's third step, 2026-08-15 — derived, never a contract member); RootIndex spelled out so ordinal-vs-handle stays visible when THandle = int |
 | GetHandles / GetHandlesWithValues | IWalkableTreenumerable | IEnumerable\<THandle\> / \<HandleAndValue\> | streams (pure stance walk) | acquisition scans: doors + steps, the walk assigns its own preorder numbering (any-layout receivers fold in place); WithValues = the search law's ONE earned exception (receiver-recovery: a value predicate mid-chain can't reach the walker without naming the receiver twice) |
 | PruneAfter lens | IWalkableTreenumerable | pair-citizen view | lazy | stream half delegates to the streaming operator; adjacency half is its own topology (the lens family; crossed colors 2026-08-14 — async source, generated sync twin) |
 | SpanningSubtree(targets) | IWalkableTreenumerable | **TreeWalkerResult\<TValue, int\>** | **capture (O(kept), at the call's end)** | **NEW 2026-08-14 (UC-32 distilled — the capstone as an operation)**: minimum spanning subtree of the targets, returned as a walker at the spanning root over a FRESH preorder capture (handles are the new capture's ordinals — the per-capture clause, pinned by test). Result-typed twice: k = 0 (spanning of ∅ is ∅) and disjoint trees (no common ancestor) are honest misses; k = 1 = the node alone. Composition of shipped pieces: walker-first LCA fold + path-recording climbs (the kept-set), severed re-root, the handle-decorated-stream clamp (Extend → PruneBefore in handle-space → Select), one Materialize. Future membership LENS makes it zero-copy; semantics fixed here. The private walker-first LCA is the axis wave's first promotion candidate. Crossed colors 2026-08-14 (async SpanningSubtreeAsync = the source; the sync twin generated) |
@@ -281,8 +281,13 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)PreorderAdjacencyIndex<TStore>   the ordinal topology over a preorder store
 │    (span-arithmetic probes; ScanUntouched seam for the probes-at-birth reclaim)
 ├─ (Async)LevelOrderAdjacencyIndex<TStore> its level-order dual (two-cursor parent merge)
-├─ (Async)DoorTopology                     Stage C's one new machinery: "the topology this
-│    walkable's door WILL bind," knocked once at first probe; empty forest = honest misses
+├─ (Async)DoorTopology (Copse.Linq.Topologies — pure topologies, not treenumerables)
+│    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
+│    at first probe; empty forest = honest misses; post-re-plumb it reconstitutes from the
+│    door's walker, never extracts
+├─ (Async)WalkerTopology (Copse.Linq.Topologies; 2026-08-15, the seed-what-breaks re-plumb)
+│    the SPI reconstituted from a vantage — every answer a public walker step (At + the
+│    three Moves); the bridge that let the operator tier drop the Core family IVT entirely
 ├─ (Async)ExtendWalkable / SubtreeWalkable / PruneAfterWalkable   the lens family — each
 │    is its own topology (topology transformers; severed door never misses)
 └─ (Async)WalkerWalk                       the Walk adapter: a topology's streaming half,

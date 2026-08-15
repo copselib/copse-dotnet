@@ -34,11 +34,7 @@ namespace Copse.Linq
       if (rootIndex == 0)
         return door;
 
-      var rootResult = door.Walker.Topology.TryGetRootAt(rootIndex);
-
-      return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(door.Walker.At(rootResult.Child.Node))
-        : default;
+      return door.Walker.MoveToRoot(rootIndex);
     }
   }
 }

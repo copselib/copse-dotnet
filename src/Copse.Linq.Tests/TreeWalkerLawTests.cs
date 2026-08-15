@@ -1,3 +1,4 @@
+using Copse.Linq.Topologies;
 using Copse.Linq.Treenumerables;
 using Copse;
 using Copse.SimpleSerializer;

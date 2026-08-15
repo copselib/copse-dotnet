@@ -25,7 +25,7 @@ namespace Copse.Linq.Tests
     // overload lets sweeps wrap every probe receiver uniformly: already-topology-typed
     // receivers pass through.
     public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(IWalkableTreenumerable<TValue, THandle> walkable)
-      => walkable.TryGetTreeWalker().Walker.Topology;
+      => new Copse.Linq.Topologies.WalkerTopology<TValue, THandle>(walkable.TryGetTreeWalker().Walker);
 
     public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(ITreeTopology<TValue, THandle> topology)
       => topology;

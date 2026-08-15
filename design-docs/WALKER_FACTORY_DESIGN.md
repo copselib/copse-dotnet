@@ -232,3 +232,36 @@ DIM unavailable on net48). The sentinel completion is CLOSED — not happening a
 something extremely compelling (ergonomics over academic correctness; the survey's
 "materialized as a seed, not as a node" is the permanent account) — so the door's shape
 has no live design question hanging over these dials.
+
+### §10 addendum — EXECUTED same day (the seed-what-breaks experiment)
+
+Jason chose not to wait for the signature pass: the ctor went public and the topology went
+PRIVATE simultaneously, and the compile-error census decided the rest. Outcome:
+
+- **All three dials landed at once, and dial 3 resolved itself.** The census showed every
+  IVT read was a construction site whose only unreachable answer was the root axis — so
+  `MoveToRoot(rootIndex)` (Jason's name: it IS a step, walking the virtual forest-root's
+  child group as `MoveToChild` walks a node's; Move stays unmarked per the MoveNext
+  precedent) plus the public ctor covered everything. No CPS window, no `Apply`, no seal
+  to choose: **all four Core IVTs are deleted** and `Topology` is `private` — tighter than
+  the `internal` the discussion started from.
+- **`WalkerTopology`** (with `DoorTopology`, both now in `Copse.Linq.Topologies` — they
+  are topologies, not treenumerables, so they left the `Treenumerables` namespace): the
+  SPI reconstituted from a vantage, every answer a public walker step. The lens builders
+  and the door-deferral consume it; the operator tier holds no access a third party lacks.
+- **The counit lesson** (caught by the law suites, first run): walker-receiver `Extend`
+  must label through the ORIGINAL walker (`walker.At(handle)`), not through the
+  reconstituted topology — struct identity (`Duplicate().GetValue()` equals the walker)
+  cannot survive wrapper indirection on the label path. The wrapper serves adjacency and
+  streaming, where identity never matters; labels stay on the source topology.
+- **The open-ecosystem pin**: `ForeignWalkableProviderTests` (in `Copse.Tests`, which
+  holds NO Core IVT — its compiling is the proof) implements the contract entirely
+  outside the family: native dictionary adjacency, string handles, a one-line door
+  through the public ctor, both surfaces coexisting.
+- The second contract member (`TryGetTreeWalkerAtRootIndex` on the walkable) was
+  considered and REJECTED: derivable correct-by-construction from door + `MoveToRoot`;
+  a contract member would re-open per-provider coherence obligations for zero capability
+  gain, and the one-member charter sentence stays load-bearing.
+- Rejected en route, recorded above: `Extend` on the contract; a named static mint
+  (`Over`) — sugar the ctor already spells; a `TryOverRoot` helper — waits for a
+  provider receipt.

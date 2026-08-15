@@ -19,7 +19,7 @@ namespace Copse.Async.Tests
   {
     // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
     private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
-      => (await walkable.TryGetTreeWalkerAsync()).Walker.Topology;
+      => new Copse.Linq.Async.Topologies.AsyncWalkerTopology<string, int>((await walkable.TryGetTreeWalkerAsync()).Walker);
 
     private static readonly string[] Trees =
     {

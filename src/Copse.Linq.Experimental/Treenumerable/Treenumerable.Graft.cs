@@ -1,6 +1,7 @@
 ﻿using Copse.Core;
 using Copse.Linq.Experimental.Treenumerators;
 using Copse.Linq.Treenumerables;
+using Copse.Treenumerables;
 using System;
 
 namespace Copse.Linq.Experimental

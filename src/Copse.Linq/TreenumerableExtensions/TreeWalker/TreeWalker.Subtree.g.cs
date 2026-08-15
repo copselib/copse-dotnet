@@ -2,6 +2,7 @@
 //   Generated from AsyncTreeWalker.Subtree.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Topologies;
 using Copse.Linq.Treenumerables;
 
 namespace Copse.Linq
@@ -17,6 +18,6 @@ namespace Copse.Linq
     /// two round trips are not symmetric).</summary>
     public static IWalkableTreenumerable<TValue, THandle> Subtree<TValue, THandle>(
       this TreeWalker<TValue, THandle> walker)
-      => new SubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
+      => new SubtreeWalkable<TValue, THandle>(new WalkerTopology<TValue, THandle>(walker), walker.Focus);
   }
 }

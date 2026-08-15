@@ -1,5 +1,6 @@
 using Copse.Async;
 using Copse.Core.Async;
+using Copse.Linq.Async.Topologies;
 using System;
 using System.Threading.Tasks;
 

@@ -32,11 +32,7 @@ namespace Copse.Linq
       if (rootIndex == 0)
         return door;
 
-      var rootResult = await door.Walker.Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
-
-      return rootResult.HasChild
-        ? new AsyncTreeWalkerResult<TValue, THandle>(door.Walker.At(rootResult.Child.Node))
-        : default;
+      return await door.Walker.MoveToRootAsync(rootIndex).ConfigureAwait(false);
     }
   }
 }

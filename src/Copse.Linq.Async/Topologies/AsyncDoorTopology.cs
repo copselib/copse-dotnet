@@ -2,7 +2,7 @@ using Copse.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Async.Topologies
 {
   // The door's topology, deferred (Stage C): the walkable no longer exposes its topology,
   // so machinery that must build lazily over "whatever topology this walkable's door will
@@ -30,7 +30,9 @@ namespace Copse.Linq.Async.Treenumerables
 
       var door = await _Source.TryGetTreeWalkerAsync().ConfigureAwait(false);
 
-      _Topology = door.HasWalker ? door.Walker.Topology : null;
+      // The re-plumb (2026-08-15): the bound topology is reconstituted from the walker's
+      // public steps, never extracted -- the door yields a vantage, and the vantage is enough.
+      _Topology = door.HasWalker ? new AsyncWalkerTopology<TValue, THandle>(door.Walker) : null;
       _Resolved = true;
 
       return _Topology;

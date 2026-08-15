@@ -1,4 +1,5 @@
 using Copse.Async;
+using Copse.Linq.Async.Topologies;
 using Copse.Linq.Async.Treenumerables;
 
 namespace Copse.Linq
@@ -14,6 +15,6 @@ namespace Copse.Linq
     /// two round trips are not symmetric).</summary>
     public static IAsyncWalkableTreenumerable<TValue, THandle> Subtree<TValue, THandle>(
       this AsyncTreeWalker<TValue, THandle> walker)
-      => new AsyncSubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
+      => new AsyncSubtreeWalkable<TValue, THandle>(new AsyncWalkerTopology<TValue, THandle>(walker), walker.Focus);
   }
 }

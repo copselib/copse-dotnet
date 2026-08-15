@@ -31,22 +31,27 @@ namespace Copse.Async
   /// </summary>
   public readonly struct AsyncTreeWalker<TValue, THandle>
   {
-    // INTERNAL (Stage C, the cut): the doors are the only public mints -- a consumer gets a
-    // walker from a factory or from another walker (steps, the jump), never by construction.
-    // The operator tier and the doors mint through the family IVT; `default` remains the one
-    // invalid inhabitant.
-    internal AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology, THandle focus)
+    /// <summary>The provider mint (PUBLIC again 2026-08-15, restoring the placement-pass
+    /// ruling "construction IS the trust door" -- Stage C's internalization closed the
+    /// ecosystem: the SPI was implementable but the door was not, so a foreign
+    /// <see cref="IAsyncWalkableTreenumerable{TValue, THandle}"/> could never mint the walker
+    /// its own door must return). Construction is pure pairing: the topology flows IN, the
+    /// walker flows out, and nothing here exposes the topology to anyone who did not already
+    /// hold it. Validity is the caller's oath, exactly as at the jump: the focus is presumed
+    /// a real node of <paramref name="topology"/>, a forged one detonates at the first probe,
+    /// and <c>default</c> remains the one invalid inhabitant. Two audiences, two mints:
+    /// consumers mint through doors and the jump; providers mint through construction.</summary>
+    public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology, THandle focus)
     {
       Topology = topology;
       Focus = focus;
     }
 
-    /// <summary>The topology this walker stands on. INTERNAL (the door-only design): consumers
-    /// meet exactly one navigation spelling -- the walker's own members -- and never the SPI
-    /// behind it; the comonad's operator surface (co-bind, duplicate, the severed view) reads
-    /// this half through the family IVT. A vantage is focus × topology; the focus is public
-    /// identity, the topology is bound physics.</summary>
-    internal readonly IAsyncTreeTopology<TValue, THandle> Topology;
+    /// <summary>The topology this walker stands on. PRIVATE (the 2026-08-15 seed-what-breaks
+    /// experiment): consumers meet exactly one navigation spelling -- the walker's own
+    /// members -- and never the SPI behind it. A vantage is focus × topology; the focus is
+    /// public identity, the topology is bound physics.</summary>
+    private readonly IAsyncTreeTopology<TValue, THandle> Topology;
 
     /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
     public readonly THandle Focus;
@@ -83,6 +88,22 @@ namespace Copse.Async
 
       return childResult.HasChild
         ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Topology, childResult.Child.Node))
+        : default;
+    }
+
+    /// <summary>The third step (2026-08-15, the seed-what-breaks receipt): a stance at the
+    /// root at <paramref name="rootIndex"/> of the SAME topology -- the one adjacency the
+    /// other steps cannot reach, because roots share no parent/child edge (this walks the
+    /// virtual forest-root's child group, exactly as <see cref="MoveToChildAsync"/> walks a
+    /// node's). Empty result past the last root. With this member the step set covers the
+    /// topology's whole probe surface, which is what let the operator tier stop extracting
+    /// the topology from walkers altogether.</summary>
+    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToRootAsync(int rootIndex)
+    {
+      var rootResult = await Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+
+      return rootResult.HasChild
+        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(Topology, rootResult.Child.Node))
         : default;
     }
 

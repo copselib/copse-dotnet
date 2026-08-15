@@ -11,12 +11,9 @@
     <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Family IVT (the store-policy precedent, 2026-08-14): the walker's Topology field is
-         internal so consumers meet ONE navigation spelling; the comonad extensions in the
-         operator tier are the sanctioned readers. Lockstep packaging makes this skew-safe. -->
-    <InternalsVisibleTo Include="Copse.Linq" />
-    <InternalsVisibleTo Include="Copse.Linq.Tests" />
-  </ItemGroup>
+  <!-- No InternalsVisibleTo (2026-08-15, the seed-what-breaks re-plumb): the walker's
+       topology is PRIVATE, the constructor and MoveToRoot are public, and the operator
+       tier consumes only the public surface; the family machinery holds no access a
+       third party lacks. -->
 
 </Project>
