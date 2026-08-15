@@ -486,6 +486,15 @@ jobs:
           BENCHER_PROJECT: ${{ vars.BENCHER_PROJECT || 'copse-dotnet' }}
         run: |
           set -euo pipefail
+          # Feature branches: fork Bencher's branch from MAIN's population, cloning main's
+          # per-testbed thresholds, so every branch upload is COMPARED against main -- the
+          # branch-vs-main answer the dashboard (main-only by design) never gives. Reset on
+          # each run so the comparison is always against current main, never stale branch
+          # history. Main itself needs no start point.
+          START_POINT_ARGS=""
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            START_POINT_ARGS="--start-point main --start-point-clone-thresholds --start-point-reset"
+          fi
           # One report per family, filed under a PER-CPU-MODEL testbed (recorded by each leg):
           # shared runners are a CPU lottery, and per-CPU testbeds let Bencher's per-benchmark
           # thresholds learn each machine model's population separately -- a fleet change shows
@@ -519,6 +528,7 @@ jobs:
               --project "$BENCHER_PROJECT" \
               --key "$BENCHER_API_KEY" \
               --branch "$GITHUB_REF_NAME" \
+              $START_POINT_ARGS \
               --testbed "$TESTBED" \
               --adapter json \
               --file "$BMF" \
