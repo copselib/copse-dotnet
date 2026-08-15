@@ -7,24 +7,23 @@ namespace Copse.Linq.Experimental
   {
     // The sequence floor of the walker tower (design-docs/WALKER_DESIGN.md): axes yield lazy sequences of
     // HANDLES, so ordinary LINQ is the walker's operator algebra -- no operator algebra of its own.
-    // Values resolve through GetValue. Names follow the 2016 ITreeWalker surface (GetAncestors,
-    // GetChildren, ...), whose extensions these resurrect, over the indexed child contract (the
-    // VisualTreeHelper shape -- no enumerator objects anywhere below this floor; the IEnumerable
-    // allocation here is the LINQ boundary's, where it was always going to be paid). Parked here
-    // so the axis spelling isn't locked in by shipping; the region and walk floors are not
-    // scaffolded yet.
+    // Values resolve through the walker. Names follow the 2016 ITreeWalker surface (GetAncestors,
+    // GetChildren, ...), whose extensions these resurrect, spelled over the door and the walker's
+    // steps (the only public navigation surface post-cut -- the adjacency probes are provider SPI).
+    // Parked here so the axis spelling isn't locked in by shipping; the region and walk floors are
+    // not scaffolded yet.
 
     public static IEnumerable<THandle> GetAncestors<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
-      var parentResult = source.TryGetParent(handle);
+      var step = source.GetTreeWalkerAt(handle).MoveToParent();
 
-      while (parentResult.HasParent)
+      while (step.HasWalker)
       {
-        yield return parentResult.Parent;
+        yield return step.Walker.Focus;
 
-        parentResult = source.TryGetParent(parentResult.Parent);
+        step = step.Walker.MoveToParent();
       }
     }
 
@@ -42,17 +41,17 @@ namespace Copse.Linq.Experimental
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
-      var root = handle;
-      var parentResult = source.TryGetParent(handle);
+      var walker = source.GetTreeWalkerAt(handle);
+      var step = walker.MoveToParent();
 
-      while (parentResult.HasParent)
+      while (step.HasWalker)
       {
-        root = parentResult.Parent;
+        walker = step.Walker;
 
-        parentResult = source.TryGetParent(root);
+        step = walker.MoveToParent();
       }
 
-      return root;
+      return walker.Focus;
     }
 
     // The number of proper ancestors. O(depth) -- contrast a height, which is a subtree sweep.
@@ -61,13 +60,13 @@ namespace Copse.Linq.Experimental
       THandle handle)
     {
       var depth = 0;
-      var parentResult = source.TryGetParent(handle);
+      var step = source.GetTreeWalkerAt(handle).MoveToParent();
 
-      while (parentResult.HasParent)
+      while (step.HasWalker)
       {
         depth++;
 
-        parentResult = source.TryGetParent(parentResult.Parent);
+        step = step.Walker.MoveToParent();
       }
 
       return depth;
@@ -77,14 +76,16 @@ namespace Copse.Linq.Experimental
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
+      var walker = source.GetTreeWalkerAt(handle);
+
       for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = source.TryGetChildAt(handle, childIndex);
+        var step = walker.MoveToChild(childIndex);
 
-        if (!childResult.HasChild)
+        if (!step.HasWalker)
           yield break;
 
-        yield return childResult.Child;
+        yield return new NodeAndSiblingIndex<THandle>(step.Walker.Focus, childIndex);
       }
     }
 
@@ -93,27 +94,28 @@ namespace Copse.Linq.Experimental
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootResult = source.TryGetRootAt(rootIndex);
+        var rootResult = source.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootResult.HasChild)
+        if (!rootResult.HasWalker)
           yield break;
 
-        yield return rootResult.Child;
+        yield return new NodeAndSiblingIndex<THandle>(rootResult.Walker.Focus, rootIndex);
       }
     }
 
-    // The derived count -- deliberately NOT on the contract: the probe is finite work per call
+    // The derived count -- deliberately NOT on the contract: the step is finite work per call
     // whatever the fan-out, but a count diverges on a generator-backed provider with an
-    // unbounded child group. This walks the probe to the first miss -- the LINQ Count()
+    // unbounded child group. This walks the child axis to the first miss -- the LINQ Count()
     // contract, divergent on infinite sequences by the caller's choice. Finite providers offer
     // cheap counts as members of their concrete types.
     public static int GetChildCount<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
+      var walker = source.GetTreeWalkerAt(handle);
       var childCount = 0;
 
-      while (source.TryGetChildAt(handle, childCount).HasChild)
+      while (walker.MoveToChild(childCount).HasWalker)
         childCount++;
 
       return childCount;
@@ -121,8 +123,8 @@ namespace Copse.Linq.Experimental
 
     // The swap-down verb of the walker/treenumerable pair (the AsEnumerable precedent): does
     // nothing, exists purely to steer the static type back to the streaming surface mid-chain.
-    // The swap UP is Materialize's probe ladder (the walker escalation collapsed into it) -- free where the capability survives,
-    // a documented capture where it does not.
+    // The swap UP is Materialize -- the capture's door binds the index, free where the
+    // capability survives, a documented capture where it does not.
     public static ITreenumerable<TValue> AsTreenumerable<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
       => source;

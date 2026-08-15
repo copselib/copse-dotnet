@@ -1,5 +1,5 @@
 using Copse.Treenumerables;
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Linq.Experimental.Treenumerators.ExpandNodes;
 using System;
 

@@ -23,8 +23,6 @@ namespace Copse.Linq.Experimental.Treenumerators.ExpandNodes
     private readonly Func<NodeContext<TSource>, ITreenumerable<TExpandedNode>> _NodeExpander;
     private readonly Func<NodeContext<TSource>, NodeContext<TExpandedNode>, TResult> _Selector;
 
-    private ITreenumerable<TExpandedNode> _ExpandedNode;
-
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (!_InnerTreenumerator.MoveNext(nodeTraversalStrategies))
@@ -33,7 +31,7 @@ namespace Copse.Linq.Experimental.Treenumerators.ExpandNodes
       throw new NotImplementedException();
     }
 
-    public override void Dispose()
+    protected override void OnDisposing()
     {
       _InnerTreenumerator?.Dispose();
     }
