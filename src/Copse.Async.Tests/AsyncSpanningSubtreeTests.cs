@@ -1,3 +1,4 @@
+using Copse.Async;
 using Copse.Core.Async;
 using Copse.Linq;
 using Copse.SimpleSerializer;
@@ -17,6 +18,10 @@ namespace Copse.Async.Tests
   [TestClass]
   public class AsyncSpanningSubtreeTests
   {
+    // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
+    private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
+      => (await walkable.TryGetTreeWalkerAsync()).Walker.Topology;
+
     private static IAsyncWalkableTreenumerable<string, int> W(string tree)
       => TreeSerializer.DeserializeDepthFirstTreeAsync(() => new StringReader(tree)).Memoize();
 
@@ -75,8 +80,8 @@ namespace Copse.Async.Tests
 
       // The adjacency half: a pruned-after node hands out no children; everything else delegates.
       var handleOfB = (await HandlesWhereAsync(walkable, value => value == "b")).Single();
-      Assert.IsFalse((await pruned.TryGetChildAtAsync(handleOfB, 0)).HasChild, "b keeps no children");
-      Assert.IsTrue((await pruned.TryGetParentAsync(handleOfB)).HasParent, "b keeps its ancestry");
+      Assert.IsFalse((await (await TopologyOf(pruned)).TryGetChildAtAsync(handleOfB, 0)).HasChild, "b keeps no children");
+      Assert.IsTrue((await (await TopologyOf(pruned)).TryGetParentAsync(handleOfB)).HasParent, "b keeps its ancestry");
 
       // The order half: the streaming operator, wholesale.
       CollectionAssert.AreEqual(new[] { "a", "b", "c" }, await PreorderValuesAsync(pruned));

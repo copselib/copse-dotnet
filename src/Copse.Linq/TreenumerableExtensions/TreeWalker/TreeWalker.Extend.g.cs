@@ -21,8 +21,9 @@ namespace Copse.Linq
       this TreeWalker<TValue, THandle> walker,
       Func<TreeWalker<TValue, THandle>, TResult> observer)
       => new TreeWalker<TResult, THandle>(
-        walker.Topology.Extend<TValue, THandle, TResult>(
-          (source, handle) => observer(new TreeWalker<TValue, THandle>(source, handle))),
+        new ExtendWalkable<TValue, THandle, TResult>(
+          walker.Topology,
+          (topology, handle) => observer(new TreeWalker<TValue, THandle>(topology, handle))),
         walker.Focus);
   }
 }

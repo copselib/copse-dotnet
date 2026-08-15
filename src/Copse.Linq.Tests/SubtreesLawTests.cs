@@ -46,11 +46,11 @@ namespace Copse.Linq.Tests
 
         for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
         {
-          var rootHandle = walkable.TryGetRootAt(rootIndex).Child.Node;
+          var rootHandle = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex).Child.Node;
 
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
-            subtrees.GetValue(rootHandle),
+            WalkerLawProviders.TopologyOf(subtrees).GetValue(rootHandle),
             $"extract∘duplicate at root {rootIndex} [{tree}]");
         }
       }
@@ -65,15 +65,15 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var label = subtrees.GetValue(handle);
+          var label = WalkerLawProviders.TopologyOf(subtrees).GetValue(handle);
 
-          Assert.AreEqual(walkable.GetValue(handle), label.GetValue(handle), $"map(extract)∘duplicate [{tree}]");
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), WalkerLawProviders.TopologyOf(label).GetValue(handle), $"map(extract)∘duplicate [{tree}]");
 
-          var labelRoot = label.TryGetRootAt(0);
+          var labelRoot = WalkerLawProviders.TopologyOf(label).TryGetRootAt(0);
           Assert.IsTrue(labelRoot.HasChild, $"label has a root [{tree}]");
           Assert.AreEqual(handle, labelRoot.Child.Node, $"the label's root is its node [{tree}]");
           Assert.AreEqual(0, labelRoot.Child.SiblingIndex, $"the label's root re-roots to sibling 0 [{tree}]");
-          Assert.IsFalse(label.TryGetRootAt(1).HasChild, $"a subtree is single-rooted [{tree}]");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetRootAt(1).HasChild, $"a subtree is single-rooted [{tree}]");
         }
       }
     }
@@ -87,14 +87,14 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var label = subtrees.GetValue(handle);
+          var label = WalkerLawProviders.TopologyOf(subtrees).GetValue(handle);
 
-          Assert.IsFalse(label.TryGetParent(handle).HasParent, $"the label's root is parentless [{tree}]");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetParent(handle).HasParent, $"the label's root is parentless [{tree}]");
 
           foreach (var descendant in Descendants(walkable, handle).Where(d => d != handle))
           {
-            var viaLabel = label.TryGetParent(descendant);
-            var viaSource = walkable.TryGetParent(descendant);
+            var viaLabel = WalkerLawProviders.TopologyOf(label).TryGetParent(descendant);
+            var viaSource = WalkerLawProviders.TopologyOf(walkable).TryGetParent(descendant);
 
             Assert.IsTrue(viaLabel.HasParent, $"descendants keep their parents [{tree}]");
             Assert.AreEqual(viaSource.Parent, viaLabel.Parent, $"descendant parents delegate [{tree}]");
@@ -112,13 +112,13 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var label = subtrees.GetValue(handle);
+          var label = WalkerLawProviders.TopologyOf(subtrees).GetValue(handle);
 
           foreach (var descendant in Descendants(walkable, handle))
           {
             AssertEquivalent(
-              subtrees.GetValue(descendant),
-              label.Subtrees().GetValue(descendant),
+              WalkerLawProviders.TopologyOf(subtrees).GetValue(descendant),
+              WalkerLawProviders.TopologyOf(label.Subtrees()).GetValue(descendant),
               $"duplicate∘duplicate [{tree}]");
           }
         }
@@ -144,7 +144,7 @@ namespace Copse.Linq.Tests
       {
         AssertEquivalent(
           TreeSerializer.DeserializeDepthFirstTree(expected),
-          W(tree).Subtrees().GetValue(handle),
+          WalkerLawProviders.TopologyOf(W(tree).Subtrees()).GetValue(handle),
           $"interior pin @{handle} [{tree}]");
       }
     }
@@ -176,7 +176,7 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           AssertEquivalent(
-            subtrees.GetValue(handle),
+            WalkerLawProviders.TopologyOf(subtrees).GetValue(handle),
             walkable.GetTreeWalkerAt(handle).Subtree(),
             $"walker.Subtree() ≡ duplicate's label [{tree}]");
         }
@@ -205,7 +205,7 @@ namespace Copse.Linq.Tests
 
         for (var childIndex = 0; ; childIndex++)
         {
-          var childResult = source.TryGetChildAt(current, childIndex);
+          var childResult = WalkerLawProviders.TopologyOf(source).TryGetChildAt(current, childIndex);
 
           if (!childResult.HasChild)
             break;
@@ -231,7 +231,7 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(source.Position, outer.Position, $"position {context}");
 
           var label = outer.Node;
-          Assert.AreEqual(source.Node, label.GetValue(label.TryGetRootAt(0).Child.Node), $"label root value {context}");
+          Assert.AreEqual(source.Node, WalkerLawProviders.TopologyOf(label).GetValue(WalkerLawProviders.TopologyOf(label).TryGetRootAt(0).Child.Node), $"label root value {context}");
         }
 
         Assert.IsFalse(outer.MoveNext(NodeTraversalStrategies.TraverseAll), $"outer ran long {context}");

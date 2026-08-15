@@ -19,8 +19,9 @@ namespace Copse.Linq
       this AsyncTreeWalker<TValue, THandle> walker,
       Func<AsyncTreeWalker<TValue, THandle>, ValueTask<TResult>> observer)
       => new AsyncTreeWalker<TResult, THandle>(
-        walker.Topology.Extend<TValue, THandle, TResult>(
-          (source, handle) => observer(new AsyncTreeWalker<TValue, THandle>(source, handle))),
+        new AsyncExtendWalkable<TValue, THandle, TResult>(
+          walker.Topology,
+          (topology, handle) => observer(new AsyncTreeWalker<TValue, THandle>(topology, handle))),
         walker.Focus);
   }
 }

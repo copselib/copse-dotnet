@@ -118,7 +118,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEquivalent(
         new[] { "d", "c" },
-        hits.Select(walkable.GetValue).ToList());
+        hits.Select(handle => WalkerLawProviders.TopologyOf(walkable).GetValue(handle)).ToList());
 
       // A missed search is an empty sequence -- the miss, spoken natively.
       Assert.AreEqual(0, walkable.GetHandlesWithValues().Count(row => row.Value == "zzz"));
@@ -132,7 +132,7 @@ namespace Copse.Linq.Tests
         .Select(row => row.Handle)
         .FirstOrDefault();
       Assert.AreEqual(0, trap);
-      Assert.AreEqual("a", walkable.GetValue(trap), "the miss masquerades as the root");
+      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetValue(trap), "the miss masquerades as the root");
     }
   }
 }

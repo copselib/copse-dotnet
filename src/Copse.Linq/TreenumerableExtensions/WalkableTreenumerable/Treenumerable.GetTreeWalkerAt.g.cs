@@ -22,6 +22,9 @@ namespace Copse.Linq
     public static TreeWalker<TValue, THandle> GetTreeWalkerAt<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
-      => new TreeWalker<TValue, THandle>(source, handle);
+      // Stage C: the walkable no longer IS a topology, so re-entry goes door-then-jump --
+      // one knock, then the trusted address. A valid handle implies a nonempty forest, so
+      // the door's walker is presumed present (the trust door's usual bargain).
+      => (source.TryGetTreeWalker()).Walker.At(handle);
   }
 }

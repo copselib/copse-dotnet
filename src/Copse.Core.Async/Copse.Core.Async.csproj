@@ -17,6 +17,7 @@
          internal so consumers meet ONE navigation spelling; the comonad extensions in the
          operator tier are the sanctioned readers. Lockstep packaging makes this skew-safe. -->
     <InternalsVisibleTo Include="Copse.Linq.Async" />
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
   </ItemGroup>
 
   <!-- netstandard2.1 and net8.0 have IAsyncEnumerable/IAsyncDisposable/ValueTask in-box; net48 and

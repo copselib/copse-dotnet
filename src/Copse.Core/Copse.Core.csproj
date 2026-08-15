@@ -16,6 +16,7 @@
          internal so consumers meet ONE navigation spelling; the comonad extensions in the
          operator tier are the sanctioned readers. Lockstep packaging makes this skew-safe. -->
     <InternalsVisibleTo Include="Copse.Linq" />
+    <InternalsVisibleTo Include="Copse.Linq.Tests" />
   </ItemGroup>
 
 </Project>

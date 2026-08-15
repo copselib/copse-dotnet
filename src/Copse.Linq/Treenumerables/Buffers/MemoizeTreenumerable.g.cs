@@ -120,14 +120,7 @@ namespace Copse.Linq.Treenumerables
       return _AdjacencyProbes;
     }
 
-    public TValue GetValue(int handle) => EnsureAdjacencyProbes().GetValue(handle);
-
-    public ParentResult<int> TryGetParent(int handle) => EnsureAdjacencyProbes().TryGetParent(handle);
-
-    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
-      => EnsureAdjacencyProbes().TryGetChildAt(handle, childIndex);
-
-    public ChildResult<int> TryGetRootAt(int rootIndex) => EnsureAdjacencyProbes().TryGetRootAt(rootIndex);
+    // Probe members removed (Stage C, the cut): the contract no longer carries them.
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.

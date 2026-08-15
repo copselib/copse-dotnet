@@ -18,7 +18,7 @@ namespace Copse.Linq.Async.Treenumerables
   // provider's own terms (the contract's clause), the identity axiom untouched. Handles from
   // outside the subtree are not reachable from this view's root; probing with one is answered
   // by blind delegation, unspecified like any foreign-handle probe.
-  internal sealed class AsyncSubtreeWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>
+  internal sealed class AsyncSubtreeWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>, IAsyncTreeTopology<TValue, THandle>
   {
     public AsyncSubtreeWalkable(IAsyncTreeTopology<TValue, THandle> source, THandle root)
     {

@@ -37,7 +37,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var (tree, walkable) in AllWalkables())
       {
-        var extended = walkable.Extend((source, handle) => source.GetValue(handle));
+        var extended = walkable.Extend((source, handle) => WalkerLawProviders.TopologyOf(source).GetValue(handle));
 
         // Streams: the extended citizen's walk-adapter streams must equal the source's
         // native store-treenumerator streams -- the law and the adapter conformance in one.
@@ -46,8 +46,8 @@ namespace Copse.Linq.Tests
         // Adjacency: handles and shape untouched.
         foreach (var handle in walkable.GetHandles())
         {
-          Assert.AreEqual(walkable.GetValue(handle), extended.GetValue(handle));
-          Assert.AreEqual(walkable.TryGetParent(handle).HasParent, extended.TryGetParent(handle).HasParent);
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), WalkerLawProviders.TopologyOf(extended).GetValue(handle));
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle).HasParent, WalkerLawProviders.TopologyOf(extended).TryGetParent(handle).HasParent);
         }
       }
     }
@@ -56,14 +56,14 @@ namespace Copse.Linq.Tests
     public void ComonadLaw_ExtractAfterExtend_RecoversTheObserver()
     {
       Func<ITreeTopology<string, int>, int, string> observer =
-        (source, handle) => $"{source.GetValue(handle)}@{Depth(source, handle)}";
+        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}@{Depth(source, handle)}";
 
       foreach (var (tree, walkable) in AllWalkables())
       {
         var extended = walkable.Extend(observer);
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(observer(walkable, handle), extended.GetValue(handle), $"extract∘extend [{tree}]");
+          Assert.AreEqual(observer(WalkerLawProviders.TopologyOf(walkable), handle), WalkerLawProviders.TopologyOf(extended).GetValue(handle), $"extract∘extend [{tree}]");
       }
     }
 
@@ -74,26 +74,26 @@ namespace Copse.Linq.Tests
       // g-extended tree (consults the parent's g-value -- a genuinely neighborhood-dependent
       // second observation, so the law is exercised on real co-Kleisli composition).
       Func<ITreeTopology<string, int>, int, string> g =
-        (source, handle) => $"{source.GetValue(handle)}@{Depth(source, handle)}";
+        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}@{Depth(source, handle)}";
 
       Func<ITreeTopology<string, int>, int, string> f =
         (source, handle) =>
         {
-          var parentResult = source.TryGetParent(handle);
-          var parentLabel = parentResult.HasParent ? source.GetValue(parentResult.Parent) : "⊤";
-          return $"{source.GetValue(handle)}<{parentLabel}";
+          var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
+          var parentLabel = parentResult.HasParent ? WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Parent) : "⊤";
+          return $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}<{parentLabel}";
         };
 
       foreach (var (tree, walkable) in AllWalkables())
       {
 
         var stepwise = walkable.Extend(g).Extend(f);
-        var composed = walkable.Extend((source, handle) => f(source.Extend(g), handle));
+        var composed = walkable.Extend((source, handle) => f(WalkerLawProviders.TopologyOf(source.Extend(g)), handle));
 
         AssertEquivalent(composed, stepwise, $"co-associativity streams [{tree}]");
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(composed.GetValue(handle), stepwise.GetValue(handle), $"co-associativity values [{tree}]");
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(composed).GetValue(handle), WalkerLawProviders.TopologyOf(stepwise).GetValue(handle), $"co-associativity values [{tree}]");
       }
     }
 
@@ -115,13 +115,13 @@ namespace Copse.Linq.Tests
 
         var viaExtend = walkable.Extend((source, handle) =>
         {
-          var path = new List<string> { source.GetValue(handle) };
-          var parentResult = source.TryGetParent(handle);
+          var path = new List<string> { WalkerLawProviders.TopologyOf(source).GetValue(handle) };
+          var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
 
           while (parentResult.HasParent)
           {
-            path.Add(source.GetValue(parentResult.Parent));
-            parentResult = source.TryGetParent(parentResult.Parent);
+            path.Add(WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Parent));
+            parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Parent);
           }
 
           var accumulate = seed;
@@ -169,7 +169,7 @@ namespace Copse.Linq.Tests
 
       for (var childIndex = 0; ; childIndex++)
       {
-        var childResult = source.TryGetChildAt(handle, childIndex);
+        var childResult = WalkerLawProviders.TopologyOf(source).TryGetChildAt(handle, childIndex);
 
         if (!childResult.HasChild)
           break;
@@ -178,13 +178,13 @@ namespace Copse.Linq.Tests
       }
 
       if (childAccumulations.Count == 0)
-        return nodeAccumulator(seed, source.GetValue(handle));
+        return nodeAccumulator(seed, WalkerLawProviders.TopologyOf(source).GetValue(handle));
 
       var reduced = childAccumulations[0];
       for (var siblingIndex = 1; siblingIndex < childAccumulations.Count; siblingIndex++)
         reduced = edgeAccumulator(reduced, childAccumulations[siblingIndex]);
 
-      return nodeAccumulator(reduced, source.GetValue(handle));
+      return nodeAccumulator(reduced, WalkerLawProviders.TopologyOf(source).GetValue(handle));
     }
 
     // ---------------------------------------------------------------------- helpers
@@ -192,12 +192,12 @@ namespace Copse.Linq.Tests
     private static int Depth(ITreeTopology<string, int> source, int handle)
     {
       var depth = 0;
-      var parentResult = source.TryGetParent(handle);
+      var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
 
       while (parentResult.HasParent)
       {
         depth++;
-        parentResult = source.TryGetParent(parentResult.Parent);
+        parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Parent);
       }
 
       return depth;

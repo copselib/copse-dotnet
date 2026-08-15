@@ -91,9 +91,9 @@ namespace Copse.Linq.Tests
 
       var scan = buffer.LeaffixScan(0, (left, right) => left + right, (accumulate, node) => accumulate + 1);
 
-      Assert.AreEqual(5, scan.GetValue(0).Accumulate, "the root's accumulate is the whole tree's count");
-      Assert.AreEqual("a", scan.GetValue(0).Node);
-      Assert.IsTrue(scan.TryGetChildAt(0, 0).HasChild);
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(scan).GetValue(0).Accumulate, "the root's accumulate is the whole tree's count");
+      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(scan).GetValue(0).Node);
+      Assert.IsTrue(WalkerLawProviders.TopologyOf(scan).TryGetChildAt(0, 0).HasChild);
     }
 
     private static void AssertScan(

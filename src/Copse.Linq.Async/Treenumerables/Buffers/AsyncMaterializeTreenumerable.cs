@@ -124,16 +124,6 @@ namespace Copse.Linq.Async.Treenumerables
     public async ValueTask<AsyncTreeWalkerResult<TValue, int>> TryGetTreeWalkerAsync()
       => await (await SettleAsync().ConfigureAwait(false)).TryGetTreeWalkerAsync().ConfigureAwait(false);
 
-    public async ValueTask<TValue> GetValueAsync(int handle)
-      => await (await SettleAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
-
-    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
-      => await (await SettleAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);
-
-    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
-      => await (await SettleAsync().ConfigureAwait(false)).TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
-
-    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
-      => await (await SettleAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+    // Probe members removed (Stage C, the cut): the contract no longer carries them.
   }
 }

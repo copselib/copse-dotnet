@@ -53,17 +53,9 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Capture.GetBreadthFirstTreenumerator();
 
-    public TValue GetValue(int handle)
-      => (EnsureAdjacencyProbes()).GetValue(handle);
-
-    public ParentResult<int> TryGetParent(int handle)
-      => (EnsureAdjacencyProbes()).TryGetParent(handle);
-
-    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
-      => (EnsureAdjacencyProbes()).TryGetChildAt(handle, childIndex);
-
-    public ChildResult<int> TryGetRootAt(int rootIndex)
-      => (EnsureAdjacencyProbes()).TryGetRootAt(rootIndex);
+    // Probe members removed (Stage C, the cut): the contract no longer carries them; the
+    // door binds the topology (the index) directly, and nothing else asks this wrapper
+    // adjacency questions.
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one

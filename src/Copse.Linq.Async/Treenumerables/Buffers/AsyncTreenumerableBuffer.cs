@@ -52,17 +52,9 @@ namespace Copse.Linq.Async.Treenumerables
 
     public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _Capture.GetAsyncBreadthFirstTreenumerator();
 
-    public async ValueTask<TValue> GetValueAsync(int handle)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
-
-    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);
-
-    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
-
-    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
-      => await (await EnsureAdjacencyProbesAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
+    // Probe members removed (Stage C, the cut): the contract no longer carries them; the
+    // door binds the topology (the index) directly, and nothing else asks this wrapper
+    // adjacency questions.
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one

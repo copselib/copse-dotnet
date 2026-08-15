@@ -34,12 +34,11 @@ namespace Copse
   /// </summary>
   public readonly struct TreeWalker<TValue, THandle>
   {
-    // PUBLIC by design (the Core move, 2026-08-14): construction IS the trust-based door --
-    // GetTreeWalkerAt was always just this call -- and the comonad's operator surface (Extend,
-    // Duplicate, Subtree, the doors) lives up in the operator tier, which needs to mint
-    // walkers. The invariant's content survives untouched: a handle is always supplied;
-    // only `default` remains the invalid inhabitant.
-    public TreeWalker(ITreeTopology<TValue, THandle> topology, THandle focus)
+    // INTERNAL (Stage C, the cut): the doors are the only public mints -- a consumer gets a
+    // walker from a factory or from another walker (steps, the jump), never by construction.
+    // The operator tier and the doors mint through the family IVT; `default` remains the one
+    // invalid inhabitant.
+    internal TreeWalker(ITreeTopology<TValue, THandle> topology, THandle focus)
     {
       Topology = topology;
       Focus = focus;

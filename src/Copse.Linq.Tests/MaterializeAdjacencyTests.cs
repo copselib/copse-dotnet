@@ -28,21 +28,21 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(BufferLayout.Preorder, walkable.NativeLayout, "the walker default: the ancestry-cheap capture");
 
       // Handles minted in preorder: a=0 b=1 d=2 e=3 c=4 f=5 g=6.
-      Assert.AreEqual("a", walkable.GetValue(0));
-      Assert.AreEqual("d", walkable.GetValue(2));
-      Assert.AreEqual("c", walkable.GetValue(4));
+      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetValue(0));
+      Assert.AreEqual("d", WalkerLawProviders.TopologyOf(walkable).GetValue(2));
+      Assert.AreEqual("c", WalkerLawProviders.TopologyOf(walkable).GetValue(4));
 
-      Assert.IsFalse(walkable.TryGetParent(0).HasParent);
-      Assert.AreEqual(1, walkable.TryGetParent(2).Parent, "d's parent is b");
-      Assert.AreEqual(4, walkable.TryGetParent(6).Parent, "g's parent is c");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetParent(0).HasParent);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Parent, "d's parent is b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetParent(6).Parent, "g's parent is c");
 
-      Assert.AreEqual(1, walkable.TryGetChildAt(0, 0).Child.Node, "a's child 0 is b");
-      Assert.AreEqual(4, walkable.TryGetChildAt(0, 1).Child.Node, "a's child 1 is c");
-      Assert.AreEqual(5, walkable.TryGetChildAt(4, 0).Child.Node, "c's child 0 is f");
-      Assert.IsFalse(walkable.TryGetChildAt(0, 2).HasChild);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 0).Child.Node, "a's child 0 is b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 1).Child.Node, "a's child 1 is c");
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(4, 0).Child.Node, "c's child 0 is f");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 2).HasChild);
 
-      Assert.AreEqual(0, walkable.TryGetRootAt(0).Child.Node);
-      Assert.IsFalse(walkable.TryGetRootAt(1).HasChild);
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(0).Child.Node);
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(1).HasChild);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
 
       // The first adjacency call settles: one depth-first capture walk, handles minted.
-      Assert.AreEqual(1, walkable.TryGetParent(2).Parent);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Parent);
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
 
@@ -97,9 +97,9 @@ namespace Copse.Linq.Tests
       // over someone else's store, owning nothing). A native-adjacency provider over an
       // infinite structure would sit in this cell too -- the type's silence about buffer-ness
       // is the infinity permission.
-      var walkableOnly = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
+      var walkableOnly = WalkerLawProviders.TopologyOf(TreeSerializer.DeserializeDepthFirstTree(ToyTree)
         .Materialize(BufferLayout.Preorder)
-        .Subtrees()
+        .Subtrees())
         .GetValue(0);
 
       Assert.IsFalse(walkableOnly is ITreenumerableBuffer<string>);

@@ -1,3 +1,4 @@
+using Copse.Async;
 using Copse.Async.Treenumerables;
 using Copse.Core.Async;
 using Copse.Linq;
@@ -16,6 +17,10 @@ namespace Copse.Async.Tests
   [TestClass]
   public class AsyncTreeWalkerLawTests
   {
+    // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
+    private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
+      => (await walkable.TryGetTreeWalkerAsync()).Walker.Topology;
+
     private static readonly string[] Trees =
     {
       "a",
@@ -37,8 +42,8 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
           Assert.AreEqual(
-            await walkable.GetValueAsync(handle),
-            await walkable.GetTreeWalkerAt(handle).GetValueAsync(),
+            await (await TopologyOf(walkable)).GetValueAsync(handle),
+            await (await walkable.GetTreeWalkerAtAsync(handle)).GetValueAsync(),
             $"extract [{tree}]");
       }
     }
@@ -52,7 +57,7 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.GetTreeWalkerAt(handle);
+          var walker = (await walkable.GetTreeWalkerAtAsync(handle));
 
           Assert.AreEqual(walker, await walker.Duplicate().GetValueAsync(), $"extract∘duplicate ≡ id [{tree}]");
         }
@@ -68,13 +73,13 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var parentResult = await walkable.TryGetParentAsync(handle);
-          var stepped = await walkable.GetTreeWalkerAt(handle).MoveToParentAsync();
+          var parentResult = await (await TopologyOf(walkable)).TryGetParentAsync(handle);
+          var stepped = await (await walkable.GetTreeWalkerAtAsync(handle)).MoveToParentAsync();
 
           Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
             Assert.AreEqual(
-              await walkable.GetValueAsync(parentResult.Parent),
+              await (await TopologyOf(walkable)).GetValueAsync(parentResult.Parent),
               await stepped.Walker.GetValueAsync(),
               $"up-step value [{tree}]");
         }
@@ -92,7 +97,7 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
         {
-          var walker = walkable.GetTreeWalkerAt(handle);
+          var walker = (await walkable.GetTreeWalkerAtAsync(handle));
           var extended = walker.Extend(async focus => await focus.GetValueAsync().ConfigureAwait(false) + "@" + focus.Focus);
 
           Assert.AreEqual(
@@ -125,13 +130,13 @@ namespace Copse.Async.Tests
 
       await foreach (var handle in walkable.GetHandles())
       {
-        var subtree = walkable.GetTreeWalkerAt(handle).Subtree();
+        var subtree = (await walkable.GetTreeWalkerAtAsync(handle)).Subtree();
 
         var subtreeRoot = await subtree.TryGetTreeWalkerAtRootIndexAsync();
         Assert.IsTrue(subtreeRoot.HasWalker);
         Assert.AreEqual(handle, subtreeRoot.Walker.Focus, "the subtree stands at the focus");
 
-        Assert.IsFalse((await subtree.TryGetParentAsync(handle)).HasParent, "severed at the root");
+        Assert.IsFalse((await (await TopologyOf(subtree)).TryGetParentAsync(handle)).HasParent, "severed at the root");
       }
     }
   }

@@ -36,10 +36,15 @@ namespace Copse.Linq
       this IWalkableTreenumerable<TValue, THandle> source,
       IEnumerable<THandle> targets)
     {
-      var targetWalkers = targets.Select(handle => source.GetTreeWalkerAt(handle)).ToList();
+      // Stage C: one knock at the door, then the jump lifts every stored handle into a
+      // stance (a valid target implies a nonempty forest, the trust door's usual bargain).
+      var targetList = targets.ToList();
 
-      if (targetWalkers.Count == 0)
+      if (targetList.Count == 0)
         return default;
+
+      var door = source.TryGetTreeWalker();
+      var targetWalkers = targetList.Select(handle => door.Walker.At(handle)).ToList();
 
       var spanningRootResult = new TreeWalkerResult<TValue, THandle>(targetWalkers[0]);
 

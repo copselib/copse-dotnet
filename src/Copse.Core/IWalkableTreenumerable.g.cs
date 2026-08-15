@@ -45,14 +45,15 @@ namespace Copse
   /// source is DEMAND -- it may pull the underlying feed just far enough to answer (the
   /// grow-precedes-read protocol); a completed source answers immediately.</para>
   /// </summary>
-  // STAGE A of the walker factory design (docs/WALKER_FACTORY_DESIGN.md): the charter --
+  // THE CHARTER, final form (Stage C of docs/WALKER_FACTORY_DESIGN.md, the cut):
   // ITreenumerable is an enumerator factory; IWalkableTreenumerable is a TREE WALKER
-  // factory. The four probes now live on IAsyncTreeTopology (the provider SPI this contract
-  // inherits); the door below is the contract's own affordance. Stage C removes the
-  // topology inheritance from this PUBLIC contract (the probes stay SPI-reachable for
-  // providers; consumers keep only the door and the walker it manufactures).
-  public interface IWalkableTreenumerable<TValue, THandle>
-    : ITreenumerable<TValue>, ITreeTopology<TValue, THandle>
+  // factory. One member. The probes live on IAsyncTreeTopology -- the provider SPI, which
+  // this contract no longer exposes to consumers: the walker is the entire public
+  // navigation surface, the topology is bound at the door, and the walkable appears in no
+  // navigation call path. BREAKING (pre-beta, release-notes flag): consumers who probed a
+  // walkable directly now navigate through the walker; providers implement the SPI and
+  // this door.
+  public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>
   {
     /// <summary>
     /// The door: a walker standing at the first root, or an empty result for the empty

@@ -49,10 +49,10 @@ namespace Copse.Linq.Tests
 
     private static readonly Provider[] Providers =
     {
-      new Provider("Materialize(Preorder)", tree => tree.Materialize(BufferLayout.Preorder), BufferLayout.Preorder),
-      new Provider("Materialize(LevelOrder)", tree => tree.Materialize(BufferLayout.LevelOrder), BufferLayout.LevelOrder),
-      new Provider("Materialize() organic, probe-settled", tree => tree.Materialize(), BufferLayout.Preorder),
-      new Provider("Memoize() fresh -- mid-race pull-through", tree => tree.Memoize(), BufferLayout.Preorder),
+      new Provider("Materialize(Preorder)", tree => WalkerLawProviders.TopologyOf(tree.Materialize(BufferLayout.Preorder)), BufferLayout.Preorder),
+      new Provider("Materialize(LevelOrder)", tree => WalkerLawProviders.TopologyOf(tree.Materialize(BufferLayout.LevelOrder)), BufferLayout.LevelOrder),
+      new Provider("Materialize() organic, probe-settled", tree => WalkerLawProviders.TopologyOf(tree.Materialize()), BufferLayout.Preorder),
+      new Provider("Memoize() fresh -- mid-race pull-through", tree => WalkerLawProviders.TopologyOf(tree.Memoize()), BufferLayout.Preorder),
       new Provider("Memoize() breadth-first-primed", tree =>
       {
         var memo = tree.Memoize();
@@ -62,13 +62,13 @@ namespace Copse.Linq.Tests
           {
           }
         }
-        return memo;
+        return WalkerLawProviders.TopologyOf(memo);
       }, BufferLayout.LevelOrder),
       new Provider("Memoize() completed", tree =>
       {
         var memo = tree.Memoize();
         memo.Complete();
-        return memo;
+        return WalkerLawProviders.TopologyOf(memo);
       }, BufferLayout.Preorder),
     };
 
@@ -87,21 +87,21 @@ namespace Copse.Linq.Tests
           // Roots: every ordinal, then the first miss.
           for (var rootIndex = 0; rootIndex < model.Roots.Count; rootIndex++)
           {
-            var rootResult = walkable.TryGetRootAt(rootIndex);
+            var rootResult = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex);
             Assert.IsTrue(rootResult.HasChild, $"root {rootIndex} exists — {context}");
             Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Child.Node, $"root {rootIndex} — {context}");
             Assert.AreEqual(rootIndex, rootResult.Child.SiblingIndex, $"root {rootIndex} sibling — {context}");
           }
 
-          Assert.IsFalse(walkable.TryGetRootAt(model.Roots.Count).HasChild, $"past the last root — {context}");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(model.Roots.Count).HasChild, $"past the last root — {context}");
 
           foreach (var node in model.Nodes)
           {
             var handle = ordinals[node];
 
-            Assert.AreEqual(node.Value, walkable.GetValue(handle), $"value @{handle} — {context}");
+            Assert.AreEqual(node.Value, WalkerLawProviders.TopologyOf(walkable).GetValue(handle), $"value @{handle} — {context}");
 
-            var parentResult = walkable.TryGetParent(handle);
+            var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
             if (node.Parent == null)
             {
               Assert.IsFalse(parentResult.HasParent, $"root has no parent @{handle} — {context}");
@@ -114,13 +114,13 @@ namespace Copse.Linq.Tests
 
             for (var childIndex = 0; childIndex < node.Children.Count; childIndex++)
             {
-              var childResult = walkable.TryGetChildAt(handle, childIndex);
+              var childResult = WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, childIndex);
               Assert.IsTrue(childResult.HasChild, $"child {childIndex} exists @{handle} — {context}");
               Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Child.Node, $"child {childIndex} @{handle} — {context}");
               Assert.AreEqual(childIndex, childResult.Child.SiblingIndex, $"child {childIndex} sibling @{handle} — {context}");
             }
 
-            Assert.IsFalse(walkable.TryGetChildAt(handle, node.Children.Count).HasChild, $"past the last child @{handle} — {context}");
+            Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, node.Children.Count).HasChild, $"past the last child @{handle} — {context}");
           }
         }
       }

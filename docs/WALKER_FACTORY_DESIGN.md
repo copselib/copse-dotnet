@@ -1,6 +1,6 @@
 # The Walker Factory Design: the door-only walkable, the topology SPI, and the receipts rollout
 
-**Status:** SPEC (2026-08-14) — ratified in conversation, unbuilt. Supersedes
+**Status:** EXECUTED THROUGH STAGE C (A: 16c464e, B: 777adec + c9810c6, C: 2026-08-15 -- the cut). The walkable is a one-member factory; the probes are provider SPI; the walker is the entire public navigation surface. Supersedes
 WALKABLE_CONTRACT_DESIGN.md §1a's contract shape (and resurrects its withdrawn topology
 split in a corrected role); completes §12's two-audience policy; instantiates
 CATEGORY_THEORY_SURVEY.md §10's foundation.
@@ -154,3 +154,18 @@ door machinery clause is ratified in place (`TryGetTreeWalkerAtRootIndex` probes
 group; doors may touch topology — consumers never need to). Production-side, nothing
 outside the SPI's citizens and the door machinery speaks a probe; the law suites' remaining
 probe calls are SPI-coherence checks that retype mechanically at Stage C's cut.
+
+**2026-08-15 — Stage C executed: the cut.** `IWalkableTreenumerable` is the charter's
+one-member factory — the topology inheritance and probes are gone from the public
+contract. The walker's constructor went internal (the doors and the jump are the only
+mints). `DoorTopology` landed as the deferral seam — "the topology this walkable's door
+will bind," knocked once at the first probe — which let `Extend` and the lens ctors stay
+lazy and sync-shaped with no empty-forest special case (the empty door misses honestly
+everywhere; pinned). The handle doors rewired to door-then-jump; the probe-suppliers
+(buffer, memos, materialize wrapper) dropped their now-orphaned probe members; the three
+lens views declare the SPI explicitly (they ARE topologies, handed to walkers by their
+doors). Tests reach the SPI through the family seam (`TopologyOf`, door → walker →
+topology, Core→tests IVT) — the coherence checks now say what they always meant: walker
+steps against raw topology answers. BREAKING, release-notes flag: consumers who probed a
+walkable now navigate through the walker; providers implement `ITreeTopology` plus the
+door.

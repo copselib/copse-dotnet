@@ -125,16 +125,6 @@ namespace Copse.Linq.Treenumerables
     public TreeWalkerResult<TValue, int> TryGetTreeWalker()
       => (Settle()).TryGetTreeWalker();
 
-    public TValue GetValue(int handle)
-      => (Settle()).GetValue(handle);
-
-    public ParentResult<int> TryGetParent(int handle)
-      => (Settle()).TryGetParent(handle);
-
-    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
-      => (Settle()).TryGetChildAt(handle, childIndex);
-
-    public ChildResult<int> TryGetRootAt(int rootIndex)
-      => (Settle()).TryGetRootAt(rootIndex);
+    // Probe members removed (Stage C, the cut): the contract no longer carries them.
   }
 }

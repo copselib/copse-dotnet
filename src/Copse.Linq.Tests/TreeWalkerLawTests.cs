@@ -1,3 +1,4 @@
+using Copse.Linq.Treenumerables;
 using Copse;
 using Copse.SimpleSerializer;
 using Copse.Treenumerables;
@@ -38,7 +39,7 @@ namespace Copse.Linq.Tests
       {
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(walkable.GetValue(handle), walkable.GetTreeWalkerAt(handle).GetValue(), $"extract [{tree}]");
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), walkable.GetTreeWalkerAt(handle).GetValue(), $"extract [{tree}]");
       }
     }
 
@@ -117,12 +118,12 @@ namespace Copse.Linq.Tests
 
         foreach (var handle in walkable.GetHandles())
         {
-          var parentResult = walkable.TryGetParent(handle);
+          var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
           var stepped = walkable.GetTreeWalkerAt(handle).MoveToParent();
 
           Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
           if (parentResult.HasParent)
-            Assert.AreEqual(walkable.GetValue(parentResult.Parent), stepped.Walker.GetValue(), $"up-step value [{tree}]");
+            Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(parentResult.Parent), stepped.Walker.GetValue(), $"up-step value [{tree}]");
         }
       }
     }
@@ -160,7 +161,7 @@ namespace Copse.Linq.Tests
       {
         Assert.IsFalse(provider.TryGetTreeWalkerAtRootIndex().HasWalker, "the root door refuses in the result type");
         Assert.IsFalse(provider.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
-        Assert.IsFalse(provider.TryGetRootAt(0).HasChild, "no probe succeeds");
+        Assert.IsFalse(new DoorTopology<string, int>(provider).TryGetRootAt(0).HasChild, "no probe succeeds (the deferred door misses honestly)");
       }
     }
 

@@ -24,12 +24,12 @@ namespace Copse.Linq.Tests
         .PruneAfter(value => value == "b");
 
       // b survives with its ancestry and hands out no children; the rest is untouched.
-      Assert.IsFalse(lensed.TryGetChildAt(1, 0).HasChild, "b sheds d and e");
-      Assert.AreEqual(1, lensed.TryGetChildAt(0, 0).Child.Node, "a's child 0 is still b");
-      Assert.AreEqual(4, lensed.TryGetChildAt(0, 1).Child.Node, "a's child 1 is still c");
-      Assert.AreEqual(5, lensed.TryGetChildAt(4, 0).Child.Node, "c keeps f");
-      Assert.AreEqual(0, lensed.TryGetParent(1).Parent, "ancestry untouched");
-      Assert.AreEqual(0, lensed.TryGetRootAt(0).Child.Node, "roots always survive a prune-after");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(1, 0).HasChild, "b sheds d and e");
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 0).Child.Node, "a's child 0 is still b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 1).Child.Node, "a's child 1 is still c");
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(4, 0).Child.Node, "c keeps f");
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(lensed).TryGetParent(1).Parent, "ancestry untouched");
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(lensed).TryGetRootAt(0).Child.Node, "roots always survive a prune-after");
     }
 
     [TestMethod]
@@ -61,9 +61,9 @@ namespace Copse.Linq.Tests
         .PruneAfter(value => value == "b")
         .PruneAfter(value => value == "c");
 
-      Assert.IsFalse(stacked.TryGetChildAt(1, 0).HasChild, "b still sheds");
-      Assert.IsFalse(stacked.TryGetChildAt(4, 0).HasChild, "c now sheds too");
-      Assert.AreEqual(4, stacked.TryGetChildAt(0, 1).Child.Node, "both survive as leaves");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(1, 0).HasChild, "b still sheds");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(4, 0).HasChild, "c now sheds too");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(0, 1).Child.Node, "both survive as leaves");
 
       var oracle = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
         .PruneAfter(value => value == "b")

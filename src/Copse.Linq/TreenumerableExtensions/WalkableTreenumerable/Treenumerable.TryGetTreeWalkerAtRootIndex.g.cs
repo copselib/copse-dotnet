@@ -24,10 +24,20 @@ namespace Copse.Linq
       this IWalkableTreenumerable<TValue, THandle> source,
       int rootIndex = 0)
     {
-      var rootResult = source.TryGetRootAt(rootIndex);
+      // Stage C: the door clause in action -- knock once, then reach the bound topology
+      // through the walker seam for the k-th root (the sentinel's child group).
+      var door = source.TryGetTreeWalker();
+
+      if (!door.HasWalker)
+        return default;
+
+      if (rootIndex == 0)
+        return door;
+
+      var rootResult = door.Walker.Topology.TryGetRootAt(rootIndex);
 
       return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(source, rootResult.Child.Node))
+        ? new TreeWalkerResult<TValue, THandle>(door.Walker.At(rootResult.Child.Node))
         : default;
     }
   }

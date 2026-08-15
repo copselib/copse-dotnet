@@ -1,4 +1,5 @@
 using Copse.Async;
+using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
@@ -16,9 +17,12 @@ namespace Copse.Linq
     /// Pure construction: no probe fires here; a forged handle stays loud on the exception
     /// channel at the first probe through the walker.
     /// </summary>
-    public static AsyncTreeWalker<TValue, THandle> GetTreeWalkerAt<TValue, THandle>(
+    public static async ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAtAsync<TValue, THandle>(
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
-      => new AsyncTreeWalker<TValue, THandle>(source, handle);
+      // Stage C: the walkable no longer IS a topology, so re-entry goes door-then-jump --
+      // one knock, then the trusted address. A valid handle implies a nonempty forest, so
+      // the door's walker is presumed present (the trust door's usual bargain).
+      => (await source.TryGetTreeWalkerAsync().ConfigureAwait(false)).Walker.At(handle);
   }
 }

@@ -24,6 +24,17 @@ namespace Copse.Linq
     /// after extend recovers the observer; and extend co-associates.</para>
     /// </summary>
     public static IWalkableTreenumerable<TResult, THandle> Extend<TValue, THandle, TResult>(
+      this IWalkableTreenumerable<TValue, THandle> source,
+      Func<ITreeTopology<TValue, THandle>, THandle, TResult> observer)
+      // Stage C: the walkable no longer exposes its topology, so the relabeling binds "the
+      // topology this walkable's door will hand over" -- deferred, knocked once at the
+      // first pull or probe. The empty forest needs no special case: the door topology
+      // misses honestly everywhere.
+      => new ExtendWalkable<TValue, THandle, TResult>(new DoorTopology<TValue, THandle>(source), observer);
+
+    // The topology-receiver form: the algebra at SPI altitude, for machinery that already
+    // holds a topology (the lens compositions, the clamp).
+    internal static IWalkableTreenumerable<TResult, THandle> Extend<TValue, THandle, TResult>(
       this ITreeTopology<TValue, THandle> source,
       Func<ITreeTopology<TValue, THandle>, THandle, TResult> observer)
       => new ExtendWalkable<TValue, THandle, TResult>(source, observer);
