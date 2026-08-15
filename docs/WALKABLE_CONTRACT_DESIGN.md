@@ -58,10 +58,16 @@ handle-parameterized probes) above the composite. **Withdrawn on review**, on tw
    arrives, inserting a supertype above `IWalkableTreenumerable` is a compatible change
    *then* — deferral costs nothing.
 
-So the contract is today's, unchanged and whole:
+So the contract, AS OF THIS SECTION'S WRITING, stayed whole:
+
+> **SUPERSEDED (2026-08-15, WALKER_FACTORY_DESIGN.md Stage C — the cut):** the probes below
+> left the public contract (and later gained the Try prefix); they live on `ITreeTopology`,
+> the provider SPI — this very section's withdrawn topology split, resurrected and renamed
+> — and the walkable is a ONE-MEMBER walker factory. The snippet stands as the record of
+> the shape this section ratified.
 
 ```csharp
-public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>
+public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>   // historical
 {
   TValue GetValue(THandle handle);
   ParentResult<THandle> GetParent(THandle handle);

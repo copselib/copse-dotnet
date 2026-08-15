@@ -315,3 +315,71 @@ phrased carrier-neutrally so the DAG branch instantiates it unchanged:
   make it skew-safe; the long migration collects the freedom). Wholesale access hands the
   read-only store struct, never arrays; a SIMD-shaped future escalates to `ReadOnlySpan`
   accessors, preserving no-mutation at full speed.
+
+## 11. The duality, closed: two factory formulas, one category, one conserved miss (2026-08-15)
+
+Jason's decade-old epiphany was a type: **`IEnumerable` is `M<() => IEnumerator>`** — the
+monad's value reached through a thunk of a *process you consume*. The walker factory
+design's charter turned out to be its dual, and the chat that closed the story found the
+exact formula: **`IWalkableTreenumerable` is the dual comonad's factory** — a thunk of a
+*space you inhabit*. Both contracts are one acquisition door in front of an algebra; the
+factory sentences ("an enumerator factory" / "a tree walker factory") are these formulas'
+prose forms.
+
+**The dual's carrier is the walkable itself, not the walker.** The monad's carrier is a
+tree-of-`T`; its dual must be the same species with the co-structure. `duplicate` at that
+species is tree → tree-of-trees — which is `Subtrees`, shipped and law-pinned — and
+`extract` is the root. `TreeWalker` is *a* comonad (Store, the laws' home) but not *the*
+dual: it is the **focused presentation** — the vantage co-Kleisli arrows are written
+against, the human-facing cursor, the ergonomic face. The species test decides it: the
+walker's `Duplicate` yields a pair-of-pairs; the dual's duplicate must yield the
+tree-of-trees, and does, as `Subtrees`.
+
+**Graft and Subtrees are the mirrored pair.** The monad's `join` consumes tree-of-trees
+(the graft — `SelectMany`, designed a decade, still unbuilt); the comonad's `duplicate`
+produces tree-of-subtrees (shipped). Join's input is duplicate's output. When `SelectMany`
+finally ships, its coherence oracle is already waiting in `SubtreesLawTests`.
+
+**The category is Par, and the Try law is its declaration.** In Set, `extract` must be
+total and the empty forest breaks it. Jason's move — `Option.Nothing` as a carrier
+citizen, the *void topology* — is lawful in the category of partial maps, where misses
+propagate and the counit law holds void included. And that category is not
+opportunistic: the two-channel doctrine — expected misses carried in result structs,
+every partial arrow typed as partial — means the library has computed in Par all along.
+The result structs are its morphisms; the Try law is the choice of category, made
+nominal.
+
+**The miss is conserved; only its address moves.** The empty forest owes somebody a miss,
+and every formulation relocates the debt without deleting it: pay at `extract` (the Par
+carrier), pay at the door (what shipped — partiality quarantined at entry, life inside
+total), pay in the values (pointed labels — the sentinel trap with credentials; house-
+forbidden), or pay at a materialized virtual root (total doors, a valueless sentinel —
+the no-unfocused ruling reversed). The monad never pays because its empty-case operations
+are answers-not-required — consuming empty is a no-op, and folds take SEEDS; `extract` is
+the one seedless operation in either algebra. The deep symmetry: the monad's honest miss
+is `MoveNext` false at the stream's END; a sentinel-completed comonad's would be
+parent-of-sentinel at the climb's TOP — each algebra pays one boundary miss at its
+natural edge.
+
+**The sentinel completion — canonized as semantics, refused as representation.** The
+completed carrier is the sentinel-rooted tree over `Option`-labels: root `None` (the void
+topology, structurally valueless), interiors `Just` — born inhabited (the empty forest is
+the sentinel alone), `duplicate(empty)` = the single-`None`-node tree, `extract` total.
+This is the truest description of the algebra. It is deliberately NOT implemented: partial
+adoption puts a mystery node flickering across tier boundaries (a leaffix result carries
+it; `Where` drops to the monad and it vanishes), full adoption re-pins every visit stream
+and escalates (the virtual FRINGE — leaffix's dual boundary, the DAG's super-sink — has an
+equal citizenship claim; nobody wants a sink node in their tree). The resolution: **the
+library already materializes the sentinel — as a seed, not as a node.** Its position is
+`NodePosition.ForestRoot`; its stance is the pre-enumeration protocol; its child group is
+`TryGetRootAt`; its engine reality is Where-DFT's private sentinel; its value contribution
+is every boundary instrument (`RootfixScan`'s seed = what arrives from the virtual root;
+`LeaffixScan`'s seed = the virtual fringe's arrival). Distributed materialization, every
+way except the one that would put a node nobody asked for in a consumer's tree. A provider
+who genuinely wants a standable root can model one in their own label type (the DOM's
+`document` is exactly this); the completion needs no contract citizenship to exist.
+
+The closing sentence, decade to decade: *a treenumerable is a monadic process you consume;
+a walkable treenumerable is a comonadic space you inhabit; both arrive as one-door
+factories; and the void's one honest miss is conserved — the library chose to pay it at
+the door, typed, once.*

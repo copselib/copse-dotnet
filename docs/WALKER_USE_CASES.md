@@ -73,8 +73,9 @@ The walker is the one consumer spelling (Stage B): `MoveToParent()`/`MoveToChild
 
 Layer: sequence · Re-enters: yes · Cost: O(1) (indexed); O(n) scan (keyed)
 
-`TryGetChildAt(handle, k)` — the strawman's `GetChildAt`, wearing the Try law's prefix
-since 2026-08-14 (the miss is expected and typed). Keyed access
+`walker.MoveToChild(k)` — the consumer spelling since Stage C (the strawman's
+`GetChildAt` survives as `TryGetChildAt` on the `ITreeTopology` SPI, provider-side).
+Keyed access
 (`GetChildrenByKey`) is deliberately NOT a library member: value search is consumer code
 (the no-node-equality pledge), spelled as consumer LINQ over `GetHandlesWithValues` —
 the search law (OPERATOR_SURFACE_MAP.md §0; the brief `FindHandles`/`FindHandle` sugar
@@ -120,7 +121,7 @@ verb the DAG side has to shout.
 Layer: sequence (folds) · Re-enters: no · Cost: O(depth) / O(subtree) / O(k)
 
 Depth = the climb, counted. Height/size = `Subtree()` + a scan or `CountNodes`. Degree =
-probe `TryGetChildAt(h, k)` to the first miss. The catalog's original asymmetry note stands:
+step `MoveToChild(k)` to the first miss. The catalog's original asymmetry note stands:
 depth is O(depth), height is O(subtree) — no design can make both cheap.
 
 ### UC-10 The classic traversals from a node — COMPOSED
