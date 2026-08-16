@@ -96,6 +96,35 @@ namespace Copse.Linq.Treenumerables
       return (false, default);
     }
 
+    // The counted-source door (the presize fast-path, 2026-08-16): the exact node count, when
+    // a completed store underneath already knows it -- a pure READ, never a build: the
+    // undecided case and a lazy store not yet built decline (forcing an O(n) build to answer a
+    // count question would be a surprising side effect; the uncounted capture path handles
+    // those correctly). Callers presize transpose captures with the answer.
+    internal (bool HasCount, int Count) TryGetNodeCount()
+    {
+      if (_Topology == null)
+        return default;
+
+      UpgradeTopology();
+
+      if (_Topology is PreorderArrayTopology<TValue> preorderTopology)
+        return (true, preorderTopology.Store.Count);
+
+      if (_Topology is LevelOrderArrayTopology<TValue> levelOrderTopology)
+        return (true, levelOrderTopology.Store.Count);
+
+      if (_Topology is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyPreorder
+        && lazyPreorder.Store.IsBuilt)
+        return (true, lazyPreorder.Store.BuiltStore.Count);
+
+      if (_Topology is LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>> lazyLevelOrder
+        && lazyLevelOrder.Store.IsBuilt)
+        return (true, lazyLevelOrder.Store.BuiltStore.Count);
+
+      return default;
+    }
+
     private ITreeTopology<TValue, int> EnsureTopology()
     {
       if (_Topology != null)

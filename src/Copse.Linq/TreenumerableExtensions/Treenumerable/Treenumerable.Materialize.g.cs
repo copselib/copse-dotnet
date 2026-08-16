@@ -127,9 +127,40 @@ namespace Copse.Linq
     // re-capture the buffer's own capture from its visit stream) never runs for a
     // Materialize-built buffer. The organic overload cannot pre-attach (its layout is
     // decided by the first pull's dimension), so it keeps the settle.
+    // The presize fast-path's Linq half (2026-08-16): a source that is secretly a completed
+    // concrete buffer can promise its exact node count (the buffer's counted-source door), so
+    // the capture allocates final arrays exactly and skips the chunked build buffer -- the
+    // transpose path's ~2n transient drops to 1n. The door is a pure read; a source whose
+    // count is not already known takes the uncounted path unchanged.
+    private static PreorderArrayStore<TValue> CapturePreorder<TValue>(IDepthFirstTreenumerable<TValue> source)
+    {
+      if (source is TreenumerableBuffer<TValue> buffer)
+      {
+        var (hasCount, count) = buffer.TryGetNodeCount();
+
+        if (hasCount)
+          return PreorderCapture.CaptureFrom(source, count);
+      }
+
+      return PreorderCapture.CaptureFrom(source);
+    }
+
+    private static LevelOrderArrayStore<TValue> CaptureLevelOrder<TValue>(IBreadthFirstTreenumerable<TValue> source)
+    {
+      if (source is TreenumerableBuffer<TValue> buffer)
+      {
+        var (hasCount, count) = buffer.TryGetNodeCount();
+
+        if (hasCount)
+          return LevelOrderCapture.CaptureFrom(source, count);
+      }
+
+      return LevelOrderCapture.CaptureFrom(source);
+    }
+
     private static TreenumerableBuffer<TValue> PreorderCaptureBuffer<TValue>(IDepthFirstTreenumerable<TValue> source)
     {
-      var lazyStore = new LazyPreorderStore<TValue>(() => PreorderCapture.CaptureFrom(source));
+      var lazyStore = new LazyPreorderStore<TValue>(() => CapturePreorder(source));
 
       return new TreenumerableBuffer<TValue>(
         new PreorderTreenumerable<TValue, LazyPreorderStore<TValue>>(lazyStore),
@@ -139,7 +170,7 @@ namespace Copse.Linq
 
     private static TreenumerableBuffer<TValue> LevelOrderCaptureBuffer<TValue>(IBreadthFirstTreenumerable<TValue> source)
     {
-      var lazyStore = new LazyLevelOrderStore<TValue>(() => LevelOrderCapture.CaptureFrom(source));
+      var lazyStore = new LazyLevelOrderStore<TValue>(() => CaptureLevelOrder(source));
 
       return new TreenumerableBuffer<TValue>(
         new LevelOrderTreenumerable<TValue, LazyLevelOrderStore<TValue>>(lazyStore),
@@ -149,10 +180,10 @@ namespace Copse.Linq
 
     private static ITreenumerable<TValue> DeferredPreorderCapture<TValue>(IDepthFirstTreenumerable<TValue> source)
       => new PreorderTreenumerable<TValue, LazyPreorderStore<TValue>>(
-        new LazyPreorderStore<TValue>(() => PreorderCapture.CaptureFrom(source)));
+        new LazyPreorderStore<TValue>(() => CapturePreorder(source)));
 
     private static ITreenumerable<TValue> DeferredLevelOrderCapture<TValue>(IBreadthFirstTreenumerable<TValue> source)
       => new LevelOrderTreenumerable<TValue, LazyLevelOrderStore<TValue>>(
-        new LazyLevelOrderStore<TValue>(() => LevelOrderCapture.CaptureFrom(source)));
+        new LazyLevelOrderStore<TValue>(() => CaptureLevelOrder(source)));
   }
 }

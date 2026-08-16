@@ -34,6 +34,56 @@ namespace Copse.Async.Stores
     }
 
     /// <summary>
+    /// The COUNTED fast path (the presize rule, 2026-08-16): as <c>CaptureFromAsync(source)</c>,
+    /// with the node count known in advance -- the final arrays are allocated exactly and the
+    /// chunked build buffer is skipped, so the capture's transient allocation drops from ~2n to
+    /// 1n. The count is a CONTRACT, not a hint: callers read it off a completed same-tree store
+    /// (a transpose source, a completed memo), and a mismatch is a caller bug kept loud -- an
+    /// undercount overruns the array, an overcount fails the closing check.
+    /// </summary>
+    public static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
+      IAsyncDepthFirstTreenumerable<TValue> source,
+      int nodeCount)
+    {
+      var values = new TValue[nodeCount];
+      var subtreeSizes = new int[nodeCount];
+      var openNodes = new Stack<int>();
+      var nextIndex = 0;
+
+      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
+      await using (treenumerator.ConfigureAwait(false))
+      {
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
+        {
+          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
+            continue;
+
+          while (openNodes.Count > treenumerator.Position.Depth)
+          {
+            var closedNode = openNodes.Pop();
+            subtreeSizes[closedNode] = nextIndex - closedNode;
+          }
+
+          openNodes.Push(nextIndex);
+          values[nextIndex] = treenumerator.Node;
+          nextIndex++;
+        }
+      }
+
+      while (openNodes.Count > 0)
+      {
+        var closedNode = openNodes.Pop();
+        subtreeSizes[closedNode] = nextIndex - closedNode;
+      }
+
+      if (nextIndex != nodeCount)
+        throw new InvalidOperationException(
+          $"Counted capture walked {nextIndex} nodes; the caller promised {nodeCount}.");
+
+      return new AsyncPreorderArrayStore<TValue>(values, subtreeSizes);
+    }
+
+    /// <summary>
     /// As <c>CaptureFromAsync(source)</c>, additionally evaluating
     /// <paramref name="sideChannelSelector"/> exactly once per node -- during the capture,
     /// against the SOURCE context -- into a preorder-parallel array (element i belongs to store

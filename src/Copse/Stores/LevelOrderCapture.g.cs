@@ -3,6 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
+using System;
 using System.Collections.Generic;
 
 namespace Copse.Stores
@@ -67,6 +68,63 @@ namespace Copse.Stores
 
       return new LevelOrderArrayStore<TValue>(
         values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
+    }
+
+    /// <summary>
+    /// The COUNTED fast path (the presize rule, 2026-08-16): as <c>CaptureFromAsync(source)</c>,
+    /// with the node count known in advance -- the three final arrays are allocated exactly and
+    /// the chunked build buffers are skipped, so the capture's transient allocation drops from
+    /// ~2n to 1n. The count is a CONTRACT, not a hint: callers read it off a completed
+    /// same-tree store, and a mismatch is a caller bug kept loud -- an undercount overruns the
+    /// arrays, an overcount fails the closing check.
+    /// </summary>
+    public static LevelOrderArrayStore<TValue> CaptureFrom<TValue>(
+      IBreadthFirstTreenumerable<TValue> source,
+      int nodeCount)
+    {
+      var values = new TValue[nodeCount];
+      var firstChildIndices = new int[nodeCount];
+      var childCounts = new int[nodeCount];
+      var rootCount = 0;
+      var frontIndex = -1;
+      var nextIndex = 0;
+
+      var treenumerator = source.GetBreadthFirstTreenumerator();
+      using (treenumerator)
+      {
+        while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
+        {
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
+          {
+            values[nextIndex] = treenumerator.Node;
+            firstChildIndices[nextIndex] = -1; // set when this node's first child arrives
+
+            if (treenumerator.Position.Depth == 0)
+            {
+              rootCount++;
+            }
+            else
+            {
+              if (childCounts[frontIndex] == 0)
+                firstChildIndices[frontIndex] = nextIndex;
+
+              childCounts[frontIndex]++;
+            }
+
+            nextIndex++;
+          }
+          else if (treenumerator.VisitCount == 1)
+          {
+            frontIndex++;
+          }
+        }
+      }
+
+      if (nextIndex != nodeCount)
+        throw new InvalidOperationException(
+          $"Counted capture walked {nextIndex} nodes; the caller promised {nodeCount}.");
+
+      return new LevelOrderArrayStore<TValue>(values, firstChildIndices, childCounts, rootCount);
     }
 
     /// <summary>

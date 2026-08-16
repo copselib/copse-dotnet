@@ -5,6 +5,7 @@ using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Stores;
 using Copse.Linq.Async.Treenumerables;
+using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
@@ -125,9 +126,40 @@ namespace Copse.Linq
     // re-capture the buffer's own capture from its visit stream) never runs for a
     // Materialize-built buffer. The organic overload cannot pre-attach (its layout is
     // decided by the first pull's dimension), so it keeps the settle.
+    // The presize fast-path's Linq half (2026-08-16): a source that is secretly a completed
+    // concrete buffer can promise its exact node count (the buffer's counted-source door), so
+    // the capture allocates final arrays exactly and skips the chunked build buffer -- the
+    // transpose path's ~2n transient drops to 1n. The door is a pure read; a source whose
+    // count is not already known takes the uncounted path unchanged.
+    private static ValueTask<AsyncPreorderArrayStore<TValue>> CapturePreorderAsync<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
+    {
+      if (source is AsyncTreenumerableBuffer<TValue> buffer)
+      {
+        var (hasCount, count) = buffer.TryGetNodeCount();
+
+        if (hasCount)
+          return AsyncPreorderCapture.CaptureFromAsync(source, count);
+      }
+
+      return AsyncPreorderCapture.CaptureFromAsync(source);
+    }
+
+    private static ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureLevelOrderAsync<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
+    {
+      if (source is AsyncTreenumerableBuffer<TValue> buffer)
+      {
+        var (hasCount, count) = buffer.TryGetNodeCount();
+
+        if (hasCount)
+          return AsyncLevelOrderCapture.CaptureFromAsync(source, count);
+      }
+
+      return AsyncLevelOrderCapture.CaptureFromAsync(source);
+    }
+
     private static AsyncTreenumerableBuffer<TValue> PreorderCaptureBuffer<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
     {
-      var lazyStore = new AsyncLazyPreorderStore<TValue>(() => AsyncPreorderCapture.CaptureFromAsync(source));
+      var lazyStore = new AsyncLazyPreorderStore<TValue>(() => CapturePreorderAsync(source));
 
       return new AsyncTreenumerableBuffer<TValue>(
         new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(lazyStore),
@@ -137,7 +169,7 @@ namespace Copse.Linq
 
     private static AsyncTreenumerableBuffer<TValue> LevelOrderCaptureBuffer<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
     {
-      var lazyStore = new AsyncLazyLevelOrderStore<TValue>(() => AsyncLevelOrderCapture.CaptureFromAsync(source));
+      var lazyStore = new AsyncLazyLevelOrderStore<TValue>(() => CaptureLevelOrderAsync(source));
 
       return new AsyncTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(lazyStore),
@@ -147,10 +179,10 @@ namespace Copse.Linq
 
     private static IAsyncTreenumerable<TValue> DeferredPreorderCapture<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
       => new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(
-        new AsyncLazyPreorderStore<TValue>(() => AsyncPreorderCapture.CaptureFromAsync(source)));
+        new AsyncLazyPreorderStore<TValue>(() => CapturePreorderAsync(source)));
 
     private static IAsyncTreenumerable<TValue> DeferredLevelOrderCapture<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
       => new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(
-        new AsyncLazyLevelOrderStore<TValue>(() => AsyncLevelOrderCapture.CaptureFromAsync(source)));
+        new AsyncLazyLevelOrderStore<TValue>(() => CaptureLevelOrderAsync(source)));
   }
 }

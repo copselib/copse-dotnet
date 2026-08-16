@@ -96,7 +96,9 @@ namespace Copse.Linq.Async.Treenumerables
 
       if (_RequestedLayout == BufferLayout.Preorder)
       {
-        var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Memo).ConfigureAwait(false);
+        // The memo is complete (the CompleteAsync above), so its count presizes the transpose
+        // capture (the counted fast path -- final arrays exact, no chunked build buffer).
+        var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Memo, _Memo.GetBufferedCount()).ConfigureAwait(false);
 
         _Settled = new AsyncTreenumerableBuffer<TValue>(
           new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
@@ -106,7 +108,7 @@ namespace Copse.Linq.Async.Treenumerables
         return _Settled;
       }
 
-      var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Memo).ConfigureAwait(false);
+      var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Memo, _Memo.GetBufferedCount()).ConfigureAwait(false);
 
       _Settled = new AsyncTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
