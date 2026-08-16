@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786901108253,
+  "lastUpdate": 1786901108997,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -27592,6 +27592,52 @@ window.BENCHMARK_DATA = {
             "value": 12371045.29815051,
             "unit": "ns",
             "range": "± 493127.0458587768"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "f78ce5c825516dbbc6e2a10a690c8a7c829bc197",
+          "message": "[skip ci] The four-class buffer taxonomy: names speak the operator call\n\n{Materialize, Memoize} x {construction, replay}, one class per question:\n\n- Materialize (construction): rows renamed Preorder_*/LevelOrder_* -- the\n  declared BufferLayout plus the tree, the call's own vocabulary. The old\n  DftCapture/BftCapture spellings named a capture flavor, which is how the\n  replay grid stayed mislabeled for a week.\n- MaterializeReplay: the four rows moved out of Memoize, renamed\n  {Dft,Bft}_over_{Preorder,LevelOrder}. Their setup had called Materialize\n  since the era when Materialize WAS Memoize+Complete -- they measured the\n  flat-store read path all along (the 25-35% win's instrument), and the\n  provenance comment now records it.\n- Memoize (construction): FirstPass_*/Partial_* unchanged.\n- MemoizeReplay: NEW -- the memo's own replay path, uncovered since the\n  2026-08-10 divergence; the side-by-side grids put a continuous number on\n  chunked-vs-flat reads.\n\nHistory carried in both stores: gh-pages by data-surgery commit, Bencher by\nthe one-off bencher-rename.yml (dispatch BEFORE the first run under new\nnames; delete after verification). BENCHMARKING.md mints the convention:\ncoverage-transfer arguments expire with the sharing that justified them --\nname the sharing, or lose the meaning silently.\n\n[skip ci]: this push must not trigger a benchmark run before the Bencher\nrenames land; the rename workflow gets dispatched first, then benchmarks.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T15:42:38Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f78ce5c825516dbbc6e2a10a690c8a7c829bc197"
+        },
+        "date": 1786901108898,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14499661.146875,
+            "unit": "ns",
+            "range": "± 149749.86648948333"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26867261.140625,
+            "unit": "ns",
+            "range": "± 171645.9762553333"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25242157.0875,
+            "unit": "ns",
+            "range": "± 377868.4774371094"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 14981928.173406864,
+            "unit": "ns",
+            "range": "± 611995.9050996652"
           }
         ]
       }
