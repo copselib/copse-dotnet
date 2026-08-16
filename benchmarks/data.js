@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786908219871,
+  "lastUpdate": 1786908220704,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -117284,6 +117284,160 @@ window.BENCHMARK_DATA = {
             "value": 64335649.39423077,
             "unit": "ns",
             "range": "± 167576.65787258974"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "1cb791216d20b28043ee8a6e0818247ef97cc410",
+          "message": "Adjacency split: completed-store topologies + growing engines on house collections\n\nTwo citizens per layout, per completeness (the BufferProbes family, seeded\none commit back, is the instrument and referee for all of this):\n\n- (Async)PreorderArrayTopology / (Async)LevelOrderArrayTopology -- the\n  COMPLETED citizens. Preorder: exact arrays built at most once on first\n  probe per axis (parents via one open-span sweep whose stack lives in\n  the answer array; children/roots as a CSR index derived from the\n  parent map); probes are then 1-3 array reads. Level-order: children\n  and roots stay store arithmetic; parents collapse to one exact\n  two-cursor merge. Pure span arithmetic for preorder children was\n  measured first and REJECTED: +69% on warm walker sweeps -- the\n  per-probe size reads outweighed the O(1) reads they avoided building.\n\n- (Async)PreorderAdjacencyIndex / (Async)LevelOrderAdjacencyIndex stay\n  the GROWING citizens (memos, lazy births), rehoused: the preorder\n  child axis is three parallel linked arrays on RefAppendOnlyList with\n  a sibling-chain cursor (the old List<List<int>> allocated a child\n  list PER SCANNED NODE), the open-span stack is a RefSemiDeque, and\n  every remaining List<int> is a RefAppendOnlyList.\n\nBufferProbes, local same-machine A/B (ShortRun): warm preorder walk\n11.97 -> 7.89 ms (-34%), warm level-order 26.57 -> 7.55 ms (-72%),\ncold memoized walks -43%/-46% time and 113.6 -> 50.4 MB (-56%) alloc,\nLeaffixScan bulk-fold guard rail unmoved. Warm rows still allocate 0 B.\n24,568 tests green.\n\nConstruction sites: buffer settle + probes-at-birth reclaim retarget to\nthe array topologies; the bulk-fold sniff keys on the topology type;\nlazy/memoize births keep the growing engines. Codegen manifest carries\nthe two new twins; surface map machinery listing updated.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T18:47:42Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cb791216d20b28043ee8a6e0818247ef97cc410"
+        },
+        "date": 1786908220599,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 51186927.87857143,
+            "unit": "ns",
+            "range": "± 371881.4023193573"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 94530213.78666668,
+            "unit": "ns",
+            "range": "± 307898.828044459"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 94172976.89230768,
+            "unit": "ns",
+            "range": "± 535970.9586104989"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 31015436.245833334,
+            "unit": "ns",
+            "range": "± 198501.2598108812"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 108478962.02777778,
+            "unit": "ns",
+            "range": "± 2229533.925787621"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 108398539.16666667,
+            "unit": "ns",
+            "range": "± 1021494.8602613272"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 17953119.34375,
+            "unit": "ns",
+            "range": "± 112981.1195911692"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 94994054.38333334,
+            "unit": "ns",
+            "range": "± 584121.9393142917"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 80679160.54285714,
+            "unit": "ns",
+            "range": "± 3207352.253963831"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 99573233.45714284,
+            "unit": "ns",
+            "range": "± 244824.4275873475"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 84609195.47435898,
+            "unit": "ns",
+            "range": "± 385723.6528122545"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 48502654.739957705,
+            "unit": "ns",
+            "range": "± 301777.64300607523"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 89007039.6,
+            "unit": "ns",
+            "range": "± 683392.0851598694"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 74520893.38461539,
+            "unit": "ns",
+            "range": "± 231421.88979096754"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 35443936.733333334,
+            "unit": "ns",
+            "range": "± 232116.75681104223"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 99198393.50000001,
+            "unit": "ns",
+            "range": "± 459353.26826946373"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 75012618.11428571,
+            "unit": "ns",
+            "range": "± 206089.0069584426"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 25817792.551339287,
+            "unit": "ns",
+            "range": "± 37816.30167955139"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 98018577.36,
+            "unit": "ns",
+            "range": "± 840404.6976877387"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 56559330.585185185,
+            "unit": "ns",
+            "range": "± 376786.3582791593"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 99200580.24,
+            "unit": "ns",
+            "range": "± 766861.5272904824"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 55513184.92666667,
+            "unit": "ns",
+            "range": "± 707439.3932123779"
           }
         ]
       }
