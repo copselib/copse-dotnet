@@ -3,11 +3,11 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Stores;
-using System.Collections.Generic;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The level-order adjacency engine: the layout's native affordances need almost no index --
+  // The GROWING level-order citizen (completed stores ride AsyncLevelOrderArrayTopology,
+  // the 2026-08-16 adjacency split): the layout's native affordances need almost no index --
   // children are a bounds probe plus an offset (contiguous runs), roots are the leading
   // entries -- so only the parent axis carries state: the walker PoC's stackless two-cursor
   // merge (child runs tile the buffer in parent order), restructured as an INCREMENTAL sweep
@@ -34,7 +34,7 @@ namespace Copse.Linq.Treenumerables
 
     internal bool ScanUntouched => !_RootsSeeded && _ParentIndexes.Count == 0;
 
-    private readonly List<int> _ParentIndexes = new List<int>();
+    private readonly RefAppendOnlyList<int> _ParentIndexes = new RefAppendOnlyList<int>();
     private bool _RootsSeeded;
     private int _ParentCursor;
     private int _ChildOrdinal;
@@ -89,7 +89,7 @@ namespace Copse.Linq.Treenumerables
 
         while (_Store.EnsureRootAvailable(rootOrdinal))
         {
-          _ParentIndexes.Add(NoParent);
+          _ParentIndexes.AddLast(NoParent);
           rootOrdinal++;
         }
 
@@ -109,7 +109,7 @@ namespace Copse.Linq.Treenumerables
           var childIndex = _FirstChildIndex + _ChildOrdinal;
 
           while (_ParentIndexes.Count <= childIndex)
-            _ParentIndexes.Add(NoParent);
+            _ParentIndexes.AddLast(NoParent);
 
           _ParentIndexes[childIndex] = _ParentCursor;
           _ChildOrdinal++;

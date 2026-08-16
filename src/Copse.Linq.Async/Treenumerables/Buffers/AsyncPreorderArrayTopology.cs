@@ -1,0 +1,154 @@
+using Copse.Async;
+using Copse.Async.Stores;
+using System.Threading.Tasks;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  // The COMPLETED preorder citizen (the 2026-08-16 adjacency split): a topology over a
+  // finished array store answers every probe from exact arrays built at most once. The
+  // first probe of each axis triggers the build -- the parent map (one open-span sweep,
+  // the same rule the growing engine applies incrementally) and, for the child and root
+  // axes, a CSR index derived FROM that map in two more linear passes (count, then fill;
+  // preorder order is sibling order, so ascending fill lands each child in place). After
+  // the build a child probe is three array reads and a parent probe is one -- no per-node
+  // objects, no per-probe subtree-size arithmetic.
+  //
+  // Pure span arithmetic (sibling hops, no arrays at all) was measured first and REJECTED:
+  // the BufferProbes walker sweep read +69% on warm preorder walks (2026-08-16, local A/B)
+  // -- the per-probe size reads and cursor bookkeeping cost more than the O(1) reads they
+  // avoided building. The CSR shape is the walker branch's validated design. Contrast
+  // AsyncPreorderAdjacencyIndex, the GROWING citizen, which keeps incremental scan state
+  // (linked sibling chains) because its store may still be fed. Single-threaded by
+  // contract, like every adjacency engine.
+  internal sealed class AsyncPreorderArrayTopology<TValue> : IAsyncTreeTopology<TValue, int>
+  {
+    public AsyncPreorderArrayTopology(AsyncPreorderArrayStore<TValue> store)
+    {
+      _Store = store;
+    }
+
+    private const int NoParent = -1;
+
+    private readonly AsyncPreorderArrayStore<TValue> _Store;
+
+    // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
+    // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
+    // fast path's door.
+    internal AsyncPreorderArrayStore<TValue> Store => _Store;
+
+    // Built at most once, exact sizes, no per-node machinery. The parent map stands alone;
+    // the CSR trio (child slots, per-node offsets, roots) builds as one unit on top of it.
+    private int[] _ParentIndexes;
+    private int[] _ChildIndexes;
+    private int[] _FirstChildOffsets;
+    private int[] _RootIndexes;
+
+    public ValueTask<TValue> GetValueAsync(int handle)
+      => new ValueTask<TValue>(_Store.GetValue(handle));
+
+    public ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
+    {
+      if (_ParentIndexes == null)
+        BuildParentIndexes();
+
+      var parentIndex = _ParentIndexes[handle];
+
+      return parentIndex == NoParent
+        ? default
+        : new ValueTask<ParentResult<int>>(new ParentResult<int>(parentIndex));
+    }
+
+    public ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+    {
+      if (_ChildIndexes == null)
+        BuildChildIndexes();
+
+      var firstSlot = _FirstChildOffsets[handle];
+
+      if (childIndex < 0 || childIndex >= _FirstChildOffsets[handle + 1] - firstSlot)
+        return default;
+
+      return new ValueTask<ChildResult<int>>(
+        new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex)));
+    }
+
+    public ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
+    {
+      if (_ChildIndexes == null)
+        BuildChildIndexes();
+
+      if (rootIndex < 0 || rootIndex >= _RootIndexes.Length)
+        return default;
+
+      return new ValueTask<ChildResult<int>>(
+        new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex)));
+    }
+
+    // One open-span sweep over the whole store: each node's parent is the innermost span
+    // still open at its index. The span stack lives in the parent array itself -- a node's
+    // slot holds the stack-below entry until the sweep settles it, so the build allocates
+    // exactly the map it returns.
+    private void BuildParentIndexes()
+    {
+      var parentIndexes = new int[_Store.Count];
+      var openSpanTop = NoParent;
+
+      for (var nodeIndex = 0; nodeIndex < parentIndexes.Length; nodeIndex++)
+      {
+        while (openSpanTop != NoParent && openSpanTop + _Store.GetSubtreeSize(openSpanTop) <= nodeIndex)
+          openSpanTop = parentIndexes[openSpanTop];
+
+        parentIndexes[nodeIndex] = openSpanTop;
+        openSpanTop = nodeIndex;
+      }
+
+      _ParentIndexes = parentIndexes;
+    }
+
+    // The CSR build: count children per node off the parent map, prefix-sum into offsets,
+    // then an ascending fill -- preorder order is sibling order, so each child lands at its
+    // parent's next open slot in sibling sequence. Roots (parentless nodes) fill their own
+    // array in the same passes.
+    private void BuildChildIndexes()
+    {
+      if (_ParentIndexes == null)
+        BuildParentIndexes();
+
+      var nodeCount = _ParentIndexes.Length;
+      var firstChildOffsets = new int[nodeCount + 1];
+      var rootCount = 0;
+
+      for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
+      {
+        var parentIndex = _ParentIndexes[nodeIndex];
+
+        if (parentIndex == NoParent)
+          rootCount++;
+        else
+          firstChildOffsets[parentIndex + 1]++;
+      }
+
+      for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
+        firstChildOffsets[nodeIndex + 1] += firstChildOffsets[nodeIndex];
+
+      var childIndexes = new int[nodeCount - rootCount];
+      var rootIndexes = new int[rootCount];
+      var nextChildSlots = new int[nodeCount];
+      var nextRootSlot = 0;
+
+      for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
+      {
+        var parentIndex = _ParentIndexes[nodeIndex];
+
+        if (parentIndex == NoParent)
+          rootIndexes[nextRootSlot++] = nodeIndex;
+        else
+          childIndexes[firstChildOffsets[parentIndex] + nextChildSlots[parentIndex]++] = nodeIndex;
+      }
+
+      _FirstChildOffsets = firstChildOffsets;
+      _RootIndexes = rootIndexes;
+      _ChildIndexes = childIndexes;
+    }
+  }
+}

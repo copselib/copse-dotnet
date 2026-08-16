@@ -280,9 +280,21 @@ Concrete stores/streams                       consumers
 
 Walker-tier machinery (Copse.Linq/Treenumerables — async sources, generated sync twins;
 ADDED 2026-08-14/15, the walker workstream)
-├─ (Async)PreorderAdjacencyIndex<TStore>   the ordinal topology over a preorder store
-│    (span-arithmetic probes; ScanUntouched seam for the probes-at-birth reclaim)
-├─ (Async)LevelOrderAdjacencyIndex<TStore> its level-order dual (two-cursor parent merge)
+├─ (Async)PreorderAdjacencyIndex<TStore>   the GROWING preorder citizen (2026-08-16 split:
+│    one engine per layout per completeness): incremental open-span scan; child axis =
+│    three parallel linked arrays on RefAppendOnlyList (zero per-node objects — the old
+│    List<List<int>> allocated a child list per scanned node); sibling-chain cursor keeps
+│    sequential child iteration O(1) amortized; ScanUntouched seam for the reclaim
+├─ (Async)LevelOrderAdjacencyIndex<TStore> its GROWING level-order dual (suspendable
+│    two-cursor parent merge, RefAppendOnlyList-backed)
+├─ (Async)PreorderArrayTopology            the COMPLETED preorder citizen: exact arrays
+│    built at most once on first probe per axis — parents in one open-span sweep (the
+│    stack lives in the answer array), children/roots as a CSR index derived from the
+│    parent map (probes are then 1–3 array reads); pure span arithmetic was measured
+│    and REJECTED (+69% on warm walks — BufferProbes, 2026-08-16); carries the
+│    bulk-fold Store seam
+├─ (Async)LevelOrderArrayTopology          the COMPLETED level-order citizen: children/
+│    roots are store arithmetic, parents one exact two-cursor merge on first probe
 ├─ (Async)LazyTopology (né DoorTopology, then WalkableTopology — settled 2026-08-15 on the
 │    MECHANISM name once nothing else was left to distinguish it from; internal sealed in
 │    Copse/Topologies, PUBLIC via TreeTopology.Lazy — the topology tier's creation surface

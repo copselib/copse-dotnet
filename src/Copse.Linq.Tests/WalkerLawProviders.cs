@@ -56,7 +56,7 @@ namespace Copse.Linq.Tests
       return new TreenumerableBuffer<string>(
         new PreorderTreenumerable<string, PreorderArrayStore<string>>(store),
         BufferLayout.Preorder,
-        new PreorderAdjacencyIndex<string, PreorderArrayStore<string>>(store));
+        new PreorderArrayTopology<string>(store));
     }
   }
 }

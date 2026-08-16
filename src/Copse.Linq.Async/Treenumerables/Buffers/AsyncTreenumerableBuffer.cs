@@ -84,8 +84,8 @@ namespace Copse.Linq.Async.Treenumerables
 
       var adjacencyProbes = await EnsureTopologyAsync().ConfigureAwait(false);
 
-      if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>> arrayIndex)
-        return (true, arrayIndex.Store);
+      if (adjacencyProbes is AsyncPreorderArrayTopology<TValue> arrayTopology)
+        return (true, arrayTopology.Store);
 
       // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
       // forcing hands over the same arrays the stream half built or will build.
@@ -107,14 +107,14 @@ namespace Copse.Linq.Async.Treenumerables
       {
         var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore);
+        _Topology = new AsyncLevelOrderArrayTopology<TValue>(levelOrderStore);
 
         return _Topology;
       }
 
       var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-      _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore);
+      _Topology = new AsyncPreorderArrayTopology<TValue>(preorderStore);
 
       return _Topology;
     }
@@ -133,7 +133,7 @@ namespace Copse.Linq.Async.Treenumerables
         && lazyPreorder.ScanUntouched
         && lazyPreorder.Store.IsBuilt)
       {
-        _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
+        _Topology = new AsyncPreorderArrayTopology<TValue>(lazyPreorder.Store.BuiltStore);
         return;
       }
 
@@ -141,7 +141,7 @@ namespace Copse.Linq.Async.Treenumerables
         && lazyLevelOrder.ScanUntouched
         && lazyLevelOrder.Store.IsBuilt)
       {
-        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
+        _Topology = new AsyncLevelOrderArrayTopology<TValue>(lazyLevelOrder.Store.BuiltStore);
       }
     }
   }

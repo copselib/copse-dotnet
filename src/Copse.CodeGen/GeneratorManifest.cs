@@ -359,9 +359,10 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncMemoizeTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/IMemoizeTreenumerableBuffer.g.cs",
         "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq.Treenumerables"),
-      // The adjacency engines (the buffer re-parent, WALKABLE_CONTRACT_DESIGN.md step 2): the
-      // walker PoC's index builds restructured as incremental scans, so one engine per layout
-      // serves completed captures and growing memos alike.
+      // The adjacency engines (the buffer re-parent, WALKABLE_CONTRACT_DESIGN.md step 2),
+      // two citizens per layout since the 2026-08-16 split: the *AdjacencyIndex scans serve
+      // GROWING stores incrementally; the *ArrayTopology engines serve COMPLETED array
+      // stores via span arithmetic plus a one-shot parent map.
       new("Copse.Core.Async/IAsyncTreeTopology.cs",
         "Copse.Core/ITreeTopology.g.cs",
         "IAsyncTreeTopology", "ITreeTopology", "Copse"),
@@ -371,6 +372,12 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/Buffers/AsyncLevelOrderAdjacencyIndex.cs",
         "Copse.Linq/Treenumerables/Buffers/LevelOrderAdjacencyIndex.g.cs",
         "AsyncLevelOrderAdjacencyIndex", "LevelOrderAdjacencyIndex", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncPreorderArrayTopology.cs",
+        "Copse.Linq/Treenumerables/Buffers/PreorderArrayTopology.g.cs",
+        "AsyncPreorderArrayTopology", "PreorderArrayTopology", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncLevelOrderArrayTopology.cs",
+        "Copse.Linq/Treenumerables/Buffers/LevelOrderArrayTopology.g.cs",
+        "AsyncLevelOrderArrayTopology", "LevelOrderArrayTopology", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
         "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",

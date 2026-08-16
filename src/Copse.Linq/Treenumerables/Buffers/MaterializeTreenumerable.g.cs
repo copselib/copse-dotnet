@@ -102,7 +102,7 @@ namespace Copse.Linq.Treenumerables
         _Settled = new TreenumerableBuffer<TValue>(
           new PreorderTreenumerable<TValue, PreorderArrayStore<TValue>>(preorderStore),
           BufferLayout.Preorder,
-          new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore));
+          new PreorderArrayTopology<TValue>(preorderStore));
 
         return _Settled;
       }
@@ -112,7 +112,7 @@ namespace Copse.Linq.Treenumerables
       _Settled = new TreenumerableBuffer<TValue>(
         new LevelOrderTreenumerable<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore),
         BufferLayout.LevelOrder,
-        new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore));
+        new LevelOrderArrayTopology<TValue>(levelOrderStore));
 
       return _Settled;
     }

@@ -3,23 +3,29 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Stores;
-using System.Collections.Generic;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The preorder adjacency engine: the walker PoC's one-pass index build (open-span stack ->
-  // parents; discovery order -> child lists; stack-empty points -> roots), restructured as an
-  // INCREMENTAL SCAN so one engine serves completed captures and growing memos alike. The scan
-  // cursor advances one node at a time, each advance demanding exactly one more buffered node
-  // (grow-precedes-read), and every probe extends the scan only as far as its answer needs --
-  // the span-bounded promise of the walkable contract, by construction. On a completed store
-  // the same scan just never suspends, and probes behind the cursor are O(1) list reads.
+  // The GROWING preorder citizen (completed stores ride AsyncPreorderArrayTopology, the
+  // 2026-08-16 adjacency split): the walker PoC's one-pass index build (open-span stack ->
+  // parents; discovery order -> child links; stack-empty points -> roots), restructured as
+  // an INCREMENTAL SCAN for stores still being fed. The scan cursor advances one node at a
+  // time, each advance demanding exactly one more buffered node (grow-precedes-read), and
+  // every probe extends the scan only as far as its answer needs -- the span-bounded
+  // promise of the walkable contract, by construction.
   //
-  // The pop rule tolerates growth: an open span's size reads 0 until the store grows past its
-  // close, so an ancestor of the frontier simply stays on the stack ("topSize > 0" gates the
-  // pop) and is re-checked when the scan resumes -- the parent recorded for each node is the
-  // stack top at its scan moment, which is correct whether or not the enclosing spans have
-  // closed yet. Single-threaded by contract, like the memo feeds it may drive.
+  // The child axis is three parallel linked arrays (first child / next sibling / last
+  // child), all RefAppendOnlyList<int>: one slot per scanned node, zero per-node objects
+  // (the 2026-08-16 rework -- the old List<List<int>> allocated a child list PER SCANNED
+  // NODE). An ordinal probe walks the sibling chain, so a one-slot cursor (parent, ordinal,
+  // child) keeps sequential child iteration -- the walker's dominant pattern -- O(1)
+  // amortized; chain links are written once and never move, so the cursor never goes stale.
+  //
+  // The pop rule tolerates growth: an open span's size reads 0 until the store grows past
+  // its close, so an ancestor of the frontier simply stays on the stack ("topSize > 0"
+  // gates the pop) and is re-checked when the scan resumes -- the parent recorded for each
+  // node is the stack top at its scan moment, which is correct whether or not the enclosing
+  // spans have closed yet. Single-threaded by contract, like the memo feeds it may drive.
   internal sealed class PreorderAdjacencyIndex<TValue, TStore> : ITreeTopology<TValue, int>
     where TStore : IPreorderStore<TValue>
   {
@@ -29,6 +35,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     private const int NoParent = -1;
+    private const int NoIndex = -1;
 
     private readonly TStore _Store;
 
@@ -40,12 +47,19 @@ namespace Copse.Linq.Treenumerables
     // The reclaim seam: true iff no probe has advanced the scan -- re-seating is free.
     internal bool ScanUntouched => _ScanCursor == 0;
 
-    private readonly List<int> _ParentIndexes = new List<int>();
-    private readonly List<List<int>> _ChildIndexes = new List<List<int>>();
-    private readonly List<int> _RootIndexes = new List<int>();
-    private readonly List<int> _OpenSpanStack = new List<int>();
+    private readonly RefAppendOnlyList<int> _ParentIndexes = new RefAppendOnlyList<int>();
+    private readonly RefAppendOnlyList<int> _FirstChildIndexes = new RefAppendOnlyList<int>();
+    private readonly RefAppendOnlyList<int> _NextSiblingIndexes = new RefAppendOnlyList<int>();
+    private readonly RefAppendOnlyList<int> _LastChildIndexes = new RefAppendOnlyList<int>();
+    private readonly RefAppendOnlyList<int> _RootIndexes = new RefAppendOnlyList<int>();
+    private readonly RefSemiDeque<int> _OpenSpanStack = new RefSemiDeque<int>();
     private int _ScanCursor;
     private bool _Exhausted;
+
+    // The sequential-iteration cursor: the last answered (parent, ordinal, child) triple.
+    private int _CursorParent = NoParent;
+    private int _CursorOrdinal;
+    private int _CursorChild;
 
     public TValue GetValue(int handle)
     {
@@ -79,19 +93,50 @@ namespace Copse.Linq.Treenumerables
           return default;
       }
 
-      while (_ChildIndexes[handle].Count <= childIndex)
+      int ordinal;
+      int child;
+
+      if (_CursorParent == handle && _CursorOrdinal <= childIndex)
       {
-        // No further children can appear once the handle's span has closed behind the scan.
-        var subtreeSize = _Store.GetSubtreeSize(handle);
+        ordinal = _CursorOrdinal;
+        child = _CursorChild;
+      }
+      else
+      {
+        while (_FirstChildIndexes[handle] == NoIndex)
+        {
+          // No further children can appear once the handle's span has closed behind the scan.
+          if (SpanClosedBehindScan(handle))
+            return default;
 
-        if (subtreeSize > 0 && _ScanCursor >= handle + subtreeSize)
-          return default;
+          if (!ScanForward())
+            return default;
+        }
 
-        if (!ScanForward())
-          return default;
+        ordinal = 0;
+        child = _FirstChildIndexes[handle];
       }
 
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[handle][childIndex], childIndex));
+      while (ordinal < childIndex)
+      {
+        while (_NextSiblingIndexes[child] == NoIndex)
+        {
+          if (SpanClosedBehindScan(handle))
+            return default;
+
+          if (!ScanForward())
+            return default;
+        }
+
+        child = _NextSiblingIndexes[child];
+        ordinal++;
+      }
+
+      _CursorParent = handle;
+      _CursorOrdinal = childIndex;
+      _CursorChild = child;
+
+      return new ChildResult<int>(new NodeAndSiblingIndex<int>(child, childIndex));
     }
 
     public ChildResult<int> TryGetRootAt(int rootIndex)
@@ -108,9 +153,17 @@ namespace Copse.Linq.Treenumerables
       return new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
     }
 
+    private bool SpanClosedBehindScan(int handle)
+    {
+      var subtreeSize = _Store.GetSubtreeSize(handle);
+
+      return subtreeSize > 0 && _ScanCursor >= handle + subtreeSize;
+    }
+
     // Advance the scan by one node: demand it from the store, settle which open spans have
-    // closed behind the cursor, and record the node's parent, its slot in that parent's child
-    // list, and (at stack-empty points) its roothood. False iff the feed exhausted first.
+    // closed behind the cursor, and record the node's parent, its link in that parent's
+    // sibling chain, and (at stack-empty points) its roothood. False iff the feed exhausted
+    // first.
     private bool ScanForward()
     {
       if (_Exhausted)
@@ -124,29 +177,41 @@ namespace Copse.Linq.Treenumerables
 
       while (_OpenSpanStack.Count > 0)
       {
-        var openSpanStart = _OpenSpanStack[_OpenSpanStack.Count - 1];
+        var openSpanStart = _OpenSpanStack.GetLast();
         var openSpanSize = _Store.GetSubtreeSize(openSpanStart);
 
         if (openSpanSize > 0 && openSpanStart + openSpanSize <= _ScanCursor)
-          _OpenSpanStack.RemoveAt(_OpenSpanStack.Count - 1);
+          _OpenSpanStack.RemoveLast();
         else
           break;
       }
 
+      // The node's own chain slots go in first; a parent's linking below touches only
+      // earlier slots, which already exist.
+      _FirstChildIndexes.AddLast(NoIndex);
+      _NextSiblingIndexes.AddLast(NoIndex);
+      _LastChildIndexes.AddLast(NoIndex);
+
       if (_OpenSpanStack.Count == 0)
       {
-        _ParentIndexes.Add(NoParent);
-        _RootIndexes.Add(_ScanCursor);
+        _ParentIndexes.AddLast(NoParent);
+        _RootIndexes.AddLast(_ScanCursor);
       }
       else
       {
-        var parentIndex = _OpenSpanStack[_OpenSpanStack.Count - 1];
-        _ParentIndexes.Add(parentIndex);
-        _ChildIndexes[parentIndex].Add(_ScanCursor);
+        var parentIndex = _OpenSpanStack.GetLast();
+
+        _ParentIndexes.AddLast(parentIndex);
+
+        if (_FirstChildIndexes[parentIndex] == NoIndex)
+          _FirstChildIndexes[parentIndex] = _ScanCursor;
+        else
+          _NextSiblingIndexes[_LastChildIndexes[parentIndex]] = _ScanCursor;
+
+        _LastChildIndexes[parentIndex] = _ScanCursor;
       }
 
-      _ChildIndexes.Add(new List<int>());
-      _OpenSpanStack.Add(_ScanCursor);
+      _OpenSpanStack.AddLast(_ScanCursor);
       _ScanCursor++;
 
       return true;

@@ -101,7 +101,7 @@ namespace Copse.Linq.Async.Treenumerables
         _Settled = new AsyncTreenumerableBuffer<TValue>(
           new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
           BufferLayout.Preorder,
-          new AsyncPreorderAdjacencyIndex<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore));
+          new AsyncPreorderArrayTopology<TValue>(preorderStore));
 
         return _Settled;
       }
@@ -111,7 +111,7 @@ namespace Copse.Linq.Async.Treenumerables
       _Settled = new AsyncTreenumerableBuffer<TValue>(
         new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
         BufferLayout.LevelOrder,
-        new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore));
+        new AsyncLevelOrderArrayTopology<TValue>(levelOrderStore));
 
       return _Settled;
     }

@@ -85,8 +85,8 @@ namespace Copse.Linq.Treenumerables
 
       var adjacencyProbes = EnsureTopology();
 
-      if (adjacencyProbes is PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>> arrayIndex)
-        return (true, arrayIndex.Store);
+      if (adjacencyProbes is PreorderArrayTopology<TValue> arrayTopology)
+        return (true, arrayTopology.Store);
 
       // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
       // forcing hands over the same arrays the stream half built or will build.
@@ -108,14 +108,14 @@ namespace Copse.Linq.Treenumerables
       {
         var levelOrderStore = LevelOrderCapture.CaptureFrom(_Capture);
 
-        _Topology = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(levelOrderStore);
+        _Topology = new LevelOrderArrayTopology<TValue>(levelOrderStore);
 
         return _Topology;
       }
 
       var preorderStore = PreorderCapture.CaptureFrom(_Capture);
 
-      _Topology = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(preorderStore);
+      _Topology = new PreorderArrayTopology<TValue>(preorderStore);
 
       return _Topology;
     }
@@ -134,7 +134,7 @@ namespace Copse.Linq.Treenumerables
         && lazyPreorder.ScanUntouched
         && lazyPreorder.Store.IsBuilt)
       {
-        _Topology = new PreorderAdjacencyIndex<TValue, PreorderArrayStore<TValue>>(lazyPreorder.Store.BuiltStore);
+        _Topology = new PreorderArrayTopology<TValue>(lazyPreorder.Store.BuiltStore);
         return;
       }
 
@@ -142,7 +142,7 @@ namespace Copse.Linq.Treenumerables
         && lazyLevelOrder.ScanUntouched
         && lazyLevelOrder.Store.IsBuilt)
       {
-        _Topology = new LevelOrderAdjacencyIndex<TValue, LevelOrderArrayStore<TValue>>(lazyLevelOrder.Store.BuiltStore);
+        _Topology = new LevelOrderArrayTopology<TValue>(lazyLevelOrder.Store.BuiltStore);
       }
     }
   }
