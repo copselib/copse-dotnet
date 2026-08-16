@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786843256346,
+  "lastUpdate": 1786843256845,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -103210,6 +103210,168 @@ window.BENCHMARK_DATA = {
             "value": 131178108.31666666,
             "unit": "ns",
             "range": "± 1762740.7074634882"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fc08bfd9f1854d5e730f6c7ae66985a71733dc0e",
+          "message": "Reunification: main's four days merge into the walker tier\n\nMain's three semantic novelties land intact on the branch's machinery:\n\n- TakeSubtreesWhere (the subgraph selection cluster's tree restriction)\n  arrives whole, re-homed to the TreenumerableExtensions layout and the\n  Tree factory names, with the reunification's ONE compile fix: its\n  breadth-first arm now calls Materialize() (lazy, unawaited) where it\n  was born calling the pre-lazy MaterializeAsync -- the exact break that\n  made origin/main red.\n- The virtual-root rule (leaffix boundary selector-only): the branch's\n  receiver-smart LeaffixScan keeps its span/walker in-place folds,\n  RE-KEYED from the retired seed flavor to the value-selector flavor\n  (the leaf slot is position-free either way); the stream path delegates\n  every flavor through public LeaffixDispatch per the ruling. The leaffix\n  coherence pin and the receiver-smart battery re-spell their seeds as\n  formula fringes (leaf => nodeAcc(seed, leaf)) -- the equivalence the\n  ruling itself names.\n- The recording rule, type-level: ScanResult is gone; NodeAccumulation\n  and NodeArrival flow through the merged sources, twins, tests, map\n  rows, and README.\n\nThe duplicate lazy-materialize commits resolve to the branch's evolved\ncopies (probes-at-birth and the buffer re-parent supersede them). The\nsurface map merges both histories row-by-row -- TakeSubtreesWhere's row\njoins, LeaffixScan/LeaffixAggregate go selector-only with the\nreceiver-smart notes preserved, RootfixScan/RootfixDispatch carry the\ntype-level pairings -- and two vocabulary-ban stragglers that arrived\nwith main's Aug-5 prose are fixed en route.\n\nFull suite 24,568 green (main's TakeSubtreesWhere + recording-rule +\ncapture-ops tests join; the seed-flavor pins retire with their\noverloads). README examples re-verified by compilation.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T01:07:13Z",
+          "tree_id": "acaeef44cf6da3f5d44754f3c9ad5d070032d979",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fc08bfd9f1854d5e730f6c7ae66985a71733dc0e"
+        },
+        "date": 1786843256740,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 106080734.81428573,
+            "unit": "ns",
+            "range": "± 469450.3602490919"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 127502160.81666666,
+            "unit": "ns",
+            "range": "± 1216525.3264958428"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 76321286.1547619,
+            "unit": "ns",
+            "range": "± 729695.2260785308"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 96908906.5285714,
+            "unit": "ns",
+            "range": "± 352105.1391551853"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Triangle",
+            "value": 47868102.5047619,
+            "unit": "ns",
+            "range": "± 216548.6414308182"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Triangle",
+            "value": 70867529.54285714,
+            "unit": "ns",
+            "range": "± 498763.50502118806"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.DftCapture_Chain",
+            "value": 27629258.902083334,
+            "unit": "ns",
+            "range": "± 123628.67060825316"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.BftCapture_Chain",
+            "value": 35348313.819047615,
+            "unit": "ns",
+            "range": "± 573703.6977377362"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_DftCapture",
+            "value": 37577585.141666666,
+            "unit": "ns",
+            "range": "± 35682.2070808192"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_DftCapture",
+            "value": 44429778.75,
+            "unit": "ns",
+            "range": "± 315967.8823814947"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Bft_over_BftCapture",
+            "value": 38676604.719780214,
+            "unit": "ns",
+            "range": "± 42887.45871242358"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Replay_Dft_over_BftCapture",
+            "value": 26316522.74375,
+            "unit": "ns",
+            "range": "± 282904.54099944443"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 123233129.82142857,
+            "unit": "ns",
+            "range": "± 450498.4529127306"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 141360342.28333333,
+            "unit": "ns",
+            "range": "± 1801180.9495469634"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 20211841.9875,
+            "unit": "ns",
+            "range": "± 307884.6196275883"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 131251442.15384616,
+            "unit": "ns",
+            "range": "± 552189.7121346609"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 137775096.6346154,
+            "unit": "ns",
+            "range": "± 775582.3599576886"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 151795440.63333333,
+            "unit": "ns",
+            "range": "± 1943519.7299805013"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 125088934.51666667,
+            "unit": "ns",
+            "range": "± 1937004.16313646"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 83261939.08333333,
+            "unit": "ns",
+            "range": "± 1403704.7888576721"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 175318904.64444444,
+            "unit": "ns",
+            "range": "± 3027857.432447656"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 92867806.19444443,
+            "unit": "ns",
+            "range": "± 239200.05947598044"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 164204307.04166666,
+            "unit": "ns",
+            "range": "± 4992702.008340325"
           }
         ]
       }
