@@ -4,53 +4,17 @@ using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
-  // Covers the memoize surfaces the Materialize benchmarks do NOT: Materialize measures the
-  // capture (build) path and discards the result; these measure reading captures back. The
-  // native/cross-order replay pairs put a number on the accepted locality tax, and the replay
-  // rows are the RefAppendOnlyList-indexing-vs-raw-array question for the second-pass hot path.
+  // MEMOIZE CONSTRUCTION -- building the memo's capture: the first pass (capture interleaved
+  // with the replay machinery -- distinct from Materialize, which drives the feed directly
+  // with no replay in the loop) and the bounded-prefix laziness claim. Reading a settled memo
+  // back is MemoizeReplay's job (the four-class taxonomy, 2026-08-16: {Materialize, Memoize}
+  // x {construction, replay}). The replay grid that lived here until 2026-08-16 measured
+  // MATERIALIZE's product (its setup called Materialize, from the era when Materialize WAS
+  // Memoize + Complete) -- it moved to MaterializeReplay with its history.
   [MemoryDiagnoser]
   [BenchmarkCategory("Buffer", "Memoize")]
   public class Memoize
   {
-    // Consume is MECHANICAL (walks a treenumerator unconditionally, buffers included), so
-    // these rows measure exactly what their names say: the replay traversal over a capture.
-    private ITreenumerable<int> _DftCapture;
-    private ITreenumerable<int> _BftCapture;
-
-    [GlobalSetup]
-    public void Setup()
-    {
-      _DftCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder);
-      _BftCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder);
-
-      // Materialize is deferred (2026-08-10): settle the captures here so the timed rows keep
-      // measuring replay only.
-      _DftCapture.Consume(TreeTraversalStrategy.DepthFirst);
-      _BftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
-    }
-
-    // --- Second pass: replay a completed capture. Native rows ride the capture in its own
-    // dimension; cross rows ride it in the other (the four-case rule's case 2). Each
-    // native/cross pair over the same capture isolates the locality tax.
-
-    [Benchmark]
-    public void Replay_Dft_over_DftCapture()
-      => _DftCapture.Consume(TreeTraversalStrategy.DepthFirst);
-
-    [Benchmark]
-    public void Replay_Bft_over_DftCapture()
-      => _DftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
-
-    [Benchmark]
-    public void Replay_Bft_over_BftCapture()
-      => _BftCapture.Consume(TreeTraversalStrategy.BreadthFirst);
-
-    [Benchmark]
-    public void Replay_Dft_over_BftCapture()
-      => _BftCapture.Consume(TreeTraversalStrategy.DepthFirst);
-
-    // --- First pass THROUGH a replay: capture interleaved with the replay machinery (case 3)
-    // -- distinct from Materialize, which drives the feed directly with no replay in the loop.
     // The breadth-first row is the only end-to-end exercise of the level-order builder under
     // load.
 

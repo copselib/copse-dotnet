@@ -4,9 +4,16 @@ using BenchmarkDotNet.Attributes;
 
 namespace Copse.Benchmarks
 {
-  // The capture (build) path only: drive the source once into a completed buffer and discard
-  // it -- replay cost lives in the Memoize benchmarks. Both capture dimensions, per the
-  // buffer-producer rule (capture layout differs by dimension).
+  // MATERIALIZE CONSTRUCTION -- the capture (build) path only: drive the source once into a
+  // completed buffer and discard it. Reading the capture back is MaterializeReplay's job (the
+  // four-class taxonomy, 2026-08-16: {Materialize, Memoize} x {construction, replay}, one
+  // class per question). Both capture layouts, per the buffer-producer rule.
+  //
+  // Row names speak the operator's own vocabulary (renamed 2026-08-16, history carried in
+  // gh-pages and Bencher): the declared BufferLayout plus the tree -- Preorder_Triangle is
+  // Materialize(BufferLayout.Preorder) on the mega triangle, forced by one native-dimension
+  // pull. The old DftCapture/BftCapture spellings named a capture flavor instead of the
+  // call, which is how the replay grid ended up mislabeled for a week.
   //
   // Materialize is DEFERRED (2026-08-10): the call itself builds nothing, so each row forces
   // the build with a single pull in the capture's own dimension -- the deferred build runs
@@ -17,19 +24,19 @@ namespace Copse.Benchmarks
   public class Materialize
   {
     [Benchmark]
-    public ITreenumerable<int> DftCapture_Triangle()
+    public ITreenumerable<int> Preorder_Triangle()
       => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public ITreenumerable<int> BftCapture_Triangle()
+    public ITreenumerable<int> LevelOrder_Triangle()
       => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
-    public ITreenumerable<int> DftCapture_Chain()
+    public ITreenumerable<int> Preorder_Chain()
       => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public ITreenumerable<int> BftCapture_Chain()
+    public ITreenumerable<int> LevelOrder_Chain()
       => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
 
     private static ITreenumerable<int> ForceBuild(ITreenumerable<int> buffer, TreeTraversalStrategy strategy)

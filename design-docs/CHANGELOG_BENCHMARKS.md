@@ -117,3 +117,29 @@ All changes verified:
 ## Migration
 
 No migration needed - everything updated in this change. The benchmark project is now production-ready and follows canonical BenchmarkDotNet patterns.
+
+## Date: 2026-08-16 — The four-class buffer taxonomy (renames, history carried)
+
+**The finding:** the `Memoize.Replay_*` grid's setup called `Materialize()` — correct in the
+era when Materialize WAS Memoize + Complete (one artifact answered both replay questions),
+silently wrong after the 2026-08-10 lazy rewrite split the products. The rows had been
+measuring Materialize's flat-store replay all along (they are how the 25–35% flat-read win
+finally surfaced), while the memo's own replay path had NO coverage.
+
+**The taxonomy:** `{Materialize, Memoize} × {construction, replay}`, one class per question:
+
+| Class | Rows | Provenance |
+|---|---|---|
+| `Materialize` | `Preorder_Triangle/Chain`, `LevelOrder_Triangle/Chain` | renamed (was `DftCapture_*`/`BftCapture_*` — names now speak the call: declared `BufferLayout` + tree) |
+| `MaterializeReplay` | `Dft_over_Preorder`, `Bft_over_Preorder`, `Bft_over_LevelOrder`, `Dft_over_LevelOrder` | moved from `Memoize.Replay_*_over_*Capture` |
+| `Memoize` | `FirstPass_*`, `Partial_*` | unchanged |
+| `MemoizeReplay` | same grid as MaterializeReplay | NEW — the re-covered memo replay path |
+
+**History:** carried in both stores — gh-pages `data.js` renamed by data-surgery commit
+(latency and Memory suites); Bencher renamed in place via the one-off
+`bencher-rename.yml` workflow (dispatch BEFORE the first run under new names; delete after).
+
+**The convention this mints** (also in BENCHMARKING.md): a benchmark whose coverage is
+justified by implementation sharing ("A covers B because B is built on A") must NAME the
+sharing in its comment — the justification expires with the sharing, and nothing else
+audits it.

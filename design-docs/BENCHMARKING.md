@@ -91,6 +91,12 @@ Local runs automatically use fast `ShortRun` mode; CI uses the accurate default 
    a buffer.
 3. Sanity: every time row should clear ~1 ms on the slowest runner (~10 ms target) — see the
    noise-floor notes in `CanonicalTrees`.
+4. **Coverage-transfer expires with the sharing that justified it** (the 2026-08-16 lesson —
+   see CHANGELOG_BENCHMARKS.md): if a row's coverage argument is "A covers B because B is
+   built on A," the row's comment must NAME that sharing — when B's implementation diverges,
+   nothing else audits the claim, and the suite quietly stops meaning what it meant. Row
+   names speak the operator call under test (its method and arguments), never an
+   implementation detail that can drift.
 
 Adding a whole new **family** is a bigger step: the workflow's matrix list, the publish job's
 find-results loop, two store steps, and the Bencher loop all enumerate families explicitly in
