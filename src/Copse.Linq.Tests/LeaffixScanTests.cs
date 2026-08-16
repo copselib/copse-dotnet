@@ -60,11 +60,12 @@ namespace Copse.Linq.Tests
       EnumerableToTreeTest(treeString, expectedTreeString, TreeTraversalStrategy.DepthFirst);
     }
 
-    // The dual fold shape (2026-08-05): seed "" arrives at the fringe (value(leaf) =
-    // nodeAcc("", leaf) = leaf), the edge accumulator concatenates the children's completed
-    // accumulations in sibling order, and the node accumulator prepends the node's own letter
-    // once. Concatenation is non-commutative, so the corpus also pins the sibling-order
-    // guarantee -- any out-of-order reduction scrambles the expected strings.
+    // The dual fold shape (2026-08-05; selector boundary since THE VIRTUAL-ROOT RULE,
+    // 2026-08-06): each leaf's accumulation is its own letter (the selector), the edge
+    // accumulator concatenates the children's completed accumulations in sibling order, and
+    // the node accumulator prepends the node's own letter once. Concatenation is
+    // non-commutative, so the corpus also pins the sibling-order guarantee -- any
+    // out-of-order reduction scrambles the expected strings.
     public void EnumerableToTreeTest(
       string treeString,
       string expectedTreeString,
@@ -88,7 +89,7 @@ namespace Copse.Linq.Tests
       var actual =
         sut
         .LeaffixScan(
-          "",
+          leaf => leaf,
           (left, right) => left + right,
           (accumulate, node) => node + accumulate)
         .Select(pairing => pairing.Accumulate)
@@ -118,14 +119,14 @@ namespace Copse.Linq.Tests
       var narrowSource = (IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(treeString);
 
       var viaDisclosureRule = narrowSource.LeaffixScan(
-        "",
+        leaf => leaf,
         (left, right) => left + right,
         (accumulate, node) => node + accumulate);
 
       var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(treeString)
         .Materialize()
         .LeaffixScan(
-          "",
+          leaf => leaf,
           (left, right) => left + right,
           (accumulate, node) => node + accumulate);
 
@@ -157,7 +158,7 @@ namespace Copse.Linq.Tests
         var scan = TreeSerializer
           .DeserializeDepthFirstTree(treeString)
           .LeaffixScan(
-            "",
+            leaf => leaf,
             (left, right) => left + right,
             (accumulate, node) => node + accumulate)
           .Select(pairing => pairing.Accumulate);
@@ -174,29 +175,5 @@ namespace Copse.Linq.Tests
       }
     }
 
-    // The two instruments at the fringe, mirroring every other boundary in the family: the
-    // seed PARTICIPATES through the node accumulator (value(leaf) = nodeAcc(seed, leaf)); the
-    // selector sets each leaf DIRECTLY, node accumulator bypassed at the fringe. Deliberately
-    // different, so a future "consistency fix" is a decision.
-    [TestMethod]
-    public void SeedAndSelectorFlavors_AreDifferentInstruments_AtTheFringe()
-    {
-      var seedFlavor = TreeSerializer
-        .DeserializeDepthFirstTree("a,b")
-        .LeaffixScan("s", (left, right) => left + right, (accumulate, node) => node + accumulate)
-        .Select(pairing => pairing.Accumulate)
-        .GetPreorderTraversal()
-        .ToArray();
-
-      var selectorFlavor = TreeSerializer
-        .DeserializeDepthFirstTree("a,b")
-        .LeaffixScan(_ => "s", (left, right) => left + right, (accumulate, node) => node + accumulate)
-        .Select(pairing => pairing.Accumulate)
-        .GetPreorderTraversal()
-        .ToArray();
-
-      CollectionAssert.AreEqual(new[] { "as", "bs" }, seedFlavor, "the virtual fringe's arrival folds through the node accumulator");
-      CollectionAssert.AreEqual(new[] { "s", "s" }, selectorFlavor, "the selector sets each leaf's accumulation directly");
-    }
   }
 }

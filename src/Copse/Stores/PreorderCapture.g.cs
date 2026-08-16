@@ -56,7 +56,7 @@ namespace Copse.Stores
     /// The NAKED encoding: as the side-channel form, but returning the walk's raw
     /// preorder-parallel arrays instead of wrapping them in a store -- for consumers that weave
     /// a DIFFERENT store out of the walk (RootfixDispatch surveys over the encoding, then
-    /// builds a ScanResult store from the same subtree-size array). <c>Values[i]</c> in
+    /// builds a NodeArrival store from the same subtree-size array). <c>Values[i]</c> in
     /// preorder; node i's subtree spans <c>[i, i + SubtreeSizes[i])</c>;
     /// <c>SideChannel[i]</c> evaluated once per node against the source context.
     /// </summary>

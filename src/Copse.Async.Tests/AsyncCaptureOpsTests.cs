@@ -98,11 +98,11 @@ namespace Copse.Async.Tests
         var sync = Sync(tree)
           .RootfixDispatch("s", Survey)
           .GetPreorderTraversal()
-          .Select(dn => dn.Accumulate + dn.Node)
+          .Select(dn => dn.Arrival + dn.Node)
           .ToList();
 
         var async = (await ToList(Async(tree).RootfixDispatch("s", Survey).GetPreorderTraversal()))
-          .Select(dn => dn.Accumulate + dn.Node)
+          .Select(dn => dn.Arrival + dn.Node)
           .ToList();
 
         CollectionAssert.AreEqual(sync, async, $"Preorder {tree}");
@@ -174,6 +174,19 @@ namespace Copse.Async.Tests
         var sync = Sync(tree).Materialize().Invert();
 
         CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(mirrored.GetPreorderTraversal()), $"Preorder {tree}");
+      }
+    }
+
+    [TestMethod]
+    public async Task TakeSubtreesWhere_MatchesSync_BothDimensions()
+    {
+      foreach (var tree in Trees)
+      {
+        var sync = Sync(tree).TakeSubtreesWhere(node => node == "b" || node == "c");
+        var async = Async(tree).TakeSubtreesWhere(node => node == "b" || node == "c");
+
+        CollectionAssert.AreEqual(sync.GetPreorderTraversal().ToList(), await ToList(async.GetPreorderTraversal()), $"Preorder {tree}");
+        CollectionAssert.AreEqual(sync.GetLevelOrderTraversal().ToList(), await ToList(async.GetLevelOrderTraversal()), $"LevelOrder {tree}");
       }
     }
 

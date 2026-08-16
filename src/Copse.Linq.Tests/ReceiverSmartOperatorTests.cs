@@ -40,14 +40,14 @@ namespace Copse.Linq.Tests
       {
         var stream = TreeSerializer.DeserializeDepthFirstTree(tree);
 
-        var oracle = stream.Where(context => true).LeaffixScan("~", Edge, Node)
+        var oracle = stream.Where(context => true).LeaffixScan(leaf => Node("~", leaf), Edge, Node)
           .GetTraversal(TreeTraversalStrategy.DepthFirst).Select(DescribeScan).ToList();
 
-        AssertScan(oracle, stream.Materialize(BufferLayout.Preorder).LeaffixScan("~", Edge, Node), $"{tree} (preorder buffer, span path)");
-        AssertScan(oracle, stream.Materialize(BufferLayout.LevelOrder).LeaffixScan("~", Edge, Node), $"{tree} (level-order buffer, engine path)");
+        AssertScan(oracle, stream.Materialize(BufferLayout.Preorder).LeaffixScan(leaf => Node("~", leaf), Edge, Node), $"{tree} (preorder buffer, span path)");
+        AssertScan(oracle, stream.Materialize(BufferLayout.LevelOrder).LeaffixScan(leaf => Node("~", leaf), Edge, Node), $"{tree} (level-order buffer, engine path)");
 
         using var memo = stream.Memoize();
-        AssertScan(oracle, memo.LeaffixScan("~", Edge, Node), $"{tree} (memo, walker path)");
+        AssertScan(oracle, memo.LeaffixScan(leaf => Node("~", leaf), Edge, Node), $"{tree} (memo, walker path)");
       }
     }
 
@@ -89,7 +89,7 @@ namespace Copse.Linq.Tests
     {
       var buffer = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
-      var scan = buffer.LeaffixScan(0, (left, right) => left + right, (accumulate, node) => accumulate + 1);
+      var scan = buffer.LeaffixScan(node => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
 
       Assert.AreEqual(5, WalkerLawProviders.TopologyOf(scan).GetValue(0).Accumulate, "the root's accumulate is the whole tree's count");
       Assert.AreEqual("a", WalkerLawProviders.TopologyOf(scan).GetValue(0).Node);
@@ -98,14 +98,14 @@ namespace Copse.Linq.Tests
 
     private static void AssertScan(
       System.Collections.Generic.List<string> oracle,
-      ITreenumerableBuffer<ScanResult<string, string>> actual,
+      ITreenumerableBuffer<NodeAccumulation<string, string>> actual,
       string label)
       => CollectionAssert.AreEqual(
         oracle,
         actual.GetTraversal(TreeTraversalStrategy.DepthFirst).Select(DescribeScan).ToList(),
         label);
 
-    private static string DescribeScan(NodeVisit<ScanResult<string, string>> visit)
+    private static string DescribeScan(NodeVisit<NodeAccumulation<string, string>> visit)
       => $"{visit.Mode} {visit.Node.Node}<-{visit.Node.Accumulate} @{visit.Position} x{visit.VisitCount}";
 
     private static string DescribeNode(NodeVisit<string> visit)

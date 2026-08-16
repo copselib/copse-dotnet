@@ -100,16 +100,16 @@ int[] filtered = tree
 
 **`LeaffixAggregate`** folds bottom-up, one value per root: each family's completed child
 accumulations are reduced pairwise (the edge accumulator), then the node folds itself in
-once (the node accumulator); leaves fold against the seed:
+once (the node accumulator); leaves answer through the leaf selector directly:
 
 ```csharp
 int subtreeSum = tree
     .LeaffixAggregate(
-        0,                                                   // seed: what arrives at a leaf
+        leaf => leaf,                                        // each leaf's own accumulation
         (accumulate, childAccumulate) => accumulate + childAccumulate,
         (accumulate, node) => accumulate + node)
     .First()
-    .Accumulate;   // results are ScanResults: the root's value paired with its fold
+    .Accumulate;   // results are NodeAccumulations: the root's value paired with its fold
 // 28  (1 + 2 + 3 + 4 + 5 + 6 + 7)
 ```
 

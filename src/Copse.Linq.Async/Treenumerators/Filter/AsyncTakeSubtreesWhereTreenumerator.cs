@@ -1,0 +1,115 @@
+using Copse.Async;
+using Copse.Core;
+using Copse.Core.Async;
+using Copse.Linq.Extensions;
+using System;
+using System.Threading.Tasks;
+
+namespace Copse.Linq.Async
+{
+  /// <summary>
+  /// <b>async</b> <c>TakeSubtreesWhere</c>'s depth-first streamer and the codegen source of truth for
+  /// its sync twin: strip the <c>await</c>s and it becomes the synchronous driver. DEPTH-FIRST
+  /// ONLY, by theorem not choice: a matched subtree is one contiguous segment of the depth-first
+  /// visit stream, so this wrapper is a pass-through with an in-subtree flag and O(1) state --
+  /// while outside, every visit is suppressed and each newly scheduled node is tested; while
+  /// inside, visits stream through with the depth offset (and the predicate never fires -- the
+  /// outermost-match rule IS the flag). Breadth-first has no streaming form (result level k
+  /// interleaves source levels as matches start at different depths -- the reorder wall), which
+  /// is why the breadth-first arms capture.
+  ///
+  /// Positions: a match re-roots at depth 0 with sibling index = its match ordinal (result
+  /// roots are siblings in source preorder order); descendants keep their sibling indices, depth
+  /// shifted by the match's. Visit counts pass through untouched. Consumer strategies answer the
+  /// visits the consumer saw and forward to the inner walk; SkipSiblings on a result ROOT means
+  /// "no more result roots", so the wrapper stops opening subtrees and ends after the current
+  /// one drains.
+  /// </summary>
+  internal sealed class AsyncTakeSubtreesWhereTreenumerator<TNode>
+    : AsyncTreenumeratorWrapper<TNode>
+  {
+    public AsyncTakeSubtreesWhereTreenumerator(
+      Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
+      Func<NodeContext<TNode>, bool> predicate)
+      : base(innerTreenumeratorFactory)
+    {
+      _Predicate = predicate;
+    }
+
+    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private int _MatchDepth = -1;
+    private int _EmittedRootCount;
+    private bool _NoMoreSubtrees;
+
+    protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
+    {
+      if (EnumerationFinished)
+        return false;
+
+      // Result roots are all siblings of each other, so skipping a root's siblings means no
+      // further subtrees open; the strategy still forwards (pruning the inner walk is free).
+      if (_MatchDepth >= 0
+        && Position.Depth == 0
+        && (nodeTraversalStrategies & NodeTraversalStrategies.SkipSiblings) != 0)
+        _NoMoreSubtrees = true;
+
+      // The consumer's verdict answers the visit the consumer saw; the wrapper's own advances
+      // through suppressed outside-region visits traverse everything (a match can hide anywhere).
+      var verdict = nodeTraversalStrategies;
+
+      while (true)
+      {
+        if (!await InnerTreenumerator.MoveNextAsync(verdict).ConfigureAwait(false))
+          return false;
+
+        verdict = NodeTraversalStrategies.TraverseAll;
+
+        if (_MatchDepth >= 0)
+        {
+          // A scheduling at the match's depth is a later sibling; a visit above it is an
+          // ancestor -- either way the contiguous segment is over.
+          var leaving =
+            InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
+            ? InnerTreenumerator.Position.Depth <= _MatchDepth
+            : InnerTreenumerator.Position.Depth < _MatchDepth;
+
+          if (!leaving)
+          {
+            UpdateState();
+            return true;
+          }
+
+          _MatchDepth = -1;
+
+          if (_NoMoreSubtrees)
+            return false;
+        }
+
+        // Outside any matched subtree: nothing is emitted, and only a scheduling visit can
+        // open the next subtree.
+        if (InnerTreenumerator.Mode != TreenumeratorMode.SchedulingNode)
+          continue;
+
+        if (!_Predicate(InnerTreenumerator.ToNodeContext()))
+          continue;
+
+        _MatchDepth = InnerTreenumerator.Position.Depth;
+        _EmittedRootCount++;
+        UpdateState();
+        return true;
+      }
+    }
+
+    private void UpdateState()
+    {
+      Mode = InnerTreenumerator.Mode;
+      Node = InnerTreenumerator.Node;
+      VisitCount = InnerTreenumerator.VisitCount;
+      Position = new NodePosition(
+        InnerTreenumerator.Position.Depth == _MatchDepth
+          ? _EmittedRootCount - 1
+          : InnerTreenumerator.Position.SiblingIndex,
+        InnerTreenumerator.Position.Depth - _MatchDepth);
+    }
+  }
+}

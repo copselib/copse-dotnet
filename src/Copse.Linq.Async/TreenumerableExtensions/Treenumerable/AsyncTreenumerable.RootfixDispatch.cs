@@ -54,18 +54,19 @@ namespace Copse.Linq
     /// derive.)</para>
     ///
     /// <para>The result pairs every source value with what ARRIVED at it
-    /// (<see cref="ScanResult{TSource, TDispatch}"/>, the family's canonical pairing --
-    /// design-docs/SCANRESULT_DESIGN.md) in the source tree's shape. NOTE the deliberate contrast
-    /// with the fold tiers: a fold records its OUTPUT, while this survey records its INPUT --
-    /// a node's pairing is what its family's survey dispatched to it -- because the survey's
-    /// outputs are edge-grained and land as the MEMBERS' arrivals; a survey has no
-    /// node-grained output to record. Project <c>.Accumulate</c> away with Select for
-    /// immutable values. For mutable nodes, LAND the arrivals with the composed effect idiom
-    /// -- <c>.Do(visit =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode)
-    /// visit.Node.Node.Amount = visit.Node.Accumulate; }).Select(pairing =&gt;
-    /// pairing.Node)</c> -- effects fire per drain (the re-enumeration contract);
-    /// Materialize/Memoize is the consumer's pin (design-docs/SCANRESULT_DESIGN.md, the demotion
-    /// record).</para>
+    /// (<see cref="NodeArrival{TSource, TDispatch}"/>, the family's INPUT pairing -- the
+    /// recording rule made type-level 2026-08-06, design-docs/SCANRESULT_DESIGN.md) in the source
+    /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
+    /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
+    /// what its family's survey dispatched to it -- because the survey's outputs are
+    /// edge-grained and land as the MEMBERS' arrivals; a survey has no node-grained output
+    /// to record. This operator is the family's ONE input-recorder, so it is the one
+    /// NodeArrival producer. Project <c>.Arrival</c> away with Select for immutable values.
+    /// For mutable nodes, LAND the arrivals with the composed effect idiom -- <c>.Do(visit
+    /// =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Amount =
+    /// visit.Node.Arrival; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
@@ -75,11 +76,11 @@ namespace Copse.Linq
     /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       TDispatch seed,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatch(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
     /// <summary>
@@ -95,19 +96,19 @@ namespace Copse.Linq
     /// point, which the selector bypasses. Pinned deliberately-different by
     /// RootfixDispatchTests.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatch(source, PerRootSurvey<TSource, TDispatch>((node, _) => rootNodeSelector(node)), survey)), BufferLayout.Preorder);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the root's value and its position -- seeding by root ordinal.</summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatch(source, PerRootSurvey<TSource, TDispatch>(rootNodeSelector), survey)), BufferLayout.Preorder);
 
     /// <summary>
@@ -117,41 +118,41 @@ namespace Copse.Linq
     /// RootfixDispatch pays, disclosed by the buffer return type) and the pass runs over the
     /// capture's depth-first replay.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       TDispatch seed,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, PerRootSurvey<TSource, TDispatch>((node, _) => rootNodeSelector(node)), survey)), BufferLayout.Preorder);
 
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
-      => new AsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>>(
+      => new AsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, PerRootSurvey<TSource, TDispatch>(rootNodeSelector), survey)), BufferLayout.Preorder);
 
     /// <summary>Disambiguation overloads for full trees; keep the depth-first consumption.</summary>
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncTreenumerable<TSource> source,
       TDispatch seed,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => RootfixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, seed, survey);
 
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
       => RootfixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, rootNodeSelector, survey);
 
-    public static IAsyncTreenumerableBuffer<ScanResult<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
+    public static IAsyncTreenumerableBuffer<NodeArrival<TSource, TDispatch>> RootfixDispatch<TSource, TDispatch>(
       this IAsyncTreenumerable<TSource> source,
       Func<TSource, NodePosition, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
@@ -171,29 +172,29 @@ namespace Copse.Linq
     // Preorder for BOTH dimensions, matching LeaffixDispatch's measured layout decision (see its
     // note: the breadth-first cross-decode tax over raw array stores is ~1.08x, not worth a
     // transpose).
-    private static IAsyncTreenumerable<ScanResult<TSource, TDispatch>> PreorderRootfixDispatch<TSource, TDispatch>(
+    private static IAsyncTreenumerable<NodeArrival<TSource, TDispatch>> PreorderRootfixDispatch<TSource, TDispatch>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
-      var dispatched = new AsyncLazyPreorderStore<ScanResult<TSource, TDispatch>>(
+      var dispatched = new AsyncLazyPreorderStore<NodeArrival<TSource, TDispatch>>(
         () => BuildRootfixDispatchAsync(source, rootFamilySurvey, survey));
 
-      return new AsyncPreorderTreenumerable<ScanResult<TSource, TDispatch>, AsyncLazyPreorderStore<ScanResult<TSource, TDispatch>>>(dispatched);
+      return new AsyncPreorderTreenumerable<NodeArrival<TSource, TDispatch>, AsyncLazyPreorderStore<NodeArrival<TSource, TDispatch>>>(dispatched);
     }
 
-    private static IAsyncTreenumerable<ScanResult<TSource, TDispatch>> PreorderRootfixDispatchBreadthFirstSource<TSource, TDispatch>(
+    private static IAsyncTreenumerable<NodeArrival<TSource, TDispatch>> PreorderRootfixDispatchBreadthFirstSource<TSource, TDispatch>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
-      var dispatched = new AsyncLazyPreorderStore<ScanResult<TSource, TDispatch>>(
+      var dispatched = new AsyncLazyPreorderStore<NodeArrival<TSource, TDispatch>>(
         () => BuildRootfixDispatchFromBreadthFirstAsync(source, rootFamilySurvey, survey));
 
-      return new AsyncPreorderTreenumerable<ScanResult<TSource, TDispatch>, AsyncLazyPreorderStore<ScanResult<TSource, TDispatch>>>(dispatched);
+      return new AsyncPreorderTreenumerable<NodeArrival<TSource, TDispatch>, AsyncLazyPreorderStore<NodeArrival<TSource, TDispatch>>>(dispatched);
     }
 
-    private static async ValueTask<AsyncPreorderArrayStore<ScanResult<TSource, TDispatch>>> BuildRootfixDispatchFromBreadthFirstAsync<TSource, TDispatch>(
+    private static async ValueTask<AsyncPreorderArrayStore<NodeArrival<TSource, TDispatch>>> BuildRootfixDispatchFromBreadthFirstAsync<TSource, TDispatch>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
@@ -203,22 +204,22 @@ namespace Copse.Linq
       return await BuildRootfixDispatchAsync(capture, rootFamilySurvey, survey).ConfigureAwait(false);
     }
 
-    // The finisher: run the pass, then zip (values, arrivals) into the ScanResult
+    // The finisher: run the pass, then zip (values, arrivals) into the NodeArrival
     // decoration.
-    private static async ValueTask<AsyncPreorderArrayStore<ScanResult<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
+    private static async ValueTask<AsyncPreorderArrayStore<NodeArrival<TSource, TDispatch>>> BuildRootfixDispatchAsync<TSource, TDispatch>(
       IAsyncDepthFirstTreenumerable<TSource> source,
       Action<DispatchTargets<TSource, TDispatch>> rootFamilySurvey,
       Action<TDispatch, DispatchTargets<TSource, TDispatch>> survey)
     {
       var (values, subtreeSizes, arrivals) = await RunRootfixDispatchPassAsync(source, rootFamilySurvey, survey).ConfigureAwait(false);
 
-      var results = new ScanResult<TSource, TDispatch>[values.Length];
+      var results = new NodeArrival<TSource, TDispatch>[values.Length];
       for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
-        results[nodeIndex] = new ScanResult<TSource, TDispatch>(values[nodeIndex], arrivals[nodeIndex]);
+        results[nodeIndex] = new NodeArrival<TSource, TDispatch>(values[nodeIndex], arrivals[nodeIndex]);
 
       // The result store rides the SAME subtree-size array the capture produced -- the shape is
       // the source's, only the values changed.
-      return new AsyncPreorderArrayStore<ScanResult<TSource, TDispatch>>(results, subtreeSizes);
+      return new AsyncPreorderArrayStore<NodeArrival<TSource, TDispatch>>(results, subtreeSizes);
     }
 
     // The shared dispatch pass, both operators' engine: capture, child-index, arrival

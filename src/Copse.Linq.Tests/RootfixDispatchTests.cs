@@ -62,7 +62,7 @@ namespace Copse.Linq.Tests
             foreach (var child in children)
               child.Dispatch(arrival + lastChildLetter);
           })
-        .Select(node => $"{node.Accumulate}{node.Node}");
+        .Select(node => $"{node.Arrival}{node.Node}");
     }
 
     [TestMethod]
@@ -261,7 +261,7 @@ namespace Copse.Linq.Tests
               member.Dispatch(arrival + member.Node);
           })
         .GetPreorderTraversal()
-        .Select(node => $"{node.Accumulate}{node.Node}")
+        .Select(node => $"{node.Arrival}{node.Node}")
         .ToArray();
 
       CollectionAssert.AreEqual(
@@ -284,7 +284,7 @@ namespace Copse.Linq.Tests
               member.Dispatch(arrival * 10 + ++memberOrdinal);
           })
         .GetPreorderTraversal()
-        .Select(node => $"{node.Node}:{node.Accumulate}")
+        .Select(node => $"{node.Node}:{node.Arrival}")
         .ToArray();
 
       // The virtual family numbers the root (0*10+1), then a's family numbers b and c off it.
@@ -353,7 +353,7 @@ namespace Copse.Linq.Tests
               member.Dispatch(arrival + lastMemberLetter);
           })
         .GetPreorderTraversal()
-        .Select(pairing => pairing.Accumulate)
+        .Select(pairing => pairing.Arrival)
         .ToArray();
 
       // Virtual family: a and b receive "s" + "b". a's family: c receives "sb" + "c"; likewise d.
@@ -385,7 +385,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a,b")
         .RootfixDispatch(10, proportionSurvey)
         .GetPreorderTraversal()
-        .Select(pairing => pairing.Accumulate)
+        .Select(pairing => pairing.Arrival)
         .ToArray();
 
       var selectorFlavor =
@@ -393,7 +393,7 @@ namespace Copse.Linq.Tests
         .DeserializeDepthFirstTree("a,b")
         .RootfixDispatch(_ => 10, proportionSurvey)
         .GetPreorderTraversal()
-        .Select(pairing => pairing.Accumulate)
+        .Select(pairing => pairing.Arrival)
         .ToArray();
 
       CollectionAssert.AreEqual(new[] { 5, 5 }, seedFlavor, "the seed is divvied by the survey at the virtual family");

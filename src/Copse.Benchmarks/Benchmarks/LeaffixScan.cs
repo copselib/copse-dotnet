@@ -13,8 +13,11 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Aggregate", "Leaffix")]
   public class LeaffixScan
   {
-    // Subtree node count on the dual shape: seed 0 at the fringe, edge-sum the children's
-    // counts, node accumulator adds one for the node itself.
+    // Subtree node count on the dual shape: each leaf counts as one (the canonical count
+    // fringe), edge-sum the children's counts, node accumulator adds one for the node itself.
+    private static int LeafCount(int node)
+      => 1;
+
     private static int EdgeSum(int left, int right)
       => left + right;
 
@@ -24,28 +27,28 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Dft_Triangle()
     {
-      var scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(0, EdgeSum, CountNode);
+      var scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Triangle()
     {
-      var scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(0, EdgeSum, CountNode);
+      var scan = CanonicalTrees.MegaTriangleTree().LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
 
     [Benchmark]
     public void Dft_Chain()
     {
-      var scan = CanonicalTrees.MegaChainTree().LeaffixScan(0, EdgeSum, CountNode);
+      var scan = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
     [Benchmark]
     public void Bft_Chain()
     {
-      var scan = CanonicalTrees.MegaChainTree().LeaffixScan(0, EdgeSum, CountNode);
+      var scan = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
   }

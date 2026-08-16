@@ -29,7 +29,7 @@ namespace Copse.Linq.Tests
         TreeSerializer
         .DeserializeDepthFirstTree(treeString)
         .LeaffixAggregate(
-          "",
+          leaf => leaf,
           (left, right) => left + right,
           (accumulate, node) => node + accumulate)
         .Select(pairing => pairing.Accumulate)

@@ -13,10 +13,13 @@ namespace Copse.Linq.Tests
   //
   // Boundary flavors mean the same thing on both tiers -- the two instruments, uniformly:
   // the SEED is the virtual root's arrival, transformed by the tier's callback (fold /
-  // survey) so every node participates; the SELECTOR sets each root's value directly,
-  // bypassing the callback (known per-root values). This battery pins the invariant that
-  // selected the selector's bypass semantics (reversing the one-day arrival-semantics
-  // detour); every future boundary flavor must join it.
+  // survey) so every node participates; the SELECTOR sets each boundary node's value
+  // directly, bypassing the callback. Since THE VIRTUAL-ROOT RULE (2026-08-06) the
+  // quantifier is exact: seeds exist only at the rootfix boundary (the virtual forest root
+  // is the family's one tree-lawful virtual node), so every flavor on the surface has a
+  // same-boundary twin on the other tier -- no translated equivalences remain. This battery
+  // pins the invariant that selected the selector's bypass semantics (reversing the one-day
+  // arrival-semantics detour); every future boundary flavor must join it.
   [TestClass]
   public class CrossTierCoherenceTests
   {
@@ -31,8 +34,14 @@ namespace Copse.Linq.Tests
         member.Dispatch(Fold(arrival, member.Node));
     }
 
-    private static string[] Pairings(ITreenumerable<ScanResult<string, string>> results) =>
+    private static string[] Pairings(ITreenumerable<NodeAccumulation<string, string>> results) =>
       results.GetPreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Accumulate}").ToArray();
+
+    // The dispatch side records ARRIVALS (NodeArrival -- the recording rule, type-level since
+    // 2026-08-06); under the fold encoding what arrives at a node IS its accumulation, which
+    // is exactly the equivalence this battery pins -- the projections coincide by the law.
+    private static string[] Pairings(ITreenumerable<NodeArrival<string, string>> results) =>
+      results.GetPreorderTraversal().Select(pairing => $"{pairing.Node}:{pairing.Arrival}").ToArray();
 
     [TestMethod]
     public void SeedFlavor_ScanIsTheFoldShapedDispatch()
@@ -59,33 +68,6 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEqual(new[] { "a:A", "b:Ab", "c:Ac", "d:D", "e:De", "f:Df" }, scan,
         "the selector sets each root's value directly, bypassing the tier's callback");
-      CollectionAssert.AreEqual(scan, dispatch);
-    }
-
-    [TestMethod]
-    public void LeaffixSeedFlavor_ScanIsTheFoldShapedDispatch()
-    {
-      // The leaffix half of the invariant, dual shape (2026-08-05): the seed is the VIRTUAL
-      // FRINGE's arrival, participating through the node accumulator at every leaf -- visible
-      // here as the "*" folded into every fringe value.
-      var scan = Pairings(
-        TreeSerializer.DeserializeDepthFirstTree(Forest)
-          .LeaffixScan("*", (left, right) => left + right, (accumulate, node) => node + accumulate));
-
-      var dispatch = Pairings(
-        TreeSerializer.DeserializeDepthFirstTree(Forest)
-          .LeaffixDispatch(
-            leaf => leaf + "*",
-            (node, children) =>
-            {
-              var reduced = children[0].Accumulate;
-              for (var siblingIndex = 1; siblingIndex < children.Count; siblingIndex++)
-                reduced += children[siblingIndex].Accumulate;
-              return node + reduced;
-            }));
-
-      CollectionAssert.AreEqual(new[] { "a:ab*c*", "b:b*", "c:c*", "d:de*f*", "e:e*", "f:f*" }, scan,
-        "the seed folds through the node accumulator at every leaf");
       CollectionAssert.AreEqual(scan, dispatch);
     }
 

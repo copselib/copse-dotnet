@@ -12,11 +12,11 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The root-to-leaf accumulations (RootfixScan, then the leaves), as a lazy async sequence --
-    /// one <see cref="ScanResult{TSource, TAccumulate}"/> per leaf: the leaf's value paired with
+    /// one <see cref="NodeAccumulation{TSource, TAccumulate}"/> per leaf: the leaf's value paired with
     /// the fold of the accumulator down its root-to-leaf path (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md -- project <c>.Accumulate</c> when only values are wanted).
     /// </summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -28,7 +28,7 @@ namespace Copse.Linq
     }
 
     /// <summary>The breadth-first dual: leaf pairings in level order.</summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -40,7 +40,7 @@ namespace Copse.Linq
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// The forest-correct seeding form (see the RootfixScan rootNodeSelector overloads): every
     /// root seeds its own accumulation, so each tree of a forest folds independently.
     /// </summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -62,7 +62,7 @@ namespace Copse.Linq
     }
 
     /// <summary>The breadth-first dual: per-root-seeded leaf pairings in level order.</summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -74,14 +74,14 @@ namespace Copse.Linq
     }
 
     /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixAggregate((IDepthFirstTreenumerable<TNode>)source, rootNodeSelector, accumulator);
 
     /// <summary>The positional selector flavor: seeding by root ordinal.</summary>
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -92,7 +92,7 @@ namespace Copse.Linq
         .GetLeaves();
     }
 
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
@@ -103,7 +103,7 @@ namespace Copse.Linq
         .GetLeaves();
     }
 
-    public static IEnumerable<ScanResult<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)

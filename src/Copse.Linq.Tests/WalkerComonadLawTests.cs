@@ -138,7 +138,9 @@ namespace Copse.Linq.Tests
     // The upward twin, completing the pair: LeaffixScan is extend of the SUBTREE fold
     // (synthesized attributes, where the rootfix coherence above is the inherited ones).
     // The decided leaffix shape: value(n) = nodeAcc(edgeReduce(children's accumulations), n),
-    // edgeReduce a left-fold from the first child; value(leaf) = nodeAcc(seed, leaf).
+    // edgeReduce a left-fold from the first child. The fringe is selector-only (the
+    // virtual-root rule, 2026-08-06), so the seed rides the formula spelling:
+    // leaf => nodeAcc(seed, leaf) -- the fold side of the pin keeps the identical leaf case.
     [TestMethod]
     public void Coherence_LeaffixScan_IsExtendOfTheSubtreeFold()
     {
@@ -149,7 +151,7 @@ namespace Copse.Linq.Tests
       foreach (var (tree, walkable) in AllWalkables())
       {
         var viaScan = TreeSerializer.DeserializeDepthFirstTree(tree)
-          .LeaffixScan(seed, edgeAccumulator, nodeAccumulator)
+          .LeaffixScan(leaf => nodeAccumulator(seed, leaf), edgeAccumulator, nodeAccumulator)
           .Select(result => result.Accumulate);
 
         var viaExtend = walkable.Extend((source, handle) => SubtreeFold(source, handle, seed, edgeAccumulator, nodeAccumulator));
