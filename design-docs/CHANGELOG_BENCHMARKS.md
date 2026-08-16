@@ -136,10 +136,37 @@ finally surfaced), while the memo's own replay path had NO coverage.
 | `MemoizeReplay` | same grid as MaterializeReplay | NEW — the re-covered memo replay path |
 
 **History:** carried in both stores — gh-pages `data.js` renamed by data-surgery commit
-(latency and Memory suites); Bencher renamed in place via the one-off
-`bencher-rename.yml` workflow (dispatch BEFORE the first run under new names; delete after).
+(latency and Memory suites); Bencher renamed in place in the web UI (the repo's
+`BENCHER_API_KEY` is a project RUN key and cannot mutate resources — the one-off
+`bencher-rename.yml` workflow died 401 and was deleted).
 
 **The convention this mints** (also in BENCHMARKING.md): a benchmark whose coverage is
 justified by implementation sharing ("A covers B because B is built on A") must NAME the
 sharing in its comment — the justification expires with the sharing, and nothing else
 audits it.
+
+---
+
+## Date: 2026-08-16 — BufferProbes: the probe/topology layer gets its first rows
+
+**The gap:** the adjacency engines (`PreorderAdjacencyIndex` / `LevelOrderAdjacencyIndex` —
+the machinery behind the buffer's TryGetParent/TryGetChildAt/TryGetRootAt surface) had zero
+coverage, direct or indirect: every Buffer row rides the visit-stream decoders, which never
+consult them; Materialize rows construct an index but never advance its scan; Aggregate rows
+are stream sources, so the receiver-smart path never fires. The walker-era consumers
+(GetTreeWalker navigation, buffer-receiver LeaffixScan) were flying dark. Seeded BEFORE the
+planned adjacency-engine rework so the rework lands as a visible step in the series.
+
+**New family** (`BufferProbes`, Buffer leg, MegaTriangle, MemoryDiagnoser):
+
+| Row | Temperature | Pins |
+|---|---|---|
+| `Walk_over_MaterializedPreorder` | warm | steady-state probe reads, completed preorder engine |
+| `Walk_over_MaterializedLevelOrder` | warm | completed level-order (isolates the parent merge) |
+| `Walk_over_MemoizedPreorder` | cold (fresh `Memoize()` per invocation, fed from the settled capture) | the growing engine's incremental scan — time AND allocation, every invocation |
+| `Walk_over_MemoizedLevelOrder` | cold | growing level-order twin |
+| `LeaffixScan_over_MaterializedPreorder` | — | the bulk-fold seam (guard rail: must not move with probe machinery changes) |
+
+Coverage is indirect through the walker surface (the engines are internal — no public door,
+and no-IVT is law); the routing assumption is named in the class comment per the expiry
+convention above.
