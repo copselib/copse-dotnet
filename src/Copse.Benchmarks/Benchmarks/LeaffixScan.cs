@@ -51,5 +51,24 @@ namespace Copse.Benchmarks
       var scan = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
+
+    // The composed-projection witnesses (SELECT_INTO_CAPTURES_DESIGN.md; seeded 2026-08-16
+    // while this spelling is a stream VENEER: the full pair buffer is built underneath and
+    // the projection is per-pull). The spelling never changes -- when scan results claim the
+    // projection citizenship, the same call's route flips to a composed 1-wide build and
+    // this series shows the step. Same-run ratio against Dft/Bft_Chain prices the projection.
+    [Benchmark]
+    public void Select_Accumulate_Dft_Chain()
+    {
+      var projected = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode).Select(x => x.Accumulate);
+      projected.Consume(TreeTraversalStrategy.DepthFirst);
+    }
+
+    [Benchmark]
+    public void Select_Accumulate_Bft_Chain()
+    {
+      var projected = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode).Select(x => x.Accumulate);
+      projected.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
   }
 }

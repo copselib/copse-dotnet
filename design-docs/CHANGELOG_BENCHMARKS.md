@@ -193,3 +193,16 @@ Seeded BEFORE the presize change; its 2n→1n step shows in these rows' Alloc co
 the chunks — which is itself the control. Settle-from-memo stays uncovered for now: it rides
 the same CaptureFrom core as the transpose (the sharing named here per convention #4 — if
 the memo settle ever grows its own capture path, this coverage claim expires).
+
+---
+
+## Date: 2026-08-16 — LeaffixScan projection witnesses (citizenship instrumentation)
+
+Two rows added to `LeaffixScan` (Aggregate leg): `Select_Accumulate_Dft_Chain` /
+`Select_Accumulate_Bft_Chain` — scan, project `.Accumulate`, consume. Seeded on MAIN while
+the spelling is a stream veneer (full pair buffer + per-pull projection; first local
+reading 112 ms / 88.1 MB and 125.6 ms / 60.0 MB), BEFORE the projection citizenship
+(feature/select-composable, SELECT_INTO_CAPTURES_DESIGN.md) flips the same spelling's
+route to a composed 1-wide build. The spelling never changes; the step will. Same-run
+ratio against `Dft/Bft_Chain` prices the projection; the Compose family and the Select
+family's Composition rows are the control (the streaming lattice must not move).
