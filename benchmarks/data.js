@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786905404343,
+  "lastUpdate": 1786905404848,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -85274,6 +85274,150 @@ window.BENCHMARK_DATA = {
             "value": 42661810.2948718,
             "unit": "ns",
             "range": "± 60490.60717099997"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3b05ee41451683bb0d78b3b5d792f6e9ad9168c2",
+          "message": "BufferProbes: first rows over the walker probe surface\n\nThe adjacency engines (PreorderAdjacencyIndex / LevelOrderAdjacencyIndex)\nhad zero benchmark coverage -- every Buffer row rides the visit-stream\ndecoders, which never consult them. Five rows through the public walker\nsurface (the engines are internal; no-IVT is law): warm materialized\nwalks pin steady-state probe reads (0 B allocated -- the sweep is\nalloc-free, so the Alloc column is the engine's own story), cold\nmemoized walks drive the growing engine's scan every invocation\n(first local reading: 113.6 MB/walk -- the per-node List machinery,\nnow measured), and a LeaffixScan guard row pins the bulk-fold seam\nthat must not move when the probe machinery changes.\n\nSeeded before the planned adjacency-engine rework so it lands as a\nvisible step in the series. Routing: first category tag \"Buffer\" joins\nthe existing leg; no workflow change.\n\nAlso: delete the dead bencher-rename.yml (a project run key cannot\nmutate Bencher resources; the renames landed via the web UI) and\ncorrect the changelog's record of that.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T18:22:46Z",
+          "tree_id": "c3e662d93997016d9c63f9b92bf4ef47e13d7ac7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3b05ee41451683bb0d78b3b5d792f6e9ad9168c2"
+        },
+        "date": 1786905404738,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12770640.194010416,
+            "unit": "ns",
+            "range": "± 18224.856222457696"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22550305.066964287,
+            "unit": "ns",
+            "range": "± 173518.97839576352"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3922987.6842447915,
+            "unit": "ns",
+            "range": "± 2777.644526571764"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6104940.636458334,
+            "unit": "ns",
+            "range": "± 90358.83757662513"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 94429652.5952381,
+            "unit": "ns",
+            "range": "± 498605.34406413545"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 148636807.0277778,
+            "unit": "ns",
+            "range": "± 3086758.150968688"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33085172.408653848,
+            "unit": "ns",
+            "range": "± 29159.294865287215"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 53928990.97802199,
+            "unit": "ns",
+            "range": "± 43020.43018278309"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11872658.473958334,
+            "unit": "ns",
+            "range": "± 30562.080655602786"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11127904.89423077,
+            "unit": "ns",
+            "range": "± 54130.99996998517"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2911413.4170673075,
+            "unit": "ns",
+            "range": "± 1922.9055542231988"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2912690.7762276786,
+            "unit": "ns",
+            "range": "± 3662.1862812063036"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 92912365.37333335,
+            "unit": "ns",
+            "range": "± 214393.57200171787"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 82599475.0128205,
+            "unit": "ns",
+            "range": "± 227950.81280680958"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 28792495.911057692,
+            "unit": "ns",
+            "range": "± 39475.19483117988"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 19108299.329166666,
+            "unit": "ns",
+            "range": "± 102464.80370400642"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 106065976.26153848,
+            "unit": "ns",
+            "range": "± 215238.59451821275"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 147670344.28846154,
+            "unit": "ns",
+            "range": "± 376337.84146280563"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 17973178.8125,
+            "unit": "ns",
+            "range": "± 38980.23121814305"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42832276.29761905,
+            "unit": "ns",
+            "range": "± 91292.76766436145"
           }
         ]
       }
