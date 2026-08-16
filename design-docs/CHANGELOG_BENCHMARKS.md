@@ -206,3 +206,15 @@ reading 112 ms / 88.1 MB and 125.6 ms / 60.0 MB), BEFORE the projection citizens
 route to a composed 1-wide build. The spelling never changes; the step will. Same-run
 ratio against `Dft/Bft_Chain` prices the projection; the Compose family and the Select
 family's Composition rows are the control (the streaming lattice must not move).
+
+---
+
+## Date: 2026-08-16 — RootfixScan projection witnesses (streaming-tier citizenship)
+
+The rootfix mirror of the LeaffixScan witnesses: `RootfixScan.Select_Accumulate_{Dft,Bft}_Chain`
+(Aggregate leg), seeded on main while the spelling stacks a Select wrapper over the scan's
+treenumerator. RootfixScan STREAMS (no buffer), so unlike leaffix the expected step is
+TIME-ONLY — the streaming projection citizenship removes one per-pull wrapper hop; nothing is
+stored on either route. First local reading: 80.7 ms (Dft; the ~104 MB is the engine's
+O(depth) chain path state, present on the plain rows too) and 70.0 ms / 2.2 KB (Bft).
+Same-run ratio against the plain Chain rows prices the wrapper.
