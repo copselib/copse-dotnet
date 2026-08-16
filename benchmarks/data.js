@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786912473841,
+  "lastUpdate": 1786912474329,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -39411,6 +39411,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
             "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4112,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352248,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 116997,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346216,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07c08374678a97cc943733dd772fe94484598555",
+          "message": "Materialize transpose rows: counted-source capture gets its first coverage\n\nEvery Materialize construction row captures from an engine source, where\nunknown length makes the chunked build buffer irreducible -- the counted\npaths (transpose from a settled buffer, settle from a completed memo) had\nno rows. Two transpose rows seed the instrument ahead of the presize\nfast-path: its 2n -> 1n build-allocation step will show in their Alloc\ncolumn, while the engine-source rows correctly hold still (the control).\nFirst local reading: 37.8 ms / 24.1 MB and 56.4 ms / 36.3 MB.\n\nSettle-from-memo rides the same CaptureFrom core; the sharing is named in\nthe changelog per the coverage-expiry convention.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T20:10:17Z",
+          "tree_id": "db3cf069a2da75903797e146102dd697dc57a762",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07c08374678a97cc943733dd772fe94484598555"
+        },
+        "date": 1786912474220,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3523,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502100,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231162,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505973,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2254,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26071,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 58935,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33637044,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 284,
             "unit": "bytes"
           },
           {
