@@ -170,3 +170,26 @@ planned adjacency-engine rework so the rework lands as a visible step in the ser
 Coverage is indirect through the walker surface (the engines are internal — no public door,
 and no-IVT is law); the routing assumption is named in the class comment per the expiry
 convention above.
+
+---
+
+## Date: 2026-08-16 — Materialize transpose rows (presize fast-path instrumentation)
+
+**The gap:** every Materialize construction row captures from an ENGINE source — unknown
+length, so the chunked build buffer is irreducible there. The counted-source capture paths
+(transpose from a settled buffer; settle from a completed memo) had no rows, and the
+planned presize fast-path (exact-size final arrays, skip the chunks: the disclosed 2n
+transient drops to 1n) would land invisibly.
+
+**New rows** (`Materialize` class, Buffer leg — same-leg by construction):
+
+| Row | Body |
+|---|---|
+| `Preorder_from_LevelOrder` | settled level-order capture → `.Materialize(BufferLayout.Preorder)`, one forcing pull |
+| `LevelOrder_from_Preorder` | the mirror transpose |
+
+Seeded BEFORE the presize change; its 2n→1n step shows in these rows' Alloc column
+(hardware-independent). The engine-source rows correctly cannot move — unknown length keeps
+the chunks — which is itself the control. Settle-from-memo stays uncovered for now: it rides
+the same CaptureFrom core as the transpose (the sharing named here per convention #4 — if
+the memo settle ever grows its own capture path, this coverage claim expires).

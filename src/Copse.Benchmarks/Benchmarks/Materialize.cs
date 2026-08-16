@@ -23,6 +23,24 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Buffer", "Materialize")]
   public class Materialize
   {
+    private ITreenumerable<int> _PreorderCapture;
+    private ITreenumerable<int> _LevelOrderCapture;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+      // The transpose rows' sources: settled captures, so those rows time the transpose
+      // capture alone -- a COUNTED source (the completed store knows its length), unlike the
+      // engine sources above, whose length no capture can know in advance. Seeded 2026-08-16
+      // ahead of the presize fast-path so its 2n -> 1n build-allocation step lands on rows
+      // that can see it (the engine-source rows correctly cannot -- unknown length keeps the
+      // chunked build buffer).
+      _PreorderCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder);
+      _LevelOrderCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder);
+      _PreorderCapture.Consume(TreeTraversalStrategy.DepthFirst);
+      _LevelOrderCapture.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
+
     [Benchmark]
     public ITreenumerable<int> Preorder_Triangle()
       => ForceBuild(CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
@@ -38,6 +56,17 @@ namespace Copse.Benchmarks
     [Benchmark]
     public ITreenumerable<int> LevelOrder_Chain()
       => ForceBuild(CanonicalTrees.MegaChainTree().Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
+
+    // The transpose pair: a mismatched declared layout re-captures FROM the settled buffer
+    // (the surface map's transpose clause). The source replay is flat-store decode; the row's
+    // cost is the transpose capture build.
+    [Benchmark]
+    public ITreenumerable<int> Preorder_from_LevelOrder()
+      => ForceBuild(_LevelOrderCapture.Materialize(BufferLayout.Preorder), TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public ITreenumerable<int> LevelOrder_from_Preorder()
+      => ForceBuild(_PreorderCapture.Materialize(BufferLayout.LevelOrder), TreeTraversalStrategy.BreadthFirst);
 
     private static ITreenumerable<int> ForceBuild(ITreenumerable<int> buffer, TreeTraversalStrategy strategy)
     {
