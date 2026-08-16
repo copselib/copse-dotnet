@@ -140,6 +140,67 @@ namespace Copse.Linq.Tests
       }
     }
 
+    // ---- The STREAMING tier's citizen (RootfixScan; same laws, no buffer anywhere) ----
+
+    private static ITreenumerable<NodeAccumulation<string, int>> DepthScan(string tree)
+      => TreeSerializer.DeserializeDepthFirstTree(tree).RootfixScan(0, (accumulate, _) => accumulate + 1);
+
+    [TestMethod]
+    public void Streaming_Closure_SelectOverRootfixScanIsCitizen()
+    {
+      foreach (var tree in Corpus)
+      {
+        Assert.IsInstanceOfType(DepthScan(tree), typeof(ISelectComposableTreenumerable<NodeAccumulation<string, int>>), $"scan [{tree}]");
+        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate), typeof(ISelectComposableTreenumerable<int>), $"projected [{tree}]");
+        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate).Select(depth => depth * 2), typeof(ISelectComposableTreenumerable<int>), $"chained [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void Streaming_WrapperEquivalenceAnchor_ComposedEqualsForcedWrapper()
+    {
+      // The force-stacked control (the NarrowCompositionTests idiom): a Tree.Defer wrapper is
+      // not composable, so Select over it is the plain wrapper -- the veneer oracle.
+      foreach (var tree in Corpus)
+      {
+        var composed = Drain(ToComposite(DepthScan(tree).Select(x => x.Accumulate)));
+        var wrapper = Drain(Tree.Defer(() => DepthScan(tree)).Select(x => x.Accumulate));
+
+        CollectionAssert.AreEqual(wrapper.DepthFirst, composed.DepthFirst, $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(wrapper.BreadthFirst, composed.BreadthFirst, $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void Streaming_FunctorComposition_ChainedSelectsEqualComposedSelector()
+    {
+      foreach (var tree in Corpus)
+      {
+        var chained = Drain(ToComposite(DepthScan(tree).Select(x => x.Accumulate).Select(depth => depth * 2)));
+        var composed = Drain(ToComposite(DepthScan(tree).Select(x => x.Accumulate * 2)));
+
+        CollectionAssert.AreEqual(composed.DepthFirst, chained.DepthFirst, $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(composed.BreadthFirst, chained.BreadthFirst, $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void Streaming_ComposeRightJoin_FirstFilterProducesTheOneDriver()
+    {
+      foreach (var tree in Corpus)
+      {
+        var joined = DepthScan(tree).Select(x => x.Accumulate).Where(depth => depth != 2);
+
+        Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), joined.GetType().GetGenericTypeDefinition(), $"join [{tree}]");
+
+        var absorbed = joined.Select(depth => depth * 10);
+
+        Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), absorbed.GetType().GetGenericTypeDefinition(), $"absorb [{tree}]");
+      }
+    }
+
+    private static ITreenumerable<int> ToComposite(ITreenumerable<int> source) => source;
+
     [TestMethod]
     public void SharedPass_SiblingVariantsAgree_AndOriginalSurvivesComposition()
     {

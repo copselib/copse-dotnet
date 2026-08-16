@@ -31,15 +31,14 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => AsyncTree.Create(
-        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
-          source.GetAsyncBreadthFirstTreenumerator,
-          PairingAccumulator(accumulator),
-          new NodeAccumulation<TNode, TAccumulate>(default, seed)),
-        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
-          source.GetAsyncDepthFirstTreenumerator,
-          PairingAccumulator(accumulator),
-          new NodeAccumulation<TNode, TAccumulate>(default, seed)));
+      // The composite result is the streaming tier's citizen (the projection citizenship):
+      // plain acquisitions construct exactly the engines this overload always constructed;
+      // a composed Select re-plants the projection inside the product engine twins.
+      => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
+        source.GetAsyncDepthFirstTreenumerator,
+        source.GetAsyncBreadthFirstTreenumerator,
+        PairingAccumulator(accumulator),
+        new NodeAccumulation<TNode, TAccumulate>(default, seed));
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -102,15 +101,12 @@ namespace Copse.Linq
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       // The engines still park a sentinel seed, but under this form it is NEVER READ: the wrapped
       // accumulator routes every root to the selector off the sentinel's POSITION alone.
-      => AsyncTree.Create(
-        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
-          source.GetAsyncBreadthFirstTreenumerator,
-          PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
-          default),
-        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
-          source.GetAsyncDepthFirstTreenumerator,
-          PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
-          default));
+      // Citizen-shaped like the seed flavor (the rootNodeSelector flavor flows through here).
+      => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
+        source.GetAsyncDepthFirstTreenumerator,
+        source.GetAsyncBreadthFirstTreenumerator,
+        PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
+        default);
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,

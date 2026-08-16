@@ -180,6 +180,10 @@ namespace Copse.CodeGen
         ["IAsyncSelectComposableTreenumerableBuffer"] = "ISelectComposableTreenumerableBuffer",
         ["AsyncScanFoldPass"] = "ScanFoldPass",
         ["AsyncScanProductBuffer"] = "ScanProductBuffer",
+        ["AsyncRootfixScanProductDepthFirstTreenumerator"] = "RootfixScanProductDepthFirstTreenumerator",
+        ["AsyncRootfixScanProductBreadthFirstTreenumerator"] = "RootfixScanProductBreadthFirstTreenumerator",
+        ["AsyncRootfixScanTreenumerable"] = "RootfixScanTreenumerable",
+        ["AsyncRootfixScanProductTreenumerable"] = "RootfixScanProductTreenumerable",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()

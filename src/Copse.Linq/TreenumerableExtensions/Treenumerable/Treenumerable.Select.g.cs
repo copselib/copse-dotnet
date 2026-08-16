@@ -46,6 +46,12 @@ namespace Copse.Linq
           nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
           relabels: false);
 
+      // The PUBLIC projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md) -- probed after
+      // the internal lattice, before the wrapper fallback: a citizen composes the projection
+      // into its own machinery (a rootfix scan re-plants it inside the engine).
+      if (source is ISelectComposableTreenumerable<TSource> composableSource)
+        return composableSource.ComposeSelect(selector);
+
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
 

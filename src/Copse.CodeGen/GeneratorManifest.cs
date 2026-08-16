@@ -321,6 +321,24 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerators/RootfixScan/RootfixScanBreadthFirstTreenumerator.g.cs",
         "AsyncRootfixScanBreadthFirstTreenumerator", "RootfixScanBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
 
+      // The streaming projection citizenship's product twins + citizen wrappers
+      // (SELECT_INTO_CAPTURES_DESIGN.md): the plain engines above stay untouched.
+      new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanProductDepthFirstTreenumerator.cs",
+        "Copse.Linq/Treenumerators/RootfixScan/RootfixScanProductDepthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanProductDepthFirstTreenumerator", "RootfixScanProductDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerators/RootfixScan/AsyncRootfixScanProductBreadthFirstTreenumerator.cs",
+        "Copse.Linq/Treenumerators/RootfixScan/RootfixScanProductBreadthFirstTreenumerator.g.cs",
+        "AsyncRootfixScanProductBreadthFirstTreenumerator", "RootfixScanProductBreadthFirstTreenumerator", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncRootfixScanTreenumerable.cs",
+        "Copse.Linq/Treenumerables/RootfixScanTreenumerable.g.cs",
+        "AsyncRootfixScanTreenumerable", "RootfixScanTreenumerable", "Copse.Linq.Treenumerators"),
+
+      new("Copse.Linq.Async/Treenumerables/AsyncRootfixScanProductTreenumerable.cs",
+        "Copse.Linq/Treenumerables/RootfixScanProductTreenumerable.g.cs",
+        "AsyncRootfixScanProductTreenumerable", "RootfixScanProductTreenumerable", "Copse.Linq.Treenumerators"),
+
       new("Copse.Linq.Async/Treenumerators/StructuralMerge/AsyncStructuralMergeDepthFirstTreenumerator.cs",
         "Copse.Linq/Treenumerators/StructuralMerge/StructuralMergeDepthFirstTreenumerator.g.cs",
         "AsyncStructuralMergeDepthFirstTreenumerator", "StructuralMergeDepthFirstTreenumerator", "Copse.Linq.Treenumerators"),
