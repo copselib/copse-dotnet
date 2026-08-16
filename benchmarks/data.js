@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786912472862,
+  "lastUpdate": 1786912473340,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -28354,6 +28354,54 @@ window.BENCHMARK_DATA = {
             "value": 12955828.26171875,
             "unit": "ns",
             "range": "± 574167.5756418741"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07c08374678a97cc943733dd772fe94484598555",
+          "message": "Materialize transpose rows: counted-source capture gets its first coverage\n\nEvery Materialize construction row captures from an engine source, where\nunknown length makes the chunked build buffer irreducible -- the counted\npaths (transpose from a settled buffer, settle from a completed memo) had\nno rows. Two transpose rows seed the instrument ahead of the presize\nfast-path: its 2n -> 1n build-allocation step will show in their Alloc\ncolumn, while the engine-source rows correctly hold still (the control).\nFirst local reading: 37.8 ms / 24.1 MB and 56.4 ms / 36.3 MB.\n\nSettle-from-memo rides the same CaptureFrom core; the sharing is named in\nthe changelog per the coverage-expiry convention.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T20:10:17Z",
+          "tree_id": "db3cf069a2da75903797e146102dd697dc57a762",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07c08374678a97cc943733dd772fe94484598555"
+        },
+        "date": 1786912473231,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 11274215.331597222,
+            "unit": "ns",
+            "range": "± 228529.65956847067"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 21353553.21153846,
+            "unit": "ns",
+            "range": "± 165945.51392606666"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 20195489.904166665,
+            "unit": "ns",
+            "range": "± 215372.5763205988"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 17865807.220588237,
+            "unit": "ns",
+            "range": "± 844594.1068959562"
           }
         ]
       }
