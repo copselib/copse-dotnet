@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786918721184,
+  "lastUpdate": 1786918721666,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -89834,6 +89834,150 @@ window.BENCHMARK_DATA = {
             "value": 43057038.79166667,
             "unit": "ns",
             "range": "± 266415.94938696525"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1ddc67159bf7165fc44b886bc34426d0cc9e2825",
+          "message": "LeaffixScan projection witnesses: the citizenship's before-picture\n\nTwo rows measuring Scan().Select(x => x.Accumulate).Consume as the stream\nveneer it is today (full pair buffer built underneath, projection per\npull) -- seeded on main so the baseline accrues in the durable series\nwhile feature/select-composable builds the projection citizenship. The\nspelling never changes; when scan results claim the citizenship the same\ncall's route flips to a composed 1-wide build and this series shows the\nstep. First local reading: 112.0 ms / 88.05 MB Dft, 125.6 ms / 60.03 MB\nBft.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T22:04:19Z",
+          "tree_id": "09194674fc038c64e51052c4bea208a2ce0d3a7a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1ddc67159bf7165fc44b886bc34426d0cc9e2825"
+        },
+        "date": 1786918721554,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 13074665.76171875,
+            "unit": "ns",
+            "range": "± 45308.38728516507"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22830253.8875,
+            "unit": "ns",
+            "range": "± 75541.05816001257"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 4061141.51953125,
+            "unit": "ns",
+            "range": "± 2467.987941121009"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 5189321.275111607,
+            "unit": "ns",
+            "range": "± 12209.704406876346"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 93684397.98809524,
+            "unit": "ns",
+            "range": "± 359345.70352398127"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 153222445.65,
+            "unit": "ns",
+            "range": "± 2841799.3887091195"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33229282.822115384,
+            "unit": "ns",
+            "range": "± 36682.29356689716"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 55226142.255102046,
+            "unit": "ns",
+            "range": "± 208448.02781009677"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12174749.7578125,
+            "unit": "ns",
+            "range": "± 18034.048088364787"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11824874.699776785,
+            "unit": "ns",
+            "range": "± 40001.771950042705"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3237578.5,
+            "unit": "ns",
+            "range": "± 2393.5082472252775"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3238975.3203125,
+            "unit": "ns",
+            "range": "± 3471.041676678738"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 92881188.07692307,
+            "unit": "ns",
+            "range": "± 268062.3237336502"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 81890105.28888889,
+            "unit": "ns",
+            "range": "± 332181.2945345013"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 30521048.161458332,
+            "unit": "ns",
+            "range": "± 39077.11339979556"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 21137265.752403848,
+            "unit": "ns",
+            "range": "± 22330.509590050664"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 96264298,
+            "unit": "ns",
+            "range": "± 237613.08784867468"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 153972024.375,
+            "unit": "ns",
+            "range": "± 391641.9368884271"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19248039.429166667,
+            "unit": "ns",
+            "range": "± 24050.304765194844"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43555478.78205128,
+            "unit": "ns",
+            "range": "± 162478.64059281274"
           }
         ]
       }
