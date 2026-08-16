@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786906899191,
+  "lastUpdate": 1786906899614,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -86190,6 +86190,150 @@ window.BENCHMARK_DATA = {
             "value": 42832276.29761905,
             "unit": "ns",
             "range": "± 91292.76766436145"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1cb791216d20b28043ee8a6e0818247ef97cc410",
+          "message": "Adjacency split: completed-store topologies + growing engines on house collections\n\nTwo citizens per layout, per completeness (the BufferProbes family, seeded\none commit back, is the instrument and referee for all of this):\n\n- (Async)PreorderArrayTopology / (Async)LevelOrderArrayTopology -- the\n  COMPLETED citizens. Preorder: exact arrays built at most once on first\n  probe per axis (parents via one open-span sweep whose stack lives in\n  the answer array; children/roots as a CSR index derived from the\n  parent map); probes are then 1-3 array reads. Level-order: children\n  and roots stay store arithmetic; parents collapse to one exact\n  two-cursor merge. Pure span arithmetic for preorder children was\n  measured first and REJECTED: +69% on warm walker sweeps -- the\n  per-probe size reads outweighed the O(1) reads they avoided building.\n\n- (Async)PreorderAdjacencyIndex / (Async)LevelOrderAdjacencyIndex stay\n  the GROWING citizens (memos, lazy births), rehoused: the preorder\n  child axis is three parallel linked arrays on RefAppendOnlyList with\n  a sibling-chain cursor (the old List<List<int>> allocated a child\n  list PER SCANNED NODE), the open-span stack is a RefSemiDeque, and\n  every remaining List<int> is a RefAppendOnlyList.\n\nBufferProbes, local same-machine A/B (ShortRun): warm preorder walk\n11.97 -> 7.89 ms (-34%), warm level-order 26.57 -> 7.55 ms (-72%),\ncold memoized walks -43%/-46% time and 113.6 -> 50.4 MB (-56%) alloc,\nLeaffixScan bulk-fold guard rail unmoved. Warm rows still allocate 0 B.\n24,568 tests green.\n\nConstruction sites: buffer settle + probes-at-birth reclaim retarget to\nthe array topologies; the bulk-fold sniff keys on the topology type;\nlazy/memoize births keep the growing engines. Codegen manifest carries\nthe two new twins; surface map machinery listing updated.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T18:47:42Z",
+          "tree_id": "26c75e6bc8e2242962f7f7f5bbdffe0d1b769858",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cb791216d20b28043ee8a6e0818247ef97cc410"
+        },
+        "date": 1786906899516,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 13162739.86049107,
+            "unit": "ns",
+            "range": "± 175667.09999779277"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 24337417.792410713,
+            "unit": "ns",
+            "range": "± 69982.4157460235"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3927991.7159598214,
+            "unit": "ns",
+            "range": "± 9041.080999623746"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6863714.124739584,
+            "unit": "ns",
+            "range": "± 114142.92135140332"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 94746611.98809524,
+            "unit": "ns",
+            "range": "± 289266.2919566915"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 143654398.125,
+            "unit": "ns",
+            "range": "± 899567.0021544006"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33242744.50892857,
+            "unit": "ns",
+            "range": "± 69231.75833959861"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 53969153.86734694,
+            "unit": "ns",
+            "range": "± 118065.12243983347"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12114744.469791668,
+            "unit": "ns",
+            "range": "± 179545.6432106779"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11125463.20982143,
+            "unit": "ns",
+            "range": "± 69506.95514811299"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2914454.1715959823,
+            "unit": "ns",
+            "range": "± 4691.320226265809"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2916694.7178485575,
+            "unit": "ns",
+            "range": "± 3004.266926560822"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 93815663.78205127,
+            "unit": "ns",
+            "range": "± 192428.3102005664"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 83936229.40000002,
+            "unit": "ns",
+            "range": "± 374940.804598533"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 29499755.315625,
+            "unit": "ns",
+            "range": "± 882602.9038796086"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 19192248.15625,
+            "unit": "ns",
+            "range": "± 65822.38509315591"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 102474984.27692308,
+            "unit": "ns",
+            "range": "± 257298.31103029734"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 149263368.18333334,
+            "unit": "ns",
+            "range": "± 362998.1990838525"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18258656.4765625,
+            "unit": "ns",
+            "range": "± 24408.431799275433"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42776350.875,
+            "unit": "ns",
+            "range": "± 148146.76834022944"
           }
         ]
       }
