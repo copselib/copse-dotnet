@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786906907045,
+  "lastUpdate": 1786906907464,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -152987,6 +152987,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
             "value": 63988528,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 2012,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1cb791216d20b28043ee8a6e0818247ef97cc410",
+          "message": "Adjacency split: completed-store topologies + growing engines on house collections\n\nTwo citizens per layout, per completeness (the BufferProbes family, seeded\none commit back, is the instrument and referee for all of this):\n\n- (Async)PreorderArrayTopology / (Async)LevelOrderArrayTopology -- the\n  COMPLETED citizens. Preorder: exact arrays built at most once on first\n  probe per axis (parents via one open-span sweep whose stack lives in\n  the answer array; children/roots as a CSR index derived from the\n  parent map); probes are then 1-3 array reads. Level-order: children\n  and roots stay store arithmetic; parents collapse to one exact\n  two-cursor merge. Pure span arithmetic for preorder children was\n  measured first and REJECTED: +69% on warm walker sweeps -- the\n  per-probe size reads outweighed the O(1) reads they avoided building.\n\n- (Async)PreorderAdjacencyIndex / (Async)LevelOrderAdjacencyIndex stay\n  the GROWING citizens (memos, lazy births), rehoused: the preorder\n  child axis is three parallel linked arrays on RefAppendOnlyList with\n  a sibling-chain cursor (the old List<List<int>> allocated a child\n  list PER SCANNED NODE), the open-span stack is a RefSemiDeque, and\n  every remaining List<int> is a RefAppendOnlyList.\n\nBufferProbes, local same-machine A/B (ShortRun): warm preorder walk\n11.97 -> 7.89 ms (-34%), warm level-order 26.57 -> 7.55 ms (-72%),\ncold memoized walks -43%/-46% time and 113.6 -> 50.4 MB (-56%) alloc,\nLeaffixScan bulk-fold guard rail unmoved. Warm rows still allocate 0 B.\n24,568 tests green.\n\nConstruction sites: buffer settle + probes-at-birth reclaim retarget to\nthe array topologies; the bulk-fold sniff keys on the topology type;\nlazy/memoize births keep the growing engines. Codegen manifest carries\nthe two new twins; surface map machinery listing updated.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T18:47:42Z",
+          "tree_id": "26c75e6bc8e2242962f7f7f5bbdffe0d1b769858",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cb791216d20b28043ee8a6e0818247ef97cc410"
+        },
+        "date": 1786906907375,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 16903639,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 54734656,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 54734752,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 50353296,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 54908914,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 54909010,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 92323170,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 92323246,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 62939544,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 62939598,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 125186,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 47396906,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 158331,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 50334485,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 47569468,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 331483,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 1023,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93372894,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 109078324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988552,
             "unit": "bytes"
           },
           {
