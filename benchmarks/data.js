@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786901106716,
+  "lastUpdate": 1786901107503,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -112548,6 +112548,160 @@ window.BENCHMARK_DATA = {
             "value": 65731428.71666667,
             "unit": "ns",
             "range": "± 1167138.6085308292"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "f78ce5c825516dbbc6e2a10a690c8a7c829bc197",
+          "message": "[skip ci] The four-class buffer taxonomy: names speak the operator call\n\n{Materialize, Memoize} x {construction, replay}, one class per question:\n\n- Materialize (construction): rows renamed Preorder_*/LevelOrder_* -- the\n  declared BufferLayout plus the tree, the call's own vocabulary. The old\n  DftCapture/BftCapture spellings named a capture flavor, which is how the\n  replay grid stayed mislabeled for a week.\n- MaterializeReplay: the four rows moved out of Memoize, renamed\n  {Dft,Bft}_over_{Preorder,LevelOrder}. Their setup had called Materialize\n  since the era when Materialize WAS Memoize+Complete -- they measured the\n  flat-store read path all along (the 25-35% win's instrument), and the\n  provenance comment now records it.\n- Memoize (construction): FirstPass_*/Partial_* unchanged.\n- MemoizeReplay: NEW -- the memo's own replay path, uncovered since the\n  2026-08-10 divergence; the side-by-side grids put a continuous number on\n  chunked-vs-flat reads.\n\nHistory carried in both stores: gh-pages by data-surgery commit, Bencher by\nthe one-off bencher-rename.yml (dispatch BEFORE the first run under new\nnames; delete after verification). BENCHMARKING.md mints the convention:\ncoverage-transfer arguments expire with the sharing that justified them --\nname the sharing, or lose the meaning silently.\n\n[skip ci]: this push must not trigger a benchmark run before the Bencher\nrenames land; the rename workflow gets dispatched first, then benchmarks.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T15:42:38Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f78ce5c825516dbbc6e2a10a690c8a7c829bc197"
+        },
+        "date": 1786901107400,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 47766753.12500001,
+            "unit": "ns",
+            "range": "± 925260.9805287195"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 86636011.89565217,
+            "unit": "ns",
+            "range": "± 2105860.0624311916"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 89347806.41818179,
+            "unit": "ns",
+            "range": "± 2142560.818633966"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 31824130.729166668,
+            "unit": "ns",
+            "range": "± 567677.6818698479"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 103356822.45833333,
+            "unit": "ns",
+            "range": "± 3044797.7064510975"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 104142154.671875,
+            "unit": "ns",
+            "range": "± 2003374.0702137689"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 15924289.596153846,
+            "unit": "ns",
+            "range": "± 120154.12924850745"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 97776170.28,
+            "unit": "ns",
+            "range": "± 1735097.1794729687"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 87995217.67857145,
+            "unit": "ns",
+            "range": "± 1555239.9502299528"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 98908956.60000001,
+            "unit": "ns",
+            "range": "± 1183329.172315986"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 82556005.16666669,
+            "unit": "ns",
+            "range": "± 2225919.552702985"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 41431496.01025641,
+            "unit": "ns",
+            "range": "± 366755.1844951507"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 77800738.10256411,
+            "unit": "ns",
+            "range": "± 835839.3019697752"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 60104523.583333336,
+            "unit": "ns",
+            "range": "± 1051724.642502375"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 33198339,
+            "unit": "ns",
+            "range": "± 605886.5766889633"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 95526249.37142856,
+            "unit": "ns",
+            "range": "± 1307352.0375440107"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 64239947.41071428,
+            "unit": "ns",
+            "range": "± 478847.21084364085"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 20403775.01785714,
+            "unit": "ns",
+            "range": "± 172060.10527873161"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93423998.75,
+            "unit": "ns",
+            "range": "± 873525.648604193"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 52919847.58571429,
+            "unit": "ns",
+            "range": "± 578194.6913887187"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 95857221.96000002,
+            "unit": "ns",
+            "range": "± 1759877.5090174123"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 45051275.60119047,
+            "unit": "ns",
+            "range": "± 570845.053830303"
           }
         ]
       }
