@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786923276689,
+  "lastUpdate": 1786923277211,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -64511,6 +64511,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
             "value": 8391429,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "11ef2c0d10bd2c446c72a610b5267cb9d2ad6059",
+          "message": "RootfixScan projection witnesses: the streaming tier's before-picture\n\nTwo rows measuring RootfixScan(...).Select(x => x.Accumulate).Consume as\nthe wrapper stack it is today. RootfixScan streams -- no buffer, so the\ncoming step is TIME-ONLY: the streaming projection citizenship fuses the\nprojection into the scan's own per-pull production, removing one wrapper\nhop. Seeded on main so the baseline accrues in the durable series. First\nlocal reading: 80.7 ms Dft / 70.0 ms Bft (the Dft allocation is the\nengine's O(depth) chain path state, shared with the plain rows).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T23:11:21Z",
+          "tree_id": "6d9176cec48e6a2c2d5cfc8815dcd277ccfd8f49",
+          "url": "https://github.com/copselib/copse-dotnet/commit/11ef2c0d10bd2c446c72a610b5267cb9d2ad6059"
+        },
+        "date": 1786923277097,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6147969,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729050,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391368,
             "unit": "bytes"
           }
         ]
