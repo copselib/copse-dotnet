@@ -316,3 +316,28 @@ the same topology reference natively); the c5f9c2d internalization ruling formal
 REVERSED, with the paternalism resolution as justification. What survives untouched:
 the public ctor mint, `MoveToRoot`, `Tree.FromTopology`, zero IVTs, the foreign-provider
 pin, the Topologies namespace.
+
+### §10 fourth addendum — LazyTopology on the creation surface (the review's last kill-attempt)
+
+Jason hunted the last topology class. The irreducibility analysis held — the deferral is
+genuine load-bearing state (knock-once cache + centralized miss semantics; the contract
+promises neither cheap nor idempotent doors, so a per-probe knock would trust the weakest
+citizen) — but two of his observations relocated and renamed it:
+
+- **The name**: with WalkerTopology dead, the source-pair justification for
+  "WalkableTopology" had evaporated; the mechanism was the only identity left, and the
+  machinery grammar already had its word. **LazyTopology** — Jason's original proposal,
+  right on the second pass ("it was just early: the pair had to die before the mechanism
+  was the only identity left").
+- **The placement**: zero Linq dependencies — the maroon pattern's third strike
+  (TreenumerableFactory, WalkerWalk, now this). Moved to Copse. The no-IVT law forces the
+  move to be a PUBLICATION, and the store policy dictates the shape: implementations stay
+  sealed, so the public face is a factory returning the contract — **TreeTopology.Lazy(source)**,
+  the topology tier's creation surface beside Tree's. The trio now reads as one family:
+  Tree.Lazy (treenumerable, call-by-need), TreeTopology.Lazy (topology, call-by-need),
+  Tree.FromTopology (streams from adjacency). Receipt: any third-party view over an
+  arbitrary walkable faces exactly the lens family's deferral problem; the lenses are the
+  public form's first consumers.
+
+Copse.Linq.Topologies — created, populated, and emptied within one night — is deleted.
+The operator tier owns zero topology classes.

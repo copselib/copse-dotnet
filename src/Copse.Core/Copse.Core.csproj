@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <!-- No InternalsVisibleTo (2026-08-15): the seal lives at the SUBSTRATE boundary, not
-       here -- TreeWalker.Topology is public (the vantage's bound-physics half; a topology
-       navigates relative to any handle, a walker relative to its focus -- the signatures
+       here: TreeWalker.Topology is public (the vantage's bound-physics half; a topology
+       navigates relative to any handle, a walker relative to its focus; the signatures
        carry the frame), and what stays hidden is the STORE behind each topology
        (implementations sealed, accessors internal, wholesale views read-only). The
        operator tier and third parties hold identical access. -->

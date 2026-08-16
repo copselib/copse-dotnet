@@ -2,21 +2,23 @@ using Copse.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Topologies
+namespace Copse.Async.Topologies
 {
-  // The walkable's topology, reconstituted lazily -- WalkerTopology's deferred sibling.
-  // The pair names its sources: WalkerTopology answers from a walker already in hand; THIS
-  // answers for a walkable whose door has not been knocked yet. Machinery that must build
-  // lazily over "whatever topology this walkable's door will bind" holds this: the knock
-  // happens once, at the first probe (Tree.Lazy semantics -- call-by-need, cached, never
-  // re-knocked), and every answer after flows through the walker the knock produced. The
-  // empty forest needs no special citizen: its door misses, so the result-typed probes
-  // miss honestly (no roots, no parents, no children) and the one probe that MUST produce
-  // a value (GetValue) throws -- on an empty forest every handle is forged, so the ask is
-  // a violation, not a miss (the two-channel doctrine).
-  internal sealed class AsyncWalkableTopology<TValue, THandle> : IAsyncTreeTopology<TValue, THandle>
+  // TreeTopology.Lazy's engine: a walkable's topology, call-by-need. Anything that must
+  // build lazily over "whatever topology this walkable's door will bind" -- a view whose
+  // constructor may neither await nor force the source -- holds this: the knock happens
+  // once, at the first probe (Tree.Lazy's semantics at the topology tier: cached, never
+  // re-knocked -- the contract does not promise cheap or idempotent doors, so the cache
+  // is what keeps a view honest against the weakest citizen), and every answer after
+  // flows through the walker the knock produced. The empty forest needs no special
+  // citizen: its door misses, so the result-typed probes miss honestly (no roots, no
+  // parents, no children) and the one probe that MUST produce a value (GetValue) throws
+  // -- on an empty forest every handle is forged, so the ask is a violation, not a miss
+  // (the two-channel doctrine). Internal sealed like every topology implementation: the
+  // factory hands out the contract, never the encoding (the store policy's rule).
+  internal sealed class AsyncLazyTopology<TValue, THandle> : IAsyncTreeTopology<TValue, THandle>
   {
-    public AsyncWalkableTopology(IAsyncWalkableTreenumerable<TValue, THandle> source)
+    public AsyncLazyTopology(IAsyncWalkableTreenumerable<TValue, THandle> source)
     {
       _Source = source;
     }

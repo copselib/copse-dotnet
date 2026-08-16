@@ -2,7 +2,7 @@
 //   Generated from AsyncTreenumerable.Extend.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Linq.Topologies;
+using Copse.Topologies;
 using Copse.Linq.Treenumerables;
 using System;
 
@@ -31,7 +31,7 @@ namespace Copse.Linq
       // topology this walkable's door will hand over" -- deferred, knocked once at the
       // first pull or probe. The empty forest needs no special case: the door topology
       // misses honestly everywhere.
-      => new ExtendWalkable<TValue, THandle, TResult>(new WalkableTopology<TValue, THandle>(source), observer);
+      => new ExtendWalkable<TValue, THandle, TResult>(TreeTopology.Lazy(source), observer);
 
     // The topology-receiver form: the algebra at SPI altitude, for machinery that already
     // holds a topology (the lens compositions, the clamp).

@@ -203,7 +203,7 @@ namespace Copse.CodeGen
         ["Copse.Linq.Async"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerators"] = "Copse.Linq.Treenumerators",
         ["Copse.Linq.Async.Treenumerables"] = "Copse.Linq.Treenumerables",
-        ["Copse.Linq.Async.Topologies"] = "Copse.Linq.Topologies",
+        ["Copse.Async.Topologies"] = "Copse.Topologies",
         ["Copse.Linq.Async.Stores"] = "Copse.Linq.Stores",
       };
 

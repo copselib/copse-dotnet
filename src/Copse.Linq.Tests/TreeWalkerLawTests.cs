@@ -1,4 +1,4 @@
-using Copse.Linq.Topologies;
+using Copse.Topologies;
 using Copse.Linq.Treenumerables;
 using Copse;
 using Copse.SimpleSerializer;
@@ -162,7 +162,7 @@ namespace Copse.Linq.Tests
       {
         Assert.IsFalse(provider.TryGetTreeWalkerAtRootIndex().HasWalker, "the root door refuses in the result type");
         Assert.IsFalse(provider.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
-        Assert.IsFalse(new WalkableTopology<string, int>(provider).TryGetRootAt(0).HasChild, "no probe succeeds (the deferred door misses honestly)");
+        Assert.IsFalse(TreeTopology.Lazy(provider).TryGetRootAt(0).HasChild, "no probe succeeds (the deferred door misses honestly)");
       }
     }
 

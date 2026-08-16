@@ -282,15 +282,17 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)PreorderAdjacencyIndex<TStore>   the ordinal topology over a preorder store
 │    (span-arithmetic probes; ScanUntouched seam for the probes-at-birth reclaim)
 ├─ (Async)LevelOrderAdjacencyIndex<TStore> its level-order dual (two-cursor parent merge)
-├─ (Async)WalkableTopology (né DoorTopology, renamed 2026-08-15; Copse.Linq.Topologies —
-│    a pure topology, not a treenumerable)
+├─ (Async)LazyTopology (né DoorTopology, then WalkableTopology — settled 2026-08-15 on the
+│    MECHANISM name once nothing else was left to distinguish it from; internal sealed in
+│    Copse/Topologies, PUBLIC via TreeTopology.Lazy — the topology tier's creation surface
+│    beside Tree's, since it has zero Linq dependencies: the maroon pattern's third strike)
 │    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
-│    at first probe (Tree.Lazy semantics); empty forest = honest misses, GetValue throws
-│    (the two-channel doctrine); resolves to the door walker's public Topology
-│    (WalkerTopology, its short-lived eager sibling, RETIRED same day by the
-│    frame-of-reference ruling: TreeWalker.Topology went public — the seal lives at the
-│    SUBSTRATE boundary, store behind topology, never at walker/topology — so an eager
-│    bridge from a vantage in hand is just the property read)
+│    at first probe (Tree.Lazy semantics — the contract promises neither cheap nor
+│    idempotent doors, so the cache is what keeps a view honest); empty forest = honest
+│    misses, GetValue throws (the two-channel doctrine); resolves to the door walker's
+│    public Topology (WalkerTopology, its short-lived eager sibling, RETIRED same day by
+│    the frame-of-reference ruling — an eager bridge from a vantage in hand is just the
+│    property read)
 ├─ (Async)ExtendWalkable / SubtreeWalkable / PruneAfterWalkable   the lens family — each
 │    is its own topology (topology transformers; severed door never misses)
 └─ WalkerWalk RETIRED 2026-08-15 → public Tree.FromTopology (Copse; frame struct =
