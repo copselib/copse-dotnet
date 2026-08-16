@@ -114,12 +114,12 @@ namespace Copse.CodeGen
       // The tree-source factories: AsyncTree is the source of truth for Tree (the async-acquire
       // Using overloads are async-only marker regions -- their transcription would collapse onto
       // the sync-acquire twins). Retires the last hand-written concrete-treenumerable exception.
-      new("Copse.Async/Treenumerables/AsyncTree.cs",
-        "Copse/Treenumerables/Tree.g.cs",
-        "AsyncTree", "Tree", "Copse.Treenumerables"),
-      new("Copse.Async/Treenumerables/AsyncTopologyChildEnumerator.cs",
-        "Copse/Treenumerables/TopologyChildEnumerator.g.cs",
-        "AsyncTopologyChildEnumerator", "TopologyChildEnumerator", "Copse.Treenumerables"),
+      new("Copse.Async/AsyncTree.cs",
+        "Copse/Tree.g.cs",
+        "AsyncTree", "Tree", "Copse"),
+      new("Copse.Async/ChildEnumerators/AsyncTopologyChildEnumerator.cs",
+        "Copse/ChildEnumerators/TopologyChildEnumerator.g.cs",
+        "AsyncTopologyChildEnumerator", "TopologyChildEnumerator", "Copse.ChildEnumerators"),
 
       new("Copse.Async/Treenumerators/AsyncDisposeActionTreenumerator.cs",
         "Copse/Treenumerators/DisposeActionTreenumerator.g.cs",
@@ -148,9 +148,9 @@ namespace Copse.CodeGen
       new("Copse.Async/Topologies/AsyncLazyTopology.cs",
         "Copse/Topologies/LazyTopology.g.cs",
         "AsyncLazyTopology", "LazyTopology", "Copse.Topologies"),
-      new("Copse.Async/Topologies/AsyncTreeTopology.cs",
-        "Copse/Topologies/TreeTopology.g.cs",
-        "AsyncTreeTopology", "TreeTopology", "Copse.Topologies"),
+      new("Copse.Async/AsyncTreeTopology.cs",
+        "Copse/TreeTopology.g.cs",
+        "AsyncTreeTopology", "TreeTopology", "Copse"),
       new("Copse.Linq.Async/Treenumerables/Walkable/AsyncSubtreeWalkable.cs",
         "Copse.Linq/Treenumerables/Walkable/SubtreeWalkable.g.cs",
         "AsyncSubtreeWalkable", "SubtreeWalkable", "Copse.Linq.Treenumerables"),

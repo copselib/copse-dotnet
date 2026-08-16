@@ -2,9 +2,10 @@
 //   Generated from AsyncTreeTopology.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Topologies;
 using Copse.Core;
 
-namespace Copse.Topologies
+namespace Copse
 {
   /// <summary>The topology tier's creation surface, beside <c>Tree</c>'s (the treenumerable
   /// tier's) -- factories hand out the contract; the implementations stay sealed.</summary>

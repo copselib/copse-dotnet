@@ -1,7 +1,7 @@
 using Copse.Core.Async;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Async.ChildEnumerators
 {
   // The frame Tree.FromTopology hands the engine: one handle, one advancing child index --
   // the topology's indexed probe is the pull, and the label resolves during it (the

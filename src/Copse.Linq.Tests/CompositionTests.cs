@@ -100,7 +100,7 @@ namespace Copse.Linq.Tests
           .GetTraversal(strategy).ToArray();
 
         // Tree.Defer's wrapper is not composable: same pipeline, forced to stack.
-        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e,f),c)").Select(n => n + "!"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e,f),c)").Select(n => n + "!"))
           .Where(n => n != "b!")
           .GetTraversal(strategy).ToArray();
 
@@ -177,7 +177,7 @@ namespace Copse.Linq.Tests
 
         Assert.IsInstanceOfType(composed, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay composed");
 
-        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")
           .GetTraversal(strategy).ToArray();
 
@@ -358,7 +358,7 @@ namespace Copse.Linq.Tests
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").Select(n => n + "!"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").Select(n => n + "!"))
           .PruneAfter(n => n == "b!");
 
         CollectionAssert.AreEqual(
@@ -379,7 +379,7 @@ namespace Copse.Linq.Tests
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var stacked = Copse.Treenumerables.Tree.Defer(() => Tree("a(b(d,e),c)").PruneAfter(n => n == "b"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneAfter(n => n == "b"))
           .Select(n => n + "!");
 
         CollectionAssert.AreEqual(

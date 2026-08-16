@@ -1,10 +1,12 @@
+using Copse.Async.ChildEnumerators;
+using Copse.Async.Treenumerables;
 using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Async
 {
   // Tree SOURCES (factories), parallel to Enumerable.Empty / Observable.Defer/Using: they MAKE
   // trees rather than transform them, so they belong with the concrete treenumerables, not with

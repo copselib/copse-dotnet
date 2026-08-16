@@ -1,6 +1,7 @@
+using Copse.Async.Topologies;
 using Copse.Core.Async;
 
-namespace Copse.Async.Topologies
+namespace Copse.Async
 {
   /// <summary>The topology tier's creation surface, beside <c>Tree</c>'s (the treenumerable
   /// tier's) -- factories hand out the contract; the implementations stay sealed.</summary>

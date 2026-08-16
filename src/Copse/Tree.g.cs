@@ -2,12 +2,14 @@
 //   Generated from AsyncTree.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.ChildEnumerators;
+using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Treenumerables
+namespace Copse
 {
   // Tree SOURCES (factories), parallel to Enumerable.Empty / Observable.Defer/Using: they MAKE
   // trees rather than transform them, so they belong with the concrete treenumerables, not with

@@ -4,7 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 
-namespace Copse.Treenumerables
+namespace Copse.ChildEnumerators
 {
   // The frame Tree.FromTopology hands the engine: one handle, one advancing child index --
   // the topology's indexed probe is the pull, and the label resolves during it (the

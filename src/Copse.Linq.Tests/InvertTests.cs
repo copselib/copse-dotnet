@@ -194,7 +194,7 @@ namespace Copse.Linq.Tests
       {
         var acquisitions = 0;
 
-        var source = Copse.Treenumerables.Tree.Defer(() =>
+        var source = Copse.Tree.Defer(() =>
         {
           acquisitions++;
           return TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c(f,g))");
@@ -257,7 +257,7 @@ namespace Copse.Linq.Tests
     {
       var resources = new List<TestResource>();
 
-      var source = Copse.Treenumerables.Tree.Using(
+      var source = Copse.Tree.Using(
         () =>
         {
           var resource = new TestResource();
