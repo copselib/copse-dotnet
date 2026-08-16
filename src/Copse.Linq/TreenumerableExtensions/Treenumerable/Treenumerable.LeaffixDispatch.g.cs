@@ -153,7 +153,7 @@ namespace Copse.Linq
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var surveyed = new LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatch(source, nodeSurvey));
+        () => BuildLeaffixDispatch(source, nodeSurvey, PairProduct));
 
       return new PreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
     }
@@ -163,34 +163,37 @@ namespace Copse.Linq
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var surveyed = new LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatchFromBreadthFirst(source, nodeSurvey));
+        () => BuildLeaffixDispatchFromBreadthFirst(source, nodeSurvey, PairProduct));
 
       return new PreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
     }
 
-    private static PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>> BuildLeaffixDispatchFromBreadthFirst<TSource, TAccumulate>(
+    private static PreorderArrayStore<TProduct> BuildLeaffixDispatchFromBreadthFirst<TSource, TAccumulate, TProduct>(
       IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
+      Func<TSource, TAccumulate, TProduct> productSelector)
     {
       var capture = source.Materialize();
 
-      return BuildLeaffixDispatch(capture, nodeSurvey);
+      return BuildLeaffixDispatch(capture, nodeSurvey, productSelector);
     }
 
-    // The finisher over the fold pass: zip (values, accumulations) into the canonical
-    // pairing.
-    private static PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>> BuildLeaffixDispatch<TSource, TAccumulate>(
+    // The finisher over the fold pass: zip (values, accumulations) into the product --
+    // canonically the pairing; the product-selector seam (SELECT_INTO_CAPTURES_DESIGN.md)
+    // lets a composed projection retarget what is STORED without touching the fold.
+    private static PreorderArrayStore<TProduct> BuildLeaffixDispatch<TSource, TAccumulate, TProduct>(
       IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
+      Func<TSource, TAccumulate, TProduct> productSelector)
     {
       var (values, subtreeSizes, accumulations) =
         RunLeaffixDispatchPass(source, nodeSurvey);
 
-      var results = new NodeAccumulation<TSource, TAccumulate>[values.Length];
+      var results = new TProduct[values.Length];
       for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
-        results[nodeIndex] = new NodeAccumulation<TSource, TAccumulate>(values[nodeIndex], accumulations[nodeIndex]);
+        results[nodeIndex] = productSelector(values[nodeIndex], accumulations[nodeIndex]);
 
-      return new PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results, subtreeSizes);
+      return new PreorderArrayStore<TProduct>(results, subtreeSizes);
     }
 
     // The shared fold pass, both operators' engine: one raw capture into the flat pre-order

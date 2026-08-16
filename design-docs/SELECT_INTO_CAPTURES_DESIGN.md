@@ -123,6 +123,16 @@ deferred-once law: the intermediate that never built cannot be observed missing)
 result: `Scan().Select(f)` is a 1-wide build — no pair store, allocation strictly below
 the veneer — and the pair contract stays the default for everyone else.
 
+**The at-most-once constraint (found during seam implementation, 2026-08-16):**
+`ComposeSelect` returns a NEW citizen while the original stays alive and pullable — if each
+held an independent build, pulling both would walk the source twice, which is illegal for
+one-shot stream sources. The citizen architecture therefore shares ONE FOLD PASS (values,
+skeleton, accumulations — built at most once) among all product variants; each variant owns
+only its finisher zip. This also produces the promised steady state: a built variant drops
+its pass reference, so in the chained spelling (original composed away, never pulled) the
+pass is collected and what remains is the 1-wide product store plus a SHARED skeleton
+array (subtree sizes are identical across variants — one int[] serves all).
+
 Later citizens ride the same door: Materialize's deferred buffer (where `ComposeSelect` is
 the composition-law rewrite `source.Materialize().Select(f)` → capture `f(source)`
 directly), Invert's build, TakeSubtreesWhere's capture arms.

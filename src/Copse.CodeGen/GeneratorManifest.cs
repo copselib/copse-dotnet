@@ -353,6 +353,14 @@ namespace Copse.CodeGen
       // engines -- the hand-written sync memoize machinery is retired; MemoizeTests plus the
       // conformance matrix are the non-differential oracle). The cluster's classes reference
       // each other, so Generated*-style validation naming is not an option here.
+      // The public projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md): per-tier
+      // public contracts; closure is enforced by the ComposeSelect return types.
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncSelectComposableTreenumerable.cs",
+        "Copse.Linq/Treenumerables/Buffers/ISelectComposableTreenumerable.g.cs",
+        "IAsyncSelectComposableTreenumerable", "ISelectComposableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncSelectComposableTreenumerableBuffer.cs",
+        "Copse.Linq/Treenumerables/Buffers/ISelectComposableTreenumerableBuffer.g.cs",
+        "IAsyncSelectComposableTreenumerableBuffer", "ISelectComposableTreenumerableBuffer", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ITreenumerableBuffer.g.cs",
         "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),

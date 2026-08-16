@@ -152,7 +152,7 @@ namespace Copse.Linq
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var surveyed = new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatchAsync(source, nodeSurvey));
+        () => BuildLeaffixDispatchAsync(source, nodeSurvey, PairProduct));
 
       return new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
     }
@@ -162,34 +162,37 @@ namespace Copse.Linq
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var surveyed = new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, nodeSurvey));
+        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, nodeSurvey, PairProduct));
 
       return new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
     }
 
-    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate>(
+    private static async ValueTask<AsyncPreorderArrayStore<TProduct>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate, TProduct>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
+      Func<TSource, TAccumulate, TProduct> productSelector)
     {
       var capture = source.Materialize();
 
-      return await BuildLeaffixDispatchAsync(capture, nodeSurvey).ConfigureAwait(false);
+      return await BuildLeaffixDispatchAsync(capture, nodeSurvey, productSelector).ConfigureAwait(false);
     }
 
-    // The finisher over the fold pass: zip (values, accumulations) into the canonical
-    // pairing.
-    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchAsync<TSource, TAccumulate>(
+    // The finisher over the fold pass: zip (values, accumulations) into the product --
+    // canonically the pairing; the product-selector seam (SELECT_INTO_CAPTURES_DESIGN.md)
+    // lets a composed projection retarget what is STORED without touching the fold.
+    private static async ValueTask<AsyncPreorderArrayStore<TProduct>> BuildLeaffixDispatchAsync<TSource, TAccumulate, TProduct>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
+      Func<TSource, TAccumulate, TProduct> productSelector)
     {
       var (values, subtreeSizes, accumulations) =
         await RunLeaffixDispatchPassAsync(source, nodeSurvey).ConfigureAwait(false);
 
-      var results = new NodeAccumulation<TSource, TAccumulate>[values.Length];
+      var results = new TProduct[values.Length];
       for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
-        results[nodeIndex] = new NodeAccumulation<TSource, TAccumulate>(values[nodeIndex], accumulations[nodeIndex]);
+        results[nodeIndex] = productSelector(values[nodeIndex], accumulations[nodeIndex]);
 
-      return new AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results, subtreeSizes);
+      return new AsyncPreorderArrayStore<TProduct>(results, subtreeSizes);
     }
 
     // The shared fold pass, both operators' engine: one raw capture into the flat pre-order
