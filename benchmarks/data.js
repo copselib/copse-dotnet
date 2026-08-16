@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786849087338,
+  "lastUpdate": 1786849087844,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -145971,6 +145971,140 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
             "value": 1973,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fc08bfd9f1854d5e730f6c7ae66985a71733dc0e",
+          "message": "Reunification: main's four days merge into the walker tier\n\nMain's three semantic novelties land intact on the branch's machinery:\n\n- TakeSubtreesWhere (the subgraph selection cluster's tree restriction)\n  arrives whole, re-homed to the TreenumerableExtensions layout and the\n  Tree factory names, with the reunification's ONE compile fix: its\n  breadth-first arm now calls Materialize() (lazy, unawaited) where it\n  was born calling the pre-lazy MaterializeAsync -- the exact break that\n  made origin/main red.\n- The virtual-root rule (leaffix boundary selector-only): the branch's\n  receiver-smart LeaffixScan keeps its span/walker in-place folds,\n  RE-KEYED from the retired seed flavor to the value-selector flavor\n  (the leaf slot is position-free either way); the stream path delegates\n  every flavor through public LeaffixDispatch per the ruling. The leaffix\n  coherence pin and the receiver-smart battery re-spell their seeds as\n  formula fringes (leaf => nodeAcc(seed, leaf)) -- the equivalence the\n  ruling itself names.\n- The recording rule, type-level: ScanResult is gone; NodeAccumulation\n  and NodeArrival flow through the merged sources, twins, tests, map\n  rows, and README.\n\nThe duplicate lazy-materialize commits resolve to the branch's evolved\ncopies (probes-at-birth and the buffer re-parent supersede them). The\nsurface map merges both histories row-by-row -- TakeSubtreesWhere's row\njoins, LeaffixScan/LeaffixAggregate go selector-only with the\nreceiver-smart notes preserved, RootfixScan/RootfixDispatch carry the\ntype-level pairings -- and two vocabulary-ban stragglers that arrived\nwith main's Aug-5 prose are fixed en route.\n\nFull suite 24,568 green (main's TakeSubtreesWhere + recording-rule +\ncapture-ops tests join; the seed-flavor pins retire with their\noverloads). README examples re-verified by compilation.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T01:07:13Z",
+          "tree_id": "acaeef44cf6da3f5d44754f3c9ad5d070032d979",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fc08bfd9f1854d5e730f6c7ae66985a71733dc0e"
+        },
+        "date": 1786849087734,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 16903639,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 54734656,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 54734752,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 50353274,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 54908914,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 54909010,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 735,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 92324517,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 92324598,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 62939532,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 62939598,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 125186,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 47396906,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 158331,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 50334461,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 47569462,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 331483,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 1023,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93372888,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 109078324,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 2012,
             "unit": "bytes"
           }
         ]
