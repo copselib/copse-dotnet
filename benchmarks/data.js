@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786918724581,
+  "lastUpdate": 1786918725258,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -70340,6 +70340,114 @@ window.BENCHMARK_DATA = {
             "value": 1030475.7883649553,
             "unit": "ns",
             "range": "± 1026.9922487032277"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1ddc67159bf7165fc44b886bc34426d0cc9e2825",
+          "message": "LeaffixScan projection witnesses: the citizenship's before-picture\n\nTwo rows measuring Scan().Select(x => x.Accumulate).Consume as the stream\nveneer it is today (full pair buffer built underneath, projection per\npull) -- seeded on main so the baseline accrues in the durable series\nwhile feature/select-composable builds the projection citizenship. The\nspelling never changes; when scan results claim the citizenship the same\ncall's route flips to a composed 1-wide build and this series shows the\nstep. First local reading: 112.0 ms / 88.05 MB Dft, 125.6 ms / 60.03 MB\nBft.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T22:04:19Z",
+          "tree_id": "09194674fc038c64e51052c4bea208a2ce0d3a7a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1ddc67159bf7165fc44b886bc34426d0cc9e2825"
+        },
+        "date": 1786918725156,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 1773810.2098214286,
+            "unit": "ns",
+            "range": "± 4136.591452547166"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1447841.409329928,
+            "unit": "ns",
+            "range": "± 1850.4127320289017"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 3614504.0333533655,
+            "unit": "ns",
+            "range": "± 871.6900268564966"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 2982720.200420673,
+            "unit": "ns",
+            "range": "± 10632.132965315655"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 512881.5138811384,
+            "unit": "ns",
+            "range": "± 827.5091437233473"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 542689.1395733173,
+            "unit": "ns",
+            "range": "± 154.76279712256542"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 317010.0893179086,
+            "unit": "ns",
+            "range": "± 731.0690894279423"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 3273454.6969866073,
+            "unit": "ns",
+            "range": "± 21575.765564755326"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 2542274.2560096155,
+            "unit": "ns",
+            "range": "± 2322.0383337306152"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 11080093.657451924,
+            "unit": "ns",
+            "range": "± 18123.495937716136"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 5943529.688151042,
+            "unit": "ns",
+            "range": "± 60496.157059871264"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1051476.7263371395,
+            "unit": "ns",
+            "range": "± 739.7618182706921"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 791312.9609375,
+            "unit": "ns",
+            "range": "± 2853.490776142999"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 811157.8876953125,
+            "unit": "ns",
+            "range": "± 732.03906682648"
           }
         ]
       }
