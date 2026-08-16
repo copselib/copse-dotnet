@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786914080181,
+  "lastUpdate": 1786914080705,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -80618,6 +80618,102 @@ window.BENCHMARK_DATA = {
             "value": 21964981.545673076,
             "unit": "ns",
             "range": "± 38396.97521700169"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "144de25079742f3f31e7701514ac8a9ae46ca1de",
+          "message": "The presize fast path: counted sources capture into exact arrays\n\nA capture whose source already knows its node count -- a transpose from a\nsettled buffer, a settle from a completed memo -- allocates its final\narrays exactly and skips the chunked build buffer. Three pieces:\n\n- Counted CaptureFromAsync overloads on both capture cores (Copse.Async):\n  presized final arrays, write cursors, and a closing check that keeps a\n  wrong count loud in both directions (the count is a contract, not a\n  hint).\n- The buffer's counted-source door (TryGetNodeCount): a PURE READ off a\n  completed store underneath -- array topologies and built lazy stores\n  answer; the undecided case and unbuilt lazies decline rather than force\n  a build to answer a count question.\n- Wiring: the four Materialize builder lambdas route through count-\n  sniffing helpers; the memo settle passes GetBufferedCount() directly\n  (CompleteAsync has already run).\n\nTranspose rows (seeded one commit back, same machine): allocation\n24.1 -> 8.1 MB and 36.3 -> 12.2 MB (-66% -- the chunked build's doubling\novershoot and ToArray copies were part of the price beyond the predicted\n2n -> 1n), time -9%/-12%. Engine-source rows take the uncounted path\nunchanged (the control). 24,568 tests green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T20:16:33Z",
+          "tree_id": "438d7356a099ca3f5d3cad3e88ab7754ad9fe2c3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/144de25079742f3f31e7701514ac8a9ae46ca1de"
+        },
+        "date": 1786914080589,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 27132504.180397727,
+            "unit": "ns",
+            "range": "± 652395.2158535884"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 10902432.50235849,
+            "unit": "ns",
+            "range": "± 451870.33858745743"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 144210090.0892857,
+            "unit": "ns",
+            "range": "± 713639.3688009116"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57006097.786324784,
+            "unit": "ns",
+            "range": "± 62654.566677506875"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 20935499.839583334,
+            "unit": "ns",
+            "range": "± 37532.617885747626"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11943746.436298076,
+            "unit": "ns",
+            "range": "± 33963.18808633565"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 109740159.95555556,
+            "unit": "ns",
+            "range": "± 1949310.7588477547"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30033349.26785714,
+            "unit": "ns",
+            "range": "± 90685.0490152257"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11192948.4625,
+            "unit": "ns",
+            "range": "± 36822.33761428184"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5949181.3671875,
+            "unit": "ns",
+            "range": "± 24985.962614516087"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 94074428.08333333,
+            "unit": "ns",
+            "range": "± 232488.01129102914"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26865311.985576924,
+            "unit": "ns",
+            "range": "± 24369.619200545425"
           }
         ]
       }
