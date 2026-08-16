@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786905410514,
+  "lastUpdate": 1786905411016,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -138397,6 +138397,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
             "value": 136307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234144,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889824,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3b05ee41451683bb0d78b3b5d792f6e9ad9168c2",
+          "message": "BufferProbes: first rows over the walker probe surface\n\nThe adjacency engines (PreorderAdjacencyIndex / LevelOrderAdjacencyIndex)\nhad zero benchmark coverage -- every Buffer row rides the visit-stream\ndecoders, which never consult them. Five rows through the public walker\nsurface (the engines are internal; no-IVT is law): warm materialized\nwalks pin steady-state probe reads (0 B allocated -- the sweep is\nalloc-free, so the Alloc column is the engine's own story), cold\nmemoized walks drive the growing engine's scan every invocation\n(first local reading: 113.6 MB/walk -- the per-node List machinery,\nnow measured), and a LeaffixScan guard row pins the bulk-fold seam\nthat must not move when the probe machinery changes.\n\nSeeded before the planned adjacency-engine rework so it lands as a\nvisible step in the series. Routing: first category tag \"Buffer\" joins\nthe existing leg; no workflow change.\n\nAlso: delete the dead bencher-rename.yml (a project run key cannot\nmutate Bencher resources; the renames landed via the web UI) and\ncorrect the changelog's record of that.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T18:22:46Z",
+          "tree_id": "c3e662d93997016d9c63f9b92bf4ef47e13d7ac7",
+          "url": "https://github.com/copselib/copse-dotnet/commit/3b05ee41451683bb0d78b3b5d792f6e9ad9168c2"
+        },
+        "date": 1786905410908,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136331,
             "unit": "bytes"
           },
           {
