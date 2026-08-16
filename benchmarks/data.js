@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786849089329,
+  "lastUpdate": 1786901102822,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -12236,6 +12236,148 @@ window.BENCHMARK_DATA = {
             "value": 208392167.34210527,
             "unit": "ns",
             "range": "± 4467373.153225416"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "f78ce5c825516dbbc6e2a10a690c8a7c829bc197",
+          "message": "[skip ci] The four-class buffer taxonomy: names speak the operator call\n\n{Materialize, Memoize} x {construction, replay}, one class per question:\n\n- Materialize (construction): rows renamed Preorder_*/LevelOrder_* -- the\n  declared BufferLayout plus the tree, the call's own vocabulary. The old\n  DftCapture/BftCapture spellings named a capture flavor, which is how the\n  replay grid stayed mislabeled for a week.\n- MaterializeReplay: the four rows moved out of Memoize, renamed\n  {Dft,Bft}_over_{Preorder,LevelOrder}. Their setup had called Materialize\n  since the era when Materialize WAS Memoize+Complete -- they measured the\n  flat-store read path all along (the 25-35% win's instrument), and the\n  provenance comment now records it.\n- Memoize (construction): FirstPass_*/Partial_* unchanged.\n- MemoizeReplay: NEW -- the memo's own replay path, uncovered since the\n  2026-08-10 divergence; the side-by-side grids put a continuous number on\n  chunked-vs-flat reads.\n\nHistory carried in both stores: gh-pages by data-surgery commit, Bencher by\nthe one-off bencher-rename.yml (dispatch BEFORE the first run under new\nnames; delete after verification). BENCHMARKING.md mints the convention:\ncoverage-transfer arguments expire with the sharing that justified them --\nname the sharing, or lose the meaning silently.\n\n[skip ci]: this push must not trigger a benchmark run before the Bencher\nrenames land; the rename workflow gets dispatched first, then benchmarks.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T15:42:38Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f78ce5c825516dbbc6e2a10a690c8a7c829bc197"
+        },
+        "date": 1786901089326,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14013264.207932692,
+            "unit": "ns",
+            "range": "± 53563.660585643316"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21023594.64732143,
+            "unit": "ns",
+            "range": "± 37855.563282471536"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3599605.7926897323,
+            "unit": "ns",
+            "range": "± 6052.905895438961"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3597527.633072917,
+            "unit": "ns",
+            "range": "± 4625.594232881713"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 113666321.17142856,
+            "unit": "ns",
+            "range": "± 844330.9500401801"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 137945949.80769232,
+            "unit": "ns",
+            "range": "± 367616.69750795845"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 44867819.64423077,
+            "unit": "ns",
+            "range": "± 246665.15419912423"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50620632.24615385,
+            "unit": "ns",
+            "range": "± 796482.6531600694"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46391498.55,
+            "unit": "ns",
+            "range": "± 197521.71082319657"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35311675.14444444,
+            "unit": "ns",
+            "range": "± 68334.2035518442"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26463614.06971154,
+            "unit": "ns",
+            "range": "± 82535.68026994496"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18283744.208333332,
+            "unit": "ns",
+            "range": "± 48941.32036497867"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 59335426.59615385,
+            "unit": "ns",
+            "range": "± 607972.3646626464"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 84173658.35714285,
+            "unit": "ns",
+            "range": "± 205723.91556560586"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15724216.946875,
+            "unit": "ns",
+            "range": "± 46562.37309017071"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14371056.901442308,
+            "unit": "ns",
+            "range": "± 7220.769911921163"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 447470076.84615386,
+            "unit": "ns",
+            "range": "± 1866960.5581255525"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 563877657.7692307,
+            "unit": "ns",
+            "range": "± 1042123.17724419"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 182834767.7738095,
+            "unit": "ns",
+            "range": "± 903137.0816987412"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 206314896.3125,
+            "unit": "ns",
+            "range": "± 2731835.9430383127"
           }
         ]
       }
