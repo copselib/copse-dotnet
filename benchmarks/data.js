@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786849083855,
+  "lastUpdate": 1786849084334,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -66294,6 +66294,114 @@ window.BENCHMARK_DATA = {
             "value": 680485.1889648438,
             "unit": "ns",
             "range": "± 7375.361686152432"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fc08bfd9f1854d5e730f6c7ae66985a71733dc0e",
+          "message": "Reunification: main's four days merge into the walker tier\n\nMain's three semantic novelties land intact on the branch's machinery:\n\n- TakeSubtreesWhere (the subgraph selection cluster's tree restriction)\n  arrives whole, re-homed to the TreenumerableExtensions layout and the\n  Tree factory names, with the reunification's ONE compile fix: its\n  breadth-first arm now calls Materialize() (lazy, unawaited) where it\n  was born calling the pre-lazy MaterializeAsync -- the exact break that\n  made origin/main red.\n- The virtual-root rule (leaffix boundary selector-only): the branch's\n  receiver-smart LeaffixScan keeps its span/walker in-place folds,\n  RE-KEYED from the retired seed flavor to the value-selector flavor\n  (the leaf slot is position-free either way); the stream path delegates\n  every flavor through public LeaffixDispatch per the ruling. The leaffix\n  coherence pin and the receiver-smart battery re-spell their seeds as\n  formula fringes (leaf => nodeAcc(seed, leaf)) -- the equivalence the\n  ruling itself names.\n- The recording rule, type-level: ScanResult is gone; NodeAccumulation\n  and NodeArrival flow through the merged sources, twins, tests, map\n  rows, and README.\n\nThe duplicate lazy-materialize commits resolve to the branch's evolved\ncopies (probes-at-birth and the buffer re-parent supersede them). The\nsurface map merges both histories row-by-row -- TakeSubtreesWhere's row\njoins, LeaffixScan/LeaffixAggregate go selector-only with the\nreceiver-smart notes preserved, RootfixScan/RootfixDispatch carry the\ntype-level pairings -- and two vocabulary-ban stragglers that arrived\nwith main's Aug-5 prose are fixed en route.\n\nFull suite 24,568 green (main's TakeSubtreesWhere + recording-rule +\ncapture-ops tests join; the seed-flavor pins retire with their\noverloads). README examples re-verified by compilation.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T01:07:13Z",
+          "tree_id": "acaeef44cf6da3f5d44754f3c9ad5d070032d979",
+          "url": "https://github.com/copselib/copse-dotnet/commit/fc08bfd9f1854d5e730f6c7ae66985a71733dc0e"
+        },
+        "date": 1786849084224,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2133400.3580729165,
+            "unit": "ns",
+            "range": "± 7324.794559964758"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1880343.9514723558,
+            "unit": "ns",
+            "range": "± 1768.5694445241904"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4231986.216666667,
+            "unit": "ns",
+            "range": "± 2921.985464712435"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3670499.9227120536,
+            "unit": "ns",
+            "range": "± 11789.609235583905"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 625460.0502929688,
+            "unit": "ns",
+            "range": "± 1094.382687609392"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 742883.5087890625,
+            "unit": "ns",
+            "range": "± 1030.6169466505069"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 419890.9567057292,
+            "unit": "ns",
+            "range": "± 1551.652987307367"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4183141.9734375,
+            "unit": "ns",
+            "range": "± 53285.22845964394"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3444347.4580729166,
+            "unit": "ns",
+            "range": "± 17775.35124435367"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13662128.621875,
+            "unit": "ns",
+            "range": "± 106420.32836190655"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7790288.61875,
+            "unit": "ns",
+            "range": "± 89895.58988856853"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1345790.170200893,
+            "unit": "ns",
+            "range": "± 3844.7371761501845"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1074418.5596354166,
+            "unit": "ns",
+            "range": "± 6390.270127232258"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1042876.61875,
+            "unit": "ns",
+            "range": "± 3727.691370352987"
           }
         ]
       }
