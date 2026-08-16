@@ -1,0 +1,58 @@
+using System;
+using System.Threading.Tasks;
+
+namespace Copse.Linq.Async.Treenumerables
+{
+  /// <summary>
+  /// The one fold pass all product variants of a scan share (the at-most-once rule,
+  /// SELECT_INTO_CAPTURES_DESIGN.md): ComposeSelect forks the CITIZEN, never the source
+  /// walk, so the walk's artifacts -- per-node values, the skeleton, the accumulations --
+  /// are built at most once and every variant owns only its finisher zip. The build thunk
+  /// is released once run, so when the last unbuilt variant builds (or dies), the raw
+  /// arrays go with it and each survivor holds only its own product store plus the SHARED
+  /// skeleton. Single-threaded by contract, like the builds it runs.
+  /// </summary>
+  internal sealed class AsyncScanFoldPass<TSource, TAccumulate>
+  {
+    public AsyncScanFoldPass(Func<ValueTask<ScanFoldArtifacts<TSource, TAccumulate>>> build)
+    {
+      _Build = build;
+    }
+
+    private Func<ValueTask<ScanFoldArtifacts<TSource, TAccumulate>>> _Build;
+    private ScanFoldArtifacts<TSource, TAccumulate> _Artifacts;
+
+    public async ValueTask<ScanFoldArtifacts<TSource, TAccumulate>> EnsureAsync()
+    {
+      if (_Build != null)
+      {
+        _Artifacts = await _Build().ConfigureAwait(false);
+        _Build = null;
+      }
+
+      return _Artifacts;
+    }
+  }
+
+  /// <summary>
+  /// A completed fold pass: the value reader (a delegate, so an in-place fold can read the
+  /// receiver's own store without copying its values), the accumulations, and the skeleton
+  /// -- one immutable int[] deliberately SHARED by every product store zipped from this
+  /// pass (subtree sizes are identical across product variants by construction).
+  /// </summary>
+  internal readonly struct ScanFoldArtifacts<TSource, TAccumulate>
+  {
+    public ScanFoldArtifacts(Func<int, TSource> valueAt, TAccumulate[] accumulates, int[] subtreeSizes)
+    {
+      ValueAt = valueAt;
+      Accumulates = accumulates;
+      SubtreeSizes = subtreeSizes;
+    }
+
+    public readonly Func<int, TSource> ValueAt;
+    public readonly TAccumulate[] Accumulates;
+    public readonly int[] SubtreeSizes;
+
+    public int Count => Accumulates.Length;
+  }
+}

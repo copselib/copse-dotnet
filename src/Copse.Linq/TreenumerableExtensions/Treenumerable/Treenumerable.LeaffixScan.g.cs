@@ -72,7 +72,7 @@ namespace Copse.Linq
       if (source is ITreenumerableBuffer<TSource> buffer)
         return InPlaceLeaffixScan(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
-      return LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
+      return StreamLeaffixScan(source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
     }
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
@@ -95,7 +95,10 @@ namespace Copse.Linq
       if (source is ITreenumerableBuffer<TSource> buffer)
         return InPlaceLeaffixScan(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
-      return LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
+      // The disclosure-rule escalation, the dispatch tier's shape: a leaffix fold runs in
+      // depth-first subtree-close order, which a level-order arrival cannot provide, so the
+      // stream is captured once and the pass runs over the capture's depth-first replay.
+      return StreamLeaffixScan(source.Materialize(), leafNodeSelector, edgeAccumulator, nodeAccumulator);
     }
 
     public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
@@ -124,46 +127,74 @@ namespace Copse.Linq
     // first pull -- the concrete buffer hands its raw store (span arithmetic; no probes, no
     // child-index build, no positions build), a foreign walkable folds through the public
     // probes (a memo's pull-through probes complete it exactly once, with no second
-    // skeleton). The result buffer gets its probes at birth, sharing the one lazy store.
+    // skeleton). The result is the scan family's CITIZEN buffer over a SHARED fold pass
+    // (SELECT_INTO_CAPTURES_DESIGN.md): the canonical pairing is just the default product,
+    // and a composed Select zips a sibling variant from the same pass.
     private static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> InPlaceLeaffixScan<TSource, TAccumulate>(
       ITreenumerableBuffer<TSource> buffer,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
-      var scanned = new LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildInPlaceLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, PairProduct));
+      var foldPass = new ScanFoldPass<TSource, TAccumulate>(
+        () => BuildInPlaceLeaffixArtifacts(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator));
 
-      return new TreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
-        new PreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(scanned),
-        BufferLayout.Preorder,
-        new PreorderAdjacencyIndex<NodeAccumulation<TSource, TAccumulate>, LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(scanned));
+      return new ScanProductBuffer<TSource, TAccumulate, NodeAccumulation<TSource, TAccumulate>>(foldPass, PairProduct);
     }
 
-    // The product-selector seam (SELECT_INTO_CAPTURES_DESIGN.md): every build is
-    // parameterized on what it STORES -- productSelector(node, accumulate) -- with the
-    // canonical pairing as the default. A composed Select retargets the selector to
-    // f-after-pair: the pair struct is still constructed per node, on the stack, but never
-    // stored, so the composed product is 1-wide from birth.
+    // The stream regime, same citizen shape: the dispatch fold pass runs once behind the
+    // shared pass; the pairing is the default finisher. (LeaffixDispatch's own surface keeps
+    // its pair product; only the scan tier is a citizen.)
+    private static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> StreamLeaffixScan<TSource, TAccumulate>(
+      IDepthFirstTreenumerable<TSource> source,
+      Func<TSource, TAccumulate> leafNodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+    {
+      var foldPass = new ScanFoldPass<TSource, TAccumulate>(
+        () => BuildStreamLeaffixArtifacts(source, leafNodeSelector, edgeAccumulator, nodeAccumulator));
+
+      return new ScanProductBuffer<TSource, TAccumulate, NodeAccumulation<TSource, TAccumulate>>(foldPass, PairProduct);
+    }
+
+    private static ScanFoldArtifacts<TSource, TAccumulate> BuildStreamLeaffixArtifacts<TSource, TAccumulate>(
+      IDepthFirstTreenumerable<TSource> source,
+      Func<TSource, TAccumulate> leafNodeSelector,
+      Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+    {
+      var (values, subtreeSizes, accumulations) = RunLeaffixDispatchPass(
+          source,
+          LeafBoundedSurvey(
+            (TSource leaf, NodePosition _) => leafNodeSelector(leaf),
+            DualFoldSurvey(edgeAccumulator, nodeAccumulator)));
+
+      return new ScanFoldArtifacts<TSource, TAccumulate>(nodeIndex => values[nodeIndex], accumulations, subtreeSizes);
+    }
+
+    // The product-selector seam (SELECT_INTO_CAPTURES_DESIGN.md): what a scan STORES is
+    // productSelector(node, accumulate) -- the canonical pairing by default. A composed
+    // Select retargets the selector to f-after-pair: the pair struct is still constructed
+    // per node, on the stack, but never stored, so the composed product is 1-wide from
+    // birth.
     private static NodeAccumulation<TSource, TAccumulate> PairProduct<TSource, TAccumulate>(TSource node, TAccumulate accumulate)
       => new NodeAccumulation<TSource, TAccumulate>(node, accumulate);
 
-    private static PreorderArrayStore<TProduct> BuildInPlaceLeaffix<TSource, TAccumulate, TProduct>(
+    private static ScanFoldArtifacts<TSource, TAccumulate> BuildInPlaceLeaffixArtifacts<TSource, TAccumulate>(
       ITreenumerableBuffer<TSource> buffer,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       if (buffer is TreenumerableBuffer<TSource> concreteBuffer)
       {
         var (hasStore, store) = concreteBuffer.TryGetPreorderStore();
 
         if (hasStore)
-          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator, productSelector);
+          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator);
       }
 
-      return WalkerLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, productSelector);
+      return WalkerLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
     }
 
     // The span fold: reverse-ordinal (children complete before their parent by preorder
@@ -171,18 +202,16 @@ namespace Copse.Linq
     // a subtree-size hop, the node's span end fences the walk). Reads the skeleton the
     // receiver already owns; the store's own facts are the only inputs. The fringe is the
     // selector's, directly (the virtual-root rule: no seed at the leaffix boundary).
-    private static PreorderArrayStore<TProduct> SpanLeaffix<TSource, TAccumulate, TProduct>(
+    private static ScanFoldArtifacts<TSource, TAccumulate> SpanLeaffix<TSource, TAccumulate>(
       PreorderArrayStore<TSource> store,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       var nodeCount = store.Count;
 
       var accumulates = new TAccumulate[nodeCount];
       var subtreeSizes = new int[nodeCount];
-      var results = new TProduct[nodeCount];
 
       for (var handle = nodeCount - 1; handle >= 0; handle--)
       {
@@ -210,10 +239,10 @@ namespace Copse.Linq
 
         accumulates[handle] = accumulate;
         subtreeSizes[handle] = subtreeSize;
-        results[handle] = productSelector(node, accumulate);
       }
 
-      return new PreorderArrayStore<TProduct>(results, subtreeSizes);
+      // The value reader is the receiver's own store: an in-place pass never copies values.
+      return new ScanFoldArtifacts<TSource, TAccumulate>(store.GetValue, accumulates, subtreeSizes);
     }
 
     // The same fold in PURE STANCE VOCABULARY (Stage B's first migration, the receipts
@@ -224,14 +253,14 @@ namespace Copse.Linq
     // -- any walkable capture folds in place, whatever its layout. Receipt for the ledger:
     // ZERO new walker features were needed; door + steps + extract are fold-complete, and
     // ordinal indexing was only ever speed, which the concrete span path already owns.
-    private static PreorderArrayStore<TProduct> WalkerLeaffix<TSource, TAccumulate, TProduct>(
+    private static ScanFoldArtifacts<TSource, TAccumulate> WalkerLeaffix<TSource, TAccumulate>(
       ITreenumerableBuffer<TSource> buffer,
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
-      var results = new List<TProduct>();
+      var values = new List<TSource>();
+      var accumulates = new List<TAccumulate>();
       var subtreeSizes = new List<int>();
       var frames = new Stack<(TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
@@ -242,7 +271,7 @@ namespace Copse.Linq
         if (!rootStance.HasWalker)
           break;
 
-        frames.Push(OpenLeaffixFrame<TSource, TAccumulate, TProduct>(rootStance.Walker, results, subtreeSizes));
+        frames.Push(OpenLeaffixFrame(rootStance.Walker, values, accumulates, subtreeSizes));
 
         while (frames.Count > 0)
         {
@@ -252,7 +281,7 @@ namespace Copse.Linq
           if (step.HasWalker)
           {
             frames.Push((frame.Walker, frame.Value, frame.ChildIndex + 1, frame.Folded, frame.Reduced, frame.OutputIndex));
-            frames.Push(OpenLeaffixFrame<TSource, TAccumulate, TProduct>(step.Walker, results, subtreeSizes));
+            frames.Push(OpenLeaffixFrame(step.Walker, values, accumulates, subtreeSizes));
             continue;
           }
 
@@ -263,8 +292,8 @@ namespace Copse.Linq
             ? nodeAccumulator(frame.Reduced, frame.Value)
             : leafNodeSelector(frame.Value);
 
-          results[frame.OutputIndex] = productSelector(frame.Value, accumulate);
-          subtreeSizes[frame.OutputIndex] = results.Count - frame.OutputIndex;
+          accumulates[frame.OutputIndex] = accumulate;
+          subtreeSizes[frame.OutputIndex] = values.Count - frame.OutputIndex;
 
           if (frames.Count > 0)
           {
@@ -275,20 +304,25 @@ namespace Copse.Linq
         }
       }
 
-      return new PreorderArrayStore<TProduct>(results.ToArray(), subtreeSizes.ToArray());
+      var valueArray = values.ToArray();
+
+      return new ScanFoldArtifacts<TSource, TAccumulate>(nodeIndex => valueArray[nodeIndex], accumulates.ToArray(), subtreeSizes.ToArray());
     }
 
-    private static (TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex) OpenLeaffixFrame<TSource, TAccumulate, TProduct>(
+    private static (TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex) OpenLeaffixFrame<TSource, TAccumulate>(
       TreeWalker<TSource, int> walker,
-      List<TProduct> results,
+      List<TSource> values,
+      List<TAccumulate> accumulates,
       List<int> subtreeSizes)
     {
-      var outputIndex = results.Count;
+      var outputIndex = values.Count;
+      var value = walker.GetValue();
 
-      results.Add(default);
+      values.Add(value);
+      accumulates.Add(default);
       subtreeSizes.Add(0);
 
-      return (walker, walker.GetValue(), 0, false, default, outputIndex);
+      return (walker, value, 0, false, default, outputIndex);
     }
 
     // The dual fold expressed as a survey -- internal families only (Count >= 1; the leaf

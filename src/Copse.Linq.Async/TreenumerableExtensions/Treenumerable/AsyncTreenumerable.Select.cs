@@ -47,6 +47,36 @@ namespace Copse.Linq
     }
 
     /// <summary>
+    /// <c>Select</c> over a CAPTURE: projecting a capture produces a capture -- the
+    /// buffer-producer rule discloses the O(n) product in the return type, and the result
+    /// keeps everything a capture affords (both dimensions, replay, the walker door).
+    /// Deferred like every capture: nothing builds until the first pull.
+    ///
+    /// <para>The probe order (SELECT_INTO_CAPTURES_DESIGN.md): a PROJECTION CITIZEN
+    /// (<see cref="IAsyncSelectComposableTreenumerableBuffer{TNode}"/>) composes the
+    /// selector into its own machinery -- for a deferred scan product, into the pending
+    /// build, so the un-projected intermediate never exists. Any other buffer takes the
+    /// projected re-capture: one walk of the completed capture into a fresh buffer of
+    /// projected values.</para>
+    /// </summary>
+    public static IAsyncTreenumerableBuffer<TResult> Select<TSource, TResult>(
+      this IAsyncTreenumerableBuffer<TSource> source,
+      Func<TSource, TResult> selector)
+    {
+      if (source is IAsyncSelectComposableTreenumerableBuffer<TSource> citizen)
+        return citizen.ComposeSelect(selector);
+
+      return SelectCore(source, nodeContext => selector(nodeContext.Node)).Materialize(BufferLayout.Preorder);
+    }
+
+    /// <summary>The positional flavor over a capture: citizens are value-only (the contract's
+    /// final-surface rule), so the positional projection always takes the re-capture.</summary>
+    public static IAsyncTreenumerableBuffer<TResult> Select<TSource, TResult>(
+      this IAsyncTreenumerableBuffer<TSource> source,
+      Func<TSource, NodePosition, TResult> selector)
+      => SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position)).Materialize(BufferLayout.Preorder);
+
+    /// <summary>
     /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
     /// Select. Positions never move under a projection, so this flavor composes exactly like
     /// the value-only one.
