@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786912469859,
+  "lastUpdate": 1786912470336,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -88002,6 +88002,150 @@ window.BENCHMARK_DATA = {
             "value": 42694435.83928571,
             "unit": "ns",
             "range": "± 243146.8975413293"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07c08374678a97cc943733dd772fe94484598555",
+          "message": "Materialize transpose rows: counted-source capture gets its first coverage\n\nEvery Materialize construction row captures from an engine source, where\nunknown length makes the chunked build buffer irreducible -- the counted\npaths (transpose from a settled buffer, settle from a completed memo) had\nno rows. Two transpose rows seed the instrument ahead of the presize\nfast-path: its 2n -> 1n build-allocation step will show in their Alloc\ncolumn, while the engine-source rows correctly hold still (the control).\nFirst local reading: 37.8 ms / 24.1 MB and 56.4 ms / 36.3 MB.\n\nSettle-from-memo rides the same CaptureFrom core; the sharing is named in\nthe changelog per the coverage-expiry convention.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-16T20:10:17Z",
+          "tree_id": "db3cf069a2da75903797e146102dd697dc57a762",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07c08374678a97cc943733dd772fe94484598555"
+        },
+        "date": 1786912470228,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12483763.600961538,
+            "unit": "ns",
+            "range": "± 29219.270243556457"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22989473.897916667,
+            "unit": "ns",
+            "range": "± 347270.43065345584"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3922269.3545673075,
+            "unit": "ns",
+            "range": "± 4398.116209176141"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6327741.54375,
+            "unit": "ns",
+            "range": "± 64873.0099792333"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 93175116.65555555,
+            "unit": "ns",
+            "range": "± 373422.7809840366"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 142943449.10416666,
+            "unit": "ns",
+            "range": "± 800130.7397761522"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33438166.59555555,
+            "unit": "ns",
+            "range": "± 60368.27354365497"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54806199.86734693,
+            "unit": "ns",
+            "range": "± 213421.63894827414"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11789970.896205356,
+            "unit": "ns",
+            "range": "± 11503.736130653475"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11040993.190625,
+            "unit": "ns",
+            "range": "± 72560.0049699444"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2912461.623497596,
+            "unit": "ns",
+            "range": "± 3507.9623347157694"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2910816.2528645834,
+            "unit": "ns",
+            "range": "± 2523.657434574232"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 90589651.54444446,
+            "unit": "ns",
+            "range": "± 487841.60239027155"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 82061216.12820512,
+            "unit": "ns",
+            "range": "± 161382.84077038802"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 28575849.238839287,
+            "unit": "ns",
+            "range": "± 68497.41631452325"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 19055926.35044643,
+            "unit": "ns",
+            "range": "± 70391.92959508226"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 101911993.72,
+            "unit": "ns",
+            "range": "± 458810.401946033"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 156101461.1,
+            "unit": "ns",
+            "range": "± 536004.9612842317"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18350595.375,
+            "unit": "ns",
+            "range": "± 46473.72162782916"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43011353.7948718,
+            "unit": "ns",
+            "range": "± 68254.25824733877"
           }
         ]
       }
