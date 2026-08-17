@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786949494067,
+  "lastUpdate": 1786949494989,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -41288,6 +41288,128 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
             "value": 33636831,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 843,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 284,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 295,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 4112,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109352248,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 116997,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346216,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "577371580556cfc4cf909821d2f72c770e66bf3d",
+          "message": "Merge branch 'main' into feature/select-composable",
+          "timestamp": "2026-08-17T05:45:43Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/577371580556cfc4cf909821d2f72c770e66bf3d"
+        },
+        "date": 1786949494877,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408084,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 743,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 275,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3523,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27502100,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231162,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505986,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26071,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 58935,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33636879,
             "unit": "bytes"
           },
           {
