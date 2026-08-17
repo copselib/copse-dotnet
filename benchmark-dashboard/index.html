@@ -18,7 +18,10 @@
   }
   * { box-sizing:border-box; }
   html { font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); }
-  body { margin:0; padding:0 16px 64px; }
+  /* Constrained content column: on wide screens an unconstrained table pushed the value/trend
+     columns arbitrarily far from the names they belong to. ~1080px keeps a row scannable as
+     one unit; the hover wash below carries the eye across what distance remains. */
+  body { margin:0 auto; padding:0 16px 64px; max-width:1080px; }
   header { position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--line); padding:12px 0; z-index:5; }
   h1 { font-size:18px; margin:0 0 8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   h1 .sub { font-weight:400; color:var(--muted); font-size:13px; }
@@ -47,6 +50,7 @@
   th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; cursor:pointer; }
   tbody tr:nth-child(4n+1) { background:var(--row); }       /* zebra over (row + expand) pairs */
   tr.brow { cursor:pointer; }
+  tr.brow:hover td { background:var(--chip); }              /* the row-tracking wash: name ↔ sparkline */
   td.num { text-align:right; font-family:var(--mono); white-space:nowrap; }
   td.name { font-family:var(--mono); font-size:13px; }
   .cls { color:var(--muted); }
@@ -87,6 +91,10 @@
       <option value="name">Name</option>
     </select>
     <label class="lbl"><input id="arch" type="checkbox" /> show archived</label>
+    <label class="lbl" title="Noise floors: hide time rows under the ms value and memory rows under the KB value (blank = off)">floor
+      <input id="floorMs" type="number" min="0" step="0.1" placeholder="ms" style="width:70px" />
+      <input id="floorKb" type="number" min="0" step="1" placeholder="KB" style="width:70px" />
+    </label>
     <span class="count" id="count"></span>
   </div>
 </header>
@@ -98,7 +106,8 @@
 <script>
 "use strict";
 const SMALLER_IS_BETTER = true; // every metric here (time, memory) is smaller-better
-const state = { q:"", group:"suite", sort:"delta", showArchived:false, collapsed:new Set(), open:new Set() };
+const state = { q:"", group:"suite", sort:"delta", showArchived:false, collapsed:new Set(), open:new Set(),
+                floorMs:null, floorKb:null }; // noise floors, OFF by default (blank inputs)
 
 function dataset() { return window.BENCHMARK_DATA; }
 
@@ -180,34 +189,57 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 function fmtDate(ms){ return new Date(ms).toISOString().slice(0,10); }
 
 // ---- inline SVG ----
+// Trailing moving average, window 5 (each point averages itself and up to 4 predecessors):
+// the reading that separates a real level shift from run-to-run machine noise. Trailing, not
+// centered, so the newest point's average never waits on future runs.
+function movingAverage(values, window=5) {
+  const out = new Array(values.length);
+  let sum = 0;
+  for (let i=0;i<values.length;i++) {
+    sum += values[i];
+    if (i>=window) sum -= values[i-window];
+    out[i] = sum / Math.min(i+1, window);
+  }
+  return out;
+}
+function pathOf(values, x, y) {
+  return values.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
+}
 function sparkline(pts, archived) {
   if (pts.length<2) return '<svg class="spark" width="120" height="22"><text x="0" y="15">single point</text></svg>';
-  const vs = pts.map(p=>p.value), mn=Math.min(...vs), mx=Math.max(...vs), W=120,H=22,P=2;
+  const vs = pts.map(p=>p.value), ma = movingAverage(vs);
+  const mn=Math.min(...vs), mx=Math.max(...vs), W=120,H=22,P=2;
   const x=i=>P+i*(W-2*P)/(pts.length-1);
   const y=v=>mx===mn ? H/2 : H-P-(v-mn)/(mx-mn)*(H-2*P);
-  const d=pts.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.value).toFixed(1)).join(" ");
   const last=pts[pts.length-1];
   const stroke = archived ? 'stroke="var(--muted)" stroke-dasharray="3 2"' : 'stroke="var(--accent)"';
   const fill = archived ? "var(--muted)" : "var(--accent)";
-  return `<svg class="spark" width="${W}" height="${H}"><path d="${d}" fill="none" ${stroke} stroke-width="1.5"/>`
+  // Raw series in the accent; the smoothed trend as a dashed muted overlay (skipped for
+  // short histories, where it would just shadow the raw line).
+  const maPath = (!archived && pts.length>=6)
+    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 2"/>` : "";
+  return `<svg class="spark" width="${W}" height="${H}">${maPath}<path d="${pathOf(vs,x,y)}" fill="none" ${stroke} stroke-width="1.5"/>`
        + `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="2" fill="${fill}"/></svg>`;
 }
 function bigChart(pts, unit) {
   if (pts.length<2) return '<div class="note">No history yet — only one commit recorded. (Toggle “Demo history” to see the trend UI populated.)</div>';
-  const vs=pts.map(p=>p.value), mn=Math.min(...vs), mx=Math.max(...vs);
+  const vs=pts.map(p=>p.value), ma=movingAverage(vs), mn=Math.min(...vs), mx=Math.max(...vs);
   const W=640,H=190,L=70,R=14,T=14,B=28, iw=W-L-R, ih=H-T-B;
   const x=i=>L+i*iw/(pts.length-1);
   const y=v=>mx===mn ? T+ih/2 : T+ih-(v-mn)/(mx-mn)*ih;
-  const d=pts.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p.value).toFixed(1)).join(" ");
   let g="";
   for (let k=0;k<=2;k++){ const v=mn+(mx-mn)*k/2, yy=y(v).toFixed(1);
     g+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)"/><text x="6" y="${(+yy+3).toFixed(1)}">${esc(fmtVal(v,unit))}</text>`; }
   let dots="";
   pts.forEach((p,i)=>{ dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2.5" fill="var(--accent)">`
     +`<title>${esc((p.id||"").slice(0,10))} · ${fmtDate(p.date)} — ${esc(fmtVal(p.value,unit))}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
+  const maPath = pts.length>=6
+    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--muted)" stroke-width="1.25" stroke-dasharray="4 3"/>` : "";
+  const maLegend = pts.length>=6
+    ? `<text x="${W-R}" y="${T-4}" text-anchor="end">· · · 5-run avg</text>` : "";
   const d0=fmtDate(pts[0].date), d1=fmtDate(pts[pts.length-1].date);
-  return `<svg width="${W}" height="${H}" role="img">${g}<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
-       + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text></svg>`;
+  return `<svg width="${W}" height="${H}" role="img">${g}${maPath}<path d="${pathOf(vs,x,y)}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
+       + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text>${maLegend}</svg>`;
 }
 
 // ---- render ----
@@ -218,10 +250,17 @@ function render() {
   let rows = buildRows();
   const archivedTotal = rows.filter(r=>r.archived).length;
   if (!state.showArchived) rows = rows.filter(r=>!r.archived);
+  // The noise floors: rows too small to care about (sub-ms times, sub-KB allocations) hide
+  // when a floor is set. Off by default -- a blank input filters nothing.
+  const beforeFloor = rows.length;
+  if (state.floorMs!=null) rows = rows.filter(r => r.unit==="bytes" || r.latest >= state.floorMs*1e6);
+  if (state.floorKb!=null) rows = rows.filter(r => r.unit!=="bytes" || r.latest >= state.floorKb*1024);
+  const flooredOut = beforeFloor - rows.length;
   const q = state.q.trim().toLowerCase();
   if (q) rows = rows.filter(r => (r.short+" "+r.suite+" "+r.engine+" "+r.metric).toLowerCase().includes(q));
   const hiddenNote = (!state.showArchived && archivedTotal) ? ` · ${archivedTotal} archived hidden` : "";
-  document.getElementById("count").textContent = rows.length+" benchmarks"+hiddenNote;
+  const floorNote = flooredOut ? ` · ${flooredOut} under floor` : "";
+  document.getElementById("count").textContent = rows.length+" benchmarks"+hiddenNote+floorNote;
 
   renderMovers(rows.filter(r=>!r.archived));
 
@@ -294,6 +333,9 @@ document.getElementById("q").addEventListener("input", e=>{ state.q=e.target.val
 document.getElementById("group").addEventListener("change", e=>{ state.group=e.target.value; state.collapsed.clear(); render(); });
 document.getElementById("sort").addEventListener("change", e=>{ state.sort=e.target.value; render(); });
 document.getElementById("arch").addEventListener("change", e=>{ state.showArchived=e.target.checked; render(); });
+const floorVal = raw => { const v = parseFloat(raw); return Number.isFinite(v) && v>0 ? v : null; };
+document.getElementById("floorMs").addEventListener("input", e=>{ state.floorMs=floorVal(e.target.value); render(); });
+document.getElementById("floorKb").addEventListener("input", e=>{ state.floorKb=floorVal(e.target.value); render(); });
 document.getElementById("main").addEventListener("click", e=>{
   const h2=e.target.closest("h2[data-key]");
   if (h2){ const k=h2.dataset.key; state.collapsed.has(k)?state.collapsed.delete(k):state.collapsed.add(k); render(); return; }
