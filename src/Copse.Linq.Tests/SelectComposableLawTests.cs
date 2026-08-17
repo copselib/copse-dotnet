@@ -203,6 +203,53 @@ namespace Copse.Linq.Tests
 
     private static ITreenumerable<int> ToComposite(ITreenumerable<int> source) => source;
 
+    // ---- TakeSubtreesWhere: the dispatched citizen (the operator is not a composition seam) ----
+
+    [TestMethod]
+    public void TakeSubtreesWhere_Closure_SelectOverResultIsCitizen_AndWhereJoinsTheDriver()
+    {
+      // The dimension dispatch (bespoke DFT wrapper / scan-chain BFT) lives BEHIND the
+      // citizenship: the composite result composes like any streaming citizen.
+      var result = TreeSerializer.DeserializeDepthFirstTree("a(b(c,d),e)").TakeSubtreesWhere(node => node == "b");
+
+      Assert.IsInstanceOfType(result, typeof(ISelectComposableTreenumerable<string>), "result");
+      Assert.IsInstanceOfType(result.Select(node => node + "!"), typeof(ISelectComposableTreenumerable<string>), "projected");
+      Assert.IsInstanceOfType(result.Select(node => node + "!").Select(text => text.Length), typeof(ISelectComposableTreenumerable<int>), "chained");
+
+      Assert.AreEqual(
+        typeof(SelectWhereTreenumerable<,,>),
+        result.Select(node => node + "!").Where(text => text.Length > 1).GetType().GetGenericTypeDefinition(),
+        "join");
+    }
+
+    [TestMethod]
+    public void TakeSubtreesWhere_MidChain_EqualsForcedWrapperSpelling()
+    {
+      // The seam pin: TakeSubtreesWhere in the middle of a Select/Where chain, composed
+      // route vs the Tree.Defer-broken wrapper route, both dimensions.
+      foreach (var tree in Corpus)
+      {
+        var composed = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .TakeSubtreesWhere(node => node == "b")
+          .Select(node => node + "!")
+          .Where(text => text != "d!");
+
+        var forced = Tree.Defer(() =>
+            Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).TakeSubtreesWhere(node => node == "b"))
+              .Select(node => node + "!"))
+          .Where(text => text != "d!");
+
+        CollectionAssert.AreEqual(
+          forced.GetPreorderTraversal().ToArray(),
+          composed.GetPreorderTraversal().ToArray(),
+          $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(
+          forced.GetLevelOrderTraversal().ToArray(),
+          composed.GetLevelOrderTraversal().ToArray(),
+          $"breadth-first [{tree}]");
+      }
+    }
+
     // ---- COMPOSE-LEFT (the door): the lattice feeds the citizen ----
 
     [TestMethod]

@@ -208,9 +208,12 @@ by the honest-streaming-baseline rule (memory dropping when un-buffering is tabl
 time answers to the best streaming implementation): the composite DIMENSION-DISPATCHES —
 DFT takes the bespoke O(1) contiguous-segment wrapper (the chain measured ~2.3x it; the
 dispatch put composite DFT below the retired buffer), BFT takes the chain (the leanest
-streaming form there). The algebraic spelling remains the operator's definition and its
-BFT implementation; a following Select composes through the normal lattice over the
-cheaper base.
+streaming form there). The dispatch lives BEHIND the citizenship — the result is a
+streaming citizen carrying (source, predicate) as its recipe, so mid-chain the operator
+is not a composition seam: Select composes onto the product selector, Where joins the
+driver over the citizen. The algebraic spelling remains the operator's definition and
+its BFT implementation; the machinery choice is an acquisition-time fact, invisible to
+the algebra.
 
 ## 6. Out of scope
 

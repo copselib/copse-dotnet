@@ -32,14 +32,15 @@ namespace Copse.Linq
     /// produces the re-rooted forest's true level order by pulling its inner ahead through
     /// its queue.</para>
     ///
-    /// <para>DIMENSION-DISPATCHED (the honest-streaming-baseline rule): each dimension takes
-    /// its leanest streaming implementation. Depth-first constructs the bespoke O(1)-state
-    /// pass-through wrapper -- a matched subtree is one contiguous preorder segment, and the
-    /// scan chain measured ~2.3x that wrapper's cost for the same work. Breadth-first
-    /// constructs the scan chain, which IS the leanest streaming form there (a bespoke BFT
-    /// would reimplement Where's cross-level promotion machinery). A following Select stacks
-    /// a light lattice wrapper and composes with any subsequent Where into one driver -- the
-    /// normal composition story over the cheaper base.</para>
+    /// <para>DIMENSION-DISPATCHED BEHIND THE CITIZENSHIP (the honest-streaming-baseline
+    /// rule): the result is a streaming-tier citizen whose recipe is (source, predicate);
+    /// each acquisition constructs that dimension's leanest streaming machinery --
+    /// depth-first the bespoke O(1)-state pass-through wrapper (the scan chain measured
+    /// ~2.3x it for the same work), breadth-first the scan chain (the leanest streaming
+    /// form there: a bespoke BFT would reimplement Where's cross-level promotion
+    /// machinery). Because the dispatch lives BEHIND the citizenship, the operator is not a
+    /// composition seam: a following Select composes (the product variant), a following
+    /// Where joins the one driver over the citizen.</para>
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
     /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
@@ -53,23 +54,14 @@ namespace Copse.Linq
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      var breadthFirstChain = source
-        .RootfixScan(false, (kept, node) => kept || predicate(node))
-        .Where(pair => pair.Accumulate)
-        .Select(pair => pair.Node);
-
-      return AsyncTree.Create(
-        breadthFirstChain.GetAsyncBreadthFirstTreenumerator,
-        () => new AsyncTakeSubtreesWhereTreenumerator<TNode>(
-          source.GetAsyncDepthFirstTreenumerator,
-          nodeContext => predicate(nodeContext.Node)));
+      return new AsyncTakeSubtreesWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
     /// <summary>
     /// The positional flavor (the Select/Where arity-split grammar): the node's value and its
     /// SOURCE position. The public scan accumulator has no positional seat (the seat rule),
-    /// so the breadth-first chain speaks the ENGINE's context-shaped accumulator directly --
-    /// same chain, same laws.
+    /// so the citizen's breadth-first chain speaks the ENGINE's context-shaped accumulator
+    /// directly -- same chain, same laws.
     /// </summary>
     public static IAsyncTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -78,19 +70,7 @@ namespace Copse.Linq
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      var breadthFirstChain = new AsyncRootfixScanTreenumerable<TNode, bool>(
-          source.GetAsyncDepthFirstTreenumerator,
-          source.GetAsyncBreadthFirstTreenumerator,
-          (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext.Node, nodeContext.Position),
-          false)
-        .Where(pair => pair.Accumulate)
-        .Select(pair => pair.Node);
-
-      return AsyncTree.Create(
-        breadthFirstChain.GetAsyncBreadthFirstTreenumerator,
-        () => new AsyncTakeSubtreesWhereTreenumerator<TNode>(
-          source.GetAsyncDepthFirstTreenumerator,
-          nodeContext => predicate(nodeContext.Node, nodeContext.Position)));
+      return new AsyncTakeSubtreesWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
     /// <summary>

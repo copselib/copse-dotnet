@@ -179,6 +179,8 @@ namespace Copse.CodeGen
         ["IAsyncSelectComposableTreenumerable"] = "ISelectComposableTreenumerable",
         ["IAsyncSelectComposableTreenumerableBuffer"] = "ISelectComposableTreenumerableBuffer",
         ["AsyncProjectedTreenumerableBuffer"] = "ProjectedTreenumerableBuffer",
+        ["AsyncTakeSubtreesWhereTreenumerable"] = "TakeSubtreesWhereTreenumerable",
+        ["AsyncTakeSubtreesWhereProductTreenumerable"] = "TakeSubtreesWhereProductTreenumerable",
         ["AsyncRootfixScanProductDepthFirstTreenumerator"] = "RootfixScanProductDepthFirstTreenumerator",
         ["AsyncRootfixScanProductBreadthFirstTreenumerator"] = "RootfixScanProductBreadthFirstTreenumerator",
         ["AsyncRootfixScanTreenumerable"] = "RootfixScanTreenumerable",
