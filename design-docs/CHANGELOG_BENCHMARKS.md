@@ -230,3 +230,16 @@ walk the wrapper per visit: `LeaffixScan.FromSelect_{Dft,Bft}_Chain` (123.5 ms /
 merges (the compose-left door: the capture walks the un-projected inner raw); the ROOTFIX
 pair holds the veneer baseline for the rootfix door, which is DEFERRED — its step lands
 whenever that mirror is built. Same-run ratio against the plain rows prices the wrapper.
+
+---
+
+## Date: 2026-08-17 — Chained-projection and scan-of-scan witnesses
+
+Two `LeaffixScan` rows (Aggregate leg) seeded ahead of the thin-shape refactor
+(SELECT_INTO_CAPTURES_DESIGN.md): `Select_Select_Dft_Chain` — the functor law's benchmark
+row; two Selects over the scan's buffer must collapse to one product build under ANY
+citizenship machinery (baseline 89.8 ms / 84.06 MB — allocation identical to the
+single-Select row proves today's collapse; a double-materializing route shows as a step up).
+`Twice_Dft_Chain` — scan-of-scan; the second scan currently misses the span fast path's
+concrete-type sniff and folds through the walker probes (baseline 231.9 ms / 272 MB — the
+priced downgrade); the refactor's return to plain buffers heals it as a visible step down.

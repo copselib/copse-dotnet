@@ -89,5 +89,33 @@ namespace Copse.Benchmarks
       var scan = CanonicalTrees.MegaChainTree().Select(node => node * 2).LeaffixScan(LeafCount, EdgeSum, CountNode);
       scan.Consume(TreeTraversalStrategy.BreadthFirst);
     }
+
+    // The chained-projection witness (the functor law's benchmark row, seeded 2026-08-17):
+    // two Selects over the scan's buffer must collapse to ONE product build whatever
+    // machinery implements the citizenship -- today the pass layer's sibling variants, next
+    // the thin projected buffer (SELECT_INTO_CAPTURES_DESIGN.md). The spelling never
+    // changes; a route that double-materializes shows here as a step up.
+    [Benchmark]
+    public void Select_Select_Dft_Chain()
+    {
+      var projected = CanonicalTrees.MegaChainTree()
+        .LeaffixScan(LeafCount, EdgeSum, CountNode)
+        .Select(x => x.Accumulate)
+        .Select(count => count * 2);
+      projected.Consume(TreeTraversalStrategy.DepthFirst);
+    }
+
+    // The scan-of-scan witness (seeded 2026-08-17): the second scan folds IN PLACE over the
+    // first scan's capture. Today the citizen buffer type misses the span fast path's
+    // concrete sniff and the fold runs through the walker probes -- this row prices that
+    // downgrade; the thin-shape refactor (plain buffers again) heals it as a visible step.
+    [Benchmark]
+    public void Twice_Dft_Chain()
+    {
+      var rescanned = CanonicalTrees.MegaChainTree()
+        .LeaffixScan(LeafCount, EdgeSum, CountNode)
+        .LeaffixScan(pair => 1, EdgeSum, (accumulate, pair) => accumulate + 1);
+      rescanned.Consume(TreeTraversalStrategy.DepthFirst);
+    }
   }
 }
