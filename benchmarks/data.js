@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787001656520,
+  "lastUpdate": 1787001657082,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -118198,6 +118198,102 @@ window.BENCHMARK_DATA = {
             "value": 79745721.92857142,
             "unit": "ns",
             "range": "± 753874.2389582144"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1daeb2f36a4c7e54cc2bd2a0651d8d5f17c82116",
+          "message": "The emission mint: rootfix scan state narrows to bare accumulates\n\nJason's observation, executed: for RootfixScan(...).Select(x => x.Accumulate)\nthe mapping is int -> (int, int) -> int, and the inner pair should never land\nin any queue or stack. It had been -- the ScanResult sweep instantiated the\nscan engines with TAccumulate = the pairing, silently doubling every stack and\nlevel-buffer entry (measured 16 bytes/node of chain depth on the DFT path\nstack). The engines' state is now the fold's own width -- bare accumulates,\nthe O(depth)/O(width) information floor -- and the pairing is constructed per\nemission from InnerTreenumerator.Node, which is the current node at every\n1:1-decorated emission, scheduling and re-visits alike. The product twins\napply the composed selector over that transient pairing; the pair lives on\nthe evaluation stack only.\n\nThe operator layer's PairingAccumulator adapters become bare context-lifts\n(ContextAccumulator / ContextAccumulatorWithRootSelector); the citizen\nwrappers hold the bare recipe; the plain engines emit the pairing natively\nand stay selector-free (the plain spelling still never pays a delegate).\n\nMeasured (local, same machine as the morning baseline):\n- RootfixScan.Dft_Chain: 104.02 MB -> 88.02 MB, BOTH plain and composed --\n  the exact pre-ScanResult level (dashboard series: 92,301,028 bytes through\n  2026-08-04, 109.08 MB since the sweep). Time at parity (~71-77ms both).\n- Bft rows unchanged (~1.8-1.9 KB; streaming had nothing to reclaim).\n\n24,581 green. CI's Dft_Chain series writes the step down on push.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T21:07:49Z",
+          "tree_id": "168ddbb494f060c9b901e2797b6372d27d666adc",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1daeb2f36a4c7e54cc2bd2a0651d8d5f17c82116"
+        },
+        "date": 1787001656964,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 105614972.53333333,
+            "unit": "ns",
+            "range": "± 1224407.5756329703"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 91147498.42666666,
+            "unit": "ns",
+            "range": "± 1566241.6163788268"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 276539922.23333335,
+            "unit": "ns",
+            "range": "± 2253025.761848139"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 274561709.96153843,
+            "unit": "ns",
+            "range": "± 487206.27729161346"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 189046225.6190476,
+            "unit": "ns",
+            "range": "± 996220.7479020489"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 221721380.47619048,
+            "unit": "ns",
+            "range": "± 1889245.9784781404"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 105817663.41666664,
+            "unit": "ns",
+            "range": "± 185752.3792986663"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 87220958.10000001,
+            "unit": "ns",
+            "range": "± 939796.8711253557"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 478723360.28571427,
+            "unit": "ns",
+            "range": "± 1800881.5970174347"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 488904521.8666667,
+            "unit": "ns",
+            "range": "± 843399.6763897941"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 99402389.55714285,
+            "unit": "ns",
+            "range": "± 317826.2771217605"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79998247.84444445,
+            "unit": "ns",
+            "range": "± 845768.2676898165"
           }
         ]
       }
