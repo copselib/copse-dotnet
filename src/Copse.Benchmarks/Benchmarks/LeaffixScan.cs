@@ -53,10 +53,10 @@ namespace Copse.Benchmarks
     }
 
     // The composed-projection witnesses (SELECT_INTO_CAPTURES_DESIGN.md; seeded 2026-08-16
-    // while this spelling is a stream VENEER: the full pair buffer is built underneath and
-    // the projection is per-pull). The spelling never changes -- when scan results claim the
-    // projection citizenship, the same call's route flips to a composed 1-wide build and
-    // this series shows the step. Same-run ratio against Dft/Bft_Chain prices the projection.
+    // as a stream VENEER, flipped by the citizenship merge, flipped again by THE THIN SHAPE
+    // 2026-08-17): the route is now the projected buffer's one counted array map off the
+    // scan's completed store -- composed ≈ plain on time; the narrow store is the +8MB step
+    // in the Alloc column. Same-run ratio against Dft/Bft_Chain prices the projection.
     [Benchmark]
     public void Select_Accumulate_Dft_Chain()
     {
@@ -72,10 +72,10 @@ namespace Copse.Benchmarks
     }
 
     // The compose-left witnesses (SELECT_INTO_CAPTURES_DESIGN.md; seeded 2026-08-17 while an
-    // upstream Select is a wrapper layer on every capture pull). The spelling never changes;
-    // when the scan learns to unwrap a projection source (the compose-left door), the same
-    // call's capture walks the un-projected inner raw and this series shows the step.
-    // Same-run ratio against Dft/Bft_Chain prices the upstream wrapper.
+    // upstream Select was a wrapper layer on every capture pull; the door landed with the
+    // citizenship merge and survived the thin-shape refactor). The scan unwraps a projection
+    // source and its capture walks the un-projected inner raw. Same-run ratio against
+    // Dft/Bft_Chain prices what remains of the route.
     [Benchmark]
     public void FromSelect_Dft_Chain()
     {
@@ -92,9 +92,10 @@ namespace Copse.Benchmarks
 
     // The chained-projection witness (the functor law's benchmark row, seeded 2026-08-17):
     // two Selects over the scan's buffer must collapse to ONE product build whatever
-    // machinery implements the citizenship -- today the pass layer's sibling variants, next
-    // the thin projected buffer (SELECT_INTO_CAPTURES_DESIGN.md). The spelling never
-    // changes; a route that double-materializes shows here as a step up.
+    // machinery implements the citizenship -- since the thin shape, ComposeSelect composes
+    // the selector and the build stays one map (SELECT_INTO_CAPTURES_DESIGN.md section 4a).
+    // The spelling never changes; a route that double-materializes shows here as a step up
+    // (the row must stay FLAT against Select_Accumulate_Dft_Chain, time and alloc alike).
     [Benchmark]
     public void Select_Select_Dft_Chain()
     {
@@ -105,10 +106,12 @@ namespace Copse.Benchmarks
       projected.Consume(TreeTraversalStrategy.DepthFirst);
     }
 
-    // The scan-of-scan witness (seeded 2026-08-17): the second scan folds IN PLACE over the
-    // first scan's capture. Today the citizen buffer type misses the span fast path's
-    // concrete sniff and the fold runs through the walker probes -- this row prices that
-    // downgrade; the thin-shape refactor (plain buffers again) heals it as a visible step.
+    // The scan-of-scan witness (seeded 2026-08-17 at 231.9ms/272MB: the citizen buffer type
+    // missed the span fast path's concrete sniff and the fold ran through the walker
+    // probes). The thin-shape refactor healed it -- scans return plain buffers again, and
+    // the dispatch tier's probes-at-birth wiring hands the second scan its raw store, so
+    // the fold runs the span path (~101ms/108MB local). A step back UP here means a scan
+    // result stopped exposing its store.
     [Benchmark]
     public void Twice_Dft_Chain()
     {

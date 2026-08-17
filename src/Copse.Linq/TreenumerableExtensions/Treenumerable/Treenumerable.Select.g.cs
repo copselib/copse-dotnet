@@ -18,13 +18,13 @@ namespace Copse.Linq
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
     ///
     /// <para>THE SELECTOR MUST BE PURE -- its invocation count is deliberately UNSPECIFIED
-    /// along two axes: COMPOSITION (a following Where fuses to once per tested node, where
+    /// along two axes: COMPOSITION (a following Where collapses it to once per tested node, where
     /// the uncomposed wrapper projects per pulled visit) and the CONSUMER's pull pattern (a
     /// value drain pulls scheduling-only, so the wrapper LOOKS once-per-node; a structural
     /// drain pulls the full visit stream and re-projects per visit). An impure selector's
     /// effect count therefore silently changes with the operators AFTER it and the drain at
     /// the END of the chain (pinned by CompositionTests and DoLandingCompositionTests; the
-    /// freedom is what lets the fusion machinery evolve). Effects belong in <c>Do</c>, the
+    /// freedom is what lets the composition machinery evolve). Effects belong in <c>Do</c>, the
     /// composition barrier with the exact per-visit contract: to LAND aggregation results on
     /// mutable nodes, use the landing idiom -- <c>.Do(visit =&gt; { if (visit.Mode ==
     /// TreenumeratorMode.SchedulingNode) ... })</c>, deterministically once per scheduled
@@ -71,11 +71,19 @@ namespace Copse.Linq
     public static ITreenumerableBuffer<TResult> Select<TSource, TResult>(
       this ITreenumerableBuffer<TSource> source,
       Func<TSource, TResult> selector)
+      => SelectBuffer(source, selector);
+
+    // The thin shape (2026-08-17): a citizen composes its selector (a projected buffer over
+    // a projected buffer would double-map; ComposeSelect keeps one map over the original
+    // source); any other buffer becomes the first projection.
+    private static ITreenumerableBuffer<TResult> SelectBuffer<TSource, TResult>(
+      ITreenumerableBuffer<TSource> source,
+      Func<TSource, TResult> selector)
     {
       if (source is ISelectComposableTreenumerableBuffer<TSource> citizen)
         return citizen.ComposeSelect(selector);
 
-      return SelectCore(source, nodeContext => selector(nodeContext.Node)).Materialize(BufferLayout.Preorder);
+      return new ProjectedTreenumerableBuffer<TSource, TResult>(source, selector);
     }
 
     /// <summary>The positional flavor over a capture: citizens are value-only (the contract's

@@ -12,8 +12,9 @@ namespace Copse.Linq.Tests
   // (the join, pinned STRUCTURALLY: one driver, never stacked wrappers), plus the functor
   // laws and the wrapper-equivalence anchor every other law reduces to. Every pin runs over
   // the corpus and drains BOTH dimensions (the citizenship must preserve the shape, not
-  // just the preorder values). LeaffixScan results are the first citizens; when RootfixScan
-  // claims the streaming citizenship, its pins join this battery.
+  // just the preorder values). THE THIN SHAPE (SELECT_INTO_CAPTURES_DESIGN.md): buffer-tier
+  // citizenship is minted at the Select seam -- a scan returns a PLAIN buffer, and Select
+  // over any buffer is the projected citizen, closed from there.
   [TestClass]
   public class SelectComposableLawTests
   {
@@ -42,7 +43,8 @@ namespace Copse.Linq.Tests
       {
         var scan = CountScan(tree);
 
-        Assert.IsInstanceOfType(scan, typeof(ISelectComposableTreenumerableBuffer<NodeAccumulation<string, int>>), $"scan [{tree}]");
+        // The citizenship starts at the Select seam (the thin shape): the scan itself is a
+        // plain buffer; its first Select is the citizen, and composition is closed from there.
         Assert.IsInstanceOfType(scan.Select(x => x.Accumulate), typeof(ISelectComposableTreenumerableBuffer<int>), $"projected [{tree}]");
         Assert.IsInstanceOfType(scan.Select(x => x.Accumulate).Select(count => count * 2), typeof(ISelectComposableTreenumerableBuffer<int>), $"chained [{tree}]");
       }
@@ -209,8 +211,8 @@ namespace Copse.Linq.Tests
       // Select(f).LeaffixScan(...): the scan surrenders through the door and walks the
       // un-projected inner raw. The forced-wrapper control (Tree.Defer breaks the door the
       // same way it breaks the lattice) is the oracle; the door route must match it on both
-      // dimensions -- and still produce a CITIZEN buffer (the door changes the walk, never
-      // the algebra).
+      // dimensions -- and its result must still enter the buffer algebra at the Select seam
+      // (the door changes the walk, never the algebra).
       foreach (var tree in Corpus)
       {
         var doorRoute = TreeSerializer.DeserializeDepthFirstTree(tree)
@@ -220,7 +222,7 @@ namespace Copse.Linq.Tests
         var wrapperRoute = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select(node => node + "!"))
           .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
 
-        Assert.IsInstanceOfType(doorRoute, typeof(ISelectComposableTreenumerableBuffer<NodeAccumulation<string, int>>), $"citizen [{tree}]");
+        Assert.IsInstanceOfType(doorRoute.Select(pair => pair.Accumulate), typeof(ISelectComposableTreenumerableBuffer<int>), $"algebra [{tree}]");
 
         CollectionAssert.AreEqual(
           wrapperRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
@@ -255,11 +257,12 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void SharedPass_SiblingVariantsAgree_AndOriginalSurvivesComposition()
+    public void SharedSource_ProjectionAgrees_AndOriginalSurvivesComposition()
     {
-      // The at-most-once architecture's observable half: composing does not disturb the
-      // original citizen, and sibling variants zipped from the one shared pass agree with
-      // each other -- pulled in either order.
+      // The at-most-once architecture's observable half (THE THIN SHAPE: the source buffer
+      // is the sharing substrate): composing does not disturb the original citizen, and a
+      // projection mapped from the source's completed store agrees with projecting the
+      // original's own pulls -- in either pull order.
       foreach (var tree in Corpus)
       {
         var scan = CountScan(tree);

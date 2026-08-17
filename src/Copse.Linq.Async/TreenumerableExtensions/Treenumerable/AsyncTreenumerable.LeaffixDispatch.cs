@@ -31,7 +31,7 @@ namespace Copse.Linq
     /// after its children complete -- so every child's survey precedes its parent's, and each
     /// view's sibling order is guaranteed; the TOTAL cross-node sequence is deliberately
     /// UNSPECIFIED (a pure callback cannot observe it, and pinning it would foreclose parallel
-    /// builds). Do not depend on the current reverse-preorder. (A FUSED single-walk build
+    /// builds). Do not depend on the current reverse-preorder. (A COLLAPSED single-walk build
     /// firing surveys at subtree close was built and MEASURED OUT 2026-08-05: it lost to the
     /// three sequential array passes on every cell -- time and memory, chains and triangles --
     /// because the walk's fine-grained bookkeeping outweighs re-iterating flat arrays the
@@ -96,8 +96,8 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => new AsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatch(source, LeafBoundedSurvey(leafNodeSelector, survey))), BufferLayout.Preorder);
+      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
+        () => BuildLeaffixDispatchAsync(source, LeafBoundedSurvey(leafNodeSelector, survey))));
 
     /// <summary>
     /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written once,
@@ -116,8 +116,8 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => new AsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
-        AsyncTree.Lazy(() => PreorderDispatchBreadthFirstSource(source, LeafBoundedSurvey(leafNodeSelector, survey))), BufferLayout.Preorder);
+      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
+        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, LeafBoundedSurvey(leafNodeSelector, survey))));
 
     /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
     public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
@@ -147,52 +147,43 @@ namespace Copse.Linq
     // breadth-first-first pull was built and MEASURED OUT -- over raw array stores the
     // breadth-first cross-decode tax is only ~1.08x, so the transpose plus transient double
     // storage needs ~5 replays to break even and taxes the common single-drain case ~8%.
-    private static IAsyncTreenumerable<NodeAccumulation<TSource, TAccumulate>> PreorderDispatch<TSource, TAccumulate>(
-      IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
-    {
-      var surveyed = new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatchAsync(source, nodeSurvey, PairProduct));
+    //
+    // Probes-at-birth (the 2026-08-15 reclaim, applied to this tier 2026-08-17): the result
+    // buffer's adjacency rides the SAME lazy store its visit stream builds, so a downstream
+    // receiver-smart consumer (a second scan, a projected buffer's counted map) reaches the
+    // raw store through TryGetPreorderStoreAsync. The former Tree.Lazy wrapping hid the
+    // store behind the composite, and every such consumer paid a full second capture.
+    // Deferral is the lazy store's own (build pinned to the first pull, run once).
+    private static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> PairBuffer<TSource, TAccumulate>(
+      AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>> surveyed)
+      => new AsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
+        new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed),
+        BufferLayout.Preorder,
+        new AsyncPreorderAdjacencyIndex<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed));
 
-      return new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
-    }
-
-    private static IAsyncTreenumerable<NodeAccumulation<TSource, TAccumulate>> PreorderDispatchBreadthFirstSource<TSource, TAccumulate>(
+    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate>(
       IAsyncBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
-    {
-      var surveyed = new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
-        () => BuildLeaffixDispatchFromBreadthFirstAsync(source, nodeSurvey, PairProduct));
-
-      return new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed);
-    }
-
-    private static async ValueTask<AsyncPreorderArrayStore<TProduct>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate, TProduct>(
-      IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
-      Func<TSource, TAccumulate, TProduct> productSelector)
     {
       var capture = source.Materialize();
 
-      return await BuildLeaffixDispatchAsync(capture, nodeSurvey, productSelector).ConfigureAwait(false);
+      return await BuildLeaffixDispatchAsync(capture, nodeSurvey).ConfigureAwait(false);
     }
 
-    // The finisher over the fold pass: zip (values, accumulations) into the product --
-    // canonically the pairing; the product-selector seam (SELECT_INTO_CAPTURES_DESIGN.md)
-    // lets a composed projection retarget what is STORED without touching the fold.
-    private static async ValueTask<AsyncPreorderArrayStore<TProduct>> BuildLeaffixDispatchAsync<TSource, TAccumulate, TProduct>(
+    // The finisher over the fold pass: zip (values, accumulations) into the canonical
+    // pairing.
+    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchAsync<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var (values, subtreeSizes, accumulations) =
         await RunLeaffixDispatchPassAsync(source, nodeSurvey).ConfigureAwait(false);
 
-      var results = new TProduct[values.Length];
+      var results = new NodeAccumulation<TSource, TAccumulate>[values.Length];
       for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
-        results[nodeIndex] = productSelector(values[nodeIndex], accumulations[nodeIndex]);
+        results[nodeIndex] = new NodeAccumulation<TSource, TAccumulate>(values[nodeIndex], accumulations[nodeIndex]);
 
-      return new AsyncPreorderArrayStore<TProduct>(results, subtreeSizes);
+      return new AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results, subtreeSizes);
     }
 
     // The shared fold pass, both operators' engine: one raw capture into the flat pre-order
@@ -215,11 +206,11 @@ namespace Copse.Linq
       var (childOffsets, childIndices, positions) = DispatchChildIndex.BuildWithPositions(subtreeSizes);
 
       // THE PRISTINE-LOOP RULE (profiled 2026-08-17): NOTHING extra rides this loop. An
-      // in-loop erased-writer call was tried for the composed products and pessimized the
-      // whole loop on net8 (the virtual call resisted devirtualization AND taxed the survey
+      // in-loop erased-writer call was tried for composed products and pessimized the whole
+      // loop on net8 (the virtual call resisted devirtualization AND taxed the survey
       // lambda around it: +22% build time), while a SEPARATE direct-array pass over the hot
-      // outputs costs ~1ms/million nodes (FusePairProducts is the proof). Composed products
-      // zip from the artifacts arrays after this returns.
+      // outputs costs ~1ms/million nodes (the pair zip in the finisher is the proof).
+      // Anything derived from the outputs runs as its own pass after this returns.
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
         accumulations[nodeIndex] = nodeSurvey(

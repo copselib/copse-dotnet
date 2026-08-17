@@ -160,6 +160,33 @@ Later citizens ride the same door: Materialize's deferred buffer (where `Compose
 the composition-law rewrite `source.Materialize().Select(f)` → capture `f(source)`
 directly), Invert's build, TakeSubtreesWhere's capture arms.
 
+## 4a. THE THIN SHAPE (2026-08-17) — the buffer tier's mechanism, superseding section 4
+
+Section 4's mechanism (product-parameterized scan builds + a shared fold pass + per-variant
+finisher zips) was built, measured, and RETIRED the same week. The worth-it audit's finding:
+buffer composition stops at every buffering boundary by design (each scan is a buffer
+producer by contract), so the pass machinery's whole surface served exactly one seam — and
+the three-arm harness priced that machinery at ~12ms/M-nodes of plumbing, SLOWER than the
+transient pair store it existed to avoid.
+
+The replacement inverts the ownership. Scans return PLAIN buffers again (span fast path
+restored for scan-of-scan; zero product machinery in any build). Buffer-tier citizenship
+is minted at the SELECT seam instead: `Select` over any buffer returns a
+`ProjectedTreenumerableBuffer` — the source buffer plus a selector, whose deferred build is
+ONE counted array map off the source's completed store (via the `TryGetPreorderStoreAsync`
+door; veneer-capture fallback for foreign buffers). `ComposeSelect` composes the SELECTOR
+(g∘f over the original source), so chained Selects stay one map, and the source buffer —
+replayable by contract — is the sharing substrate that makes at-most-once trivial: no
+shared pass needed.
+
+Measured (1M-node chain, net8): projection over a buffer is effectively free — composed ≈
+plain (the ~2ms map is paid back by decoding the narrow store), vs veneer ~+25%, vs the
+retired pass machinery ~+10%. Scan-of-scan healed from 232ms/272MB (the citizen buffer
+type missed the span path's concrete sniff) to ~101ms/108MB. Corollary landed with it:
+the dispatch tier's result buffers now wire probes-at-birth over their own lazy store —
+the former `Tree.Lazy` wrapping hid the store, and every receiver-smart consumer
+(a second scan, the projected map) paid a full second capture to reach it.
+
 ## 5. The layering north star
 
 With scans composable, capture-tier operators become definable as compositions over Scan —

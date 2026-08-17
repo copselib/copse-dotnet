@@ -110,6 +110,28 @@ find-results loop, two store steps, and the Bencher loop all enumerate families 
 - The first store step fetches gh-pages, the rest skip the fetch, the last one auto-pushes — one
   gh-pages commit per run.
 
+## Reading ratios across machines and eras (doctrine, 2026-08-17)
+
+Ratified after the leaffix composed-route paradox (three failed fix rounds before a
+three-arm profile resolved it — the "regression" was a measurement artifact):
+
+- **A ratio is a property of (spelling, machine) whenever the arms differ in cost SHAPE.**
+  Per-visit wrapper costs are hardware-dependent (+7% on the CI runner pool, +23% on the
+  codespace, for the same wrapper); fixed array-pass costs are stable everywhere. A ratio
+  of a wrapper-shaped arm over a pass-shaped arm therefore moves with the machine, and
+  comparing that ratio across eras (pre-change CI runs vs post-change CI runs) silently
+  assumes machine-stability of relative costs — invalid. Corollary: CI under-credits
+  wrapper-elimination features and over-weights array passes.
+- **The dashboard's series stay valid for accidental regressions** — a real regression
+  moves every machine the same direction. What they cannot adjudicate is a REROUTE (the
+  same spelling switching implementation route): that verdict needs same-machine,
+  same-run arms.
+- **The reroute-verdict rule:** any change that reroutes a spelling gets a multi-arm
+  harness verdict (plain / veneer / composed — or the routes in question) on one machine
+  in one session, before CI deltas are read as truth. The scan harness lives outside the
+  suite deliberately (BDN ceremony is unnecessary for A/B/C on one box): a ~40-line
+  console app, 3 warmup + 20 timed iterations per arm, arms interleaved to catch drift.
+
 ## References
 
 - [BenchmarkDotNet](https://benchmarkdotnet.org/)
