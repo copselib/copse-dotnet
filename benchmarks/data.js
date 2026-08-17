@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787005237564,
+  "lastUpdate": 1787005238137,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -76714,6 +76714,114 @@ window.BENCHMARK_DATA = {
             "value": 727704.071101262,
             "unit": "ns",
             "range": "± 19602.849142835363"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497",
+          "message": "The dispatch moves behind the citizenship: TakeSubtreesWhere composes mid-chain\n\nJason's seam objection, resolved: a bare dimension-dispatched delegating type\ncannot participate in Select/Where composition -- TakeSubtreesWhere in the\nmiddle of a chain would be a seam nothing composes over. The dispatch now\nlives BEHIND the streaming citizenship (the rootfix-citizen pattern):\nTakeSubtreesWhereTreenumerable carries (source, predicate) as its recipe and\nimplements ISelectComposableTreenumerable; the product variant carries the\ncomposed selector. Machinery is chosen per dimension at ACQUISITION time --\ndepth-first the bespoke O(1) wrapper, breadth-first the scan chain -- an\nimplementation fact invisible to the algebra.\n\nComposition, per dimension: a following Select composes onto the product\nselector (BFT: absorbed inside the chain's SelectWhere driver; DFT: exactly\nONE light Select wrapper over the bespoke wrapper, however long the composed\nchain); a following Where joins the one driver over the citizen. Pinned by\ntwo new battery pins: closure + driver join, and the mid-chain\ncomposed-equals-forced-wrapper seam pin over the corpus, both dimensions.\n\nBenchmark rows unchanged from the dispatch (the citizen adds nothing at\nacquisition): composite DFT 64-66ms / 26ms, BFT the chain. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T22:04:35Z",
+          "tree_id": "129628177165ad62147fdef777f5f7ec036e1fa3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497"
+        },
+        "date": 1787005238022,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2316317.82421875,
+            "unit": "ns",
+            "range": "± 11265.36572249813"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1849264.3588541667,
+            "unit": "ns",
+            "range": "± 1356.3460474993533"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4488439.243990385,
+            "unit": "ns",
+            "range": "± 3067.557689504444"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3892889.6268028845,
+            "unit": "ns",
+            "range": "± 16016.537042551374"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 647256.805063101,
+            "unit": "ns",
+            "range": "± 689.7857287827595"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 695305.7335111178,
+            "unit": "ns",
+            "range": "± 934.1666389947019"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 414205.6797438401,
+            "unit": "ns",
+            "range": "± 1109.0232982183197"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4288349.818014706,
+            "unit": "ns",
+            "range": "± 86544.5823766082"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3153264.6922433036,
+            "unit": "ns",
+            "range": "± 5558.000079447784"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14383544.686458332,
+            "unit": "ns",
+            "range": "± 105671.62399048425"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7733162.052884615,
+            "unit": "ns",
+            "range": "± 34517.76341087442"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1542099.3360877405,
+            "unit": "ns",
+            "range": "± 4290.414800116906"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1025165.0204326923,
+            "unit": "ns",
+            "range": "± 750.0937897554561"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1015625.7327008928,
+            "unit": "ns",
+            "range": "± 1804.5299147413168"
           }
         ]
       }
