@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786984560129,
+  "lastUpdate": 1786986636321,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -13958,6 +13958,148 @@ window.BENCHMARK_DATA = {
             "value": 203408019.18,
             "unit": "ns",
             "range": "± 1105594.8458708203"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "f2e8b67f4a8c3cfb6f0d67aada4658ef57292dc3",
+          "message": "Dashboard: the trend line becomes a rolling median, visible\n\nTwo follow-ups from first use:\n\n- The dashed gray average was invisible at sparkline scale. The trend is\n  now SOLID semi-transparent red (the --bad token, theme-aware), drawn\n  BEHIND the accent series in both chart sizes; the expanded chart's\n  legend matches (inline style -- the svg text stylesheet rule beats a\n  fill attribute).\n- The smoothing is now a 5-run rolling MEDIAN instead of a mean: the\n  series' real failure mode is lone machine-factor spikes, which a mean\n  bends toward and a median ignores -- while a shift persisting 3-of-5\n  runs is a genuine level change and the median follows it.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T16:26:11Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f2e8b67f4a8c3cfb6f0d67aada4658ef57292dc3"
+        },
+        "date": 1786986615270,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14538145.220982144,
+            "unit": "ns",
+            "range": "± 27559.84017955294"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21331030.65,
+            "unit": "ns",
+            "range": "± 261199.19533333663"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3597886.1822415865,
+            "unit": "ns",
+            "range": "± 2248.178271650637"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3598798.6688058036,
+            "unit": "ns",
+            "range": "± 3845.2591644257964"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 116511436.18666667,
+            "unit": "ns",
+            "range": "± 2179692.068206012"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 140649893.15,
+            "unit": "ns",
+            "range": "± 631330.2489172508"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 48028116.81666667,
+            "unit": "ns",
+            "range": "± 373156.4287812834"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50408083.525,
+            "unit": "ns",
+            "range": "± 34073.36787300699"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 46250239.666666664,
+            "unit": "ns",
+            "range": "± 96586.63890810941"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35177457.71428571,
+            "unit": "ns",
+            "range": "± 195209.14922913292"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 31461238.0625,
+            "unit": "ns",
+            "range": "± 53024.518594919435"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18470430.739583332,
+            "unit": "ns",
+            "range": "± 97838.23336572929"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 56007257.571428575,
+            "unit": "ns",
+            "range": "± 322144.4155931881"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88729044.7051282,
+            "unit": "ns",
+            "range": "± 415019.2020803303"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15698917.582589285,
+            "unit": "ns",
+            "range": "± 8721.335276642176"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 15693053.221153846,
+            "unit": "ns",
+            "range": "± 16465.318610330352"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 488727653.0833333,
+            "unit": "ns",
+            "range": "± 965233.3493280226"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 574082682.3076923,
+            "unit": "ns",
+            "range": "± 546588.2622750853"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 178755538.38738742,
+            "unit": "ns",
+            "range": "± 555262.3475779664"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 204774778.36,
+            "unit": "ns",
+            "range": "± 2580497.169811406"
           }
         ]
       }
