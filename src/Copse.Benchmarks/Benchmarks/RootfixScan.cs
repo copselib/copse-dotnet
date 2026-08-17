@@ -54,5 +54,23 @@ namespace Copse.Benchmarks
       .RootfixScan(0, (accumulate, _) => accumulate + 1)
       .Select(x => x.Accumulate)
       .Consume(TreeTraversalStrategy.BreadthFirst);
+
+    // The compose-left witnesses' rootfix half: an upstream Select is a wrapper on every
+    // scan pull. The ROOTFIX door is DEFERRED (SELECT_INTO_CAPTURES_DESIGN.md -- leaffix
+    // claimed compose-left first); these rows hold the veneer baseline so the rootfix door,
+    // when built, lands as a visible step. Ratio against Dft/Bft_Chain prices the wrapper.
+    [Benchmark]
+    public void FromSelect_Dft_Chain() =>
+      CanonicalTrees.MegaChainTree()
+      .Select(node => node * 2)
+      .RootfixScan(0, (accumulate, _) => accumulate + 1)
+      .Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void FromSelect_Bft_Chain() =>
+      CanonicalTrees.MegaChainTree()
+      .Select(node => node * 2)
+      .RootfixScan(0, (accumulate, _) => accumulate + 1)
+      .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }
