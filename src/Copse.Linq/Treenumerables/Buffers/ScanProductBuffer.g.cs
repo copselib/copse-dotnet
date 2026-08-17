@@ -23,12 +23,13 @@ namespace Copse.Linq.Treenumerables
   {
     public ScanProductBuffer(
       ScanFoldPass<TSource, TAccumulate> foldPass,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TSource, TAccumulate, TProduct> productSelector,
+      bool isCanonicalPairing = false)
     {
       _FoldPass = foldPass;
       _ProductSelector = productSelector;
 
-      var productStore = new LazyPreorderStore<TProduct>(() => Zip(foldPass, productSelector));
+      var productStore = new LazyPreorderStore<TProduct>(() => Zip(foldPass, productSelector, isCanonicalPairing));
 
       _Inner = new TreenumerableBuffer<TProduct>(
         new PreorderTreenumerable<TProduct, LazyPreorderStore<TProduct>>(productStore),
@@ -62,12 +63,20 @@ namespace Copse.Linq.Treenumerables
 
     // The finisher: one zip over the shared pass into this variant's own product store,
     // the skeleton array shared. The lazy store releases this closure after the build, so
-    // a built variant no longer references the pass.
+    // a built variant no longer references the pass. The canonical variant asks the pass to
+    // FUSE its pairs into the fold loop (the first-caller fusion); when it built first, the
+    // fused array IS its product -- the cast is exact, TProduct is the pairing when the
+    // flag is set -- and no zip runs at all.
     private static PreorderArrayStore<TProduct> Zip(
       ScanFoldPass<TSource, TAccumulate> foldPass,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TSource, TAccumulate, TProduct> productSelector,
+      bool isCanonicalPairing)
     {
-      var artifacts = foldPass.Ensure();
+      var (artifacts, fusedPairProducts) = foldPass.Ensure(isCanonicalPairing);
+
+      if (isCanonicalPairing && fusedPairProducts != null)
+        return new PreorderArrayStore<TProduct>((TProduct[])(object)fusedPairProducts, artifacts.SubtreeSizes);
+
       var products = new TProduct[artifacts.Count];
 
       for (var nodeIndex = 0; nodeIndex < products.Length; nodeIndex++)

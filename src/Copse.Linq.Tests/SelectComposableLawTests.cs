@@ -201,6 +201,59 @@ namespace Copse.Linq.Tests
 
     private static ITreenumerable<int> ToComposite(ITreenumerable<int> source) => source;
 
+    // ---- COMPOSE-LEFT (the door): the lattice feeds the citizen ----
+
+    [TestMethod]
+    public void ComposeLeft_SelectIntoLeaffixScan_EqualsForcedWrapperSpelling()
+    {
+      // Select(f).LeaffixScan(...): the scan surrenders through the door and walks the
+      // un-projected inner raw. The forced-wrapper control (Tree.Defer breaks the door the
+      // same way it breaks the lattice) is the oracle; the door route must match it on both
+      // dimensions -- and still produce a CITIZEN buffer (the door changes the walk, never
+      // the algebra).
+      foreach (var tree in Corpus)
+      {
+        var doorRoute = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .Select(node => node + "!")
+          .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
+
+        var wrapperRoute = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select(node => node + "!"))
+          .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
+
+        Assert.IsInstanceOfType(doorRoute, typeof(ISelectComposableTreenumerableBuffer<NodeAccumulation<string, int>>), $"citizen [{tree}]");
+
+        CollectionAssert.AreEqual(
+          wrapperRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          doorRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(
+          wrapperRoute.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          doorRoute.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void ComposeLeft_PositionalSelectIntoLeaffixScan_HonorsPositions()
+    {
+      // The wrapper's selector is context-shaped; the door hands positions through, so a
+      // positional upstream Select must survive the surrender intact.
+      foreach (var tree in Corpus)
+      {
+        var doorRoute = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .Select((node, position) => node + position.Depth)
+          .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
+
+        var wrapperRoute = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select((node, position) => node + position.Depth))
+          .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
+
+        CollectionAssert.AreEqual(
+          wrapperRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          doorRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"depth-first [{tree}]");
+      }
+    }
+
     [TestMethod]
     public void SharedPass_SiblingVariantsAgree_AndOriginalSurvivesComposition()
     {

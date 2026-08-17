@@ -82,6 +82,26 @@ Select      ∘ SelectWhere = SelectWhere   (the lattice's existing law, unchang
 So `scanBuffer.Select(f).Where(p).Select(g).Where(q)` is a narrow build with `f` folded
 in plus exactly ONE SelectWhere driver carrying `(p, g, q)` — never stacked wrappers.
 
+**THE TWO-VERB GRAMMAR (ratified in review, 2026-08-17 — do not unify these):**
+`Compose` is SAME-KIND SUCCESSION — "here is more mapping, build your successor" — one party
+holds both the type knowledge and the construction knowledge, its output is always a
+treenumerable, and its floor is one wrapper on the walk. `CaptureThrough` (the compose-left
+door, IAsyncProjectionSource/IAsyncProjectionConsumer) is CROSS-KIND SURRENDER — the pieces
+(inner tree, projector) cross a knowledge boundary to a builder of a different kind, and the
+walk drops to zero wrappers. Double dispatch because the wrapper's inner type is existential
+at the consumer's site: the consumer supplies a generic method, the wrapper instantiates it
+(the one scope where TInner can be spelled). Only the pure-projection wrapper claims the door
+(a filter-carrying driver cannot surrender); the door member lives in its own file
+(AsyncSelectTreenumerable.CaptureThrough.cs, a partial part) because the CompositeToNarrow
+fan-out is file-granular and the narrow twins must not claim a composite-width door.
+
+**THE FIRST-CALLER FUSION (the guard-rail rule, 2026-08-17):** the shared pass builds when
+its first variant pulls, and at that moment the requesting variant is known — so a canonical
+first caller gets its pair products written INLINE in the fold loop (the pre-pass cost
+exactly; the zip's ValueAt-delegate re-reads had cost the un-composed in-place spelling +16%,
+caught by the BufferProbes guard row), a composed first caller declines and the pair array is
+never built (the 1-wide promise), and only canonical-after-composed pays a second-pass zip.
+
 The two directions in mechanism terms:
 
 - **Compose right** (lattice downstream of the citizen): `Scan(...).Select(f)` — the

@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerables
   // Dual citizenship (boundary ruling 2026-08-04): the bare projection wrapper is the one
   // light-tier member that stays on the general-splice surface -- absorbing a full projection
   // layer is the composition family's measured win, unlike the prune-carrying wrappers.
-  internal sealed class SelectTreenumerable<TSource, TResult> : ISelectPruneAfterTreenumerable<TResult>, ISelectWhereTreenumerable<TResult>
+  internal sealed partial class SelectTreenumerable<TSource, TResult> : ISelectPruneAfterTreenumerable<TResult>, ISelectWhereTreenumerable<TResult>
   {
     public SelectTreenumerable(
       ITreenumerable<TSource> source,

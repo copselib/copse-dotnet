@@ -17,7 +17,7 @@ namespace Copse.Linq.Async.Treenumerables
   // Dual citizenship (boundary ruling 2026-08-04): the bare projection wrapper is the one
   // light-tier member that stays on the general-splice surface -- absorbing a full projection
   // layer is the composition family's measured win, unlike the prune-carrying wrappers.
-  internal sealed class AsyncSelectBreadthFirstTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterBreadthFirstTreenumerable<TResult>, IAsyncSelectWhereBreadthFirstTreenumerable<TResult>
+  internal sealed partial class AsyncSelectBreadthFirstTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterBreadthFirstTreenumerable<TResult>, IAsyncSelectWhereBreadthFirstTreenumerable<TResult>
   {
     public AsyncSelectBreadthFirstTreenumerable(
       IAsyncBreadthFirstTreenumerable<TSource> source,

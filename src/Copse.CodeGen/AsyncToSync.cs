@@ -184,6 +184,8 @@ namespace Copse.CodeGen
         ["AsyncRootfixScanProductBreadthFirstTreenumerator"] = "RootfixScanProductBreadthFirstTreenumerator",
         ["AsyncRootfixScanTreenumerable"] = "RootfixScanTreenumerable",
         ["AsyncRootfixScanProductTreenumerable"] = "RootfixScanProductTreenumerable",
+        ["IAsyncProjectionSource"] = "IProjectionSource",
+        ["IAsyncProjectionConsumer"] = "IProjectionConsumer",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()

@@ -22,12 +22,13 @@ namespace Copse.Linq.Async.Treenumerables
   {
     public AsyncScanProductBuffer(
       AsyncScanFoldPass<TSource, TAccumulate> foldPass,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TSource, TAccumulate, TProduct> productSelector,
+      bool isCanonicalPairing = false)
     {
       _FoldPass = foldPass;
       _ProductSelector = productSelector;
 
-      var productStore = new AsyncLazyPreorderStore<TProduct>(() => ZipAsync(foldPass, productSelector));
+      var productStore = new AsyncLazyPreorderStore<TProduct>(() => ZipAsync(foldPass, productSelector, isCanonicalPairing));
 
       _Inner = new AsyncTreenumerableBuffer<TProduct>(
         new AsyncPreorderTreenumerable<TProduct, AsyncLazyPreorderStore<TProduct>>(productStore),
@@ -61,12 +62,20 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The finisher: one zip over the shared pass into this variant's own product store,
     // the skeleton array shared. The lazy store releases this closure after the build, so
-    // a built variant no longer references the pass.
+    // a built variant no longer references the pass. The canonical variant asks the pass to
+    // FUSE its pairs into the fold loop (the first-caller fusion); when it built first, the
+    // fused array IS its product -- the cast is exact, TProduct is the pairing when the
+    // flag is set -- and no zip runs at all.
     private static async ValueTask<AsyncPreorderArrayStore<TProduct>> ZipAsync(
       AsyncScanFoldPass<TSource, TAccumulate> foldPass,
-      Func<TSource, TAccumulate, TProduct> productSelector)
+      Func<TSource, TAccumulate, TProduct> productSelector,
+      bool isCanonicalPairing)
     {
-      var artifacts = await foldPass.EnsureAsync().ConfigureAwait(false);
+      var (artifacts, fusedPairProducts) = await foldPass.EnsureAsync(isCanonicalPairing).ConfigureAwait(false);
+
+      if (isCanonicalPairing && fusedPairProducts != null)
+        return new AsyncPreorderArrayStore<TProduct>((TProduct[])(object)fusedPairProducts, artifacts.SubtreeSizes);
+
       var products = new TProduct[artifacts.Count];
 
       for (var nodeIndex = 0; nodeIndex < products.Length; nodeIndex++)
