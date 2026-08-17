@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786949493171,
+  "lastUpdate": 1786949494067,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -72662,6 +72662,112 @@ window.BENCHMARK_DATA = {
             "value": 764577.6613606771,
             "unit": "ns",
             "range": "± 2390.048669849287"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "577371580556cfc4cf909821d2f72c770e66bf3d",
+          "message": "Merge branch 'main' into feature/select-composable",
+          "timestamp": "2026-08-17T05:45:43Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/577371580556cfc4cf909821d2f72c770e66bf3d"
+        },
+        "date": 1786949493948,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2308912.4849759615,
+            "unit": "ns",
+            "range": "± 5152.788503836747"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1843189.6343149038,
+            "unit": "ns",
+            "range": "± 1799.9483151359068"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4621421.137620192,
+            "unit": "ns",
+            "range": "± 11342.639221476224"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3818357.3689903845,
+            "unit": "ns",
+            "range": "± 5807.898733698904"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 672236.3779994419,
+            "unit": "ns",
+            "range": "± 1721.6504325527706"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 709182.1195591518,
+            "unit": "ns",
+            "range": "± 2145.0275004705863"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 408104.8446219308,
+            "unit": "ns",
+            "range": "± 836.1822651454492"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4142581,
+            "unit": "ns",
+            "range": "± 24536.30659048516"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3220731.967354911,
+            "unit": "ns",
+            "range": "± 2585.683054222378"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14397652.446875,
+            "unit": "ns",
+            "range": "± 90217.88601300587"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7819084.6015625,
+            "unit": "ns",
+            "range": "± 23540.655849277133"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1371720.8807091345,
+            "unit": "ns",
+            "range": "± 1553.2952485346004"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1017978.4436598558,
+            "unit": "ns",
+            "range": "± 624.2240013912406"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1017285.5138221154,
+            "unit": "ns",
+            "range": "± 2838.714922218444"
           }
         ]
       }
