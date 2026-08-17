@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787005239230,
+  "lastUpdate": 1787005239784,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -155056,6 +155056,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
             "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 3203,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 26159,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 59023,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 27502164,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 2107727,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 2349,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497",
+          "message": "The dispatch moves behind the citizenship: TakeSubtreesWhere composes mid-chain\n\nJason's seam objection, resolved: a bare dimension-dispatched delegating type\ncannot participate in Select/Where composition -- TakeSubtreesWhere in the\nmiddle of a chain would be a seam nothing composes over. The dispatch now\nlives BEHIND the streaming citizenship (the rootfix-citizen pattern):\nTakeSubtreesWhereTreenumerable carries (source, predicate) as its recipe and\nimplements ISelectComposableTreenumerable; the product variant carries the\ncomposed selector. Machinery is chosen per dimension at ACQUISITION time --\ndepth-first the bespoke O(1) wrapper, breadth-first the scan chain -- an\nimplementation fact invisible to the algebra.\n\nComposition, per dimension: a following Select composes onto the product\nselector (BFT: absorbed inside the chain's SelectWhere driver; DFT: exactly\nONE light Select wrapper over the bespoke wrapper, however long the composed\nchain); a following Where joins the one driver over the citizen. Pinned by\ntwo new battery pins: closure + driver join, and the mid-chain\ncomposed-equals-forced-wrapper seam pin over the corpus, both dimensions.\n\nBenchmark rows unchanged from the dispatch (the citizen adds nothing at\nacquisition): composite DFT 64-66ms / 26ms, BFT the chain. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T22:04:35Z",
+          "tree_id": "129628177165ad62147fdef777f5f7ec036e1fa3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497"
+        },
+        "date": 1787005239666,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 708,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 919,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 3171,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 27502276,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 26270,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 231369,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 620,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 652,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 3083,
             "unit": "bytes"
           },
           {
