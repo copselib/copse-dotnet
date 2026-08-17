@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786946774049,
+  "lastUpdate": 1786946774585,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -29122,6 +29122,54 @@ window.BENCHMARK_DATA = {
             "value": 25506163.94625,
             "unit": "ns",
             "range": "± 5735447.84340002"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "6e5f1f9e96a78fdfc7a4192ef82885f9829774da",
+          "message": "FromSelect witnesses: the upstream wrapper priced before the door lands\n\nFour rows measuring Select(f) UPSTREAM of each scan -- the spelling\ncompose-left collapses. Seeded on main while both scans pull through the\nwrapper per visit: the upstream Select costs +20-30% over the plain\nChain rows (local: leaffix 123.5/126.5 ms, rootfix 96.1/75.0 ms). The\nleaffix pair flips at the feature/select-composable merge; the rootfix\npair holds the baseline for its deferred door.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T05:45:43Z",
+          "tree_id": "9ccce952fbfa4f4ccfde026491e78eb68926f7c2",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6e5f1f9e96a78fdfc7a4192ef82885f9829774da"
+        },
+        "date": 1786946774468,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 9774223.889246324,
+            "unit": "ns",
+            "range": "± 194507.28731895724"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 16157394.807692308,
+            "unit": "ns",
+            "range": "± 159673.41439539663"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 15324741.935267856,
+            "unit": "ns",
+            "range": "± 108402.34959672953"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 13464517.383713942,
+            "unit": "ns",
+            "range": "± 543190.8793312233"
           }
         ]
       }
