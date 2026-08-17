@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786948156033,
+  "lastUpdate": 1786948156560,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -72086,6 +72086,114 @@ window.BENCHMARK_DATA = {
             "value": 1055742.5823317308,
             "unit": "ns",
             "range": "± 1295.5999425954706"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "577371580556cfc4cf909821d2f72c770e66bf3d",
+          "message": "Merge branch 'main' into feature/select-composable",
+          "timestamp": "2026-08-17T05:45:43Z",
+          "tree_id": "474e984cd3aef85633436357c9c5714b6161632a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/577371580556cfc4cf909821d2f72c770e66bf3d"
+        },
+        "date": 1786948156445,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 1557068.2826450893,
+            "unit": "ns",
+            "range": "± 9436.252101812712"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1361564.3778645834,
+            "unit": "ns",
+            "range": "± 3929.4730940873137"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 3274090.2438616073,
+            "unit": "ns",
+            "range": "± 6781.515251498626"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 2891246.1826171875,
+            "unit": "ns",
+            "range": "± 73098.67936601443"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 489010.6042829241,
+            "unit": "ns",
+            "range": "± 775.4900305574462"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 530899.6553431919,
+            "unit": "ns",
+            "range": "± 3308.741508023408"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 401535.2293526786,
+            "unit": "ns",
+            "range": "± 1005.1206904816925"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 3039562.550520833,
+            "unit": "ns",
+            "range": "± 16271.836484913329"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 2204117.5597098214,
+            "unit": "ns",
+            "range": "± 5220.623742942712"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 10806274.175223215,
+            "unit": "ns",
+            "range": "± 20892.671170047844"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 5679831.616145833,
+            "unit": "ns",
+            "range": "± 80882.52430382656"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 938723.9268973215,
+            "unit": "ns",
+            "range": "± 3056.5001738891087"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 693500.8041992188,
+            "unit": "ns",
+            "range": "± 1264.9950472933183"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 764577.6613606771,
+            "unit": "ns",
+            "range": "± 2390.048669849287"
           }
         ]
       }
