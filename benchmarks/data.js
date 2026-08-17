@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786984554193,
+  "lastUpdate": 1786984554721,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -73236,6 +73236,114 @@ window.BENCHMARK_DATA = {
             "value": 1017285.5138221154,
             "unit": "ns",
             "range": "± 2838.714922218444"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "231b5bd9e1014f45fd88f61d31ff34297a011d58",
+          "message": "The erased product writer: composed products fuse into the fold loop\n\nThe net8 CI runs caught the composed leaffix spelling reading WORSE than\nthe veneer it replaced (Select_Accumulate/plain ratio 1.07 -> 1.15-1.18,\nboth merge runs) while net10 local showed the opposite -- real net8 cost\nin the composed route, not layout luck. Two-stage fix, net8-replica\nverified (dotnet-install 8.0.30; the benchmarks project targets net8 but\nhad been rolling forward to net10 locally, hiding the divergence):\n\n- ScanFoldArtifacts carries the raw values ARRAY when the pass owns one,\n  so zips index directly instead of a delegate per node (harmless alone:\n  MediumRun ratio unmoved -- the delegate was not the dominant term).\n- The ERASED PRODUCT WRITER, the real fix: the first-building variant\n  hands ScanProductWriter (Initialize/Write, TProduct hidden inside)\n  into the pass, and the fold loops invoke it per node -- values and\n  accumulations hot -- replacing the separate zip pass that re-traversed\n  three arrays. The canonical inline fusion stays (the guard-rail rule:\n  no virtual call on the un-composed path); the walker fold declines\n  (count unknown mid-walk) and its variants zip from artifacts; the\n  shared RunLeaffixDispatchPassAsync gains the writer as a null-default\n  parameter, dispatch callers untouched.\n\nNet8 MediumRun ratio: 1.109 -> 1.091 (composed absolute ~115 ms, plain\n~105); the remaining gap vs the veneer era is at the local noise floor\n-- the CI per-testbed series is the referee from here. 24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T16:15:20Z",
+          "tree_id": "cd886a9b663e924ef0830b331338976207908bed",
+          "url": "https://github.com/copselib/copse-dotnet/commit/231b5bd9e1014f45fd88f61d31ff34297a011d58"
+        },
+        "date": 1786984554606,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 1294875.3197265626,
+            "unit": "ns",
+            "range": "± 4890.67125316973"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1159173.6463448661,
+            "unit": "ns",
+            "range": "± 1826.5875105397768"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 2744364.099609375,
+            "unit": "ns",
+            "range": "± 4142.945662915354"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 2350716.157645089,
+            "unit": "ns",
+            "range": "± 5340.89967302104"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 413566.61955915176,
+            "unit": "ns",
+            "range": "± 656.3458219628342"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 451399.4693847656,
+            "unit": "ns",
+            "range": "± 1419.845762508054"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 310538.47900390625,
+            "unit": "ns",
+            "range": "± 860.3437228768021"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 2508220.03984375,
+            "unit": "ns",
+            "range": "± 12423.241031614612"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1927884.4820963542,
+            "unit": "ns",
+            "range": "± 7412.812343145145"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 9031106.646205356,
+            "unit": "ns",
+            "range": "± 16479.02880218646"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 4782368.319791666,
+            "unit": "ns",
+            "range": "± 56340.00304822864"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 796118.9540364583,
+            "unit": "ns",
+            "range": "± 3462.6241551429343"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 592176.11484375,
+            "unit": "ns",
+            "range": "± 1653.6866031082407"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 642641.6430989583,
+            "unit": "ns",
+            "range": "± 2371.3988731616146"
           }
         ]
       }
