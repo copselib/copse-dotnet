@@ -219,19 +219,14 @@ namespace Copse.Linq
         (TProjected leafValue, NodePosition _) => leafNodeSelector(leafValue),
         DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
-      var productWriter = request.ProductWriter;
-      productWriter?.Initialize(values.Length);
-
+      // The pristine-loop rule (see RunLeaffixDispatchPassAsync): composed products zip from
+      // the artifacts arrays after the fold, never inside it.
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
-      {
         accumulations[nodeIndex] = survey(
           values[nodeIndex],
           positions[nodeIndex],
           new DispatchSources<TProjected, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
-
-        productWriter?.Write(nodeIndex, values[nodeIndex], accumulations[nodeIndex]);
-      }
 
       return (
         new ScanFoldArtifacts<TProjected, TAccumulate>(values, accumulations, subtreeSizes),
@@ -249,8 +244,7 @@ namespace Copse.Linq
           source,
           LeafBoundedSurvey(
             (TSource leaf, NodePosition _) => leafNodeSelector(leaf),
-            DualFoldSurvey(edgeAccumulator, nodeAccumulator)),
-          request.ProductWriter)
+            DualFoldSurvey(edgeAccumulator, nodeAccumulator)))
         .ConfigureAwait(false);
 
       return (

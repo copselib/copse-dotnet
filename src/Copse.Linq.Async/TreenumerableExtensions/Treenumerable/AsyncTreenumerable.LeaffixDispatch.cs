@@ -206,8 +206,7 @@ namespace Copse.Linq
     // skipped.
     private static async ValueTask<(TSource[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations)> RunLeaffixDispatchPassAsync<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
-      ScanProductWriter<TSource, TAccumulate> productWriter = null)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var (values, subtreeSizes) = await AsyncPreorderCapture
         .CaptureRawAsync(source)
@@ -215,22 +214,18 @@ namespace Copse.Linq
 
       var (childOffsets, childIndices, positions) = DispatchChildIndex.BuildWithPositions(subtreeSizes);
 
-      // The composed-product fusion (the scan citizens' erased writer, SELECT_INTO_CAPTURES_
-      // DESIGN.md): the first-building variant's product is written inside this loop, values
-      // and accumulations hot -- the separate zip pass it replaces re-traversed three arrays.
-      // Dispatch callers pass nothing and are untouched.
-      productWriter?.Initialize(values.Length);
-
+      // THE PRISTINE-LOOP RULE (profiled 2026-08-17): NOTHING extra rides this loop. An
+      // in-loop erased-writer call was tried for the composed products and pessimized the
+      // whole loop on net8 (the virtual call resisted devirtualization AND taxed the survey
+      // lambda around it: +22% build time), while a SEPARATE direct-array pass over the hot
+      // outputs costs ~1ms/million nodes (FusePairProducts is the proof). Composed products
+      // zip from the artifacts arrays after this returns.
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
-      {
         accumulations[nodeIndex] = nodeSurvey(
           values[nodeIndex],
           positions[nodeIndex],
           new DispatchSources<TSource, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
-
-        productWriter?.Write(nodeIndex, values[nodeIndex], accumulations[nodeIndex]);
-      }
 
       return (values, subtreeSizes, accumulations);
     }
