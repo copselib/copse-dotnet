@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787008541314,
+  "lastUpdate": 1787008541892,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -141776,6 +141776,222 @@ window.BENCHMARK_DATA = {
             "value": 61147370.023809515,
             "unit": "ns",
             "range": "± 643636.6580466491"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "63b3f84759475ba6c0fe5e58c5b76299f8aff9d6",
+          "message": "The subtree stage: TakeSubtreesWhere's BFT arm is the Where machinery, one rule\n\nThe kept-bit experiment, measured and kept. In subtree mode the reject is an\nINHERITED fact -- a predicate-failing node whose inner parent was accepted is\ninside a kept region and keeps its whole subtree. And the kept-region bit\nneeds NO new state: kept == not-skipped, which the BFT Where machinery's O(1)\nskipped-ancestor prefix already carries. The whole stage is one rule at the\ndecision site (a predicate-fail with an accepted parent is a keep, one prefix\nread) plus a constructor flag.\n\nThe citizen's BFT arm now constructs AsyncWhereBreadthFirstTreenumerator in\nsubtree mode directly -- one wrapper over the source; the scan engine and its\ndriver leave the BFT hot path (the scan chain remains the operator's\nalgebraic definition and the product variant's route).\n\nMeasured (local, vs scan chain / vs retired buffer):\n- Bft_Triangle: 175.6 -> 109.5ms (buffer 114.3) / 533 -> 451 KB (buffer 41MB)\n- Bft_Chain_DeepMatch: 140.8 -> 75.1ms (buffer 75.6) / 6.1 -> 1.0 MB (40MB)\n- DFT rows byte-identical controls\n\nEvery arm of the operator is now at-or-below the retired buffer's time with\nstreaming memory. 24,585 green -- the full battery (wall pins, seam pins,\nstrategy matrix) drains BFT through the subtree stage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T23:00:00Z",
+          "tree_id": "143b31b0f98ebcfca4d31e4f7681d7ce0276620e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/63b3f84759475ba6c0fe5e58c5b76299f8aff9d6"
+        },
+        "date": 1787008541765,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 67549773.59166667,
+            "unit": "ns",
+            "range": "± 169355.38924980853"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 115055418.32142857,
+            "unit": "ns",
+            "range": "± 1070569.2397180726"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 119599289.60416667,
+            "unit": "ns",
+            "range": "± 415075.3216671323"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 36844055.828571424,
+            "unit": "ns",
+            "range": "± 316575.8998852192"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 155242758.09615386,
+            "unit": "ns",
+            "range": "± 556350.1926774491"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 145011732.44117647,
+            "unit": "ns",
+            "range": "± 2933442.3512218352"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 22622698.06026786,
+            "unit": "ns",
+            "range": "± 78899.1310780738"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 125595428.41176471,
+            "unit": "ns",
+            "range": "± 2572476.8403335465"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 101720147.53846152,
+            "unit": "ns",
+            "range": "± 1063640.9950882108"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 130592626.82954545,
+            "unit": "ns",
+            "range": "± 3140972.0738319024"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 109282026.82666667,
+            "unit": "ns",
+            "range": "± 1015338.2416912972"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Dft_Chain",
+            "value": 111493185.21333334,
+            "unit": "ns",
+            "range": "± 1580851.1119974875"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Bft_Chain",
+            "value": 115096878.20000002,
+            "unit": "ns",
+            "range": "± 1166836.390746875"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Dft_Chain",
+            "value": 108067256.78333335,
+            "unit": "ns",
+            "range": "± 935209.8335210272"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Bft_Chain",
+            "value": 115684270.16923079,
+            "unit": "ns",
+            "range": "± 396258.3062493881"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Select_Dft_Chain",
+            "value": 112153779.85714285,
+            "unit": "ns",
+            "range": "± 1858357.2504510395"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Twice_Dft_Chain",
+            "value": 110411040.50000001,
+            "unit": "ns",
+            "range": "± 2357689.6411768426"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 63199069.166666664,
+            "unit": "ns",
+            "range": "± 627627.9227921116"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 112151282.43333334,
+            "unit": "ns",
+            "range": "± 1443190.2968690842"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 95136674.33333334,
+            "unit": "ns",
+            "range": "± 492518.3998828537"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 45083932.994444445,
+            "unit": "ns",
+            "range": "± 224635.06784301723"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 127454346.66666667,
+            "unit": "ns",
+            "range": "± 454087.27076656866"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 100279824.21428572,
+            "unit": "ns",
+            "range": "± 459964.800077212"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 33477651.96666667,
+            "unit": "ns",
+            "range": "± 72590.8849063075"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 122340292.05357143,
+            "unit": "ns",
+            "range": "± 609059.3937021168"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 70114707.19642857,
+            "unit": "ns",
+            "range": "± 370313.65347124066"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 125528594.46153846,
+            "unit": "ns",
+            "range": "± 633864.7495807617"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 71736778.06593406,
+            "unit": "ns",
+            "range": "± 68998.67201723225"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Dft_Chain",
+            "value": 71882379.03809525,
+            "unit": "ns",
+            "range": "± 532927.1207210419"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Bft_Chain",
+            "value": 72928873.74725275,
+            "unit": "ns",
+            "range": "± 249353.59766841936"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Dft_Chain",
+            "value": 89413863.39999999,
+            "unit": "ns",
+            "range": "± 449896.05788065883"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Bft_Chain",
+            "value": 95839855.63333331,
+            "unit": "ns",
+            "range": "± 150181.71019312847"
           }
         ]
       }
