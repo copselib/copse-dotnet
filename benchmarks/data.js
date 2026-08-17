@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786991300003,
+  "lastUpdate": 1786991300593,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -61872,6 +61872,66 @@ window.BENCHMARK_DATA = {
             "value": 125244380.63461539,
             "unit": "ns",
             "range": "± 947112.6349975851"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af86423baba8a142f795651213a5d71e1d39cb35",
+          "message": "The pristine-loop rule, and the paradox resolved by a three-arm profile\n\nThe in-loop erased writer is removed from the stream fold (the span path\nkeeps its writer -- its alternative is delegate store-reads): profiling\nshowed the virtual call resisted net8 devirtualization AND pessimized\nthe loop around it, while a separate direct-array pass costs ~1ms per\nmillion nodes (FusePairProducts is the standing proof). Composed\nproducts now zip from the artifacts arrays after the pristine fold.\nNOTHING extra rides the shared fold loop, as a rule.\n\nThe three-arm harness (plain / composed / forced-wrapper veneer, same\nmachine, same code, net8) then resolved the \"regression that defied\ncommon sense\": composed ~118 ms, veneer ~130 ms, plain ~106 ms -- THE\nCOMPOSED ROUTE BEATS THE WRAPPER BY ~10% in any like-for-like\ncomparison. The CI story was a cross-era artifact: the wrapper's cost is\nper-visit and HARDWARE-DEPENDENT (+23% on this CPU, only +7% on the CI\npool's draws), while the composed route's cost is a fixed build overhead\n(~11% everywhere). On CPUs where wrappers happen to be cheap, the old\nseries' ratio is a hard target by a few points; on hardware where\nwrappers cost what wrappers usually cost -- and on net10 -- composed\nwins outright. Allocation and semantics win everywhere.\n\n24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T17:56:48Z",
+          "tree_id": "0ab40577223d4a4d60dd80dcda0c193e52dd321b",
+          "url": "https://github.com/copselib/copse-dotnet/commit/af86423baba8a142f795651213a5d71e1d39cb35"
+        },
+        "date": 1786991300474,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 71548568.14285715,
+            "unit": "ns",
+            "range": "± 426270.59656114475"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9541501.385044644,
+            "unit": "ns",
+            "range": "± 29490.543320394954"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 132776763.125,
+            "unit": "ns",
+            "range": "± 657942.2234127368"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17458376.74776786,
+            "unit": "ns",
+            "range": "± 158395.256204636"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 187442581.6190476,
+            "unit": "ns",
+            "range": "± 4322966.239107348"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 155406716.02941176,
+            "unit": "ns",
+            "range": "± 2887313.3108094814"
           }
         ]
       }
