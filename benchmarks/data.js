@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786949485842,
+  "lastUpdate": 1786949486773,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -84476,6 +84476,100 @@ window.BENCHMARK_DATA = {
             "value": 26032839.237980768,
             "unit": "ns",
             "range": "± 43025.53392353616"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "577371580556cfc4cf909821d2f72c770e66bf3d",
+          "message": "Merge branch 'main' into feature/select-composable",
+          "timestamp": "2026-08-17T05:45:43Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/577371580556cfc4cf909821d2f72c770e66bf3d"
+        },
+        "date": 1786949486656,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26064613.87723214,
+            "unit": "ns",
+            "range": "± 198914.6428175161"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8241860.032366072,
+            "unit": "ns",
+            "range": "± 37979.30047158306"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 152026643.85714287,
+            "unit": "ns",
+            "range": "± 1037805.7284306855"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57535847.11111112,
+            "unit": "ns",
+            "range": "± 542908.6316398885"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21897424.109375,
+            "unit": "ns",
+            "range": "± 44809.51393936933"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11966272.873798076,
+            "unit": "ns",
+            "range": "± 46471.36296068893"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 102769937.12857142,
+            "unit": "ns",
+            "range": "± 830755.0574703238"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30042563.072115384,
+            "unit": "ns",
+            "range": "± 86439.63332376553"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11893165.917067308,
+            "unit": "ns",
+            "range": "± 26865.984171509514"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6248380.829241072,
+            "unit": "ns",
+            "range": "± 27056.196034873356"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 97365271.88095237,
+            "unit": "ns",
+            "range": "± 818108.1742881757"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26110112.62723214,
+            "unit": "ns",
+            "range": "± 37371.576467902494"
           }
         ]
       }
