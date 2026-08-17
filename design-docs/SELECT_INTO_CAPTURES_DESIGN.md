@@ -1,6 +1,9 @@
 # The Public Projection Citizenship (Select Into Captures)
 
-> **Status: DRAFT v2, 2026-08-16** — reshaped after review; awaiting ratification. Origin:
+> **Status: RATIFIED 2026-08-17** (drafted 2026-08-16, reshaped in review; implemented on
+> feature/select-composable through the compose-left door and first-caller fusion — every
+> section below is landed code except the recorded deferrals: narrow parity, the memo
+> receiver, filtering citizenship, TestUtils battery extraction). Origin:
 > the pair-product price (OPERATOR_SURFACE_MAP.md LeaffixScan row). Scans deliver
 > `(Node, Accumulate)` pairs by ruling — the richer contract justifies itself — and
 > `Scan(...).Select(x => x.Accumulate)` should recover the narrow product's cost. Today
