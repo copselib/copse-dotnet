@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786998746436,
+  "lastUpdate": 1786998747000,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -176672,6 +176672,200 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
             "value": 151019538,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0bc7abb974d708637c2608aeb7b9fc642d32059a",
+          "message": "The thin shape: buffer projection becomes one counted map; the pass layer retires\n\nThe worth-it audit's verdict, executed. Buffer composition stops at every\nbuffering boundary by design, so the shared-fold-pass machinery (pass /\nsibling variants / product writer) served exactly one seam -- and the\nthree-arm harness priced it slower than the transient pair store it existed\nto avoid. Scans return PLAIN buffers again (span fast path restored for\nscan-of-scan); buffer-tier citizenship moves to the Select seam:\nProjectedTreenumerableBuffer = source buffer + selector, built as ONE\ncounted array map off the source's completed store, ComposeSelect composing\nthe selector so chains stay one map. The source buffer -- replayable by\ncontract -- is the sharing substrate; at-most-once falls out for free.\n\nLanded with it: the dispatch tier's result buffers wire probes-at-birth over\ntheir own lazy store. The former Tree.Lazy wrapping hid the store behind the\ncomposite, and every receiver-smart consumer (a second scan, the projected\nmap) paid a full second capture through EnsureTopology to reach it.\n\nReferee panel (local, same run; CI writes the steps on push):\n- Select_Accumulate_Dft_Chain: 87.4ms vs plain 87.3 -- projection is free\n  (+8MB narrow store in the Alloc column, disclosed)\n- Select_Select_Dft_Chain: 87.8ms / 96.05MB -- FLAT vs single Select, the\n  chained collapse intact\n- Twice_Dft_Chain: 231.9ms/272MB -> 101.3ms/108.05MB -- the span-path heal\n- Three-arm harness: composed 105-114ms == plain 105-112, veneer 135\n\nStreaming compose (the lattice, rootfix citizen, compose-left door) is\nuntouched -- the ruled clear win. The door's consumer now lands in a plain\npair buffer. Net -650 lines; 24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T20:17:03Z",
+          "tree_id": "6305ed7782ba85236a5ceaf52a9d77a2340eb612",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0bc7abb974d708637c2608aeb7b9fc642d32059a"
+        },
+        "date": 1786998746881,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedPreorder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedLevelOrder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedPreorder",
+            "value": 50413403,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedLevelOrder",
+            "value": 50405211,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.LeaffixScan_over_MaterializedPreorder",
+            "value": 29475740,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739888,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139988,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71355362,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25171642,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Triangle",
+            "value": 25262278,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Triangle",
+            "value": 38007631,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Chain",
+            "value": 33579595,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Chain",
+            "value": 25170628,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_from_LevelOrder",
+            "value": 8474042,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_from_Preorder",
+            "value": 12838836,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_Preorder",
+            "value": 58183,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_Preorder",
+            "value": 230797,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_LevelOrder",
+            "value": 197985,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16906101,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597882,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3364077,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_Preorder",
+            "value": 58227,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_Preorder",
+            "value": 230841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_LevelOrder",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80462044,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 51624396,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80636826,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 51476436,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79745353,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 125835197,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50357949,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 151019669,
             "unit": "bytes"
           }
         ]
