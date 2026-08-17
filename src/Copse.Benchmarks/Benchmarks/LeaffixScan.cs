@@ -70,5 +70,24 @@ namespace Copse.Benchmarks
       var projected = CanonicalTrees.MegaChainTree().LeaffixScan(LeafCount, EdgeSum, CountNode).Select(x => x.Accumulate);
       projected.Consume(TreeTraversalStrategy.BreadthFirst);
     }
+
+    // The compose-left witnesses (SELECT_INTO_CAPTURES_DESIGN.md; seeded 2026-08-17 while an
+    // upstream Select is a wrapper layer on every capture pull). The spelling never changes;
+    // when the scan learns to unwrap a projection source (the compose-left door), the same
+    // call's capture walks the un-projected inner raw and this series shows the step.
+    // Same-run ratio against Dft/Bft_Chain prices the upstream wrapper.
+    [Benchmark]
+    public void FromSelect_Dft_Chain()
+    {
+      var scan = CanonicalTrees.MegaChainTree().Select(node => node * 2).LeaffixScan(LeafCount, EdgeSum, CountNode);
+      scan.Consume(TreeTraversalStrategy.DepthFirst);
+    }
+
+    [Benchmark]
+    public void FromSelect_Bft_Chain()
+    {
+      var scan = CanonicalTrees.MegaChainTree().Select(node => node * 2).LeaffixScan(LeafCount, EdgeSum, CountNode);
+      scan.Consume(TreeTraversalStrategy.BreadthFirst);
+    }
   }
 }

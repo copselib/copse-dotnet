@@ -218,3 +218,15 @@ TIME-ONLY — the streaming projection citizenship removes one per-pull wrapper 
 stored on either route. First local reading: 80.7 ms (Dft; the ~104 MB is the engine's
 O(depth) chain path state, present on the plain rows too) and 70.0 ms / 2.2 KB (Bft).
 Same-run ratio against the plain Chain rows prices the wrapper.
+
+---
+
+## Date: 2026-08-17 — FromSelect witnesses (compose-left instrumentation)
+
+Four rows pricing an UPSTREAM Select wrapper on scan pulls, seeded on main while both scans
+walk the wrapper per visit: `LeaffixScan.FromSelect_{Dft,Bft}_Chain` (123.5 ms / 90.2 MB and
+126.5 ms / 61.5 MB local) and `RootfixScan.FromSelect_{Dft,Bft}_Chain` (96.1 ms and 75.0 ms —
++20-30% over the plain Chain rows). The LEAFFIX pair flips when feature/select-composable
+merges (the compose-left door: the capture walks the un-projected inner raw); the ROOTFIX
+pair holds the veneer baseline for the rootfix door, which is DEFERRED — its step lands
+whenever that mirror is built. Same-run ratio against the plain rows prices the wrapper.
