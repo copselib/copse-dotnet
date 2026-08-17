@@ -196,6 +196,17 @@ capture arms, the prospective SelectSubtreesWhere. The same move the SelectWhere
 made for the streaming tier, applied to the capture tier: the capture algebra gets one
 home.
 
+**FIRST LANDING (2026-08-17, Jason's spelling)**: TakeSubtreesWhere IS
+`RootfixScan(false, (kept, n) => kept || predicate(n)).Where(pair => pair.Accumulate).Select(pair => pair.Node)`
+— "keep this node" is the rootfix fold fact "an ancestor-or-self matched", the outermost
+rule falls out of the disjunction's short-circuit, and the buffer arms retired entirely:
+the chain streams BOTH dimensions (the "result's BFT cannot stream" rationale was
+disproven — general Where's breadth-first wrapper produces the re-rooted forest's true
+level order by pulling its inner ahead through its queue, verified on the
+deep-match-first-in-preorder wall shape and pinned in the battery). The result joins the
+SelectWhere driver, so the operator gets Select/Where composition automatically — the
+exact dividend this section promised.
+
 ## 6. Out of scope
 
 - **Filtering citizenship** (public Where composition): the internal-ruling's logic stands;

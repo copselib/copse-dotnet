@@ -29,6 +29,8 @@ namespace Copse.Linq.Tests
     [DataRow("r(p(x),q,s(y))", "p,s", "p(x),s(y)", DisplayName = "unmatched sibling between matches: roots renumber 0,1")]
     [DataRow("a(b(c(d)))", "b,c,d", "b(c(d))", DisplayName = "a chain of nested matches collapses to the outermost")]
     [DataRow("a(b),c(b(x))", "b", "b,b(x)", DisplayName = "the same value matching twice re-roots twice")]
+    [DataRow("a(b(x(y)),z)", "x,z", "x(y),z", DisplayName = "the reorder-wall case: the DEEP match precedes the shallow one in preorder, and the result's level order interleaves source levels")]
+    [DataRow("a(b(c(d(e))),f(g))", "c,f", "c(d(e)),f(g)", DisplayName = "two-level depth spread, deep match first in preorder")]
     public void MatchedSubtreesBecomeTheResultForest(string treeString, string matchedValues, string expectedForest)
     {
       var matches = matchedValues.Split(',');
@@ -92,22 +94,22 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void BreadthFirstNarrowArm_TheDisclosureRule_EqualsTheExplicitEscalation()
+    public void BreadthFirstNarrowArm_Streams_AndAgreesWithTheComposite()
     {
+      // The scan spelling (2026-08-17) streams the breadth-first narrow arm -- the old
+      // Materialize escalation is retired -- so the narrow result affords exactly its own
+      // dimension, compared against the composite's on that dimension.
       var source = "a(b(d,e),c(f,g))";
       Func<string, bool> predicate = node => node == "b" || node == "c";
 
-      var viaDisclosureRule = ((IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(source))
+      var streamed = ((IBreadthFirstTreenumerable<string>)TreeSerializer.DeserializeDepthFirstTree(source))
         .TakeSubtreesWhere(predicate);
-      var viaExplicitEscalation = TreeSerializer.DeserializeDepthFirstTree(source)
-        .Materialize()
+      var composite = TreeSerializer.DeserializeDepthFirstTree(source)
         .TakeSubtreesWhere(predicate);
 
-      foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
-        CollectionAssert.AreEqual(
-          viaExplicitEscalation.GetTraversal(strategy).ToArray(),
-          viaDisclosureRule.GetTraversal(strategy).ToArray(),
-          $"{strategy} mismatch");
+      CollectionAssert.AreEqual(
+        composite.GetLevelOrderTraversal().ToArray(),
+        streamed.GetLevelOrderTraversal().ToArray());
     }
 
     [TestMethod]

@@ -1,15 +1,8 @@
 using Copse.Async;
-using Copse.Async.Stores;
-using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
-using Copse.Linq.Async.Stores;
-using Copse.Linq.Async.Treenumerables;
-using Copse.Linq.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
@@ -28,31 +21,65 @@ namespace Copse.Linq
     /// predicate; there is no upward variant on trees (a subtree-toward-the-root is a branch,
     /// not a tree).
     ///
-    /// <para>This overload serves the full composite, so it returns an
-    /// <see cref="IAsyncTreenumerableBuffer{TValue}"/>: the result forest's breadth-first
-    /// dimension cannot stream (matches start at different source depths, so result level k
-    /// interleaves source levels -- the reorder wall), and the buffer disclosure is the honest
-    /// cost. The build walks the source DEPTH-FIRST once and stores only the matched subtrees
-    /// -- O(result) storage, not O(source). Deferred: construction is pinned to the first
-    /// treenumerator acquisition. Depth-first-only consumers who want the O(1)-state streaming
-    /// form take the <see cref="IAsyncDepthFirstTreenumerable{TValue}"/> overload via the
-    /// narrow cast (the dimension-choice idiom).</para>
+    /// <para>THE SCAN SPELLING (2026-08-17, the layering north star's first landing --
+    /// design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this node" is the rootfix
+    /// fold fact <c>kept(parent) || predicate(node)</c>, so the operator IS
+    /// <c>RootfixScan(false, fold).Where(pair =&gt; pair.Accumulate).Select(pair =&gt; pair.Node)</c>
+    /// -- and the outermost rule falls out of the fold (inside a kept region the disjunction
+    /// short-circuits; the predicate result is simply irrelevant there, so suppression needs
+    /// no flag). The chain composes into ONE SelectWhere driver over the scan engine, STREAMS
+    /// both dimensions (the former buffer arm is retired -- its "the result's BFT cannot
+    /// stream" rationale was disproven by the general Where machinery, whose breadth-first
+    /// wrapper produces the re-rooted forest's true level order by pulling its inner ahead
+    /// through its queue), and joins the projection citizenship for free: a following Select
+    /// lands in the driver's mapping, a following Where in its predicate.</para>
+    ///
+    /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
+    /// contract -- Materialize is the consumer's pin), and state is the scan's O(depth) /
+    /// O(width) plus the filter driver's. BREAKING (pre-beta): this overload returned an
+    /// <see cref="IAsyncTreenumerableBuffer{TValue}"/> through 2026-08-17 -- consumers who
+    /// relied on the capture add <c>.Materialize()</c>.</para>
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhere<TNode>(
+    public static IAsyncTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
-      => TakeSubtreesWhereBuffer(source, ToContextPredicate(predicate));
+    {
+      if (predicate == null)
+        throw new ArgumentNullException(nameof(predicate));
 
-    /// <summary>The positional flavor (the Select/Where arity-split grammar): the node's value and its SOURCE position.</summary>
-    public static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhere<TNode>(
+      return source
+        .RootfixScan(false, (kept, node) => kept || predicate(node))
+        .Where(pair => pair.Accumulate)
+        .Select(pair => pair.Node);
+    }
+
+    /// <summary>
+    /// The positional flavor (the Select/Where arity-split grammar): the node's value and its
+    /// SOURCE position. The public scan accumulator has no positional seat (the seat rule),
+    /// so this flavor speaks the ENGINE's context-shaped accumulator directly -- same chain,
+    /// same laws.
+    /// </summary>
+    public static IAsyncTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
-      => TakeSubtreesWhereBuffer(source, ToContextPredicate(predicate));
+    {
+      if (predicate == null)
+        throw new ArgumentNullException(nameof(predicate));
+
+      return new AsyncRootfixScanTreenumerable<TNode, bool>(
+          source.GetAsyncDepthFirstTreenumerator,
+          source.GetAsyncBreadthFirstTreenumerator,
+          (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext.Node, nodeContext.Position),
+          false)
+        .Where(pair => pair.Accumulate)
+        .Select(pair => pair.Node);
+    }
 
     /// <summary>
     /// The depth-first streaming form: a matched subtree is one CONTIGUOUS segment of the
-    /// depth-first visit stream, so the narrow arm is a pass-through wrapper with an
-    /// in-subtree flag and O(1) state -- no capture, fully lazy.
+    /// depth-first visit stream, so the narrow arm keeps its bespoke pass-through wrapper
+    /// with an in-subtree flag and O(1) state -- strictly leaner than the scan chain's
+    /// O(depth), and narrow results are outside the citizenship anyway (narrowing deferred).
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -65,21 +92,39 @@ namespace Copse.Linq
       => TakeSubtreesWhereCore(source, ToContextPredicate(predicate));
 
     /// <summary>
-    /// The breadth-first-only source overload -- the DISCLOSURE RULE's escalation written
-    /// once, here: the depth-first walk the build needs cannot come from a level-order
-    /// arrival, so the source is captured (Materialize) and the build walks the capture's
-    /// depth-first replay. Cost class: the capture is O(source); the result store is
-    /// O(result).
+    /// The breadth-first-only source overload: the scan chain STREAMS the narrow dimension
+    /// (scan, filter, and projection all carry breadth-first narrow overloads), so the old
+    /// disclosure-rule escalation -- Materialize the source, walk the capture -- is retired
+    /// with the buffer arms. BREAKING (pre-beta): returned a buffer through 2026-08-17.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhere<TNode>(
+    public static IAsyncBreadthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
-      => TakeSubtreesWhereBufferFromBreadthFirst(source, ToContextPredicate(predicate));
+    {
+      if (predicate == null)
+        throw new ArgumentNullException(nameof(predicate));
 
-    public static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhere<TNode>(
+      return source
+        .RootfixScan(false, (kept, node) => kept || predicate(node))
+        .Where(pair => pair.Accumulate)
+        .Select(pair => pair.Node);
+    }
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
-      => TakeSubtreesWhereBufferFromBreadthFirst(source, ToContextPredicate(predicate));
+    {
+      if (predicate == null)
+        throw new ArgumentNullException(nameof(predicate));
+
+      return AsyncTree.CreateBreadthFirst(
+          () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, bool>(
+            source.GetAsyncBreadthFirstTreenumerator,
+            (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext.Node, nodeContext.Position),
+            false))
+        .Where(pair => pair.Accumulate)
+        .Select(pair => pair.Node);
+    }
 
     private static Func<NodeContext<TNode>, bool> ToContextPredicate<TNode>(Func<TNode, bool> predicate)
     {
@@ -104,109 +149,5 @@ namespace Copse.Linq
         () => new AsyncTakeSubtreesWhereTreenumerator<TNode>(
           source.GetAsyncDepthFirstTreenumerator,
           predicate));
-
-    private static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhereBuffer<TNode>(
-      IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-      => new AsyncTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() =>
-        {
-          var store = new AsyncLazyPreorderStore<TNode>(() => BuildTakeSubtreesWhereAsync(source, predicate));
-          return new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(store);
-        }),
-        BufferLayout.Preorder);
-
-    private static IAsyncTreenumerableBuffer<TNode> TakeSubtreesWhereBufferFromBreadthFirst<TNode>(
-      IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-      => new AsyncTreenumerableBuffer<TNode>(
-        AsyncTree.Lazy(() =>
-        {
-          var store = new AsyncLazyPreorderStore<TNode>(() => BuildTakeSubtreesWhereFromBreadthFirstAsync(source, predicate));
-          return new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(store);
-        }),
-        BufferLayout.Preorder);
-
-    // The level-order arrival cannot afford the depth-first walk the build needs, so the
-    // source is captured once and the build walks the capture's depth-first replay.
-    private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildTakeSubtreesWhereFromBreadthFirstAsync<TNode>(
-      IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-    {
-      // Materialize is no longer awaitable (LAZY 2026-08-10: construction pinned to the
-      // first pull) -- the capture object is built synchronously, its O(n) deferred; the
-      // depth-first walk below is what forces it. (The pre-lazy MaterializeAsync spelling
-      // this arrived with was the reunification's one compile fix.)
-      var capture = source.Materialize();
-
-      return await BuildTakeSubtreesWhereAsync(capture, predicate).ConfigureAwait(false);
-    }
-
-    // One depth-first pass, scheduling visits only: outside a match every node is tested;
-    // inside, contexts append to the flat preorder arrays and subtree sizes close by the same
-    // depth arithmetic as the streaming wrapper's flag (the outermost rule: no re-testing
-    // inside). Storage is the RESULT's size -- unmatched regions never land.
-    private static async ValueTask<AsyncPreorderArrayStore<TNode>> BuildTakeSubtreesWhereAsync<TNode>(
-      IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
-    {
-      var values = new List<TNode>();
-      var subtreeSizes = new List<int>();
-      var openIndexes = new Stack<int>(); // open ancestors within the current matched subtree
-      var matchDepth = -1;
-
-      void Close()
-      {
-        var openIndex = openIndexes.Pop();
-
-        subtreeSizes[openIndex] = values.Count - openIndex;
-      }
-
-      var treenumerator = source.GetAsyncDepthFirstTreenumerator();
-      await using (treenumerator.ConfigureAwait(false))
-      {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
-        {
-          if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
-            continue;
-
-          var depth = treenumerator.Position.Depth;
-
-          if (matchDepth >= 0)
-          {
-            if (depth > matchDepth)
-            {
-              // Still inside: close completed deeper nodes, then take this one.
-              while (openIndexes.Count > depth - matchDepth)
-                Close();
-
-              openIndexes.Push(values.Count);
-              values.Add(treenumerator.Node);
-              subtreeSizes.Add(0);
-              continue;
-            }
-
-            // Left the subtree; this node is outside and falls through to the test.
-            while (openIndexes.Count > 0)
-              Close();
-
-            matchDepth = -1;
-          }
-
-          if (!predicate(treenumerator.ToNodeContext()))
-            continue;
-
-          matchDepth = depth;
-          openIndexes.Push(values.Count);
-          values.Add(treenumerator.Node);
-          subtreeSizes.Add(0);
-        }
-      }
-
-      while (openIndexes.Count > 0)
-        Close();
-
-      return new AsyncPreorderArrayStore<TNode>(values.ToArray(), subtreeSizes.ToArray());
-    }
   }
 }
