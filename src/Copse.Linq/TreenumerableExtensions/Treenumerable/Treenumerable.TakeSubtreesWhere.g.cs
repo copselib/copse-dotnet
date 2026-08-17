@@ -29,18 +29,24 @@ namespace Copse.Linq
     /// <c>RootfixScan(false, fold).Where(pair =&gt; pair.Accumulate).Select(pair =&gt; pair.Node)</c>
     /// -- and the outermost rule falls out of the fold (inside a kept region the disjunction
     /// short-circuits; the predicate result is simply irrelevant there, so suppression needs
-    /// no flag). The chain composes into ONE SelectWhere driver over the scan engine, STREAMS
-    /// both dimensions (the former buffer arm is retired -- its "the result's BFT cannot
-    /// stream" rationale was disproven by the general Where machinery, whose breadth-first
-    /// wrapper produces the re-rooted forest's true level order by pulling its inner ahead
-    /// through its queue), and joins the projection citizenship for free: a following Select
-    /// lands in the driver's mapping, a following Where in its predicate.</para>
+    /// no flag). The former buffer arm is retired -- its "the result's BFT cannot stream"
+    /// rationale was disproven by the general Where machinery, whose breadth-first wrapper
+    /// produces the re-rooted forest's true level order by pulling its inner ahead through
+    /// its queue.</para>
+    ///
+    /// <para>DIMENSION-DISPATCHED (the honest-streaming-baseline rule): each dimension takes
+    /// its leanest streaming implementation. Depth-first constructs the bespoke O(1)-state
+    /// pass-through wrapper -- a matched subtree is one contiguous preorder segment, and the
+    /// scan chain measured ~2.3x that wrapper's cost for the same work. Breadth-first
+    /// constructs the scan chain, which IS the leanest streaming form there (a bespoke BFT
+    /// would reimplement Where's cross-level promotion machinery). A following Select stacks
+    /// a light lattice wrapper and composes with any subsequent Where into one driver -- the
+    /// normal composition story over the cheaper base.</para>
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
-    /// contract -- Materialize is the consumer's pin), and state is the scan's O(depth) /
-    /// O(width) plus the filter driver's. BREAKING (pre-beta): this overload returned an
-    /// <see cref="IAsyncTreenumerableBuffer{TValue}"/> through 2026-08-17 -- consumers who
-    /// relied on the capture add <c>.Materialize()</c>.</para>
+    /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
+    /// returned an <see cref="IAsyncTreenumerableBuffer{TValue}"/> through 2026-08-17 --
+    /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
     /// </summary>
     public static ITreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this ITreenumerable<TNode> source,
@@ -49,17 +55,23 @@ namespace Copse.Linq
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      return source
+      var breadthFirstChain = source
         .RootfixScan(false, (kept, node) => kept || predicate(node))
         .Where(pair => pair.Accumulate)
         .Select(pair => pair.Node);
+
+      return Tree.Create(
+        breadthFirstChain.GetBreadthFirstTreenumerator,
+        () => new TakeSubtreesWhereTreenumerator<TNode>(
+          source.GetDepthFirstTreenumerator,
+          nodeContext => predicate(nodeContext.Node)));
     }
 
     /// <summary>
     /// The positional flavor (the Select/Where arity-split grammar): the node's value and its
     /// SOURCE position. The public scan accumulator has no positional seat (the seat rule),
-    /// so this flavor speaks the ENGINE's context-shaped accumulator directly -- same chain,
-    /// same laws.
+    /// so the breadth-first chain speaks the ENGINE's context-shaped accumulator directly --
+    /// same chain, same laws.
     /// </summary>
     public static ITreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this ITreenumerable<TNode> source,
@@ -68,13 +80,19 @@ namespace Copse.Linq
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      return new RootfixScanTreenumerable<TNode, bool>(
+      var breadthFirstChain = new RootfixScanTreenumerable<TNode, bool>(
           source.GetDepthFirstTreenumerator,
           source.GetBreadthFirstTreenumerator,
           (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext.Node, nodeContext.Position),
           false)
         .Where(pair => pair.Accumulate)
         .Select(pair => pair.Node);
+
+      return Tree.Create(
+        breadthFirstChain.GetBreadthFirstTreenumerator,
+        () => new TakeSubtreesWhereTreenumerator<TNode>(
+          source.GetDepthFirstTreenumerator,
+          nodeContext => predicate(nodeContext.Node, nodeContext.Position)));
     }
 
     /// <summary>

@@ -203,9 +203,14 @@ rule falls out of the disjunction's short-circuit, and the buffer arms retired e
 the chain streams BOTH dimensions (the "result's BFT cannot stream" rationale was
 disproven — general Where's breadth-first wrapper produces the re-rooted forest's true
 level order by pulling its inner ahead through its queue, verified on the
-deep-match-first-in-preorder wall shape and pinned in the battery). The result joins the
-SelectWhere driver, so the operator gets Select/Where composition automatically — the
-exact dividend this section promised.
+deep-match-first-in-preorder wall shape and pinned in the battery). Refined the same day
+by the honest-streaming-baseline rule (memory dropping when un-buffering is table stakes;
+time answers to the best streaming implementation): the composite DIMENSION-DISPATCHES —
+DFT takes the bespoke O(1) contiguous-segment wrapper (the chain measured ~2.3x it; the
+dispatch put composite DFT below the retired buffer), BFT takes the chain (the leanest
+streaming form there). The algebraic spelling remains the operator's definition and its
+BFT implementation; a following Select composes through the normal lattice over the
+cheaper base.
 
 ## 6. Out of scope
 
