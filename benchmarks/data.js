@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786991300593,
+  "lastUpdate": 1786991301157,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -30074,6 +30074,54 @@ window.BENCHMARK_DATA = {
             "value": 15677439.269736841,
             "unit": "ns",
             "range": "± 539652.9250881318"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af86423baba8a142f795651213a5d71e1d39cb35",
+          "message": "The pristine-loop rule, and the paradox resolved by a three-arm profile\n\nThe in-loop erased writer is removed from the stream fold (the span path\nkeeps its writer -- its alternative is delegate store-reads): profiling\nshowed the virtual call resisted net8 devirtualization AND pessimized\nthe loop around it, while a separate direct-array pass costs ~1ms per\nmillion nodes (FusePairProducts is the standing proof). Composed\nproducts now zip from the artifacts arrays after the pristine fold.\nNOTHING extra rides the shared fold loop, as a rule.\n\nThe three-arm harness (plain / composed / forced-wrapper veneer, same\nmachine, same code, net8) then resolved the \"regression that defied\ncommon sense\": composed ~118 ms, veneer ~130 ms, plain ~106 ms -- THE\nCOMPOSED ROUTE BEATS THE WRAPPER BY ~10% in any like-for-like\ncomparison. The CI story was a cross-era artifact: the wrapper's cost is\nper-visit and HARDWARE-DEPENDENT (+23% on this CPU, only +7% on the CI\npool's draws), while the composed route's cost is a fixed build overhead\n(~11% everywhere). On CPUs where wrappers happen to be cheap, the old\nseries' ratio is a hard target by a few points; on hardware where\nwrappers cost what wrappers usually cost -- and on net10 -- composed\nwins outright. Allocation and semantics win everywhere.\n\n24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T17:56:48Z",
+          "tree_id": "0ab40577223d4a4d60dd80dcda0c193e52dd321b",
+          "url": "https://github.com/copselib/copse-dotnet/commit/af86423baba8a142f795651213a5d71e1d39cb35"
+        },
+        "date": 1786991301034,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 8584515.228400735,
+            "unit": "ns",
+            "range": "± 169075.13183169835"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 19500404.847916666,
+            "unit": "ns",
+            "range": "± 260857.26615083296"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 16267883.480654761,
+            "unit": "ns",
+            "range": "± 373670.2964130169"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 13296065.990552325,
+            "unit": "ns",
+            "range": "± 490309.8547342393"
           }
         ]
       }
