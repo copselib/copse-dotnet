@@ -37,28 +37,28 @@ namespace Copse.Linq
       => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
         source.GetAsyncDepthFirstTreenumerator,
         source.GetAsyncBreadthFirstTreenumerator,
-        PairingAccumulator(accumulator),
-        new NodeAccumulation<TNode, TAccumulate>(default, seed));
+        ContextAccumulator(accumulator),
+        seed);
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => AsyncTree.CreateDepthFirst(
-        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
           source.GetAsyncDepthFirstTreenumerator,
-          PairingAccumulator(accumulator),
-          new NodeAccumulation<TNode, TAccumulate>(default, seed)));
+          ContextAccumulator(accumulator),
+          seed));
 
     public static IAsyncBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => AsyncTree.CreateBreadthFirst(
-        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
           source.GetAsyncBreadthFirstTreenumerator,
-          PairingAccumulator(accumulator),
-          new NodeAccumulation<TNode, TAccumulate>(default, seed)));
+          ContextAccumulator(accumulator),
+          seed));
 
     /// <summary>
     /// The per-root flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a different
@@ -105,7 +105,7 @@ namespace Copse.Linq
       => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
         source.GetAsyncDepthFirstTreenumerator,
         source.GetAsyncBreadthFirstTreenumerator,
-        PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
+        ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
         default);
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
@@ -113,9 +113,9 @@ namespace Copse.Linq
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => AsyncTree.CreateDepthFirst(
-        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+        () => new AsyncRootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
           source.GetAsyncDepthFirstTreenumerator,
-          PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
+          ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
           default));
 
     public static IAsyncBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
@@ -123,21 +123,21 @@ namespace Copse.Linq
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => AsyncTree.CreateBreadthFirst(
-        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+        () => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
           source.GetAsyncBreadthFirstTreenumerator,
-          PairingAccumulatorWithRootSelector(rootNodeSelector, accumulator),
+          ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
           default));
 
-    // The engine adapter: the generic scan treenumerators run with TAccumulate = the pairing
-    // (the RESULT needs it), while the user accumulator speaks the minimal (accumulate, node)
-    // basis -- the operator layer pairs on the way out, the engine stays untouched.
-    private static Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> PairingAccumulator<TNode, TAccumulate>(
+    // The engine adapter: the engines run BARE -- their state is the fold's own width (THE
+    // EMISSION MINT, 2026-08-17: the pairing is constructed per emission from the inner's
+    // node-in-hand, never stored) -- while the user accumulator speaks the minimal
+    // (accumulate, node) basis; this lifts it to the engine's context shape.
+    private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulator<TNode, TAccumulate>(
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => (parentPairing, nodeContext) =>
-        new NodeAccumulation<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
+      => (parentContext, nodeContext) => accumulator(parentContext.Node, nodeContext.Node);
 
     // The root boundary, written once so consumers never hand-roll the forest-root check: a
-    // root (parent pairing parked at the virtual forest root) takes the selector's return AS
+    // root (parent context parked at the virtual forest root) takes the selector's return AS
     // its accumulation -- the bypass instrument, THE NORTH STAR's scan half (2026-08-05):
     // cross-tier flavor coherence selects these semantics, because the dispatch selector sets
     // roots' arrivals directly and arrival IS the value there, so the fold-encoded dispatch
@@ -146,12 +146,12 @@ namespace Copse.Linq
     // intra-tier equivalence and was reversed; its real motivation, the merged DoScan's
     // silent root landing, died with the quartet.) The unused sentinel seed is default --
     // the selector branch is the only reader of roots.
-    private static Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> PairingAccumulatorWithRootSelector<TNode, TAccumulate>(
+    private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulatorWithRootSelector<TNode, TAccumulate>(
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => (parentPairing, nodeContext) =>
-        parentPairing.Position.IsForestRoot
-        ? new NodeAccumulation<TNode, TAccumulate>(nodeContext.Node, rootNodeSelector(nodeContext.Node, nodeContext.Position))
-        : new NodeAccumulation<TNode, TAccumulate>(nodeContext.Node, accumulator(parentPairing.Node.Accumulate, nodeContext.Node));
+      => (parentContext, nodeContext) =>
+        parentContext.Position.IsForestRoot
+        ? rootNodeSelector(nodeContext.Node, nodeContext.Position)
+        : accumulator(parentContext.Node, nodeContext.Node);
   }
 }

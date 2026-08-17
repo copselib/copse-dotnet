@@ -6,17 +6,18 @@ using System;
 namespace Copse.Linq.Async
 {
   // A composed-projection variant of a rootfix scan (the streaming projection citizenship):
-  // the same recipe as the plain citizen, with the product selector planted inside the
-  // product engines -- one selector call at emission instead of a wrapper layer per pull.
-  // Itself a citizen: further Selects compose onto the selector (closure by signature).
+  // the same bare recipe as the plain citizen, with the product selector planted inside the
+  // product engines -- one selector call at emission over a transient pairing, instead of a
+  // wrapper layer per pull. Itself a citizen: further Selects compose onto the selector
+  // (closure by signature).
   internal sealed class AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TProduct>
     : IAsyncSelectComposableTreenumerable<TProduct>
   {
     public AsyncRootfixScanProductTreenumerable(
       Func<IAsyncTreenumerator<TNode>> innerDepthFirstFactory,
       Func<IAsyncTreenumerator<TNode>> innerBreadthFirstFactory,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> accumulator,
-      NodeAccumulation<TNode, TAccumulate> seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed,
       Func<NodeAccumulation<TNode, TAccumulate>, TProduct> productSelector)
     {
       _InnerDepthFirstFactory = innerDepthFirstFactory;
@@ -28,8 +29,8 @@ namespace Copse.Linq.Async
 
     private readonly Func<IAsyncTreenumerator<TNode>> _InnerDepthFirstFactory;
     private readonly Func<IAsyncTreenumerator<TNode>> _InnerBreadthFirstFactory;
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> _Accumulator;
-    private readonly NodeAccumulation<TNode, TAccumulate> _Seed;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly TAccumulate _Seed;
     private readonly Func<NodeAccumulation<TNode, TAccumulate>, TProduct> _ProductSelector;
 
     public IAsyncTreenumerator<TProduct> GetAsyncDepthFirstTreenumerator()

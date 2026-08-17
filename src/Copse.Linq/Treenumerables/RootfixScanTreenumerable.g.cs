@@ -11,19 +11,19 @@ namespace Copse.Linq.Treenumerators
   // The streaming tier's FIRST CITIZEN (SELECT_INTO_CAPTURES_DESIGN.md): RootfixScan's
   // composite result, holding the scan's recipe so a composed Select re-plants the
   // projection INSIDE the engine (the product twins) instead of stacking a wrapper. The
-  // plain acquisitions construct exactly what the operator constructed before this type
-  // existed -- same engines, same adapters, same delegates -- so the un-composed spelling
-  // never pays for the citizenship. Narrow (single-dimension) scan results are NOT citizens
-  // (the citizenship is composite-width; narrowing it is CompositeToNarrow-scale work,
-  // deferred).
+  // recipe is BARE (the fold's accumulator and seed at their own width, the emission mint --
+  // the engines pair on the way out), and the plain acquisitions construct the plain
+  // engines, selector-free, so the un-composed spelling never pays for the citizenship.
+  // Narrow (single-dimension) scan results are NOT citizens (the citizenship is
+  // composite-width; narrowing it is CompositeToNarrow-scale work, deferred).
   internal sealed class RootfixScanTreenumerable<TNode, TAccumulate>
     : ISelectComposableTreenumerable<NodeAccumulation<TNode, TAccumulate>>
   {
     public RootfixScanTreenumerable(
       Func<ITreenumerator<TNode>> innerDepthFirstFactory,
       Func<ITreenumerator<TNode>> innerBreadthFirstFactory,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> accumulator,
-      NodeAccumulation<TNode, TAccumulate> seed)
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed)
     {
       _InnerDepthFirstFactory = innerDepthFirstFactory;
       _InnerBreadthFirstFactory = innerBreadthFirstFactory;
@@ -33,15 +33,15 @@ namespace Copse.Linq.Treenumerators
 
     private readonly Func<ITreenumerator<TNode>> _InnerDepthFirstFactory;
     private readonly Func<ITreenumerator<TNode>> _InnerBreadthFirstFactory;
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> _Accumulator;
-    private readonly NodeAccumulation<TNode, TAccumulate> _Seed;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly TAccumulate _Seed;
 
     public ITreenumerator<NodeAccumulation<TNode, TAccumulate>> GetDepthFirstTreenumerator()
-      => new RootfixScanDepthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+      => new RootfixScanDepthFirstTreenumerator<TNode, TAccumulate>(
         _InnerDepthFirstFactory, _Accumulator, _Seed);
 
     public ITreenumerator<NodeAccumulation<TNode, TAccumulate>> GetBreadthFirstTreenumerator()
-      => new RootfixScanBreadthFirstTreenumerator<TNode, NodeAccumulation<TNode, TAccumulate>>(
+      => new RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed);
 
     public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)

@@ -12,12 +12,20 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// Depth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
   /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. A cumulative
-  /// scan from the root -- each scheduled node's value is the accumulator applied to its parent's
-  /// accumulated value -- transforming the inner TNode stream into a TAccumulate stream; all
-  /// accumulation state is synchronous stacks.
+  /// scan from the root -- each scheduled node's accumulation is the accumulator applied to its
+  /// parent's accumulation -- emitting the canonical pairing; all accumulation state is
+  /// synchronous stacks.
+  ///
+  /// <para>THE EMISSION MINT (2026-08-17, the state-width reclaim): the stacks carry BARE
+  /// accumulates -- the fold's own width, the O(depth) information floor -- and the emitted
+  /// pairing is constructed per emission from <c>InnerTreenumerator.Node</c>, which is the
+  /// current node at every 1:1-decorated emission, scheduling and re-visits alike. The pair
+  /// lives on the evaluation stack only; it never lands in scan state. (The ScanResult sweep
+  /// had instantiated this engine with TAccumulate = the pairing, which silently doubled every
+  /// stack entry -- measured 16 bytes/node of chain depth.)</para>
   /// </summary>
   internal sealed class RootfixScanDepthFirstTreenumerator<TNode, TAccumulate>
-    : TreenumeratorWrapper<TNode, TAccumulate>
+    : TreenumeratorWrapper<TNode, NodeAccumulation<TNode, TAccumulate>>
   {
     public RootfixScanDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
@@ -85,7 +93,7 @@ namespace Copse.Linq.Treenumerators
           PopStackWithDeepestNodeVisit();
       }
 
-      var node =
+      var accumulate =
         InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), InnerTreenumerator.ToNodeContext())
         : _Stack.Pop().Node;
@@ -93,7 +101,7 @@ namespace Copse.Linq.Treenumerators
       var newVisit =
         new NodeVisit<TAccumulate>(
           InnerTreenumerator.Mode,
-          node,
+          accumulate,
           InnerTreenumerator.VisitCount,
           InnerTreenumerator.Position);
 
@@ -107,7 +115,7 @@ namespace Copse.Linq.Treenumerators
     private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = nodeVisit.Node;
+      Node = new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node);
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }

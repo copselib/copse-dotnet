@@ -12,27 +12,29 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// The COMPOSED-PROJECTION twin of <see cref="AsyncRootfixScanDepthFirstTreenumerator{TNode, TAccumulate}"/>
   /// (the streaming projection citizenship, design-docs/SELECT_INTO_CAPTURES_DESIGN.md): the
-  /// scan state threads exactly as the plain engine's -- pair-shaped visits, the same
-  /// accumulator adapters -- and the PRODUCT is <c>productSelector(pair)</c> applied at
-  /// emission, so a composed <c>Select</c> costs one selector call inside this engine instead
-  /// of a whole wrapper layer per pull. Visiting re-emissions re-apply the selector (pure by
-  /// Select's documented contract; invocation count is deliberately unspecified). The plain
-  /// engine stays untouched -- the plain spelling never pays for this seam.
+  /// scan state threads exactly as the plain engine's -- BARE accumulates on the stacks (the
+  /// emission mint, see the plain twin's doc) -- and the PRODUCT is
+  /// <c>productSelector(pairing)</c> applied at emission over a pairing minted from
+  /// <c>InnerTreenumerator.Node</c>, so a composed <c>Select</c> costs one selector call
+  /// inside this engine instead of a whole wrapper layer per pull, and the pairing itself is
+  /// a transient that never lands in scan state. Visiting re-emissions re-apply the selector
+  /// (pure by Select's documented contract; invocation count is deliberately unspecified).
+  /// The plain engine stays selector-free -- the plain spelling never pays for this seam.
   /// </summary>
   internal sealed class RootfixScanProductDepthFirstTreenumerator<TNode, TAccumulate, TProduct>
     : TreenumeratorWrapper<TNode, TProduct>
   {
     public RootfixScanProductDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> accumulator,
-      NodeAccumulation<TNode, TAccumulate> seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed,
       Func<NodeAccumulation<TNode, TAccumulate>, TProduct> productSelector) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
       _ProductSelector = productSelector;
 
       var seedVisit =
-        new NodeVisit<NodeAccumulation<TNode, TAccumulate>>(
+        new NodeVisit<TAccumulate>(
           TreenumeratorMode.VisitingNode,
           seed,
           1,
@@ -41,13 +43,13 @@ namespace Copse.Linq.Treenumerators
       _Stack.Push(seedVisit);
     }
 
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> _Accumulator;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
     private readonly Func<NodeAccumulation<TNode, TAccumulate>, TProduct> _ProductSelector;
 
-    private readonly Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> _Stack = new Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>>();
-    private readonly Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> _SkippedStack = new Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>>();
+    private readonly Stack<NodeVisit<TAccumulate>> _Stack = new Stack<NodeVisit<TAccumulate>>();
+    private readonly Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
 
-    private Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> GetStackWithDeepestNodeVisit()
+    private Stack<NodeVisit<TAccumulate>> GetStackWithDeepestNodeVisit()
     {
       if (_SkippedStack.Count > 0
         && _SkippedStack.Peek().Position.Depth > _Stack.Peek().Position.Depth)
@@ -60,7 +62,7 @@ namespace Copse.Linq.Treenumerators
 
     private int GetDeepestSeenDepth() => GetStackWithDeepestNodeVisit().Peek().Position.Depth;
 
-    private NodeVisit<NodeAccumulation<TNode, TAccumulate>> PopStackWithDeepestNodeVisit() => GetStackWithDeepestNodeVisit().Pop();
+    private NodeVisit<TAccumulate> PopStackWithDeepestNodeVisit() => GetStackWithDeepestNodeVisit().Pop();
 
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -91,15 +93,15 @@ namespace Copse.Linq.Treenumerators
           PopStackWithDeepestNodeVisit();
       }
 
-      var node =
+      var accumulate =
         InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
         ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), InnerTreenumerator.ToNodeContext())
         : _Stack.Pop().Node;
 
       var newVisit =
-        new NodeVisit<NodeAccumulation<TNode, TAccumulate>>(
+        new NodeVisit<TAccumulate>(
           InnerTreenumerator.Mode,
-          node,
+          accumulate,
           InnerTreenumerator.VisitCount,
           InnerTreenumerator.Position);
 
@@ -110,10 +112,10 @@ namespace Copse.Linq.Treenumerators
       return true;
     }
 
-    private void UpdateStateFromNodeVisit(NodeVisit<NodeAccumulation<TNode, TAccumulate>> nodeVisit)
+    private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = _ProductSelector(nodeVisit.Node);
+      Node = _ProductSelector(new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node));
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }

@@ -15,9 +15,15 @@ namespace Copse.Linq.Treenumerators
   /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. The BFT cumulative
   /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
   /// are decoupled; all level/skip state is synchronous.
+  ///
+  /// <para>THE EMISSION MINT (2026-08-17; the depth-first twin's doc carries the full
+  /// rationale): the level buffers and skip stack carry BARE accumulates -- the parent lookup
+  /// only ever reads an entry's accumulate and position -- and the emitted pairing is
+  /// constructed per emission from <c>InnerTreenumerator.Node</c>. The pair never lands in the
+  /// level buffers.</para>
   /// </summary>
   internal sealed class RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>
-    : TreenumeratorWrapper<TNode, TAccumulate>
+    : TreenumeratorWrapper<TNode, NodeAccumulation<TNode, TAccumulate>>
   {
     public RootfixScanBreadthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
@@ -112,9 +118,14 @@ namespace Copse.Linq.Treenumerators
       else
         accumulateNodeVisit = _CurrentLevel.GetFirst();
 
-      var node = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
+      var accumulate = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
 
-      var visit = InnerTreenumerator.ToNodeVisit().WithNode(node);
+      var visit =
+        new NodeVisit<TAccumulate>(
+          InnerTreenumerator.Mode,
+          accumulate,
+          InnerTreenumerator.VisitCount,
+          InnerTreenumerator.Position);
 
       _NextLevel.AddLast(visit);
 
@@ -159,7 +170,7 @@ namespace Copse.Linq.Treenumerators
     private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = nodeVisit.Node;
+      Node = new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node);
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }

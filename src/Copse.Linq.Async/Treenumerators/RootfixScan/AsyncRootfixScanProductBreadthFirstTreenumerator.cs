@@ -11,24 +11,25 @@ namespace Copse.Linq.Async
 {
   /// <summary>
   /// The COMPOSED-PROJECTION twin of <see cref="AsyncRootfixScanBreadthFirstTreenumerator{TNode, TAccumulate}"/>
-  /// (the streaming projection citizenship, design-docs/SELECT_INTO_CAPTURES_DESIGN.md): pair-shaped
-  /// scan state and the same accumulator adapters as the plain engine, with the product
-  /// applied at emission -- see the depth-first twin's doc for the full rationale.
+  /// (the streaming projection citizenship, design-docs/SELECT_INTO_CAPTURES_DESIGN.md): BARE
+  /// accumulates in the level buffers (the emission mint) and the same accumulator shape as
+  /// the plain engine, with the product applied at emission over a transient pairing -- see
+  /// the depth-first twin's doc for the full rationale.
   /// </summary>
   internal sealed class AsyncRootfixScanProductBreadthFirstTreenumerator<TNode, TAccumulate, TProduct>
     : AsyncTreenumeratorWrapper<TNode, TProduct>
   {
     public AsyncRootfixScanProductBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> accumulator,
-      NodeAccumulation<TNode, TAccumulate> seed,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      TAccumulate seed,
       Func<NodeAccumulation<TNode, TAccumulate>, TProduct> productSelector) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
       _ProductSelector = productSelector;
 
       var seedVisit =
-        new NodeVisit<NodeAccumulation<TNode, TAccumulate>>(
+        new NodeVisit<TAccumulate>(
           TreenumeratorMode.VisitingNode,
           seed,
           1,
@@ -37,13 +38,13 @@ namespace Copse.Linq.Async
       _CurrentLevel.AddLast(seedVisit);
     }
 
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, NodeContext<TNode>, NodeAccumulation<TNode, TAccumulate>> _Accumulator;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
     private readonly Func<NodeAccumulation<TNode, TAccumulate>, TProduct> _ProductSelector;
 
-    private RefSemiDeque<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> _CurrentLevel = new RefSemiDeque<NodeVisit<NodeAccumulation<TNode, TAccumulate>>>();
-    private RefSemiDeque<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> _NextLevel = new RefSemiDeque<NodeVisit<NodeAccumulation<TNode, TAccumulate>>>();
+    private RefSemiDeque<NodeVisit<TAccumulate>> _CurrentLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
+    private RefSemiDeque<NodeVisit<TAccumulate>> _NextLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
 
-    private Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>> _SkippedStack = new Stack<NodeVisit<NodeAccumulation<TNode, TAccumulate>>>();
+    private Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
 
     // Tracks whether we've scheduled any children since the last node was pushed to _SkippedStack.
     // This helps detect when we've moved to scheduling children of a different parent.
@@ -104,7 +105,7 @@ namespace Copse.Linq.Async
       // 3. Else if _NextLevel has items at parent depth, use the first one
       //    (this happens when grandparent was skipped but parent wasn't yet visited)
       // 4. Else use _CurrentLevel[0] (for root nodes, parent is seed at depth -1)
-      NodeVisit<NodeAccumulation<TNode, TAccumulate>> accumulateNodeVisit;
+      NodeVisit<TAccumulate> accumulateNodeVisit;
       if (_CurrentLevel.GetFirst().Position.Depth == parentDepth)
         accumulateNodeVisit = _CurrentLevel.GetFirst();
       else if (_SkippedStack.Count > 0)
@@ -114,9 +115,14 @@ namespace Copse.Linq.Async
       else
         accumulateNodeVisit = _CurrentLevel.GetFirst();
 
-      var node = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
+      var accumulate = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
 
-      var visit = InnerTreenumerator.ToNodeVisit().WithNode(node);
+      var visit =
+        new NodeVisit<TAccumulate>(
+          InnerTreenumerator.Mode,
+          accumulate,
+          InnerTreenumerator.VisitCount,
+          InnerTreenumerator.Position);
 
       _NextLevel.AddLast(visit);
 
@@ -147,7 +153,7 @@ namespace Copse.Linq.Async
       ref var visit = ref _CurrentLevel.GetFirst();
 
       var newVisit =
-        new NodeVisit<NodeAccumulation<TNode, TAccumulate>>(
+        new NodeVisit<TAccumulate>(
           InnerTreenumerator.Mode,
           visit.Node,
           InnerTreenumerator.VisitCount,
@@ -158,10 +164,10 @@ namespace Copse.Linq.Async
       UpdateStateFromNodeVisit(newVisit);
     }
 
-    private void UpdateStateFromNodeVisit(NodeVisit<NodeAccumulation<TNode, TAccumulate>> nodeVisit)
+    private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = _ProductSelector(nodeVisit.Node);
+      Node = _ProductSelector(new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node));
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }

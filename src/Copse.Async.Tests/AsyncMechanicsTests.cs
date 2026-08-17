@@ -408,6 +408,26 @@ namespace Copse.Async.Tests
       return visits;
     }
 
+    // The scan engines emit the canonical pairing with bare-accumulate state (the emission
+    // mint); the mechanics parity check collects the accumulate stream.
+    private static List<Visit> Collect(ITreenumerator<NodeAccumulation<int, int>> t)
+    {
+      var visits = new List<Visit>();
+      using (t)
+        while (t.MoveNext(NodeTraversalStrategies.TraverseAll))
+          visits.Add(new Visit(t.Mode, t.Node.Accumulate, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+      return visits;
+    }
+
+    private static async Task<List<Visit>> CollectAsync(IAsyncTreenumerator<NodeAccumulation<int, int>> t)
+    {
+      var visits = new List<Visit>();
+      await using (t.ConfigureAwait(false))
+        while (await t.MoveNextAsync(NodeTraversalStrategies.TraverseAll))
+          visits.Add(new Visit(t.Mode, t.Node.Accumulate, t.VisitCount, t.Position.Depth, t.Position.SiblingIndex));
+      return visits;
+    }
+
     private static List<int> FirstVisitNodes(List<Visit> visits)
       => visits.Where(v => v.Mode == TreenumeratorMode.VisitingNode && v.VisitCount == 1).Select(v => v.Node).ToList();
 
