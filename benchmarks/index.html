@@ -189,16 +189,18 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 function fmtDate(ms){ return new Date(ms).toISOString().slice(0,10); }
 
 // ---- inline SVG ----
-// Trailing moving average, window 5 (each point averages itself and up to 4 predecessors):
-// the reading that separates a real level shift from run-to-run machine noise. Trailing, not
-// centered, so the newest point's average never waits on future runs.
-function movingAverage(values, window=5) {
+// Trailing rolling MEDIAN, window 5 (each point: the median of itself and up to 4
+// predecessors) -- robust to the machine-factor spikes benchmark series actually suffer: a
+// lone outlier never bends the trend, while a shift that persists 3-of-5 runs is a real
+// level change and the median follows it. Trailing, not centered, so the newest point never
+// waits on future runs.
+function movingMedian(values, window=5) {
   const out = new Array(values.length);
-  let sum = 0;
   for (let i=0;i<values.length;i++) {
-    sum += values[i];
-    if (i>=window) sum -= values[i-window];
-    out[i] = sum / Math.min(i+1, window);
+    const start = Math.max(0, i-window+1);
+    const slice = values.slice(start, i+1).sort((a,b)=>a-b);
+    const mid = slice.length >> 1;
+    out[i] = slice.length % 2 ? slice[mid] : (slice[mid-1]+slice[mid])/2;
   }
   return out;
 }
@@ -207,23 +209,24 @@ function pathOf(values, x, y) {
 }
 function sparkline(pts, archived) {
   if (pts.length<2) return '<svg class="spark" width="120" height="22"><text x="0" y="15">single point</text></svg>';
-  const vs = pts.map(p=>p.value), ma = movingAverage(vs);
+  const vs = pts.map(p=>p.value), ma = movingMedian(vs);
   const mn=Math.min(...vs), mx=Math.max(...vs), W=120,H=22,P=2;
   const x=i=>P+i*(W-2*P)/(pts.length-1);
   const y=v=>mx===mn ? H/2 : H-P-(v-mn)/(mx-mn)*(H-2*P);
   const last=pts[pts.length-1];
   const stroke = archived ? 'stroke="var(--muted)" stroke-dasharray="3 2"' : 'stroke="var(--accent)"';
   const fill = archived ? "var(--muted)" : "var(--accent)";
-  // Raw series in the accent; the smoothed trend as a dashed muted overlay (skipped for
-  // short histories, where it would just shadow the raw line).
+  // Raw series in the accent; the trend as a SOLID semi-transparent red drawn BEHIND it
+  // (the dashed gray was invisible at sparkline scale). Skipped for short histories, where
+  // it would just shadow the raw line.
   const maPath = (!archived && pts.length>=6)
-    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 2"/>` : "";
+    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.45" stroke-width="2"/>` : "";
   return `<svg class="spark" width="${W}" height="${H}">${maPath}<path d="${pathOf(vs,x,y)}" fill="none" ${stroke} stroke-width="1.5"/>`
        + `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="2" fill="${fill}"/></svg>`;
 }
 function bigChart(pts, unit) {
   if (pts.length<2) return '<div class="note">No history yet — only one commit recorded. (Toggle “Demo history” to see the trend UI populated.)</div>';
-  const vs=pts.map(p=>p.value), ma=movingAverage(vs), mn=Math.min(...vs), mx=Math.max(...vs);
+  const vs=pts.map(p=>p.value), ma=movingMedian(vs), mn=Math.min(...vs), mx=Math.max(...vs);
   const W=640,H=190,L=70,R=14,T=14,B=28, iw=W-L-R, ih=H-T-B;
   const x=i=>L+i*iw/(pts.length-1);
   const y=v=>mx===mn ? T+ih/2 : T+ih-(v-mn)/(mx-mn)*ih;
@@ -234,9 +237,9 @@ function bigChart(pts, unit) {
   pts.forEach((p,i)=>{ dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2.5" fill="var(--accent)">`
     +`<title>${esc((p.id||"").slice(0,10))} · ${fmtDate(p.date)} — ${esc(fmtVal(p.value,unit))}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
   const maPath = pts.length>=6
-    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--muted)" stroke-width="1.25" stroke-dasharray="4 3"/>` : "";
+    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.4" stroke-width="2.5"/>` : "";
   const maLegend = pts.length>=6
-    ? `<text x="${W-R}" y="${T-4}" text-anchor="end">· · · 5-run avg</text>` : "";
+    ? `<text x="${W-R}" y="${T-4}" text-anchor="end" style="fill:var(--bad);fill-opacity:.7">— 5-run median</text>` : "";
   const d0=fmtDate(pts[0].date), d1=fmtDate(pts[pts.length-1].date);
   return `<svg width="${W}" height="${H}" role="img">${g}${maPath}<path d="${pathOf(vs,x,y)}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
        + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text>${maLegend}</svg>`;
