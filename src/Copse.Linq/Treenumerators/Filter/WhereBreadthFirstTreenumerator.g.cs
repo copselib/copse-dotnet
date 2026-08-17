@@ -29,10 +29,12 @@ namespace Copse.Linq.Treenumerators
   {
     public WhereBreadthFirstTreenumerator(
       Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
-      TResultSelector resultSelector)
+      TResultSelector resultSelector,
+      bool takeSubtrees = false)
       : base(innerTreenumeratorFactory)
     {
       _ResultSelector = resultSelector;
+      _TakeSubtrees = takeSubtrees;
 
       // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
       // sentinel value is never published, so no projection is owed).
@@ -40,6 +42,14 @@ namespace Copse.Linq.Treenumerators
     }
 
     private readonly TResultSelector _ResultSelector;
+
+    // THE SUBTREE STAGE (TakeSubtreesWhere as a driver-stage fact, 2026-08-17): in subtree
+    // mode the reject is an INHERITED fact -- a predicate-failing node whose inner parent was
+    // ACCEPTED is inside a kept region and is kept with its whole subtree; only nodes whose
+    // every ancestor-or-self failed are dropped (the outermost rule as prefix arithmetic --
+    // the kept-region bit IS "parent not skipped", already carried by the O(1) skip prefix,
+    // so the stage costs one prefix read per predicate-failing schedule and NO new state).
+    private readonly bool _TakeSubtrees;
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
@@ -162,12 +172,21 @@ namespace Copse.Linq.Treenumerators
           // strategies ride the pending/deferred slots so they apply on the pull following the
           // node's scheduling publish.
           var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
-          var skipped = result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
+          var resultStrategies = result.Strategies;
+          var skipped = resultStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
+
+          // The subtree stage's one rule: a predicate-fail inside a kept region is a keep.
+          if (skipped && _TakeSubtrees && _Path.ScheduledParentIsAccepted(innerDepth))
+          {
+            skipped = false;
+            resultStrategies &= ~NodeTraversalStrategies.SkipNode;
+          }
+
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
 
           if (skipped)
           {
-            nodeTraversalStrategies = result.Strategies;
+            nodeTraversalStrategies = resultStrategies;
             continue;
           }
 
@@ -220,7 +239,7 @@ namespace Copse.Linq.Treenumerators
               _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               // The schedule publishes on a later entry; its accept-side strategies wait with it.
-              _DeferredResultStrategies = result.Strategies;
+              _DeferredResultStrategies = resultStrategies;
               _Path.Front.VisitCount++;
               Publish(ref _Path.Front, TreenumeratorMode.VisitingNode);
               return true;
@@ -234,7 +253,7 @@ namespace Copse.Linq.Treenumerators
           _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
           // The scheduling publish below is this node's; its accept-side strategies apply on
           // the pull that follows it.
-          _PendingResultStrategies = result.Strategies;
+          _PendingResultStrategies = resultStrategies;
         }
         else // VisitingNode
         {

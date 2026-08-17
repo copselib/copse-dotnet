@@ -10,8 +10,8 @@ namespace Copse.Benchmarks
   // subtree is a contiguous preorder segment), while the composite arm is THE SCAN SPELLING
   // (2026-08-17): RootfixScan(false, kept-or-match) -> Where(.Accumulate) -> Select(.Node),
   // one SelectWhere driver over the scan engine; the composite DIMENSION-DISPATCHES: its DFT
-  // arm takes the bespoke O(1) wrapper, its BFT arm the chain. The store build is retired, so
-  // the *_Buffered row names are HISTORICAL (kept for series continuity). Steps at the swap:
+  // arm takes the bespoke O(1) wrapper, its BFT arm the Where machinery in SUBTREE MODE (the
+  // kept-region rule as one prefix read; 2026-08-17). *_Buffered row names are HISTORICAL.
   // alloc collapses wherever the result store dominated (Triangle ~41MB -> ~0.2-0.5MB; Bft
   // chain ~40MB -> ~6MB); composite DFT time DROPS below the buffer (dispatch); composite BFT
   // time rises ~1.5x (per-pull scan+driver vs buffered decode -- the streaming price). The

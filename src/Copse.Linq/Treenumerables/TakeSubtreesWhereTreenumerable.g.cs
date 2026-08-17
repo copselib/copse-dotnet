@@ -34,8 +34,21 @@ namespace Copse.Linq.Treenumerators
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
       => new TakeSubtreesWhereTreenumerator<TNode>(_Source.GetDepthFirstTreenumerator, _Predicate);
 
+    // THE SUBTREE STAGE (2026-08-17): the BFT arm is the Where machinery itself in subtree
+    // mode -- one wrapper, no scan engine, no pair, the kept-region fact read off the skip
+    // prefix the machinery already carries. The scan chain (BreadthFirstChain) remains the
+    // operator's algebraic definition and the product variant's route.
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
-      => BreadthFirstChain(_Source, _Predicate).GetBreadthFirstTreenumerator();
+    {
+      var predicate = _Predicate;
+
+      return new WhereBreadthFirstTreenumerator<TNode, TNode, FuncResultSelector<TNode, TNode>>(
+        _Source.GetBreadthFirstTreenumerator,
+        new FuncResultSelector<TNode, TNode>(nodeContext => new SelectWhereResult<TNode>(
+          nodeContext.Node,
+          predicate(nodeContext) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
+        takeSubtrees: true);
+    }
 
     public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
       => new TakeSubtreesWhereProductTreenumerable<TNode, TResult>(_Source, _Predicate, selector);

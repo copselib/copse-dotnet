@@ -32,8 +32,21 @@ namespace Copse.Linq.Async
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
       => new AsyncTakeSubtreesWhereTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator, _Predicate);
 
+    // THE SUBTREE STAGE (2026-08-17): the BFT arm is the Where machinery itself in subtree
+    // mode -- one wrapper, no scan engine, no pair, the kept-region fact read off the skip
+    // prefix the machinery already carries. The scan chain (BreadthFirstChain) remains the
+    // operator's algebraic definition and the product variant's route.
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
-      => BreadthFirstChain(_Source, _Predicate).GetAsyncBreadthFirstTreenumerator();
+    {
+      var predicate = _Predicate;
+
+      return new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, FuncResultSelector<TNode, TNode>>(
+        _Source.GetAsyncBreadthFirstTreenumerator,
+        new FuncResultSelector<TNode, TNode>(nodeContext => new SelectWhereResult<TNode>(
+          nodeContext.Node,
+          predicate(nodeContext) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
+        takeSubtrees: true);
+    }
 
     public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
       => new AsyncTakeSubtreesWhereProductTreenumerable<TNode, TResult>(_Source, _Predicate, selector);

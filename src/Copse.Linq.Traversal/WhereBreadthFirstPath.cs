@@ -225,6 +225,19 @@ namespace Copse.Linq.Treenumerators
       _PrefixStoredCount++;
     }
 
+    // The subtree-mode gate (TakeSubtreesWhere as a driver stage, 2026-08-17): is the node
+    // being scheduled at innerDepth inside a KEPT region -- its immediate inner parent
+    // accepted? Read BEFORE PrefixWriteForScheduledNode writes the node's own slot. Roots
+    // have no parent and are never inside a kept region.
+    public bool ScheduledParentIsAccepted(int innerDepth)
+    {
+      if (innerDepth == 0)
+        return false;
+
+      PrefixSkippedAncestorCount(innerDepth, out var immediateParentIsSkipped);
+      return !immediateParentIsSkipped;
+    }
+
     private int PrefixSkippedAncestorCount(int innerDepth, out bool immediateParentIsSkipped)
     {
       var depth = innerDepth;
