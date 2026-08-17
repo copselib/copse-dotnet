@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786984551505,
+  "lastUpdate": 1786984552039,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -112142,6 +112142,102 @@ window.BENCHMARK_DATA = {
             "value": 48873861.41818181,
             "unit": "ns",
             "range": "± 273637.6507488535"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "231b5bd9e1014f45fd88f61d31ff34297a011d58",
+          "message": "The erased product writer: composed products fuse into the fold loop\n\nThe net8 CI runs caught the composed leaffix spelling reading WORSE than\nthe veneer it replaced (Select_Accumulate/plain ratio 1.07 -> 1.15-1.18,\nboth merge runs) while net10 local showed the opposite -- real net8 cost\nin the composed route, not layout luck. Two-stage fix, net8-replica\nverified (dotnet-install 8.0.30; the benchmarks project targets net8 but\nhad been rolling forward to net10 locally, hiding the divergence):\n\n- ScanFoldArtifacts carries the raw values ARRAY when the pass owns one,\n  so zips index directly instead of a delegate per node (harmless alone:\n  MediumRun ratio unmoved -- the delegate was not the dominant term).\n- The ERASED PRODUCT WRITER, the real fix: the first-building variant\n  hands ScanProductWriter (Initialize/Write, TProduct hidden inside)\n  into the pass, and the fold loops invoke it per node -- values and\n  accumulations hot -- replacing the separate zip pass that re-traversed\n  three arrays. The canonical inline fusion stays (the guard-rail rule:\n  no virtual call on the un-composed path); the walker fold declines\n  (count unknown mid-walk) and its variants zip from artifacts; the\n  shared RunLeaffixDispatchPassAsync gains the writer as a null-default\n  parameter, dispatch callers untouched.\n\nNet8 MediumRun ratio: 1.109 -> 1.091 (composed absolute ~115 ms, plain\n~105); the remaining gap vs the veneer era is at the local noise floor\n-- the CI per-testbed series is the referee from here. 24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T16:15:20Z",
+          "tree_id": "cd886a9b663e924ef0830b331338976207908bed",
+          "url": "https://github.com/copselib/copse-dotnet/commit/231b5bd9e1014f45fd88f61d31ff34297a011d58"
+        },
+        "date": 1786984551921,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 103320194.8,
+            "unit": "ns",
+            "range": "± 335687.34127936006"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 90836980.53571428,
+            "unit": "ns",
+            "range": "± 289598.71823784814"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 269311030.3,
+            "unit": "ns",
+            "range": "± 1887100.9046245553"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 273346362.6,
+            "unit": "ns",
+            "range": "± 750740.6907176073"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 195403314.6904762,
+            "unit": "ns",
+            "range": "± 1641374.4739340036"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 237667381.00000003,
+            "unit": "ns",
+            "range": "± 1408036.9253060194"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 105396053.11666667,
+            "unit": "ns",
+            "range": "± 242487.31109723425"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 86468346.03333335,
+            "unit": "ns",
+            "range": "± 700759.2353903018"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 473315312.8666667,
+            "unit": "ns",
+            "range": "± 1682878.1159594192"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 501197496.35714287,
+            "unit": "ns",
+            "range": "± 1063855.2390071042"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 99069244.92857143,
+            "unit": "ns",
+            "range": "± 221683.77891375"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79492993.05555555,
+            "unit": "ns",
+            "range": "± 714218.329675969"
           }
         ]
       }
