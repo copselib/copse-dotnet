@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787005242994,
+  "lastUpdate": 1787005243535,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -83652,6 +83652,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
             "value": 2840154,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 332817,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 265129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497",
+          "message": "The dispatch moves behind the citizenship: TakeSubtreesWhere composes mid-chain\n\nJason's seam objection, resolved: a bare dimension-dispatched delegating type\ncannot participate in Select/Where composition -- TakeSubtreesWhere in the\nmiddle of a chain would be a seam nothing composes over. The dispatch now\nlives BEHIND the streaming citizenship (the rootfix-citizen pattern):\nTakeSubtreesWhereTreenumerable carries (source, predicate) as its recipe and\nimplements ISelectComposableTreenumerable; the product variant carries the\ncomposed selector. Machinery is chosen per dimension at ACQUISITION time --\ndepth-first the bespoke O(1) wrapper, breadth-first the scan chain -- an\nimplementation fact invisible to the algebra.\n\nComposition, per dimension: a following Select composes onto the product\nselector (BFT: absorbed inside the chain's SelectWhere driver; DFT: exactly\nONE light Select wrapper over the bespoke wrapper, however long the composed\nchain); a following Where joins the one driver over the citizen. Pinned by\ntwo new battery pins: closure + driver join, and the mid-chain\ncomposed-equals-forced-wrapper seam pin over the corpus, both dimensions.\n\nBenchmark rows unchanged from the dispatch (the citizen adds nothing at\nacquisition): composite DFT 64-66ms / 26ms, BFT the chain. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T22:04:35Z",
+          "tree_id": "129628177165ad62147fdef777f5f7ec036e1fa3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07ca8034b4e46d28b1ab7a9bdbcc34c1c5ed3497"
+        },
+        "date": 1787005243418,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642108,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2417,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693218,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 70553,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 2865,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789058,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051115,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840160,
             "unit": "bytes"
           },
           {
