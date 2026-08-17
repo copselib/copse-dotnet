@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787008542422,
+  "lastUpdate": 1787008543002,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -31034,6 +31034,54 @@ window.BENCHMARK_DATA = {
             "value": 16046566.52955163,
             "unit": "ns",
             "range": "± 896274.7618145882"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "63b3f84759475ba6c0fe5e58c5b76299f8aff9d6",
+          "message": "The subtree stage: TakeSubtreesWhere's BFT arm is the Where machinery, one rule\n\nThe kept-bit experiment, measured and kept. In subtree mode the reject is an\nINHERITED fact -- a predicate-failing node whose inner parent was accepted is\ninside a kept region and keeps its whole subtree. And the kept-region bit\nneeds NO new state: kept == not-skipped, which the BFT Where machinery's O(1)\nskipped-ancestor prefix already carries. The whole stage is one rule at the\ndecision site (a predicate-fail with an accepted parent is a keep, one prefix\nread) plus a constructor flag.\n\nThe citizen's BFT arm now constructs AsyncWhereBreadthFirstTreenumerator in\nsubtree mode directly -- one wrapper over the source; the scan engine and its\ndriver leave the BFT hot path (the scan chain remains the operator's\nalgebraic definition and the product variant's route).\n\nMeasured (local, vs scan chain / vs retired buffer):\n- Bft_Triangle: 175.6 -> 109.5ms (buffer 114.3) / 533 -> 451 KB (buffer 41MB)\n- Bft_Chain_DeepMatch: 140.8 -> 75.1ms (buffer 75.6) / 6.1 -> 1.0 MB (40MB)\n- DFT rows byte-identical controls\n\nEvery arm of the operator is now at-or-below the retired buffer's time with\nstreaming memory. 24,585 green -- the full battery (wall pins, seam pins,\nstrategy matrix) drains BFT through the subtree stage.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T23:00:00Z",
+          "tree_id": "143b31b0f98ebcfca4d31e4f7681d7ce0276620e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/63b3f84759475ba6c0fe5e58c5b76299f8aff9d6"
+        },
+        "date": 1787008542876,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 16358328.795833332,
+            "unit": "ns",
+            "range": "± 239781.27292718817"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 33519503.620833334,
+            "unit": "ns",
+            "range": "± 451426.551410554"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 30775277.546875,
+            "unit": "ns",
+            "range": "± 685063.1314334079"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 16220936.13261218,
+            "unit": "ns",
+            "range": "± 833292.5910633624"
           }
         ]
       }
