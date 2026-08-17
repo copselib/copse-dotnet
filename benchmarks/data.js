@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786998744236,
+  "lastUpdate": 1786998744792,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -142966,6 +142966,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PreorderTraversal.Binary",
             "value": 3035,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26135,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0bc7abb974d708637c2608aeb7b9fc642d32059a",
+          "message": "The thin shape: buffer projection becomes one counted map; the pass layer retires\n\nThe worth-it audit's verdict, executed. Buffer composition stops at every\nbuffering boundary by design, so the shared-fold-pass machinery (pass /\nsibling variants / product writer) served exactly one seam -- and the\nthree-arm harness priced it slower than the transient pair store it existed\nto avoid. Scans return PLAIN buffers again (span fast path restored for\nscan-of-scan); buffer-tier citizenship moves to the Select seam:\nProjectedTreenumerableBuffer = source buffer + selector, built as ONE\ncounted array map off the source's completed store, ComposeSelect composing\nthe selector so chains stay one map. The source buffer -- replayable by\ncontract -- is the sharing substrate; at-most-once falls out for free.\n\nLanded with it: the dispatch tier's result buffers wire probes-at-birth over\ntheir own lazy store. The former Tree.Lazy wrapping hid the store behind the\ncomposite, and every receiver-smart consumer (a second scan, the projected\nmap) paid a full second capture through EnsureTopology to reach it.\n\nReferee panel (local, same run; CI writes the steps on push):\n- Select_Accumulate_Dft_Chain: 87.4ms vs plain 87.3 -- projection is free\n  (+8MB narrow store in the Alloc column, disclosed)\n- Select_Select_Dft_Chain: 87.8ms / 96.05MB -- FLAT vs single Select, the\n  chained collapse intact\n- Twice_Dft_Chain: 231.9ms/272MB -> 101.3ms/108.05MB -- the span-path heal\n- Three-arm harness: composed 105-114ms == plain 105-112, veneer 135\n\nStreaming compose (the lattice, rootfix citizen, compose-left door) is\nuntouched -- the ruled clear win. The door's consumer now lands in a plain\npair buffer. Net -650 lines; 24,581 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T20:17:03Z",
+          "tree_id": "6305ed7782ba85236a5ceaf52a9d77a2340eb612",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0bc7abb974d708637c2608aeb7b9fc642d32059a"
+        },
+        "date": 1786998744672,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 807,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 342,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27503067,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231219,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214095,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 3465,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35079,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 596,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 342,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3017,
             "unit": "bytes"
           },
           {
