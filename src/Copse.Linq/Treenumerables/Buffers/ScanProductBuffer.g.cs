@@ -61,28 +61,65 @@ namespace Copse.Linq.Treenumerables
         (node, accumulate) => selector(currentProductSelector(node, accumulate)));
     }
 
-    // The finisher: one zip over the shared pass into this variant's own product store,
-    // the skeleton array shared. The lazy store releases this closure after the build, so
-    // a built variant no longer references the pass. The canonical variant asks the pass to
-    // FUSE its pairs into the fold loop (the first-caller fusion); when it built first, the
-    // fused array IS its product -- the cast is exact, TProduct is the pairing when the
-    // flag is set -- and no zip runs at all.
+    // The finisher: the first-building variant's product fuses into the fold loop -- the
+    // canonical pairing inline (the fused array IS the product; the cast is exact when the
+    // flag is set), a composed product through the erased writer. Only a variant arriving
+    // AFTER the build zips from the artifacts (direct array reads when the pass owns its
+    // values; the reader delegate only for in-place passes, which never copy the store).
+    // The lazy store releases this closure after the build, dropping the pass reference.
     private static PreorderArrayStore<TProduct> Zip(
       ScanFoldPass<TSource, TAccumulate> foldPass,
       Func<TSource, TAccumulate, TProduct> productSelector,
       bool isCanonicalPairing)
     {
-      var (artifacts, fusedPairProducts) = foldPass.Ensure(isCanonicalPairing);
+      var writer = isCanonicalPairing ? null : new ArrayProductWriter(productSelector);
+      var (artifacts, fusedPairProducts, writerRan) = foldPass
+        .Ensure(new ScanBuildRequest<TSource, TAccumulate>(isCanonicalPairing, writer));
 
       if (isCanonicalPairing && fusedPairProducts != null)
         return new PreorderArrayStore<TProduct>((TProduct[])(object)fusedPairProducts, artifacts.SubtreeSizes);
 
+      if (writerRan)
+        return new PreorderArrayStore<TProduct>(writer.Products, artifacts.SubtreeSizes);
+
       var products = new TProduct[artifacts.Count];
 
-      for (var nodeIndex = 0; nodeIndex < products.Length; nodeIndex++)
-        products[nodeIndex] = productSelector(artifacts.ValueAt(nodeIndex), artifacts.Accumulates[nodeIndex]);
+      if (artifacts.Values != null)
+      {
+        var values = artifacts.Values;
+        var accumulates = artifacts.Accumulates;
+
+        for (var nodeIndex = 0; nodeIndex < products.Length; nodeIndex++)
+          products[nodeIndex] = productSelector(values[nodeIndex], accumulates[nodeIndex]);
+      }
+      else
+      {
+        for (var nodeIndex = 0; nodeIndex < products.Length; nodeIndex++)
+          products[nodeIndex] = productSelector(artifacts.ValueAt(nodeIndex), artifacts.Accumulates[nodeIndex]);
+      }
 
       return new PreorderArrayStore<TProduct>(products, artifacts.SubtreeSizes);
+    }
+
+    private sealed class ArrayProductWriter : ScanProductWriter<TSource, TAccumulate>
+    {
+      public ArrayProductWriter(Func<TSource, TAccumulate, TProduct> productSelector)
+      {
+        _ProductSelector = productSelector;
+      }
+
+      private readonly Func<TSource, TAccumulate, TProduct> _ProductSelector;
+
+      public TProduct[] Products;
+
+      public override void Initialize(int nodeCount)
+      {
+        Products = new TProduct[nodeCount];
+        Filled = true;
+      }
+
+      public override void Write(int nodeIndex, TSource value, TAccumulate accumulate)
+        => Products[nodeIndex] = _ProductSelector(value, accumulate);
     }
   }
 }

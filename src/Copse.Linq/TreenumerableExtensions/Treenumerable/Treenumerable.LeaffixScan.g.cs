@@ -137,7 +137,7 @@ namespace Copse.Linq
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
       var foldPass = new ScanFoldPass<TSource, TAccumulate>(
-        fuseCanonicalPairing => BuildInPlaceLeaffixArtifacts(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, fuseCanonicalPairing));
+        request => BuildInPlaceLeaffixArtifacts(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, request));
 
       return new ScanProductBuffer<TSource, TAccumulate, NodeAccumulation<TSource, TAccumulate>>(foldPass, PairProduct, isCanonicalPairing: true);
     }
@@ -161,7 +161,7 @@ namespace Copse.Linq
           new LeaffixFromProjectionConsumer<TSource, TAccumulate>(leafNodeSelector, edgeAccumulator, nodeAccumulator));
 
       var foldPass = new ScanFoldPass<TSource, TAccumulate>(
-        fuseCanonicalPairing => BuildStreamLeaffixArtifacts(source, leafNodeSelector, edgeAccumulator, nodeAccumulator, fuseCanonicalPairing));
+        request => BuildStreamLeaffixArtifacts(source, leafNodeSelector, edgeAccumulator, nodeAccumulator, request));
 
       return new ScanProductBuffer<TSource, TAccumulate, NodeAccumulation<TSource, TAccumulate>>(foldPass, PairProduct, isCanonicalPairing: true);
     }
@@ -190,7 +190,7 @@ namespace Copse.Linq
         Func<NodeContext<TInner>, TProjected> projector)
       {
         var foldPass = new ScanFoldPass<TProjected, TAccumulate>(
-          fuseCanonicalPairing => BuildStreamLeaffixFromProjectionArtifacts(innerSource, projector, _LeafNodeSelector, _EdgeAccumulator, _NodeAccumulator, fuseCanonicalPairing));
+          request => BuildStreamLeaffixFromProjectionArtifacts(innerSource, projector, _LeafNodeSelector, _EdgeAccumulator, _NodeAccumulator, request));
 
         return new ScanProductBuffer<TProjected, TAccumulate, NodeAccumulation<TProjected, TAccumulate>>(foldPass, PairProduct, isCanonicalPairing: true);
       }
@@ -206,7 +206,7 @@ namespace Copse.Linq
       Func<TProjected, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TProjected, TAccumulate> nodeAccumulator,
-      bool fuseCanonicalPairing)
+      ScanBuildRequest<TProjected, TAccumulate> request)
     {
       var (innerValues, subtreeSizes) = PreorderCapture.CaptureRaw(innerSource);
 
@@ -220,16 +220,23 @@ namespace Copse.Linq
         (TProjected leafValue, NodePosition _) => leafNodeSelector(leafValue),
         DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
+      var productWriter = request.ProductWriter;
+      productWriter?.Initialize(values.Length);
+
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
+      {
         accumulations[nodeIndex] = survey(
           values[nodeIndex],
           positions[nodeIndex],
           new DispatchSources<TProjected, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
 
+        productWriter?.Write(nodeIndex, values[nodeIndex], accumulations[nodeIndex]);
+      }
+
       return (
-        new ScanFoldArtifacts<TProjected, TAccumulate>(nodeIndex => values[nodeIndex], accumulations, subtreeSizes),
-        fuseCanonicalPairing ? FusePairProducts(values, accumulations) : null);
+        new ScanFoldArtifacts<TProjected, TAccumulate>(values, accumulations, subtreeSizes),
+        request.FuseCanonicalPairing ? FusePairProducts(values, accumulations) : null);
     }
 
     private static (ScanFoldArtifacts<TSource, TAccumulate> Artifacts, NodeAccumulation<TSource, TAccumulate>[] FusedPairProducts) BuildStreamLeaffixArtifacts<TSource, TAccumulate>(
@@ -237,17 +244,18 @@ namespace Copse.Linq
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      bool fuseCanonicalPairing)
+      ScanBuildRequest<TSource, TAccumulate> request)
     {
       var (values, subtreeSizes, accumulations) = RunLeaffixDispatchPass(
           source,
           LeafBoundedSurvey(
             (TSource leaf, NodePosition _) => leafNodeSelector(leaf),
-            DualFoldSurvey(edgeAccumulator, nodeAccumulator)));
+            DualFoldSurvey(edgeAccumulator, nodeAccumulator)),
+          request.ProductWriter);
 
       return (
-        new ScanFoldArtifacts<TSource, TAccumulate>(nodeIndex => values[nodeIndex], accumulations, subtreeSizes),
-        fuseCanonicalPairing ? FusePairProducts(values, accumulations) : null);
+        new ScanFoldArtifacts<TSource, TAccumulate>(values, accumulations, subtreeSizes),
+        request.FuseCanonicalPairing ? FusePairProducts(values, accumulations) : null);
     }
 
     // The stream builds' fusion: values and accumulations are hot arrays here, so the pair
@@ -277,17 +285,17 @@ namespace Copse.Linq
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      bool fuseCanonicalPairing)
+      ScanBuildRequest<TSource, TAccumulate> request)
     {
       if (buffer is TreenumerableBuffer<TSource> concreteBuffer)
       {
         var (hasStore, store) = concreteBuffer.TryGetPreorderStore();
 
         if (hasStore)
-          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator, fuseCanonicalPairing);
+          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator, request);
       }
 
-      return WalkerLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, fuseCanonicalPairing);
+      return WalkerLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator, request.FuseCanonicalPairing);
     }
 
     // The span fold: reverse-ordinal (children complete before their parent by preorder
@@ -300,13 +308,15 @@ namespace Copse.Linq
       Func<TSource, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator,
-      bool fuseCanonicalPairing)
+      ScanBuildRequest<TSource, TAccumulate> request)
     {
       var nodeCount = store.Count;
 
       var accumulates = new TAccumulate[nodeCount];
       var subtreeSizes = new int[nodeCount];
-      var fusedPairProducts = fuseCanonicalPairing ? new NodeAccumulation<TSource, TAccumulate>[nodeCount] : null;
+      var fusedPairProducts = request.FuseCanonicalPairing ? new NodeAccumulation<TSource, TAccumulate>[nodeCount] : null;
+      var productWriter = request.ProductWriter;
+      productWriter?.Initialize(nodeCount);
 
       for (var handle = nodeCount - 1; handle >= 0; handle--)
       {
@@ -336,9 +346,12 @@ namespace Copse.Linq
         subtreeSizes[handle] = subtreeSize;
 
         // The first-caller fusion: the canonical product written INLINE, node in register --
-        // the pre-pass fold's exact cost for the un-composed spelling.
+        // the pre-pass fold's exact cost for the un-composed spelling; a composed first
+        // caller's product goes through its erased writer instead, same loop, values hot.
         if (fusedPairProducts != null)
           fusedPairProducts[handle] = new NodeAccumulation<TSource, TAccumulate>(node, accumulate);
+        else
+          productWriter?.Write(handle, node, accumulate);
       }
 
       // The value reader is the receiver's own store: an in-place pass never copies values.
@@ -413,7 +426,7 @@ namespace Copse.Linq
       var valueArray = values.ToArray();
 
       return (
-        new ScanFoldArtifacts<TSource, TAccumulate>(nodeIndex => valueArray[nodeIndex], accumulates.ToArray(), subtreeSizes.ToArray()),
+        new ScanFoldArtifacts<TSource, TAccumulate>(valueArray, accumulates.ToArray(), subtreeSizes.ToArray()),
         fusedPairProducts?.ToArray());
     }
 

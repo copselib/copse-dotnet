@@ -206,7 +206,8 @@ namespace Copse.Linq
     // skipped.
     private static async ValueTask<(TSource[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations)> RunLeaffixDispatchPassAsync<TSource, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey,
+      ScanProductWriter<TSource, TAccumulate> productWriter = null)
     {
       var (values, subtreeSizes) = await AsyncPreorderCapture
         .CaptureRawAsync(source)
@@ -214,12 +215,22 @@ namespace Copse.Linq
 
       var (childOffsets, childIndices, positions) = DispatchChildIndex.BuildWithPositions(subtreeSizes);
 
+      // The composed-product fusion (the scan citizens' erased writer, SELECT_INTO_CAPTURES_
+      // DESIGN.md): the first-building variant's product is written inside this loop, values
+      // and accumulations hot -- the separate zip pass it replaces re-traversed three arrays.
+      // Dispatch callers pass nothing and are untouched.
+      productWriter?.Initialize(values.Length);
+
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
+      {
         accumulations[nodeIndex] = nodeSurvey(
           values[nodeIndex],
           positions[nodeIndex],
           new DispatchSources<TSource, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
+
+        productWriter?.Write(nodeIndex, values[nodeIndex], accumulations[nodeIndex]);
+      }
 
       return (values, subtreeSizes, accumulations);
     }
