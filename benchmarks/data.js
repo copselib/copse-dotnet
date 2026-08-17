@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786986657485,
+  "lastUpdate": 1786986659119,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -161325,6 +161325,88 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
             "value": 1659,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "f2e8b67f4a8c3cfb6f0d67aada4658ef57292dc3",
+          "message": "Dashboard: the trend line becomes a rolling median, visible\n\nTwo follow-ups from first use:\n\n- The dashed gray average was invisible at sparkline scale. The trend is\n  now SOLID semi-transparent red (the --bad token, theme-aware), drawn\n  BEHIND the accent series in both chart sizes; the expanded chart's\n  legend matches (inline style -- the svg text stylesheet rule beats a\n  fill attribute).\n- The smoothing is now a 5-run rolling MEDIAN instead of a mean: the\n  series' real failure mode is lone machine-factor spikes, which a mean\n  bends toward and a median ignores -- while a shift persisting 3-of-5\n  runs is a genuine level change and the median follows it.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-17T16:26:11Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f2e8b67f4a8c3cfb6f0d67aada4658ef57292dc3"
+        },
+        "date": 1786986659015,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53899,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234021,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889701,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1235,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1641,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1235,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1628,
             "unit": "bytes"
           }
         ]
