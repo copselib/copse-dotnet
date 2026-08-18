@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787018639248,
+  "lastUpdate": 1787018639848,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -185993,6 +185993,200 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
             "value": 80637347,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 51476436,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79742420,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 125835197,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50357947,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 151019664,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4df76372edcd3e138e4fc5e4967df77caa2e1a33",
+          "message": "The struct-composed arrow: chains nest in the type, phase 1 of reunification\n\nComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>\n-- ResultSelectorThenResultSelector as a TYPE instead of a closure. Both legs\nare struct type parameters, so the JIT specializes and inlines the whole\ncomposed chain; user lambdas stay leaf calls; chains nest as\nComposed<Composed<A,B>,C>. The ISelectWhere interface gains the struct\nCompose form; the driver nests; the light Select citizen DONATES ITS\nPROJECTION AS A STRUCT LEG (SelectResultSelector) -- the exact property whose\nabsence exiled the light tier. Select-onto-driver and Where-onto-citizen call\nsites route through the struct splice; the Func form remains for inherently\nclosure-shaped pieces.\n\nGate measurement (Compose family, local): FiveOperators collapse widened\nfrom the Func era's 1.3-1.6x to 2.36x DFT (76.5 vs 180.8ms) and 15.4x BFT\n(73.5 vs 1130.7ms) -- the stacked side unmoved, the composed side dropped.\nSelectWhere 2-op pair stays ~1.0 (legs converge either way). Four\nrepresentation pins re-aimed at the open-generic driver (the pin is the ONE\ndriver; the selector representation is free). 24,585 green.\n\nPhase 2 (the seal experiment): PruneAfter-family struct donation + the\nWhere.Triangle_Mixed re-test that decides whether the tier seal opens.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T01:36:50Z",
+          "tree_id": "97bfc540f1a828c5b78961c7516ebc396b2baf67",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4df76372edcd3e138e4fc5e4967df77caa2e1a33"
+        },
+        "date": 1787018639721,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedPreorder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedLevelOrder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedPreorder",
+            "value": 50413506,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedLevelOrder",
+            "value": 50405211,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.LeaffixScan_over_MaterializedPreorder",
+            "value": 29475740,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739888,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139820,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71357054,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25171507,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Triangle",
+            "value": 25262274,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Triangle",
+            "value": 38007631,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Chain",
+            "value": 33579830,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Chain",
+            "value": 25170609,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_from_LevelOrder",
+            "value": 8474073,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_from_Preorder",
+            "value": 12838795,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_Preorder",
+            "value": 58206,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_Preorder",
+            "value": 230803,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_LevelOrder",
+            "value": 197985,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16906096,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597850,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3364077,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_Preorder",
+            "value": 58234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_Preorder",
+            "value": 230841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_LevelOrder",
+            "value": 197989,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80462044,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 51624396,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80636826,
             "unit": "bytes"
           },
           {
