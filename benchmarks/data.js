@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787032559871,
+  "lastUpdate": 1787032560416,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -67322,6 +67322,66 @@ window.BENCHMARK_DATA = {
             "value": 155514605.09210527,
             "unit": "ns",
             "range": "± 1646869.8687981865"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07a70f37f18e8147ae90593775a7a8e43e460bf9",
+          "message": "The rootfix door: compose-left, left of the scan\n\nThe last mechanism on the composition ledger -- the leaffix door's streaming\nmirror, waited on by the FromSelect witnesses since 2026-08-17. A\npure-projection wrapper upstream of RootfixScan surrenders its pieces\n(IAsyncProjectionSource.CaptureThrough -- the door interface was already\nfully general; \"capture\" was only ever the first consumer's kind) and the\nscan's PRODUCT citizen is built over the un-projected inner raw: the\nprojection folds into the accumulator (once per scheduled node) and rides\nthe product selector at emission (once per visit) -- the exact counts the\nwrapper spelling paid, minus the wrapper hop on every pull.\n\nThe enabling change: the product engines' selector went CONTEXT-shaped\n(they have the inner position in hand at every emission; the pair context\nis minted transiently), so surrendered positional projectors are honored.\nThe citizen recipes carry context-shaped selectors internally; value-shaped\ncomposition wraps at the seams; the fourth-cell door simplified\n(SelectResultSelector takes the context selector directly).\n\nAll composite flavors route through the door (seed + rootNodeSelector value\nand positional, via the shared RootfixScanCitizen construction). The door's\nresult is still the citizen, so the left-composed chain stays total:\nSelect(f).RootfixScan(...).Where(...).Select(...) is ONE\nScanWhereTreenumerable -- Jason's typed pipeline as a single machine,\npinned by the new ComposeLeft_RootfixDoorResult_KeepsComposing law (plus\nthe door-equivalence anchor, corpus, both dimensions).\n\nWitnesses (same-run vs plain): FromSelect_Dft_Chain +6.5% (was +20-30% --\nthe hop is gone; the residual is the projector's contract-equal invocation\nsites), FromSelect_Bft +13%. 24,589 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T05:36:43Z",
+          "tree_id": "3bd7815ad9da7bfc040f8d208ecbcd32c2528ca3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07a70f37f18e8147ae90593775a7a8e43e460bf9"
+        },
+        "date": 1787032560292,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 71395333.90476193,
+            "unit": "ns",
+            "range": "± 43533.51758877596"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9303128.31919643,
+            "unit": "ns",
+            "range": "± 52784.25399141671"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 132514902.9423077,
+            "unit": "ns",
+            "range": "± 380354.58864615933"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17729647.776041668,
+            "unit": "ns",
+            "range": "± 96086.67599594436"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 179398020.30158725,
+            "unit": "ns",
+            "range": "± 4270900.14651731"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 159472840.45833334,
+            "unit": "ns",
+            "range": "± 363295.2706669071"
           }
         ]
       }
