@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787023382845,
+  "lastUpdate": 1787023383420,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -104450,6 +104450,150 @@ window.BENCHMARK_DATA = {
             "value": 42651674.33566434,
             "unit": "ns",
             "range": "± 57901.40168427096"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1be2f7f302cdea743a3919ded47ebade8ca89f4",
+          "message": "The scan tier, sketched: inherited folds as a driver stage\n\ndesign-docs/SCAN_TIER_DESIGN.md (DRAFT, awaiting ratification) -- the typed\npipeline as the spec, the output-reachability erasure rule as the law\ndeciding driver-stage vs scan-engine, scope corrected to INHERITED folds only\n(a synthesized leaffix fact cannot exist at scheduling time, so\nSelectSubtreesWhere stays a capture-side candidate), the shipped boolean\nsubtree stage as the free special case, the plain-Where guard as the hard\ngate on the general TAccumulate slot, and the five-question ruling list.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:58:11Z",
+          "tree_id": "6c6ffabcf7d23178a6441f1a8e01579a7706dbbf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e1be2f7f302cdea743a3919ded47ebade8ca89f4"
+        },
+        "date": 1787023383285,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12810008.91294643,
+            "unit": "ns",
+            "range": "± 38819.98294313016"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 24279168.293269232,
+            "unit": "ns",
+            "range": "± 42375.06700694819"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 3919383.7013221155,
+            "unit": "ns",
+            "range": "± 2893.1157224886947"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6292350.9484375,
+            "unit": "ns",
+            "range": "± 70059.19534074435"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 94064621.25641027,
+            "unit": "ns",
+            "range": "± 176546.3856997014"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 144442559.83333334,
+            "unit": "ns",
+            "range": "± 1427927.003521641"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33112782.58035714,
+            "unit": "ns",
+            "range": "± 26114.330343923346"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 53982299.87755103,
+            "unit": "ns",
+            "range": "± 137470.51572822224"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11773862.988839285,
+            "unit": "ns",
+            "range": "± 8634.615211013383"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11065691.116666667,
+            "unit": "ns",
+            "range": "± 84109.30858456151"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2910824.384207589,
+            "unit": "ns",
+            "range": "± 4335.765379747236"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2929368.3682291666,
+            "unit": "ns",
+            "range": "± 3257.0600568786763"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 93837759.19047618,
+            "unit": "ns",
+            "range": "± 125533.37583819094"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 80859969.34065935,
+            "unit": "ns",
+            "range": "± 173847.6461312478"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 28921766.71153846,
+            "unit": "ns",
+            "range": "± 59323.37728427383"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 19141150.80625,
+            "unit": "ns",
+            "range": "± 349158.6400468117"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 100000603.20000002,
+            "unit": "ns",
+            "range": "± 862679.9081672635"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 146694794.85714287,
+            "unit": "ns",
+            "range": "± 185366.12529367788"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18289535.697916668,
+            "unit": "ns",
+            "range": "± 34080.02206106139"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42818866.493589744,
+            "unit": "ns",
+            "range": "± 284157.91354977194"
           }
         ]
       }
