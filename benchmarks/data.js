@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787023391973,
+  "lastUpdate": 1787023392578,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -71592,6 +71592,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
             "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391368,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1be2f7f302cdea743a3919ded47ebade8ca89f4",
+          "message": "The scan tier, sketched: inherited folds as a driver stage\n\ndesign-docs/SCAN_TIER_DESIGN.md (DRAFT, awaiting ratification) -- the typed\npipeline as the spec, the output-reachability erasure rule as the law\ndeciding driver-stage vs scan-engine, scope corrected to INHERITED folds only\n(a synthesized leaffix fact cannot exist at scheduling time, so\nSelectSubtreesWhere stays a capture-side candidate), the shipped boolean\nsubtree stage as the free special case, the plain-Where guard as the hard\ngate on the general TAccumulate slot, and the five-question ruling list.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:58:11Z",
+          "tree_id": "6c6ffabcf7d23178a6441f1a8e01579a7706dbbf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e1be2f7f302cdea743a3919ded47ebade8ca89f4"
+        },
+        "date": 1787023392451,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206420,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6148040,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729080,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534416,
             "unit": "bytes"
           },
           {
