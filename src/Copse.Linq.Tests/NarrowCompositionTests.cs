@@ -131,11 +131,10 @@ namespace Copse.Linq.Tests
         new[] { "a", "b", "c" },
         depthFirst.GetPreorderTraversal().ToArray());
     }
-
+    // The narrow seal pin, flipped with the composite one: rejecting operators splice
     // The tier seal, narrow half (boundary ruling 2026-08-04): rejecting operators stack
-    // over the sealed NARROW light tier. (The composite seal OPENED 2026-08-18 — see
-    // CompositionTests.LightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen; the narrow
-    // donation lands with the demolition pass, and this pin flips with it.)
+    // into ONE narrow driver. (The seal opened 2026-08-18, composite and narrow together --
+    // CompositeToNarrow fanned the interface re-merge out; see the composite twin pin.)
     [TestMethod]
     public void NarrowLightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen()
     {

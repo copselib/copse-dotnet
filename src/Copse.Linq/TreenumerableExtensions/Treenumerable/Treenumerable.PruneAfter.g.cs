@@ -25,9 +25,10 @@ namespace Copse.Linq
 
       // The light tier composes a prune-after in-tier and keeps no-promotion machinery:
       // prune over prune merges predicates on the bespoke driver; prune over projections
-      // rides the light passthrough driver. Prune-afters compose ONLY in-tier (boundary
-      // ruling 2026-08-04): over a general chain the light wrapper stacks on top -- joining
-      // the chain would demote its representation for a layer that costs almost nothing.
+      // rides the light passthrough driver. Prune-afters compose only in-tier -- the
+      // SURVIVING half of the 2026-08-04 ruling (the other half, rejecting-over-light,
+      // opened 2026-08-18): over a general chain the light wrapper stacks on top, since
+      // joining would demote its representation for a layer that costs almost nothing.
       if (source is ISelectPruneAfterTreenumerable<T> selectPruneAfterSource)
         return selectPruneAfterSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 

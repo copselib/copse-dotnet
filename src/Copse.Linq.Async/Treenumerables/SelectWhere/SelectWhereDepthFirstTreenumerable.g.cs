@@ -40,17 +40,14 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The composition law (SelectWhereComposition, the algebra's one home) under this
     // representation's successor choice: the general wrapper composes to a general wrapper.
+    // The Func form is the struct form with the closure as its one leaf: no closure route,
+    // no second home for the law (the closure-arrow spelling was deleted when the simplify
+    // pass found every Func door reducible to this forward).
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
-    {
-      return new SelectWhereDepthFirstTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
-        _Source,
-        new FuncResultSelector<TSource, TOuterResult>(
-          SelectWhereComposition.ResultSelectorThenResultSelector<TSource, TResult, TResultSelector, TOuterResult>(
-            _ResultSelector, resultSelector)),
-        Relabels | relabels);
-    }
+      => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
+        new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
 
     // The struct-composed successor: the chain nests in the type, every leg inlinable.
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(

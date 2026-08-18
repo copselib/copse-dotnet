@@ -7,7 +7,8 @@ using Copse.Core;
 namespace Copse.Linq.Treenumerables
 {
   // THE STRUCT-COMPOSED ARROW (the reunification gate, OPERATOR_COMPOSITION_DESIGN.md 2.9's
-  // recorded exit): ResultSelectorThenResultSelector as a TYPE instead of a closure. Both
+  // recorded exit): the general composition law as a TYPE -- the closure spelling it
+  // replaced (ResultSelectorThenResultSelector) is deleted; this is the law's one home. Both
   // legs arrive as struct type parameters, so the JIT specializes and inlines the whole
   // composed chain per visit -- user lambdas remain leaf calls, but the composition PLUMBING
   // costs nothing, which is the property whose absence exiled the light tier (the

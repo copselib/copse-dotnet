@@ -16,7 +16,7 @@ namespace Copse.Linq.Treenumerables
   // ONE method covers the whole selector algebra: a projection is just a result selector that never
   // rejects (its results carry TraverseAll), and the composition law handles it without
   // being told. The light projection-only representation is not this contract's business --
-  // it is the capability of the one wrapper that has it (IAsyncSelectTreenumerable).
+  // it is the capability of the one wrapper that has it (AsyncSelectTreenumerable).
   //
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make

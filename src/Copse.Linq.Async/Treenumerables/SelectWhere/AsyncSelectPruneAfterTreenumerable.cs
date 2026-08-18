@@ -10,8 +10,9 @@ namespace Copse.Linq.Async.Treenumerables
   // result preserves labels and never carries SkipNode, so the chain runs on the light
   // passthrough driver -- no promotion machinery, no path state, one driver class for both
   // dimensions. Only composition produces this wrapper (plain Select and plain PruneAfter
-  // keep their own cheapest machinery), so the arrow is delegate-bound by nature and needs
-  // no struct seam.
+  // keep their own cheapest machinery), so its IN-TIER arrow is delegate-bound by nature;
+  // spliced over through the inherited general Compose, its chain rides as one
+  // FuncResultSelector leaf under struct plumbing (the open seal).
   internal sealed class AsyncSelectPruneAfterTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterTreenumerable<TResult>
   {
     public AsyncSelectPruneAfterTreenumerable(
@@ -35,7 +36,7 @@ namespace Copse.Linq.Async.Treenumerables
     // The general surface (inherited): light chains never relabel.
     public bool Relabels => false;
 
-    // The struct splice (the open seal): the chain.s composed closure rides as one
+    // The struct splice (the open seal): the chain's composed closure rides as one
     // FuncResultSelector leaf; the splice plumbing and the outer leg are structs.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
@@ -49,19 +50,12 @@ namespace Copse.Linq.Async.Treenumerables
         relabels);
     }
 
-    // The Func splice (inherited; for pieces that are inherently closures): the chain's
-    // closure wraps as a struct leaf and the algebra's one law composes over it.
+    // The Func splice (inherited): the struct splice with the closure as its one leaf.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
-    {
-      return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
-        _Source,
-        new FuncResultSelector<TSource, TOuterResult>(
-          SelectWhereComposition.ResultSelectorThenResultSelector<TSource, TResult, FuncResultSelector<TSource, TResult>, TOuterResult>(
-            new FuncResultSelector<TSource, TResult>(_ResultSelector), resultSelector)),
-        relabels);
-    }
+      => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
+        new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
 
     // A prune-after composes in-tier.
     public IAsyncTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)

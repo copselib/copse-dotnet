@@ -11,27 +11,14 @@ namespace Copse.Linq.Async.Treenumerables
   // type to build) and acquisition (which driver to hand the composed arrow).
   internal static class SelectWhereComposition
   {
-    // The composition law, covering the whole selector algebra (a projection is a result
-    // selector that never rejects): the fold stops at the first SkipNode-carrying result (that
-    // node left the logical tree, so later operators never saw it in the stacked pipeline, and
-    // it has no outer value); while accepting, the value maps and strategies union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> ResultSelectorThenResultSelector<TSource, TResult, TResultSelector, TOuterResult>(
-      TResultSelector innerResultSelector,
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector)
-      where TResultSelector : struct, IResultSelector<TSource, TResult>
-    {
-      return nodeContext =>
-      {
-        var innerResult = innerResultSelector.GetResult(nodeContext);
-
-        if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
-          return new SelectWhereResult<TOuterResult>(default, innerResult.Strategies);
-
-        var outerResult = resultSelector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position));
-
-        return new SelectWhereResult<TOuterResult>(outerResult.Value, outerResult.Strategies | innerResult.Strategies);
-      };
-    }
+    // (The composition law itself -- inner-first, SkipNode short-circuits, strategies union
+    // -- lives in ComposedResultSelector, the struct-composed arrow: since the reunification
+    // (2026-08-18) every general splice routes through it, Func pieces riding as
+    // FuncResultSelector leaves, so the closure spellings of the general law
+    // (ResultSelectorThenResultSelector, SelectThenResultSelector) went dead and were
+    // deleted. This class keeps the LIGHT tier's in-tier arrows, which are closure-bound by
+    // nature: only composition produces the light wrappers, and their pieces are user
+    // lambdas.)
 
     // A projection composed onto a projection is still a projection.
     public static Func<NodeContext<TSource>, TOuterResult> SelectThenSelect<TSource, TResult, TOuterResult>(
@@ -56,15 +43,6 @@ namespace Copse.Linq.Async.Treenumerables
             ? NodeTraversalStrategies.SkipDescendants
             : NodeTraversalStrategies.TraverseAll);
       };
-    }
-
-    // A rejecting operator joins a projection. The projection cannot reject and carries no
-    // strategies, so the outer result stands alone -- no short-circuit, no union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectThenResultSelector<TSource, TResult, TOuterResult>(
-      Func<NodeContext<TSource>, TResult> innerSelector,
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector)
-    {
-      return nodeContext => resultSelector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position));
     }
 
     // A projection joins a prune-after: the prune predicate judges the source value (its layer
@@ -128,8 +106,9 @@ namespace Copse.Linq.Async.Treenumerables
       };
     }
 
-    // (The rejecting-joins-never-rejecting arrow was deleted with the tier seal, boundary
-    // ruling 2026-08-04: a rejecting operator STACKS over a light wrapper instead of
-    // converting it, so no arrow crosses the tier boundary anymore.)
+    // (Cross-tier splices carry no arrow here: since the seal opened (2026-08-18) a
+    // rejecting operator splices over a light wrapper through the inherited struct Compose
+    // -- the chain rides as struct legs in ComposedResultSelector, the general law's one
+    // home.)
   }
 }
