@@ -408,4 +408,58 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    the cost shape-independent — at which point the light tier can rejoin the general
    algebra, benchmark-gated by the Compose family. That is the bench session's centerpiece
    (it subsumes the structs-4→2 consolidation), not a patch to rush.
+
+2.10 ✅ SHIPPED (main, 2026-08-18): **the reunification — the seal opens.** The path 2.9
+   recorded was walked in three commits, each benchmark-gated as prescribed:
+
+   **Phase 1, the struct-composed arrow (`4df7637`):**
+   `ComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>` — the
+   composition law as a TYPE. Both legs arrive as struct type parameters, chains nest as
+   `Composed<Composed<A,B>,C>`, the JIT specializes and inlines the whole spliced chain;
+   user lambdas stay leaf calls. The `ISelectWhere` surface gained the generic
+   struct-taking `Compose`; the light Select citizen donated its projection as a
+   `SelectResultSelector` struct leg. **Gate reading (Compose family, local):**
+   FiveOperators collapse widened from the Func era's 1.3–1.6× to 2.36× DFT / 15.4× BFT —
+   the stacked side unmoved, the composed side dropped. The hypothesis (splice plumbing at
+   zero marginal cost) confirmed.
+
+   **Phase 2, the seal experiment (`c601e5a`):** the prune-carrying wrappers donated their
+   pieces — `PruneAfterResultSelector` (delegate-free) and the middle tier's composed
+   closure as ONE `FuncResultSelector` leaf — and the composite value-Where spliced over
+   them instead of stacking. **Verdict rows (interleaved same-machine A/B vs sealed):**
+   `Dft_Triangle_Mixed` 59.5 → 63.4 ms (~+6%, vs the +20–25% that forced the seal),
+   `Bft_Triangle_Mixed` at parity. **The ruling (Jason, 2026-08-18):** ~6% on short DFT
+   prune+where mixes buys a TOTAL composition algebra — one law, no exceptions; "this is
+   the kind of reduction in complexity that makes paying the tax compelling." The tax
+   inverts on longer chains (stacking costs per operator; the composed chain does not).
+
+   **Phase 3, the tear-out (`ebe4918`) and the simplify pass (`c235c55`):**
+   `IAsyncSelectPruneAfterTreenumerable` extends `IAsyncSelectWhereTreenumerable` again —
+   the structural carve-out healed, `ComposeRejecting` (the experiment's separate door)
+   merged into the inherited struct `Compose`, the narrow twins came free via the
+   CompositeToNarrow fan-out, both seal pins flipped to join pins, and positional flavors
+   joined through the existing `!Relabels` guard (light wrappers hardcode
+   `Relabels => false`). Then every Func `Compose` door became a one-line forward to the
+   struct door with `FuncResultSelector` as the outer leg — the law's THREE homes became
+   one, the per-visit closure hop died, and the closure spellings of the general law
+   (`ResultSelectorThenResultSelector`, `SelectThenResultSelector`) were DELETED.
+   `SelectWhereComposition` now holds only the light tier's in-tier arrows (closure-bound
+   by nature); `ComposedResultSelector` is the general law's one home. Net across
+   tear-out + simplify: −75 lines while ADDING the general surface to the light tier.
+
+   **The structs-4→2 consolidation (2.9's rider): CLOSED, won't-do (2026-08-18).** The
+   four bespoke predicate selectors ({Where, PruneBefore} × {value, positional}; six with
+   PruneAfter and Select) differ only in strategy CONSTANTS and predicate arity. Merging
+   the operator axis turns those constants into struct fields — trading JIT-foldable
+   immediates for field loads on the hottest per-visit branch — and the arity axis cannot
+   merge (the Func types differ). Fifteen-line structs with zero drift risk are the struct
+   seam working as designed; uniformity for its own sake loses to the inlining doctrine.
+
+   **Standing state:** composition is total — any number of Select / Where / PruneAfter /
+   PruneBefore members, any order, one driver. The 2.9 evidence stands above as the
+   history that made the walk safe; its Mixed rows are now the reunification's watch rows
+   (CI series accumulating the ten-run-standard confirmation; revert = `c601e5a` + the
+   pin flips). Recorded follow-up, benchmark-gated: the extension sites that pass selector
+   structs as `.GetResult` method-group delegates where the struct door exists — newly hot
+   via the inheritance, Mixed rows arbitrate.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
