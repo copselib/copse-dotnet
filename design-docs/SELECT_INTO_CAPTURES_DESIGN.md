@@ -219,7 +219,18 @@ the algebra.
 
 - **Filtering citizenship** (public Where composition): the internal-ruling's logic stands;
   revisit only with a design that makes foreign filter invariants checkable.
-- **The memo receiver**: dispose-ownership questions; memo consumers Materialize first.
+- **The memo receiver — CLOSED as law (Jason's ruling, 2026-08-19): the memo is a COMPOSE
+  SEAM.** Above it, the total algebra (Select/Where/prune chains over a memo compose into
+  one driver, as over any source); through it, nothing — no operator composes INTO the
+  memo's machinery, and no recipe holds the disposable. Every pull pays one pass-through
+  at the memo's replay layer, which is the seam's honest cost. The memo joins the barrier
+  taxonomy beside Do (the count barrier) and Hide (the isolation barrier) as the
+  buffer-tier composition seam. `Materialize` is the bridge to capture-tier composition:
+  it retires the feed at a moment the caller chose and hands composition a plain,
+  non-disposable citizen. (The pre-existing deferred-capture-over-a-live-feed hazard —
+  `memo.Select(f)` via the buffer overload holds the memo until first pull, and
+  dispose-before-pull throws per the replay rule — predates composition entirely and is
+  filed separately as a graceful-handling discussion item; it is orthogonal to compose.)
 - **Benchmarks**: consult-first when implementation starts — a composed-vs-veneer pair in
   the Compose-family idiom; the headline is retained size and replay speed, and with the
   citizenship as the mechanism the Alloc column is favorable from day one (no
