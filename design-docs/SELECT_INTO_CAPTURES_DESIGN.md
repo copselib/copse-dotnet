@@ -217,6 +217,13 @@ the algebra.
 
 ## 6. Out of scope
 
+- **Narrow citizenship parity — DEFERRED UNTIL DEMAND (Jason's ruling, 2026-08-19: "it's
+  possible to do — maybe do later if there is demand").** Narrow (single-dimension) scan
+  results stay non-citizens for now: narrow chains are consume-shaped by nature (a narrow
+  source exists because it affords only one dimension), and today's cost is at most one
+  wrapper layer over floor-state machinery. Not a won't-do: the composite citizenship is
+  the template, the CompositeToNarrow fan-out is the mechanism, and a workload composing
+  long narrow scan chains is the trigger. File demand here when it appears.
 - **Filtering citizenship** (public Where composition): the internal-ruling's logic stands;
   revisit only with a design that makes foreign filter invariants checkable.
 - **The memo receiver — CLOSED as law (Jason's ruling, 2026-08-19): the memo is a COMPOSE
