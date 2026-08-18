@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787018635733,
+  "lastUpdate": 1787018636325,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -77878,6 +77878,114 @@ window.BENCHMARK_DATA = {
             "value": 1034642.9038461539,
             "unit": "ns",
             "range": "± 1318.8046556145878"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4df76372edcd3e138e4fc5e4967df77caa2e1a33",
+          "message": "The struct-composed arrow: chains nest in the type, phase 1 of reunification\n\nComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>\n-- ResultSelectorThenResultSelector as a TYPE instead of a closure. Both legs\nare struct type parameters, so the JIT specializes and inlines the whole\ncomposed chain; user lambdas stay leaf calls; chains nest as\nComposed<Composed<A,B>,C>. The ISelectWhere interface gains the struct\nCompose form; the driver nests; the light Select citizen DONATES ITS\nPROJECTION AS A STRUCT LEG (SelectResultSelector) -- the exact property whose\nabsence exiled the light tier. Select-onto-driver and Where-onto-citizen call\nsites route through the struct splice; the Func form remains for inherently\nclosure-shaped pieces.\n\nGate measurement (Compose family, local): FiveOperators collapse widened\nfrom the Func era's 1.3-1.6x to 2.36x DFT (76.5 vs 180.8ms) and 15.4x BFT\n(73.5 vs 1130.7ms) -- the stacked side unmoved, the composed side dropped.\nSelectWhere 2-op pair stays ~1.0 (legs converge either way). Four\nrepresentation pins re-aimed at the open-generic driver (the pin is the ONE\ndriver; the selector representation is free). 24,585 green.\n\nPhase 2 (the seal experiment): PruneAfter-family struct donation + the\nWhere.Triangle_Mixed re-test that decides whether the tier seal opens.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T01:36:50Z",
+          "tree_id": "97bfc540f1a828c5b78961c7516ebc396b2baf67",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4df76372edcd3e138e4fc5e4967df77caa2e1a33"
+        },
+        "date": 1787018636198,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2253943.253645833,
+            "unit": "ns",
+            "range": "± 4820.038941695251"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1897298.2721819195,
+            "unit": "ns",
+            "range": "± 951.4588702307987"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4492785.925480769,
+            "unit": "ns",
+            "range": "± 11672.206150033975"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3853583.0421875,
+            "unit": "ns",
+            "range": "± 12860.57509010947"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 660012.3364955357,
+            "unit": "ns",
+            "range": "± 238.18005324240733"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 433229.9254673549,
+            "unit": "ns",
+            "range": "± 1334.5182156513947"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 411256.56048177084,
+            "unit": "ns",
+            "range": "± 746.8595123397573"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4199775.915625,
+            "unit": "ns",
+            "range": "± 15423.717813106185"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3301520.1848958335,
+            "unit": "ns",
+            "range": "± 8263.602669582126"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14376051.404166667,
+            "unit": "ns",
+            "range": "± 98925.95280656905"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7673070.71875,
+            "unit": "ns",
+            "range": "± 21494.091783539257"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1398113.2294921875,
+            "unit": "ns",
+            "range": "± 3169.567440331481"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 722605.4935396635,
+            "unit": "ns",
+            "range": "± 1212.6691183791172"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1036808.0327524039,
+            "unit": "ns",
+            "range": "± 1799.610551279278"
           }
         ]
       }
