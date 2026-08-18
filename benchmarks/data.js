@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787024424598,
+  "lastUpdate": 1787024425008,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -66072,6 +66072,66 @@ window.BENCHMARK_DATA = {
             "value": 129007614.05,
             "unit": "ns",
             "range": "± 2905052.77137845"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3",
+          "message": "Every splice enters through the struct door\n\nThe efficiency review's parked follow-up, unparked by the benchmark verdict\n(Jason: no real regressions in the CI series). The ~20 extension sites that\npassed selector structs as .GetResult method-group delegates -- or built\nSelectWhereResult lambdas inline -- now call the struct Compose door\ndirectly: Where (value + positional, composite + narrow), PruneBefore (all\nten sites), and Select's positional and narrow-value splices ride\nWhereResultSelector / PositionalWhereResultSelector /\nPruneBeforeResultSelector / PositionalPruneBeforeResultSelector /\nSelectResultSelector legs into ComposedResultSelector. No method-group\ndelegate allocation, no per-visit closure hop; user lambdas remain the only\ndelegate leaves. The light tier's in-tier doors stay closure-bound by design.\n\nLocal sanity: Dft_Triangle_Mixed 50.3ms / Bft 56.1ms -- both BELOW the old\nsealed baseline (59.5/67.1) on the same machine; the seal-opening tax\ninverted once the whole splice surface went struct. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T03:25:13Z",
+          "tree_id": "ad8ae54cfda5b72e82a73c2d18233d12768ee297",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3"
+        },
+        "date": 1787024424921,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 62331322.84821428,
+            "unit": "ns",
+            "range": "± 139712.17121091913"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 8109062.012276785,
+            "unit": "ns",
+            "range": "± 31721.297321534028"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 124607056.76000005,
+            "unit": "ns",
+            "range": "± 9121746.868810505"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 13626513.831770834,
+            "unit": "ns",
+            "range": "± 108406.59667609035"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 124563832.54166667,
+            "unit": "ns",
+            "range": "± 244058.25829280715"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 107968771.84999998,
+            "unit": "ns",
+            "range": "± 209884.8813126974"
           }
         ]
       }
