@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787032556228,
+  "lastUpdate": 1787032556866,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -96776,6 +96776,102 @@ window.BENCHMARK_DATA = {
             "value": 28394789.28125,
             "unit": "ns",
             "range": "± 90650.42084537202"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "07a70f37f18e8147ae90593775a7a8e43e460bf9",
+          "message": "The rootfix door: compose-left, left of the scan\n\nThe last mechanism on the composition ledger -- the leaffix door's streaming\nmirror, waited on by the FromSelect witnesses since 2026-08-17. A\npure-projection wrapper upstream of RootfixScan surrenders its pieces\n(IAsyncProjectionSource.CaptureThrough -- the door interface was already\nfully general; \"capture\" was only ever the first consumer's kind) and the\nscan's PRODUCT citizen is built over the un-projected inner raw: the\nprojection folds into the accumulator (once per scheduled node) and rides\nthe product selector at emission (once per visit) -- the exact counts the\nwrapper spelling paid, minus the wrapper hop on every pull.\n\nThe enabling change: the product engines' selector went CONTEXT-shaped\n(they have the inner position in hand at every emission; the pair context\nis minted transiently), so surrendered positional projectors are honored.\nThe citizen recipes carry context-shaped selectors internally; value-shaped\ncomposition wraps at the seams; the fourth-cell door simplified\n(SelectResultSelector takes the context selector directly).\n\nAll composite flavors route through the door (seed + rootNodeSelector value\nand positional, via the shared RootfixScanCitizen construction). The door's\nresult is still the citizen, so the left-composed chain stays total:\nSelect(f).RootfixScan(...).Where(...).Select(...) is ONE\nScanWhereTreenumerable -- Jason's typed pipeline as a single machine,\npinned by the new ComposeLeft_RootfixDoorResult_KeepsComposing law (plus\nthe door-equivalence anchor, corpus, both dimensions).\n\nWitnesses (same-run vs plain): FromSelect_Dft_Chain +6.5% (was +20-30% --\nthe hop is gone; the residual is the projector's contract-equal invocation\nsites), FromSelect_Bft +13%. 24,589 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T05:36:43Z",
+          "tree_id": "3bd7815ad9da7bfc040f8d208ecbcd32c2528ca3",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07a70f37f18e8147ae90593775a7a8e43e460bf9"
+        },
+        "date": 1787032556735,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 25936343.165865384,
+            "unit": "ns",
+            "range": "± 57749.31638877213"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8142194.886160715,
+            "unit": "ns",
+            "range": "± 39435.08781111024"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 149224890.25,
+            "unit": "ns",
+            "range": "± 1307162.236381756"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 59039457.64444444,
+            "unit": "ns",
+            "range": "± 690368.6282332452"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21584325.698660713,
+            "unit": "ns",
+            "range": "± 39125.69559828899"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12152855.527901785,
+            "unit": "ns",
+            "range": "± 32173.87211513897"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 101595150.43076922,
+            "unit": "ns",
+            "range": "± 165566.67735366497"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30550028.963942308,
+            "unit": "ns",
+            "range": "± 63329.26236054445"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11166972.67075893,
+            "unit": "ns",
+            "range": "± 25322.291822508596"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6220637.595703125,
+            "unit": "ns",
+            "range": "± 6762.853039070273"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 94100565.17857143,
+            "unit": "ns",
+            "range": "± 502784.13207638595"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26724691.904166665,
+            "unit": "ns",
+            "range": "± 82091.41939788732"
           }
         ]
       }
