@@ -497,6 +497,12 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/SelectWhere/WhereResultSelector.cs",
         "Copse.Linq/Treenumerables/SelectWhere/WhereResultSelector.g.cs",
         "WhereResultSelector", "WhereResultSelector", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/ComposedResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ComposedResultSelector.g.cs",
+        "ComposedResultSelector", "ComposedResultSelector", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/SelectResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectResultSelector.g.cs",
+        "SelectResultSelector", "SelectResultSelector", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/PositionalWhereResultSelector.cs",
         "Copse.Linq/Treenumerables/SelectWhere/PositionalWhereResultSelector.g.cs",

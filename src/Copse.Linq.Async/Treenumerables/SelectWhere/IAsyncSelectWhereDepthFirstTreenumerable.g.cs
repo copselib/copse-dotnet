@@ -34,5 +34,14 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels);
+
+    // The STRUCT-composed form (the reunification gate): the outer piece arrives as an
+    // inlinable selector struct, so the successor's composed chain nests in the TYPE and the
+    // splice costs no delegate hops. The Func form above remains for pieces that are
+    // inherently closures.
+    IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
   }
 }

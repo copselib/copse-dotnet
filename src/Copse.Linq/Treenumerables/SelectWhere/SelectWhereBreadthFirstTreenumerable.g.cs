@@ -49,5 +49,17 @@ namespace Copse.Linq.Treenumerables
             _ResultSelector, resultSelector)),
         Relabels | relabels);
     }
+
+    // The struct-composed successor: the chain nests in the type, every leg inlinable.
+    public IBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+    {
+      return new SelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
+        Relabels | relabels);
+    }
   }
 }

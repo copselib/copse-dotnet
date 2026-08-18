@@ -26,8 +26,8 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // is the plain path's struct: the operator's semantics, stated once.
       if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose(
-          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
+          new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), relabels: true);
@@ -67,8 +67,8 @@ namespace Copse.Linq
       // through a narrow-typed receiver composes on its own representation -- the successor
       // keeps both dimensions; a narrow chain composes to a narrow successor.
       if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose(
-          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
+          new WhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
         return depthFirstSelectWhereSource.Compose(
@@ -107,8 +107,8 @@ namespace Copse.Linq
         return source;
 
       if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose(
-          new WhereResultSelector<TNode>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
+          new WhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
         return breadthFirstSelectWhereSource.Compose(

@@ -59,6 +59,22 @@ namespace Copse.Linq.Treenumerables
         relabels);
     }
 
+    // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
+    // gate's decisive case: the tier seal exists because this wrapper's pieces used to
+    // arrive as bare Funcs and de-inlined the whole splice chain; here its projection rides
+    // an inlinable struct leg, the user lambda staying a leaf call).
+    public IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+    {
+      return new SelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>(
+          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector),
+        relabels);
+    }
+
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() =>
       new SelectTreenumerator<TSource, TResult>(_Source.GetDepthFirstTreenumerator, _Selector);
   }

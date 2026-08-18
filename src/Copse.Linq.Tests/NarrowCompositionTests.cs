@@ -39,9 +39,7 @@ namespace Copse.Linq.Tests
         .Where(n => n != "c!")
         .Select(n => n + "?");
 
-      Assert.IsInstanceOfType(
-        depthFirst,
-        typeof(SelectWhereDepthFirstTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.AreEqual(typeof(SelectWhereDepthFirstTreenumerable<,,>), depthFirst.GetType().GetGenericTypeDefinition());
 
       IBreadthFirstTreenumerable<string> breadthFirst = StreamBreadthFirst("a(b,c)")
         .Where(n => n != "b")
@@ -49,9 +47,7 @@ namespace Copse.Linq.Tests
         .Where(n => n != "c!")
         .Select(n => n + "?");
 
-      Assert.IsInstanceOfType(
-        breadthFirst,
-        typeof(SelectWhereBreadthFirstTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.AreEqual(typeof(SelectWhereBreadthFirstTreenumerable<,,>), breadthFirst.GetType().GetGenericTypeDefinition());
     }
 
     [TestMethod]
@@ -193,9 +189,7 @@ namespace Copse.Linq.Tests
 
       IDepthFirstTreenumerable<string> continued = narrowed.Where(n => n != "e");
 
-      Assert.IsInstanceOfType(
-        continued,
-        typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>),
+      Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), continued.GetType().GetGenericTypeDefinition(),
         "the composite wrapper must keep composing, not stack a narrow layer");
 
       CollectionAssert.AreEqual(

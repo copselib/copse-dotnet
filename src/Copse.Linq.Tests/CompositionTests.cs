@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "?")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition()); // the pin is the ONE driver; the selector representation is free (struct-composed since the reunification gate)
     }
 
     [TestMethod]
@@ -154,8 +154,8 @@ namespace Copse.Linq.Tests
         .PruneBefore(n => n == "b")
         .Where(n => n != "z");
 
-      Assert.IsInstanceOfType(whereThenPrune, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
-      Assert.IsInstanceOfType(pruneThenWhere, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>));
+      Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), whereThenPrune.GetType().GetGenericTypeDefinition());
+      Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), pruneThenWhere.GetType().GetGenericTypeDefinition());
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
         CollectionAssert.AreEqual(
@@ -175,7 +175,7 @@ namespace Copse.Linq.Tests
           .PruneBefore(n => n == "b")
           .Where(n => n != "z");
 
-        Assert.IsInstanceOfType(composed, typeof(SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>), "prune chain must stay composed");
+        Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition(), "prune chain must stay composed");
 
         var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
           .Where(n => n != "z")

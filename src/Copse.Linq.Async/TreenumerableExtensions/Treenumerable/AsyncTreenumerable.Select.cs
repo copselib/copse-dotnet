@@ -39,8 +39,10 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+        // The struct-composed splice (the reunification gate): the projection rides an
+        // inlinable selector-struct leg instead of erasing the chain to delegates.
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
 
       // The PUBLIC projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md) -- probed after
@@ -130,8 +132,10 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+        // The struct-composed splice (the reunification gate): the projection rides an
+        // inlinable selector-struct leg instead of erasing the chain to delegates.
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
 
       if (source is IAsyncSelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource)
@@ -180,8 +184,10 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+        // The struct-composed splice (the reunification gate): the projection rides an
+        // inlinable selector-struct leg instead of erasing the chain to delegates.
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
 
       if (source is IAsyncSelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource)
