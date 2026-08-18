@@ -34,6 +34,27 @@
 > speeds up), and a ready gate (the witness pairs converging). Stages B-C are not dead --
 > they are gated behind the light tier's own reunification.
 >
+> **ATTEMPT #2, SAME DAY: the known cure FAILED its gate too.** The light struct nesting
+> was built in full (the SPA machine and wrapper went 3-arity selector-struct-generic,
+> chains nesting via ComposedResultSelector; the four Select-involving arrows deleted;
+> 24,600 green) and measured WORSE: PruneAfter_Spelled 59.4 -> 71.0 ms DFT, and 55.7 ->
+> 146.2 ms BFT -- reproducible (StdDev 0.12), and AggressiveInlining on every GetResult
+> changed nothing. The deep nested-generic struct chain under PER-VISIT evaluation is a
+> JIT/codegen pathology on this runtime that the driver tier never sees, because the
+> driver evaluates ONCE PER SCHEDULE where any per-call residual is noise. Committing it
+> would also have regressed ordinary Select-then-PruneAfter chains, so the whole attempt
+> was REVERTED UNSHIPPED.
+>
+> **The corrected lesson, both attempts on record:** the cost is evaluation-count TIMES
+> per-evaluation weight. The Func arrows lose on weight but the struct chain loses
+> HARDER under per-visit multiplicity (against every prior on this codebase). The light
+> tier's real moat is the bespoke drivers' EVALUATION-SITE DISCIPLINE -- one predicate at
+> the scheduling decision, nothing per visit. Any future rescue must target the COUNT
+> (a once-per-node evaluation cache in the passthrough -- the first verdict's sketch,
+> prematurely dismissed), and must profile before building: two hardware rejections is
+> the doctrine speaking. Until then the light tier's closure arrows stand as measured-
+> best, and the witness pairs remain the standing gate.
+>
 > **What stands meanwhile:** WithPosition itself (Stage A, additive -- the
 > explicit-capture spelling, the capture-scope semantics, the sugar-equivalence law, all
 > pinned); the witness series as the standing gate; the design record below. The
