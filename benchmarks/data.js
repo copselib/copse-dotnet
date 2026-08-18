@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787024423591,
+  "lastUpdate": 1787024424093,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -139176,6 +139176,234 @@ window.BENCHMARK_DATA = {
             "value": 115971811.14666663,
             "unit": "ns",
             "range": "± 968784.1767469151"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3",
+          "message": "Every splice enters through the struct door\n\nThe efficiency review's parked follow-up, unparked by the benchmark verdict\n(Jason: no real regressions in the CI series). The ~20 extension sites that\npassed selector structs as .GetResult method-group delegates -- or built\nSelectWhereResult lambdas inline -- now call the struct Compose door\ndirectly: Where (value + positional, composite + narrow), PruneBefore (all\nten sites), and Select's positional and narrow-value splices ride\nWhereResultSelector / PositionalWhereResultSelector /\nPruneBeforeResultSelector / PositionalPruneBeforeResultSelector /\nSelectResultSelector legs into ComposedResultSelector. No method-group\ndelegate allocation, no per-visit closure hop; user lambdas remain the only\ndelegate leaves. The light tier's in-tier doors stay closure-bound by design.\n\nLocal sanity: Dft_Triangle_Mixed 50.3ms / Bft 56.1ms -- both BELOW the old\nsealed baseline (59.5/67.1) on the same machine; the seal-opening tax\ninverted once the whole splice surface went struct. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T03:25:13Z",
+          "tree_id": "ad8ae54cfda5b72e82a73c2d18233d12768ee297",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3"
+        },
+        "date": 1787024424007,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedPreorder",
+            "value": 8643341.784598215,
+            "unit": "ns",
+            "range": "± 13472.053152102768"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedLevelOrder",
+            "value": 7657053.372596154,
+            "unit": "ns",
+            "range": "± 7726.745529469491"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedPreorder",
+            "value": 98510421.63333336,
+            "unit": "ns",
+            "range": "± 181081.45376559842"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedLevelOrder",
+            "value": 99179078.5222222,
+            "unit": "ns",
+            "range": "± 263207.7014170227"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.LeaffixScan_over_MaterializedPreorder",
+            "value": 32495249.1875,
+            "unit": "ns",
+            "range": "± 117010.16896771308"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 91665695.8076923,
+            "unit": "ns",
+            "range": "± 306521.5930812607"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 99423168.27777778,
+            "unit": "ns",
+            "range": "± 131022.47067057902"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 56446926.41481483,
+            "unit": "ns",
+            "range": "± 998248.3123933866"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 74189941.83809525,
+            "unit": "ns",
+            "range": "± 823347.2100146419"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Triangle",
+            "value": 38447220.384615384,
+            "unit": "ns",
+            "range": "± 101179.3145619366"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Triangle",
+            "value": 53991541.45535714,
+            "unit": "ns",
+            "range": "± 280867.55609066493"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Chain",
+            "value": 18619588.414583333,
+            "unit": "ns",
+            "range": "± 316069.7153979344"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Chain",
+            "value": 24244451.66346154,
+            "unit": "ns",
+            "range": "± 100327.2072436749"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_from_LevelOrder",
+            "value": 25930519.558035713,
+            "unit": "ns",
+            "range": "± 115495.82262650153"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_from_Preorder",
+            "value": 39052148.71153846,
+            "unit": "ns",
+            "range": "± 43189.52651713988"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_Preorder",
+            "value": 24311561.370535713,
+            "unit": "ns",
+            "range": "± 107233.00803057954"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_Preorder",
+            "value": 37020588.423469394,
+            "unit": "ns",
+            "range": "± 152062.223168682"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_LevelOrder",
+            "value": 34555472.5948718,
+            "unit": "ns",
+            "range": "± 151298.39581058387"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_LevelOrder",
+            "value": 21379184.40625,
+            "unit": "ns",
+            "range": "± 52294.938165518004"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 87286170.08333334,
+            "unit": "ns",
+            "range": "± 74933.08534937879"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 103117448.43076923,
+            "unit": "ns",
+            "range": "± 771628.6405744416"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 15227406.06361607,
+            "unit": "ns",
+            "range": "± 29592.89893881778"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_Preorder",
+            "value": 42040043.479166664,
+            "unit": "ns",
+            "range": "± 43984.64008092088"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_Preorder",
+            "value": 53203270.112222224,
+            "unit": "ns",
+            "range": "± 3139925.264428156"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_LevelOrder",
+            "value": 33451313.80952381,
+            "unit": "ns",
+            "range": "± 74992.38189418043"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_LevelOrder",
+            "value": 24018278.960416667,
+            "unit": "ns",
+            "range": "± 143953.43779957964"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 95425722.29333334,
+            "unit": "ns",
+            "range": "± 908337.5797985885"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 114748164.65,
+            "unit": "ns",
+            "range": "± 2997779.068284115"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 109199360.3409091,
+            "unit": "ns",
+            "range": "± 1146132.0987184034"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 98133419.25714287,
+            "unit": "ns",
+            "range": "± 259189.0924842028"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79581514.72380953,
+            "unit": "ns",
+            "range": "± 1222579.960722208"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 130921388.26190476,
+            "unit": "ns",
+            "range": "± 2600566.474953393"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 70979516.26666667,
+            "unit": "ns",
+            "range": "± 294681.2447868463"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 123866922.31521739,
+            "unit": "ns",
+            "range": "± 2935952.2876937957"
           }
         ]
       }
