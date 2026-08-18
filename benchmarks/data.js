@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787029340384,
+  "lastUpdate": 1787029341237,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -95248,6 +95248,100 @@ window.BENCHMARK_DATA = {
             "value": 25941369.353365384,
             "unit": "ns",
             "range": "± 28015.104427833907"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3",
+          "message": "Every splice enters through the struct door\n\nThe efficiency review's parked follow-up, unparked by the benchmark verdict\n(Jason: no real regressions in the CI series). The ~20 extension sites that\npassed selector structs as .GetResult method-group delegates -- or built\nSelectWhereResult lambdas inline -- now call the struct Compose door\ndirectly: Where (value + positional, composite + narrow), PruneBefore (all\nten sites), and Select's positional and narrow-value splices ride\nWhereResultSelector / PositionalWhereResultSelector /\nPruneBeforeResultSelector / PositionalPruneBeforeResultSelector /\nSelectResultSelector legs into ComposedResultSelector. No method-group\ndelegate allocation, no per-visit closure hop; user lambdas remain the only\ndelegate leaves. The light tier's in-tier doors stay closure-bound by design.\n\nLocal sanity: Dft_Triangle_Mixed 50.3ms / Bft 56.1ms -- both BELOW the old\nsealed baseline (59.5/67.1) on the same machine; the seal-opening tax\ninverted once the whole splice surface went struct. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T03:25:13Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3"
+        },
+        "date": 1787029341118,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 23608422.011160713,
+            "unit": "ns",
+            "range": "± 29994.914081928004"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8022863.810096154,
+            "unit": "ns",
+            "range": "± 29805.26465351916"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 133160016.46666667,
+            "unit": "ns",
+            "range": "± 1255496.3890337711"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 55360245.690476194,
+            "unit": "ns",
+            "range": "± 160660.12619854094"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 20109461.65625,
+            "unit": "ns",
+            "range": "± 100239.20020557445"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11538578.610416668,
+            "unit": "ns",
+            "range": "± 58060.846954088636"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 86085578.77380954,
+            "unit": "ns",
+            "range": "± 96121.7703759995"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 27648785.31875,
+            "unit": "ns",
+            "range": "± 71624.72140252961"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 10541666.488541666,
+            "unit": "ns",
+            "range": "± 30191.880803555545"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5431020.584821428,
+            "unit": "ns",
+            "range": "± 16858.284356457498"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 84444169.29591836,
+            "unit": "ns",
+            "range": "± 873246.7937894693"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 24262210.814583335,
+            "unit": "ns",
+            "range": "± 138648.48852273362"
           }
         ]
       }
