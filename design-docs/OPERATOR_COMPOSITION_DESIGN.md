@@ -1,8 +1,15 @@
 # Operator Composition (design record)
 
-> **Status: DESIGNED 2026-07-15; SHIPPED through the narrow (single-dimension) halves
-> 2026-07-18 (see Phases), all rulings taken and measured.** The recipe surface is the
-> one-property/one-method shape with the light-tier capability doors, mirrored per
+> **Status: CLOSED 2026-08-19.** Designed 2026-07-15; shipped through the narrow halves
+> 2026-07-18; sealed at the tier boundary 2026-08-04 (§2.9); REUNIFIED 2026-08-18 by the
+> struct-composed arrow (§2.10 — the seal opened, the tax inverted, the law's one home is
+> `ComposedResultSelector`); completed the same week by the ancestor composer
+> (SCAN_TIER_DESIGN.md — the fourth cell). **Composition is total**: any number of
+> Select / Where / PruneAfter / PruneBefore members, any order, one driver; scans compose
+> left and right; one carrier engine only where the accumulate is the output; the barrier
+> taxonomy (Do = count, Hide = isolation, Memoize = the buffer seam) marks the deliberate
+> edges. All steps are on the CI record. This document is history. The recipe surface is
+> the one-property/one-method shape with the light-tier capability doors, mirrored per
 > traversal dimension. Companion decisions in
 > [LAZINESS_AND_BUFFERING_POLICY.md](LAZINESS_AND_BUFFERING_POLICY.md);
 > capability probing (the orthogonal "cheaper when rich" axis) in

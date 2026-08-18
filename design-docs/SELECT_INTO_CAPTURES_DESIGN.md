@@ -1,9 +1,11 @@
 # The Public Projection Citizenship (Select Into Captures)
 
-> **Status: RATIFIED 2026-08-17** (drafted 2026-08-16, reshaped in review; implemented on
-> feature/select-composable through the compose-left door and first-caller fusion — every
-> section below is landed code except the recorded deferrals: narrow parity, the memo
-> receiver, filtering citizenship, TestUtils battery extraction). Origin:
+> **Status: CLOSED 2026-08-19.** Drafted 2026-08-16, ratified 2026-08-17, and completed
+> through the thin shape (§4a), the emission mint, both compose-left doors (leaffix
+> capture-shaped, rootfix streaming-shaped), and the fourth cell (SCAN_TIER_DESIGN.md).
+> Every ruling is taken: the memo is a compose seam by law, narrow parity is deferred
+> until demand, filtering citizenship is internal-forever (§6). All steps are on the CI
+> record. This document is history. Origin:
 > the pair-product price (OPERATOR_SURFACE_MAP.md LeaffixScan row). Scans deliver
 > `(Node, Accumulate)` pairs by ruling — the richer contract justifies itself — and
 > `Scan(...).Select(x => x.Accumulate)` should recover the narrow product's cost. Today
@@ -224,8 +226,14 @@ the algebra.
   wrapper layer over floor-state machinery. Not a won't-do: the composite citizenship is
   the template, the CompositeToNarrow fan-out is the mechanism, and a workload composing
   long narrow scan chains is the trigger. File demand here when it appears.
-- **Filtering citizenship** (public Where composition): the internal-ruling's logic stands;
-  revisit only with a design that makes foreign filter invariants checkable.
+- **Filtering citizenship — CLOSED as internal-forever (Jason's ruling, 2026-08-19: "too
+  difficult to do right").** The public composition door stays projection-only,
+  permanently. The lattice's correctness rests on invariants a foreign filter could
+  silently violate — `Relabels` honesty, strategy-carrying result contracts, the promotion
+  machinery's assumptions, and (since the fourth cell) fold-state discipline — and no
+  checkable-invariants design has emerged or is sought. A projection cannot lie in ways
+  that corrupt structure; a filter can. Filtering composes only through the library's own
+  audited machinery.
 - **The memo receiver — CLOSED as law (Jason's ruling, 2026-08-19): the memo is a COMPOSE
   SEAM.** Above it, the total algebra (Select/Where/prune chains over a memo compose into
   one driver, as over any source); through it, nothing — no operator composes INTO the
