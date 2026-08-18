@@ -12,13 +12,13 @@ namespace Copse.Benchmarks
   // one SelectWhere driver over the scan engine; the composite DIMENSION-DISPATCHES: its DFT
   // arm takes the bespoke O(1) wrapper, its BFT arm the Where machinery in SUBTREE MODE (the
   // kept-region rule as one prefix read; 2026-08-17). *_Buffered row names are HISTORICAL.
-  // alloc collapses wherever the result store dominated (Triangle ~41MB -> ~0.2-0.5MB; Bft
-  // chain ~40MB -> ~6MB); composite DFT time DROPS below the buffer (dispatch); composite BFT
-  // time rises ~1.5x (per-pull scan+driver vs buffered decode -- the streaming price). The
-  // level-1 predicate makes the result nearly the whole tree; the deep predicate on the chain
-  // selects one small tail (the narrow arm's suppression path doing almost all the work).
+  // Steps at the swap: alloc collapses wherever the result store dominated (Triangle ~41MB ->
+  // ~0.2-0.5MB; Bft chain ~40MB -> ~1MB) and every arm ran at-or-below the buffer time. NOTE
+  // (2026-08-18): the family was born mis-tagged "Filter" -- a leg NOT in the CI matrix -- so
+  // it NEVER uploaded; first Streaming-leg run seeds the series fresh. The level-1 predicate
+  // makes the result nearly the whole tree; the deep chain predicate selects one small tail.
   [MemoryDiagnoser]
-  [BenchmarkCategory("Filter", "TakeSubtreesWhere")]
+  [BenchmarkCategory("Streaming", "TakeSubtreesWhere")]
   public class TakeSubtreesWhere
   {
     [Benchmark]
