@@ -90,6 +90,14 @@ namespace Copse.Benchmarks
       PositionalPruneAfterSpelled().Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
+    public void Dft_Triangle_PositionalPruneAfter_Hoisted() =>
+      PositionalPruneAfterHoisted().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_PositionalPruneAfter_Hoisted() =>
+      PositionalPruneAfterHoisted().Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
     public void Dft_Triangle_PositionalWhere_Overload() =>
       PositionalWhereOverload().Consume(TreeTraversalStrategy.DepthFirst);
 
@@ -156,6 +164,20 @@ namespace Copse.Benchmarks
       .WithPosition()
       .PruneAfter(pair => pair.Position.Depth == 1200)
       .Select(pair => pair.Node);
+
+    // THE HOISTING PROBE (diagnostic, 2026-08-18): the spelled chain with a
+    // semantically-identity Where APPENDED. No node is removed, so the output is
+    // identical -- but the route changes: the whole chain joins the general DRIVER, which
+    // evaluates the composed selector ONCE PER SCHEDULED NODE and republishes stored
+    // values from its path frames on visits (the frames it must carry anyway for
+    // promotion). Prices "store once, pass through" against the light tier's "recompute
+    // per visit", using machinery that already exists.
+    private static ITreenumerable<int> PositionalPruneAfterHoisted() =>
+      CanonicalTrees.MegaTriangleTree()
+      .WithPosition()
+      .PruneAfter(pair => pair.Position.Depth == 1200)
+      .Select(pair => pair.Node)
+      .Where(_ => true);
 
     private static ITreenumerable<int> PositionalWhereOverload() =>
       CanonicalTrees.MegaTriangleTree()
