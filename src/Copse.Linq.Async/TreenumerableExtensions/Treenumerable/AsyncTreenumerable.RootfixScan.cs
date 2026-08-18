@@ -3,6 +3,7 @@ using Copse.Async.Treenumerables;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
+using Copse.Linq.Async.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -34,11 +35,7 @@ namespace Copse.Linq
       // The composite result is the streaming tier's citizen (the projection citizenship):
       // plain acquisitions construct exactly the engines this overload always constructed;
       // a composed Select re-plants the projection inside the product engine twins.
-      => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
-        source.GetAsyncDepthFirstTreenumerator,
-        source.GetAsyncBreadthFirstTreenumerator,
-        ContextAccumulator(accumulator),
-        seed);
+      => RootfixScanCitizen(source, ContextAccumulator(accumulator), seed);
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -102,11 +99,67 @@ namespace Copse.Linq
       // The engines still park a sentinel seed, but under this form it is NEVER READ: the wrapped
       // accumulator routes every root to the selector off the sentinel's POSITION alone.
       // Citizen-shaped like the seed flavor (the rootNodeSelector flavor flows through here).
-      => new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
+      => RootfixScanCitizen(source, ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator), default);
+
+    // COMPOSE-LEFT (the rootfix door -- "left of the scan", SCAN_TIER_DESIGN.md; the leaffix
+    // door's streaming mirror): a pure-projection wrapper upstream surrenders its pieces and
+    // the scan's citizen is built over the un-projected inner RAW -- the projection folds
+    // into the accumulator (once per scheduled node) and rides the context-shaped product
+    // selector at emission; ZERO wrapper layers on any pull, and the result is still the
+    // citizen, so the whole left-composed chain keeps composing (Select into the engine,
+    // rejecting operators into the fourth cell).
+    private static IAsyncTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScanCitizen<TNode, TAccumulate>(
+      IAsyncTreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> contextAccumulator,
+      TAccumulate seed)
+    {
+      if (source is IAsyncProjectionSource<TNode> projectionSource)
+        return projectionSource.CaptureThrough(
+          new AsyncRootfixFromProjectionConsumer<TNode, TAccumulate>(contextAccumulator, seed));
+
+      return new AsyncRootfixScanTreenumerable<TNode, TAccumulate>(
         source.GetAsyncDepthFirstTreenumerator,
         source.GetAsyncBreadthFirstTreenumerator,
-        ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
-        default);
+        contextAccumulator,
+        seed);
+    }
+
+    // The consumer half of the rootfix door: builds the PRODUCT citizen over the surrendered
+    // inner -- the projector runs inside the fold (per scheduled node) and inside the product
+    // selector (per emission), exactly the counts the wrapper spelling paid, minus the
+    // wrapper hop on every pull.
+    private sealed class AsyncRootfixFromProjectionConsumer<TProjected, TAccumulate>
+      : IAsyncProjectionConsumer<TProjected, IAsyncTreenumerable<NodeAccumulation<TProjected, TAccumulate>>>
+    {
+      public AsyncRootfixFromProjectionConsumer(
+        Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> contextAccumulator,
+        TAccumulate seed)
+      {
+        _ContextAccumulator = contextAccumulator;
+        _Seed = seed;
+      }
+
+      private readonly Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> _ContextAccumulator;
+      private readonly TAccumulate _Seed;
+
+      public IAsyncTreenumerable<NodeAccumulation<TProjected, TAccumulate>> Consume<TInner>(
+        IAsyncTreenumerable<TInner> innerSource,
+        Func<NodeContext<TInner>, TProjected> projector)
+      {
+        var contextAccumulator = _ContextAccumulator;
+
+        return new AsyncRootfixScanProductTreenumerable<TInner, TAccumulate, NodeAccumulation<TProjected, TAccumulate>>(
+          innerSource.GetAsyncDepthFirstTreenumerator,
+          innerSource.GetAsyncBreadthFirstTreenumerator,
+          (parentContext, innerContext) => contextAccumulator(
+            parentContext,
+            new NodeContext<TProjected>(projector(innerContext), innerContext.Position)),
+          _Seed,
+          pairingContext => new NodeAccumulation<TProjected, TAccumulate>(
+            projector(new NodeContext<TInner>(pairingContext.Node.Node, pairingContext.Position)),
+            pairingContext.Node.Accumulate));
+      }
+    }
 
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,

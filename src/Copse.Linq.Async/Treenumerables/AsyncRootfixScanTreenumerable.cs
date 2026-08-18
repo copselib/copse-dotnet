@@ -51,7 +51,8 @@ namespace Copse.Linq.Async
 
     public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
       => new AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
-        _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, selector);
+        _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
+        pairingContext => selector(pairingContext.Node));
 
     // The general surface: a scan never relabels (it decorates), and a splicing operator's
     // leg lands in the fold-carrying driver.

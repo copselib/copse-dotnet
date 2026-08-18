@@ -24,7 +24,7 @@ namespace Copse.Linq.Treenumerators
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed,
-      Func<NodeAccumulation<TNode, TAccumulate>, TProduct> productSelector) : base(innerTreenumeratorFactory)
+      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
       _ProductSelector = productSelector;
@@ -40,7 +40,10 @@ namespace Copse.Linq.Treenumerators
     }
 
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
-    private readonly Func<NodeAccumulation<TNode, TAccumulate>, TProduct> _ProductSelector;
+    // Context-shaped (2026-08-18, the rootfix door): the door's surrendered projectors are
+    // NodeContext-shaped (positional Selects included), and the engine has the inner
+    // position in hand at every emission -- the pair context is minted transiently.
+    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
 
     private RefSemiDeque<NodeVisit<TAccumulate>> _CurrentLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
     private RefSemiDeque<NodeVisit<TAccumulate>> _NextLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
@@ -168,7 +171,8 @@ namespace Copse.Linq.Treenumerators
     private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = _ProductSelector(new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node));
+      Node = _ProductSelector(new NodeContext<NodeAccumulation<TNode, TAccumulate>>(
+        new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node), nodeVisit.Position));
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;
     }

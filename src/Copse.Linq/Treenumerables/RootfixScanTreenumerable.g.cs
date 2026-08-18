@@ -54,7 +54,8 @@ namespace Copse.Linq.Treenumerators
 
     public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
       => new RootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
-        _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, selector);
+        _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
+        pairingContext => selector(pairingContext.Node));
 
     // The general surface: a scan never relabels (it decorates), and a splicing operator's
     // leg lands in the fold-carrying driver.

@@ -5,6 +5,7 @@
 using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -36,11 +37,7 @@ namespace Copse.Linq
       // The composite result is the streaming tier's citizen (the projection citizenship):
       // plain acquisitions construct exactly the engines this overload always constructed;
       // a composed Select re-plants the projection inside the product engine twins.
-      => new RootfixScanTreenumerable<TNode, TAccumulate>(
-        source.GetDepthFirstTreenumerator,
-        source.GetBreadthFirstTreenumerator,
-        ContextAccumulator(accumulator),
-        seed);
+      => RootfixScanCitizen(source, ContextAccumulator(accumulator), seed);
 
     public static IDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -104,11 +101,67 @@ namespace Copse.Linq
       // The engines still park a sentinel seed, but under this form it is NEVER READ: the wrapped
       // accumulator routes every root to the selector off the sentinel's POSITION alone.
       // Citizen-shaped like the seed flavor (the rootNodeSelector flavor flows through here).
-      => new RootfixScanTreenumerable<TNode, TAccumulate>(
+      => RootfixScanCitizen(source, ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator), default);
+
+    // COMPOSE-LEFT (the rootfix door -- "left of the scan", SCAN_TIER_DESIGN.md; the leaffix
+    // door's streaming mirror): a pure-projection wrapper upstream surrenders its pieces and
+    // the scan's citizen is built over the un-projected inner RAW -- the projection folds
+    // into the accumulator (once per scheduled node) and rides the context-shaped product
+    // selector at emission; ZERO wrapper layers on any pull, and the result is still the
+    // citizen, so the whole left-composed chain keeps composing (Select into the engine,
+    // rejecting operators into the fourth cell).
+    private static ITreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScanCitizen<TNode, TAccumulate>(
+      ITreenumerable<TNode> source,
+      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> contextAccumulator,
+      TAccumulate seed)
+    {
+      if (source is IProjectionSource<TNode> projectionSource)
+        return projectionSource.CaptureThrough(
+          new RootfixFromProjectionConsumer<TNode, TAccumulate>(contextAccumulator, seed));
+
+      return new RootfixScanTreenumerable<TNode, TAccumulate>(
         source.GetDepthFirstTreenumerator,
         source.GetBreadthFirstTreenumerator,
-        ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
-        default);
+        contextAccumulator,
+        seed);
+    }
+
+    // The consumer half of the rootfix door: builds the PRODUCT citizen over the surrendered
+    // inner -- the projector runs inside the fold (per scheduled node) and inside the product
+    // selector (per emission), exactly the counts the wrapper spelling paid, minus the
+    // wrapper hop on every pull.
+    private sealed class RootfixFromProjectionConsumer<TProjected, TAccumulate>
+      : IProjectionConsumer<TProjected, ITreenumerable<NodeAccumulation<TProjected, TAccumulate>>>
+    {
+      public RootfixFromProjectionConsumer(
+        Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> contextAccumulator,
+        TAccumulate seed)
+      {
+        _ContextAccumulator = contextAccumulator;
+        _Seed = seed;
+      }
+
+      private readonly Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> _ContextAccumulator;
+      private readonly TAccumulate _Seed;
+
+      public ITreenumerable<NodeAccumulation<TProjected, TAccumulate>> Consume<TInner>(
+        ITreenumerable<TInner> innerSource,
+        Func<NodeContext<TInner>, TProjected> projector)
+      {
+        var contextAccumulator = _ContextAccumulator;
+
+        return new RootfixScanProductTreenumerable<TInner, TAccumulate, NodeAccumulation<TProjected, TAccumulate>>(
+          innerSource.GetDepthFirstTreenumerator,
+          innerSource.GetBreadthFirstTreenumerator,
+          (parentContext, innerContext) => contextAccumulator(
+            parentContext,
+            new NodeContext<TProjected>(projector(innerContext), innerContext.Position)),
+          _Seed,
+          pairingContext => new NodeAccumulation<TProjected, TAccumulate>(
+            projector(new NodeContext<TInner>(pairingContext.Node.Node, pairingContext.Position)),
+            pairingContext.Node.Accumulate));
+      }
+    }
 
     public static IDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,

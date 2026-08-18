@@ -19,7 +19,7 @@ namespace Copse.Linq.Async
       Func<IAsyncTreenumerator<TNode>> innerBreadthFirstFactory,
       Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
       TAccumulate seed,
-      Func<NodeAccumulation<TNode, TAccumulate>, TProduct> productSelector)
+      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector)
     {
       _InnerDepthFirstFactory = innerDepthFirstFactory;
       _InnerBreadthFirstFactory = innerBreadthFirstFactory;
@@ -32,7 +32,9 @@ namespace Copse.Linq.Async
     private readonly Func<IAsyncTreenumerator<TNode>> _InnerBreadthFirstFactory;
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
     private readonly TAccumulate _Seed;
-    private readonly Func<NodeAccumulation<TNode, TAccumulate>, TProduct> _ProductSelector;
+    // Context-shaped since the rootfix door (2026-08-18): the door surrenders
+    // NodeContext-shaped projectors; value-shaped composition wraps at the seams below.
+    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
 
     public IAsyncTreenumerator<TProduct> GetAsyncDepthFirstTreenumerator()
       => new AsyncRootfixScanProductDepthFirstTreenumerator<TNode, TAccumulate, TProduct>(
@@ -48,7 +50,7 @@ namespace Copse.Linq.Async
 
       return new AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
-        pairing => selector(currentProductSelector(pairing)));
+        pairingContext => selector(currentProductSelector(pairingContext)));
     }
 
     // The fourth-cell door (see the plain citizen): the composed product rides as a
@@ -69,7 +71,7 @@ namespace Copse.Linq.Async
         _Accumulator,
         _Seed,
         new ComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>(
-          new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>(pairContext => currentProductSelector(pairContext.Node)),
+          new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>(currentProductSelector),
           outerSelector),
         relabels);
     }

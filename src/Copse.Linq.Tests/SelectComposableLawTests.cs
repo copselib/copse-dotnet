@@ -310,6 +310,59 @@ namespace Copse.Linq.Tests
     // ---- COMPOSE-LEFT (the door): the lattice feeds the citizen ----
 
     [TestMethod]
+    public void ComposeLeft_SelectIntoRootfixScan_EqualsForcedWrapperSpelling()
+    {
+      // The rootfix door (the leaffix door's streaming mirror): Select(f).RootfixScan(...)
+      // surrenders through the door and the scan's citizen runs over the un-projected inner
+      // raw, the projection folded into the accumulator and the emission product. The
+      // Tree.Defer-broken wrapper spelling is the oracle, both dimensions.
+      foreach (var tree in Corpus)
+      {
+        var doorRoute = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .Select(node => node + "!")
+          .RootfixScan(0, (depth, _) => depth + 1);
+
+        var wrapperRoute = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select(node => node + "!"))
+          .RootfixScan(0, (depth, _) => depth + 1);
+
+        CollectionAssert.AreEqual(
+          wrapperRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          doorRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(
+          wrapperRoute.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          doorRoute.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void ComposeLeft_RootfixDoorResult_KeepsComposing()
+    {
+      // The door's result is still the citizen: a following Select lands in the product
+      // engine, a following Where joins the fourth cell -- the left-composed chain stays
+      // total. Oracle: the fully wrapper-broken spelling.
+      foreach (var tree in Corpus)
+      {
+        var composed = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .Select(node => node + "!")
+          .RootfixScan(0, (depth, _) => depth + 1)
+          .Where(pair => pair.Accumulate != 2)
+          .Select(pair => pair.Node + ":" + pair.Accumulate);
+
+        Assert.AreEqual(typeof(ScanWhereTreenumerable<,,,>), composed.GetType().GetGenericTypeDefinition(), $"one machine [{tree}]");
+
+        var broken = Tree.Defer(() => Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select(node => node + "!"))
+            .RootfixScan(0, (depth, _) => depth + 1))
+          .Where(pair => pair.Accumulate != 2)
+          .Select(pair => pair.Node + ":" + pair.Accumulate);
+
+        CollectionAssert.AreEqual(broken.GetPreorderTraversal().ToArray(), composed.GetPreorderTraversal().ToArray(), $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(broken.GetLevelOrderTraversal().ToArray(), composed.GetLevelOrderTraversal().ToArray(), $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
     public void ComposeLeft_SelectIntoLeaffixScan_EqualsForcedWrapperSpelling()
     {
       // Select(f).LeaffixScan(...): the scan surrenders through the door and walks the
