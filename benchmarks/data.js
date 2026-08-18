@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787077957708,
+  "lastUpdate": 1787077958354,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -135726,6 +135726,102 @@ window.BENCHMARK_DATA = {
             "value": 80761404.9689441,
             "unit": "ns",
             "range": "± 1979626.8808980975"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2acd8e2f3225a50ec1c8f558078ababbb0fded7e",
+          "message": "Folder cleanup: the shared result selectors get their own subfolder\n\nSelectWhere/ResultSelectors/ (both colors): the struct seam contract\n(IResultSelector), the pair it returns (SelectWhereResult), the chain\nnester (ComposedResultSelector), the closure leaf (FuncResultSelector),\nand the rejecting operators' legs (Where/PruneBefore, value and\npositional). SelectWhere/ itself is now just the driver family, the\nfold-carrying ScanWhere, and the light arrows (SelectWhereComposition).\n\nThe family-owned legs stay with their families (SelectResultSelector in\nSelect/, PruneAfterResultSelector in PruneAfter/ -- the claimed-by\nrule). Pure git mv + manifest paths; regen byte-stable; pins and drift\ngreen.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T17:56:27Z",
+          "tree_id": "ef667a8dc190c003a0bf25556adfbe92517249ac",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2acd8e2f3225a50ec1c8f558078ababbb0fded7e"
+        },
+        "date": 1787077958215,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 107791113.93333334,
+            "unit": "ns",
+            "range": "± 977267.2126132963"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 91949201.37179486,
+            "unit": "ns",
+            "range": "± 821009.987589472"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 241122273.45238096,
+            "unit": "ns",
+            "range": "± 635292.9412289885"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 265149855.26666668,
+            "unit": "ns",
+            "range": "± 3815636.6549767046"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 193896053.05555546,
+            "unit": "ns",
+            "range": "± 5000029.694786425"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 196773940.71794876,
+            "unit": "ns",
+            "range": "± 1281644.5631410342"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 108136780.4142857,
+            "unit": "ns",
+            "range": "± 435385.5910011988"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 87640188.36904763,
+            "unit": "ns",
+            "range": "± 389485.88980640325"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 495162700.53333336,
+            "unit": "ns",
+            "range": "± 1772928.379963011"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 489841484.14285713,
+            "unit": "ns",
+            "range": "± 602005.6348405919"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 101591396.00000001,
+            "unit": "ns",
+            "range": "± 114297.726598565"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 78660215.35238095,
+            "unit": "ns",
+            "range": "± 190410.44137758212"
           }
         ]
       }
