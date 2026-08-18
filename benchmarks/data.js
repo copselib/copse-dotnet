@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787023386616,
+  "lastUpdate": 1787023387223,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -31802,6 +31802,54 @@ window.BENCHMARK_DATA = {
             "value": 17597084.868908897,
             "unit": "ns",
             "range": "± 777662.8237826937"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1be2f7f302cdea743a3919ded47ebade8ca89f4",
+          "message": "The scan tier, sketched: inherited folds as a driver stage\n\ndesign-docs/SCAN_TIER_DESIGN.md (DRAFT, awaiting ratification) -- the typed\npipeline as the spec, the output-reachability erasure rule as the law\ndeciding driver-stage vs scan-engine, scope corrected to INHERITED folds only\n(a synthesized leaffix fact cannot exist at scheduling time, so\nSelectSubtreesWhere stays a capture-side candidate), the shipped boolean\nsubtree stage as the free special case, the plain-Where guard as the hard\ngate on the general TAccumulate slot, and the five-question ruling list.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:58:11Z",
+          "tree_id": "6c6ffabcf7d23178a6441f1a8e01579a7706dbbf",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e1be2f7f302cdea743a3919ded47ebade8ca89f4"
+        },
+        "date": 1787023387093,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14409209.137276785,
+            "unit": "ns",
+            "range": "± 209562.335207088"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26905363.785714287,
+            "unit": "ns",
+            "range": "± 87756.79896534033"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 25054389.639583334,
+            "unit": "ns",
+            "range": "± 302862.23969647556"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15242983.46454327,
+            "unit": "ns",
+            "range": "± 410405.680049317"
           }
         ]
       }
