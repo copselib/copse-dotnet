@@ -152,7 +152,7 @@ namespace Copse.Linq.Tests
     {
       var hidden = Plain().Select(n => n + "!").Hide();
 
-      Assert.IsFalse(hidden is ISelectComposableTreenumerable<string>, "Hide must strip the citizenship");
+      Assert.IsFalse(hidden is ISelectTreenumerable<string>, "Hide must strip the citizenship");
       Assert.IsFalse(hidden is ISelectWhereTreenumerable<string>, "Hide must strip the general surface");
       Assert.IsFalse(hidden is ISelectPruneAfterTreenumerable<string>, "Hide must strip the light tier");
 

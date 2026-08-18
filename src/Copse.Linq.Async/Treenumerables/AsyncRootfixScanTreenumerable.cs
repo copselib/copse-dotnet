@@ -20,7 +20,7 @@ namespace Copse.Linq.Async.Treenumerables
   // (the product ENGINE -- zero extra machinery), so Select probes the citizenship BEFORE
   // this surface.
   internal sealed class AsyncRootfixScanTreenumerable<TNode, TAccumulate>
-    : IAsyncSelectComposableTreenumerable<NodeAccumulation<TNode, TAccumulate>>,
+    : IAsyncSelectTreenumerable<NodeAccumulation<TNode, TAccumulate>>,
       IAsyncSelectWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>>
   {
     public AsyncRootfixScanTreenumerable(
@@ -48,7 +48,7 @@ namespace Copse.Linq.Async.Treenumerables
       => new AsyncRootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed);
 
-    public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
+    public IAsyncSelectTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
       => new AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
         pairingContext => selector(pairingContext.Node));

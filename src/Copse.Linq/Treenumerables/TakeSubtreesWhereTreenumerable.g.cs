@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // Where joins the one driver over this citizen -- the machinery choice stays an
   // acquisition-time fact, invisible to the algebra.
   internal sealed class TakeSubtreesWhereTreenumerable<TNode>
-    : ISelectComposableTreenumerable<TNode>
+    : ISelectTreenumerable<TNode>
   {
     public TakeSubtreesWhereTreenumerable(
       ITreenumerable<TNode> source,
@@ -51,7 +51,7 @@ namespace Copse.Linq.Treenumerables
         takeSubtrees: true);
     }
 
-    public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
+    public ISelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
       => new TakeSubtreesWhereProductTreenumerable<TNode, TResult>(_Source, _Predicate, selector);
 
     // The scan spelling (the operator's definition -- SELECT_INTO_CAPTURES_DESIGN.md section

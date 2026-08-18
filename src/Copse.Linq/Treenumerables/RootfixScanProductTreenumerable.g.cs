@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerables
   // wrapper layer per pull. Itself a citizen: further Selects compose onto the selector
   // (closure by signature).
   internal sealed class RootfixScanProductTreenumerable<TNode, TAccumulate, TProduct>
-    : ISelectComposableTreenumerable<TProduct>,
+    : ISelectTreenumerable<TProduct>,
       ISelectWhereTreenumerable<TProduct>
   {
     public RootfixScanProductTreenumerable(
@@ -47,7 +47,7 @@ namespace Copse.Linq.Treenumerables
       => new RootfixScanProductBreadthFirstTreenumerator<TNode, TAccumulate, TProduct>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed, _ProductSelector);
 
-    public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
+    public ISelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
     {
       var currentProductSelector = _ProductSelector;
 

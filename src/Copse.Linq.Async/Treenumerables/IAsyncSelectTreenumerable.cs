@@ -25,7 +25,7 @@ namespace Copse.Linq.Async.Treenumerables
   /// <c>ComposeSelect(g after f)</c>. The return type IS the citizenship: closure
   /// (Select over a citizen stays a citizen) is enforced by the signature.</para>
   /// </summary>
-  public interface IAsyncSelectComposableTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+  public interface IAsyncSelectTreenumerable<TNode> : IAsyncTreenumerable<TNode>
   {
     /// <summary>
     /// Compose <paramref name="selector"/> into this treenumerable's own machinery,
@@ -33,6 +33,6 @@ namespace Copse.Linq.Async.Treenumerables
     /// shape. Cost contract: no worse than the wrapper it replaces; the point of
     /// citizenship is that it is usually strictly better.
     /// </summary>
-    IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
+    IAsyncSelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
   }
 }

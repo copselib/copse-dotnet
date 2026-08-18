@@ -10,7 +10,7 @@ namespace Copse.Linq.Async.Treenumerables
   // wrapper layer per pull. Itself a citizen: further Selects compose onto the selector
   // (closure by signature).
   internal sealed class AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TProduct>
-    : IAsyncSelectComposableTreenumerable<TProduct>,
+    : IAsyncSelectTreenumerable<TProduct>,
       IAsyncSelectWhereTreenumerable<TProduct>
   {
     public AsyncRootfixScanProductTreenumerable(
@@ -43,7 +43,7 @@ namespace Copse.Linq.Async.Treenumerables
       => new AsyncRootfixScanProductBreadthFirstTreenumerator<TNode, TAccumulate, TProduct>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed, _ProductSelector);
 
-    public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
+    public IAsyncSelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
     {
       var currentProductSelector = _ProductSelector;
 

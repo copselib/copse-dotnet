@@ -373,9 +373,9 @@ namespace Copse.CodeGen
       // each other, so Generated*-style validation naming is not an option here.
       // The public projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md): per-tier
       // public contracts; closure is enforced by the ComposeSelect return types.
-      new("Copse.Linq.Async/Treenumerables/IAsyncSelectComposableTreenumerable.cs",
-        "Copse.Linq/Treenumerables/ISelectComposableTreenumerable.g.cs",
-        "IAsyncSelectComposableTreenumerable", "ISelectComposableTreenumerable", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
+        "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
+        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncSelectComposableTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ISelectComposableTreenumerableBuffer.g.cs",
         "IAsyncSelectComposableTreenumerableBuffer", "ISelectComposableTreenumerableBuffer", "Copse.Linq.Treenumerables"),

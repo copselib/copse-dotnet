@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerables
   // absorbs it); depth-first it is one light Select wrapper over the bespoke O(1) wrapper --
   // one layer however long the composed chain, because composition happened on the selector.
   internal sealed class TakeSubtreesWhereProductTreenumerable<TNode, TProduct>
-    : ISelectComposableTreenumerable<TProduct>
+    : ISelectTreenumerable<TProduct>
   {
     public TakeSubtreesWhereProductTreenumerable(
       ITreenumerable<TNode> source,
@@ -42,7 +42,7 @@ namespace Copse.Linq.Treenumerables
         .Select(_ProductSelector)
         .GetBreadthFirstTreenumerator();
 
-    public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
+    public ISelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TProduct, TResult> selector)
     {
       var currentProductSelector = _ProductSelector;
 

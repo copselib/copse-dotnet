@@ -16,7 +16,7 @@ namespace Copse.Linq.Async.Treenumerables
   // Where joins the one driver over this citizen -- the machinery choice stays an
   // acquisition-time fact, invisible to the algebra.
   internal sealed class AsyncTakeSubtreesWhereTreenumerable<TNode>
-    : IAsyncSelectComposableTreenumerable<TNode>
+    : IAsyncSelectTreenumerable<TNode>
   {
     public AsyncTakeSubtreesWhereTreenumerable(
       IAsyncTreenumerable<TNode> source,
@@ -48,7 +48,7 @@ namespace Copse.Linq.Async.Treenumerables
         takeSubtrees: true);
     }
 
-    public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
+    public IAsyncSelectTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector)
       => new AsyncTakeSubtreesWhereProductTreenumerable<TNode, TResult>(_Source, _Predicate, selector);
 
     // The scan spelling (the operator's definition -- SELECT_INTO_CAPTURES_DESIGN.md section

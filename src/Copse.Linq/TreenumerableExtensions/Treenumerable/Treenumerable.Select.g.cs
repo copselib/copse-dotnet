@@ -44,7 +44,7 @@ namespace Copse.Linq
       // the general surface since the fourth-cell door (SCAN_TIER_DESIGN.md): the scan
       // citizens now also implement ISelectWhere, and a bare Select must keep taking
       // ComposeSelect (the product ENGINE) rather than minting a fold-carrying driver.
-      if (source is ISelectComposableTreenumerable<TSource> composableSource)
+      if (source is ISelectTreenumerable<TSource> composableSource)
         return composableSource.ComposeSelect(selector);
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)

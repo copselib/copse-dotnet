@@ -152,9 +152,9 @@ namespace Copse.Linq.Tests
     {
       foreach (var tree in Corpus)
       {
-        Assert.IsInstanceOfType(DepthScan(tree), typeof(ISelectComposableTreenumerable<NodeAccumulation<string, int>>), $"scan [{tree}]");
-        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate), typeof(ISelectComposableTreenumerable<int>), $"projected [{tree}]");
-        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate).Select(depth => depth * 2), typeof(ISelectComposableTreenumerable<int>), $"chained [{tree}]");
+        Assert.IsInstanceOfType(DepthScan(tree), typeof(ISelectTreenumerable<NodeAccumulation<string, int>>), $"scan [{tree}]");
+        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate), typeof(ISelectTreenumerable<int>), $"projected [{tree}]");
+        Assert.IsInstanceOfType(DepthScan(tree).Select(x => x.Accumulate).Select(depth => depth * 2), typeof(ISelectTreenumerable<int>), $"chained [{tree}]");
       }
     }
 
@@ -269,9 +269,9 @@ namespace Copse.Linq.Tests
       // citizenship: the composite result composes like any streaming citizen.
       var result = TreeSerializer.DeserializeDepthFirstTree("a(b(c,d),e)").TakeSubtreesWhere(node => node == "b");
 
-      Assert.IsInstanceOfType(result, typeof(ISelectComposableTreenumerable<string>), "result");
-      Assert.IsInstanceOfType(result.Select(node => node + "!"), typeof(ISelectComposableTreenumerable<string>), "projected");
-      Assert.IsInstanceOfType(result.Select(node => node + "!").Select(text => text.Length), typeof(ISelectComposableTreenumerable<int>), "chained");
+      Assert.IsInstanceOfType(result, typeof(ISelectTreenumerable<string>), "result");
+      Assert.IsInstanceOfType(result.Select(node => node + "!"), typeof(ISelectTreenumerable<string>), "projected");
+      Assert.IsInstanceOfType(result.Select(node => node + "!").Select(text => text.Length), typeof(ISelectTreenumerable<int>), "chained");
 
       Assert.AreEqual(
         typeof(SelectWhereTreenumerable<,,>),

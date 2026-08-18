@@ -24,7 +24,7 @@ namespace Copse.Linq.Treenumerables
   // (the product ENGINE -- zero extra machinery), so Select probes the citizenship BEFORE
   // this surface.
   internal sealed class RootfixScanTreenumerable<TNode, TAccumulate>
-    : ISelectComposableTreenumerable<NodeAccumulation<TNode, TAccumulate>>,
+    : ISelectTreenumerable<NodeAccumulation<TNode, TAccumulate>>,
       ISelectWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>>
   {
     public RootfixScanTreenumerable(
@@ -52,7 +52,7 @@ namespace Copse.Linq.Treenumerables
       => new RootfixScanBreadthFirstTreenumerator<TNode, TAccumulate>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed);
 
-    public ISelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
+    public ISelectTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
       => new RootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
         pairingContext => selector(pairingContext.Node));
