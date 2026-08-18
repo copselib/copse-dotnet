@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787064609498,
+  "lastUpdate": 1787064610342,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -90392,6 +90392,98 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
             "value": 264889,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "07a70f37f18e8147ae90593775a7a8e43e460bf9",
+          "message": "The rootfix door: compose-left, left of the scan\n\nThe last mechanism on the composition ledger -- the leaffix door's streaming\nmirror, waited on by the FromSelect witnesses since 2026-08-17. A\npure-projection wrapper upstream of RootfixScan surrenders its pieces\n(IAsyncProjectionSource.CaptureThrough -- the door interface was already\nfully general; \"capture\" was only ever the first consumer's kind) and the\nscan's PRODUCT citizen is built over the un-projected inner raw: the\nprojection folds into the accumulator (once per scheduled node) and rides\nthe product selector at emission (once per visit) -- the exact counts the\nwrapper spelling paid, minus the wrapper hop on every pull.\n\nThe enabling change: the product engines' selector went CONTEXT-shaped\n(they have the inner position in hand at every emission; the pair context\nis minted transiently), so surrendered positional projectors are honored.\nThe citizen recipes carry context-shaped selectors internally; value-shaped\ncomposition wraps at the seams; the fourth-cell door simplified\n(SelectResultSelector takes the context selector directly).\n\nAll composite flavors route through the door (seed + rootNodeSelector value\nand positional, via the shared RootfixScanCitizen construction). The door's\nresult is still the citizen, so the left-composed chain stays total:\nSelect(f).RootfixScan(...).Where(...).Select(...) is ONE\nScanWhereTreenumerable -- Jason's typed pipeline as a single machine,\npinned by the new ComposeLeft_RootfixDoorResult_KeepsComposing law (plus\nthe door-equivalence anchor, corpus, both dimensions).\n\nWitnesses (same-run vs plain): FromSelect_Dft_Chain +6.5% (was +20-30% --\nthe hop is gone; the residual is the projector's contract-equal invocation\nsites), FromSelect_Bft +13%. 24,589 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T05:36:43Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07a70f37f18e8147ae90593775a7a8e43e460bf9"
+        },
+        "date": 1787064610236,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642107,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2417,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1291,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693218,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 70552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 2624,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789057,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051113,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840154,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 332817,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 264888,
             "unit": "bytes"
           },
           {
