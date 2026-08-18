@@ -9,9 +9,13 @@ namespace Copse.Linq.Treenumerables
   // inner sources are single-dimension, and the consumer contract is composite-width).
   // The wrapper's whole contribution is the generic instantiation: this is the one scope
   // where TSource -- the consumer's existential TInner -- can be spelled.
-  internal sealed partial class SelectTreenumerable<TSource, TResult> : IProjectionSource<TResult>
+  //
+  // Explicit implementation, deliberately: the compose-left door is PARKED as internal
+  // (SELECT_INTO_CAPTURES_DESIGN.md -- third parties get compose-right only), and the
+  // class going public must not unpark it.
+  partial class SelectTreenumerable<TSource, TResult> : IProjectionSource<TResult>
   {
-    public TOperatorResult CaptureThrough<TOperatorResult>(IProjectionConsumer<TResult, TOperatorResult> consumer)
+    TOperatorResult IProjectionSource<TResult>.CaptureThrough<TOperatorResult>(IProjectionConsumer<TResult, TOperatorResult> consumer)
       => consumer.Consume(_Source, _Selector);
   }
 }

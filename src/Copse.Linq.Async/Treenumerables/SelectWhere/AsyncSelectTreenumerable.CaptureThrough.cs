@@ -5,9 +5,13 @@ namespace Copse.Linq.Async.Treenumerables
   // inner sources are single-dimension, and the consumer contract is composite-width).
   // The wrapper's whole contribution is the generic instantiation: this is the one scope
   // where TSource -- the consumer's existential TInner -- can be spelled.
-  internal sealed partial class AsyncSelectTreenumerable<TSource, TResult> : IAsyncProjectionSource<TResult>
+  //
+  // Explicit implementation, deliberately: the compose-left door is PARKED as internal
+  // (SELECT_INTO_CAPTURES_DESIGN.md -- third parties get compose-right only), and the
+  // class going public must not unpark it.
+  partial class AsyncSelectTreenumerable<TSource, TResult> : IAsyncProjectionSource<TResult>
   {
-    public TOperatorResult CaptureThrough<TOperatorResult>(IAsyncProjectionConsumer<TResult, TOperatorResult> consumer)
+    TOperatorResult IAsyncProjectionSource<TResult>.CaptureThrough<TOperatorResult>(IAsyncProjectionConsumer<TResult, TOperatorResult> consumer)
       => consumer.Consume(_Source, _Selector);
   }
 }

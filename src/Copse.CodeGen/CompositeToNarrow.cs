@@ -81,6 +81,26 @@ namespace Copse.CodeGen
           : "GetAsyncDepthFirstTreenumerator";
       }
 
+      // Narrow twins are internal regardless of the composite declaration's visibility
+      // (PUBLIC_COMPOSITION_SURFACE_DESIGN.md: the public wrapper classes are
+      // composite-width only -- narrow parity is deferred).
+      public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
+      {
+        var visited = (ClassDeclarationSyntax)base.VisitClassDeclaration(node);
+
+        for (var index = 0; index < visited.Modifiers.Count; index++)
+        {
+          if (visited.Modifiers[index].IsKind(SyntaxKind.PublicKeyword))
+          {
+            var internalKeyword = SyntaxFactory.Token(
+              visited.Modifiers[index].LeadingTrivia, SyntaxKind.InternalKeyword, visited.Modifiers[index].TrailingTrivia);
+            return visited.WithModifiers(visited.Modifiers.Replace(visited.Modifiers[index], internalKeyword));
+          }
+        }
+
+        return visited;
+      }
+
       // Strip the composite-only public bases from base lists (see StrippedBases).
       public override SyntaxNode VisitBaseList(BaseListSyntax node)
       {
