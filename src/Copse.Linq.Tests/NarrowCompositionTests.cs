@@ -137,17 +137,19 @@ namespace Copse.Linq.Tests
     // CompositionTests.LightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen; the narrow
     // donation lands with the demolition pass, and this pin flips with it.)
     [TestMethod]
-    public void NarrowLightTier_StaysSealedWhenARejectingOperatorJoins()
+    public void NarrowLightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen()
     {
-      IDepthFirstTreenumerable<string> stacked = StreamDepthFirst("a(b(d,e),c)")
+      // The narrow seal opened WITH the composite one (2026-08-18): CompositeToNarrow fans
+      // the interface re-merge out, so narrow light chains splice into one narrow driver.
+      IDepthFirstTreenumerable<string> joined = StreamDepthFirst("a(b(d,e),c)")
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!")
         .Where(n => n != "c!");
 
-      Assert.IsInstanceOfType(
-        stacked,
-        typeof(SelectWhereDepthFirstTreenumerable<string, string, WhereResultSelector<string>>),
-        "a rejecting operator must stack its struct-selector driver over the sealed narrow light tier, not convert it");
+      Assert.AreEqual(
+        typeof(SelectWhereDepthFirstTreenumerable<,,>),
+        joined.GetType().GetGenericTypeDefinition(),
+        "a rejecting operator joining a narrow light chain must splice into ONE narrow driver");
     }
 
     // The join rule, narrow half: a positional lambda is entitled to its input tree's emitted

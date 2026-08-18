@@ -34,9 +34,12 @@ namespace Copse.Linq.Treenumerables
         _Source, SelectWhereComposition.SelectPruneAfterThenSelect(_ResultSelector, selector));
     }
 
-    // The seal experiment's donation: the chain's composed closure rides as one
-    // FuncResultSelector leaf; the splice and the rejecting leg are structs.
-    public ITreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
+    // The general surface (inherited): light chains never relabel.
+    public bool Relabels => false;
+
+    // The struct splice (the open seal): the chain.s composed closure rides as one
+    // FuncResultSelector leaf; the splice plumbing and the outer leg are structs.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
@@ -45,6 +48,20 @@ namespace Copse.Linq.Treenumerables
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
           new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),
+        relabels);
+    }
+
+    // The Func splice (inherited; for pieces that are inherently closures): the chain's
+    // closure wraps as a struct leaf and the algebra's one law composes over it.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
+      bool relabels)
+    {
+      return new SelectWhereTreenumerable<TSource, TOuterResult, FuncResultSelector<TSource, TOuterResult>>(
+        _Source,
+        new FuncResultSelector<TSource, TOuterResult>(
+          SelectWhereComposition.ResultSelectorThenResultSelector<TSource, TResult, FuncResultSelector<TSource, TResult>, TOuterResult>(
+            new FuncResultSelector<TSource, TResult>(_ResultSelector), resultSelector)),
         relabels);
     }
 

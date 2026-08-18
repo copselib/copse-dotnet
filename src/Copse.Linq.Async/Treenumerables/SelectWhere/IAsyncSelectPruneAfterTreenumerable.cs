@@ -10,33 +10,23 @@ namespace Copse.Linq.Async.Treenumerables
   // (the relabels-nothing row of the gradient: no promotion, no renumbering), so even
   // positional lambdas compose across it.
   //
-  // Both signatures are the type-enforced tier boundary: a projection returns a bare value
+  // Both light signatures are the type-enforced tier fact: a projection returns a bare value
   // and a prune-after returns a bool -- neither can smuggle SkipNode, so composing through
-  // these doors provably stays in the tier.
+  // these doors provably stays on the light machinery.
   //
-  // THE TIER IS SEALED (boundary ruling 2026-08-04): this interface deliberately does NOT
-  // extend the general-splice surface, so a rejecting operator (Where, PruneBefore) STACKS
-  // its inlined-struct driver over a light wrapper instead of converting it. Conversion was
-  // measured underwater both ways -- the light wrapper is the one splice participant with no
-  // struct leg to donate, so absorbing it trades a near-free passthrough layer for an
-  // all-delegate FuncResultSelector chain (Where.Dft_Triangle_Mixed, +25%). The one
-  // exception is the bare projection wrapper: AsyncSelectTreenumerable additionally
-  // implements IAsyncSelectWhereTreenumerable (dual citizenship), because absorbing a full
-  // projection layer is the composition family's measured win.
-  internal interface IAsyncSelectPruneAfterTreenumerable<TNode> : IAsyncTreenumerable<TNode>
+  // THE SEAL IS OPEN (reunification, 2026-08-18; sealed 2026-08-04 by the Mixed regression):
+  // this interface extends the general-splice surface again -- a rejecting operator SPLICES
+  // over a light chain through the inherited struct Compose, the chain's pieces riding as
+  // legs (structs where the operator has one, a single closure leaf where the chain is
+  // delegate-bound by nature). The struct-composed arrow removed the all-delegate chain
+  // that forced the seal; the residual (~6% on short DFT mixes, inverting on longer
+  // chains) was ruled a fair price for a TOTAL composition algebra -- one law, no
+  // exceptions. The 2026-08-04 evidence stands in OPERATOR_COMPOSITION_DESIGN.md 2.9 as
+  // history.
+  internal interface IAsyncSelectPruneAfterTreenumerable<TNode> : IAsyncSelectWhereTreenumerable<TNode>
   {
     // Compose a projection, staying on the tier's light machinery.
     IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
-
-    // THE SEAL EXPERIMENT (reunification phase 2, 2026-08-18): a rejecting operator's
-    // struct leg splices OVER this tier's composed closure -- the closure rides as ONE
-    // FuncResultSelector leaf (the delegate the chain already pays per visit today), the
-    // splice plumbing and the rejecting leg are structs. This is the donation whose
-    // Func-shaped form caused the 2026-08-04 Mixed regression; the Mixed rows rule on it.
-    IAsyncTreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
-      TOuterSelector outerSelector,
-      bool relabels)
-      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
 
     // Compose a prune-after (keep the node, shed its subtree on a match), staying on the
     // tier's light machinery.

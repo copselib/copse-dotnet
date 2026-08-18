@@ -26,13 +26,6 @@ namespace Copse.Linq
         return selectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
-      // THE SEAL EXPERIMENT (reunification phase 2, 2026-08-18): a light prune chain donates
-      // its pieces as legs and the Where splices OVER it -- struct plumbing, one closure
-      // leaf. The Mixed rows rule on whether the 2026-08-04 seal opens.
-      if (source is IAsyncSelectPruneAfterTreenumerable<TNode> selectPruneAfterSource)
-        return selectPruneAfterSource.ComposeRejecting<TNode, WhereResultSelector<TNode>>(
-          new WhereResultSelector<TNode>(predicate), relabels: true);
-
       return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }

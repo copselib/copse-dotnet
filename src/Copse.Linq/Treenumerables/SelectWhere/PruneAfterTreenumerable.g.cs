@@ -28,9 +28,12 @@ namespace Copse.Linq.Treenumerables
 
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE
     // wrapper by predicate union.
-    // The seal experiment's donation: the predicate rides its own struct leaf -- this
-    // wrapper's whole donation is delegate-free plumbing (one leaf lambda, as always).
-    public ITreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
+    // The general surface (inherited): light wrappers never relabel.
+    public bool Relabels => false;
+
+    // The struct splice (the open seal): the predicate rides its own struct leaf -- this
+    // wrapper.s donation is delegate-free plumbing (one leaf lambda, as always).
+    public ITreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>
@@ -39,6 +42,19 @@ namespace Copse.Linq.Treenumerables
         _Source,
         new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>(
           new PruneAfterResultSelector<TNode>(_Predicate), outerSelector),
+        relabels);
+    }
+
+    // The Func splice (inherited; for pieces that are inherently closures).
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> resultSelector,
+      bool relabels)
+    {
+      return new SelectWhereTreenumerable<TNode, TOuterResult, FuncResultSelector<TNode, TOuterResult>>(
+        _Source,
+        new FuncResultSelector<TNode, TOuterResult>(
+          SelectWhereComposition.ResultSelectorThenResultSelector<TNode, TNode, PruneAfterResultSelector<TNode>, TOuterResult>(
+            new PruneAfterResultSelector<TNode>(_Predicate), resultSelector)),
         relabels);
     }
 

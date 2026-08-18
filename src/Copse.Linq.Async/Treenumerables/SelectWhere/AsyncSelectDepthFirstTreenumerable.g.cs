@@ -61,14 +61,7 @@ namespace Copse.Linq.Async.Treenumerables
         relabels);
     }
 
-    // The prune-tier face of the same donation (dual citizenship): identical construction.
-    public IAsyncDepthFirstTreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
-      TOuterSelector outerSelector,
-      bool relabels)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
-      => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
-
-    // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
+        // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
     // gate's decisive case: the tier seal exists because this wrapper's pieces used to
     // arrive as bare Funcs and de-inlined the whole splice chain; here its projection rides
     // an inlinable struct leg, the user lambda staying a leaf call).
