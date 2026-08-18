@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787077959656,
+  "lastUpdate": 1787077960303,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -68982,6 +68982,66 @@ window.BENCHMARK_DATA = {
             "value": 157598612.671875,
             "unit": "ns",
             "range": "± 525180.487454763"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2acd8e2f3225a50ec1c8f558078ababbb0fded7e",
+          "message": "Folder cleanup: the shared result selectors get their own subfolder\n\nSelectWhere/ResultSelectors/ (both colors): the struct seam contract\n(IResultSelector), the pair it returns (SelectWhereResult), the chain\nnester (ComposedResultSelector), the closure leaf (FuncResultSelector),\nand the rejecting operators' legs (Where/PruneBefore, value and\npositional). SelectWhere/ itself is now just the driver family, the\nfold-carrying ScanWhere, and the light arrows (SelectWhereComposition).\n\nThe family-owned legs stay with their families (SelectResultSelector in\nSelect/, PruneAfterResultSelector in PruneAfter/ -- the claimed-by\nrule). Pure git mv + manifest paths; regen byte-stable; pins and drift\ngreen.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T17:56:27Z",
+          "tree_id": "ef667a8dc190c003a0bf25556adfbe92517249ac",
+          "url": "https://github.com/copselib/copse-dotnet/commit/2acd8e2f3225a50ec1c8f558078ababbb0fded7e"
+        },
+        "date": 1787077960172,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 67710618.171875,
+            "unit": "ns",
+            "range": "± 2879290.8297677236"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9532747.692307692,
+            "unit": "ns",
+            "range": "± 57726.95585831794"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 134154931.46428572,
+            "unit": "ns",
+            "range": "± 984303.5133092101"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17466104.94591346,
+            "unit": "ns",
+            "range": "± 93341.01159486956"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 171171007.76984125,
+            "unit": "ns",
+            "range": "± 5930555.50484252"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 155208450.1973684,
+            "unit": "ns",
+            "range": "± 679662.1392937204"
           }
         ]
       }
