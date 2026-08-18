@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787074089526,
+  "lastUpdate": 1787074090529,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -91693,6 +91693,98 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
             "value": 2625,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789058,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051115,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840160,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 332817,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 264889,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "37c57fe2417d5a4e15a12467e72ea468cd077b90",
+          "message": "The complete pass: naming, comments, docs, dead usings, vocabulary\n\nThe five-agent audit of the composition workstream, applied:\n\nNaming/structure:\n- Citizen sync twins move to their true namespace (Copse.Linq.Treenumerables;\n  the manifest's sync-namespace field was stale) and the async citizens align\n  (Copse.Linq.Async.Treenumerables); IAsyncSelectComposableTreenumerable moves\n  out of Buffers/ (it is the streaming citizenship, not a buffer contract)\n- SelectWhereTreenumerable -> AsyncSelectWhereTreenumerable (the one async\n  driver wrapper missing its color prefix), narrow twins and codegen name map\n  updated\n- IResultSelector<TInner,TNode> -> <TSource,TResult> family-wide (the modern\n  role names ComposedResultSelector already used); ScanWhere machines and the\n  Where drivers follow (identifier-only; plain Where machinery untouched)\n- BreadthFirstChain -> GetBreadthFirstChain\n\nComments: stale claims corrected (TakeSubtreesWhere BFT arm is the Where\nmachinery in subtree mode since the subtree stage, not the scan chain; the\ncomposed chain nests in ComposedResultSelector, not a FuncResultSelector\nclosure; FuncResultSelector is the closure leaf; reorder-wall doc no longer\nclaims the BFT arms capture); apostrophe artifacts fixed; duplicated header\nline in NarrowCompositionTests removed; composite TakeSubtreesWhere overloads\ncollapse onto ToContextPredicate.\n\nDocs: closure dates corrected to 2026-08-18 (the repo record); supersession\nnotes (SelectWhereComposition = light in-tier arrows only, the general law's\none home is ComposedResultSelector; method-group follow-up done, 6bc14fd);\nSCAN_TIER questions marked settled; surface-map TakeSubtreesWhere row updated\nfor the subtree stage; SELECT_INTO_CAPTURES probe order and positional ruling\nrecorded; \"FIRST-CALLER FUSION\" renamed under the vocabulary ban, plus a\nrepo-wide purge of remaining post-ruling fusion vocabulary.\n\nHygiene: 40+ unused usings removed (build-verified); stray mid-file BOMs\ndropped in the EnumerableExtensions pair; sync twins regenerated.\n\n24,589 tests green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T15:46:59Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/37c57fe2417d5a4e15a12467e72ea468cd077b90"
+        },
+        "date": 1787074090402,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642108,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2417,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693218,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 70553,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 2624,
             "unit": "bytes"
           },
           {
