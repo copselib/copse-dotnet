@@ -1,4 +1,4 @@
-# The Ancestor Composer (the fourth cell) — RATIFIED 2026-08-18
+# The Ancestor Composer (the fourth cell) — SHIPPED 2026-08-18
 
 *Drafted 2026-08-18 from the TakeSubtreesWhere dialogue; reframed the same day by Jason's
 composer taxonomy; ruled BUILD ("let's do things the right way — we'll be glad we did

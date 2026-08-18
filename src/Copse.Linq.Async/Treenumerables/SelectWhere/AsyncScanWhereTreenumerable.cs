@@ -13,13 +13,10 @@ namespace Copse.Linq.Async.Treenumerables
   // struct Compose forms and every downstream Select/Where lands in ITS legs, not in a
   // stacked layer.
   //
-  // DIMENSION DISPATCH (interim, 2026-08-18): the depth-first acquisition is the staged
-  // machine (AsyncScanWhereDepthFirstTreenumerator -- fold trail + filter in one pull
-  // loop); the breadth-first acquisition is the two-machine spelling (the scan product
-  // engine feeding a plain filter driver) until the BFT staged machine lands -- its
-  // accumulate trail needs the skip-prefix's re-anchoring discipline plus rejected-node
-  // replay, a separate build. The dispatch is invisible to the algebra (the
-  // TakeSubtreesWhere lesson: machinery is an acquisition-time fact).
+  // Both dimensions are staged machines: DFT rides the accumulate trail
+  // (AsyncScanWhereDepthFirstTreenumerator), BFT rides the accumulate tracker -- the
+  // rootfix BFT engine's state machinery embedded beside the filter path
+  // (AsyncScanWhereBreadthFirstTreenumerator). ONE machine per acquisition, both dims.
   internal sealed class AsyncScanWhereTreenumerable<TInner, TAccumulate, TResult, TResultSelector>
     : IAsyncSelectWhereTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<NodeAccumulation<TInner, TAccumulate>, TResult>
@@ -53,11 +50,8 @@ namespace Copse.Linq.Async.Treenumerables
         _InnerDepthFirstFactory, _Accumulator, _Seed, _ResultSelector);
 
     public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncWhereBreadthFirstTreenumerator<NodeAccumulation<TInner, TAccumulate>, TResult, TResultSelector>(
-        new AsyncRootfixScanTreenumerable<TInner, TAccumulate>(
-          _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed)
-          .GetAsyncBreadthFirstTreenumerator,
-        _ResultSelector);
+      => new AsyncScanWhereBreadthFirstTreenumerator<TInner, TAccumulate, TResult, TResultSelector>(
+        _InnerBreadthFirstFactory, _Accumulator, _Seed, _ResultSelector);
 
     // The composition law under this representation: successors keep the fold and nest the
     // outer leg onto the selector chain -- the chain composes in the TYPE, over the pair.

@@ -181,6 +181,7 @@ namespace Copse.CodeGen
         ["AsyncProjectedTreenumerableBuffer"] = "ProjectedTreenumerableBuffer",
         ["AsyncScanWhereTreenumerable"] = "ScanWhereTreenumerable",
         ["AsyncScanWhereDepthFirstTreenumerator"] = "ScanWhereDepthFirstTreenumerator",
+        ["AsyncScanWhereBreadthFirstTreenumerator"] = "ScanWhereBreadthFirstTreenumerator",
         ["AsyncTakeSubtreesWhereTreenumerable"] = "TakeSubtreesWhereTreenumerable",
         ["AsyncTakeSubtreesWhereProductTreenumerable"] = "TakeSubtreesWhereProductTreenumerable",
         ["AsyncRootfixScanProductDepthFirstTreenumerator"] = "RootfixScanProductDepthFirstTreenumerator",
