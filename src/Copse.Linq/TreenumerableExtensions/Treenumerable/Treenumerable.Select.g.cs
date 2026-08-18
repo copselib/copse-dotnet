@@ -110,8 +110,8 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
@@ -145,8 +145,8 @@ namespace Copse.Linq
         return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+        return depthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
 
       return new SelectDepthFirstTreenumerable<TSource, TResult>(
@@ -163,16 +163,16 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       if (source is ISelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource) // the tier never relabels
         return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+        return depthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       return new SelectDepthFirstTreenumerable<TSource, TResult>(
@@ -197,8 +197,8 @@ namespace Copse.Linq
         return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node), NodeTraversalStrategies.TraverseAll),
+        return breadthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
 
       return new SelectBreadthFirstTreenumerable<TSource, TResult>(
@@ -213,16 +213,16 @@ namespace Copse.Linq
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       if (source is ISelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource) // the tier never relabels
         return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose(
-          nodeContext => new SelectWhereResult<TResult>(selector(nodeContext.Node, nodeContext.Position), NodeTraversalStrategies.TraverseAll),
+        return breadthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
+          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
           relabels: false);
 
       return new SelectBreadthFirstTreenumerable<TSource, TResult>(

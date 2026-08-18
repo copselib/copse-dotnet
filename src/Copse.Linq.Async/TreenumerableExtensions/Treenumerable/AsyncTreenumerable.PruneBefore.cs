@@ -22,8 +22,8 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // is the plain path's struct: the operator's semantics, stated once.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
+          new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
         source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
@@ -42,8 +42,8 @@ namespace Copse.Linq
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
         source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
@@ -60,12 +60,12 @@ namespace Copse.Linq
       // through a narrow-typed receiver composes on its own representation -- the successor
       // keeps both dimensions; a narrow chain composes to a narrow successor.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
+          new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose(
-          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return depthFirstSelectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
+          new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
         source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
@@ -81,12 +81,12 @@ namespace Copse.Linq
       // The join rule, as in the composite positional overload: splice only while the chain
       // is label-preserving.
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose(
-          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return depthFirstSelectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
         source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
@@ -100,12 +100,12 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose(
-          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
+          new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose(
-          new PruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return breadthFirstSelectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
+          new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
         source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
@@ -119,12 +119,12 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(
-          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose(
-          new PositionalPruneBeforeResultSelector<T>(predicate).GetResult, relabels: true);
+        return breadthFirstSelectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
         source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
