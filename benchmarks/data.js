@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787029341237,
+  "lastUpdate": 1787029342117,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -106278,6 +106278,148 @@ window.BENCHMARK_DATA = {
             "value": 36651318.65384615,
             "unit": "ns",
             "range": "± 101746.96008402314"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3",
+          "message": "Every splice enters through the struct door\n\nThe efficiency review's parked follow-up, unparked by the benchmark verdict\n(Jason: no real regressions in the CI series). The ~20 extension sites that\npassed selector structs as .GetResult method-group delegates -- or built\nSelectWhereResult lambdas inline -- now call the struct Compose door\ndirectly: Where (value + positional, composite + narrow), PruneBefore (all\nten sites), and Select's positional and narrow-value splices ride\nWhereResultSelector / PositionalWhereResultSelector /\nPruneBeforeResultSelector / PositionalPruneBeforeResultSelector /\nSelectResultSelector legs into ComposedResultSelector. No method-group\ndelegate allocation, no per-visit closure hop; user lambdas remain the only\ndelegate leaves. The light tier's in-tier doors stay closure-bound by design.\n\nLocal sanity: Dft_Triangle_Mixed 50.3ms / Bft 56.1ms -- both BELOW the old\nsealed baseline (59.5/67.1) on the same machine; the seal-opening tax\ninverted once the whole splice surface went struct. 24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T03:25:13Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/6bc14fd3ef8ccf113d3bf7a59d6871a5b6db11a3"
+        },
+        "date": 1787029341994,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 8090720.814583333,
+            "unit": "ns",
+            "range": "± 44117.35840956772"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 13139869.820833333,
+            "unit": "ns",
+            "range": "± 45246.00620324548"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 2534616.831770833,
+            "unit": "ns",
+            "range": "± 33532.83296128475"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 3036962.4947916665,
+            "unit": "ns",
+            "range": "± 2802.6391520964166"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 54811438.1,
+            "unit": "ns",
+            "range": "± 469969.24128139915"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 82906118.46153846,
+            "unit": "ns",
+            "range": "± 935577.4978568066"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 18980985.258223683,
+            "unit": "ns",
+            "range": "± 109453.38173290428"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 30986392.09375,
+            "unit": "ns",
+            "range": "± 359434.544191387"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 7494899.155729166,
+            "unit": "ns",
+            "range": "± 20995.04162054912"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 7105061.5953125,
+            "unit": "ns",
+            "range": "± 15068.359443347315"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 1858092.1869140626,
+            "unit": "ns",
+            "range": "± 30747.79615592013"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 1835594.3639787945,
+            "unit": "ns",
+            "range": "± 31208.63926729451"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 49967445.384615384,
+            "unit": "ns",
+            "range": "± 156515.4961984373"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 44655286.916666664,
+            "unit": "ns",
+            "range": "± 72206.98270530293"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 16445548.245192308,
+            "unit": "ns",
+            "range": "± 22122.516063425912"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 12375818.433333334,
+            "unit": "ns",
+            "range": "± 24804.655771314403"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 55153016.745000005,
+            "unit": "ns",
+            "range": "± 2863154.1325079896"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 83489620.62820512,
+            "unit": "ns",
+            "range": "± 656749.3239948087"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 11144051.111979166,
+            "unit": "ns",
+            "range": "± 143794.17521149715"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 26816516.63839286,
+            "unit": "ns",
+            "range": "± 80758.93603753563"
           }
         ]
       }
