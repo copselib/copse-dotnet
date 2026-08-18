@@ -16,6 +16,11 @@ namespace Copse.Benchmarks
   // compose across), so the composed:stacked ratio IS the collapse win. A machinery
   // regression shows twice -- absolute drift on the composed row, and the ratio closing
   // toward 1.
+  //
+  // NARROW-dimension composed chains have no rows of their own: the narrow drivers are
+  // generated from these composite driver sources (CompositeToNarrow), so these rows cover
+  // them BY SHARING -- if the narrow lattice ever grows its own machinery, this claim
+  // expires (the coverage-by-sharing convention, CHANGELOG_BENCHMARKS 2026-08-16).
   [MemoryDiagnoser]
   [BenchmarkCategory("Streaming", "Compose")]
   public class Compose
@@ -52,6 +57,22 @@ namespace Copse.Benchmarks
     public void Bft_Triangle_FiveOperators_Stacked() =>
       FiveOperatorsStacked().Consume(TreeTraversalStrategy.BreadthFirst);
 
+    [Benchmark]
+    public void Dft_Triangle_ScanWhere_Composed() =>
+      ScanWhereComposed().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_ScanWhere_Composed() =>
+      ScanWhereComposed().Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Triangle_ScanWhere_Stacked() =>
+      ScanWhereStacked().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_ScanWhere_Stacked() =>
+      ScanWhereStacked().Consume(TreeTraversalStrategy.BreadthFirst);
+
     // The headline WhereSelect case: one projection, one ~50% filter, one wrapper.
     private static ITreenumerable<int> SelectWhereComposed() =>
       CanonicalTrees.MegaTriangleTree()
@@ -61,6 +82,22 @@ namespace Copse.Benchmarks
     private static ITreenumerable<int> SelectWhereStacked() =>
       Tree.Defer(() => CanonicalTrees.MegaTriangleTree().Select(n => n + 1))
       .Where(projected => (projected & 1) == 0);
+
+    // THE FOURTH-CELL WITNESSES (SCAN_TIER_DESIGN.md, seeded 2026-08-18 while the spelling
+    // is TWO machines: the rootfix scan engine feeding a separate Where driver). The
+    // spelling never changes -- when the ancestor composer lands (the fold-carrying driver;
+    // a rejecting operator over the scan citizen composes into ONE machine), the composed
+    // row's route flips and this series shows the step; the Defer-broken stacked control
+    // never collapses. Predicate consumes the ACCUMULATE (depth), so the fold is genuinely
+    // load-bearing; the pair survives to the output (the erasure rule's emission case).
+    private static ITreenumerable<NodeAccumulation<int, int>> ScanWhereComposed() =>
+      CanonicalTrees.MegaTriangleTree()
+      .RootfixScan(0, (depth, _) => depth + 1)
+      .Where(pair => (pair.Accumulate & 1) == 0);
+
+    private static ITreenumerable<NodeAccumulation<int, int>> ScanWhereStacked() =>
+      Tree.Defer(() => CanonicalTrees.MegaTriangleTree().RootfixScan(0, (depth, _) => depth + 1))
+      .Where(pair => (pair.Accumulate & 1) == 0);
 
     // The closure property: five operators in any order stay one wrapper.
     private static ITreenumerable<int> FiveOperatorsComposed() =>
