@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787031527606,
+  "lastUpdate": 1787031528226,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -153644,6 +153644,222 @@ window.BENCHMARK_DATA = {
             "value": 84554504.93589744,
             "unit": "ns",
             "range": "± 391672.64390092867"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c63fc355310d03aa7c30fdeecb4f509bb7d0e3f4",
+          "message": "The surface map records the fourth cell\n\nRootfixScan's row gains the ancestor-composer clause: the scan citizens are\non the general-splice surface, rejecting operators land in the fold-carrying\ndriver (one machine, both dimensions), bare Select keeps the product engine\nvia probe order.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T04:57:40Z",
+          "tree_id": "bbb0343ec1219bbc006d3208389743d2302779ac",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c63fc355310d03aa7c30fdeecb4f509bb7d0e3f4"
+        },
+        "date": 1787031528096,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 32521239.723214287,
+            "unit": "ns",
+            "range": "± 107862.77206408608"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 63628532.74285714,
+            "unit": "ns",
+            "range": "± 385784.63105625426"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 63131871.54945055,
+            "unit": "ns",
+            "range": "± 337895.644634763"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 21275949.825,
+            "unit": "ns",
+            "range": "± 279571.25185159757"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 71451756.4642857,
+            "unit": "ns",
+            "range": "± 383926.0004843687"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 74312717.16666666,
+            "unit": "ns",
+            "range": "± 449506.9859559044"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 11597513.490625,
+            "unit": "ns",
+            "range": "± 61165.04070451522"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 69801121.4095238,
+            "unit": "ns",
+            "range": "± 435022.1485520988"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 54346802.185185194,
+            "unit": "ns",
+            "range": "± 603731.6211812885"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 70229443.53333333,
+            "unit": "ns",
+            "range": "± 430800.11287802435"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 59966984.56666667,
+            "unit": "ns",
+            "range": "± 384689.5896437119"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Dft_Chain",
+            "value": 63120096.68148148,
+            "unit": "ns",
+            "range": "± 966456.2103752895"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Bft_Chain",
+            "value": 64687539.04464286,
+            "unit": "ns",
+            "range": "± 388495.0995597919"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Dft_Chain",
+            "value": 57919475.09821428,
+            "unit": "ns",
+            "range": "± 360709.9787820242"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Bft_Chain",
+            "value": 64521371.03571428,
+            "unit": "ns",
+            "range": "± 344631.70169658604"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Select_Dft_Chain",
+            "value": 67493685.56521738,
+            "unit": "ns",
+            "range": "± 1683820.8893773986"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Twice_Dft_Chain",
+            "value": 64987884.675,
+            "unit": "ns",
+            "range": "± 903154.0947281974"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 30301866.433333334,
+            "unit": "ns",
+            "range": "± 175113.5913320298"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 56255037.3095238,
+            "unit": "ns",
+            "range": "± 269934.5962056994"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 48869467.31515153,
+            "unit": "ns",
+            "range": "± 189991.63541958496"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 24895248.3375,
+            "unit": "ns",
+            "range": "± 274080.0239637365"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 69992201.84693877,
+            "unit": "ns",
+            "range": "± 661395.613171913"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 51545617.973333344,
+            "unit": "ns",
+            "range": "± 234297.40307119302"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 16519218.166666666,
+            "unit": "ns",
+            "range": "± 167197.43945009127"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 63883941.76530612,
+            "unit": "ns",
+            "range": "± 937414.4943712649"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 39125914.220512815,
+            "unit": "ns",
+            "range": "± 345436.9297154513"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 66814838.20879121,
+            "unit": "ns",
+            "range": "± 273810.5194722854"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 38095643.42380952,
+            "unit": "ns",
+            "range": "± 201657.46841004485"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Dft_Chain",
+            "value": 39203985.4,
+            "unit": "ns",
+            "range": "± 226430.7694374629"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Bft_Chain",
+            "value": 38239056.00476191,
+            "unit": "ns",
+            "range": "± 302818.6030746722"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Dft_Chain",
+            "value": 48153111.4969697,
+            "unit": "ns",
+            "range": "± 264481.0448429415"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Bft_Chain",
+            "value": 47665409.66060606,
+            "unit": "ns",
+            "range": "± 169965.87156451933"
           }
         ]
       }
