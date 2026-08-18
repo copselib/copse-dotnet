@@ -79,9 +79,11 @@ Where treenumerators stay byte-identical.
    Select/Where compose into that driver's legs (the lattice's normal story).
 2. **TakeSubtreesWhere's general form** — and prospective one-line operators
    (depth-window filters, path-budget filters). The BOOLEAN case keeps its free
-   subtree-mode encoding (zero state beats a real slot; it is the cell's optimized
-   degenerate instance, not scaffolding to delete blindly) unless measurement says the
-   staged spelling matches it.
+   subtree-mode encoding -- MEASURED AND CLOSED 2026-08-18: the staged spelling costs
+   1.5-2x on time and 3-5x on allocation vs the free encoding (deep-match chain, both
+   dims: 37.4ms/8.2MB vs 58-70ms/43.9MB DFT) -- zero state on the skip prefix beats a
+   real fold slot, permanently. The boolean machinery is the cell's optimized degenerate
+   instance and STAYS.
 
 ## 5. Open implementation questions
 
