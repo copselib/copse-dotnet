@@ -50,7 +50,7 @@ namespace Copse.Linq.Tests
       // The full sugar spelling collapses to ONE middle-tier wrapper (the erasure
       // argument: the pair is a stack-transient inside the composed selector).
       Assert.AreEqual(
-        typeof(SelectPruneAfterTreenumerable<,>),
+        typeof(SelectPruneAfterTreenumerable<,,>),
         Plain().WithPosition().PruneAfter(nc => nc.Position.Depth == 1).Select(nc => nc.Node)
           .GetType().GetGenericTypeDefinition(),
         "the positional-prune spelling collapses to one wrapper");

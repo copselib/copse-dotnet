@@ -14,8 +14,10 @@ namespace Copse.Linq.Treenumerables
   {
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TNode, TOuterResult> selector)
     {
-      return new SelectPruneAfterTreenumerable<TNode, TOuterResult>(
-        _Source, SelectWhereComposition.PruneAfterThenSelect(_Predicate, nodeContext => selector(nodeContext.Node)));
+      return new SelectPruneAfterTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, SelectResultSelector<TNode, TOuterResult>>>(
+        _Source,
+        new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, SelectResultSelector<TNode, TOuterResult>>(
+          new PruneAfterResultSelector<TNode>(_Predicate), new SelectResultSelector<TNode, TOuterResult>(nodeContext => selector(nodeContext.Node))));
     }
 
     public IPruneAfterTreenumerable<TNode> ComposePruneAfter(Func<TNode, bool> predicate)

@@ -44,9 +44,9 @@ namespace Copse.Linq.Tests
       AssertMachine(Plain().PruneAfter(n => n == "b").PruneAfter(n => n == "e"),
         typeof(PruneAfterTreenumerable<>), "PruneAfter.PruneAfter");
       AssertMachine(Plain().Select(n => n + "!").PruneAfter(n => n == "b!"),
-        typeof(SelectPruneAfterTreenumerable<,>), "Select.PruneAfter");
+        typeof(SelectPruneAfterTreenumerable<,,>), "Select.PruneAfter");
       AssertMachine(Plain().PruneAfter(n => n == "b").Select(n => n + "!"),
-        typeof(SelectPruneAfterTreenumerable<,>), "PruneAfter.Select");
+        typeof(SelectPruneAfterTreenumerable<,,>), "PruneAfter.Select");
     }
 
     // ---- The general driver: rejecting operators produce ONE SelectWhere machine ----

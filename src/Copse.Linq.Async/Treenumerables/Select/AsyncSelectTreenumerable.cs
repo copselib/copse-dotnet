@@ -58,11 +58,13 @@ namespace Copse.Linq.Async.Treenumerables
     }
 
     // A prune-after joins: promote to the middle tier (light passthrough driver), never the
-    // filter driver.
+    // filter driver -- the chain nesting in the TYPE (attempt #2, kept for review).
     IAsyncTreenumerable<TResult> IAsyncSelectWhereTreenumerable<TResult>.ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
     {
-      return new AsyncSelectPruneAfterTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, predicate));
+      return new AsyncSelectPruneAfterTreenumerable<TSource, TResult, ComposedResultSelector<TSource, TResult, TResult, SelectResultSelector<TSource, TResult>, PruneAfterResultSelector<TResult>>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TResult, SelectResultSelector<TSource, TResult>, PruneAfterResultSelector<TResult>>(
+          new SelectResultSelector<TSource, TResult>(_Selector), new PruneAfterResultSelector<TResult>(predicate)));
     }
 
     // The Func splice: the struct splice with the closure as its one leaf.

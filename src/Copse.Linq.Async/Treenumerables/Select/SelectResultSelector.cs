@@ -1,5 +1,7 @@
 using Copse.Core;
+using System.Runtime.CompilerServices;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Async.Treenumerables
 {
@@ -14,6 +16,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly Func<NodeContext<TSource>, TResult> _Selector;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
       => new SelectWhereResult<TResult>(_Selector(nodeContext), NodeTraversalStrategies.TraverseAll);
   }

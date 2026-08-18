@@ -320,9 +320,9 @@ namespace Copse.Linq.Tests
         .PruneAfter(n => n == "b")
         .Select((n, position) => $"{n}@{position.Depth}.{position.SiblingIndex}");
 
-      Assert.IsInstanceOfType(
-        composed,
-        typeof(SelectPruneAfterTreenumerable<string, string>),
+      Assert.AreEqual(
+        typeof(SelectPruneAfterTreenumerable<,,>),
+        composed.GetType().GetGenericTypeDefinition(),
         "positional Select must compose across the label-preserving prune -- and stay on the light tier");
 
       var labeled = composed
@@ -354,7 +354,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+      Assert.AreEqual(typeof(SelectPruneAfterTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition());
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
@@ -375,7 +375,7 @@ namespace Copse.Linq.Tests
         .PruneAfter(n => n == "b")
         .Select(n => n + "!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+      Assert.AreEqual(typeof(SelectPruneAfterTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition());
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {

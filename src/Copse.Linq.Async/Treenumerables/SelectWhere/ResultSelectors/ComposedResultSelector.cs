@@ -1,4 +1,5 @@
 using Copse.Core;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Async.Treenumerables
 {
@@ -28,6 +29,7 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly TInnerSelector _InnerSelector;
     private readonly TOuterSelector _OuterSelector;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
     {
       var innerResult = _InnerSelector.GetResult(nodeContext);

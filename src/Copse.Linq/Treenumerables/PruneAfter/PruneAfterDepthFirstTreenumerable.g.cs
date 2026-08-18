@@ -91,11 +91,13 @@ namespace Copse.Linq.Treenumerables
     }
 
     // A projection joins: promote to the middle tier (light passthrough driver), never the
-    // filter driver.
+    // filter driver -- the chain nesting in the TYPE (attempt #2, kept for review).
     IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
     {
-      return new SelectPruneAfterDepthFirstTreenumerable<TNode, TOuterResult>(
-        _Source, SelectWhereComposition.PruneAfterThenSelect(_Predicate, selector));
+      return new SelectPruneAfterDepthFirstTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, SelectResultSelector<TNode, TOuterResult>>>(
+        _Source,
+        new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, SelectResultSelector<TNode, TOuterResult>>(
+          new PruneAfterResultSelector<TNode>(_Predicate), new SelectResultSelector<TNode, TOuterResult>(selector)));
     }
 
     /// <inheritdoc/>

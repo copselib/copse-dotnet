@@ -3,6 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
+using System.Runtime.CompilerServices;
 using System;
 
 namespace Copse.Linq.Treenumerables
@@ -18,6 +19,7 @@ namespace Copse.Linq.Treenumerables
 
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
       => new SelectWhereResult<TNode>(
         nodeContext.Node,

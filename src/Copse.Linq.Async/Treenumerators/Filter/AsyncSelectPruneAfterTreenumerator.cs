@@ -17,18 +17,22 @@ namespace Copse.Linq.Async
   /// moment the consumer's own strategies for that visit arrive. No promotion machinery, no path
   /// state. Dimension-agnostic.
   /// </summary>
-  internal sealed class AsyncSelectPruneAfterTreenumerator<TSource, TNode>
+  // THE LIGHT TIER GOES STRUCT (attempt #2, WITHPOSITION_DESIGN.md status -- GATE-FAILING,
+  // kept for review): the composed chain arrives as an inlinable selector STRUCT nested in
+  // the type (ComposedResultSelector legs, user lambdas as leaves), not as closure arrows.
+  internal sealed class AsyncSelectPruneAfterTreenumerator<TSource, TNode, TResultSelector>
     : AsyncTreenumeratorWrapper<TSource, TNode>
+    where TResultSelector : struct, IResultSelector<TSource, TNode>
   {
     public AsyncSelectPruneAfterTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TSource>, SelectWhereResult<TNode>> resultSelector)
+      TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TNode>> _ResultSelector;
+    private readonly TResultSelector _ResultSelector;
 
     private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
@@ -48,7 +52,7 @@ namespace Copse.Linq.Async
       // so the composed selector sees real nodes only. Evaluated per published visit, like the
       // plain Select wrapper (invocation counts are unspecified; only the scheduling visit's
       // strategies count -- subtrees are shed at scheduling, the PruneAfter contract).
-      var result = _ResultSelector(InnerTreenumerator.ToNodeContext());
+      var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
 
       Node = result.Value;
 

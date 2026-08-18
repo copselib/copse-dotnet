@@ -103,7 +103,7 @@ namespace Copse.Linq.Tests
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterDepthFirstTreenumerable<string, string>));
+      Assert.AreEqual(typeof(SelectPruneAfterDepthFirstTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition());
 
       var stacked = Tree.DeferDepthFirst(() => StreamDepthFirst("a(b(d,e),c)").Select(n => n + "!"))
         .PruneAfter(n => n == "b!")
@@ -174,7 +174,7 @@ namespace Copse.Linq.Tests
         .PruneAfter(n => n == "b")
         .Select((n, position) => $"{n}@{position.Depth}.{position.SiblingIndex}");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterDepthFirstTreenumerable<string, string>));
+      Assert.AreEqual(typeof(SelectPruneAfterDepthFirstTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition());
 
       CollectionAssert.AreEqual(
         new[] { "a@0.0", "b@1.0", "d@1.1" },

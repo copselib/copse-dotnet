@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Async.Treenumerables
 {
@@ -16,6 +17,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext) => _ResultSelector(nodeContext);
   }
 }

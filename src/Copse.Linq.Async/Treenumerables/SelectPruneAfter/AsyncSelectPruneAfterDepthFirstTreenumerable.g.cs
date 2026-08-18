@@ -2,71 +2,75 @@
 //   Generated from AsyncSelectPruneAfterTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The middle representation tier: a composed chain of projections and prune-afters. Every
-  // result preserves labels and never carries SkipNode, so the chain runs on the light
-  // passthrough driver -- no promotion machinery, no path state, one driver class for both
-  // dimensions. Only composition produces this wrapper (plain Select and plain PruneAfter
-  // keep their own cheapest machinery), so its IN-TIER arrow is delegate-bound by nature;
-  // spliced over through the inherited general Compose, its chain rides as one
-  // FuncResultSelector leaf under struct plumbing (the open seal).
-  internal sealed partial class AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult> : IAsyncSelectWhereDepthFirstTreenumerable<TResult>
+  // The middle (light passthrough) tier, STRUCT-COMPOSED (attempt #2,
+  // WITHPOSITION_DESIGN.md status -- GATE-FAILING, kept for review): the chain nests in
+  // the TYPE -- ComposedResultSelector legs, user lambdas as leaves -- exactly as the
+  // driver tier's chains have since the reunification. Measured WORSE than the closure
+  // arrows under per-visit evaluation (59.4 -> 71.0 ms DFT, 55.7 -> 146.2 ms BFT on the
+  // PositionalPruneAfter_Spelled witness); the revert is Jason's ruling.
+  internal sealed partial class AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereDepthFirstTreenumerable<TResult>
+    where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
     public AsyncSelectPruneAfterDepthFirstTreenumerable(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> resultSelector)
+      TResultSelector resultSelector)
     {
       _Source = source;
       _ResultSelector = resultSelector;
     }
 
     private readonly IAsyncDepthFirstTreenumerable<TSource> _Source;
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
+    private readonly TResultSelector _ResultSelector;
 
-    // A projection composes in-tier.
-    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-    {
-      return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TOuterResult>(
-        _Source, SelectWhereComposition.SelectPruneAfterThenSelect(_ResultSelector, selector));
-    }
-
-    // The general surface (inherited): light chains never relabel.
+    // The general surface: light chains never relabel.
     public bool Relabels => false;
 
-    // The struct splice (the open seal): the chain's composed closure rides as one
-    // FuncResultSelector leaf; the splice plumbing and the outer leg are structs.
+    // A projection composes in-tier: the leg nests in the type.
+    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    {
+      return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
+          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(selector)));
+    }
+
+    // A prune-after composes in-tier: the leg nests in the type.
+    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+    {
+      return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult, ComposedResultSelector<TSource, TResult, TResult, TResultSelector, PruneAfterResultSelector<TResult>>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TResult, TResultSelector, PruneAfterResultSelector<TResult>>(
+          _ResultSelector, new PruneAfterResultSelector<TResult>(predicate)));
+    }
+
+    // The struct splice (the open seal): this chain rides the driver as its inner leg,
+    // already a struct -- no closure leaf, no re-wrapping.
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new AsyncSelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
+      return new AsyncSelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
-          new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),
+        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
         relabels);
     }
 
-    // The Func splice (inherited): the struct splice with the closure as its one leaf.
+    // The Func splice: the struct splice with the closure as its one leaf.
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
       Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
       bool relabels)
       => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
         new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
 
-    // A prune-after composes in-tier.
-    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
-    {
-      return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectPruneAfterThenPruneAfter(_ResultSelector, predicate));
-    }
-
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() =>
-      new AsyncSelectPruneAfterTreenumerator<TSource, TResult>(_Source.GetAsyncDepthFirstTreenumerator, _ResultSelector);
+      new AsyncSelectPruneAfterTreenumerator<TSource, TResult, TResultSelector>(_Source.GetAsyncDepthFirstTreenumerator, _ResultSelector);
   }
 }
