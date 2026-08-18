@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787018632788,
+  "lastUpdate": 1787018633381,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -121882,6 +121882,102 @@ window.BENCHMARK_DATA = {
             "value": 79122712.37755103,
             "unit": "ns",
             "range": "± 476946.85924826795"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4df76372edcd3e138e4fc5e4967df77caa2e1a33",
+          "message": "The struct-composed arrow: chains nest in the type, phase 1 of reunification\n\nComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>\n-- ResultSelectorThenResultSelector as a TYPE instead of a closure. Both legs\nare struct type parameters, so the JIT specializes and inlines the whole\ncomposed chain; user lambdas stay leaf calls; chains nest as\nComposed<Composed<A,B>,C>. The ISelectWhere interface gains the struct\nCompose form; the driver nests; the light Select citizen DONATES ITS\nPROJECTION AS A STRUCT LEG (SelectResultSelector) -- the exact property whose\nabsence exiled the light tier. Select-onto-driver and Where-onto-citizen call\nsites route through the struct splice; the Func form remains for inherently\nclosure-shaped pieces.\n\nGate measurement (Compose family, local): FiveOperators collapse widened\nfrom the Func era's 1.3-1.6x to 2.36x DFT (76.5 vs 180.8ms) and 15.4x BFT\n(73.5 vs 1130.7ms) -- the stacked side unmoved, the composed side dropped.\nSelectWhere 2-op pair stays ~1.0 (legs converge either way). Four\nrepresentation pins re-aimed at the open-generic driver (the pin is the ONE\ndriver; the selector representation is free). 24,585 green.\n\nPhase 2 (the seal experiment): PruneAfter-family struct donation + the\nWhere.Triangle_Mixed re-test that decides whether the tier seal opens.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T01:36:50Z",
+          "tree_id": "97bfc540f1a828c5b78961c7516ebc396b2baf67",
+          "url": "https://github.com/copselib/copse-dotnet/commit/4df76372edcd3e138e4fc5e4967df77caa2e1a33"
+        },
+        "date": 1787018633260,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 104389411.76923075,
+            "unit": "ns",
+            "range": "± 388736.839729816"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 92108510.50000001,
+            "unit": "ns",
+            "range": "± 72258.57862983283"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 271357138,
+            "unit": "ns",
+            "range": "± 785467.2391446625"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 276320110.4,
+            "unit": "ns",
+            "range": "± 2754008.925069554"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 195301564.12820512,
+            "unit": "ns",
+            "range": "± 2625989.4643480135"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 227325165.09523806,
+            "unit": "ns",
+            "range": "± 1713338.1242203915"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 105260904.07692307,
+            "unit": "ns",
+            "range": "± 347597.44200069166"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 86112542.07777777,
+            "unit": "ns",
+            "range": "± 863505.6725569678"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 491813475.8666667,
+            "unit": "ns",
+            "range": "± 1583328.5424451267"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 507730986.8333333,
+            "unit": "ns",
+            "range": "± 10609299.059267778"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 98858386.89999999,
+            "unit": "ns",
+            "range": "± 270519.22534942825"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79759312.20952381,
+            "unit": "ns",
+            "range": "± 598469.4422857738"
           }
         ]
       }
