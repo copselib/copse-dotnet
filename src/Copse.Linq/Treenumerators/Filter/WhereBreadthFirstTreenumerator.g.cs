@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerators
   /// the single <c>await</c> on the inner pull and it becomes the sync BFT Where driver -- the library's
   /// most intricate operator (deferred parent visits, manufactured/suppressed visits, the O(1)
   /// skipped-ancestor prefix carry). All structural state lives in the shared, color-agnostic
-  /// <see cref="WhereBreadthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
+  /// <see cref="WhereBreadthFirstPath{TResult}"/> (the SAME struct the sync driver uses, verbatim).
   ///
   /// <para>The two manufactured-parent-visit sites inline <c>_Path.Front</c> rather than taking a
   /// <c>ref var parentStatus = ref _Path.Front;</c> local, because by-reference locals are illegal in
@@ -23,12 +23,12 @@ namespace Copse.Linq.Treenumerators
   /// semantically identical -- and the hand-written sync twin inlines it the same way so the generated
   /// twin matches byte-for-byte.</para>
   /// </summary>
-  internal sealed class WhereBreadthFirstTreenumerator<TInner, TNode, TResultSelector>
-    : TreenumeratorWrapper<TInner, TNode>
-    where TResultSelector : struct, IResultSelector<TInner, TNode>
+  internal sealed class WhereBreadthFirstTreenumerator<TSource, TResult, TResultSelector>
+    : TreenumeratorWrapper<TSource, TResult>
+    where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
     public WhereBreadthFirstTreenumerator(
-      Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
+      Func<ITreenumerator<TSource>> innerTreenumeratorFactory,
       TResultSelector resultSelector,
       bool takeSubtrees = false)
       : base(innerTreenumeratorFactory)
@@ -36,9 +36,9 @@ namespace Copse.Linq.Treenumerators
       _ResultSelector = resultSelector;
       _TakeSubtrees = takeSubtrees;
 
-      // Seed the path with a sentinel root at the inner treenumerator.s initial position (the
+      // Seed the path with a sentinel root at the inner treenumerator's initial position (the
       // sentinel value is never published, so no projection is owed).
-      _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
+      _Path = new WhereBreadthFirstPath<TResult>(default, InnerTreenumerator.Position);
     }
 
     private readonly TResultSelector _ResultSelector;
@@ -53,7 +53,7 @@ namespace Copse.Linq.Treenumerators
 
     // Non-readonly so calls bind `ref this` and the struct's state mutations persist (a readonly field
     // would force a defensive copy and silently lose them -- see DepthFirstTreenumerator.cs:37-39).
-    private WhereBreadthFirstPath<TNode> _Path;
+    private WhereBreadthFirstPath<TResult> _Path;
 
     // The front (active effective parent)'s return-visit cadence against the inner stream.
     // The wrapper must do TWO things the base engine never does: MANUFACTURE a visit the inner
@@ -287,7 +287,7 @@ namespace Copse.Linq.Treenumerators
     // The single publish funnel. Takes an EXPLICIT mode: the BFT wrapper publishes manufactured and
     // deferred-schedule visits whose VisitCount does not match their mode (a deferred SCHEDULE carries a
     // nonzero VisitCount), so the mode cannot be derived from VisitCount the way the DFT wrapper does.
-    private void Publish(ref WhereBreadthFirstPath<TNode>.AcceptedFrame frame, TreenumeratorMode mode)
+    private void Publish(ref WhereBreadthFirstPath<TResult>.AcceptedFrame frame, TreenumeratorMode mode)
     {
       Mode = mode;
       Node = frame.Node;

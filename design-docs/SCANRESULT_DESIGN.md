@@ -107,7 +107,7 @@ a weaker failure posture no workload wants) are recorded in RootfixDoDispatch's 
 > **`XDoY ≡ XY(pure) ∘ Do(scheduling-filtered effect) ∘ Select(.Node)`**
 
 Every Do operator is derivable from the pure tier plus `Do` plus `Select` — the family
-has **zero unique algorithmic content**; it is contract plus fusion ("sugar + license",
+has **zero unique algorithmic content**; it is contract plus collapse ("sugar + license",
 LINQ's `Average`-over-`Sum`/`Count` status). What the dedicated operators sell over the
 composition: (1) a NODE-GRAINED effect contract over a visit-grained stream — `Do` fires
 per visit event (a k-child node emits 1 S + k+1 V), so the composed form needs the
@@ -128,7 +128,7 @@ with the node in hand, `store` lands for you.* Consequences:
   block form). Under the selector flavors the fold never fires at roots, so **the selector
   is the root's landing** — the author's original instinctive call site, now correct by
   design. Implementation is literally `RootfixScan(seed, fold).Select(r => r.Node)` (the
-  old `(compute, store)` split's `ComputeStoreAccumulator` fused them into exactly this
+  old `(compute, store)` split's `ComputeStoreAccumulator` collapsed them into exactly this
   fold before the machinery ever saw them — the API now speaks the machinery's shape).
   The operator's remaining content is the LICENSE: fold invoked exactly once per node per
   traversal, effects sanctioned — where the pure scan keeps the permissive
@@ -139,7 +139,7 @@ with the node in hand, `store` lands for you.* Consequences:
 - **Both DoDispatches keep `(survey, store)`** — the surveys don't reach the leaves.
 - Rejected fold shapes: bare `Action<TAcc, TNode>` (severs the accumulate chain — the
   machinery cannot read the flow back off the node); `Action` + read-back selector (the
-  author's original form — fuses into the Func anyway one layer down; sugar over sugar).
+  author's original form — collapses into the Func anyway one layer down; sugar over sugar).
 
 ## THE NORTH STAR (ratified 2026-08-05 — cross-tier flavor coherence)
 
@@ -223,7 +223,7 @@ does not, because the multiplicity flip is precisely what trees cannot dualize �
 same fact, applied consistently, that deleted the dispatch seed.
 
 **THE LEAFFIX DUAL (2026-08-05, the same day's second act — "the mechanism is not the
-dual of RootfixScan")**: the old LeaffixScan fused the boundary INTO its map ("both an
+dual of RootfixScan")**: the old LeaffixScan folded the boundary INTO its map ("both an
 accumulator and a generator"), which is why it had no boundary flavors and read as
 non-dual. The true dual decomposes on upstream multiplicity — one parent down, n children
 up — so the reshape is:
@@ -272,7 +272,7 @@ Every consumer-facing callback in the library follows one grammar:
 `NodeContext<T>` consequently appears in NO public callback signature. Its lawful homes:
 the view element types (`DispatchTarget`/`DispatchSource.Context` — immediate, consumed
 in place, cannot go stale, per the position ruling) and internal machinery (the
-SelectWhere fusion currency; the engine's child-enumerator protocol; capture/fold
+SelectWhere composition currency; the engine's child-enumerator protocol; capture/fold
 plumbing; the test scenario corpus, adapted at single call sites).
 
 ## The readiness clause (ratified 2026-08-05 — survey order)
@@ -282,9 +282,9 @@ children), after the children complete (leaffix — children before parents). Th
 order is the operator's meaning and is guaranteed, as is sibling order within every view;
 the TOTAL cross-node sequence is deliberately UNSPECIFIED — a pure callback cannot
 observe it, its only beneficiaries would be off-contract impure surveys, and pinning it
-would foreclose parallel builds forever. (Field origin: a candidate fused leaffix build would have changed
+would foreclose parallel builds forever. (Field origin: a candidate collapsed leaffix build would have changed
 reverse-preorder to postorder and the author noticed he had assumed an order; the clause
-converts that from a latent trap into stated law. The fused build itself was then
+converts that from a latent trap into stated law. The collapsed build itself was then
 MEASURED OUT -- one walk lost to three sequential array passes on every cell, time and
 memory both, because fine-grained walk bookkeeping outweighs re-iterating flat arrays --
 so the clause outlived its trigger: survey order stays unspecified, the pass structure is

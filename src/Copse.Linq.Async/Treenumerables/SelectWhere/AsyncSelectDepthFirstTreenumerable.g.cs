@@ -2,21 +2,19 @@
 //   Generated from AsyncSelectTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Async;
-using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The pure-projection wrapper. Kept distinct from SelectWhereTreenumerable deliberately: a chain of
+  // The pure-projection wrapper. Kept distinct from AsyncSelectWhereTreenumerable deliberately: a chain of
   // nothing but Selects acquires through the light AsyncSelectTreenumerator, not the filter
   // driver -- plain operators keep their cheapest machinery; the general driver is paid only
   // when a rejecting operator joins (the representation choice IS the type split).
   // Since the seal opened (2026-08-18) every light wrapper is on the general-splice surface
-  // through the tier interface.s inheritance; this wrapper was the first (dual citizenship,
-  // 2026-08-04) because absorbing a full projection layer was the family.s measured win.
+  // through the tier interface's inheritance; this wrapper was the first (dual citizenship,
+  // 2026-08-04) because absorbing a full projection layer was the family's measured win.
   internal sealed partial class AsyncSelectDepthFirstTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterDepthFirstTreenumerable<TResult>
   {
     public AsyncSelectDepthFirstTreenumerable(
@@ -57,7 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
         new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
 
     // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
-    // gate.s decisive case: the tier seal existed because this wrapper.s pieces used to
+    // gate's decisive case: the tier seal existed because this wrapper's pieces used to
     // arrive as bare Funcs and de-inlined the whole splice chain; here its projection rides
     // an inlinable struct leg, the user lambda staying a leaf call).
     public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
@@ -65,7 +63,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new SelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
+      return new AsyncSelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>(
           new SelectResultSelector<TSource, TResult>(_Selector), outerSelector),

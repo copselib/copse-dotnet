@@ -1,9 +1,8 @@
-using Copse.Core;
 using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Async.Treenumerables
 {
   // The streaming tier's FIRST CITIZEN (SELECT_INTO_CAPTURES_DESIGN.md): RootfixScan's
   // composite result, holding the scan's recipe so a composed Select re-plants the

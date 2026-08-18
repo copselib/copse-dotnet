@@ -2,7 +2,6 @@
 //   Generated from IResultSelector.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
@@ -13,8 +12,8 @@ namespace Copse.Linq.Treenumerables
   // seam would pay an un-inlinable second call forever. Implementations MUST be stateless
   // readonly structs: the drivers hold them in readonly fields, where a mutating call would
   // silently operate on a defensive copy.
-  internal interface IResultSelector<TInner, TNode>
+  internal interface IResultSelector<TSource, TResult>
   {
-    SelectWhereResult<TNode> GetResult(NodeContext<TInner> nodeContext);
+    SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext);
   }
 }

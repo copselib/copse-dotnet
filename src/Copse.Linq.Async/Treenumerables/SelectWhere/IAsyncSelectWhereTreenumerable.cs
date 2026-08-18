@@ -1,4 +1,3 @@
-using Copse.Core;
 using Copse.Core.Async;
 using System;
 

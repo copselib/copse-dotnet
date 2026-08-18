@@ -40,7 +40,7 @@ namespace Copse.Benchmarks
     // streams, so unlike the leaffix witnesses the expected step is TIME-ONLY: composition
     // removes one per-pull wrapper hop, and nothing is stored either way). The spelling never
     // changes; when the scan claims the STREAMING projection citizenship, the same call's
-    // route fuses. Same-run ratio against Dft/Bft_Chain prices the projection wrapper.
+    // route collapses. Same-run ratio against Dft/Bft_Chain prices the projection wrapper.
     [Benchmark]
     public void Select_Accumulate_Dft_Chain() =>
       CanonicalTrees.MegaChainTree()

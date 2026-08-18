@@ -3,10 +3,10 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerables;
+using Copse.Linq.Treenumerators; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Treenumerators
+namespace Copse.Linq.Treenumerables
 {
   // A composed-projection variant of a rootfix scan (the streaming projection citizenship):
   // the same bare recipe as the plain citizen, with the product selector planted inside the

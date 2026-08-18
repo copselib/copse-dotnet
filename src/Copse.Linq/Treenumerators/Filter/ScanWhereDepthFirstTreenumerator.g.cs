@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// The FOURTH CELL's depth-first machine (the ancestor composer, SCAN_TIER_DESIGN.md) and
   /// the codegen source of truth for its sync twin: the filter driver with an inherited-fold
-  /// stage. Identical to <see cref="AsyncWhereDepthFirstTreenumerator{TInner, TNode, TResultSelector}"/>
+  /// stage. Identical to <see cref="AsyncWhereDepthFirstTreenumerator{TSource, TResult, TResultSelector}"/>
   /// except that scheduling runs the rootfix fold FIRST -- once per scheduled node, accepted
   /// or rejected (composition is data flow: a rejected node's descendants still fold through
   /// its accumulate) -- and the composed selector chain sees the PAIR <c>(node, accumulate)</c>,
@@ -31,13 +31,13 @@ namespace Copse.Linq.Treenumerators
   /// <para>Plain Where pays nothing for this machine's existence: it is a TWIN family
   /// (the hard gate, SCAN_TIER_DESIGN.md section 3); the plain driver is byte-identical.</para>
   /// </summary>
-  internal sealed class ScanWhereDepthFirstTreenumerator<TInner, TAccumulate, TNode, TResultSelector>
-    : TreenumeratorWrapper<TInner, TNode>
-    where TResultSelector : struct, IResultSelector<NodeAccumulation<TInner, TAccumulate>, TNode>
+  internal sealed class ScanWhereDepthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>
+    : TreenumeratorWrapper<TSource, TResult>
+    where TResultSelector : struct, IResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>
   {
     public ScanWhereDepthFirstTreenumerator(
-      Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> accumulator,
+      Func<ITreenumerator<TSource>> innerTreenumeratorFactory,
+      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
@@ -46,10 +46,10 @@ namespace Copse.Linq.Treenumerators
       _SeedContext = new NodeContext<TAccumulate>(seed, NodePosition.ForestRoot);
       _ResultSelector = resultSelector;
 
-      _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
+      _Path = new WhereDepthFirstPath<TResult>(default, NodePosition.ForestRoot);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> _Accumulator;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
     private readonly NodeContext<TAccumulate> _SeedContext;
     private readonly TResultSelector _ResultSelector;
 
@@ -57,7 +57,7 @@ namespace Copse.Linq.Treenumerators
     // virtual forest root), so roots fold from it -- the scan engines' exact boundary.
     private readonly List<NodeContext<TAccumulate>> _AccumulateTrail = new List<NodeContext<TAccumulate>>();
 
-    private WhereDepthFirstPath<TNode> _Path;
+    private WhereDepthFirstPath<TResult> _Path;
     private bool _HasCachedChild = false;
 
     private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
@@ -130,8 +130,8 @@ namespace Copse.Linq.Treenumerators
       // ONE evaluation of the composed selector chain, against the PAIR context: the pair
       // is minted here, on the stack, and never stored.
       var result = _ResultSelector.GetResult(
-        new NodeContext<NodeAccumulation<TInner, TAccumulate>>(
-          new NodeAccumulation<TInner, TAccumulate>(InnerTreenumerator.Node, accumulate),
+        new NodeContext<NodeAccumulation<TSource, TAccumulate>>(
+          new NodeAccumulation<TSource, TAccumulate>(InnerTreenumerator.Node, accumulate),
           InnerTreenumerator.Position));
 
       if (result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
@@ -175,7 +175,7 @@ namespace Copse.Linq.Treenumerators
       return true;
     }
 
-    private void Publish(ref WhereDepthFirstPath<TNode>.InternalNodeVisit frame)
+    private void Publish(ref WhereDepthFirstPath<TResult>.InternalNodeVisit frame)
     {
       Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
 

@@ -19,14 +19,14 @@ namespace Copse.Linq.Async
   /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
   /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
   /// single-selector instantiations. All structural state lives in the shared, color-agnostic
-  /// <see cref="WhereDepthFirstPath{TNode}"/> (the SAME struct the sync driver uses, verbatim).
+  /// <see cref="WhereDepthFirstPath{TResult}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>
-  internal sealed class AsyncWhereDepthFirstTreenumerator<TInner, TNode, TResultSelector>
-    : AsyncTreenumeratorWrapper<TInner, TNode>
-    where TResultSelector : struct, IResultSelector<TInner, TNode>
+  internal sealed class AsyncWhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>
+    : AsyncTreenumeratorWrapper<TSource, TResult>
+    where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
     public AsyncWhereDepthFirstTreenumerator(
-      Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
+      Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,
       TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
@@ -34,12 +34,12 @@ namespace Copse.Linq.Async
 
       // Seed the path with a sentinel root: the virtual forest root by definition (its value is
       // never published, so no result is owed).
-      _Path = new WhereDepthFirstPath<TNode>(default, NodePosition.ForestRoot);
+      _Path = new WhereDepthFirstPath<TResult>(default, NodePosition.ForestRoot);
     }
 
     private readonly TResultSelector _ResultSelector;
 
-    private WhereDepthFirstPath<TNode> _Path;
+    private WhereDepthFirstPath<TResult> _Path;
     private bool _HasCachedChild = false;
 
     // Accept-side strategies from the last published scheduling visit's result, applied on the
@@ -148,7 +148,7 @@ namespace Copse.Linq.Async
       return true;
     }
 
-    private void Publish(ref WhereDepthFirstPath<TNode>.InternalNodeVisit frame)
+    private void Publish(ref WhereDepthFirstPath<TResult>.InternalNodeVisit frame)
     {
       Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
 

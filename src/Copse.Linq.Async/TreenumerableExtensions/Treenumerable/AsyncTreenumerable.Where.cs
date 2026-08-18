@@ -1,6 +1,5 @@
 using Copse.Core;
 using Copse.Core.Async;
-using Copse.Linq.Async;
 using Copse.Linq.Async.Treenumerables;
 using System;
 
@@ -26,7 +25,7 @@ namespace Copse.Linq
         return selectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+      return new AsyncSelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }
 
@@ -49,7 +48,7 @@ namespace Copse.Linq
         return selectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+      return new AsyncSelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
         source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 
@@ -71,7 +70,7 @@ namespace Copse.Linq
         return depthFirstSelectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }
 
@@ -92,7 +91,7 @@ namespace Copse.Linq
         return depthFirstSelectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
         source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 
@@ -111,7 +110,7 @@ namespace Copse.Linq
         return breadthFirstSelectWhereSource.Compose<TNode, WhereResultSelector<TNode>>(
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
+      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
         source, new WhereResultSelector<TNode>(predicate), relabels: true);
     }
 
@@ -130,7 +129,7 @@ namespace Copse.Linq
         return breadthFirstSelectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
+      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
         source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
     }
 

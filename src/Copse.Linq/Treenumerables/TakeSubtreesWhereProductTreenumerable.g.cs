@@ -3,10 +3,10 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerables;
+using Copse.Linq.Treenumerators; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Treenumerators
+namespace Copse.Linq.Treenumerables
 {
   // The composed-projection variant of the TakeSubtreesWhere citizen: the same dispatched
   // recipe with a product selector, itself a citizen (further Selects compose onto the
@@ -38,7 +38,7 @@ namespace Copse.Linq.Treenumerators
         .GetDepthFirstTreenumerator();
 
     public ITreenumerator<TProduct> GetBreadthFirstTreenumerator()
-      => TakeSubtreesWhereTreenumerable<TNode>.BreadthFirstChain(_Source, _Predicate)
+      => TakeSubtreesWhereTreenumerable<TNode>.GetBreadthFirstChain(_Source, _Predicate)
         .Select(_ProductSelector)
         .GetBreadthFirstTreenumerator();
 

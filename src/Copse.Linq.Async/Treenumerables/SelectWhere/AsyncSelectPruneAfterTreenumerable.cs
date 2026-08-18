@@ -1,5 +1,3 @@
-using Copse.Async;
-using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using System;
@@ -43,7 +41,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new SelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
+      return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
           new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),

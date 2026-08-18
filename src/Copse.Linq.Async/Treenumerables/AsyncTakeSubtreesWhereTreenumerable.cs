@@ -1,19 +1,19 @@
-using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Async.Treenumerables
 {
   // TakeSubtreesWhere's composite result: a streaming-tier citizen CARRYING the dimension
   // dispatch (the honest-streaming-baseline rule, 2026-08-17). The recipe is (source,
   // context predicate); each acquisition constructs that dimension's leanest streaming
   // machinery -- depth-first the bespoke O(1) contiguous-segment wrapper, breadth-first the
-  // scan chain (RootfixScan -> Where -> Select, the operator's algebraic definition and the
-  // leanest streaming BFT). Because the DISPATCH lives behind the citizenship, the operator
-  // is not a composition seam: a following Select composes here (the product variant), a
-  // following Where joins the one driver over this citizen -- the machinery choice stays an
+  // Where machinery in subtree mode (the subtree stage; the scan chain remains the
+  // operator's algebraic DEFINITION, spelled in GetBreadthFirstChain for the product
+  // variant). Because the DISPATCH lives behind the citizenship, the operator is not a
+  // composition seam: a following Select composes here (the product variant), a following
+  // Where joins the one driver over this citizen -- the machinery choice stays an
   // acquisition-time fact, invisible to the algebra.
   internal sealed class AsyncTakeSubtreesWhereTreenumerable<TNode>
     : IAsyncSelectComposableTreenumerable<TNode>
@@ -34,7 +34,7 @@ namespace Copse.Linq.Async
 
     // THE SUBTREE STAGE (2026-08-17): the BFT arm is the Where machinery itself in subtree
     // mode -- one wrapper, no scan engine, no pair, the kept-region fact read off the skip
-    // prefix the machinery already carries. The scan chain (BreadthFirstChain) remains the
+    // prefix the machinery already carries. The scan chain (GetBreadthFirstChain) remains the
     // operator's algebraic definition and the product variant's route.
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
     {
@@ -55,7 +55,7 @@ namespace Copse.Linq.Async
     // 5): "keep this node" is the rootfix fold fact kept(parent) || predicate(node); the
     // outermost rule is the disjunction's short-circuit. The chain joins into one SelectWhere
     // driver over the scan engine.
-    internal static IAsyncTreenumerable<TNode> BreadthFirstChain(
+    internal static IAsyncTreenumerable<TNode> GetBreadthFirstChain(
       IAsyncTreenumerable<TNode> source,
       Func<NodeContext<TNode>, bool> predicate)
       => new AsyncRootfixScanTreenumerable<TNode, bool>(

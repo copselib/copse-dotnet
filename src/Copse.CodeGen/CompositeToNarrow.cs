@@ -49,7 +49,7 @@ namespace Copse.CodeGen
         ["IAsyncTreenumerable"] = "IAsync{0}Treenumerable",
         ["IAsyncSelectWhereTreenumerable"] = "IAsyncSelectWhere{0}Treenumerable",
         ["IAsyncSelectPruneAfterTreenumerable"] = "IAsyncSelectPruneAfter{0}Treenumerable",
-        ["SelectWhereTreenumerable"] = "SelectWhere{0}Treenumerable",
+        ["AsyncSelectWhereTreenumerable"] = "AsyncSelectWhere{0}Treenumerable",
         ["AsyncSelectTreenumerable"] = "AsyncSelect{0}Treenumerable",
         ["AsyncPruneAfterTreenumerable"] = "AsyncPruneAfter{0}Treenumerable",
         ["AsyncSelectPruneAfterTreenumerable"] = "AsyncSelectPruneAfter{0}Treenumerable",

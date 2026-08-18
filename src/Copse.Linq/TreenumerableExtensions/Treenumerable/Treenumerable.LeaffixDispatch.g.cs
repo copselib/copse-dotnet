@@ -4,14 +4,10 @@
 // </auto-generated>
 using Copse.Stores;
 using Copse.Treenumerables;
-using Copse.Treenumerators;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 using Copse.Linq.Stores;
-using Copse.Linq.Treenumerators;
-using Copse.Linq.Extensions;
 using System;
-using System.Collections.Generic;
 
 namespace Copse.Linq
 {

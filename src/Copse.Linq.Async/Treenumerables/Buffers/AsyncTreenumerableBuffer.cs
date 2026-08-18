@@ -1,7 +1,6 @@
 using Copse.Async;
 using Copse.Async.Stores;
 using Copse.Linq.Async.Stores;
-using Copse.Core;
 using Copse.Core.Async;
 using System.Threading.Tasks;
 

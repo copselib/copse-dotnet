@@ -5,7 +5,6 @@
 using Copse.Treenumerators;
 using Copse.Core;
 using Copse.Linq.Stores;
-using Copse.Linq.Treenumerators;
 
 namespace Copse.Linq.Treenumerables
 {

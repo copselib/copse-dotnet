@@ -65,7 +65,7 @@ The fold-carrying driver: the Where-family machinery plus
   why the predicate said no.
 
 **The hard gate:** plain Where is the hottest machinery in the library and must not move
-a byte. RULING (question 1): the fold-carrying driver is a TWIN family
+a byte. RULING: the fold-carrying driver is a TWIN family
 (`ScanWhere*Treenumerator` or similar under the naming grammar), not a genericized slot
 in today's driver — mirroring how every plain operator keeps bespoke machinery. Today's
 Where treenumerators stay byte-identical.
@@ -85,15 +85,16 @@ Where treenumerators stay byte-identical.
    real fold slot, permanently. The boolean machinery is the cell's optimized degenerate
    instance and STAYS.
 
-## 5. Open implementation questions
+## 5. Implementation questions (all settled)
 
-1. The positional seat: the internal fold speaks the context-shaped accumulator (as the
-   scan engines do); the public surface stays seat-rule-minimal.
-2. The `Relabels` interaction: the fold sees INNER positions (its input tree — the
-   data-flow law); positional legs downstream obey the existing join rule.
-3. Benchmarks (consult-first): the natural witness pair is `Scan().Where()` composed vs
-   forced-two-machine, in the Compose family's idiom; the Where family rows guard the
-   untouched plain driver.
-4. Battery: the fourth cell joins SelectComposableLawTests — equivalence pins against
-   the two-machine oracle over the corpus, both dimensions, plus strategy-matrix
-   conformance for the new treenumerators.
+1. The positional seat — settled as written: the internal fold speaks the context-shaped
+   accumulator (as the scan engines do); the public surface stays seat-rule-minimal.
+2. The `Relabels` interaction — settled as written: the fold sees INNER positions (its
+   input tree — the data-flow law); positional legs downstream obey the existing join
+   rule.
+3. Benchmarks — DONE: the ScanWhere witness pair was seeded BEFORE the machinery
+   (`1f128c9`, ~1.0 baseline) and the flip is on the CI record (composed below stacked,
+   both dimensions); the Where family rows guard the untouched plain driver.
+4. Battery — DONE: the fourth cell joined SelectComposableLawTests (equivalence pins
+   against the two-machine oracle over the corpus, both dimensions) plus strategy-matrix
+   conformance for the new treenumerators; full battery green at landing.

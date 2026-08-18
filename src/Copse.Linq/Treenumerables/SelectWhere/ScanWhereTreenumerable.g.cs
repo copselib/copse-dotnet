@@ -10,7 +10,7 @@ namespace Copse.Linq.Treenumerables
 {
   // THE FOURTH CELL's wrapper (the ancestor composer, SCAN_TIER_DESIGN.md): a rootfix fold
   // plus a composed selector chain over the PAIR (node, accumulate), as ONE machine. The
-  // recipe is (source, accumulator, seed, resultSelector); the selector algebra is the
+  // recipe is (inner factory pair, accumulator, seed, resultSelector); the selector algebra is the
   // lattice's own -- the legs compose over the pair source type exactly as they compose
   // over any source type, so this wrapper joins the general surface with the standard
   // struct Compose forms and every downstream Select/Where lands in ITS legs, not in a
@@ -20,14 +20,14 @@ namespace Copse.Linq.Treenumerables
   // (AsyncScanWhereDepthFirstTreenumerator), BFT rides the accumulate tracker -- the
   // rootfix BFT engine's state machinery embedded beside the filter path
   // (AsyncScanWhereBreadthFirstTreenumerator). ONE machine per acquisition, both dims.
-  internal sealed class ScanWhereTreenumerable<TInner, TAccumulate, TResult, TResultSelector>
+  internal sealed class ScanWhereTreenumerable<TSource, TAccumulate, TResult, TResultSelector>
     : ISelectWhereTreenumerable<TResult>
-    where TResultSelector : struct, IResultSelector<NodeAccumulation<TInner, TAccumulate>, TResult>
+    where TResultSelector : struct, IResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>
   {
     public ScanWhereTreenumerable(
-      Func<ITreenumerator<TInner>> innerDepthFirstFactory,
-      Func<ITreenumerator<TInner>> innerBreadthFirstFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> accumulator,
+      Func<ITreenumerator<TSource>> innerDepthFirstFactory,
+      Func<ITreenumerator<TSource>> innerBreadthFirstFactory,
+      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector,
       bool relabels)
@@ -40,20 +40,20 @@ namespace Copse.Linq.Treenumerables
       Relabels = relabels;
     }
 
-    private readonly Func<ITreenumerator<TInner>> _InnerDepthFirstFactory;
-    private readonly Func<ITreenumerator<TInner>> _InnerBreadthFirstFactory;
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> _Accumulator;
+    private readonly Func<ITreenumerator<TSource>> _InnerDepthFirstFactory;
+    private readonly Func<ITreenumerator<TSource>> _InnerBreadthFirstFactory;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
     private readonly TAccumulate _Seed;
     private readonly TResultSelector _ResultSelector;
 
     public bool Relabels { get; }
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator()
-      => new ScanWhereDepthFirstTreenumerator<TInner, TAccumulate, TResult, TResultSelector>(
+      => new ScanWhereDepthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>(
         _InnerDepthFirstFactory, _Accumulator, _Seed, _ResultSelector);
 
     public ITreenumerator<TResult> GetBreadthFirstTreenumerator()
-      => new ScanWhereBreadthFirstTreenumerator<TInner, TAccumulate, TResult, TResultSelector>(
+      => new ScanWhereBreadthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>(
         _InnerBreadthFirstFactory, _Accumulator, _Seed, _ResultSelector);
 
     // The composition law under this representation: successors keep the fold and nest the
@@ -63,12 +63,12 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new ScanWhereTreenumerable<TInner, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TInner, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+      return new ScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _InnerDepthFirstFactory,
         _InnerBreadthFirstFactory,
         _Accumulator,
         _Seed,
-        new ComposedResultSelector<NodeAccumulation<TInner, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
+        new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
         Relabels | relabels);
     }
 

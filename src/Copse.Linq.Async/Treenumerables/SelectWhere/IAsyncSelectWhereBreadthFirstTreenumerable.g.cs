@@ -2,7 +2,6 @@
 //   Generated from IAsyncSelectWhereTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 using Copse.Core.Async;
 using System;
 

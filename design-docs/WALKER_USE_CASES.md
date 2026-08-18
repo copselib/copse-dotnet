@@ -217,7 +217,7 @@ designed by analogy from is now proven. The analysis that survives as design inp
 descendant-information law; **region intersection** (UC-20, "what lies between") is a new
 lens class — regions are EDGE sets, and ∩/∪ over two memos is O(1)/step;
 **`TakeUpstreamWhere` decomposed** (UC-21) was this catalog's origin story — closure,
-filter, and reify as separate citizens instead of one fused sweep; **effective stake**
+filter, and reify as separate citizens instead of one collapsed sweep; **effective stake**
 (UC-22) is path semantics and must stay LOUD (the multiplicities canary); **NAV as a
 region-restricted sweep** (UC-23) carries the oracle equivalence (region-restricted scan ≡
 prune-the-complement sweep — free conformance tests); **attribution as a transpose**

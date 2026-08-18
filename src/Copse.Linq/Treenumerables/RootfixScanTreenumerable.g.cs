@@ -3,10 +3,10 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
-using Copse.Linq.Treenumerables;
+using Copse.Linq.Treenumerators; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Treenumerators
+namespace Copse.Linq.Treenumerables
 {
   // The streaming tier's FIRST CITIZEN (SELECT_INTO_CAPTURES_DESIGN.md): RootfixScan's
   // composite result, holding the scan's recipe so a composed Select re-plants the

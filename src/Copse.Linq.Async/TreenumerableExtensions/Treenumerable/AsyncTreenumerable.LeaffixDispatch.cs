@@ -1,15 +1,10 @@
 using Copse.Async.Stores;
-using Copse.Async;
 using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
 using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async.Treenumerables;
 using Copse.Linq.Async.Stores;
-using Copse.Linq.Async.Treenumerators;
-using Copse.Linq.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Copse.Linq

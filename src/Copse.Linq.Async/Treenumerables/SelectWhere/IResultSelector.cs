@@ -1,4 +1,3 @@
-using Copse.Core;
 
 namespace Copse.Linq.Async.Treenumerables
 {
@@ -9,8 +8,8 @@ namespace Copse.Linq.Async.Treenumerables
   // seam would pay an un-inlinable second call forever. Implementations MUST be stateless
   // readonly structs: the drivers hold them in readonly fields, where a mutating call would
   // silently operate on a defensive copy.
-  internal interface IResultSelector<TInner, TNode>
+  internal interface IResultSelector<TSource, TResult>
   {
-    SelectWhereResult<TNode> GetResult(NodeContext<TInner> nodeContext);
+    SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext);
   }
 }

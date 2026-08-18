@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerators
   /// The FOURTH CELL's breadth-first machine (the ancestor composer, SCAN_TIER_DESIGN.md) and
   /// the codegen source of truth for its sync twin: the BFT filter driver with an
   /// inherited-fold stage. The filter half is
-  /// <see cref="AsyncWhereBreadthFirstTreenumerator{TInner, TNode, TResultSelector}"/> verbatim;
+  /// <see cref="AsyncWhereBreadthFirstTreenumerator{TSource, TResult, TResultSelector}"/> verbatim;
   /// the fold half is THE ACCUMULATE TRACKER -- the rootfix BFT engine's state machinery
   /// (level deques, skipped stack, the four-way parent lookup) carrying bare accumulates,
   /// minus that engine's emission. Both halves read the same inner pulls; the composed
@@ -30,13 +30,13 @@ namespace Copse.Linq.Treenumerators
   /// descendants fold THROUGH rejected ancestors). The engine solved this correlation
   /// problem years of pins ago; this machine inherits the solution verbatim.</para>
   /// </summary>
-  internal sealed class ScanWhereBreadthFirstTreenumerator<TInner, TAccumulate, TNode, TResultSelector>
-    : TreenumeratorWrapper<TInner, TNode>
-    where TResultSelector : struct, IResultSelector<NodeAccumulation<TInner, TAccumulate>, TNode>
+  internal sealed class ScanWhereBreadthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>
+    : TreenumeratorWrapper<TSource, TResult>
+    where TResultSelector : struct, IResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>
   {
     public ScanWhereBreadthFirstTreenumerator(
-      Func<ITreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> accumulator,
+      Func<ITreenumerator<TSource>> innerTreenumeratorFactory,
+      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
@@ -52,10 +52,10 @@ namespace Copse.Linq.Treenumerators
       // engines' exact boundary).
       _TrackerCurrentLevel.AddLast(new NodeContext<TAccumulate>(seed, NodePosition.ForestRoot));
 
-      _Path = new WhereBreadthFirstPath<TNode>(default, InnerTreenumerator.Position);
+      _Path = new WhereBreadthFirstPath<TResult>(default, InnerTreenumerator.Position);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TInner>, TAccumulate> _Accumulator;
+    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
     private readonly TResultSelector _ResultSelector;
 
     // ---- The accumulate tracker: the rootfix BFT engine's state, bare accumulates ----
@@ -130,7 +130,7 @@ namespace Copse.Linq.Treenumerators
 
     // ---- The filter half: AsyncWhereBreadthFirstTreenumerator, verbatim ----
 
-    private WhereBreadthFirstPath<TNode> _Path;
+    private WhereBreadthFirstPath<TResult> _Path;
 
     private enum FrontReturnVisit
     {
@@ -227,8 +227,8 @@ namespace Copse.Linq.Treenumerators
 
           // ONE evaluation of the composed selector chain, against the PAIR context.
           var result = _ResultSelector.GetResult(
-            new NodeContext<NodeAccumulation<TInner, TAccumulate>>(
-              new NodeAccumulation<TInner, TAccumulate>(InnerTreenumerator.Node, accumulate),
+            new NodeContext<NodeAccumulation<TSource, TAccumulate>>(
+              new NodeAccumulation<TSource, TAccumulate>(InnerTreenumerator.Node, accumulate),
               InnerTreenumerator.Position));
           var skipped = result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
           _Path.PrefixWriteForScheduledNode(innerDepth, skipped);
@@ -325,7 +325,7 @@ namespace Copse.Linq.Treenumerators
       return false;
     }
 
-    private void Publish(ref WhereBreadthFirstPath<TNode>.AcceptedFrame frame, TreenumeratorMode mode)
+    private void Publish(ref WhereBreadthFirstPath<TResult>.AcceptedFrame frame, TreenumeratorMode mode)
     {
       Mode = mode;
       Node = frame.Node;

@@ -2,8 +2,6 @@
 //   Generated from AsyncSelectPruneAfterTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Async;
-using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using System;
@@ -47,7 +45,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new SelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
+      return new AsyncSelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
           new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),

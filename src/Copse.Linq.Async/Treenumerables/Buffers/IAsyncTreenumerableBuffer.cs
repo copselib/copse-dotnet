@@ -1,5 +1,4 @@
 using Copse.Async;
-using Copse.Core.Async;
 
 namespace Copse.Linq.Async.Treenumerables
 {

@@ -1,6 +1,6 @@
 # The Public Projection Citizenship (Select Into Captures)
 
-> **Status: CLOSED 2026-08-19.** Drafted 2026-08-16, ratified 2026-08-17, and completed
+> **Status: CLOSED 2026-08-18.** Drafted 2026-08-16, ratified 2026-08-17, and completed
 > through the thin shape (§4a), the emission mint, both compose-left doors (leaffix
 > capture-shaped, rootfix streaming-shaped), and the fourth cell (SCAN_TIER_DESIGN.md).
 > Every ruling is taken: the memo is a compose seam by law, narrow parity is deferred
@@ -52,13 +52,15 @@ public interface IAsyncSelectComposableTreenumerableBuffer<TNode> : IAsyncTreenu
 (The return types are the CITIZENSHIPS, not the bare contracts: closure is a contract
 property — `Select ∘ Citizen = Citizen` is enforced by the signature itself.)
 
-(Sync twins generated. Positional-flavor question — a second method vs. value-only — is
-OPEN: a second method doubles the final-contract surface; a citizen whose machinery cannot
-see positions cannot honor it. Lean: value-only, and the positional Select flavor takes
+(Sync twins generated. Positional-flavor question — a second method vs. value-only —
+RESOLVED as the lean: value-only `ComposeSelect`, and the positional Select flavor takes
 the wrapper over citizens, symmetric with the lattice's Relabels guard.)
 
-**Select's probe order, deterministic and documented:** internal lattice first (our
-streaming operators), public citizenship second, wrapper fallback last. The buffer-receiver
+**Select's probe order, deterministic and documented:** light tier first
+(`IAsyncSelectPruneAfterTreenumerable`), public citizenship second
+(`IAsyncSelectComposableTreenumerable` — moved above the general probe when the scan
+citizens joined, `53ce350`), general driver third (`IAsyncSelectWhereTreenumerable`),
+wrapper fallback last. The buffer-receiver
 `Select` overload (returns `IAsyncTreenumerableBuffer<TResult>` — the buffer-producer rule
 discloses the O(n)) probes the buffer citizenship, falling back to a COUNTED projected
 re-capture (the presize rule: the settled source's count is known; one narrow store, no
@@ -100,7 +102,8 @@ at the consumer's site: the consumer supplies a generic method, the wrapper inst
 (AsyncSelectTreenumerable.CaptureThrough.cs, a partial part) because the CompositeToNarrow
 fan-out is file-granular and the narrow twins must not claim a composite-width door.
 
-**THE FIRST-CALLER FUSION (the guard-rail rule, 2026-08-17):** the shared pass builds when
+**THE FIRST-CALLER COLLAPSE (the guard-rail rule, 2026-08-17; the shared-pass layer it
+governed was superseded by the thin shape, §4a):** the shared pass builds when
 its first variant pulls, and at that moment the requesting variant is known — so a canonical
 first caller gets its pair products written INLINE in the fold loop (the pre-pass cost
 exactly; the zip's ValueAt-delegate re-reads had cost the un-composed in-place spelling +16%,
@@ -219,14 +222,14 @@ the algebra.
 
 ## 6. Out of scope
 
-- **Narrow citizenship parity — DEFERRED UNTIL DEMAND (Jason's ruling, 2026-08-19: "it's
+- **Narrow citizenship parity — DEFERRED UNTIL DEMAND (Jason's ruling, 2026-08-18: "it's
   possible to do — maybe do later if there is demand").** Narrow (single-dimension) scan
   results stay non-citizens for now: narrow chains are consume-shaped by nature (a narrow
   source exists because it affords only one dimension), and today's cost is at most one
   wrapper layer over floor-state machinery. Not a won't-do: the composite citizenship is
   the template, the CompositeToNarrow fan-out is the mechanism, and a workload composing
   long narrow scan chains is the trigger. File demand here when it appears.
-- **Filtering citizenship — CLOSED as internal-forever (Jason's ruling, 2026-08-19: "too
+- **Filtering citizenship — CLOSED as internal-forever (Jason's ruling, 2026-08-18: "too
   difficult to do right").** The public composition door stays projection-only,
   permanently. The lattice's correctness rests on invariants a foreign filter could
   silently violate — `Relabels` honesty, strategy-carrying result contracts, the promotion
@@ -234,7 +237,7 @@ the algebra.
   checkable-invariants design has emerged or is sought. A projection cannot lie in ways
   that corrupt structure; a filter can. Filtering composes only through the library's own
   audited machinery.
-- **The memo receiver — CLOSED as law (Jason's ruling, 2026-08-19): the memo is a COMPOSE
+- **The memo receiver — CLOSED as law (Jason's ruling, 2026-08-18): the memo is a COMPOSE
   SEAM.** Above it, the total algebra (Select/Where/prune chains over a memo compose into
   one driver, as over any source); through it, nothing — no operator composes INTO the
   memo's machinery, and no recipe holds the disposable. Every pull pays one pass-through

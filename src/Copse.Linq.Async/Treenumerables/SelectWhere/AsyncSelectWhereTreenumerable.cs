@@ -1,5 +1,3 @@
-using Copse.Async;
-using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async;
 using System;
@@ -7,15 +5,16 @@ using System;
 namespace Copse.Linq.Async.Treenumerables
 {
   // The reified operator chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
-  // holding the Kleisli-composed result of every composed operator, so value-lambda chains of any
+  // holding the Kleisli-composed result of every composed operator, so chains of any
   // length and order collapse to ONE layer over the source. Plain operators
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
-  // spliced chains carry the composed closure in a FuncResultSelector (composition inherently
-  // holds user delegates). Splicing is total: every legality decision was made outer-side.
-  internal sealed class SelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
+  // composed chains nest those structs in the TYPE via ComposedResultSelector (a user
+  // delegate enters only as a FuncResultSelector leaf). Splicing is total: every legality
+  // decision was made outer-side.
+  internal sealed class AsyncSelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
-    public SelectWhereTreenumerable(
+    public AsyncSelectWhereTreenumerable(
       IAsyncTreenumerable<TSource> source,
       TResultSelector resultSelector,
       bool relabels)
@@ -55,7 +54,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
-      return new SelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+      return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
         Relabels | relabels);

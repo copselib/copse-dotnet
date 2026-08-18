@@ -1,4 +1,3 @@
-using Copse.Core;
 using Copse.Core.Async;
 using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
@@ -33,7 +32,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>
     {
-      return new SelectWhereTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>>(
+      return new AsyncSelectWhereTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>(
           new PruneAfterResultSelector<TNode>(_Predicate), outerSelector),

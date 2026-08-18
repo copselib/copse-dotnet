@@ -1,5 +1,5 @@
 using Copse.Treenumerables;
-﻿using Copse.Core;
+using Copse.Core;
 using Copse.Linq.Treenumerators.Enumerator;
 using System.Collections.Generic;
 

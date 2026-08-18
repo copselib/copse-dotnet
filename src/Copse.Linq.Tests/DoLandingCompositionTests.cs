@@ -169,7 +169,7 @@ namespace Copse.Linq.Tests
       // effect count depends on the CONSUMER's pull pattern -- a value drain pulls
       // scheduling-only and LOOKS once-per-node; a structural drain pulls the full visit
       // stream and re-projects per visit -- and on downstream COMPOSITION (a following Where
-      // fuses to once per tested node; CompositionTests). Contractually unspecified on every
+      // collapses to once per tested node; CompositionTests). Contractually unspecified on every
       // axis. Idempotent assignments hide the variability; += compounds. Effects belong in
       // Do, whose scheduling filter is deterministic under every consumer and composition.
       var corpus = Corpus();

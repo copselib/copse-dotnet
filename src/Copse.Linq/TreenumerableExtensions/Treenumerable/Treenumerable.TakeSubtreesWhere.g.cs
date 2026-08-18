@@ -4,6 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -38,11 +39,11 @@ namespace Copse.Linq
     /// rule): the result is a streaming-tier citizen whose recipe is (source, predicate);
     /// each acquisition constructs that dimension's leanest streaming machinery --
     /// depth-first the bespoke O(1)-state pass-through wrapper (the scan chain measured
-    /// ~2.3x it for the same work), breadth-first the scan chain (the leanest streaming
-    /// form there: a bespoke BFT would reimplement Where's cross-level promotion
-    /// machinery). Because the dispatch lives BEHIND the citizenship, the operator is not a
-    /// composition seam: a following Select composes (the product variant), a following
-    /// Where joins the one driver over the citizen.</para>
+    /// ~2.3x it for the same work), breadth-first the Where machinery in subtree mode (the
+    /// subtree stage: kept-region membership read off the skip prefix the machinery already
+    /// carries -- no scan engine, no pair). Because the dispatch lives BEHIND the
+    /// citizenship, the operator is not a composition seam: a following Select composes
+    /// (the product variant), a following Where joins the one driver over the citizen.</para>
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
     /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
@@ -52,28 +53,17 @@ namespace Copse.Linq
     public static ITreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this ITreenumerable<TNode> source,
       Func<TNode, bool> predicate)
-    {
-      if (predicate == null)
-        throw new ArgumentNullException(nameof(predicate));
-
-      return new TakeSubtreesWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
-    }
+      => new TakeSubtreesWhereTreenumerable<TNode>(source, ToContextPredicate(predicate));
 
     /// <summary>
     /// The positional flavor (the Select/Where arity-split grammar): the node's value and its
-    /// SOURCE position. The public scan accumulator has no positional seat (the seat rule),
-    /// so the citizen's breadth-first chain speaks the ENGINE's context-shaped accumulator
-    /// directly -- same chain, same laws.
+    /// SOURCE position. The citizen's recipe is a context predicate, so both flavors are the
+    /// same citizen -- this one just reads the position off the context.
     /// </summary>
     public static ITreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
-    {
-      if (predicate == null)
-        throw new ArgumentNullException(nameof(predicate));
-
-      return new TakeSubtreesWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
-    }
+      => new TakeSubtreesWhereTreenumerable<TNode>(source, ToContextPredicate(predicate));
 
     /// <summary>
     /// The depth-first streaming form: a matched subtree is one CONTIGUOUS segment of the

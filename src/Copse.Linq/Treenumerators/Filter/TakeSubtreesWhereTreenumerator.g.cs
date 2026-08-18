@@ -15,9 +15,9 @@ namespace Copse.Linq.Treenumerators
   /// visit stream, so this wrapper is a pass-through with an in-subtree flag and O(1) state --
   /// while outside, every visit is suppressed and each newly scheduled node is tested; while
   /// inside, visits stream through with the depth offset (and the predicate never fires -- the
-  /// outermost-match rule IS the flag). Breadth-first has no streaming form (result level k
-  /// interleaves source levels as matches start at different depths -- the reorder wall), which
-  /// is why the breadth-first arms capture.
+  /// outermost-match rule IS the flag). This contiguous-segment shape is depth-first-specific:
+  /// the breadth-first arm streams through different machinery (the Where wrapper in subtree
+  /// mode, whose queue reorders across levels -- see the citizen's dispatch).
   ///
   /// Positions: a match re-roots at depth 0 with sibling index = its match ordinal (result
   /// roots are siblings in source preorder order); descendants keep their sibling indices, depth

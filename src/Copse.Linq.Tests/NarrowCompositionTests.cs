@@ -131,8 +131,8 @@ namespace Copse.Linq.Tests
         new[] { "a", "b", "c" },
         depthFirst.GetPreorderTraversal().ToArray());
     }
+
     // The narrow seal pin, flipped with the composite one: rejecting operators splice
-    // The tier seal, narrow half (boundary ruling 2026-08-04): rejecting operators stack
     // into ONE narrow driver. (The seal opened 2026-08-18, composite and narrow together --
     // CompositeToNarrow fanned the interface re-merge out; see the composite twin pin.)
     [TestMethod]

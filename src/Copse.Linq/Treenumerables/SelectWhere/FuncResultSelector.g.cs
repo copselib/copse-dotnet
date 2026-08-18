@@ -2,23 +2,24 @@
 //   Generated from FuncResultSelector.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The composed chains' selector: wraps the Kleisli-composed result closure. A composed
-  // chain inherently carries user delegates, so this path keeps the delegate call -- the
-  // struct seam exists so the PLAIN operators don't pay it.
-  internal readonly struct FuncResultSelector<TInner, TNode> : IResultSelector<TInner, TNode>
+  // The closure LEAF of the selector algebra: wraps ONE user-delegate result selector so it
+  // can ride the struct forms (the Func Compose doors wrap their delegate in this and
+  // forward to struct Compose; chains then nest via ComposedResultSelector). A user delegate
+  // inherently costs a delegate call, so this leaf keeps it -- the struct seam exists so the
+  // PLAIN operators don't pay it.
+  internal readonly struct FuncResultSelector<TSource, TResult> : IResultSelector<TSource, TResult>
   {
-    public FuncResultSelector(Func<NodeContext<TInner>, SelectWhereResult<TNode>> resultSelector)
+    public FuncResultSelector(Func<NodeContext<TSource>, SelectWhereResult<TResult>> resultSelector)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TInner>, SelectWhereResult<TNode>> _ResultSelector;
+    private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
-    public SelectWhereResult<TNode> GetResult(NodeContext<TInner> nodeContext) => _ResultSelector(nodeContext);
+    public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext) => _ResultSelector(nodeContext);
   }
 }

@@ -1,6 +1,6 @@
 # Operator Composition (design record)
 
-> **Status: CLOSED 2026-08-19.** Designed 2026-07-15; shipped through the narrow halves
+> **Status: CLOSED 2026-08-18.** Designed 2026-07-15; shipped through the narrow halves
 > 2026-07-18; sealed at the tier boundary 2026-08-04 (§2.9); REUNIFIED 2026-08-18 by the
 > struct-composed arrow (§2.10 — the seal opened, the tax inverted, the law's one home is
 > `ComposedResultSelector`); completed the same week by the ancestor composer
@@ -141,9 +141,9 @@ and best performance it can honestly offer.
 
 | Pair (inner→outer) | Verdict | Mechanism |
 |---|---|---|
-| Select∘Select | **shipped** | `Compose` delegate composition |
+| Select∘Select | **shipped** | `Compose` selector nesting (structs since §2.10 — `ComposedResultSelector`) |
 | value-only Where∘Where | **shipped** | predicate combination (LINQ's `CombinePredicates`) |
-| Select↔Where | **shipped** | genericized Where core: `<TInner, TNode>` + selector at the test site; Select is position-invariant so no label arithmetic exists |
+| Select↔Where | **shipped** | genericized Where core: `<TSource, TResult>` + selector at the test site; Select is position-invariant so no label arithmetic exists |
 | Select∘Prune | **shipped** | same seam on the prune cores — composition is a dispatch table of pair types; prune's bespoke no-promotion machinery is never funneled through Where |
 | Select∘capture-ops | filed | fold projection into the capture walk (the keyed factory's side-channel precedent) |
 | context-ful Where∘Where | **gated, presumed unneeded** | see below |
@@ -189,8 +189,9 @@ make this cell permanently moot.
   `AsyncPruneAfterTreenumerable` converts itself to the general representation and
   delegates (unwrap, discard, rebuild). Erasure unchanged: the wrapper knows its source
   type; the method is typed on output only. Each operator's semantics are stated ONCE —
-  the compose branch reuses the plain path's selector struct as a method group
-  (`new WhereResultSelector(p).GetResult`); PruneAfter's lives in the wrapper's
+  the compose branch reuses the plain path's selector struct (originally as a
+  `.GetResult` method group; since the §2.10 struct-door sweep, `6bc14fd`, the struct
+  itself passes through the struct `Compose` door); PruneAfter's lives in the wrapper's
   `CreateResultSelector`. `SelectWhereResult` is a BARE PAIR `(value, strategies)` — two
   fields, one constructor, zero behavior — rejection IS SkipNode membership, inherited
   from the consumer protocol, so every pair is coherent by definition. (An earlier
@@ -226,7 +227,10 @@ make this cell permanently moot.
   `SelectPruneAfterThen…` trio) — lives in one static class, named [inner]Then[outer] in
   execution order. The algebra is dimension-blind (arrows never touch a treenumerator);
   wrappers own only representation choice (which successor type to build) and acquisition
-  (which driver runs the composed arrow).
+  (which driver runs the composed arrow). *(Superseded in part by §2.10: the GENERAL
+  law's one home is now the `ComposedResultSelector` struct — chains nest in the type —
+  and `ResultSelectorThenResultSelector` is deleted; `SelectWhereComposition` remains the
+  home of the light in-tier arrows only.)*
 - **The narrow (single-dimension) halves mirror the lattice (2026-07-18)**: the
   dimension-preserving operator overloads (`IDepthFirstTreenumerable` /
   `IBreadthFirstTreenumerable` receivers) compose exactly like the composite-width ones.
@@ -377,9 +381,10 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    conformance over the corpus). Follow-up same day: the twelve narrow twins became
    GENERATED files (`CompositeToNarrow` phase in Copse.CodeGen, drift-guarded) — the
    lattice's implementation is edited in one place, the composite-width async file.
-2.8 Remaining: Select-into-captures; TakeNodesUntil/While migration; the async
-   OperatorStack re-measure (the tabled wrapper-wave decision — the BFT collapse ratio is
-   the strong signal).
+2.8 Remaining at the time: Select-into-captures (✅ done — CaptureThrough, its design doc
+   CLOSED); TakeNodesUntil/While migration (still filed); the async OperatorStack
+   re-measure (the tabled wrapper-wave decision — the BFT collapse ratio is the strong
+   signal).
 2.9 ✅ SHIPPED (main, 2026-08-04): **the tier seal** — the light tier left the
    general-splice surface. `ISelectPruneAfterTreenumerable` no longer extends
    `ISelectWhereTreenumerable`; the prune-carrying wrappers lost their conversion doors
@@ -466,7 +471,8 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    PruneBefore members, any order, one driver. The 2.9 evidence stands above as the
    history that made the walk safe; its Mixed rows are now the reunification's watch rows
    (CI series accumulating the ten-run-standard confirmation; revert = `c601e5a` + the
-   pin flips). Recorded follow-up, benchmark-gated: the extension sites that pass selector
-   structs as `.GetResult` method-group delegates where the struct door exists — newly hot
-   via the inheritance, Mixed rows arbitrate.
+   pin flips). The recorded follow-up (extension sites passing selector structs as
+   `.GetResult` method-group delegates) is ✅ DONE (`6bc14fd`): all ~20 splice sites now
+   take the struct door; local Mixed landed BELOW the old sealed baseline — the tax
+   inverted once the whole splice surface went struct.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
