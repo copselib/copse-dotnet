@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787064603843,
+  "lastUpdate": 1787064604592,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -174081,6 +174081,128 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
             "value": 3185,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 26159,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 59023,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 27502164,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 2107727,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 2349,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "07a70f37f18e8147ae90593775a7a8e43e460bf9",
+          "message": "The rootfix door: compose-left, left of the scan\n\nThe last mechanism on the composition ledger -- the leaffix door's streaming\nmirror, waited on by the FromSelect witnesses since 2026-08-17. A\npure-projection wrapper upstream of RootfixScan surrenders its pieces\n(IAsyncProjectionSource.CaptureThrough -- the door interface was already\nfully general; \"capture\" was only ever the first consumer's kind) and the\nscan's PRODUCT citizen is built over the un-projected inner raw: the\nprojection folds into the accumulator (once per scheduled node) and rides\nthe product selector at emission (once per visit) -- the exact counts the\nwrapper spelling paid, minus the wrapper hop on every pull.\n\nThe enabling change: the product engines' selector went CONTEXT-shaped\n(they have the inner position in hand at every emission; the pair context\nis minted transiently), so surrendered positional projectors are honored.\nThe citizen recipes carry context-shaped selectors internally; value-shaped\ncomposition wraps at the seams; the fourth-cell door simplified\n(SelectResultSelector takes the context selector directly).\n\nAll composite flavors route through the door (seed + rootNodeSelector value\nand positional, via the shared RootfixScanCitizen construction). The door's\nresult is still the citizen, so the left-composed chain stays total:\nSelect(f).RootfixScan(...).Where(...).Select(...) is ONE\nScanWhereTreenumerable -- Jason's typed pipeline as a single machine,\npinned by the new ComposeLeft_RootfixDoorResult_KeepsComposing law (plus\nthe door-equivalence anchor, corpus, both dimensions).\n\nWitnesses (same-run vs plain): FromSelect_Dft_Chain +6.5% (was +20-30% --\nthe hop is gone; the residual is the projector's contract-equal invocation\nsites), FromSelect_Bft +13%. 24,589 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T05:36:43Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/07a70f37f18e8147ae90593775a7a8e43e460bf9"
+        },
+        "date": 1787064604483,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 708,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 919,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 454,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 3147,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 27502276,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 26273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 231369,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 620,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 652,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 363,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 3203,
             "unit": "bytes"
           },
           {
