@@ -732,6 +732,10 @@ namespace Copse.CodeGen
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.Select.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.WithPosition.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.WithPosition.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.SkipLastTrees.cs",
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.SkipLastTrees.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
