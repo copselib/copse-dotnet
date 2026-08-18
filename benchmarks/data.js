@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787022247127,
+  "lastUpdate": 1787022247716,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -180597,6 +180597,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
             "value": 889824,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 75539189,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3165,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1659,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 67134536,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994552,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1641,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c235c55ad981156274ec712dcce4ef6f4bc29572",
+          "message": "The simplify pass: every Func door forwards to the struct door; two arrows die\n\nFour review agents (reuse/simplification/efficiency/altitude) over the\ntear-out, findings synthesized:\n\n- Every Func Compose (the heavy wrapper + all three light wrappers) is now a\n  one-line forward to its own struct Compose with FuncResultSelector as the\n  outer leg -- the struct splice with the closure as its single leaf. This\n  resolves the reuse finding (the law had grown three homes) AND the\n  efficiency finding (the closure route paid a per-visit delegate hop the\n  struct arrow eliminates) with the same line.\n- ResultSelectorThenResultSelector and SelectThenResultSelector went dead and\n  are DELETED -- ComposedResultSelector is the general law's one home;\n  SelectWhereComposition keeps only the light tier's in-tier arrows, which\n  are closure-bound by nature.\n- AsyncSelectTreenumerable drops its now-redundant explicit ISelectWhere base\n  (implied by the tier interface's inheritance).\n- Comment sweep: five sealed-world headers rewritten to the open-seal facts,\n  the stranded ComposePruneAfter comment re-homed, the surviving half of the\n  2026-08-04 ruling cited as surviving, typo/indent artifacts fixed.\n\nSkipped (flagged, benchmark-gated): extension sites passing selector structs\nas .GetResult method-group delegates where the struct door exists -- newly\nhot via the inheritance, compounds on light chains; the Mixed rows should\narbitrate before converting ~20 sites. Recorded as the follow-up.\n\n24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:48:10Z",
+          "tree_id": "8c198a0419e3a73c17bcfa58ece9825fb47d6094",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c235c55ad981156274ec712dcce4ef6f4bc29572"
+        },
+        "date": 1787022247595,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53923,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136331,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 234021,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889488,
             "unit": "bytes"
           },
           {
