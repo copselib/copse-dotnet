@@ -1,10 +1,20 @@
 # The Public Composition Surface (design)
 
-> **Status: RATIFIED 2026-08-18; build not started.** Successor to the citizenship shape of
-> SELECT_INTO_CAPTURES_DESIGN.md §2 (that document stays CLOSED; its rulings carry
-> forward unchanged: filtering internal-forever, the memo compose seam, the value-only
-> seat rule, compose-left PARKED). Ratified in design dialogue, 2026-08-18; all rulings
-> below are Jason's unless marked as recommendation-accepted.
+> **Status: STAGES 0-2 SHIPPED 2026-08-18** (`962ba0c` stage 0 harness, `5e5c932` +
+> `db16afb` stage 1 reorientation, `8f4dfd0` stage 2 classes public; every Stage 0 pin
+> unchanged throughout, full suite 24,596 green). Stage 3 (this record) same day. ONE
+> consult item remains open: the buffer flavor's rename (§9). One disclosed
+> representation change on an unpinned edge, in the stage-1 commit message: a composite
+> general chain reaching PruneAfter through a narrow-typed receiver now stacks the
+> composite light wrapper where it stacked the narrow one. Successor to the citizenship
+> shape of SELECT_INTO_CAPTURES_DESIGN.md §2 (that document stays CLOSED; its rulings
+> carry forward unchanged: filtering internal-forever, the memo compose seam, the
+> value-only seat rule, compose-left PARKED). Ratified in design dialogue, 2026-08-18;
+> all rulings are Jason's unless marked as recommendation-accepted.
+>
+> **BREAKING (pre-beta, release-notes flags):** `IAsyncSelectComposableTreenumerable` /
+> `ISelectComposableTreenumerable` (shipped v0.3.0-alpha.18) are replaced by
+> `IAsyncSelectTreenumerable` / `ISelectTreenumerable`.
 
 ## 1. Origin
 

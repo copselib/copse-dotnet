@@ -13,6 +13,16 @@
 > spelling collapse — and does it through a door anyone can walk through, not a private
 > arrangement between our operators.
 
+> **SUPERSEDED IN SHAPE (2026-08-18, the same day this document closed):**
+> PUBLIC_COMPOSITION_SURFACE_DESIGN.md generalizes the citizenship. The interface is now
+> `IAsyncSelectTreenumerable` (no "Composable"), joined by `IAsyncPruneAfterTreenumerable`
+> (the boundary law: public composition = what consumer strategies can express), the
+> internal `IAsyncSelectWhereTreenumerable` EXTENDS both (the reversed hierarchy), the
+> probe ladder collapsed to one sniff per door under the door-optimality law, and the
+> canonical wrapper classes went public as the citizenship's vehicles. Every RULING here
+> (filtering internal-forever, value-only seat rule, compose-left parked, the laws and the
+> dogfooding proof) carries forward unchanged -- only the citizenship's SHAPE moved.
+
 ## 1. The ruling this design splits
 
 The SelectWhere lattice's citizenship is INTERNAL by deliberate ruling: a public recipe
