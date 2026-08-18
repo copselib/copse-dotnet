@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787020491937,
+  "lastUpdate": 1787020492365,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -64812,6 +64812,66 @@ window.BENCHMARK_DATA = {
             "value": 152759327.61842105,
             "unit": "ns",
             "range": "± 864757.1378816761"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c601e5ac0a43eb6c5b846acf49b89e1bfe6f9ce4",
+          "message": "The seal opens: rejecting operators splice over the light tier, phase 2\n\nJason's ruling (2026-08-18): ~6% on short DFT prune+where mixes buys a total\ncomposition algebra -- the reduction in complexity makes the tax compelling.\n\nThe donation machinery: the prune tier's ComposeRejecting -- the light\nchain's composed closure rides as ONE FuncResultSelector leaf (the delegate\nit already pays per visit), the splice plumbing and the rejecting leg are\nstructs; AsyncPruneAfterTreenumerable donates its predicate as a delegate-\nfree PruneAfterResultSelector struct leaf; the dual-citizen Select delegates\nto its phase-1 struct Compose. The composite value-Where probe splices\ninstead of stacking.\n\nMeasured (same machine, interleaved A/B vs sealed): Dft_Triangle_Mixed\n59.5 -> 63.4ms (~+6%; the 2026-08-04 era paid +20-25%), Bft at parity\n(67.1 -> 65.8). The tax inverts on longer chains (FiveOperators 2.36x/15.4x).\n\nThe seal pin flips to the join pin (composite); the narrow twin stays\ntruthfully sealed until the narrow donation lands with the demolition pass\n(interface re-merge, duplicated-member consolidation, dead closure arrows,\npositional flavors) -- staged behind the CI Mixed series' ten-run-standard\nconfirmation. Revert path: this commit + the pin flip.\n\n24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:19:39Z",
+          "tree_id": "0beb830748a5e196003dc6213fa1288a4bb0407a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c601e5ac0a43eb6c5b846acf49b89e1bfe6f9ce4"
+        },
+        "date": 1787020492267,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 71198979.4095238,
+            "unit": "ns",
+            "range": "± 120142.91555367543"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9221107.6328125,
+            "unit": "ns",
+            "range": "± 25336.00562855364"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 132701224.34615384,
+            "unit": "ns",
+            "range": "± 394226.88270058157"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17770909.008333333,
+            "unit": "ns",
+            "range": "± 218981.40975339097"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 180600244.66666663,
+            "unit": "ns",
+            "range": "± 4248949.508699046"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 158910227.65384614,
+            "unit": "ns",
+            "range": "± 381340.6245613753"
           }
         ]
       }
