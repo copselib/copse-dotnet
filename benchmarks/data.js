@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787031526393,
+  "lastUpdate": 1787031527004,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -129394,6 +129394,102 @@ window.BENCHMARK_DATA = {
             "value": 79289641.27619049,
             "unit": "ns",
             "range": "± 1035292.2520078293"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c63fc355310d03aa7c30fdeecb4f509bb7d0e3f4",
+          "message": "The surface map records the fourth cell\n\nRootfixScan's row gains the ancestor-composer clause: the scan citizens are\non the general-splice surface, rejecting operators land in the fold-carrying\ndriver (one machine, both dimensions), bare Select keeps the product engine\nvia probe order.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T04:57:40Z",
+          "tree_id": "bbb0343ec1219bbc006d3208389743d2302779ac",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c63fc355310d03aa7c30fdeecb4f509bb7d0e3f4"
+        },
+        "date": 1787031526877,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 109019579.1285714,
+            "unit": "ns",
+            "range": "± 311600.6728829664"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 88470977.37179486,
+            "unit": "ns",
+            "range": "± 533062.9508224031"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 251883423.63333333,
+            "unit": "ns",
+            "range": "± 1510358.9089296253"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 262480795.08333334,
+            "unit": "ns",
+            "range": "± 377768.41842973256"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 201633318.6777778,
+            "unit": "ns",
+            "range": "± 5932233.7525827"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 200152209.69230768,
+            "unit": "ns",
+            "range": "± 421463.84655888303"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 110338707.55384614,
+            "unit": "ns",
+            "range": "± 892688.20699098"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 89358217.48888889,
+            "unit": "ns",
+            "range": "± 780881.3074405494"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 492864394.3333333,
+            "unit": "ns",
+            "range": "± 1639105.5237952482"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 493853440.26666665,
+            "unit": "ns",
+            "range": "± 1143564.7853906201"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 107360261.84615383,
+            "unit": "ns",
+            "range": "± 171933.40527159956"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 80523766.46258503,
+            "unit": "ns",
+            "range": "± 1842314.4333553263"
           }
         ]
       }
