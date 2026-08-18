@@ -1,6 +1,36 @@
 # WithPosition (design)
 
-> **Status: RATIFIED 2026-08-18; Stage A in progress on `feature/with-position`.**
+> **Status: STAGE A SHIPPED; STAGES B-C REJECTED AT THE WITNESS GATE (2026-08-18).**
+> The witness pairs (Compose family, seeded before any reroute) measured the spelling
+> against the overloads' machines on MegaTriangle, local ShortRun:
+>
+> | Pair (DFT / BFT)      | Overload        | Spelled         | Delta        |
+> |-----------------------|-----------------|-----------------|--------------|
+> | PositionalPruneAfter  | 32.7 / 36.6 ms  | 59.4 / 55.7 ms  | +82% / +52%  |
+> | PositionalWhere       | 57.6 / 55.4 ms  | 64.1 / 63.7 ms  | +11% / +15%  |
+> | Allocations           | --              | --              | IDENTICAL    |
+>
+> **The erasure argument held exactly for allocation** (the pair never lands in any
+> state) **and failed for time**, from two mechanisms the design under-weighted:
+> (i) the bespoke prune driver evaluates its predicate ONCE PER SCHEDULED NODE, while
+> the light passthrough the spelling collapses into evaluates its composed selector PER
+> PULLED VISIT -- on a structural drain that multiplier dominates (+82% DFT); (ii) the
+> light tier's in-tier arrows are Func-composed, so the spelling's extra legs (pair mint,
+> strip) cost real per-node delegate invocations even when the machine is shared (+11-15%
+> on the Where pair, where both routes run the same driver). A rescue would need BOTH a
+> once-per-node evaluation cache in the light passthrough AND struct-nested light arrows
+> -- a substantial perf workstream with uncertain payoff, parked unless demand returns.
+>
+> **What stands:** WithPosition itself (Stage A, additive -- the explicit-capture
+> spelling, the capture-scope semantics, the sugar-equivalence law, all pinned); the
+> witness series (now a standing guard: if the light tier's arrows ever go struct, these
+> rows say whether the reroute opens); and the design record below, kept as the analysis
+> that the gate then arbitrated. The positional overloads KEEP their machines -- the
+> cheapest-machinery doctrine, upheld by its own instrument. The deletion list (section 3)
+> does NOT execute.
+>
+> Original status line, for the record: RATIFIED 2026-08-18; ratified in design dialogue
+> the same day the public composition surface shipped.
 > Jason's design, arrived at in dialogue the same day the public composition surface
 > shipped: strip the positional ARITY AXIS from the operator machinery and make position a
 > SPELLING — a projection into `NodeContext<TNode>` that the value algebra composes over —

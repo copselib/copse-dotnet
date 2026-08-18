@@ -73,6 +73,38 @@ namespace Copse.Benchmarks
     public void Bft_Triangle_ScanWhere_Stacked() =>
       ScanWhereStacked().Consume(TreeTraversalStrategy.BreadthFirst);
 
+    [Benchmark]
+    public void Dft_Triangle_PositionalPruneAfter_Overload() =>
+      PositionalPruneAfterOverload().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_PositionalPruneAfter_Overload() =>
+      PositionalPruneAfterOverload().Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Triangle_PositionalPruneAfter_Spelled() =>
+      PositionalPruneAfterSpelled().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_PositionalPruneAfter_Spelled() =>
+      PositionalPruneAfterSpelled().Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Triangle_PositionalWhere_Overload() =>
+      PositionalWhereOverload().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_PositionalWhere_Overload() =>
+      PositionalWhereOverload().Consume(TreeTraversalStrategy.BreadthFirst);
+
+    [Benchmark]
+    public void Dft_Triangle_PositionalWhere_Spelled() =>
+      PositionalWhereSpelled().Consume(TreeTraversalStrategy.DepthFirst);
+
+    [Benchmark]
+    public void Bft_Triangle_PositionalWhere_Spelled() =>
+      PositionalWhereSpelled().Consume(TreeTraversalStrategy.BreadthFirst);
+
     // The headline WhereSelect case: one projection, one ~50% filter, one wrapper.
     private static ITreenumerable<int> SelectWhereComposed() =>
       CanonicalTrees.MegaTriangleTree()
@@ -98,6 +130,39 @@ namespace Copse.Benchmarks
     private static ITreenumerable<NodeAccumulation<int, int>> ScanWhereStacked() =>
       Tree.Defer(() => CanonicalTrees.MegaTriangleTree().RootfixScan(0, (depth, _) => depth + 1))
       .Where(pair => (pair.Accumulate & 1) == 0);
+
+    // THE WITHPOSITION WITNESSES (WITHPOSITION_DESIGN.md, seeded 2026-08-18 while the
+    // positional overloads still own their machinery). The Overload rows price today's
+    // machines: positional PruneAfter over a plain source = the bespoke predicate-only
+    // prune driver (the stage-B divergence -- the sugar builds the SelectPruneAfter
+    // passthrough instead); positional Where = the general driver with the positional
+    // selector struct. The Spelled rows price the WithPosition spelling: the pair minted
+    // transiently inside the collapsed chain (the erasure argument, on hardware). THE GATE
+    // FIRED (2026-08-18, first run): alloc identical (erasure confirmed) but time failed --
+    // PruneAfter +82%/+52% (per-VISIT selector evaluation in the passthrough vs the bespoke
+    // driver's per-SCHEDULE predicate), Where +11%/+15% (the Func-arrow legs' per-node
+    // cost). Stages B-C REJECTED; the overloads keep their machines. The pairs STAY as a
+    // standing guard: if the light tier's arrows ever go struct, these rows say whether
+    // the reroute opens (WITHPOSITION_DESIGN.md status).
+    private static ITreenumerable<int> PositionalPruneAfterOverload() =>
+      CanonicalTrees.MegaTriangleTree()
+      .PruneAfter((n, position) => position.Depth == 1200);
+
+    private static ITreenumerable<int> PositionalPruneAfterSpelled() =>
+      CanonicalTrees.MegaTriangleTree()
+      .WithPosition()
+      .PruneAfter(pair => pair.Position.Depth == 1200)
+      .Select(pair => pair.Node);
+
+    private static ITreenumerable<int> PositionalWhereOverload() =>
+      CanonicalTrees.MegaTriangleTree()
+      .Where((n, position) => (position.Depth & 1) == 0);
+
+    private static ITreenumerable<int> PositionalWhereSpelled() =>
+      CanonicalTrees.MegaTriangleTree()
+      .WithPosition()
+      .Where(pair => (pair.Position.Depth & 1) == 0)
+      .Select(pair => pair.Node);
 
     // The closure property: five operators in any order stay one wrapper.
     private static ITreenumerable<int> FiveOperatorsComposed() =>
