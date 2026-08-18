@@ -11,23 +11,35 @@
 > | Allocations           | --              | --              | IDENTICAL    |
 >
 > **The erasure argument held exactly for allocation** (the pair never lands in any
-> state) **and failed for time**, from two mechanisms the design under-weighted:
-> (i) the bespoke prune driver evaluates its predicate ONCE PER SCHEDULED NODE, while
-> the light passthrough the spelling collapses into evaluates its composed selector PER
-> PULLED VISIT -- on a structural drain that multiplier dominates (+82% DFT); (ii) the
-> light tier's in-tier arrows are Func-composed, so the spelling's extra legs (pair mint,
-> strip) cost real per-node delegate invocations even when the machine is shared (+11-15%
-> on the Where pair, where both routes run the same driver). A rescue would need BOTH a
-> once-per-node evaluation cache in the light passthrough AND struct-nested light arrows
-> -- a substantial perf workstream with uncertain payoff, parked unless demand returns.
+> state) **and failed for time. The mechanism, CORRECTED by decomposition** (Jason's
+> challenge -- "if composing Select.PruneAfter.Select added 82%, the composition story
+> has been lying" -- prompted the follow-up run; local DFT rows: raw drain 46.2 ms, bare
+> `Select(n => n)` 45.6 ms, overload 33.0 ms, spelled 59.2 ms, Defer-broken stacked
+> spelling 66.0 ms):
 >
-> **What stands:** WithPosition itself (Stage A, additive -- the explicit-capture
-> spelling, the capture-scope semantics, the sugar-equivalence law, all pinned); the
-> witness series (now a standing guard: if the light tier's arrows ever go struct, these
-> rows say whether the reroute opens); and the design record below, kept as the analysis
-> that the gate then arbitrated. The positional overloads KEEP their machines -- the
-> cheapest-machinery doctrine, upheld by its own instrument. The deletion list (section 3)
-> does NOT execute.
+> - **The composition story is VINDICATED**: composed (59.2) beats stacked (66.0) on
+>   exactly this chain.
+> - **A single per-visit delegate is FREE** (bare Select ≈ raw), falsifying the
+>   first-draft per-visit-vs-per-schedule multiplicity claim as the dominant term.
+> - The overload's 33 vs raw's 46 is just the pruned walk (depth-1200 sheds ~30%).
+> - **The real gap is the LIGHT TIER'S FUNC-COMPOSED ARROWS**: the spelled chain runs
+>   three closure hops with NodeContext/SelectWhereResult struct plumbing per visit
+>   (~12 ns/visit over ~2.2M visits ≈ the 26 ms) -- the exact de-inlined-delegate-chain
+>   disease the struct-composed arrow cured in the DRIVER tier at the reunification,
+>   still alive in the light tier (SelectWhereComposition = closure arrows).
+>
+> **The rescue is therefore a KNOWN CURE, not speculation: struct-nest the light tier's
+> in-tier arrows** the way ComposedResultSelector struct-nested the driver's. Precedent
+> (the reunification's collapse-ratio recovery), independent value (every light chain
+> speeds up), and a ready gate (the witness pairs converging). Stages B-C are not dead --
+> they are gated behind the light tier's own reunification.
+>
+> **What stands meanwhile:** WithPosition itself (Stage A, additive -- the
+> explicit-capture spelling, the capture-scope semantics, the sugar-equivalence law, all
+> pinned); the witness series as the standing gate; the design record below. The
+> positional overloads KEEP their machines until the light arrows go struct and the
+> pairs converge -- the cheapest-machinery doctrine, upheld by its own instrument. The
+> deletion list (section 3) does NOT execute yet.
 >
 > Original status line, for the record: RATIFIED 2026-08-18; ratified in design dialogue
 > the same day the public composition surface shipped.

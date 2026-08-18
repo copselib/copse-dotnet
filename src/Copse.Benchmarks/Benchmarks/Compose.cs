@@ -138,12 +138,15 @@ namespace Copse.Benchmarks
     // passthrough instead); positional Where = the general driver with the positional
     // selector struct. The Spelled rows price the WithPosition spelling: the pair minted
     // transiently inside the collapsed chain (the erasure argument, on hardware). THE GATE
-    // FIRED (2026-08-18, first run): alloc identical (erasure confirmed) but time failed --
-    // PruneAfter +82%/+52% (per-VISIT selector evaluation in the passthrough vs the bespoke
-    // driver's per-SCHEDULE predicate), Where +11%/+15% (the Func-arrow legs' per-node
-    // cost). Stages B-C REJECTED; the overloads keep their machines. The pairs STAY as a
-    // standing guard: if the light tier's arrows ever go struct, these rows say whether
-    // the reroute opens (WITHPOSITION_DESIGN.md status).
+    // FIRED (2026-08-18): alloc identical (erasure confirmed) but time failed -- PruneAfter
+    // +82%/+52%, Where +11%/+15%. Decomposition (same day) CORRECTED the mechanism: the
+    // composed spelling BEATS its Defer-broken stacked control (59.2 vs 66.0 ms -- the
+    // composition story vindicated) and a single per-visit delegate is free (bare Select
+    // = raw drain); the gap is the LIGHT TIER'S FUNC-COMPOSED ARROWS -- three closure
+    // hops + struct plumbing per visit, the de-inlined-chain disease the struct arrow
+    // cured in the driver tier at the reunification. Stages B-C are GATED, not dead:
+    // struct-nest the light in-tier arrows and these pairs say whether the reroute opens
+    // (WITHPOSITION_DESIGN.md status).
     private static ITreenumerable<int> PositionalPruneAfterOverload() =>
       CanonicalTrees.MegaTriangleTree()
       .PruneAfter((n, position) => position.Depth == 1200);
