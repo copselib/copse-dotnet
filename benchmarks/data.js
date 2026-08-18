@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787022241335,
+  "lastUpdate": 1787022241924,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -124386,6 +124386,102 @@ window.BENCHMARK_DATA = {
             "value": 81041450.39795919,
             "unit": "ns",
             "range": "± 803838.5904828749"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c235c55ad981156274ec712dcce4ef6f4bc29572",
+          "message": "The simplify pass: every Func door forwards to the struct door; two arrows die\n\nFour review agents (reuse/simplification/efficiency/altitude) over the\ntear-out, findings synthesized:\n\n- Every Func Compose (the heavy wrapper + all three light wrappers) is now a\n  one-line forward to its own struct Compose with FuncResultSelector as the\n  outer leg -- the struct splice with the closure as its single leaf. This\n  resolves the reuse finding (the law had grown three homes) AND the\n  efficiency finding (the closure route paid a per-visit delegate hop the\n  struct arrow eliminates) with the same line.\n- ResultSelectorThenResultSelector and SelectThenResultSelector went dead and\n  are DELETED -- ComposedResultSelector is the general law's one home;\n  SelectWhereComposition keeps only the light tier's in-tier arrows, which\n  are closure-bound by nature.\n- AsyncSelectTreenumerable drops its now-redundant explicit ISelectWhere base\n  (implied by the tier interface's inheritance).\n- Comment sweep: five sealed-world headers rewritten to the open-seal facts,\n  the stranded ComposePruneAfter comment re-homed, the surviving half of the\n  2026-08-04 ruling cited as surviving, typo/indent artifacts fixed.\n\nSkipped (flagged, benchmark-gated): extension sites passing selector structs\nas .GetResult method-group delegates where the struct door exists -- newly\nhot via the inheritance, compounds on light chains; the Mixed rows should\narbitrate before converting ~20 sites. Recorded as the follow-up.\n\n24,585 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-18T02:48:10Z",
+          "tree_id": "8c198a0419e3a73c17bcfa58ece9825fb47d6094",
+          "url": "https://github.com/copselib/copse-dotnet/commit/c235c55ad981156274ec712dcce4ef6f4bc29572"
+        },
+        "date": 1787022241796,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106581538.38461539,
+            "unit": "ns",
+            "range": "± 110047.6324075606"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 90117028.93333332,
+            "unit": "ns",
+            "range": "± 404060.74234717956"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 243249058.71111113,
+            "unit": "ns",
+            "range": "± 3079866.762114722"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 263063896.4,
+            "unit": "ns",
+            "range": "± 2080046.7584428685"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 193755001.35632184,
+            "unit": "ns",
+            "range": "± 5674564.45818266"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 201237498.99999997,
+            "unit": "ns",
+            "range": "± 3522103.8192099975"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 112479627.6956522,
+            "unit": "ns",
+            "range": "± 2843642.6224366906"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 86489451.64102565,
+            "unit": "ns",
+            "range": "± 98709.82150160604"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 495262372.8666667,
+            "unit": "ns",
+            "range": "± 1963661.4911133985"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 473322691.0714286,
+            "unit": "ns",
+            "range": "± 2310222.636488276"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 103874397.64,
+            "unit": "ns",
+            "range": "± 836363.5872441777"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 78744243.88775511,
+            "unit": "ns",
+            "range": "± 213644.87273359424"
           }
         ]
       }
