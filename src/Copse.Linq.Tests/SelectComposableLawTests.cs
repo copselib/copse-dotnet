@@ -187,21 +187,78 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Streaming_ComposeRightJoin_FirstFilterProducesTheOneDriver()
+    public void Streaming_ComposeRightJoin_FirstFilterProducesTheFoldCarryingDriver()
     {
+      // THE FOURTH CELL (SCAN_TIER_DESIGN.md, 2026-08-18): a rejecting operator joining a
+      // scan-citizen chain no longer stacks a driver over the scan engine -- it splices into
+      // ONE fold-carrying driver (the ancestor composer), and everything after composes into
+      // THAT driver's legs.
       foreach (var tree in Corpus)
       {
         var joined = DepthScan(tree).Select(x => x.Accumulate).Where(depth => depth != 2);
 
-        Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), joined.GetType().GetGenericTypeDefinition(), $"join [{tree}]");
+        Assert.AreEqual(typeof(ScanWhereTreenumerable<,,,>), joined.GetType().GetGenericTypeDefinition(), $"join [{tree}]");
 
         var absorbed = joined.Select(depth => depth * 10);
 
-        Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), absorbed.GetType().GetGenericTypeDefinition(), $"absorb [{tree}]");
+        Assert.AreEqual(typeof(ScanWhereTreenumerable<,,,>), absorbed.GetType().GetGenericTypeDefinition(), $"absorb [{tree}]");
       }
     }
 
     private static ITreenumerable<int> ToComposite(ITreenumerable<int> source) => source;
+
+    // ---- THE FOURTH CELL (the ancestor composer, SCAN_TIER_DESIGN.md) ----
+
+    [TestMethod]
+    public void FourthCell_ScanWhere_EqualsTheTwoMachineSpelling()
+    {
+      // The ancestor composer's equivalence anchor: Scan().Where(pair-predicate) spliced
+      // into ONE fold-carrying driver vs the Defer-broken two-machine spelling (scan engine
+      // + plain driver), both dimensions. The predicate rejects ALL depth-1 nodes, so the
+      // corpus's deeper trees exercise promotion THROUGH rejected nodes.
+      foreach (var tree in Corpus)
+      {
+        var composed = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .RootfixScan(0, (depth, _) => depth + 1)
+          .Where(pair => pair.Accumulate != 2);
+
+        var twoMachine = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).RootfixScan(0, (depth, _) => depth + 1))
+          .Where(pair => pair.Accumulate != 2);
+
+        CollectionAssert.AreEqual(
+          twoMachine.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          composed.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(
+          twoMachine.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          composed.GetLevelOrderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),
+          $"breadth-first [{tree}]");
+      }
+    }
+
+    [TestMethod]
+    public void FourthCell_MidChain_FoldFlowsThroughRejectedNodes()
+    {
+      // Composition is data flow: a rejected node's descendants fold THROUGH its accumulate
+      // (the trail folds before the accept/reject decision), and a following Select composes
+      // into the fold-carrying driver's legs rather than stacking.
+      foreach (var tree in Corpus)
+      {
+        var composed = TreeSerializer.DeserializeDepthFirstTree(tree)
+          .RootfixScan(0, (depth, _) => depth + 1)
+          .Where(pair => pair.Accumulate != 2)
+          .Select(pair => pair.Node + ":" + pair.Accumulate);
+
+        Assert.AreEqual(typeof(ScanWhereTreenumerable<,,,>), composed.GetType().GetGenericTypeDefinition(), $"one machine [{tree}]");
+
+        var twoMachine = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).RootfixScan(0, (depth, _) => depth + 1))
+          .Where(pair => pair.Accumulate != 2)
+          .Select(pair => pair.Node + ":" + pair.Accumulate);
+
+        CollectionAssert.AreEqual(twoMachine.GetPreorderTraversal().ToArray(), composed.GetPreorderTraversal().ToArray(), $"depth-first [{tree}]");
+        CollectionAssert.AreEqual(twoMachine.GetLevelOrderTraversal().ToArray(), composed.GetLevelOrderTraversal().ToArray(), $"breadth-first [{tree}]");
+      }
+    }
 
     // ---- TakeSubtreesWhere: the dispatched citizen (the operator is not a composition seam) ----
 

@@ -14,7 +14,8 @@ namespace Copse.Linq.Treenumerators
   // wrapper layer per pull. Itself a citizen: further Selects compose onto the selector
   // (closure by signature).
   internal sealed class RootfixScanProductTreenumerable<TNode, TAccumulate, TProduct>
-    : ISelectComposableTreenumerable<TProduct>
+    : ISelectComposableTreenumerable<TProduct>,
+      ISelectWhereTreenumerable<TProduct>
   {
     public RootfixScanProductTreenumerable(
       Func<ITreenumerator<TNode>> innerDepthFirstFactory,
@@ -52,5 +53,34 @@ namespace Copse.Linq.Treenumerators
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed,
         pairing => selector(currentProductSelector(pairing)));
     }
+
+    // The fourth-cell door (see the plain citizen): the composed product rides as a
+    // SelectResultSelector inner leg, the splicing operator's leg composes over it, and the
+    // whole chain -- fold, projection, rejection -- is ONE machine.
+    public bool Relabels => false;
+
+    public ITreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TProduct, TOuterResult>
+    {
+      var currentProductSelector = _ProductSelector;
+
+      return new ScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>>(
+        _InnerDepthFirstFactory,
+        _InnerBreadthFirstFactory,
+        _Accumulator,
+        _Seed,
+        new ComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>(
+          new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>(pairContext => currentProductSelector(pairContext.Node)),
+          outerSelector),
+        relabels);
+    }
+
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<TProduct>, SelectWhereResult<TOuterResult>> resultSelector,
+      bool relabels)
+      => Compose<TOuterResult, FuncResultSelector<TProduct, TOuterResult>>(
+        new FuncResultSelector<TProduct, TOuterResult>(resultSelector), relabels);
   }
 }

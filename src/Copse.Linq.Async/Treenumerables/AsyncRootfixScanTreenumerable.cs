@@ -13,8 +13,16 @@ namespace Copse.Linq.Async
   // engines, selector-free, so the un-composed spelling never pays for the citizenship.
   // Narrow (single-dimension) scan results are NOT citizens (the citizenship is
   // composite-width; narrowing it is CompositeToNarrow-scale work, deferred).
+  // THE FOURTH-CELL DOOR (the ancestor composer, SCAN_TIER_DESIGN.md): the citizen also
+  // joins the general-splice surface, so a rejecting operator landing on a scan does NOT
+  // stack a driver over the engine -- its Compose constructs the fold-carrying driver
+  // (AsyncScanWhereTreenumerable) from this recipe, and the whole chain is ONE machine.
+  // Probe order matters at the Select seam: bare Selects must keep taking ComposeSelect
+  // (the product ENGINE -- zero extra machinery), so Select probes the citizenship BEFORE
+  // this surface.
   internal sealed class AsyncRootfixScanTreenumerable<TNode, TAccumulate>
-    : IAsyncSelectComposableTreenumerable<NodeAccumulation<TNode, TAccumulate>>
+    : IAsyncSelectComposableTreenumerable<NodeAccumulation<TNode, TAccumulate>>,
+      IAsyncSelectWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>>
   {
     public AsyncRootfixScanTreenumerable(
       Func<IAsyncTreenumerator<TNode>> innerDepthFirstFactory,
@@ -44,5 +52,22 @@ namespace Copse.Linq.Async
     public IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<NodeAccumulation<TNode, TAccumulate>, TResult> selector)
       => new AsyncRootfixScanProductTreenumerable<TNode, TAccumulate, TResult>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, selector);
+
+    // The general surface: a scan never relabels (it decorates), and a splicing operator's
+    // leg lands in the fold-carrying driver.
+    public bool Relabels => false;
+
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
+      => new AsyncScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, TOuterSelector>(
+        _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, outerSelector, relabels);
+
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
+      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, SelectWhereResult<TOuterResult>> resultSelector,
+      bool relabels)
+      => Compose<TOuterResult, FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
+        new FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(resultSelector), relabels);
   }
 }

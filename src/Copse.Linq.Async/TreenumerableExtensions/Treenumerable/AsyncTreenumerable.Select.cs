@@ -38,18 +38,19 @@ namespace Copse.Linq
       if (source is IAsyncSelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
         return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
 
+      // The PUBLIC projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md) -- probed BEFORE
+      // the general surface since the fourth-cell door (SCAN_TIER_DESIGN.md): the scan
+      // citizens now also implement ISelectWhere, and a bare Select must keep taking
+      // ComposeSelect (the product ENGINE) rather than minting a fold-carrying driver.
+      if (source is IAsyncSelectComposableTreenumerable<TSource> composableSource)
+        return composableSource.ComposeSelect(selector);
+
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
         // The struct-composed splice (the reunification gate): the projection rides an
         // inlinable selector-struct leg instead of erasing the chain to delegates.
         return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
           new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
           relabels: false);
-
-      // The PUBLIC projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md) -- probed after
-      // the internal lattice, before the wrapper fallback: a citizen composes the projection
-      // into its own machinery (a rootfix scan re-plants it inside the engine).
-      if (source is IAsyncSelectComposableTreenumerable<TSource> composableSource)
-        return composableSource.ComposeSelect(selector);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
