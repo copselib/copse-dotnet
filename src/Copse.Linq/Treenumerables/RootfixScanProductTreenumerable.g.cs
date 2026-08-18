@@ -84,5 +84,19 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       => Compose<TOuterResult, FuncResultSelector<TProduct, TOuterResult>>(
         new FuncResultSelector<TProduct, TOuterResult>(resultSelector), relabels);
+
+    // The context-shaped projection door (a positional leg, join-rule-cleared by the
+    // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
+      => Compose<TOuterResult, SelectResultSelector<TProduct, TOuterResult>>(
+        new SelectResultSelector<TProduct, TOuterResult>(selector), relabels: false);
+
+    // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
+    // stacks over the product citizen.
+    public ITreenumerable<TProduct> ComposePruneAfter(Func<NodeContext<TProduct>, bool> predicate)
+      => new PruneAfterTreenumerable<TProduct>(this, predicate);
+
+    public IPruneAfterTreenumerable<TProduct> ComposePruneAfter(Func<TProduct, bool> predicate)
+      => new PruneAfterTreenumerable<TProduct>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

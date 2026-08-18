@@ -73,5 +73,19 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       => Compose<TOuterResult, FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
         new FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(resultSelector), relabels);
+
+    // The context-shaped projection door (a positional leg, join-rule-cleared by the
+    // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TOuterResult> selector)
+      => Compose<TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
+        new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(selector), relabels: false);
+
+    // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
+    // stacks over the scan.
+    public ITreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneAfter(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, bool> predicate)
+      => new PruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, predicate);
+
+    public IPruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneAfter(Func<NodeAccumulation<TNode, TAccumulate>, bool> predicate)
+      => new PruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

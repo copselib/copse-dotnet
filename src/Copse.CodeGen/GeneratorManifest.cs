@@ -43,12 +43,6 @@ namespace Copse.CodeGen
         "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectWhereBreadthFirstTreenumerable.g.cs",
         NarrowDimension.BreadthFirst),
 
-      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
-        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
-        NarrowDimension.DepthFirst),
-      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
-        "Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
-        NarrowDimension.BreadthFirst),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectWhereTreenumerable.cs",
         "Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectWhereDepthFirstTreenumerable.g.cs",
@@ -376,6 +370,10 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
         "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/IAsyncPruneAfterTreenumerable.cs",
+        "Copse.Linq/Treenumerables/IPruneAfterTreenumerable.g.cs",
+        "IAsyncPruneAfterTreenumerable", "IPruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncSelectComposableTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ISelectComposableTreenumerableBuffer.g.cs",
         "IAsyncSelectComposableTreenumerableBuffer", "ISelectComposableTreenumerableBuffer", "Copse.Linq.Treenumerables"),
@@ -385,6 +383,22 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.CaptureThrough.cs",
         "Copse.Linq/Treenumerables/SelectWhere/SelectTreenumerable.CaptureThrough.g.cs",
         "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectTreenumerable.Citizenship.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectTreenumerable.Citizenship.g.cs",
+        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncPruneAfterTreenumerable.Citizenship.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/PruneAfterTreenumerable.Citizenship.g.cs",
+        "AsyncPruneAfterTreenumerable", "PruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterTreenumerable.Citizenship.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectPruneAfterTreenumerable.Citizenship.g.cs",
+        "AsyncSelectPruneAfterTreenumerable", "SelectPruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectWhereTreenumerable.Citizenship.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/SelectWhereTreenumerable.Citizenship.g.cs",
+        "AsyncSelectWhereTreenumerable", "SelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Buffers/AsyncProjectedTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ProjectedTreenumerableBuffer.g.cs",
         "AsyncProjectedTreenumerableBuffer", "ProjectedTreenumerableBuffer", "Copse.Linq.Treenumerables"),
@@ -478,9 +492,6 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereTreenumerable.g.cs",
         "IAsyncSelectWhereTreenumerable", "ISelectWhereTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterTreenumerable.cs",
-        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterTreenumerable.g.cs",
-        "IAsyncSelectPruneAfterTreenumerable", "ISelectPruneAfterTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectPruneAfterTreenumerable.cs",
         "Copse.Linq/Treenumerables/SelectWhere/SelectPruneAfterTreenumerable.g.cs",
@@ -560,13 +571,6 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/SelectWhere/ISelectWhereBreadthFirstTreenumerable.g.cs",
         "IAsyncSelectWhereBreadthFirstTreenumerable", "ISelectWhereBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterDepthFirstTreenumerable.g.cs",
-        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterDepthFirstTreenumerable.g.cs",
-        "IAsyncSelectPruneAfterDepthFirstTreenumerable", "ISelectPruneAfterDepthFirstTreenumerable", "Copse.Linq.Treenumerables"),
-
-      new("Copse.Linq.Async/Treenumerables/SelectWhere/IAsyncSelectPruneAfterBreadthFirstTreenumerable.g.cs",
-        "Copse.Linq/Treenumerables/SelectWhere/ISelectPruneAfterBreadthFirstTreenumerable.g.cs",
-        "IAsyncSelectPruneAfterBreadthFirstTreenumerable", "ISelectPruneAfterBreadthFirstTreenumerable", "Copse.Linq.Treenumerables"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectWhereDepthFirstTreenumerable.g.cs",
         "Copse.Linq/Treenumerables/SelectWhere/SelectWhereDepthFirstTreenumerable.g.cs",

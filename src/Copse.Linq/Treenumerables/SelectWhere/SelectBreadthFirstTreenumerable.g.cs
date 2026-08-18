@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // Since the seal opened (2026-08-18) every light wrapper is on the general-splice surface
   // through the tier interface's inheritance; this wrapper was the first (dual citizenship,
   // 2026-08-04) because absorbing a full projection layer was the family's measured win.
-  internal sealed partial class SelectBreadthFirstTreenumerable<TSource, TResult> : ISelectPruneAfterBreadthFirstTreenumerable<TResult>
+  internal sealed partial class SelectBreadthFirstTreenumerable<TSource, TResult> : ISelectWhereBreadthFirstTreenumerable<TResult>
   {
     public SelectBreadthFirstTreenumerable(
       IBreadthFirstTreenumerable<TSource> source,

@@ -13,7 +13,7 @@ namespace Copse.Linq.Treenumerables
   // label-preserving (survivors keep their coordinates), so even positional lambdas compose
   // across it -- in-tier through the light doors, and since the seal opened (2026-08-18)
   // a rejecting operator splices over it through the inherited general Compose.
-  internal sealed class PruneAfterTreenumerable<TNode> : ISelectPruneAfterTreenumerable<TNode>
+  internal sealed partial class PruneAfterTreenumerable<TNode> : ISelectWhereTreenumerable<TNode>
   {
     public PruneAfterTreenumerable(
       ITreenumerable<TNode> source,

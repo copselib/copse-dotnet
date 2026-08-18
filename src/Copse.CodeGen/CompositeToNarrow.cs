@@ -48,11 +48,21 @@ namespace Copse.CodeGen
       {
         ["IAsyncTreenumerable"] = "IAsync{0}Treenumerable",
         ["IAsyncSelectWhereTreenumerable"] = "IAsyncSelectWhere{0}Treenumerable",
-        ["IAsyncSelectPruneAfterTreenumerable"] = "IAsyncSelectPruneAfter{0}Treenumerable",
         ["AsyncSelectWhereTreenumerable"] = "AsyncSelectWhere{0}Treenumerable",
         ["AsyncSelectTreenumerable"] = "AsyncSelect{0}Treenumerable",
         ["AsyncPruneAfterTreenumerable"] = "AsyncPruneAfter{0}Treenumerable",
         ["AsyncSelectPruneAfterTreenumerable"] = "AsyncSelectPruneAfter{0}Treenumerable",
+      };
+
+      // The public capability bases (PUBLIC_COMPOSITION_SURFACE_DESIGN.md) are
+      // composite-width only -- narrow parity is deferred -- so the narrow twins strip them
+      // from base lists. (Their door MEMBERS never appear in fanned files: the wrappers
+      // implement the public doors in composite-only partial parts, the file-granular
+      // idiom.)
+      private static readonly HashSet<string> StrippedBases = new()
+      {
+        "IAsyncSelectTreenumerable",
+        "IAsyncPruneAfterTreenumerable",
       };
 
       private readonly Dictionary<string, string> _renames;
@@ -69,6 +79,23 @@ namespace Copse.CodeGen
         _droppedAcquisition = dimension == NarrowDimension.DepthFirst
           ? "GetAsyncBreadthFirstTreenumerator"
           : "GetAsyncDepthFirstTreenumerator";
+      }
+
+      // Strip the composite-only public bases from base lists (see StrippedBases).
+      public override SyntaxNode VisitBaseList(BaseListSyntax node)
+      {
+        var kept = new List<BaseTypeSyntax>();
+        foreach (var baseType in node.Types)
+        {
+          var name = baseType.Type is GenericNameSyntax genericName ? genericName.Identifier.ValueText : null;
+          if (name == null || !StrippedBases.Contains(name))
+            kept.Add(baseType);
+        }
+
+        if (kept.Count == node.Types.Count)
+          return base.VisitBaseList(node);
+
+        return base.VisitBaseList(node.WithTypes(SyntaxFactory.SeparatedList(kept)));
       }
 
       // Drop the other dimension's acquisition method (declaration in the wrapper sources; the

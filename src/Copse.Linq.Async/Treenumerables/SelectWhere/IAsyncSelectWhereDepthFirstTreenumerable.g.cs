@@ -21,8 +21,17 @@ namespace Copse.Linq.Async.Treenumerables
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
-  internal interface IAsyncSelectWhereDepthFirstTreenumerable<TNode> : IAsyncDepthFirstTreenumerable<TNode>
-  {
+  //
+  // THE REVERSED HIERARCHY (PUBLIC_COMPOSITION_SURFACE_DESIGN.md): this interface EXTENDS
+  // the public capability bases -- the strategy-expressible fragment (projection,
+  // prune-after) is public at the root; the driver algebra (rejection, relabeling, the
+  // struct splice) is this internal layer above it. Every member of this surface therefore
+  // answers the public doors, each with ITS OWN best machinery (the door-optimality law:
+  // the light wrappers stay light, the driver nests a leg, the scan citizens re-plant).
+  // The narrow twins strip the public bases in the fan-out -- narrow parity is deferred,
+  // so the public doors are composite-width only.
+  internal interface IAsyncSelectWhereDepthFirstTreenumerable<TNode>
+    : IAsyncDepthFirstTreenumerable<TNode>  {
     // True once any relabeling operator is aboard; the operators' positional flavors read this
     // to apply the join rule before composing.
     bool Relabels { get; }
@@ -42,5 +51,19 @@ namespace Copse.Linq.Async.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
+
+    // The context-shaped projection door (the light tier's door, absorbed here when the
+    // conjunction marker retired): the leg is a pure projection that MAY read positions --
+    // the caller has already applied the join rule (the positional flavors check Relabels
+    // before knocking). Per the door-optimality law: light wrappers compose in-tier and
+    // stay light; the driver splices a struct leg; the scan citizens splice into the
+    // fold-carrying driver.
+    IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+
+    // The context-shaped prune-after door (same absorption). Per the in-tier-only boundary
+    // ruling (2026-08-04, the surviving half): light wrappers merge in-tier; every other
+    // member STACKS the light prune wrapper over itself -- joining would demote its
+    // representation for a layer that costs almost nothing.
+    IAsyncDepthFirstTreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> predicate);
   }
 }

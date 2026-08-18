@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // keep their own cheapest machinery), so its IN-TIER arrow is delegate-bound by nature;
   // spliced over through the inherited general Compose, its chain rides as one
   // FuncResultSelector leaf under struct plumbing (the open seal).
-  internal sealed class SelectPruneAfterBreadthFirstTreenumerable<TSource, TResult> : ISelectPruneAfterBreadthFirstTreenumerable<TResult>
+  internal sealed partial class SelectPruneAfterBreadthFirstTreenumerable<TSource, TResult> : ISelectWhereBreadthFirstTreenumerable<TResult>
   {
     public SelectPruneAfterBreadthFirstTreenumerable(
       IBreadthFirstTreenumerable<TSource> source,

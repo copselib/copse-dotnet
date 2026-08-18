@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // composed chains nest those structs in the TYPE via ComposedResultSelector (a user
   // delegate enters only as a FuncResultSelector leaf). Splicing is total: every legality
   // decision was made outer-side.
-  internal sealed class SelectWhereDepthFirstTreenumerable<TSource, TResult, TResultSelector> : ISelectWhereDepthFirstTreenumerable<TResult>
+  internal sealed partial class SelectWhereDepthFirstTreenumerable<TSource, TResult, TResultSelector> : ISelectWhereDepthFirstTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<TSource, TResult>
   {
     public SelectWhereDepthFirstTreenumerable(
@@ -63,5 +63,17 @@ namespace Copse.Linq.Treenumerables
         new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
         Relabels | relabels);
     }
+
+    // The context-shaped projection door: the projection rides an inlinable struct leg
+    // (the caller has already applied the join rule for positional legs).
+    public IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => Compose<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
+
+    // The context-shaped prune-after door: the in-tier-only boundary ruling (2026-08-04,
+    // the surviving half) -- the light prune wrapper STACKS over the driver rather than
+    // demoting its representation for a layer that costs almost nothing.
+    public IDepthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+      => new PruneAfterDepthFirstTreenumerable<TResult>(this, predicate);
   }
 }

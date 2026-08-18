@@ -34,25 +34,13 @@ namespace Copse.Linq
       this ITreenumerable<TSource> source,
       Func<TSource, TResult> selector)
     {
-      // A value selector observes no coordinates, so it composes unconditionally. The fast
-      // path first: a projection-only chain composes selectors and stays on the light
-      // acquisition; anything else composes the projection as a never-rejecting selector.
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
-
-      // The PUBLIC projection citizenship (SELECT_INTO_CAPTURES_DESIGN.md) -- probed BEFORE
-      // the general surface since the fourth-cell door (SCAN_TIER_DESIGN.md): the scan
-      // citizens now also implement ISelectWhere, and a bare Select must keep taking
-      // ComposeSelect (the product ENGINE) rather than minting a fold-carrying driver.
+      // ONE sniff (PUBLIC_COMPOSITION_SURFACE_DESIGN.md): a value selector observes no
+      // coordinates, so it composes unconditionally, and every member's ComposeSelect is
+      // that member's best machinery (the door-optimality law) -- the light wrappers stay
+      // light in-tier, the driver nests a struct leg, the scan citizens re-plant into the
+      // product engine, foreign citizens absorb into their recipe.
       if (source is ISelectTreenumerable<TSource> composableSource)
         return composableSource.ComposeSelect(selector);
-
-      if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
-        // The struct-composed splice (the reunification gate): the projection rides an
-        // inlinable selector-struct leg instead of erasing the chain to delegates.
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
-          relabels: false);
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node));
     }
@@ -105,14 +93,12 @@ namespace Copse.Linq
       Func<TSource, NodePosition, TResult> selector)
     {
       // The join rule (see Where's positional overload): splice only over a label-preserving
-      // chain; otherwise stack, so the selector reads genuinely emitted labels.
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
-
+      // chain; otherwise stack, so the selector reads genuinely emitted labels. The
+      // context-shaped door dispatches per member (the door-optimality law: light stays
+      // light, the driver nests a struct leg, a scan citizen's leg lands in the
+      // fold-carrying driver).
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
+        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }
@@ -130,24 +116,13 @@ namespace Copse.Linq
     {
       // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
       // through a narrow-typed receiver composes on its own representation -- the successor
-      // keeps both dimensions; a narrow chain composes to a narrow successor.
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
-
+      // keeps both dimensions; a narrow chain composes to a narrow successor. The
+      // context-shaped door dispatches per member (the door-optimality law).
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
-        // The struct-composed splice (the reunification gate): the projection rides an
-        // inlinable selector-struct leg instead of erasing the chain to delegates.
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
-          relabels: false);
-
-      if (source is ISelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource)
-        return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
-          relabels: false);
+        return depthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
 
       return new SelectDepthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node));
@@ -158,22 +133,12 @@ namespace Copse.Linq
       Func<TSource, NodePosition, TResult> selector)
     {
       // The join rule (see the composite positional overload): splice only over a
-      // label-preserving chain.
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
-
+      // label-preserving chain. The context-shaped door dispatches per member.
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
-
-      if (source is ISelectPruneAfterDepthFirstTreenumerable<TSource> depthFirstSelectPruneAfterSource) // the tier never relabels
-        return depthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
+        return depthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return new SelectDepthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
@@ -183,23 +148,13 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, TResult> selector)
     {
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource)
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
-
+      // The context-shaped door dispatches per member (the door-optimality law); see the
+      // depth-first overload.
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource)
-        // The struct-composed splice (the reunification gate): the projection rides an
-        // inlinable selector-struct leg instead of erasing the chain to delegates.
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
-          relabels: false);
-
-      if (source is ISelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource)
-        return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node));
+        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
 
       if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node)),
-          relabels: false);
+        return breadthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
 
       return new SelectBreadthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node));
@@ -209,21 +164,13 @@ namespace Copse.Linq
       this IBreadthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
     {
-      if (source is ISelectPruneAfterTreenumerable<TSource> selectPruneAfterSource) // the tier never relabels, so the positional flavor always qualifies
-        return selectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
-
+      // The join rule; the context-shaped door dispatches per member. See the depth-first
+      // overload.
       if (source is ISelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
-
-      if (source is ISelectPruneAfterBreadthFirstTreenumerable<TSource> breadthFirstSelectPruneAfterSource) // the tier never relabels
-        return breadthFirstSelectPruneAfterSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       if (source is ISelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose<TResult, SelectResultSelector<TSource, TResult>>(
-          new SelectResultSelector<TSource, TResult>(nodeContext => selector(nodeContext.Node, nodeContext.Position)),
-          relabels: false);
+        return breadthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return new SelectBreadthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node, nodeContext.Position));

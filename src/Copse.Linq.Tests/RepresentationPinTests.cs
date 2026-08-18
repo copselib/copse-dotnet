@@ -152,9 +152,9 @@ namespace Copse.Linq.Tests
     {
       var hidden = Plain().Select(n => n + "!").Hide();
 
-      Assert.IsFalse(hidden is ISelectTreenumerable<string>, "Hide must strip the citizenship");
+      Assert.IsFalse(hidden is ISelectTreenumerable<string>, "Hide must strip the Select citizenship");
+      Assert.IsFalse(hidden is IPruneAfterTreenumerable<string>, "Hide must strip the PruneAfter citizenship");
       Assert.IsFalse(hidden is ISelectWhereTreenumerable<string>, "Hide must strip the general surface");
-      Assert.IsFalse(hidden is ISelectPruneAfterTreenumerable<string>, "Hide must strip the light tier");
 
       AssertMachine(hidden.Select(n => n.Length),
         typeof(SelectTreenumerable<,>), "Hide.Select takes the wrapper fallback");

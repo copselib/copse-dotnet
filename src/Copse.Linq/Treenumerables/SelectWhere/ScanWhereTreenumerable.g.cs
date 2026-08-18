@@ -78,5 +78,34 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
         new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
+
+    // The context-shaped projection door: the projection nests as a struct leg onto the
+    // selector chain, over the pair (this machine is not in the narrow fan-out, so all
+    // four doors live in this file).
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => Compose<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
+
+    // The public projection door: the same leg, value-flavored, returning the composed
+    // fold-carrying machine (which is itself a citizen through the general surface).
+    public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
+    {
+      return new ScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>>(
+        _InnerDepthFirstFactory,
+        _InnerBreadthFirstFactory,
+        _Accumulator,
+        _Seed,
+        new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
+          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
+        Relabels);
+    }
+
+    // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
+    // stacks over the fold-carrying machine.
+    public ITreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+      => new PruneAfterTreenumerable<TResult>(this, predicate);
+
+    public IPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
+      => new PruneAfterTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

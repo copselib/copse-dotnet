@@ -11,7 +11,7 @@ namespace Copse.Linq.Async.Treenumerables
   // keep their own cheapest machinery), so its IN-TIER arrow is delegate-bound by nature;
   // spliced over through the inherited general Compose, its chain rides as one
   // FuncResultSelector leaf under struct plumbing (the open seal).
-  internal sealed class AsyncSelectPruneAfterTreenumerable<TSource, TResult> : IAsyncSelectPruneAfterTreenumerable<TResult>
+  internal sealed partial class AsyncSelectPruneAfterTreenumerable<TSource, TResult> : IAsyncSelectWhereTreenumerable<TResult>
   {
     public AsyncSelectPruneAfterTreenumerable(
       IAsyncTreenumerable<TSource> source,

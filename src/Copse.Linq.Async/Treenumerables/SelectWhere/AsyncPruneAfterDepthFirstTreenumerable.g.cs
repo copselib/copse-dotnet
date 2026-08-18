@@ -13,7 +13,7 @@ namespace Copse.Linq.Async.Treenumerables
   // label-preserving (survivors keep their coordinates), so even positional lambdas compose
   // across it -- in-tier through the light doors, and since the seal opened (2026-08-18)
   // a rejecting operator splices over it through the inherited general Compose.
-  internal sealed class AsyncPruneAfterDepthFirstTreenumerable<TNode> : IAsyncSelectPruneAfterDepthFirstTreenumerable<TNode>
+  internal sealed partial class AsyncPruneAfterDepthFirstTreenumerable<TNode> : IAsyncSelectWhereDepthFirstTreenumerable<TNode>
   {
     public AsyncPruneAfterDepthFirstTreenumerable(
       IAsyncDepthFirstTreenumerable<TNode> source,
