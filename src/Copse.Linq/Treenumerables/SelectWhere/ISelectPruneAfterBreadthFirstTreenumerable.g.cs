@@ -35,6 +35,16 @@ namespace Copse.Linq.Treenumerables
     // Compose a projection, staying on the tier's light machinery.
     IBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
 
+    // THE SEAL EXPERIMENT (reunification phase 2, 2026-08-18): a rejecting operator's
+    // struct leg splices OVER this tier's composed closure -- the closure rides as ONE
+    // FuncResultSelector leaf (the delegate the chain already pays per visit today), the
+    // splice plumbing and the rejecting leg are structs. This is the donation whose
+    // Func-shaped form caused the 2026-08-04 Mixed regression; the Mixed rows rule on it.
+    IBreadthFirstTreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
+
     // Compose a prune-after (keep the node, shed its subtree on a match), staying on the
     // tier's light machinery.
     IBreadthFirstTreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> predicate);

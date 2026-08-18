@@ -32,6 +32,20 @@ namespace Copse.Linq.Async.Treenumerables
         _Source, SelectWhereComposition.SelectPruneAfterThenSelect(_ResultSelector, selector));
     }
 
+    // The seal experiment's donation: the chain's composed closure rides as one
+    // FuncResultSelector leaf; the splice and the rejecting leg are structs.
+    public IAsyncTreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+    {
+      return new SelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
+          new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),
+        relabels);
+    }
+
     // A prune-after composes in-tier.
     public IAsyncTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
     {

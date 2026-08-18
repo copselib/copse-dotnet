@@ -32,6 +32,20 @@ namespace Copse.Linq.Treenumerables
 
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE
     // wrapper by predicate union.
+    // The seal experiment's donation: the predicate rides its own struct leaf -- this
+    // wrapper's whole donation is delegate-free plumbing (one leaf lambda, as always).
+    public IDepthFirstTreenumerable<TOuterResult> ComposeRejecting<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>
+    {
+      return new SelectWhereDepthFirstTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>>(
+        _Source,
+        new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>(
+          new PruneAfterResultSelector<TNode>(_Predicate), outerSelector),
+        relabels);
+    }
+
     public IDepthFirstTreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> outerPredicate)
     {
       return new PruneAfterDepthFirstTreenumerable<TNode>(

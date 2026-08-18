@@ -404,17 +404,20 @@ namespace Copse.Linq.Tests
     // wrapper has no struct leg to donate, so absorbing it traded a near-free passthrough
     // layer for an all-delegate chain (the Where.Triangle_Mixed regression, +25%).
     [TestMethod]
-    public void LightTier_StaysSealedWhenARejectingOperatorJoins()
+    public void LightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen()
     {
-      var stacked = Tree("a(b(d,e),c)")
+      // THE SEAL OPENED (reunification phase 2, 2026-08-18, Jason ruling: ~6% on short DFT
+      // mixes buys a total composition algebra): the light chain donates struct legs and the
+      // rejecting operator splices OVER it -- ONE driver, any order. CI Mixed series confirms.
+      var joined = Tree("a(b(d,e),c)")
         .Select(n => n + "!")
         .PruneAfter(n => n == "b!")
         .Where(n => n != "c!");
 
-      Assert.IsInstanceOfType(
-        stacked,
-        typeof(SelectWhereTreenumerable<string, string, WhereResultSelector<string>>),
-        "a rejecting operator must stack its struct-selector driver over the sealed light tier, not convert it");
+      Assert.AreEqual(
+        typeof(SelectWhereTreenumerable<,,>),
+        joined.GetType().GetGenericTypeDefinition(),
+        "a rejecting operator joining a light prune chain must splice into ONE driver -- the seal is open");
     }
   }
 }

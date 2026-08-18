@@ -133,7 +133,9 @@ namespace Copse.Linq.Tests
     }
 
     // The tier seal, narrow half (boundary ruling 2026-08-04): rejecting operators stack
-    // over the sealed light tier -- see CompositionTests.LightTier_StaysSealedWhenARejectingOperatorJoins.
+    // over the sealed NARROW light tier. (The composite seal OPENED 2026-08-18 — see
+    // CompositionTests.LightTier_JoinsWhenARejectingOperatorArrives_TheSealIsOpen; the narrow
+    // donation lands with the demolition pass, and this pin flips with it.)
     [TestMethod]
     public void NarrowLightTier_StaysSealedWhenARejectingOperatorJoins()
     {
