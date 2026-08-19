@@ -17,7 +17,7 @@
 ## 0. Naming grammar (ratified 2026-08-14)
 
 The surface's prefixes are a grammar, not a habit. Five families, two minor conventions,
-one law — new surface must name itself by these:
+and the rulings below — new surface must name itself by these:
 
 | Prefix | Meaning | The test |
 |---|---|---|
@@ -39,6 +39,25 @@ receiver-recovery); a predicate search is consumer LINQ over `GetHandlesWithValu
 one receiver-recovery exception), and its honest miss is the **empty sequence** — flow it
 into a result-typed consumer to keep the miss typed. Never `FirstOrDefault` over ordinal
 handles: handle 0 is the root, and the miss masquerades as it.
+
+**The result-struct admission rule** (ratified 2026-08-16, closing the result-struct-vs-
+`Option` question): *a result struct earns its own name when its miss has domain meaning.*
+`ParentResult.HasParent` false says "this handle is a root"; `ChildResult.HasChild` false
+says "past the last child"; `TreeWalkerResult.HasWalker` false says "the step had nowhere
+to stand." Three different noes, three names — the recording rule applied to misses. A
+single generic `Option<T>`/`Maybe<T>` across the surface was considered and DECLINED: it
+collapses those noes into one indistinguishable absence and erases the very fact the
+caller reads next. (The unrelated `Option`-labelled sentinel completion of the carrier is
+a separate question, canonized as semantics and refused as representation in
+CATEGORY_THEORY_SURVEY.md §11.) Two clauses follow from the rule:
+
+- **Shape follows audience.** A miss that never crosses the public surface may ride a
+  named tuple — `TryGetPreorderStore`'s `(bool HasStore, PreorderArrayStore<TValue> Store)`
+  is internal and stays a tuple. The two-channel doctrine is a promise made to *consumers*:
+  if that door is ever published, the tuple becomes `StoreResult` in the same commit.
+- **By value, never `out`.** The result struct is the async spelling of the try-pattern —
+  it stores nothing (no frame bloat) and is legal in an async method, which is why one
+  shape serves both colors.
 
 **One extension class per color** (`Treenumerable` / `AsyncTreenumerable`, the
 `Enumerable`-idiom name — the folder wears the `*Extensions` suffix, the class does not):
