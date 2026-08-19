@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787116407508,
+  "lastUpdate": 1787117891931,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -16830,6 +16830,150 @@ window.BENCHMARK_DATA = {
             "value": 208761234.14285713,
             "unit": "ns",
             "range": "± 743599.7049458758"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "51950ea3bb9de1a8d8e72e8f38da675674210465",
+          "message": "Carry the door move into the prose it invalidated\n\nThe merge brought the code but not its documentation. Three places still\ndescribed Relabels as an interface member callers read.\n\nCode comments (async sources; sync twins regenerated):\n- IAsyncSelectWhereTreenumerable's header said the operator \"knows its\n  own flavor and reads Relabels for the join rule\". It no longer reads\n  anything: it knows its flavor, which is what PICKS THE DOOR, and the\n  member decides. Replaced with THE TWO DOORS -- Compose is\n  position-blind and always splices; ComposePositional is\n  position-reading and the member decides splice-or-stack, because only\n  it knows whether its representation moves labels.\n- IAsyncSelectTreenumerable (PUBLIC) told third-party citizens that the\n  positional Select flavor takes the wrapper \"the same guard the internal\n  lattice applies through Relabels\". Now: through its ComposePositional\n  door. This one mattered most -- it is the contract text an implementer\n  reads.\n\nLeft alone deliberately: AsyncSelectWhereTreenumerable's\n\"see _Relabels, proven always true\" cites the surviving PRIVATE field to\nexplain why the driver's door consults no flag. Still accurate, and the\npoint of the comment.\n\nDesign docs:\n- OPERATOR_COMPOSITION_DESIGN.md gains a closing \"The door move\" section\n  (the rule unchanged, the enforcement relocated, what each tier decides,\n  and why stack-always is exact rather than conservative -- the driver's\n  Relabels was proven always true by a throw-on-false probe against the\n  full battery on two branches). The \"interface is Relabels plus ONE\n  total method\" line is marked superseded rather than rewritten, since it\n  records a dated decision.\n- PUBLIC_COMPOSITION_SURFACE_DESIGN.md's stage-3 audit question (\"does\n  any internal-concept member have a public-typed signature? Relabels is\n  the known one\") is marked RESOLVED: it left the interface entirely\n  rather than being hand-checked into an explicit implementation, so\n  there is nothing left to audit.\n\n24,598 green; no codegen drift.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T05:17:58Z",
+          "tree_id": "470e70da90d708f4de5b6770801863d41819ac2d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/51950ea3bb9de1a8d8e72e8f38da675674210465"
+        },
+        "date": 1787117864121,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14035629.926041666,
+            "unit": "ns",
+            "range": "± 64016.49013458745"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22119394.891826924,
+            "unit": "ns",
+            "range": "± 132783.1884371447"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3929962.6434151786,
+            "unit": "ns",
+            "range": "± 12112.605893559114"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3928269.7880208334,
+            "unit": "ns",
+            "range": "± 7991.33941035417"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 112475786.58571431,
+            "unit": "ns",
+            "range": "± 284534.2983528053"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 138880742.93333334,
+            "unit": "ns",
+            "range": "± 894613.6117441361"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 52985909.67307692,
+            "unit": "ns",
+            "range": "± 258171.68187483214"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50177606.3,
+            "unit": "ns",
+            "range": "± 146965.7443664188"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 43231594.80555556,
+            "unit": "ns",
+            "range": "± 142467.38436806377"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35581568.70952381,
+            "unit": "ns",
+            "range": "± 442688.89060708793"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26625409.07142857,
+            "unit": "ns",
+            "range": "± 26909.488906759656"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18262185.674479168,
+            "unit": "ns",
+            "range": "± 42864.2571498951"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55168228.35714286,
+            "unit": "ns",
+            "range": "± 268361.0223788619"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 87656689.03333333,
+            "unit": "ns",
+            "range": "± 680818.4539414322"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 15699968.263392856,
+            "unit": "ns",
+            "range": "± 11645.168034113462"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14389644.278846154,
+            "unit": "ns",
+            "range": "± 14896.048256743466"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 438980390.35714287,
+            "unit": "ns",
+            "range": "± 593862.1760581784"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 572588103.5384616,
+            "unit": "ns",
+            "range": "± 1047509.3855053374"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 210175145.15053767,
+            "unit": "ns",
+            "range": "± 3620768.4908436346"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 204700476.31896552,
+            "unit": "ns",
+            "range": "± 8944396.840215763"
           }
         ]
       }
