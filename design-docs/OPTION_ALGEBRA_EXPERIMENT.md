@@ -19,6 +19,8 @@
 | `868bb6c9` | **A** | `Option<TValue>` in Copse.Vocabulary; `ChildResult`, `ParentResult`, `AsyncTreeWalkerResult` and their three generated twins deleted; every probe, pull and step re-typed |
 | `3f44ce60` | **B** | the algebra spent at the call sites: `Map` at the doors and the steps, `TryGetValue` in the climbs and axis scans, `AsyncOption` for awaited chains |
 | `af21dafb` | **C** | the algebra taken back OUT of the three walker steps (the per-node call), everything else in B kept |
+| `2d4e3dfb` | **D** | the buffer's two internal tuple doors (`TryGetPreorderStore`, `TryGetNodeCount`) take the option; the admission rule's "shape follows audience" clause corrected |
+| `07bf23ad` | **E** | every call site rewritten for readability over terseness: eleven guards and loops go back to probe-guard-use |
 
 `Option<TValue>` is a `readonly struct` carrying a public `HasValue` flag beside a public
 `Value` field -- deliberately the same shape the deleted family had, so stage A measures
@@ -83,10 +85,15 @@ Whole branch, `cc1bb101..HEAD`, 93 files:
 
 | | insertions | deletions | net |
 |---|---|---|---|
-| new (`Option.cs` 106, `AsyncOption.cs` 53) | 159 | 0 | +159 |
-| existing hand-written sources (59 files) | 346 | 516 | **-170** |
-| generated twins (32 files) | 138 | 284 | **-146** |
-| **total** | 643 | 800 | **-157** |
+| new (`Option.cs`, `AsyncOption.cs`) | 159 | 0 | +159 |
+| existing hand-written sources (60 files) | 372 | 491 | **-119** |
+| generated twins (33 files) | 160 | 257 | **-97** |
+| **total** | 691 | 748 | **-57** |
+
+These are the numbers AFTER stage E. Stage B's collapse read -170 hand-written and -146
+generated; writing the call sites for readability instead of terseness gave about 60 lines
+back, and the figures above are the honest ones to rule on. What survives the give-back is
+the type swap and the doors -- not clever call sites.
 
 The 159 new lines replace 160 deleted ones (six type files, three of them generated), so
 the type swap is a wash by construction and everything below the line is call-site
@@ -103,7 +110,8 @@ collapse. Three shapes carried nearly all of it:
   `GetHandles`, `GetHandlesWithValues`, `Invert`, `LeaffixScan` and the axes shed their
   break-guard and their temporary the same way.
 
-Explicit `.HasValue` reads in hand-written sources: **117 → 97**.
+Explicit `.HasValue` reads in hand-written sources: **117 → 115** (stage B drove it to 97;
+stage E put the guards back).
 
 Where the algebra does NOT help, and the code was left alone:
 
@@ -181,6 +189,15 @@ modern async leg accepts it. Capture-free algebra means naming the state twice.
 3. If no: the admission rule stands as written, and this branch is the evidence for it --
    §0 gains a line pointing here so the question is closed by measurement rather than
    re-argued.
+
+4. `TryGetValue` **stays, for now** (ruled 2026-08-19). Every objection to it is about the
+   NAME -- `TryGetPreorderStore().TryGetValue(…)` says try twice, and §0's `TryGet` means a
+   door whose miss is typed, which this member's `bool`-and-`out` miss is not. Every argument
+   for it is about the SHAPE: a loop condition is the one place C# demands a `bool` with no
+   way to bind, the C# 7.3 floor (enforced by the multi-target sync legs) rules out the
+   pattern-matching alternatives, and it adds no expressive power, so it cannot make the type
+   incoherent. After stage E its only callers are the five sync loops in the walker axes.
+   Open: keep the BCL-familiar name, or take it out of the `Try` family (`IsSome(out …)`).
 
 Whichever way it goes, two artifacts here are worth keeping regardless: the codegen's
 depth-independent `ValueTask<X>` unwrap, and the per-node-delegate finding -- which applies

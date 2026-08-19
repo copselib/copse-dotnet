@@ -44,8 +44,15 @@ namespace Copse
     /// and the miss would masquerade as it.</summary>
     public TValue GetValueOrDefault() => Value;
 
-    /// <summary>The try-pattern face, for callers standing outside an <c>await</c>: <c>true</c>
-    /// with the value on a hit, <c>false</c> with <c>default</c> on a miss.</summary>
+    /// <summary>Test and bind in one expression, for the one place C# offers nothing else: a
+    /// loop condition demands a <c>bool</c> and gives no way to name the value it guards. This is
+    /// not a second door -- the door's miss is already typed, and this option IS that miss; it is
+    /// the adapter between the type and the language's statement grammar. Anywhere a statement
+    /// will do, read <see cref="HasValue"/> and <see cref="Value"/> instead, or take the algebra.
+    ///
+    /// <para>Assigns <paramref name="value"/> on the miss too (<c>default</c>, the try-pattern's
+    /// own contract), so a loop that reuses its stance as the target ends holding a default. Fine
+    /// where the variable dies with the loop; a bug the moment it is read after.</para></summary>
     public bool TryGetValue(out TValue value)
     {
       value = Value;
