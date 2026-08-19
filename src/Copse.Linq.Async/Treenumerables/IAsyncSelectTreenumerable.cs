@@ -15,7 +15,7 @@ namespace Copse.Linq.Async.Treenumerables
   /// no default interface members, so any member added later would break every
   /// implementer): one method, value-selector flavor only -- the positional Select flavor
   /// always takes the wrapper over citizens, the same guard the internal lattice applies
-  /// through <c>Relabels</c>.</para>
+  /// through its <c>ComposePositional</c> door.</para>
   ///
   /// <para>The laws (the admission test; the battery in Copse.TestUtils pins them for any
   /// claimant): <c>ComposeSelect</c> must be extensionally equal to wrapper-Select over

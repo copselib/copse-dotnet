@@ -6,8 +6,16 @@ namespace Copse.Linq.Async.Treenumerables
   // The composition recipe surface (design-docs/OPERATOR_COMPOSITION_DESIGN.md): appending an operator is
   // ONE call -- the wrapper unwraps its own mapping, composes the result selector onto it, discards
   // itself, and constructs the successor treenumerable. The operator composes with bare
-  // lambdas (it knows its own flavor and reads Relabels for the join rule);
-  // the wrapper, which knows the erased source type, binds it and constructs.
+  // lambdas -- it knows its own FLAVOR, so it picks the door; the wrapper, which knows the
+  // erased source type, binds it and constructs.
+  //
+  // THE TWO DOORS (the door move, 2026-08-19): Compose is position-BLIND and always splices.
+  // ComposePositional is position-READING, and the MEMBER decides splice-or-stack -- only it
+  // knows whether its own representation moves labels. The join rule ("a positional leg is
+  // entitled to its input tree's emitted labels, so it may splice only while the chain is
+  // label-preserving") therefore has ONE home per member instead of being re-derived from a
+  // published Relabels flag at every positional call site. The flag survives as private state
+  // where a member still needs it; it is no longer part of this contract.
   //
   // ONE method covers the whole selector algebra: a projection is just a result selector that never
   // rejects (its results carry TraverseAll), and the composition law handles it without

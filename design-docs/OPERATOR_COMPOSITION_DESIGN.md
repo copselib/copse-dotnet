@@ -170,7 +170,8 @@ make this cell permanently moot.
   hidden-iterator precedent is the considered one. Internal→public later is free.
 - **Compose-in-one-step, ONE method (Jason's original `Compose` model, restored 2026-07-16
   after the map middleman was reviewed out; collapsed to a single method 2026-07-17)**: the
-  interface is `Relabels` plus ONE total method —
+  interface is `Relabels` plus ONE total method (**superseded 2026-08-19 — see "The door
+  move" at the end of this document: `Relabels` left the interface**) —
   `Compose<TOut>(resultSelector, relabels)` where a result selector is
   `Func<NodeContext<TNode>, SelectWhereResult<TOut>>` — returning the successor
   treenumerable directly: the wrapper unwraps its own mapping, composes, discards itself,
@@ -476,3 +477,51 @@ flowing into MoveNext are a separate channel, handled once, at the final (real) 
    take the struct door; local Mixed landed BELOW the old sealed baseline — the tax
    inverted once the whole splice surface went struct.
 3. (Only on demonstrated need) context-ful Where∘Where, DFT-first.
+
+---
+
+## The door move (2026-08-19) — `Relabels` leaves the interface
+
+**Status: SHIPPED on main.** Supersedes every description above of `Relabels` as an
+interface member; the *rule* it enforced is unchanged.
+
+The join rule is: *a positional leg is entitled to its input tree's emitted labels, so it may
+splice only while the chain is label-preserving.* It was enforced by publishing a `Relabels`
+bool on the composition interface and having every positional operator overload read it and
+decide for itself:
+
+```csharp
+if (source is IAsyncSelectWhereTreenumerable<TNode> s && !s.Relabels)
+    return s.Compose(...);          // splice
+return new AsyncSelectWhereTreenumerable<...>(source, ...);   // stack
+```
+
+That put one law in ~20 call sites, and made a member's internal representation part of its
+contract — a bare bool that every implementer had to answer honestly, and that the public
+surface work then had to hand-check as a compiler-blind case.
+
+**The move**: the interface exposes two doors instead of a flag.
+
+| door | reads positions? | who decides |
+|---|---|---|
+| `Compose` | no | nobody — a position-blind leg always splices |
+| `ComposePositional` | yes | **the member**, because only it knows whether its own representation moves labels |
+
+Both doors come in the context and struct shapes. The operator still knows its own lambda's
+flavor — that is what picks the door — but it no longer knows or asks *how* the member will
+answer.
+
+**What each member decides.** The light tier (`Select`, `PruneAfter`) never relabels, so its
+`ComposePositional` splices in-tier. The drivers (`SelectWhere`, `ScanWhere`) always stack a
+wrapper: a driver exists *because* something rejected, and rejection is what moves labels, so
+a spliced positional leg would read inner coordinates the driver does not publish. No flag is
+consulted at the door — the answer is a property of the representation, stated once where the
+representation lives.
+
+`Relabels` survives as private state (`_Relabels`) where a member still needs it internally,
+including the `relabels` parameter on `Compose`, which is how a splicing operator reports
+whether *it* relabels. What left is the published getter.
+
+**Why it is safe**: the driver's `Relabels` was proven always true by a throw-on-false probe
+run against the full battery on two independent branches, so the stack-always rule is not a
+conservative approximation — it is the same answer the flag gave.

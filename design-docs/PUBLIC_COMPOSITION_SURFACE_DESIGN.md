@@ -179,8 +179,12 @@ all collapsing that matters.
    `CaptureThrough` via the projection-consumer shapes) — those cannot compile as
    implicit public.
 3. **Hand-check the compiler-blind cases**: internal-concept members with public-typed
-   signatures — `Relabels` (a bare bool) is the known one. Audit question: "does any
+   signatures — `Relabels` (a bare bool) was the known one. Audit question: "does any
    implicit public member remain that isn't the ctor or a public door?"
+   **RESOLVED 2026-08-19 by the door move**: `Relabels` left the interface entirely rather
+   than being hand-checked into an explicit implementation. The join rule moved to a
+   `ComposePositional` door where the member decides splice-or-stack, so there is no longer
+   an internal-concept member with a public-typed signature to audit.
 4. `CaptureThrough` stays an explicit implementation of the internal
    `IAsyncProjectionSource` — invisible publicly, reachable by our capture operators'
    sniff. **This preserves the PARKED status of compose-left** (third parties get
