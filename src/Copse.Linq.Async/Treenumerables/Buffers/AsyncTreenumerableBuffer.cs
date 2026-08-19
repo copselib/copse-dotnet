@@ -63,9 +63,7 @@ namespace Copse.Linq.Async.Treenumerables
       var topology = await EnsureTopologyAsync().ConfigureAwait(false);
       var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
 
-      return rootResult.HasValue
-        ? new Option<AsyncTreeWalker<TValue, int>>(new AsyncTreeWalker<TValue, int>(topology, rootResult.Value.Node))
-        : default;
+      return rootResult.Map(topology, (boundTopology, root) => new AsyncTreeWalker<TValue, int>(boundTopology, root.Node));
     }
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN

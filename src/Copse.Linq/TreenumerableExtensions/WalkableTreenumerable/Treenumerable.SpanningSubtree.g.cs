@@ -103,27 +103,15 @@ namespace Copse.Linq
       var firstRootPath = new HashSet<THandle>();
       var stance = first;
 
-      while (true)
-      {
+      do
         firstRootPath.Add(stance.Focus);
-
-        var up = stance.MoveToParent();
-        if (!up.HasValue)
-          break;
-
-        stance = up.Value;
-      }
+      while ((stance.MoveToParent()).TryGetValue(out stance));
 
       var candidate = second;
 
       while (!firstRootPath.Contains(candidate.Focus))
-      {
-        var up = candidate.MoveToParent();
-        if (!up.HasValue)
+        if (!(candidate.MoveToParent()).TryGetValue(out candidate))
           return default;
-
-        candidate = up.Value;
-      }
 
       return new Option<TreeWalker<TValue, THandle>>(candidate);
     }

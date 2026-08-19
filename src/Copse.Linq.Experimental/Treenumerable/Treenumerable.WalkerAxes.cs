@@ -17,14 +17,10 @@ namespace Copse.Linq.Experimental
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
-      var step = source.GetTreeWalkerAt(handle).MoveToParent();
+      var stance = source.GetTreeWalkerAt(handle);
 
-      while (step.HasValue)
-      {
-        yield return step.Value.Focus;
-
-        step = step.Value.MoveToParent();
-      }
+      while (stance.MoveToParent().TryGetValue(out stance))
+        yield return stance.Focus;
     }
 
     public static IEnumerable<THandle> GetAncestorsAndSelf<TValue, THandle>(
@@ -42,14 +38,9 @@ namespace Copse.Linq.Experimental
       THandle handle)
     {
       var walker = source.GetTreeWalkerAt(handle);
-      var step = walker.MoveToParent();
 
-      while (step.HasValue)
-      {
-        walker = step.Value;
-
-        step = walker.MoveToParent();
-      }
+      while (walker.MoveToParent().TryGetValue(out var parent))
+        walker = parent;
 
       return walker.Focus;
     }
@@ -60,14 +51,10 @@ namespace Copse.Linq.Experimental
       THandle handle)
     {
       var depth = 0;
-      var step = source.GetTreeWalkerAt(handle).MoveToParent();
+      var stance = source.GetTreeWalkerAt(handle);
 
-      while (step.HasValue)
-      {
+      while (stance.MoveToParent().TryGetValue(out stance))
         depth++;
-
-        step = step.Value.MoveToParent();
-      }
 
       return depth;
     }
@@ -78,29 +65,15 @@ namespace Copse.Linq.Experimental
     {
       var walker = source.GetTreeWalkerAt(handle);
 
-      for (var childIndex = 0; ; childIndex++)
-      {
-        var step = walker.MoveToChild(childIndex);
-
-        if (!step.HasValue)
-          yield break;
-
-        yield return new NodeAndSiblingIndex<THandle>(step.Value.Focus, childIndex);
-      }
+      for (var childIndex = 0; walker.MoveToChild(childIndex).TryGetValue(out var child); childIndex++)
+        yield return new NodeAndSiblingIndex<THandle>(child.Focus, childIndex);
     }
 
     public static IEnumerable<NodeAndSiblingIndex<THandle>> GetRootNodes<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
     {
-      for (var rootIndex = 0; ; rootIndex++)
-      {
-        var rootResult = source.TryGetTreeWalkerAtRootIndex(rootIndex);
-
-        if (!rootResult.HasValue)
-          yield break;
-
-        yield return new NodeAndSiblingIndex<THandle>(rootResult.Value.Focus, rootIndex);
-      }
+      for (var rootIndex = 0; source.TryGetTreeWalkerAtRootIndex(rootIndex).TryGetValue(out var root); rootIndex++)
+        yield return new NodeAndSiblingIndex<THandle>(root.Focus, rootIndex);
     }
 
     // The derived count -- deliberately NOT on the contract: the step is finite work per call

@@ -227,14 +227,11 @@ namespace Copse.Linq
       var subtreeSizes = new List<int>();
       var frames = new Stack<(TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
-      for (var rootIndex = 0; ; rootIndex++)
+      for (var rootIndex = 0;
+        (buffer.TryGetTreeWalkerAtRootIndex(rootIndex)).TryGetValue(out var rootStance);
+        rootIndex++)
       {
-        var rootStance = buffer.TryGetTreeWalkerAtRootIndex(rootIndex);
-
-        if (!rootStance.HasValue)
-          break;
-
-        frames.Push(OpenLeaffixFrame(rootStance.Value, results, subtreeSizes));
+        frames.Push(OpenLeaffixFrame(rootStance, results, subtreeSizes));
 
         while (frames.Count > 0)
         {

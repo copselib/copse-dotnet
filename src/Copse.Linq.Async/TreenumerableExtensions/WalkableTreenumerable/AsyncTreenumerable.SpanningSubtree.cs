@@ -101,27 +101,15 @@ namespace Copse.Linq
       var firstRootPath = new HashSet<THandle>();
       var stance = first;
 
-      while (true)
-      {
+      do
         firstRootPath.Add(stance.Focus);
-
-        var up = await stance.MoveToParentAsync().ConfigureAwait(false);
-        if (!up.HasValue)
-          break;
-
-        stance = up.Value;
-      }
+      while ((await stance.MoveToParentAsync().ConfigureAwait(false)).TryGetValue(out stance));
 
       var candidate = second;
 
       while (!firstRootPath.Contains(candidate.Focus))
-      {
-        var up = await candidate.MoveToParentAsync().ConfigureAwait(false);
-        if (!up.HasValue)
+        if (!(await candidate.MoveToParentAsync().ConfigureAwait(false)).TryGetValue(out candidate))
           return default;
-
-        candidate = up.Value;
-      }
 
       return new Option<AsyncTreeWalker<TValue, THandle>>(candidate);
     }

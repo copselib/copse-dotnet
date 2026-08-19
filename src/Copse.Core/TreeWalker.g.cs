@@ -24,7 +24,7 @@ namespace Copse
   /// have a value to return, so the unfocused state is not a member of the carrier. Every
   /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
   /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
-  /// <c>default</c> instances anyway; per the <see cref="Option{TValue}"/> convention,
+  /// <c>default</c> instances anyway; per the <see cref="ChildResult{TNode}"/> convention,
   /// that value is invalid and must not be used.</para>
   ///
   /// <para>This type carries the CARRIER and the navigation the contract alone affords:
@@ -79,24 +79,14 @@ namespace Copse
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToParent()
-    {
-      var parentResult = Topology.TryGetParent(Focus);
-
-      return parentResult.HasValue
-        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, parentResult.Value))
-        : default;
-    }
+      => (Topology.TryGetParent(Focus))
+        .Map(Topology, (topology, parent) => new TreeWalker<TValue, THandle>(topology, parent));
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or an empty result past the last child.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToChild(int childIndex)
-    {
-      var childResult = Topology.TryGetChildAt(Focus, childIndex);
-
-      return childResult.HasValue
-        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, childResult.Value.Node))
-        : default;
-    }
+      => (Topology.TryGetChildAt(Focus, childIndex))
+        .Map(Topology, (topology, child) => new TreeWalker<TValue, THandle>(topology, child.Node));
 
     /// <summary>The third step: a stance at the root at <paramref name="rootIndex"/> of the
     /// SAME topology. Roots share no parent/child edge, so this is the one adjacency the other
@@ -105,13 +95,8 @@ namespace Copse
     /// the step set covers the topology's whole probe surface, so a walker never has to be
     /// opened up for its topology.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToRoot(int rootIndex)
-    {
-      var rootResult = Topology.TryGetRootAt(rootIndex);
-
-      return rootResult.HasValue
-        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, rootResult.Value.Node))
-        : default;
-    }
+      => (Topology.TryGetRootAt(rootIndex))
+        .Map(Topology, (topology, root) => new TreeWalker<TValue, THandle>(topology, root.Node));
 
   }
 }

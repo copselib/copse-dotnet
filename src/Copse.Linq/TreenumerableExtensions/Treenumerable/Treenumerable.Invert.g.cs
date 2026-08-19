@@ -182,15 +182,10 @@ namespace Copse.Linq
 
       var rootStances = new List<TreeWalker<TNode, int>>();
 
-      for (var rootIndex = 0; ; rootIndex++)
-      {
-        var rootStance = buffer.TryGetTreeWalkerAtRootIndex(rootIndex);
-
-        if (!rootStance.HasValue)
-          break;
-
-        rootStances.Add(rootStance.Value);
-      }
+      for (var rootIndex = 0;
+        (buffer.TryGetTreeWalkerAtRootIndex(rootIndex)).TryGetValue(out var rootStance);
+        rootIndex++)
+        rootStances.Add(rootStance);
 
       foreach (var rootStance in rootStances)
         stack.Push((rootStance, -1));
@@ -212,15 +207,10 @@ namespace Copse.Linq
 
         stack.Push((default, outputIndex));
 
-        for (var childIndex = 0; ; childIndex++)
-        {
-          var step = stance.MoveToChild(childIndex);
-
-          if (!step.HasValue)
-            break;
-
-          stack.Push((step.Value, -1));
-        }
+        for (var childIndex = 0;
+          (stance.MoveToChild(childIndex)).TryGetValue(out var child);
+          childIndex++)
+          stack.Push((child, -1));
       }
 
       return new PreorderArrayStore<TNode>(mirroredValues.ToArray(), mirroredSubtreeSizes.ToArray());

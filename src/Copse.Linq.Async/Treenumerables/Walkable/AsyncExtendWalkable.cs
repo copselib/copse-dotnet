@@ -49,9 +49,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
 
-      return rootResult.HasValue
-        ? new Option<AsyncTreeWalker<TResult, THandle>>(new AsyncTreeWalker<TResult, THandle>(this, rootResult.Value.Node))
-        : default;
+      return rootResult.Map(this, (topology, root) => new AsyncTreeWalker<TResult, THandle>(topology, root.Node));
     }
   }
 }

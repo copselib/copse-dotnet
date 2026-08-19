@@ -61,9 +61,7 @@ namespace Copse.Linq.Treenumerables
     {
       var rootResult = TryGetRootAt(0);
 
-      return rootResult.HasValue
-        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(this, rootResult.Value.Node))
-        : default;
+      return rootResult.Map(this, (topology, root) => new TreeWalker<TValue, THandle>(topology, root.Node));
     }
   }
 }

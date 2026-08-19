@@ -26,13 +26,10 @@ namespace Copse.Linq
       // through the walker seam for the k-th root (the sentinel's child group).
       var door = await source.TryGetTreeWalkerAsync().ConfigureAwait(false);
 
-      if (!door.HasValue)
-        return default;
-
-      if (rootIndex == 0)
-        return door;
-
-      return await door.Value.MoveToRootAsync(rootIndex).ConfigureAwait(false);
+      // Root 0 is the door's own stance -- answer it without a second probe.
+      return rootIndex == 0
+        ? door
+        : await door.BindAsync(rootIndex, (index, walker) => walker.MoveToRootAsync(index)).ConfigureAwait(false);
     }
   }
 }

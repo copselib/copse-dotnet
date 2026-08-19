@@ -126,9 +126,7 @@ namespace Copse.Linq.Async.Treenumerables
       var topology = EnsureTopology();
       var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
 
-      return rootResult.HasValue
-        ? new Option<AsyncTreeWalker<TValue, int>>(new AsyncTreeWalker<TValue, int>(topology, rootResult.Value.Node))
-        : default;
+      return rootResult.Map(topology, (boundTopology, root) => new AsyncTreeWalker<TValue, int>(boundTopology, root.Node));
     }
 
     private AsyncMemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()

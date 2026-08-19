@@ -65,9 +65,7 @@ namespace Copse.Linq.Treenumerables
       var topology = EnsureTopology();
       var rootResult = topology.TryGetRootAt(0);
 
-      return rootResult.HasValue
-        ? new Option<TreeWalker<TValue, int>>(new TreeWalker<TValue, int>(topology, rootResult.Value.Node))
-        : default;
+      return rootResult.Map(topology, (boundTopology, root) => new TreeWalker<TValue, int>(boundTopology, root.Node));
     }
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
