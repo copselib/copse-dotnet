@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787163292781,
+  "lastUpdate": 1787163293312,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -49507,6 +49507,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
             "value": 346248,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "10f5cda0a608fce2fa7e45ad93e6abbcf66e8cf5",
+          "message": "One construction home per driver: Splice\n\nThe public projection door (ComposeSelect) and the internal one (the context-shaped\nCompose) build the same successor and differ only in whether the leg reads a value or a\ncontext. In the two driver classes each was spelled out in full: ScanWhere's ComposeSelect\nwas a 12-line re-statement of the fold-carrying recipe, SelectWhere's a 6-line\nre-statement of the nested-selector construction. A second home for a construction is a\nplace for two doors to drift apart.\n\nBoth classes now have a private Splice that performs the one construction and returns the\nCONCRETE successor type; every door forwards to it. The concrete return is the whole\nmechanism -- an interface implementation must match its declared return type exactly, so\nno door can serve another door's return type, but a private helper can serve them all.\n\nNot applied where doors legitimately differ: RootfixScan's ComposeSelect builds the\nproduct citizen while its internal projection door builds the fold-carrying driver (the\nrootfix door ruling, 07a70f3 -- door-optimality working as intended). The light tier's\npairs are two-line bodies differing by an adapter lambda; a helper would add lines there.\n\nAccounting, stated plainly: +34 lines across 10 files. This one does not shrink the code.\nIt removes two duplicate constructions and adds four helpers, because the narrow twins\ncarry Splice through the fan-out without having a citizenship part to dedupe against. The\nwin is one construction per class and three driver classes that read alike.\n\nFull battery 24,598 green, Stage 0 representation pins unchanged.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:51:50Z",
+          "tree_id": "b51e1190b2e1a8ae301aa6a5f8d91e269c7abf26",
+          "url": "https://github.com/copselib/copse-dotnet/commit/10f5cda0a608fce2fa7e45ad93e6abbcf66e8cf5"
+        },
+        "date": 1787163293200,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8408116,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 764,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 307,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 3492,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 27501374,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 59319,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 231164,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 10505967,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 2279,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26092,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 58956,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 33629273,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 819,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 316,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 310,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 3768,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 109346868,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 116968,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 346125,
             "unit": "bytes"
           }
         ]
