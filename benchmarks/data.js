@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787163296381,
+  "lastUpdate": 1787163296908,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -78185,6 +78185,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
             "value": 8391429,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "10f5cda0a608fce2fa7e45ad93e6abbcf66e8cf5",
+          "message": "One construction home per driver: Splice\n\nThe public projection door (ComposeSelect) and the internal one (the context-shaped\nCompose) build the same successor and differ only in whether the leg reads a value or a\ncontext. In the two driver classes each was spelled out in full: ScanWhere's ComposeSelect\nwas a 12-line re-statement of the fold-carrying recipe, SelectWhere's a 6-line\nre-statement of the nested-selector construction. A second home for a construction is a\nplace for two doors to drift apart.\n\nBoth classes now have a private Splice that performs the one construction and returns the\nCONCRETE successor type; every door forwards to it. The concrete return is the whole\nmechanism -- an interface implementation must match its declared return type exactly, so\nno door can serve another door's return type, but a private helper can serve them all.\n\nNot applied where doors legitimately differ: RootfixScan's ComposeSelect builds the\nproduct citizen while its internal projection door builds the fold-carrying driver (the\nrootfix door ruling, 07a70f3 -- door-optimality working as intended). The light tier's\npairs are two-line bodies differing by an adapter lambda; a helper would add lines there.\n\nAccounting, stated plainly: +34 lines across 10 files. This one does not shrink the code.\nIt removes two duplicate constructions and adds four helpers, because the narrow twins\ncarry Splice through the fan-out without having a citizenship part to dedupe against. The\nwin is one construction per class and three driver classes that read alike.\n\nFull battery 24,598 green, Stage 0 representation pins unchanged.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:51:50Z",
+          "tree_id": "b51e1190b2e1a8ae301aa6a5f8d91e269c7abf26",
+          "url": "https://github.com/copselib/copse-dotnet/commit/10f5cda0a608fce2fa7e45ad93e6abbcf66e8cf5"
+        },
+        "date": 1787163296797,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6147970,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391368,
             "unit": "bytes"
           }
         ]
