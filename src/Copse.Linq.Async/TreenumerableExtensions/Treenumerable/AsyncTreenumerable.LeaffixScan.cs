@@ -230,20 +230,20 @@ namespace Copse.Linq
       {
         var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        frames.Push(await OpenLeaffixFrameAsync(rootStance.Walker, results, subtreeSizes).ConfigureAwait(false));
+        frames.Push(await OpenLeaffixFrameAsync(rootStance.Value, results, subtreeSizes).ConfigureAwait(false));
 
         while (frames.Count > 0)
         {
           var frame = frames.Pop();
           var step = await frame.Walker.MoveToChildAsync(frame.ChildIndex).ConfigureAwait(false);
 
-          if (step.HasWalker)
+          if (step.HasValue)
           {
             frames.Push((frame.Walker, frame.Value, frame.ChildIndex + 1, frame.Folded, frame.Reduced, frame.OutputIndex));
-            frames.Push(await OpenLeaffixFrameAsync(step.Walker, results, subtreeSizes).ConfigureAwait(false));
+            frames.Push(await OpenLeaffixFrameAsync(step.Value, results, subtreeSizes).ConfigureAwait(false));
             continue;
           }
 

@@ -40,21 +40,21 @@ namespace Copse.Linq.Treenumerables
 
     public TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public ParentResult<THandle> TryGetParent(THandle handle)
+    public Option<THandle> TryGetParent(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)
         ? default
         : _Source.TryGetParent(handle);
 
-    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
+    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
-    public ChildResult<THandle> TryGetRootAt(int rootIndex)
+    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
       => rootIndex == 0
-        ? new ChildResult<THandle>(new NodeAndSiblingIndex<THandle>(_Root, 0))
+        ? new Option<NodeAndSiblingIndex<THandle>>(new NodeAndSiblingIndex<THandle>(_Root, 0))
         : default;
 
     // The door (walker factory design, Stage A): the severed view has exactly one root --
     // the walker stands there, never missing.
-    public TreeWalkerResult<TValue, THandle> TryGetTreeWalker()
-      => new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(this, _Root));
+    public Option<TreeWalker<TValue, THandle>> TryGetTreeWalker()
+      => new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(this, _Root));
   }
 }

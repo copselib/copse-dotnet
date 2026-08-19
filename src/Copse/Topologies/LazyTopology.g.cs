@@ -38,7 +38,7 @@ namespace Copse.Topologies
 
       // The door yields a vantage; its public Topology property is the bound physics
       // (the frame-of-reference ruling, 2026-08-15).
-      _Topology = door.HasWalker ? door.Walker.Topology : null;
+      _Topology = door.HasValue ? door.Value.Topology : null;
       _Resolved = true;
 
       return _Topology;
@@ -54,21 +54,21 @@ namespace Copse.Topologies
       return topology.GetValue(handle);
     }
 
-    public ParentResult<THandle> TryGetParent(THandle handle)
+    public Option<THandle> TryGetParent(THandle handle)
     {
       var topology = Resolve();
 
       return topology == null ? default : topology.TryGetParent(handle);
     }
 
-    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex)
+    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
     {
       var topology = Resolve();
 
       return topology == null ? default : topology.TryGetChildAt(handle, childIndex);
     }
 
-    public ChildResult<THandle> TryGetRootAt(int rootIndex)
+    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
     {
       var topology = Resolve();
 

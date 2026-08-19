@@ -59,10 +59,10 @@ namespace Copse.Linq.Tests
       // The point of keeping handles: jump straight in -- the walker spelling (Stage B):
       // a stored handle becomes a stance again through a vantage already held (the jump),
       // and navigation speaks steps, never probes. d's parent is b; g's parent is c.
-      var stance = walkable.TryGetTreeWalker().Walker;
+      var stance = walkable.TryGetTreeWalker().Value;
 
-      Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Walker.GetValue());
-      Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Walker.GetValue());
+      Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Value.GetValue());
+      Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Value.GetValue());
     }
 
     [TestMethod]
@@ -91,13 +91,13 @@ namespace Copse.Linq.Tests
       {
         var door = walkable.TryGetTreeWalker();
 
-        Assert.IsTrue(door.HasWalker);
-        Assert.AreEqual("a", door.Walker.GetValue(), "the door stands at the first root");
-        Assert.AreEqual("b", door.Walker.MoveToChild(0).Walker.GetValue(), "and the stance navigates");
+        Assert.IsTrue(door.HasValue);
+        Assert.AreEqual("a", door.Value.GetValue(), "the door stands at the first root");
+        Assert.AreEqual("b", door.Value.MoveToChild(0).Value.GetValue(), "and the stance navigates");
       }
 
       var empty = TreeSerializer.DeserializeDepthFirstTree("a").Where(context => false).Materialize(BufferLayout.Preorder);
-      Assert.IsFalse(empty.TryGetTreeWalker().HasWalker, "the empty forest misses at the door");
+      Assert.IsFalse(empty.TryGetTreeWalker().HasValue, "the empty forest misses at the door");
     }
 
     // The search law (naming grammar, 2026-08-14): searches are not surface. FindHandles and

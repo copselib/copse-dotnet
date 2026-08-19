@@ -124,7 +124,7 @@ namespace Copse.Linq.Treenumerables
     // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
     // The door (walker factory design, Stage A): the settled capture manufactures the walker,
     // so the stance rides the settled topology directly.
-    public TreeWalkerResult<TValue, int> TryGetTreeWalker()
+    public Option<TreeWalker<TValue, int>> TryGetTreeWalker()
       => (Settle()).TryGetTreeWalker();
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.

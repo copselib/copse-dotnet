@@ -219,12 +219,12 @@ namespace Copse.Async
       {
         var rootResult = await topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
-        if (!rootResult.HasChild)
+        if (!rootResult.HasValue)
           yield break;
 
-        var value = await topology.GetValueAsync(rootResult.Child.Node).ConfigureAwait(false);
+        var value = await topology.GetValueAsync(rootResult.Value.Node).ConfigureAwait(false);
 
-        yield return new HandleAndValue<THandle, TValue>(rootResult.Child.Node, value);
+        yield return new HandleAndValue<THandle, TValue>(rootResult.Value.Node, value);
       }
     }
   }

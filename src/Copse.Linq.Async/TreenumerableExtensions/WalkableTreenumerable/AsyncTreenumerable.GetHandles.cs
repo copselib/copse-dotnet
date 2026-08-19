@@ -23,10 +23,10 @@ namespace Copse.Linq
       {
         var rootStance = await source.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        pending.Push(rootStance.Walker);
+        pending.Push(rootStance.Value);
       }
 
       while (pending.Count > 0)
@@ -39,10 +39,10 @@ namespace Copse.Linq
         {
           var step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
 
-          if (!step.HasWalker)
+          if (!step.HasValue)
             break;
 
-          pending.Push(step.Walker);
+          pending.Push(step.Value);
         }
       }
     }

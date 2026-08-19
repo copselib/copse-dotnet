@@ -121,18 +121,10 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
         "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
         "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
-      // ChildResult: the child-enumerator protocol's read struct, per-color beside its
-      // contract (IChildEnumerator / IAsyncChildEnumerator), identity-named like the reads.
-      new("Copse.Core.Async/ChildResult.cs",
-        "Copse.Core/ChildResult.g.cs",
-        "ChildResult", "ChildResult", "Copse"),
       // The walker core (WALKABLE_CONTRACT_DESIGN.md §8b): the comonad's carrier, its result
       // struct, the Walk adapter, the extend/severed-view machinery, and the extension
       // surface -- authored async, generated into the base Copse project (the walker ships
       // with the engine and factories, not the operators; only the lens family stays Linq).
-      new("Copse.Core.Async/AsyncTreeWalkerResult.cs",
-        "Copse.Core/TreeWalkerResult.g.cs",
-        "AsyncTreeWalkerResult", "TreeWalkerResult", "Copse"),
       new("Copse.Core.Async/AsyncTreeWalker.cs",
         "Copse.Core/TreeWalker.g.cs",
         "AsyncTreeWalker", "TreeWalker", "Copse"),
@@ -196,9 +188,6 @@ namespace Copse.CodeGen
       // The walkable contract family (design-docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency
       // contract and its upward result struct cross colors -- async is the source, the walker
       // tier's sync PoC files demote to twins.
-      new("Copse.Core.Async/ParentResult.cs",
-        "Copse.Core/ParentResult.g.cs",
-        "ParentResult", "ParentResult", "Copse"),
       new("Copse.Core.Async/IAsyncWalkableTreenumerable.cs",
         "Copse.Core/IWalkableTreenumerable.g.cs",
         "IAsyncWalkableTreenumerable", "IWalkableTreenumerable", "Copse"),

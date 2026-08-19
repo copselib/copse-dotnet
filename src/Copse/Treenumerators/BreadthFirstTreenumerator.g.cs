@@ -185,22 +185,22 @@ namespace Copse.Treenumerators
     }
 
     // Land a pulled child under the schedule-stack top; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfScheduleTop(ChildResult<TNode> result)
+    private bool TrySchedulePulledChildOfScheduleTop(Option<NodeAndSiblingIndex<TNode>> result)
     {
-      if (!result.HasChild)
+      if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Value.Node, result.Value.SiblingIndex));
       return true;
     }
 
     // Land a pulled child under the queue front; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfFront(ChildResult<TNode> result)
+    private bool TrySchedulePulledChildOfFront(Option<NodeAndSiblingIndex<TNode>> result)
     {
-      if (!result.HasChild)
+      if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Child.Node, result.Child.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Value.Node, result.Value.SiblingIndex));
       return true;
     }
 

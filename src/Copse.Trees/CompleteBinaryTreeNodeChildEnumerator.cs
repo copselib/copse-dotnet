@@ -39,7 +39,7 @@ namespace Copse.Trees
 
     private int _ChildValue;
 
-    public ChildResult<int> MoveNext()
+    public Option<NodeAndSiblingIndex<int>> MoveNext()
     {
       if (_Disposed || _ChildValue == int.MaxValue)
       {
@@ -50,7 +50,7 @@ namespace Copse.Trees
 
       TryIncrementChildValue();
 
-      return new ChildResult<int>(child);
+      return new Option<NodeAndSiblingIndex<int>>(child);
     }
 
     private bool _Disposed;

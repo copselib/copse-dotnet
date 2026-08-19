@@ -29,12 +29,12 @@ namespace Copse.Linq.Tests
       var interesting = new HashSet<string> { "h", "i", "g" };
       var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Value)).Select(row => row.Handle));
 
-      Assert.IsTrue(spanning.HasWalker);
-      Assert.AreEqual("a", spanning.Walker.GetValue(), "the walker stands at the spanning root");
+      Assert.IsTrue(spanning.HasValue);
+      Assert.AreEqual("a", spanning.Value.GetValue(), "the walker stands at the spanning root");
 
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("a(b(d(h,i)),c(g))")),
-        DrainScheduleOrder(spanning.Walker.Subtree()),
+        DrainScheduleOrder(spanning.Value.Subtree()),
         "the spanning subtree, exactly");
     }
 
@@ -49,12 +49,12 @@ namespace Copse.Linq.Tests
       var interesting = new HashSet<string> { "h", "e" };
       var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Value)).Select(row => row.Handle));
 
-      Assert.IsTrue(spanning.HasWalker);
-      Assert.AreEqual("b", spanning.Walker.GetValue(), "the spanning root is mid-tree");
+      Assert.IsTrue(spanning.HasValue);
+      Assert.AreEqual("b", spanning.Value.GetValue(), "the spanning root is mid-tree");
 
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("b(d(h),e)")),
-        DrainScheduleOrder(spanning.Walker.Subtree()),
+        DrainScheduleOrder(spanning.Value.Subtree()),
         "the spanning subtree of a mid-tree cluster");
     }
 
@@ -66,21 +66,21 @@ namespace Copse.Linq.Tests
       var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
       // No targets: the spanning subtree of nothing is nothing.
-      Assert.IsFalse(walkable.SpanningSubtree(Enumerable.Empty<int>()).HasWalker, "k = 0 is an honest miss");
+      Assert.IsFalse(walkable.SpanningSubtree(Enumerable.Empty<int>()).HasValue, "k = 0 is an honest miss");
 
       // One target: the node alone -- the fold is a no-op and the clamp keeps exactly it.
       var single = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => row.Value == "d").Select(row => row.Handle));
-      Assert.IsTrue(single.HasWalker);
-      Assert.AreEqual("d", single.Walker.GetValue());
+      Assert.IsTrue(single.HasValue);
+      Assert.AreEqual("d", single.Value.GetValue());
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("d")),
-        DrainScheduleOrder(single.Walker.Subtree()),
+        DrainScheduleOrder(single.Value.Subtree()),
         "the spanning subtree of one node is the node");
 
       // Disjoint trees in a forest: no common ancestor exists, and the type says so.
       var forest = TreeSerializer.DeserializeDepthFirstTree("a(b),c(d)").Materialize(BufferLayout.Preorder);
       var disjoint = forest.SpanningSubtree(forest.GetHandlesWithValues().Where(row => row.Value == "b" || row.Value == "d").Select(row => row.Handle));
-      Assert.IsFalse(disjoint.HasWalker, "disjoint targets: an honest miss, never a default walker");
+      Assert.IsFalse(disjoint.HasValue, "disjoint targets: an honest miss, never a default walker");
     }
 
     // The per-capture clause, made visible at the operation's seam: the returned walker
@@ -96,8 +96,8 @@ namespace Copse.Linq.Tests
 
       var spanning = walkable.SpanningSubtree(targets);
 
-      Assert.AreEqual(0, spanning.Walker.Focus, "the spanning root is ordinal zero of ITS OWN capture");
-      Assert.AreEqual("b", spanning.Walker.GetValue());
+      Assert.AreEqual(0, spanning.Value.Focus, "the spanning root is ordinal zero of ITS OWN capture");
+      Assert.AreEqual("b", spanning.Value.GetValue());
     }
 
     // The DECOMPOSED arc -- the floor-by-floor walkthrough the operation distills, kept
@@ -118,7 +118,7 @@ namespace Copse.Linq.Tests
 
       var lca = targets
         .Select(handle => walkable.GetTreeWalkerAt(handle))
-        .Aggregate((left, right) => LowestCommonAncestor(left, right).Walker);
+        .Aggregate((left, right) => LowestCommonAncestor(left, right).Value);
 
       Assert.AreEqual("a", lca.GetValue(), "the three targets' LCA");
 
@@ -145,7 +145,7 @@ namespace Copse.Linq.Tests
     // the axis wave promotes them to public extensions. Walker-first, result-typed, loud
     // on precondition violation -- the review's spec, in its target dialect.
 
-    private static TreeWalkerResult<string, int> LowestCommonAncestor(TreeWalker<string, int> first, TreeWalker<string, int> second)
+    private static Option<TreeWalker<string, int>> LowestCommonAncestor(TreeWalker<string, int> first, TreeWalker<string, int> second)
     {
       var firstPath = new HashSet<int>();
       var stance = first;
@@ -155,10 +155,10 @@ namespace Copse.Linq.Tests
         firstPath.Add(stance.Focus);
 
         var up = stance.MoveToParent();
-        if (!up.HasWalker)
+        if (!up.HasValue)
           break;
 
-        stance = up.Walker;
+        stance = up.Value;
       }
 
       var candidate = second;
@@ -166,13 +166,13 @@ namespace Copse.Linq.Tests
       while (!firstPath.Contains(candidate.Focus))
       {
         var up = candidate.MoveToParent();
-        if (!up.HasWalker)
+        if (!up.HasValue)
           return default;   // disjoint trees: an honest miss, never a default walker
 
-        candidate = up.Walker;
+        candidate = up.Value;
       }
 
-      return new TreeWalkerResult<string, int>(candidate);
+      return new Option<TreeWalker<string, int>>(candidate);
     }
 
     private static IEnumerable<int> PathToAncestor(TreeWalker<string, int> descendant, int ancestorFocus)
@@ -184,11 +184,11 @@ namespace Copse.Linq.Tests
         yield return stance.Focus;
 
         var up = stance.MoveToParent();
-        if (!up.HasWalker)
+        if (!up.HasValue)
           throw new System.InvalidOperationException(
             "the given focus is not an ancestor of the starting stance -- a poisoned handle would have walked past a root here");
 
-        stance = up.Walker;
+        stance = up.Value;
       }
     }
 

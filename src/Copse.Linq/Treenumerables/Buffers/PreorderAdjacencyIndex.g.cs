@@ -67,7 +67,7 @@ namespace Copse.Linq.Treenumerables
       return _Store.GetValue(handle);
     }
 
-    public ParentResult<int> TryGetParent(int handle)
+    public Option<int> TryGetParent(int handle)
     {
       while (_ScanCursor <= handle)
       {
@@ -79,10 +79,10 @@ namespace Copse.Linq.Treenumerables
 
       return parentIndex == NoParent
         ? default
-        : new ParentResult<int>(parentIndex);
+        : new Option<int>(parentIndex);
     }
 
-    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
+    public Option<NodeAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
     {
       if (childIndex < 0)
         return default;
@@ -136,10 +136,10 @@ namespace Copse.Linq.Treenumerables
       _CursorOrdinal = childIndex;
       _CursorChild = child;
 
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(child, childIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(child, childIndex));
     }
 
-    public ChildResult<int> TryGetRootAt(int rootIndex)
+    public Option<NodeAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
     {
       if (rootIndex < 0)
         return default;
@@ -150,7 +150,7 @@ namespace Copse.Linq.Treenumerables
           return default;
       }
 
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
     }
 
     private bool SpanClosedBehindScan(int handle)

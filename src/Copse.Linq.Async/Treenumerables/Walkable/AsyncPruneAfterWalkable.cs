@@ -44,23 +44,23 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<TValue> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
 
-    public ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
+    public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
-    public async ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex)
+    public async ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex)
       => _Predicate(await _Source.GetValueAsync(handle).ConfigureAwait(false))
         ? default
         : await _Source.TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 
-    public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
+    public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
-    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAsync()
+    public async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> TryGetTreeWalkerAsync()
     {
       var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
 
-      return rootResult.HasChild
-        ? new AsyncTreeWalkerResult<TValue, THandle>(new AsyncTreeWalker<TValue, THandle>(this, rootResult.Child.Node))
+      return rootResult.HasValue
+        ? new Option<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this, rootResult.Value.Node))
         : default;
     }
   }

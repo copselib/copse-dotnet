@@ -93,7 +93,7 @@ namespace Copse.Linq.Tests
 
       Assert.AreEqual(5, WalkerLawProviders.TopologyOf(scan).GetValue(0).Accumulate, "the root's accumulate is the whole tree's count");
       Assert.AreEqual("a", WalkerLawProviders.TopologyOf(scan).GetValue(0).Node);
-      Assert.IsTrue(WalkerLawProviders.TopologyOf(scan).TryGetChildAt(0, 0).HasChild);
+      Assert.IsTrue(WalkerLawProviders.TopologyOf(scan).TryGetChildAt(0, 0).HasValue);
     }
 
     private static void AssertScan(

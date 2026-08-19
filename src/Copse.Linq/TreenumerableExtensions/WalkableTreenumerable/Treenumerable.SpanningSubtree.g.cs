@@ -32,7 +32,7 @@ namespace Copse.Linq
     /// semantics are fixed here. Target handles are presumed to be the source's own (the
     /// foreign-handle clause).</para>
     /// </summary>
-    public static TreeWalkerResult<TValue, int> SpanningSubtree<TValue, THandle>(
+    public static Option<TreeWalker<TValue, int>> SpanningSubtree<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       IEnumerable<THandle> targets)
     {
@@ -44,19 +44,19 @@ namespace Copse.Linq
         return default;
 
       var door = source.TryGetTreeWalker();
-      var targetWalkers = targetList.Select(handle => door.Walker.At(handle)).ToList();
+      var targetWalkers = targetList.Select(handle => door.Value.At(handle)).ToList();
 
-      var spanningRootResult = new TreeWalkerResult<TValue, THandle>(targetWalkers[0]);
+      var spanningRootResult = new Option<TreeWalker<TValue, THandle>>(targetWalkers[0]);
 
       for (var index = 1; index < targetWalkers.Count; index++)
       {
-        spanningRootResult = LowestCommonAncestor(spanningRootResult.Walker, targetWalkers[index]);
+        spanningRootResult = LowestCommonAncestor(spanningRootResult.Value, targetWalkers[index]);
 
-        if (!spanningRootResult.HasWalker)
+        if (!spanningRootResult.HasValue)
           return default;
       }
 
-      var spanningRoot = spanningRootResult.Walker;
+      var spanningRoot = spanningRootResult.Value;
 
       // The kept-set: every node on a target-to-root path, recorded by the climbs. Each
       // climb stops at the first already-kept ancestor (shared path segments are walked
@@ -71,7 +71,7 @@ namespace Copse.Linq
         while (!keptHandles.Contains(stance.Focus))
         {
           keptHandles.Add(stance.Focus);
-          stance = (stance.MoveToParent()).Walker;
+          stance = (stance.MoveToParent()).Value;
         }
       }
 
@@ -96,7 +96,7 @@ namespace Copse.Linq
     // miss -- disjoint trees -- is a fact, never a default walker. Same-topology is
     // presumed (the walkers' topology is private even to this assembly; the check becomes
     // possible when the axis wave lands in the walker's own assembly).
-    private static TreeWalkerResult<TValue, THandle> LowestCommonAncestor<TValue, THandle>(
+    private static Option<TreeWalker<TValue, THandle>> LowestCommonAncestor<TValue, THandle>(
       TreeWalker<TValue, THandle> first,
       TreeWalker<TValue, THandle> second)
     {
@@ -108,10 +108,10 @@ namespace Copse.Linq
         firstRootPath.Add(stance.Focus);
 
         var up = stance.MoveToParent();
-        if (!up.HasWalker)
+        if (!up.HasValue)
           break;
 
-        stance = up.Walker;
+        stance = up.Value;
       }
 
       var candidate = second;
@@ -119,13 +119,13 @@ namespace Copse.Linq
       while (!firstRootPath.Contains(candidate.Focus))
       {
         var up = candidate.MoveToParent();
-        if (!up.HasWalker)
+        if (!up.HasValue)
           return default;
 
-        candidate = up.Walker;
+        candidate = up.Value;
       }
 
-      return new TreeWalkerResult<TValue, THandle>(candidate);
+      return new Option<TreeWalker<TValue, THandle>>(candidate);
     }
   }
 }

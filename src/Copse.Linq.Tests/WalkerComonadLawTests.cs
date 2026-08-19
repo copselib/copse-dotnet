@@ -47,7 +47,7 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), WalkerLawProviders.TopologyOf(extended).GetValue(handle));
-          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle).HasParent, WalkerLawProviders.TopologyOf(extended).TryGetParent(handle).HasParent);
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle).HasValue, WalkerLawProviders.TopologyOf(extended).TryGetParent(handle).HasValue);
         }
       }
     }
@@ -80,7 +80,7 @@ namespace Copse.Linq.Tests
         (source, handle) =>
         {
           var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
-          var parentLabel = parentResult.HasParent ? WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Parent) : "⊤";
+          var parentLabel = parentResult.HasValue ? WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Value) : "⊤";
           return $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}<{parentLabel}";
         };
 
@@ -118,10 +118,10 @@ namespace Copse.Linq.Tests
           var path = new List<string> { WalkerLawProviders.TopologyOf(source).GetValue(handle) };
           var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
 
-          while (parentResult.HasParent)
+          while (parentResult.HasValue)
           {
-            path.Add(WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Parent));
-            parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Parent);
+            path.Add(WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Value));
+            parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Value);
           }
 
           var accumulate = seed;
@@ -173,10 +173,10 @@ namespace Copse.Linq.Tests
       {
         var childResult = WalkerLawProviders.TopologyOf(source).TryGetChildAt(handle, childIndex);
 
-        if (!childResult.HasChild)
+        if (!childResult.HasValue)
           break;
 
-        childAccumulations.Add(SubtreeFold(source, childResult.Child.Node, seed, edgeAccumulator, nodeAccumulator));
+        childAccumulations.Add(SubtreeFold(source, childResult.Value.Node, seed, edgeAccumulator, nodeAccumulator));
       }
 
       if (childAccumulations.Count == 0)
@@ -196,10 +196,10 @@ namespace Copse.Linq.Tests
       var depth = 0;
       var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
 
-      while (parentResult.HasParent)
+      while (parentResult.HasValue)
       {
         depth++;
-        parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Parent);
+        parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Value);
       }
 
       return depth;

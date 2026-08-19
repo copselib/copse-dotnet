@@ -78,16 +78,16 @@ namespace Copse.Linq.Tests
           var stepped = walker.MoveToChild(0);
           var steppedDuplicated = duplicated.MoveToChild(0);
 
-          Assert.AreEqual(stepped.HasWalker, steppedDuplicated.HasWalker, $"child step parity [{tree}]");
-          if (stepped.HasWalker)
-            Assert.AreEqual(stepped.Walker, steppedDuplicated.Walker.GetValue(), $"duplicate commutes with child step [{tree}]");
+          Assert.AreEqual(stepped.HasValue, steppedDuplicated.HasValue, $"child step parity [{tree}]");
+          if (stepped.HasValue)
+            Assert.AreEqual(stepped.Value, steppedDuplicated.Value.GetValue(), $"duplicate commutes with child step [{tree}]");
 
           var upStepped = walker.MoveToParent();
           var upSteppedDuplicated = duplicated.MoveToParent();
 
-          Assert.AreEqual(upStepped.HasWalker, upSteppedDuplicated.HasWalker, $"parent step parity [{tree}]");
-          if (upStepped.HasWalker)
-            Assert.AreEqual(upStepped.Walker, upSteppedDuplicated.Walker.GetValue(), $"duplicate commutes with parent step [{tree}]");
+          Assert.AreEqual(upStepped.HasValue, upSteppedDuplicated.HasValue, $"parent step parity [{tree}]");
+          if (upStepped.HasValue)
+            Assert.AreEqual(upStepped.Value, upSteppedDuplicated.Value.GetValue(), $"duplicate commutes with parent step [{tree}]");
         }
       }
     }
@@ -122,9 +122,9 @@ namespace Copse.Linq.Tests
           var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
           var stepped = walkable.GetTreeWalkerAt(handle).MoveToParent();
 
-          Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
-          if (parentResult.HasParent)
-            Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(parentResult.Parent), stepped.Walker.GetValue(), $"up-step value [{tree}]");
+          Assert.AreEqual(parentResult.HasValue, stepped.HasValue, $"up-step parity [{tree}]");
+          if (parentResult.HasValue)
+            Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(parentResult.Value), stepped.Value.GetValue(), $"up-step value [{tree}]");
         }
       }
     }
@@ -135,14 +135,14 @@ namespace Copse.Linq.Tests
       foreach (var walkable in WalkerLawProviders.Walkables("a,b(d),c(e(f))"))
       {
         var firstRoot = walkable.TryGetTreeWalkerAtRootIndex();
-        Assert.IsTrue(firstRoot.HasWalker);
-        Assert.AreEqual("a", firstRoot.Walker.GetValue());
+        Assert.IsTrue(firstRoot.HasValue);
+        Assert.AreEqual("a", firstRoot.Value.GetValue());
 
         var thirdRoot = walkable.TryGetTreeWalkerAtRootIndex(2);
-        Assert.IsTrue(thirdRoot.HasWalker);
-        Assert.AreEqual("c", thirdRoot.Walker.GetValue());
+        Assert.IsTrue(thirdRoot.HasValue);
+        Assert.AreEqual("c", thirdRoot.Value.GetValue());
 
-        Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasWalker, "past the last root: no walker, never a walker standing nowhere");
+        Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasValue, "past the last root: no walker, never a walker standing nowhere");
       }
     }
 
@@ -160,9 +160,9 @@ namespace Copse.Linq.Tests
         Tree.Empty<string>().Memoize(),
       })
       {
-        Assert.IsFalse(provider.TryGetTreeWalkerAtRootIndex().HasWalker, "the root door refuses in the result type");
+        Assert.IsFalse(provider.TryGetTreeWalkerAtRootIndex().HasValue, "the root door refuses in the result type");
         Assert.IsFalse(provider.GetHandles().Any(), "the handle door never opens: no handle is ever issued");
-        Assert.IsFalse(TreeTopology.Lazy(provider).TryGetRootAt(0).HasChild, "no probe succeeds (the deferred door misses honestly)");
+        Assert.IsFalse(TreeTopology.Lazy(provider).TryGetRootAt(0).HasValue, "no probe succeeds (the deferred door misses honestly)");
       }
     }
 
@@ -173,10 +173,10 @@ namespace Copse.Linq.Tests
       var depth = 0;
       var stepped = walker.MoveToParent();
 
-      while (stepped.HasWalker)
+      while (stepped.HasValue)
       {
         depth++;
-        stepped = stepped.Walker.MoveToParent();
+        stepped = stepped.Value.MoveToParent();
       }
 
       return depth;

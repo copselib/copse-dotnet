@@ -13,7 +13,7 @@ namespace Copse.Trees
     private readonly int _ChildCount;
     private int _ChildIndex;
 
-    public ChildResult<int> MoveNext()
+    public Option<NodeAndSiblingIndex<int>> MoveNext()
     {
       if (_Disposed || _ChildIndex == _ChildCount)
       {
@@ -22,7 +22,7 @@ namespace Copse.Trees
 
       var child = new NodeAndSiblingIndex<int>(_ChildIndex, _ChildIndex);
       _ChildIndex++;
-      return new ChildResult<int>(child);
+      return new Option<NodeAndSiblingIndex<int>>(child);
     }
 
     private bool _Disposed;

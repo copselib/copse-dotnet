@@ -40,19 +40,19 @@ namespace Copse.Linq.Treenumerables
 
     public TResult GetValue(THandle handle) => _Observer(_Source, handle);
 
-    public ParentResult<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
+    public Option<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 
-    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
+    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
-    public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
+    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
     // The door (walker factory design, Stage A): the relabeled view is its own topology.
-    public TreeWalkerResult<TResult, THandle> TryGetTreeWalker()
+    public Option<TreeWalker<TResult, THandle>> TryGetTreeWalker()
     {
       var rootResult = TryGetRootAt(0);
 
-      return rootResult.HasChild
-        ? new TreeWalkerResult<TResult, THandle>(new TreeWalker<TResult, THandle>(this, rootResult.Child.Node))
+      return rootResult.HasValue
+        ? new Option<TreeWalker<TResult, THandle>>(new TreeWalker<TResult, THandle>(this, rootResult.Value.Node))
         : default;
     }
   }

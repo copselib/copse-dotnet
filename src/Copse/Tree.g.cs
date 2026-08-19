@@ -199,12 +199,12 @@ namespace Copse
       {
         var rootResult = topology.TryGetRootAt(rootIndex);
 
-        if (!rootResult.HasChild)
+        if (!rootResult.HasValue)
           yield break;
 
-        var value = topology.GetValue(rootResult.Child.Node);
+        var value = topology.GetValue(rootResult.Value.Node);
 
-        yield return new HandleAndValue<THandle, TValue>(rootResult.Child.Node, value);
+        yield return new HandleAndValue<THandle, TValue>(rootResult.Value.Node, value);
       }
     }
   }

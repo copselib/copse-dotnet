@@ -31,14 +31,14 @@ namespace Copse.Async
     ValueTask<TValue> GetValueAsync(THandle handle);
 
     /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root.</summary>
-    ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle);
+    ValueTask<Option<THandle>> TryGetParentAsync(THandle handle);
 
     /// <summary>Indexed downward probe: the child at <paramref name="childIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last child.</summary>
-    ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex);
+    ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex);
 
     /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last root.</summary>
-    ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex);
+    ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex);
   }
 }

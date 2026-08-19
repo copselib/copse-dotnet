@@ -34,7 +34,7 @@ namespace Copse.Linq.Treenumerables
     public TValue GetValue(int handle)
       => _Store.GetValue(handle);
 
-    public ParentResult<int> TryGetParent(int handle)
+    public Option<int> TryGetParent(int handle)
     {
       if (_ParentIndexes == null)
         _ParentIndexes = BuildParentIndexes();
@@ -43,26 +43,26 @@ namespace Copse.Linq.Treenumerables
 
       return parentIndex == NoParent
         ? default
-        : new ParentResult<int>(parentIndex);
+        : new Option<int>(parentIndex);
     }
 
-    public ChildResult<int> TryGetChildAt(int handle, int childIndex)
+    public Option<NodeAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
     {
       if (childIndex < 0 || !_Store.EnsureChildAvailable(handle, childIndex))
         return default;
 
       // GetFirstChildIndex is meaningful once the parent has an available child, which the
       // successful probe above just established.
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
     }
 
-    public ChildResult<int> TryGetRootAt(int rootIndex)
+    public Option<NodeAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
     {
       if (rootIndex < 0 || !_Store.EnsureRootAvailable(rootIndex))
         return default;
 
       // Root ordinal k is buffer index k: the roots are the store's leading entries.
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
     }
 
     // The stackless two-cursor merge, run to completion: seed the roots (the leading

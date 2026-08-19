@@ -20,7 +20,7 @@ namespace Copse.Linq
     /// topology through the walker seam rather than the contract.
     /// invariant, kept at the door.
     /// </summary>
-    public static TreeWalkerResult<TValue, THandle> TryGetTreeWalkerAtRootIndex<TValue, THandle>(
+    public static Option<TreeWalker<TValue, THandle>> TryGetTreeWalkerAtRootIndex<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       int rootIndex = 0)
     {
@@ -28,13 +28,13 @@ namespace Copse.Linq
       // through the walker seam for the k-th root (the sentinel's child group).
       var door = source.TryGetTreeWalker();
 
-      if (!door.HasWalker)
+      if (!door.HasValue)
         return default;
 
       if (rootIndex == 0)
         return door;
 
-      return door.Walker.MoveToRoot(rootIndex);
+      return door.Value.MoveToRoot(rootIndex);
     }
   }
 }

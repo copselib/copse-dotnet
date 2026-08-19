@@ -32,9 +32,9 @@ namespace Copse
   /// child-enumerator pull protocol is untouched -- that is the hierarchical family's source
   /// adapter, a different job.</para>
   ///
-  /// <para>The probes return <see cref="ChildResult{TNode}"/> (the Try is built into the shape:
-  /// HasChild false past the end); the parent axis mirrors it with
-  /// <see cref="ParentResult{THandle}"/>. Roots are the children of the virtual forest-root
+  /// <para>The probes return options (the Try is built into the shape: an absent value past
+  /// the end), and the parent axis is the same option over a bare handle. Roots are the
+  /// children of the virtual forest-root
   /// position (the pre-enumeration convention, reused as the walker's starting position above all
   /// roots), which is why they are indexed like any other child group -- the entry probe is the
   /// protocol door, and a source having one is the job description, not a smell (the resolved
@@ -63,6 +63,6 @@ namespace Copse
     /// view) -- and then exits the story: the walkable appears in no navigation call path,
     /// exactly as <c>IEnumerable</c> after <c>GetEnumerator</c>.
     /// </summary>
-    TreeWalkerResult<TValue, THandle> TryGetTreeWalker();
+    Option<TreeWalker<TValue, THandle>> TryGetTreeWalker();
   }
 }

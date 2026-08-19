@@ -36,7 +36,7 @@ namespace Copse.Async.Topologies
 
       // The door yields a vantage; its public Topology property is the bound physics
       // (the frame-of-reference ruling, 2026-08-15).
-      _Topology = door.HasWalker ? door.Walker.Topology : null;
+      _Topology = door.HasValue ? door.Value.Topology : null;
       _Resolved = true;
 
       return _Topology;
@@ -52,21 +52,21 @@ namespace Copse.Async.Topologies
       return await topology.GetValueAsync(handle).ConfigureAwait(false);
     }
 
-    public async ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle)
+    public async ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)
     {
       var topology = await ResolveAsync().ConfigureAwait(false);
 
       return topology == null ? default : await topology.TryGetParentAsync(handle).ConfigureAwait(false);
     }
 
-    public async ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex)
+    public async ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex)
     {
       var topology = await ResolveAsync().ConfigureAwait(false);
 
       return topology == null ? default : await topology.TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
     }
 
-    public async ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex)
+    public async ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex)
     {
       var topology = await ResolveAsync().ConfigureAwait(false);
 

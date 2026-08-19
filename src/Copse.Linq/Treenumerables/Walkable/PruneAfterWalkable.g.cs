@@ -46,23 +46,23 @@ namespace Copse.Linq.Treenumerables
 
     public TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public ParentResult<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
+    public Option<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 
-    public ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex)
+    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
       => _Predicate(_Source.GetValue(handle))
         ? default
         : _Source.TryGetChildAt(handle, childIndex);
 
-    public ChildResult<THandle> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
+    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
-    public TreeWalkerResult<TValue, THandle> TryGetTreeWalker()
+    public Option<TreeWalker<TValue, THandle>> TryGetTreeWalker()
     {
       var rootResult = TryGetRootAt(0);
 
-      return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(this, rootResult.Child.Node))
+      return rootResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(this, rootResult.Value.Node))
         : default;
     }
   }

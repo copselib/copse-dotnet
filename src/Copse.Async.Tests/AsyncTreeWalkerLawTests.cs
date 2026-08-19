@@ -19,7 +19,7 @@ namespace Copse.Async.Tests
   {
     // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
     private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
-      => (await walkable.TryGetTreeWalkerAsync()).Walker.Topology;
+      => (await walkable.TryGetTreeWalkerAsync()).Value.Topology;
 
     private static readonly string[] Trees =
     {
@@ -76,11 +76,11 @@ namespace Copse.Async.Tests
           var parentResult = await (await TopologyOf(walkable)).TryGetParentAsync(handle);
           var stepped = await (await walkable.GetTreeWalkerAtAsync(handle)).MoveToParentAsync();
 
-          Assert.AreEqual(parentResult.HasParent, stepped.HasWalker, $"up-step parity [{tree}]");
-          if (parentResult.HasParent)
+          Assert.AreEqual(parentResult.HasValue, stepped.HasValue, $"up-step parity [{tree}]");
+          if (parentResult.HasValue)
             Assert.AreEqual(
-              await (await TopologyOf(walkable)).GetValueAsync(parentResult.Parent),
-              await stepped.Walker.GetValueAsync(),
+              await (await TopologyOf(walkable)).GetValueAsync(parentResult.Value),
+              await stepped.Value.GetValueAsync(),
               $"up-step value [{tree}]");
         }
       }
@@ -114,13 +114,13 @@ namespace Copse.Async.Tests
       var forest = W("a,b,c");
 
       var firstRoot = await forest.TryGetTreeWalkerAtRootIndexAsync();
-      Assert.IsTrue(firstRoot.HasWalker);
-      Assert.AreEqual("a", await firstRoot.Walker.GetValueAsync());
+      Assert.IsTrue(firstRoot.HasValue);
+      Assert.AreEqual("a", await firstRoot.Value.GetValueAsync());
 
-      Assert.IsFalse((await forest.TryGetTreeWalkerAtRootIndexAsync(3)).HasWalker, "past the last root: no walker");
+      Assert.IsFalse((await forest.TryGetTreeWalkerAtRootIndexAsync(3)).HasValue, "past the last root: no walker");
 
       var empty = AsyncTree.Empty<string>().Memoize();
-      Assert.IsFalse((await empty.TryGetTreeWalkerAtRootIndexAsync()).HasWalker, "the empty forest grants no walker");
+      Assert.IsFalse((await empty.TryGetTreeWalkerAtRootIndexAsync()).HasValue, "the empty forest grants no walker");
     }
 
     [TestMethod]
@@ -133,10 +133,10 @@ namespace Copse.Async.Tests
         var subtree = (await walkable.GetTreeWalkerAtAsync(handle)).Subtree();
 
         var subtreeRoot = await subtree.TryGetTreeWalkerAtRootIndexAsync();
-        Assert.IsTrue(subtreeRoot.HasWalker);
-        Assert.AreEqual(handle, subtreeRoot.Walker.Focus, "the subtree stands at the focus");
+        Assert.IsTrue(subtreeRoot.HasValue);
+        Assert.AreEqual(handle, subtreeRoot.Value.Focus, "the subtree stands at the focus");
 
-        Assert.IsFalse((await (await TopologyOf(subtree)).TryGetParentAsync(handle)).HasParent, "severed at the root");
+        Assert.IsFalse((await (await TopologyOf(subtree)).TryGetParentAsync(handle)).HasValue, "severed at the root");
       }
     }
   }

@@ -185,10 +185,10 @@ namespace Copse.Linq
       {
         var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        rootStances.Add(rootStance.Walker);
+        rootStances.Add(rootStance.Value);
       }
 
       foreach (var rootStance in rootStances)
@@ -215,10 +215,10 @@ namespace Copse.Linq
         {
           var step = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
 
-          if (!step.HasWalker)
+          if (!step.HasValue)
             break;
 
-          stack.Push((step.Walker, -1));
+          stack.Push((step.Value, -1));
         }
       }
 

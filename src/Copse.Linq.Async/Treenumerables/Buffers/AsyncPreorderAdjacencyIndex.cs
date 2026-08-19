@@ -65,7 +65,7 @@ namespace Copse.Linq.Async.Treenumerables
       return _Store.GetValue(handle);
     }
 
-    public async ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
+    public async ValueTask<Option<int>> TryGetParentAsync(int handle)
     {
       while (_ScanCursor <= handle)
       {
@@ -77,10 +77,10 @@ namespace Copse.Linq.Async.Treenumerables
 
       return parentIndex == NoParent
         ? default
-        : new ParentResult<int>(parentIndex);
+        : new Option<int>(parentIndex);
     }
 
-    public async ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+    public async ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
     {
       if (childIndex < 0)
         return default;
@@ -134,10 +134,10 @@ namespace Copse.Linq.Async.Treenumerables
       _CursorOrdinal = childIndex;
       _CursorChild = child;
 
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(child, childIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(child, childIndex));
     }
 
-    public async ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
+    public async ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
     {
       if (rootIndex < 0)
         return default;
@@ -148,7 +148,7 @@ namespace Copse.Linq.Async.Treenumerables
           return default;
       }
 
-      return new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
+      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
     }
 
     private bool SpanClosedBehindScan(int handle)

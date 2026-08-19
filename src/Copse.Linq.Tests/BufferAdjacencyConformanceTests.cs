@@ -88,12 +88,12 @@ namespace Copse.Linq.Tests
           for (var rootIndex = 0; rootIndex < model.Roots.Count; rootIndex++)
           {
             var rootResult = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex);
-            Assert.IsTrue(rootResult.HasChild, $"root {rootIndex} exists — {context}");
-            Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Child.Node, $"root {rootIndex} — {context}");
-            Assert.AreEqual(rootIndex, rootResult.Child.SiblingIndex, $"root {rootIndex} sibling — {context}");
+            Assert.IsTrue(rootResult.HasValue, $"root {rootIndex} exists — {context}");
+            Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Value.Node, $"root {rootIndex} — {context}");
+            Assert.AreEqual(rootIndex, rootResult.Value.SiblingIndex, $"root {rootIndex} sibling — {context}");
           }
 
-          Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(model.Roots.Count).HasChild, $"past the last root — {context}");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(model.Roots.Count).HasValue, $"past the last root — {context}");
 
           foreach (var node in model.Nodes)
           {
@@ -104,23 +104,23 @@ namespace Copse.Linq.Tests
             var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
             if (node.Parent == null)
             {
-              Assert.IsFalse(parentResult.HasParent, $"root has no parent @{handle} — {context}");
+              Assert.IsFalse(parentResult.HasValue, $"root has no parent @{handle} — {context}");
             }
             else
             {
-              Assert.IsTrue(parentResult.HasParent, $"parent exists @{handle} — {context}");
-              Assert.AreEqual(ordinals[node.Parent], parentResult.Parent, $"parent @{handle} — {context}");
+              Assert.IsTrue(parentResult.HasValue, $"parent exists @{handle} — {context}");
+              Assert.AreEqual(ordinals[node.Parent], parentResult.Value, $"parent @{handle} — {context}");
             }
 
             for (var childIndex = 0; childIndex < node.Children.Count; childIndex++)
             {
               var childResult = WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, childIndex);
-              Assert.IsTrue(childResult.HasChild, $"child {childIndex} exists @{handle} — {context}");
-              Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Child.Node, $"child {childIndex} @{handle} — {context}");
-              Assert.AreEqual(childIndex, childResult.Child.SiblingIndex, $"child {childIndex} sibling @{handle} — {context}");
+              Assert.IsTrue(childResult.HasValue, $"child {childIndex} exists @{handle} — {context}");
+              Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Value.Node, $"child {childIndex} @{handle} — {context}");
+              Assert.AreEqual(childIndex, childResult.Value.SiblingIndex, $"child {childIndex} sibling @{handle} — {context}");
             }
 
-            Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, node.Children.Count).HasChild, $"past the last child @{handle} — {context}");
+            Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, node.Children.Count).HasValue, $"past the last child @{handle} — {context}");
           }
         }
       }

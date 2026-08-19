@@ -24,26 +24,26 @@ namespace Copse.Async.ChildEnumerators
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 
-    public ValueTask<ChildResult<HandleAndValue<THandle, TValue>>> MoveNextAsync()
+    public ValueTask<Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>>> MoveNextAsync()
     {
       var childIndex = _NextChildIndex;
       _NextChildIndex++;
       return PullAsync(childIndex);
     }
 
-    private async ValueTask<ChildResult<HandleAndValue<THandle, TValue>>> PullAsync(int childIndex)
+    private async ValueTask<Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>>> PullAsync(int childIndex)
     {
       var childResult = await _Topology.TryGetChildAtAsync(_ParentHandle, childIndex).ConfigureAwait(false);
 
-      if (!childResult.HasChild)
+      if (!childResult.HasValue)
         return default;
 
-      var value = await _Topology.GetValueAsync(childResult.Child.Node).ConfigureAwait(false);
+      var value = await _Topology.GetValueAsync(childResult.Value.Node).ConfigureAwait(false);
 
-      return new ChildResult<HandleAndValue<THandle, TValue>>(
+      return new Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>>(
         new NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>(
-          new HandleAndValue<THandle, TValue>(childResult.Child.Node, value),
-          childResult.Child.SiblingIndex));
+          new HandleAndValue<THandle, TValue>(childResult.Value.Node, value),
+          childResult.Value.SiblingIndex));
     }
 
     public void Dispose()

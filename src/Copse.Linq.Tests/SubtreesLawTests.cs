@@ -46,7 +46,7 @@ namespace Copse.Linq.Tests
 
         for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
         {
-          var rootHandle = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex).Child.Node;
+          var rootHandle = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex).Value.Node;
 
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
@@ -70,10 +70,10 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), WalkerLawProviders.TopologyOf(label).GetValue(handle), $"map(extract)∘duplicate [{tree}]");
 
           var labelRoot = WalkerLawProviders.TopologyOf(label).TryGetRootAt(0);
-          Assert.IsTrue(labelRoot.HasChild, $"label has a root [{tree}]");
-          Assert.AreEqual(handle, labelRoot.Child.Node, $"the label's root is its node [{tree}]");
-          Assert.AreEqual(0, labelRoot.Child.SiblingIndex, $"the label's root re-roots to sibling 0 [{tree}]");
-          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetRootAt(1).HasChild, $"a subtree is single-rooted [{tree}]");
+          Assert.IsTrue(labelRoot.HasValue, $"label has a root [{tree}]");
+          Assert.AreEqual(handle, labelRoot.Value.Node, $"the label's root is its node [{tree}]");
+          Assert.AreEqual(0, labelRoot.Value.SiblingIndex, $"the label's root re-roots to sibling 0 [{tree}]");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetRootAt(1).HasValue, $"a subtree is single-rooted [{tree}]");
         }
       }
     }
@@ -89,15 +89,15 @@ namespace Copse.Linq.Tests
         {
           var label = WalkerLawProviders.TopologyOf(subtrees).GetValue(handle);
 
-          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetParent(handle).HasParent, $"the label's root is parentless [{tree}]");
+          Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetParent(handle).HasValue, $"the label's root is parentless [{tree}]");
 
           foreach (var descendant in Descendants(walkable, handle).Where(d => d != handle))
           {
             var viaLabel = WalkerLawProviders.TopologyOf(label).TryGetParent(descendant);
             var viaSource = WalkerLawProviders.TopologyOf(walkable).TryGetParent(descendant);
 
-            Assert.IsTrue(viaLabel.HasParent, $"descendants keep their parents [{tree}]");
-            Assert.AreEqual(viaSource.Parent, viaLabel.Parent, $"descendant parents delegate [{tree}]");
+            Assert.IsTrue(viaLabel.HasValue, $"descendants keep their parents [{tree}]");
+            Assert.AreEqual(viaSource.Value, viaLabel.Value, $"descendant parents delegate [{tree}]");
           }
         }
       }
@@ -185,7 +185,7 @@ namespace Copse.Linq.Tests
         {
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
-            walkable.TryGetTreeWalkerAtRootIndex(rootIndex).Walker.Subtree(),
+            walkable.TryGetTreeWalkerAtRootIndex(rootIndex).Value.Subtree(),
             $"tree → root walker → Subtree() round trip [{tree}]");
         }
       }
@@ -207,10 +207,10 @@ namespace Copse.Linq.Tests
         {
           var childResult = WalkerLawProviders.TopologyOf(source).TryGetChildAt(current, childIndex);
 
-          if (!childResult.HasChild)
+          if (!childResult.HasValue)
             break;
 
-          pending.Push(childResult.Child.Node);
+          pending.Push(childResult.Value.Node);
         }
       }
     }
@@ -231,7 +231,7 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(source.Position, outer.Position, $"position {context}");
 
           var label = outer.Node;
-          Assert.AreEqual(source.Node, WalkerLawProviders.TopologyOf(label).GetValue(WalkerLawProviders.TopologyOf(label).TryGetRootAt(0).Child.Node), $"label root value {context}");
+          Assert.AreEqual(source.Node, WalkerLawProviders.TopologyOf(label).GetValue(WalkerLawProviders.TopologyOf(label).TryGetRootAt(0).Value.Node), $"label root value {context}");
         }
 
         Assert.IsFalse(outer.MoveNext(NodeTraversalStrategies.TraverseAll), $"outer ran long {context}");

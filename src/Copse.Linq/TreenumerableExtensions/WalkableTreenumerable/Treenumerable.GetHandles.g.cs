@@ -24,10 +24,10 @@ namespace Copse.Linq
       {
         var rootStance = source.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        pending.Push(rootStance.Walker);
+        pending.Push(rootStance.Value);
       }
 
       while (pending.Count > 0)
@@ -40,10 +40,10 @@ namespace Copse.Linq
         {
           var step = stance.MoveToChild(childIndex);
 
-          if (!step.HasWalker)
+          if (!step.HasValue)
             break;
 
-          pending.Push(step.Walker);
+          pending.Push(step.Value);
         }
       }
     }

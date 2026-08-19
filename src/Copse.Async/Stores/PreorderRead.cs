@@ -2,7 +2,7 @@ namespace Copse.Async.Stores
 {
   // The struct-return result of one forward-only preorder read: HasValue == false means the
   // stream is exhausted. The struct-return shape is mandatory on the async side (out params
-  // cannot cross an await -- the same constraint that made ChildResult replace
+  // cannot cross an await -- the same constraint that made the by-value option replace
   // IChildEnumerator's out-style child pull), and the sync twin is generated from this file so
   // both colors read identically. Small and transient (returned and immediately consumed, never
   // stored per-frame), so it carries no allocation cost.

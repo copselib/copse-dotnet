@@ -19,11 +19,11 @@ namespace Copse.Linq.Experimental
     {
       var step = source.GetTreeWalkerAt(handle).MoveToParent();
 
-      while (step.HasWalker)
+      while (step.HasValue)
       {
-        yield return step.Walker.Focus;
+        yield return step.Value.Focus;
 
-        step = step.Walker.MoveToParent();
+        step = step.Value.MoveToParent();
       }
     }
 
@@ -44,9 +44,9 @@ namespace Copse.Linq.Experimental
       var walker = source.GetTreeWalkerAt(handle);
       var step = walker.MoveToParent();
 
-      while (step.HasWalker)
+      while (step.HasValue)
       {
-        walker = step.Walker;
+        walker = step.Value;
 
         step = walker.MoveToParent();
       }
@@ -62,11 +62,11 @@ namespace Copse.Linq.Experimental
       var depth = 0;
       var step = source.GetTreeWalkerAt(handle).MoveToParent();
 
-      while (step.HasWalker)
+      while (step.HasValue)
       {
         depth++;
 
-        step = step.Walker.MoveToParent();
+        step = step.Value.MoveToParent();
       }
 
       return depth;
@@ -82,10 +82,10 @@ namespace Copse.Linq.Experimental
       {
         var step = walker.MoveToChild(childIndex);
 
-        if (!step.HasWalker)
+        if (!step.HasValue)
           yield break;
 
-        yield return new NodeAndSiblingIndex<THandle>(step.Walker.Focus, childIndex);
+        yield return new NodeAndSiblingIndex<THandle>(step.Value.Focus, childIndex);
       }
     }
 
@@ -96,10 +96,10 @@ namespace Copse.Linq.Experimental
       {
         var rootResult = source.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootResult.HasWalker)
+        if (!rootResult.HasValue)
           yield break;
 
-        yield return new NodeAndSiblingIndex<THandle>(rootResult.Walker.Focus, rootIndex);
+        yield return new NodeAndSiblingIndex<THandle>(rootResult.Value.Focus, rootIndex);
       }
     }
 
@@ -115,7 +115,7 @@ namespace Copse.Linq.Experimental
       var walker = source.GetTreeWalkerAt(handle);
       var childCount = 0;
 
-      while (walker.MoveToChild(childCount).HasWalker)
+      while (walker.MoveToChild(childCount).HasValue)
         childCount++;
 
       return childCount;

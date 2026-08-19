@@ -53,25 +53,25 @@ namespace Copse.Tests
 
       // The door: the provider mint in its natural habitat. Construction is the trust door --
       // the topology flows in, the walker comes out, no family type participates.
-      public TreeWalkerResult<string, string> TryGetTreeWalker()
-        => new TreeWalkerResult<string, string>(new TreeWalker<string, string>(this, "a"));
+      public Option<TreeWalker<string, string>> TryGetTreeWalker()
+        => new Option<TreeWalker<string, string>>(new TreeWalker<string, string>(this, "a"));
 
       public string GetValue(string handle) => handle;
 
-      public ParentResult<string> TryGetParent(string handle)
-        => Parents.TryGetValue(handle, out var parent) ? new ParentResult<string>(parent) : default;
+      public Option<string> TryGetParent(string handle)
+        => Parents.TryGetValue(handle, out var parent) ? new Option<string>(parent) : default;
 
-      public ChildResult<string> TryGetChildAt(string handle, int childIndex)
+      public Option<NodeAndSiblingIndex<string>> TryGetChildAt(string handle, int childIndex)
       {
         var children = Children[handle];
 
         return childIndex < children.Length
-          ? new ChildResult<string>(new NodeAndSiblingIndex<string>(children[childIndex], childIndex))
+          ? new Option<NodeAndSiblingIndex<string>>(new NodeAndSiblingIndex<string>(children[childIndex], childIndex))
           : default;
       }
 
-      public ChildResult<string> TryGetRootAt(int rootIndex)
-        => rootIndex == 0 ? new ChildResult<string>(new NodeAndSiblingIndex<string>("a", 0)) : default;
+      public Option<NodeAndSiblingIndex<string>> TryGetRootAt(int rootIndex)
+        => rootIndex == 0 ? new Option<NodeAndSiblingIndex<string>>(new NodeAndSiblingIndex<string>("a", 0)) : default;
     }
 
     [TestMethod]
@@ -79,43 +79,43 @@ namespace Copse.Tests
     {
       var door = new FamilyFreeTree().TryGetTreeWalker();
 
-      Assert.IsTrue(door.HasWalker);
-      Assert.AreEqual("a", door.Walker.Focus);
-      Assert.AreEqual("a", door.Walker.GetValue());
+      Assert.IsTrue(door.HasValue);
+      Assert.AreEqual("a", door.Value.Focus);
+      Assert.AreEqual("a", door.Value.GetValue());
     }
 
     [TestMethod]
     public void StepsWalkTheProviderTopology()
     {
-      var walker = new FamilyFreeTree().TryGetTreeWalker().Walker;
+      var walker = new FamilyFreeTree().TryGetTreeWalker().Value;
 
       var firstChild = walker.MoveToChild(0);
-      Assert.IsTrue(firstChild.HasWalker);
-      Assert.AreEqual("b", firstChild.Walker.Focus);
+      Assert.IsTrue(firstChild.HasValue);
+      Assert.AreEqual("b", firstChild.Value.Focus);
 
-      var grandchild = firstChild.Walker.MoveToChild(0);
-      Assert.IsTrue(grandchild.HasWalker);
-      Assert.AreEqual("d", grandchild.Walker.Focus);
+      var grandchild = firstChild.Value.MoveToChild(0);
+      Assert.IsTrue(grandchild.HasValue);
+      Assert.AreEqual("d", grandchild.Value.Focus);
 
-      var backUp = grandchild.Walker.MoveToParent();
-      Assert.IsTrue(backUp.HasWalker);
-      Assert.AreEqual("b", backUp.Walker.Focus);
+      var backUp = grandchild.Value.MoveToParent();
+      Assert.IsTrue(backUp.HasValue);
+      Assert.AreEqual("b", backUp.Value.Focus);
 
       var secondChild = walker.MoveToChild(1);
-      Assert.IsTrue(secondChild.HasWalker);
-      Assert.AreEqual("c", secondChild.Walker.Focus);
+      Assert.IsTrue(secondChild.HasValue);
+      Assert.AreEqual("c", secondChild.Value.Focus);
 
-      Assert.IsFalse(walker.MoveToChild(2).HasWalker);
-      Assert.IsFalse(walker.MoveToParent().HasWalker);
+      Assert.IsFalse(walker.MoveToChild(2).HasValue);
+      Assert.IsFalse(walker.MoveToParent().HasValue);
     }
 
     [TestMethod]
     public void TheJumpReEntersOnStoredProviderHandles()
     {
-      var walker = new FamilyFreeTree().TryGetTreeWalker().Walker;
+      var walker = new FamilyFreeTree().TryGetTreeWalker().Value;
 
       Assert.AreEqual("d", walker.At("d").GetValue());
-      Assert.AreEqual("b", walker.At("d").MoveToParent().Walker.Focus);
+      Assert.AreEqual("b", walker.At("d").MoveToParent().Value.Focus);
     }
 
     [TestMethod]
@@ -127,7 +127,7 @@ namespace Copse.Tests
         new[] { "a", "b", "d", "c" },
         tree.GetPreorderTraversal().ToArray());
 
-      Assert.AreEqual("d", tree.TryGetTreeWalker().Walker.At("b").MoveToChild(0).Walker.Focus);
+      Assert.AreEqual("d", tree.TryGetTreeWalker().Value.At("b").MoveToChild(0).Value.Focus);
     }
   }
 }

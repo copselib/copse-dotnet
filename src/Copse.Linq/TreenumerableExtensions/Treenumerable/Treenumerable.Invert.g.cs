@@ -186,10 +186,10 @@ namespace Copse.Linq
       {
         var rootStance = buffer.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        rootStances.Add(rootStance.Walker);
+        rootStances.Add(rootStance.Value);
       }
 
       foreach (var rootStance in rootStances)
@@ -216,10 +216,10 @@ namespace Copse.Linq
         {
           var step = stance.MoveToChild(childIndex);
 
-          if (!step.HasWalker)
+          if (!step.HasValue)
             break;
 
-          stack.Push((step.Walker, -1));
+          stack.Push((step.Value, -1));
         }
       }
 

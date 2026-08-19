@@ -27,26 +27,26 @@ namespace Copse.ChildEnumerators
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 
-    public ChildResult<HandleAndValue<THandle, TValue>> MoveNext()
+    public Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>> MoveNext()
     {
       var childIndex = _NextChildIndex;
       _NextChildIndex++;
       return Pull(childIndex);
     }
 
-    private ChildResult<HandleAndValue<THandle, TValue>> Pull(int childIndex)
+    private Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>> Pull(int childIndex)
     {
       var childResult = _Topology.TryGetChildAt(_ParentHandle, childIndex);
 
-      if (!childResult.HasChild)
+      if (!childResult.HasValue)
         return default;
 
-      var value = _Topology.GetValue(childResult.Child.Node);
+      var value = _Topology.GetValue(childResult.Value.Node);
 
-      return new ChildResult<HandleAndValue<THandle, TValue>>(
+      return new Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>>(
         new NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>(
-          new HandleAndValue<THandle, TValue>(childResult.Child.Node, value),
-          childResult.Child.SiblingIndex));
+          new HandleAndValue<THandle, TValue>(childResult.Value.Node, value),
+          childResult.Value.SiblingIndex));
     }
 
     public void Dispose()

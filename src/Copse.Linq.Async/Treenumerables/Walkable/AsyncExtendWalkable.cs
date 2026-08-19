@@ -38,19 +38,19 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<TResult> GetValueAsync(THandle handle) => _Observer(_Source, handle);
 
-    public ValueTask<ParentResult<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
+    public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
-    public ValueTask<ChildResult<THandle>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
+    public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
 
-    public ValueTask<ChildResult<THandle>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
+    public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
     // The door (walker factory design, Stage A): the relabeled view is its own topology.
-    public async ValueTask<AsyncTreeWalkerResult<TResult, THandle>> TryGetTreeWalkerAsync()
+    public async ValueTask<Option<AsyncTreeWalker<TResult, THandle>>> TryGetTreeWalkerAsync()
     {
       var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
 
-      return rootResult.HasChild
-        ? new AsyncTreeWalkerResult<TResult, THandle>(new AsyncTreeWalker<TResult, THandle>(this, rootResult.Child.Node))
+      return rootResult.HasValue
+        ? new Option<AsyncTreeWalker<TResult, THandle>>(new AsyncTreeWalker<TResult, THandle>(this, rootResult.Value.Node))
         : default;
     }
   }

@@ -32,17 +32,17 @@ namespace Copse.Linq.Tests
       Assert.AreEqual("d", WalkerLawProviders.TopologyOf(walkable).GetValue(2));
       Assert.AreEqual("c", WalkerLawProviders.TopologyOf(walkable).GetValue(4));
 
-      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetParent(0).HasParent);
-      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Parent, "d's parent is b");
-      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetParent(6).Parent, "g's parent is c");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetParent(0).HasValue);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Value, "d's parent is b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetParent(6).Value, "g's parent is c");
 
-      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 0).Child.Node, "a's child 0 is b");
-      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 1).Child.Node, "a's child 1 is c");
-      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(4, 0).Child.Node, "c's child 0 is f");
-      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 2).HasChild);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 0).Value.Node, "a's child 0 is b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 1).Value.Node, "a's child 1 is c");
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(4, 0).Value.Node, "c's child 0 is f");
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 2).HasValue);
 
-      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(0).Child.Node);
-      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(1).HasChild);
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(0).Value.Node);
+      Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(1).HasValue);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(0, counting.DepthFirstEnumerations + counting.BreadthFirstEnumerations);
 
       // The first adjacency call settles: one depth-first capture walk, handles minted.
-      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Parent);
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Value);
       Assert.AreEqual(1, counting.DepthFirstEnumerations);
       Assert.AreEqual(0, counting.BreadthFirstEnumerations);
 

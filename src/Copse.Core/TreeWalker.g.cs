@@ -24,7 +24,7 @@ namespace Copse
   /// have a value to return, so the unfocused state is not a member of the carrier. Every
   /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
   /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
-  /// <c>default</c> instances anyway; per the <see cref="ChildResult{TNode}"/> convention,
+  /// <c>default</c> instances anyway; per the <see cref="Option{TValue}"/> convention,
   /// that value is invalid and must not be used.</para>
   ///
   /// <para>This type carries the CARRIER and the navigation the contract alone affords:
@@ -78,23 +78,23 @@ namespace Copse
 
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToParent()
+    public Option<TreeWalker<TValue, THandle>> MoveToParent()
     {
       var parentResult = Topology.TryGetParent(Focus);
 
-      return parentResult.HasParent
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Topology, parentResult.Parent))
+      return parentResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, parentResult.Value))
         : default;
     }
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or an empty result past the last child.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToChild(int childIndex)
+    public Option<TreeWalker<TValue, THandle>> MoveToChild(int childIndex)
     {
       var childResult = Topology.TryGetChildAt(Focus, childIndex);
 
-      return childResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Topology, childResult.Child.Node))
+      return childResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, childResult.Value.Node))
         : default;
     }
 
@@ -104,12 +104,12 @@ namespace Copse
     /// <see cref="MoveToChildAsync"/> walks a node's. Empty result past the last root. With it,
     /// the step set covers the topology's whole probe surface, so a walker never has to be
     /// opened up for its topology.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToRoot(int rootIndex)
+    public Option<TreeWalker<TValue, THandle>> MoveToRoot(int rootIndex)
     {
       var rootResult = Topology.TryGetRootAt(rootIndex);
 
-      return rootResult.HasChild
-        ? new TreeWalkerResult<TValue, THandle>(new TreeWalker<TValue, THandle>(Topology, rootResult.Child.Node))
+      return rootResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, rootResult.Value.Node))
         : default;
     }
 

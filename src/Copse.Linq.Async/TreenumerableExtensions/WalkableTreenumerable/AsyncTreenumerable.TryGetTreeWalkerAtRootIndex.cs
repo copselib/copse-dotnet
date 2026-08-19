@@ -18,7 +18,7 @@ namespace Copse.Linq
     /// topology through the walker seam rather than the contract.
     /// invariant, kept at the door.
     /// </summary>
-    public static async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> TryGetTreeWalkerAtRootIndexAsync<TValue, THandle>(
+    public static async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> TryGetTreeWalkerAtRootIndexAsync<TValue, THandle>(
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       int rootIndex = 0)
     {
@@ -26,13 +26,13 @@ namespace Copse.Linq
       // through the walker seam for the k-th root (the sentinel's child group).
       var door = await source.TryGetTreeWalkerAsync().ConfigureAwait(false);
 
-      if (!door.HasWalker)
+      if (!door.HasValue)
         return default;
 
       if (rootIndex == 0)
         return door;
 
-      return await door.Walker.MoveToRootAsync(rootIndex).ConfigureAwait(false);
+      return await door.Value.MoveToRootAsync(rootIndex).ConfigureAwait(false);
     }
   }
 }

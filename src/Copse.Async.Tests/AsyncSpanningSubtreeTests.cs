@@ -20,7 +20,7 @@ namespace Copse.Async.Tests
   {
     // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
     private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
-      => (await walkable.TryGetTreeWalkerAsync()).Walker.Topology;
+      => (await walkable.TryGetTreeWalkerAsync()).Value.Topology;
 
     private static IAsyncWalkableTreenumerable<string, int> W(string tree)
       => TreeSerializer.DeserializeDepthFirstTreeAsync(() => new StringReader(tree)).Memoize();
@@ -57,19 +57,19 @@ namespace Copse.Async.Tests
       var targets = await HandlesWhereAsync(walkable, value => value == "h" || value == "i" || value == "g");
       var spanning = await walkable.SpanningSubtreeAsync(targets);
 
-      Assert.IsTrue(spanning.HasWalker);
-      Assert.AreEqual("a", await spanning.Walker.GetValueAsync(), "the walker stands at the spanning root");
+      Assert.IsTrue(spanning.HasValue);
+      Assert.AreEqual("a", await spanning.Value.GetValueAsync(), "the walker stands at the spanning root");
       CollectionAssert.AreEqual(
         new[] { "a", "b", "d", "h", "i", "c", "g" },
-        await PreorderValuesAsync(spanning.Walker.Subtree()),
+        await PreorderValuesAsync(spanning.Value.Subtree()),
         "the spanning subtree, preorder");
 
       // The misses are facts, same as the sync twins pin: no targets, and disjoint trees.
-      Assert.IsFalse((await walkable.SpanningSubtreeAsync(Enumerable.Empty<int>())).HasWalker, "k = 0 is an honest miss");
+      Assert.IsFalse((await walkable.SpanningSubtreeAsync(Enumerable.Empty<int>())).HasValue, "k = 0 is an honest miss");
 
       var forest = W("a(b),c(d)");
       var disjointTargets = await HandlesWhereAsync(forest, value => value == "b" || value == "d");
-      Assert.IsFalse((await forest.SpanningSubtreeAsync(disjointTargets)).HasWalker, "disjoint targets: an honest miss");
+      Assert.IsFalse((await forest.SpanningSubtreeAsync(disjointTargets)).HasValue, "disjoint targets: an honest miss");
     }
 
     [TestMethod]
@@ -80,8 +80,8 @@ namespace Copse.Async.Tests
 
       // The adjacency half: a pruned-after node hands out no children; everything else delegates.
       var handleOfB = (await HandlesWhereAsync(walkable, value => value == "b")).Single();
-      Assert.IsFalse((await (await TopologyOf(pruned)).TryGetChildAtAsync(handleOfB, 0)).HasChild, "b keeps no children");
-      Assert.IsTrue((await (await TopologyOf(pruned)).TryGetParentAsync(handleOfB)).HasParent, "b keeps its ancestry");
+      Assert.IsFalse((await (await TopologyOf(pruned)).TryGetChildAtAsync(handleOfB, 0)).HasValue, "b keeps no children");
+      Assert.IsTrue((await (await TopologyOf(pruned)).TryGetParentAsync(handleOfB)).HasValue, "b keeps its ancestry");
 
       // The order half: the streaming operator, wholesale.
       CollectionAssert.AreEqual(new[] { "a", "b", "c" }, await PreorderValuesAsync(pruned));

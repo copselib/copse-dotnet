@@ -52,7 +52,7 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator()
       => _Inner.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<AsyncTreeWalkerResult<TResult, int>> TryGetTreeWalkerAsync()
+    public ValueTask<Option<AsyncTreeWalker<TResult, int>>> TryGetTreeWalkerAsync()
       => _Inner.TryGetTreeWalkerAsync();
 
     public IAsyncSelectComposableTreenumerableBuffer<TNext> ComposeSelect<TNext>(Func<TResult, TNext> selector)

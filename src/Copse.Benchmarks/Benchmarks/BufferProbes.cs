@@ -86,19 +86,19 @@ namespace Copse.Benchmarks
     {
       var door = walkable.TryGetTreeWalker();
 
-      if (!door.HasWalker)
+      if (!door.HasValue)
         return 0;
 
       var checksum = 0L;
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var root = door.Walker.MoveToRoot(rootIndex);
+        var root = door.Value.MoveToRoot(rootIndex);
 
-        if (!root.HasWalker)
+        if (!root.HasValue)
           break;
 
-        checksum += WalkSubtree(root.Walker);
+        checksum += WalkSubtree(root.Value);
       }
 
       return checksum;
@@ -112,11 +112,11 @@ namespace Copse.Benchmarks
       {
         var child = walker.MoveToChild(childIndex);
 
-        if (!child.HasWalker)
+        if (!child.HasValue)
           break;
 
-        checksum += WalkSubtree(child.Walker);
-        checksum += child.Walker.MoveToParent().Walker.GetValue();
+        checksum += WalkSubtree(child.Value);
+        checksum += child.Value.MoveToParent().Value.GetValue();
       }
 
       return checksum;

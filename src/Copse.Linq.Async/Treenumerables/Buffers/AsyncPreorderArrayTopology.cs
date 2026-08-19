@@ -46,7 +46,7 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask<TValue> GetValueAsync(int handle)
       => new ValueTask<TValue>(_Store.GetValue(handle));
 
-    public ValueTask<ParentResult<int>> TryGetParentAsync(int handle)
+    public ValueTask<Option<int>> TryGetParentAsync(int handle)
     {
       if (_ParentIndexes == null)
         BuildParentIndexes();
@@ -55,10 +55,10 @@ namespace Copse.Linq.Async.Treenumerables
 
       return parentIndex == NoParent
         ? default
-        : new ValueTask<ParentResult<int>>(new ParentResult<int>(parentIndex));
+        : new ValueTask<Option<int>>(new Option<int>(parentIndex));
     }
 
-    public ValueTask<ChildResult<int>> TryGetChildAtAsync(int handle, int childIndex)
+    public ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -68,11 +68,11 @@ namespace Copse.Linq.Async.Treenumerables
       if (childIndex < 0 || childIndex >= _FirstChildOffsets[handle + 1] - firstSlot)
         return default;
 
-      return new ValueTask<ChildResult<int>>(
-        new ChildResult<int>(new NodeAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex)));
+      return new ValueTask<Option<NodeAndSiblingIndex<int>>>(
+        new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex)));
     }
 
-    public ValueTask<ChildResult<int>> TryGetRootAtAsync(int rootIndex)
+    public ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -80,8 +80,8 @@ namespace Copse.Linq.Async.Treenumerables
       if (rootIndex < 0 || rootIndex >= _RootIndexes.Length)
         return default;
 
-      return new ValueTask<ChildResult<int>>(
-        new ChildResult<int>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex)));
+      return new ValueTask<Option<NodeAndSiblingIndex<int>>>(
+        new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex)));
     }
 
     // One open-span sweep over the whole store: each node's parent is the innermost span

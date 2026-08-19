@@ -34,14 +34,14 @@ namespace Copse
     TValue GetValue(THandle handle);
 
     /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root.</summary>
-    ParentResult<THandle> TryGetParent(THandle handle);
+    Option<THandle> TryGetParent(THandle handle);
 
     /// <summary>Indexed downward probe: the child at <paramref name="childIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last child.</summary>
-    ChildResult<THandle> TryGetChildAt(THandle handle, int childIndex);
+    Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex);
 
     /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
     /// sibling order, or <c>HasChild</c> false past the last root.</summary>
-    ChildResult<THandle> TryGetRootAt(int rootIndex);
+    Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex);
   }
 }

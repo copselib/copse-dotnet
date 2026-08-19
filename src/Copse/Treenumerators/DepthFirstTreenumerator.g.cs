@@ -162,12 +162,12 @@ namespace Copse.Treenumerators
     }
 
     // Land a pulled child on the path; false when the enumerator was exhausted.
-    private bool TryPushPulledChild(ChildResult<TNode> result)
+    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<TNode>> result)
     {
-      if (!result.HasChild)
+      if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushChild(result.Child.Node, result.Child.SiblingIndex));
+      Publish(ref _Path.PushChild(result.Value.Node, result.Value.SiblingIndex));
       return true;
     }
 

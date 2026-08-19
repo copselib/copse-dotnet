@@ -9,8 +9,8 @@ namespace Copse
   ///
   /// <para>The first type to adopt the THandle parameter naming (ruled 2026-08-10: "if the
   /// thing is a handle, call it a handle"); the walkable contract's TNode awaits the same
-  /// rename in the nomenclature cleanup wave. A named struct, not a tuple, per the
-  /// <see cref="ChildResult{TNode}"/> grammar.</para>
+  /// rename in the nomenclature cleanup wave. A named struct, not a tuple, so
+  /// each field keeps the name that says which fact it is.</para>
   /// </summary>
   public readonly struct HandleAndValue<THandle, TValue>
   {

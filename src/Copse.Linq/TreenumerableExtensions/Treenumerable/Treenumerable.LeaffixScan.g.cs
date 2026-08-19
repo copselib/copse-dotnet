@@ -231,20 +231,20 @@ namespace Copse.Linq
       {
         var rootStance = buffer.TryGetTreeWalkerAtRootIndex(rootIndex);
 
-        if (!rootStance.HasWalker)
+        if (!rootStance.HasValue)
           break;
 
-        frames.Push(OpenLeaffixFrame(rootStance.Walker, results, subtreeSizes));
+        frames.Push(OpenLeaffixFrame(rootStance.Value, results, subtreeSizes));
 
         while (frames.Count > 0)
         {
           var frame = frames.Pop();
           var step = frame.Walker.MoveToChild(frame.ChildIndex);
 
-          if (step.HasWalker)
+          if (step.HasValue)
           {
             frames.Push((frame.Walker, frame.Value, frame.ChildIndex + 1, frame.Folded, frame.Reduced, frame.OutputIndex));
-            frames.Push(OpenLeaffixFrame(step.Walker, results, subtreeSizes));
+            frames.Push(OpenLeaffixFrame(step.Value, results, subtreeSizes));
             continue;
           }
 
