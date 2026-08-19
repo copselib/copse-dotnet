@@ -20,7 +20,7 @@ namespace Copse.Linq.Treenumerables
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
           _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
-        Relabels);
+        _Relabels);
     }
 
     public IPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)

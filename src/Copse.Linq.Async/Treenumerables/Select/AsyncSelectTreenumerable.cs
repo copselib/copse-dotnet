@@ -47,7 +47,14 @@ namespace Copse.Linq.Async.Treenumerables
     // the ctor and the public doors; the driver recipe stays internal) ----
 
     // Projections never relabel.
-    bool IAsyncSelectWhereTreenumerable<TResult>.Relabels => false;
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => ((IAsyncSelectWhereTreenumerable<TResult>)this).Compose(selector);
+
+    IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      => ((IAsyncSelectWhereTreenumerable<TResult>)this).Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
     // The fast path: a projection composed onto a projection is still a projection, so the
     // chain keeps the light acquisition.

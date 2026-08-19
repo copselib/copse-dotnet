@@ -47,7 +47,14 @@ namespace Copse.Linq.Async.Treenumerables
     // the ctor and the public doors; the driver recipe stays internal) ----
 
     // The general surface: light wrappers never relabel.
-    bool IAsyncSelectWhereTreenumerable<TNode>.Relabels => false;
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TNode>.ComposePositional<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+      => ((IAsyncSelectWhereTreenumerable<TNode>)this).Compose(selector);
+
+    IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TNode>.ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      => ((IAsyncSelectWhereTreenumerable<TNode>)this).Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
     // The struct splice (the open seal): the predicate rides its own struct leaf -- this
     // wrapper's donation is delegate-free plumbing (one leaf lambda, as always).

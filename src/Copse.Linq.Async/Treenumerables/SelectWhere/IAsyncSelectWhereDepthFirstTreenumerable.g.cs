@@ -32,10 +32,12 @@ namespace Copse.Linq.Async.Treenumerables
   // so the public doors are composite-width only.
   internal interface IAsyncSelectWhereDepthFirstTreenumerable<TNode>
     : IAsyncDepthFirstTreenumerable<TNode>  {
-    // True once any relabeling operator is aboard; the operators' positional flavors read this
-    // to apply the join rule before composing.
-    bool Relabels { get; }
-
+    // THE JOIN RULE IS NOT A QUESTION ANYONE ASKS (the door move, 2026-08-19). Whether a
+    // member relabels used to be a public bit that every positional call site read before
+    // deciding to splice; it is now each member's private business, answered at its own
+    // ComposePositional door below. What was a law callers had to know became a promise
+    // machines keep about themselves.
+    //
     // Compose a result selector onto the accumulated mapping and return the successor treenumerable.
     // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneBefore do;
     // PruneAfter and projections do not).
@@ -52,13 +54,26 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
 
-    // The context-shaped projection door (the light tier's door, absorbed here when the
-    // conjunction marker retired): the leg is a pure projection that MAY read positions --
-    // the caller has already applied the join rule (the positional flavors check Relabels
-    // before knocking). Per the door-optimality law: light wrappers compose in-tier and
-    // stay light; the driver splices a struct leg; the scan citizens splice into the
-    // fold-carrying driver.
+    // The context-shaped projection door, POSITION-BLIND BY CONTRACT: the leg reads values
+    // only, so splicing is unconditionally safe -- a coordinate the leg never observes
+    // cannot be the wrong one. Always the cheapest route. Per the door-optimality law:
+    // light wrappers compose in-tier and stay light; the driver splices a struct leg; the
+    // scan citizens splice into the fold-carrying driver.
     IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+
+    // ---- The POSITION-READING doors: same shapes, stronger contract ----
+    //
+    // The leg MAY read coordinates, and the implementer guarantees it sees THIS member's
+    // EMITTED labels. Members that never move a label splice exactly as the blind doors do;
+    // a member that relabels stacks over itself, so the leg reads published labels by
+    // construction. The caller checks nothing.
+
+    IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+
+    IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
 
     // The context-shaped prune-after door (same absorption). Per the in-tier-only boundary
     // ruling (2026-08-04, the surviving half): light wrappers merge in-tier; every other

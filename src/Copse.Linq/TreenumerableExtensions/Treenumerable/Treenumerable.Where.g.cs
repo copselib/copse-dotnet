@@ -47,8 +47,8 @@ namespace Copse.Linq
       // The join rule, applied here because only the operator knows its lambda's flavor: a
       // positional predicate is entitled to its input tree's emitted labels, so it splices
       // only while the chain is label-preserving and otherwise stacks a real layer.
-      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
@@ -86,12 +86,12 @@ namespace Copse.Linq
 
       // The join rule, as in the composite positional overload: splice only while the chain
       // is label-preserving.
-      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
+      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.ComposePositional<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
@@ -124,12 +124,12 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose<TNode, PositionalWhereResultSelector<TNode>>(
+      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.ComposePositional<TNode, PositionalWhereResultSelector<TNode>>(
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(

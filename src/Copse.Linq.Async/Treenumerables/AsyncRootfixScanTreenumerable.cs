@@ -55,8 +55,6 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The general surface: a scan never relabels (it decorates), and a splicing operator's
     // leg lands in the fold-carrying driver.
-    public bool Relabels => false;
-
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
@@ -72,6 +70,15 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The context-shaped projection door (a positional leg, join-rule-cleared by the
     // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TOuterResult> selector)
+      => Compose(selector);
+
+    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
+      => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TOuterResult> selector)
       => Compose<TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
         new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(selector), relabels: false);

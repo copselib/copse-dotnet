@@ -37,7 +37,7 @@ namespace Copse.Linq.Treenumerables
       _Accumulator = accumulator;
       _Seed = seed;
       _ResultSelector = resultSelector;
-      Relabels = relabels;
+      _Relabels = relabels;
     }
 
     private readonly Func<ITreenumerator<TSource>> _InnerDepthFirstFactory;
@@ -46,7 +46,10 @@ namespace Copse.Linq.Treenumerables
     private readonly TAccumulate _Seed;
     private readonly TResultSelector _ResultSelector;
 
-    public bool Relabels { get; }
+    // PRIVATE, and genuinely dynamic here: a rootfix citizen's blind door builds a
+    // fold-carrying driver with relabels FALSE (a scan where nothing rejects moves no
+    // labels), so unlike the general driver this class must actually ask itself.
+    private readonly bool _Relabels;
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator()
       => new ScanWhereDepthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>(
@@ -69,7 +72,7 @@ namespace Copse.Linq.Treenumerables
         _Accumulator,
         _Seed,
         new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
-        Relabels | relabels);
+        _Relabels | relabels);
     }
 
     // The Func form is the struct form with the closure as its one leaf.
@@ -86,6 +89,22 @@ namespace Copse.Linq.Treenumerables
       => Compose<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
         new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
 
+    // The position-reading doors: this machine inherits relabeling from whatever joined it,
+    // so it answers from its own flag -- splice while nothing here moves a label, otherwise
+    // stack so the leg reads published labels.
+    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => _Relabels
+        ? new SelectTreenumerable<TResult, TOuterResult>(this, selector)
+        : Compose(selector);
+
+    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      => _Relabels
+        ? new SelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector, relabels)
+        : Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
+
     // The public projection door: the same leg, value-flavored, returning the composed
     // fold-carrying machine (which is itself a citizen through the general surface).
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
@@ -97,7 +116,7 @@ namespace Copse.Linq.Treenumerables
         _Seed,
         new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
           _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
-        Relabels);
+        _Relabels);
     }
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper

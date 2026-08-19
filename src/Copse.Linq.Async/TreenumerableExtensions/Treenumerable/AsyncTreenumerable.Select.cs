@@ -94,8 +94,8 @@ namespace Copse.Linq
       // context-shaped door dispatches per member (the door-optimality law: light stays
       // light, the driver nests a struct leg, a scan citizen's leg lands in the
       // fold-carrying driver).
-      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
     }
@@ -131,11 +131,11 @@ namespace Copse.Linq
     {
       // The join rule (see the composite positional overload): splice only over a
       // label-preserving chain. The context-shaped door dispatches per member.
-      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
-      if (source is IAsyncSelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is IAsyncSelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return new AsyncSelectDepthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
@@ -163,11 +163,11 @@ namespace Copse.Linq
     {
       // The join rule; the context-shaped door dispatches per member. See the depth-first
       // overload.
-      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
+        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
-      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
 
       return new AsyncSelectBreadthFirstTreenumerable<TSource, TResult>(
         source, nodeContext => selector(nodeContext.Node, nodeContext.Position));

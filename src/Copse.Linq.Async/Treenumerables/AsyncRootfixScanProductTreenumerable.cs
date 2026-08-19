@@ -55,8 +55,6 @@ namespace Copse.Linq.Async.Treenumerables
     // The fourth-cell door (see the plain citizen): the composed product rides as a
     // SelectResultSelector inner leg, the splicing operator's leg composes over it, and the
     // whole chain -- fold, projection, rejection -- is ONE machine.
-    public bool Relabels => false;
-
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
@@ -83,6 +81,15 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The context-shaped projection door (a positional leg, join-rule-cleared by the
     // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
+      => Compose(selector);
+
+    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TProduct, TOuterResult>
+      => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
       => Compose<TOuterResult, SelectResultSelector<TProduct, TOuterResult>>(
         new SelectResultSelector<TProduct, TOuterResult>(selector), relabels: false);

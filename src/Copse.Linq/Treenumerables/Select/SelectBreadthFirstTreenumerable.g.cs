@@ -54,7 +54,14 @@ namespace Copse.Linq.Treenumerables
     // the ctor and the public doors; the driver recipe stays internal) ----
 
     // Projections never relabel.
-    bool ISelectWhereBreadthFirstTreenumerable<TResult>.Relabels => false;
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    IBreadthFirstTreenumerable<TOuterResult> ISelectWhereBreadthFirstTreenumerable<TResult>.ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => ((ISelectWhereBreadthFirstTreenumerable<TResult>)this).Compose(selector);
+
+    IBreadthFirstTreenumerable<TOuterResult> ISelectWhereBreadthFirstTreenumerable<TResult>.ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      => ((ISelectWhereBreadthFirstTreenumerable<TResult>)this).Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
     // The fast path: a projection composed onto a projection is still a projection, so the
     // chain keeps the light acquisition.
