@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787167596820,
+  "lastUpdate": 1787167597412,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -118110,6 +118110,150 @@ window.BENCHMARK_DATA = {
             "value": 36868358.56632653,
             "unit": "ns",
             "range": "± 132418.02717246182"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0d94ccb24f1833c562c33a3da2f4883f293ab335",
+          "message": "Park the XML doc pass in the repo, not just in a session note\n\nThe parked work was recorded in Claude's memory directory, which lives inside this\ncodespace and dies with it. Jason: \"We'll need to put it in the repo somewhere, we can\nclean it up later.\"\n\ndesign-docs/XML_DOC_PASS.md carries the scope (200 flagged lines / 106 authored files,\nroughly half genuine, priority slice = public /// docs on packable projects), the finder\ncommand with its two caveats, the worked example (AsyncTreeWalker and why THE INVARIANT\nparagraph was kept as the contrast case), the timing argument, and the three open rulings\nthat should not get silently decided by whoever picks this up.\n\nThe timing argument is the part worth not losing: no project sets\nGenerateDocumentationFile, so these docs do not ship to IntelliSense today. Turning that\nproperty on is the forcing function -- run the pass first or in the same push.\n\nMarked as a working note, not a ratified design record.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T19:11:50Z",
+          "tree_id": "cabaa6c257602a2f5f896a14b9be09a031573f65",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0d94ccb24f1833c562c33a3da2f4883f293ab335"
+        },
+        "date": 1787167597278,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12468996.830729166,
+            "unit": "ns",
+            "range": "± 10730.834839063284"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 23481152.333333332,
+            "unit": "ns",
+            "range": "± 48477.75564971721"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 4252881.756009615,
+            "unit": "ns",
+            "range": "± 4939.764263428218"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 10225184.451822916,
+            "unit": "ns",
+            "range": "± 335927.3078686971"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 94723445.15476191,
+            "unit": "ns",
+            "range": "± 460191.6397188767"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 144128721.05357143,
+            "unit": "ns",
+            "range": "± 582299.1494735808"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33460484.141666666,
+            "unit": "ns",
+            "range": "± 395378.08536498505"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54414557.02040817,
+            "unit": "ns",
+            "range": "± 142238.71360733034"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 11791665.165865384,
+            "unit": "ns",
+            "range": "± 15837.987793240918"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11027112.989583334,
+            "unit": "ns",
+            "range": "± 77195.06688048468"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 2969414.5528846155,
+            "unit": "ns",
+            "range": "± 5565.02728417078"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 2975669.9997209823,
+            "unit": "ns",
+            "range": "± 12322.55816407797"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 90239570.76666667,
+            "unit": "ns",
+            "range": "± 815295.3364338919"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 81113023.68131869,
+            "unit": "ns",
+            "range": "± 169639.92956724262"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 33163383.075,
+            "unit": "ns",
+            "range": "± 46183.87345793158"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 28137312.959134616,
+            "unit": "ns",
+            "range": "± 108898.6071119458"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 108059422.43076922,
+            "unit": "ns",
+            "range": "± 521415.8543913028"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 147435145.26923078,
+            "unit": "ns",
+            "range": "± 273488.12864576234"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 18116816.64285714,
+            "unit": "ns",
+            "range": "± 73616.27770177035"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43030942.87222222,
+            "unit": "ns",
+            "range": "± 155311.00300762552"
           }
         ]
       }
