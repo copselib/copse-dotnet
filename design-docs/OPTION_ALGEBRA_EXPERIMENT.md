@@ -21,6 +21,7 @@
 | `af21dafb` | **C** | the algebra taken back OUT of the three walker steps (the per-node call), everything else in B kept |
 | `2d4e3dfb` | **D** | the buffer's two internal tuple doors (`TryGetPreorderStore`, `TryGetNodeCount`) take the option; the admission rule's "shape follows audience" clause corrected |
 | `07bf23ad` | **E** | every call site rewritten for readability over terseness: eleven guards and loops go back to probe-guard-use |
+| `f077bfcf` | **F** | `LevelOrderRead` deleted for `Option<TValue>` (field-for-field the same type); `PreorderRead` kept, with the criterion written down |
 
 `Option<TValue>` is a `readonly struct` carrying a public `HasValue` flag beside a public
 `Value` field -- deliberately the same shape the deleted family had, so stage A measures
@@ -72,7 +73,35 @@ costs" -- it is **"a delegate in a per-node step costs, and none of the other ca
 do."** The doors run once per walk, the axis scans once per child group, and neither shows
 up in any row.
 
-**One row is bimodal and must not be read as a result.** `Walk_over_MaterializedPreorder`
+### The store family's reads (stage F)
+
+`LevelOrderRead<TValue>` was `Option<TValue>` under another name, and the decoders read it
+per node, so the swap was measured on the families that drive it -- the flat decoders, the
+replay streams, and the serializer. Means in ms, two runs a side:
+
+| Row | before | after |
+|---|---|---|
+| FlatDecode Sync / Async | 3.78 / 5.13 | 3.78, 3.84 / 5.18, 5.15 |
+| AsyncOverheadMaterializeReplay Sync / Async | 0.79 / 0.95 | 0.73, 0.76 / 0.97, 1.00 |
+| MaterializeReplay Dft_over_Preorder | 25.7 | 26.2, 26.6 |
+| MaterializeReplay Bft_over_Preorder | 41.0 | 40.2, 42.0 |
+| MaterializeReplay Bft_over_LevelOrder | 37.6 | 37.2, 37.7 |
+| MaterializeReplay Dft_over_LevelOrder | 25.0 | 24.4, 24.9 |
+| Serialize_Forest | 54.2, 53.6 | 53.5, 54.0 |
+| Serialize_Chain_100K | 7.21, 7.20 | 7.21, 7.45 |
+| Deserialize_Forest | 129.9, 122.5 | 122.4, 121.8 |
+| Deserialize_Chain_100K | 14.49, 14.47 | 14.26, 14.27 |
+| Deserialize_Forest_ToInt_StringMap | 69.7, 74.1 | 74.2, 73.5 |
+| Deserialize_Forest_ToInt_SpanMap | 54.4, 54.2 | 54.7, 54.6 |
+
+No impact, as the identical layouts predict. Two rows looked like a result on the first
+pass -- `Deserialize_Forest` down 6% and `..._StringMap` up 6% -- and a second run of the
+BEFORE side landed on the AFTER numbers for both: the first BEFORE run was the outlier
+twice. The repeat-on-identical-code spread across these rows is up to ~5%, which is the
+bar any claim about them has to clear.
+
+**One row is bimodal and must not be read as a result.**
+ `Walk_over_MaterializedPreorder`
 answered 20.67 ms and 7.93 ms on IDENTICAL baseline code. Stage A landed twice in the fast
 mode, stage B twice in the slow one, stage C twice in the fast one. Whatever selects the
 mode (code layout, most likely), it is not the option -- a 2.6x "win" was on the table for
@@ -109,6 +138,13 @@ collapse. Three shapes carried nearly all of it:
 - **the SCAN** -- probe an indexed axis until the miss. The root and child loops in
   `GetHandles`, `GetHandlesWithValues`, `Invert`, `LeaffixScan` and the axes shed their
   break-guard and their temporary the same way.
+
+**The criterion the replacement turns on** (stage F): an option displaces a bespoke
+miss-carrier FOR FREE only when the payload is already one named thing. `ChildResult`
+carried a `NodeAndSiblingIndex`, `LevelOrderRead` carried a bare value, and both are gone
+at no cost. `PreorderRead` carries a value AND a depth, so the option form would mint a
+named pair for the payload -- one type traded for another, plus a hop at every read; it
+stays, and so do the serializer's `ScanEvent`/`TryScanEvent` for the same reason.
 
 Explicit `.HasValue` reads in hand-written sources: **117 → 115** (stage B drove it to 97;
 stage E put the guards back).
