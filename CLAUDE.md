@@ -479,6 +479,71 @@ When implementing a new filtering operation similar to Where, consider:
 - All treenumerators implement `IDisposable`
 - Generic type parameters follow pattern: `TValue` (node value), `TNode` (node type), `TChildEnumerator` (child enumeration)
 
+### Comments: current truth only — history lives in git
+
+**The test, applied when writing any comment: would this sentence still be true if the code
+had always looked like this?** If yes, it belongs in the code. If it is only true because of
+a journey the code took, it belongs in the commit message or a design doc.
+
+Prose has no tests. Code that goes false fails the battery; a comment that goes false just
+sits there being read, and narration goes stale far faster than law does because it is
+pinned to a past state of the code.
+
+**Placement:**
+
+| what | where |
+|---|---|
+| Laws, invariants, contracts | comment at the mechanism |
+| Why the obvious alternative was not taken | comment, a line or two |
+| A constraint with measured cost behind it | comment as a constraint + pointer to the doc holding the numbers |
+| What the code used to be, what was deleted, what superseded what | **commit message** |
+| The ruling, the alternatives weighed, the evidence | **design doc** (dated; that is what a record is for) |
+
+**No dates or commit SHAs in code comments.** A date in a comment is a staleness bomb with
+no detonator, and `git blame` answers "when and why did this line become this" precisely and
+without ever going stale. Dates belong in design docs and commit messages, both of which are
+inherently timestamped.
+
+**State a guardrail as a constraint, not as a story.** When a note exists to stop someone
+undoing a decision, the decision is the payload; the journey is not:
+
+```csharp
+// NO -- the story:
+// The tier seal existed because this wrapper's pieces used to arrive as bare Funcs and
+// de-inlined the whole splice chain; since the seal opened (2026-08-18) a rejecting
+// operator splices over a light wrapper through the inherited struct Compose.
+
+// YES -- the constraint:
+// The leg must arrive as a struct: a delegate-typed leg de-inlines the whole composed
+// chain (measured +20-25% on Mixed; OPERATOR_COMPOSITION_DESIGN.md).
+```
+
+**Named concepts** (the fourth cell, citizenship, the light tier) make design conversation
+efficient and belong in the design docs. Use them in code only where the name also appears
+in a type or method name — otherwise a reader needs a glossary to read a comment about a
+five-line method.
+
+**Durable fact vs. story.** Some history has earned its place: "always true for this class,
+proven by a probe against the full battery" is what lets a later reader delete something in
+one pass. Keep the fact, drop the account of how it was learned, and point at the record:
+`// Always true here (proof: OPERATOR_COMPOSITION_DESIGN.md).`
+
+**When distilling existing comments**: history may be RELOCATED, never destroyed. If the
+comment being removed carries evidence — a measurement, a proof, a ruling — it lands in the
+design doc in the same commit, before the comment goes.
+
+**Definition of done for any pass**: the comment diff reads as though the code had always
+been this way.
+
+**Finding candidates** (a review aid, not a gate — some dated citations are deliberate):
+
+```bash
+grep -rEn --include='*.cs' '^\s*(//|///)' src \
+  | grep -Ei '20[0-9]{2}-[0-9]{2}-[0-9]{2}|used to |no longer|was deleted|superseded|formerly|previously|the old |went dead'
+```
+
+Half of any such list is generated `.g.cs`; fix the async source and codegen carries it.
+
 ## Testing
 
 - **Framework**: MSTest with `[DynamicData]` for data-driven tests
