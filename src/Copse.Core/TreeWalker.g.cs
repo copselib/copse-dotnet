@@ -7,11 +7,16 @@ namespace Copse
 {
   /// <summary>
   /// A walkable plus a focus: one node of a tree, together with everything needed to navigate
-  /// away from it. Two words of data, held by value and owning nothing -- many walkers share
-  /// one topology, and stepping never mutates: every move returns a NEW walker, so a walker is
-  /// a value, not a cursor. (It is the carrier of the full-context Store comonad;
-  /// design-docs/CATEGORY_THEORY_SURVEY.md §4 has the theory, which you do not need in order to
-  /// use it.)
+  /// away from it. Two words of data, held by value and owning nothing, and stepping never
+  /// mutates: every move returns a NEW walker, so a walker is a value, not a cursor. (It is
+  /// the carrier of the full-context Store comonad; design-docs/CATEGORY_THEORY_SURVEY.md §4
+  /// has the theory, which you do not need in order to use it.)
+  ///
+  /// <para>THE TOPOLOGY IS THE INVARIANT SUBJECT: all walkers of one comonad stand on the
+  /// SAME topology, by definition -- mutate the topology and you fall out of the comonad. No
+  /// member here can change it: the constructor is the only way a topology enters, and every
+  /// step and every jump carries this walker's <see cref="Topology"/> through to the walker it
+  /// returns. What varies is the focus, which is the whole point.</para>
   ///
   /// <para>THE INVARIANT: a walker is always focused on an actual node. "Not yet positioned"
   /// is traversal-protocol state (the forest-root convention, the treenumerator's
