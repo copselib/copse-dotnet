@@ -518,6 +518,35 @@ undoing a decision, the decision is the payload; the journey is not:
 // chain (measured +20-25% on Mixed; OPERATOR_COMPOSITION_DESIGN.md).
 ```
 
+### The second test: who is this for, and what do they have loaded?
+
+**A `///` doc is for the CALLER** — what it is, what it guarantees, how to use it — written
+for someone with none of the design in their head. These are public API docs on packable
+projects; they become IntelliSense the day documentation generation is switched on.
+
+**A `//` comment is for the MAINTAINER** — why this shape and not the obvious one.
+
+Architecture (which project holds what, folder layout) goes to this file, not to a type's doc
+comment — CLAUDE.md already has a Project Structure section, and a second copy in a doc
+comment is a copy that will drift. Rulings go to design docs.
+
+**If a sentence only lands for someone who was in the conversation, it is not a comment.**
+The cheapest detector, and unlike the grep it fires while you type: **a named event used as a
+proper noun — "the Core move", "the seal", "Stage C", "the reunification" — means you are
+writing for yourself.** The reader cannot look it up. Neither, a week later, can you.
+
+```csharp
+// NO -- an index entry into a memory the reader does not have:
+// The comonad's SPLIT mirrors the monad's (the Core move, 2026-08-14): Core holds the
+// CARRIER and what the contract alone affords ... exactly as ITreenumerable lives here
+// while Select/Where live there: carriers in Core, algebras in Linq, for both tenants.
+
+// YES -- what a caller of this type needs:
+// This type carries the carrier and the navigation the contract alone affords. The operator
+// algebra over walkers -- Extend, Duplicate, Subtree, the doors -- lives in the Linq tier as
+// extension methods.
+```
+
 **Named concepts** (the fourth cell, citizenship, the light tier) make design conversation
 efficient and belong in the design docs. Use them in code only where the name also appears
 in a type or method name — otherwise a reader needs a glossary to read a comment about a
