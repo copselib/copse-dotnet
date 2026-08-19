@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787116405622,
+  "lastUpdate": 1787116406270,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -75807,6 +75807,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
             "value": 6147967,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391368,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d2b4d1403c24e46d6f2e029da9a521ade2aa0b95",
+          "message": "Document HideScope's default as policy, not accident\n\nJason's ruling: Hide is a DEFENSIVE operator, so it conceals everything\nby default and callers opt OUT of the part they do not need. The docs\nhad framed HideScope.Treenumerator as the \"historical default\", which\nreads as inertia; it is a deliberate safe default.\n\nThe reason is forward compatibility rather than present need. Nothing in\nCopse sniffs a treenumerator today -- every probe is at the treenumerable\nlayer -- so that scope currently defends only against foreign code. But\nif a later version adds a treenumerator-level probe (a bulk-pull fast\npath, a chunked drain), a shallow default would silently demote every\nexisting Hide() call site from a complete barrier at upgrade time, with\nno diagnostic. Under this default they stay correct and adding such a\nprobe stays non-breaking. Cost has an explicit, self-documenting opt-out;\ncorrectness cannot be opted into retroactively.\n\nHideScope.Treenumerable is documented accordingly as an opt-out: choosing\nit accepts that the concrete machine type stays visible, and that a\nfuture treenumerator-level probe would see through it.\n\nDocs only -- no behavior change, no signature change.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T04:49:38Z",
+          "tree_id": "4a4c5b30f1bec769b6c5d4c0e9326ba09395157e",
+          "url": "https://github.com/copselib/copse-dotnet/commit/d2b4d1403c24e46d6f2e029da9a521ade2aa0b95"
+        },
+        "date": 1787116406133,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206369,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6147834,
             "unit": "bytes"
           },
           {
