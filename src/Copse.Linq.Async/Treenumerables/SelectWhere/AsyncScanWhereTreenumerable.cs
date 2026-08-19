@@ -61,22 +61,30 @@ namespace Copse.Linq.Async.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
-    {
-      return new AsyncScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+      => Splice<TOuterResult, TOuterSelector>(outerSelector, relabels);
+
+    // The context-shaped projection door: the projection nests as a struct leg onto the
+    // selector chain, over the pair (this machine is not in the narrow fan-out, so all
+    // four doors live in this file).
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
+
+    // THE ONE CONSTRUCTION of a composed successor: every door that splices a leg lands
+    // here, so the fold-carrying recipe and the nested-selector spelling have a single
+    // home. It returns the concrete type because an interface implementation cannot --
+    // which is what lets the public projection door below reuse it rather than respell it.
+    private AsyncScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>> Splice<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      => new AsyncScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _InnerDepthFirstFactory,
         _InnerBreadthFirstFactory,
         _Accumulator,
         _Seed,
         new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
         _Relabels | relabels);
-    }
-
-    // The context-shaped projection door: the projection nests as a struct leg onto the
-    // selector chain, over the pair (this machine is not in the narrow fan-out, so all
-    // four doors live in this file).
-    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-      => Compose<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
-        new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
 
     // The position-reading doors: this machine inherits relabeling from whatever joined it,
     // so it answers from its own flag -- splice while nothing here moves a label, otherwise
@@ -97,16 +105,8 @@ namespace Copse.Linq.Async.Treenumerables
     // The public projection door: the same leg, value-flavored, returning the composed
     // fold-carrying machine (which is itself a citizen through the general surface).
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
-    {
-      return new AsyncScanWhereTreenumerable<TSource, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>>(
-        _InnerDepthFirstFactory,
-        _InnerBreadthFirstFactory,
-        _Accumulator,
-        _Seed,
-        new ComposedResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
-          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
-        _Relabels);
-    }
+      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)), relabels: false);
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the fold-carrying machine.

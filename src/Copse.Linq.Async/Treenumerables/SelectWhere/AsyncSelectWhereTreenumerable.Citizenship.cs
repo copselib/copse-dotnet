@@ -11,12 +11,8 @@ namespace Copse.Linq.Async.Treenumerables
   partial class AsyncSelectWhereTreenumerable<TSource, TResult, TResultSelector>
   {
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
-    {
-      return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>>(
-        _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
-          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))));
-    }
+      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)));
 
     public IAsyncPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
       => new AsyncPruneAfterTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));

@@ -583,3 +583,33 @@ which is the honest scope of the question it asks.
 
 Net −121 lines across 33 files. Behavior-neutral: removing a field nothing reads cannot
 change a result. Stage 0 representation pins unchanged, full battery 24,598 green.
+
+## One construction home per driver (2026-08-19)
+
+**Status: SHIPPED on main.** A duplication cleanup, no rule changes.
+
+The public projection door (`ComposeSelect`, from the citizenship) and the internal
+projection door (`Compose(Func<NodeContext<T>, TResult>)`) produce the same successor and
+differ only in whether the leg reads a value or a context. In the two driver classes they
+were spelled out separately — `ScanWhereTreenumerable.ComposeSelect` was a 12-line
+re-statement of the fold-carrying recipe, `SelectWhereTreenumerable`'s a 6-line
+re-statement of the nested-selector construction. A second home for a construction is a
+place for the two to drift apart.
+
+Both classes now have a private `Splice` that performs the one construction and returns the
+**concrete** successor type. Every door forwards to it. The concrete return is the point: an
+interface implementation must match its declared return type exactly, so no door can serve
+another door's return type — but a private helper can serve them all.
+
+**Not applied where the doors legitimately differ.** `RootfixScan`'s `ComposeSelect` builds
+the product citizen while its internal projection door builds the fold-carrying driver —
+that is the rootfix door ruling (`07a70f3`), the door-optimality law working as intended,
+not duplication. The light tier's door pairs are two-line bodies differing by a
+`nodeContext => f(nodeContext.Node)` adapter; a helper there would add lines, not remove
+them.
+
+**Honest accounting**: +34 lines across 10 files. This one does not shrink the code — it
+removes two duplicate constructions and adds four helpers, because the narrow twins carry
+the helper through the fan-out without having a citizenship part to dedupe against. The win
+is that a composed successor is constructed in exactly one place per class, and that all
+three driver classes read alike.

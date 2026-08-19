@@ -47,17 +47,24 @@ namespace Copse.Linq.Async.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
-    {
-      return new AsyncSelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
-        _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector));
-    }
+      => Splice<TOuterResult, TOuterSelector>(outerSelector);
 
     // The context-shaped projection door: the projection rides an inlinable struct leg
     // (the caller has already applied the join rule for positional legs).
     public IAsyncBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-      => Compose<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
-        new SelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
+      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
+        new SelectResultSelector<TResult, TOuterResult>(selector));
+
+    // THE ONE CONSTRUCTION of a composed successor: every door that splices a leg lands
+    // here, so the nested-selector spelling has a single home. It returns the concrete type
+    // because an interface implementation cannot -- which is what lets the public
+    // projection door (the citizenship part) reuse it rather than respell it.
+    private AsyncSelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>> Splice<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      => new AsyncSelectWhereBreadthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+        _Source,
+        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector));
 
     // ---- The position-reading doors: this driver STACKS ----
     //
