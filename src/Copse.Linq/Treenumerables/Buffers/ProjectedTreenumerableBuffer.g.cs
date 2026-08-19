@@ -74,8 +74,11 @@ namespace Copse.Linq.Treenumerables
     {
       if (source is TreenumerableBuffer<TSource> concreteBuffer)
       {
-        if ((concreteBuffer.TryGetPreorderStore()).TryGetValue(out var sourceStore))
+        var storeResult = concreteBuffer.TryGetPreorderStore();
+
+        if (storeResult.HasValue)
         {
+          var sourceStore = storeResult.Value;
           var count = sourceStore.Count;
           var values = new TResult[count];
           var subtreeSizes = new int[count];

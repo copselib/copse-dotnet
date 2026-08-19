@@ -136,8 +136,10 @@ namespace Copse.Linq
     {
       if (source is TreenumerableBuffer<TValue> buffer)
       {
-        if (buffer.TryGetNodeCount().TryGetValue(out var count))
-          return PreorderCapture.CaptureFrom(source, count);
+        var countResult = buffer.TryGetNodeCount();
+
+        if (countResult.HasValue)
+          return PreorderCapture.CaptureFrom(source, countResult.Value);
       }
 
       return PreorderCapture.CaptureFrom(source);
@@ -147,8 +149,10 @@ namespace Copse.Linq
     {
       if (source is TreenumerableBuffer<TValue> buffer)
       {
-        if (buffer.TryGetNodeCount().TryGetValue(out var count))
-          return LevelOrderCapture.CaptureFrom(source, count);
+        var countResult = buffer.TryGetNodeCount();
+
+        if (countResult.HasValue)
+          return LevelOrderCapture.CaptureFrom(source, countResult.Value);
       }
 
       return LevelOrderCapture.CaptureFrom(source);

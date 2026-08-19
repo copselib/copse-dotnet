@@ -22,10 +22,15 @@ namespace Copse.Linq
     {
       var pending = new Stack<TreeWalker<TValue, THandle>>();
 
-      for (var rootIndex = 0;
-        (source.TryGetTreeWalkerAtRootIndex(rootIndex)).TryGetValue(out var rootStance);
-        rootIndex++)
-        pending.Push(rootStance);
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootStance = source.TryGetTreeWalkerAtRootIndex(rootIndex);
+
+        if (!rootStance.HasValue)
+          break;
+
+        pending.Push(rootStance.Value);
+      }
 
       while (pending.Count > 0)
       {
@@ -33,10 +38,15 @@ namespace Copse.Linq
 
         yield return new HandleAndValue<THandle, TValue>(stance.Focus, stance.GetValue());
 
-        for (var childIndex = 0;
-          (stance.MoveToChild(childIndex)).TryGetValue(out var child);
-          childIndex++)
-          pending.Push(child);
+        for (var childIndex = 0; ; childIndex++)
+        {
+          var childStance = stance.MoveToChild(childIndex);
+
+          if (!childStance.HasValue)
+            break;
+
+          pending.Push(childStance.Value);
+        }
       }
     }
   }

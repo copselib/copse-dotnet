@@ -115,8 +115,10 @@ namespace Copse.Linq
       {
         if (buffer is AsyncTreenumerableBuffer<TNode> concreteBuffer)
         {
-          if ((await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false)).TryGetValue(out var store))
-            return MirrorEmit(store);
+          var storeResult = await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false);
+
+          if (storeResult.HasValue)
+            return MirrorEmit(storeResult.Value);
         }
 
         return await WalkerMirrorAsync(buffer).ConfigureAwait(false);
@@ -179,10 +181,15 @@ namespace Copse.Linq
 
       var rootStances = new List<AsyncTreeWalker<TNode, int>>();
 
-      for (var rootIndex = 0;
-        (await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false)).TryGetValue(out var rootStance);
-        rootIndex++)
-        rootStances.Add(rootStance);
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
+
+        if (!rootStance.HasValue)
+          break;
+
+        rootStances.Add(rootStance.Value);
+      }
 
       foreach (var rootStance in rootStances)
         stack.Push((rootStance, -1));
@@ -204,10 +211,15 @@ namespace Copse.Linq
 
         stack.Push((default, outputIndex));
 
-        for (var childIndex = 0;
-          (await stance.MoveToChildAsync(childIndex).ConfigureAwait(false)).TryGetValue(out var child);
-          childIndex++)
-          stack.Push((child, -1));
+        for (var childIndex = 0; ; childIndex++)
+        {
+          var childStance = await stance.MoveToChildAsync(childIndex).ConfigureAwait(false);
+
+          if (!childStance.HasValue)
+            break;
+
+          stack.Push((childStance.Value, -1));
+        }
       }
 
       return new AsyncPreorderArrayStore<TNode>(mirroredValues.ToArray(), mirroredSubtreeSizes.ToArray());

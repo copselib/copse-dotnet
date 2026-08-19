@@ -72,8 +72,11 @@ namespace Copse.Linq.Async.Treenumerables
     {
       if (source is AsyncTreenumerableBuffer<TSource> concreteBuffer)
       {
-        if ((await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false)).TryGetValue(out var sourceStore))
+        var storeResult = await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false);
+
+        if (storeResult.HasValue)
         {
+          var sourceStore = storeResult.Value;
           var count = sourceStore.Count;
           var values = new TResult[count];
           var subtreeSizes = new int[count];

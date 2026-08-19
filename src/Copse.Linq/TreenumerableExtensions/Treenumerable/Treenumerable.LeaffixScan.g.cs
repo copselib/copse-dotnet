@@ -151,8 +151,10 @@ namespace Copse.Linq
     {
       if (buffer is TreenumerableBuffer<TSource> concreteBuffer)
       {
-        if ((concreteBuffer.TryGetPreorderStore()).TryGetValue(out var store))
-          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+        var storeResult = concreteBuffer.TryGetPreorderStore();
+
+        if (storeResult.HasValue)
+          return SpanLeaffix(storeResult.Value, leafNodeSelector, edgeAccumulator, nodeAccumulator);
       }
 
       return WalkerLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
@@ -225,11 +227,14 @@ namespace Copse.Linq
       var subtreeSizes = new List<int>();
       var frames = new Stack<(TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
-      for (var rootIndex = 0;
-        (buffer.TryGetTreeWalkerAtRootIndex(rootIndex)).TryGetValue(out var rootStance);
-        rootIndex++)
+      for (var rootIndex = 0; ; rootIndex++)
       {
-        frames.Push(OpenLeaffixFrame(rootStance, results, subtreeSizes));
+        var rootStance = buffer.TryGetTreeWalkerAtRootIndex(rootIndex);
+
+        if (!rootStance.HasValue)
+          break;
+
+        frames.Push(OpenLeaffixFrame(rootStance.Value, results, subtreeSizes));
 
         while (frames.Count > 0)
         {

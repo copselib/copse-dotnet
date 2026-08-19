@@ -150,8 +150,10 @@ namespace Copse.Linq
     {
       if (buffer is AsyncTreenumerableBuffer<TSource> concreteBuffer)
       {
-        if ((await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false)).TryGetValue(out var store))
-          return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+        var storeResult = await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false);
+
+        if (storeResult.HasValue)
+          return SpanLeaffix(storeResult.Value, leafNodeSelector, edgeAccumulator, nodeAccumulator);
       }
 
       return await WalkerLeaffixAsync(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator).ConfigureAwait(false);
@@ -224,11 +226,14 @@ namespace Copse.Linq
       var subtreeSizes = new List<int>();
       var frames = new Stack<(AsyncTreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
-      for (var rootIndex = 0;
-        (await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false)).TryGetValue(out var rootStance);
-        rootIndex++)
+      for (var rootIndex = 0; ; rootIndex++)
       {
-        frames.Push(await OpenLeaffixFrameAsync(rootStance, results, subtreeSizes).ConfigureAwait(false));
+        var rootStance = await buffer.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
+
+        if (!rootStance.HasValue)
+          break;
+
+        frames.Push(await OpenLeaffixFrameAsync(rootStance.Value, results, subtreeSizes).ConfigureAwait(false));
 
         while (frames.Count > 0)
         {
