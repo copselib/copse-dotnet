@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787161896823,
+  "lastUpdate": 1787161897330,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -77711,6 +77711,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
             "value": 8391368,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e394b3238a895ca56358d77bfd03405f45127cb",
+          "message": "The driver's _Relabels goes: one consumer left in the algebra\n\nThe door move (4673265) made Relabels private state instead of a published interface bit.\nThis removes the state wherever nothing ever read it.\n\nIn the SelectWhere driver family the field was write-only in the closure sense: no code\nread it to decide anything, and the only thing it fed was the identical write-only field\nof the next driver. The reason is the door move's own: a driver exists BECAUSE something\nrejected, so its position-reading doors stack unconditionally and never ask.\n\nGone from SelectWhereTreenumerable and its two narrow twins -- the field, the constructor\nparameter, and the argument at every construction site (the Where and PruneBefore\noverloads, the light tier's splices, the middle tier's, the scan machine's stack site, and\nthree test rehearsals). The private ComposeCore helpers in the light wrappers went with\nit: with the Func door gone they had one caller each, so their bodies moved into the\nstruct door.\n\nWhat survives: the relabels PARAMETER on the interface doors, which is a splicing operator\nreporting on itself. One member still needs to hear it -- ScanWhere, whose relabeling is\ngenuinely variable (a rejecting operator builds it true, a rootfix citizen's blind door\nbuilds it false). Every other member answers from its representation. The bit now has\nexactly one consumer in the whole algebra, which is the honest scope of the question.\n\nNet -103 lines of code across 39 files. Behavior-neutral: a field nothing reads cannot\nchange a result. Stage 0 representation pins unchanged, full battery 24,598 green.\n\nDocs: a dated section in OPERATOR_COMPOSITION_DESIGN.md continuing the door move, and the\ninterface comment now names who consults relabels and who answers from representation.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:26:43Z",
+          "tree_id": "4bb6debf55a9250c9f89962529256f16c955ad6a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e394b3238a895ca56358d77bfd03405f45127cb"
+        },
+        "date": 1787161897211,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206369,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6147834,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391429,
             "unit": "bytes"
           }
         ]
