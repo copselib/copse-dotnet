@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787167607913,
+  "lastUpdate": 1787167608507,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -97108,6 +97108,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
             "value": 2840178,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 332841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 266129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0d94ccb24f1833c562c33a3da2f4883f293ab335",
+          "message": "Park the XML doc pass in the repo, not just in a session note\n\nThe parked work was recorded in Claude's memory directory, which lives inside this\ncodespace and dies with it. Jason: \"We'll need to put it in the repo somewhere, we can\nclean it up later.\"\n\ndesign-docs/XML_DOC_PASS.md carries the scope (200 flagged lines / 106 authored files,\nroughly half genuine, priority slice = public /// docs on packable projects), the finder\ncommand with its two caveats, the worked example (AsyncTreeWalker and why THE INVARIANT\nparagraph was kept as the contrast case), the timing argument, and the three open rulings\nthat should not get silently decided by whoever picks this up.\n\nThe timing argument is the part worth not losing: no project sets\nGenerateDocumentationFile, so these docs do not ship to IntelliSense today. Turning that\nproperty on is the forcing function -- run the pass first or in the same push.\n\nMarked as a working note, not a ratified design record.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T19:11:50Z",
+          "tree_id": "cabaa6c257602a2f5f896a14b9be09a031573f65",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0d94ccb24f1833c562c33a3da2f4883f293ab335"
+        },
+        "date": 1787167608367,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642132,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2441,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693242,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 70577,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 4161,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789082,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051139,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840184,
             "unit": "bytes"
           },
           {
