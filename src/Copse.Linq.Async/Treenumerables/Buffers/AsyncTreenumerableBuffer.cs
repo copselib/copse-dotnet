@@ -72,24 +72,25 @@ namespace Copse.Linq.Async.Treenumerables
     // pin rule's shape).
     // The bulk-fold fast path's door (the receiver-smart operators: LeaffixScan, Invert):
     // a preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
-    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Tuple-shaped
-    // because `out` cannot cross an `await` -- the async spelling of the try-pattern.
-    internal async ValueTask<(bool HasStore, AsyncPreorderArrayStore<TValue> Store)> TryGetPreorderStoreAsync()
+    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. A level-order buffer
+    // and an un-settled one decline, so the miss is an expected answer, not a violation.
+    internal async ValueTask<Option<AsyncPreorderArrayStore<TValue>>> TryGetPreorderStoreAsync()
     {
       if (NativeLayout == BufferLayout.LevelOrder)
-        return (false, default);
+        return default;
 
       var adjacencyProbes = await EnsureTopologyAsync().ConfigureAwait(false);
 
       if (adjacencyProbes is AsyncPreorderArrayTopology<TValue> arrayTopology)
-        return (true, arrayTopology.Store);
+        return new Option<AsyncPreorderArrayStore<TValue>>(arrayTopology.Store);
 
       // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
       // forcing hands over the same arrays the stream half built or will build.
       if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyIndex)
-        return (true, await lazyIndex.Store.EnsureBuiltStoreAsync().ConfigureAwait(false));
+        return new Option<AsyncPreorderArrayStore<TValue>>(
+          await lazyIndex.Store.EnsureBuiltStoreAsync().ConfigureAwait(false));
 
-      return (false, default);
+      return default;
     }
 
     // The counted-source door (the presize fast-path, 2026-08-16): the exact node count, when
@@ -97,7 +98,7 @@ namespace Copse.Linq.Async.Treenumerables
     // undecided case and a lazy store not yet built decline (forcing an O(n) build to answer a
     // count question would be a surprising side effect; the uncounted capture path handles
     // those correctly). Callers presize transpose captures with the answer.
-    internal (bool HasCount, int Count) TryGetNodeCount()
+    internal Option<int> TryGetNodeCount()
     {
       if (_Topology == null)
         return default;
@@ -105,18 +106,18 @@ namespace Copse.Linq.Async.Treenumerables
       UpgradeTopology();
 
       if (_Topology is AsyncPreorderArrayTopology<TValue> preorderTopology)
-        return (true, preorderTopology.Store.Count);
+        return new Option<int>(preorderTopology.Store.Count);
 
       if (_Topology is AsyncLevelOrderArrayTopology<TValue> levelOrderTopology)
-        return (true, levelOrderTopology.Store.Count);
+        return new Option<int>(levelOrderTopology.Store.Count);
 
       if (_Topology is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyPreorder
         && lazyPreorder.Store.IsBuilt)
-        return (true, lazyPreorder.Store.BuiltStore.Count);
+        return new Option<int>(lazyPreorder.Store.BuiltStore.Count);
 
       if (_Topology is AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>> lazyLevelOrder
         && lazyLevelOrder.Store.IsBuilt)
-        return (true, lazyLevelOrder.Store.BuiltStore.Count);
+        return new Option<int>(lazyLevelOrder.Store.BuiltStore.Count);
 
       return default;
     }

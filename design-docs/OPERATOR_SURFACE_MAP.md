@@ -51,10 +51,12 @@ caller reads next. (The unrelated `Option`-labelled sentinel completion of the c
 a separate question, canonized as semantics and refused as representation in
 CATEGORY_THEORY_SURVEY.md §11.) Two clauses follow from the rule:
 
-- **Shape follows audience.** A miss that never crosses the public surface may ride a
-  named tuple — `TryGetPreorderStore`'s `(bool HasStore, PreorderArrayStore<TValue> Store)`
-  is internal and stays a tuple. The two-channel doctrine is a promise made to *consumers*:
-  if that door is ever published, the tuple becomes `StoreResult` in the same commit.
+- **The internal tuples are a debt, not a dialect.** Two internal doors on
+  `TreenumerableBuffer` answer with a `(bool Has…, T)` tuple: `TryGetPreorderStore` and
+  `TryGetNodeCount`. The 2026-08-16 chat named the first a WART and made its repair
+  conditional — it becomes a result struct if that door is ever published — and never named
+  the second at all. Nothing here licenses the shape for new surface: a tuple in this
+  position is what was already there, not a sanctioned alternative to a named miss.
 - **By value, never `out`.** The result struct is the async spelling of the try-pattern —
   it stores nothing (no frame bloat) and is legal in an async method, which is why one
   shape serves both colors.

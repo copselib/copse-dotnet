@@ -45,12 +45,14 @@ namespace Copse.Linq.Tests
     // fan-out enforces the condition it depends on.
     private static IWalkableTreenumerable<string, int> SkeletonDirect(string tree)
     {
-      var (hasStore, store) = ((TreenumerableBuffer<string>)TreeSerializer
+      var storeResult = ((TreenumerableBuffer<string>)TreeSerializer
         .DeserializeDepthFirstTree(tree)
         .Materialize(BufferLayout.Preorder))
         .TryGetPreorderStore();
 
-      Microsoft.VisualStudio.TestTools.UnitTesting.Assert.IsTrue(hasStore, "a declared preorder capture must hand over its store");
+      Microsoft.VisualStudio.TestTools.UnitTesting.Assert.IsTrue(storeResult.HasValue, "a declared preorder capture must hand over its store");
+
+      var store = storeResult.Value;
       PreorderSkeletonValidity.AssertValid(store.Count, store.GetSubtreeSize);
 
       return new TreenumerableBuffer<string>(

@@ -115,9 +115,7 @@ namespace Copse.Linq
       {
         if (buffer is AsyncTreenumerableBuffer<TNode> concreteBuffer)
         {
-          var (hasStore, store) = await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false);
-
-          if (hasStore)
+          if ((await concreteBuffer.TryGetPreorderStoreAsync().ConfigureAwait(false)).TryGetValue(out var store))
             return MirrorEmit(store);
         }
 

@@ -151,9 +151,7 @@ namespace Copse.Linq
     {
       if (buffer is TreenumerableBuffer<TSource> concreteBuffer)
       {
-        var (hasStore, store) = concreteBuffer.TryGetPreorderStore();
-
-        if (hasStore)
+        if ((concreteBuffer.TryGetPreorderStore()).TryGetValue(out var store))
           return SpanLeaffix(store, leafNodeSelector, edgeAccumulator, nodeAccumulator);
       }
 

@@ -74,24 +74,25 @@ namespace Copse.Linq.Treenumerables
     // pin rule's shape).
     // The bulk-fold fast path's door (the receiver-smart operators: LeaffixScan, Invert):
     // a preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
-    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. Tuple-shaped
-    // because `out` cannot cross an `await` -- the async spelling of the try-pattern.
-    internal (bool HasStore, PreorderArrayStore<TValue> Store) TryGetPreorderStore()
+    // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. A level-order buffer
+    // and an un-settled one decline, so the miss is an expected answer, not a violation.
+    internal Option<PreorderArrayStore<TValue>> TryGetPreorderStore()
     {
       if (NativeLayout == BufferLayout.LevelOrder)
-        return (false, default);
+        return default;
 
       var adjacencyProbes = EnsureTopology();
 
       if (adjacencyProbes is PreorderArrayTopology<TValue> arrayTopology)
-        return (true, arrayTopology.Store);
+        return new Option<PreorderArrayStore<TValue>>(arrayTopology.Store);
 
       // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
       // forcing hands over the same arrays the stream half built or will build.
       if (adjacencyProbes is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyIndex)
-        return (true, lazyIndex.Store.EnsureBuiltStore());
+        return new Option<PreorderArrayStore<TValue>>(
+          lazyIndex.Store.EnsureBuiltStore());
 
-      return (false, default);
+      return default;
     }
 
     // The counted-source door (the presize fast-path, 2026-08-16): the exact node count, when
@@ -99,7 +100,7 @@ namespace Copse.Linq.Treenumerables
     // undecided case and a lazy store not yet built decline (forcing an O(n) build to answer a
     // count question would be a surprising side effect; the uncounted capture path handles
     // those correctly). Callers presize transpose captures with the answer.
-    internal (bool HasCount, int Count) TryGetNodeCount()
+    internal Option<int> TryGetNodeCount()
     {
       if (_Topology == null)
         return default;
@@ -107,18 +108,18 @@ namespace Copse.Linq.Treenumerables
       UpgradeTopology();
 
       if (_Topology is PreorderArrayTopology<TValue> preorderTopology)
-        return (true, preorderTopology.Store.Count);
+        return new Option<int>(preorderTopology.Store.Count);
 
       if (_Topology is LevelOrderArrayTopology<TValue> levelOrderTopology)
-        return (true, levelOrderTopology.Store.Count);
+        return new Option<int>(levelOrderTopology.Store.Count);
 
       if (_Topology is PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>> lazyPreorder
         && lazyPreorder.Store.IsBuilt)
-        return (true, lazyPreorder.Store.BuiltStore.Count);
+        return new Option<int>(lazyPreorder.Store.BuiltStore.Count);
 
       if (_Topology is LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>> lazyLevelOrder
         && lazyLevelOrder.Store.IsBuilt)
-        return (true, lazyLevelOrder.Store.BuiltStore.Count);
+        return new Option<int>(lazyLevelOrder.Store.BuiltStore.Count);
 
       return default;
     }

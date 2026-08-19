@@ -135,9 +135,7 @@ namespace Copse.Linq
     {
       if (source is AsyncTreenumerableBuffer<TValue> buffer)
       {
-        var (hasCount, count) = buffer.TryGetNodeCount();
-
-        if (hasCount)
+        if (buffer.TryGetNodeCount().TryGetValue(out var count))
           return AsyncPreorderCapture.CaptureFromAsync(source, count);
       }
 
@@ -148,9 +146,7 @@ namespace Copse.Linq
     {
       if (source is AsyncTreenumerableBuffer<TValue> buffer)
       {
-        var (hasCount, count) = buffer.TryGetNodeCount();
-
-        if (hasCount)
+        if (buffer.TryGetNodeCount().TryGetValue(out var count))
           return AsyncLevelOrderCapture.CaptureFromAsync(source, count);
       }
 
