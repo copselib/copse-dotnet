@@ -91,7 +91,7 @@ namespace Copse.Linq.Async.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
       => _Relabels
-        ? new AsyncSelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector, relabels)
+        ? new AsyncSelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector)
         : Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
     // The public projection door: the same leg, value-flavored, returning the composed

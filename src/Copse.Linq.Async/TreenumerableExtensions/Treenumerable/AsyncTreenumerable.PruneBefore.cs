@@ -25,7 +25,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -67,7 +67,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereDepthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     public static IAsyncDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -88,7 +88,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -107,7 +107,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereBreadthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     public static IAsyncBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -126,7 +126,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new AsyncSelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
   }
 }

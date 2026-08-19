@@ -26,7 +26,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -71,7 +71,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -92,7 +92,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -111,7 +111,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -130,7 +130,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
   }

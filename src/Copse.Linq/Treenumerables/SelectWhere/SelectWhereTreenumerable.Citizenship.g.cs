@@ -19,8 +19,7 @@ namespace Copse.Linq.Treenumerables
       return new SelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
-          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
-        _Relabels);
+          _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))));
     }
 
     public IPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)

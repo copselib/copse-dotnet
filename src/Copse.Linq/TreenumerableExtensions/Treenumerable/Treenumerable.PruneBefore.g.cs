@@ -28,7 +28,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
 
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -70,7 +70,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     public static IDepthFirstTreenumerable<T> PruneBefore<T>(
@@ -91,7 +91,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -110,7 +110,7 @@ namespace Copse.Linq
           new PruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PruneBeforeResultSelector<T>(predicate));
     }
 
     public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
@@ -129,7 +129,7 @@ namespace Copse.Linq
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+        source, new PositionalPruneBeforeResultSelector<T>(predicate));
     }
   }
 }

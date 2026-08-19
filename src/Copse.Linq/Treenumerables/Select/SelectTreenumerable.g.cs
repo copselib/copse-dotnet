@@ -82,18 +82,11 @@ namespace Copse.Linq.Treenumerables
     ITreenumerable<TOuterResult> ISelectWhereTreenumerable<TResult>.Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      => ComposeCore<TOuterResult, TOuterSelector>(outerSelector, relabels);
-
-    private ITreenumerable<TOuterResult> ComposeCore<TOuterResult, TOuterSelector>(
-      TOuterSelector outerSelector,
-      bool relabels)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
       return new SelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>(
-          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector),
-        relabels);
+          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector));
     }
 
     /// <inheritdoc/>

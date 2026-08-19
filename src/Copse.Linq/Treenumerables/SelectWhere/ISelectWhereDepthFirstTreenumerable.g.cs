@@ -55,7 +55,10 @@ namespace Copse.Linq.Treenumerables
     // successor's composed chain nests in the TYPE and the splice costs no delegate hops;
     // a piece that is inherently a closure rides as a FuncResultSelector leaf.
     // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneBefore do;
-    // PruneAfter and projections do not).
+    // PruneAfter and projections do not). Only a member whose relabeling is genuinely
+    // variable consults it -- today that is ScanWhere alone, which can be built either by a
+    // rejecting operator or by a rootfix citizen's blind door. The rest answer from their
+    // representation: light wrappers never relabel, a driver always does.
     IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)

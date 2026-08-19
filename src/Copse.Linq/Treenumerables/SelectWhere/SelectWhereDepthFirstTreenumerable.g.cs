@@ -24,22 +24,14 @@ namespace Copse.Linq.Treenumerables
   {
     public SelectWhereDepthFirstTreenumerable(
       IDepthFirstTreenumerable<TSource> source,
-      TResultSelector resultSelector,
-      bool relabels)
+      TResultSelector resultSelector)
     {
       _Source = source;
       _ResultSelector = resultSelector;
-      _Relabels = relabels;
     }
 
     private readonly IDepthFirstTreenumerable<TSource> _Source;
     private readonly TResultSelector _ResultSelector;
-
-    // PRIVATE (the door move): monotone -- the OR of every operator that has joined this
-    // chain. PROVEN ALWAYS TRUE for this class (a probe throwing on relabels=false ran the
-    // full 24,596-test battery clean): a driver exists only because Where or PruneBefore
-    // built it, and both relabel by nature. The field survives to feed successors.
-    private readonly bool _Relabels;
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() =>
       new WhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>(
@@ -55,8 +47,7 @@ namespace Copse.Linq.Treenumerables
     {
       return new SelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector),
-        _Relabels | relabels);
+        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector));
     }
 
     // The context-shaped projection door: the projection rides an inlinable struct leg
@@ -69,9 +60,9 @@ namespace Copse.Linq.Treenumerables
     //
     // A spliced leg is evaluated against this driver's INNER coordinates, which are not the
     // ones it publishes -- promotion has moved them. So a position-reading leg goes into a
-    // wrapper over this driver, where it reads published labels by construction. No flag is
+    // wrapper over this driver, where it reads published labels by construction. Nothing is
     // consulted: a driver exists because something rejected, and rejection is what moves
-    // labels (see _Relabels, proven always true).
+    // labels.
     public IDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
       => new SelectDepthFirstTreenumerable<TResult, TOuterResult>(this, selector);
 
@@ -79,7 +70,7 @@ namespace Copse.Linq.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
-      => new SelectWhereDepthFirstTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector, relabels);
+      => new SelectWhereDepthFirstTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector);
 
     // The context-shaped prune-after door: the in-tier-only boundary ruling (2026-08-04,
     // the surviving half) -- the light prune wrapper STACKS over the driver rather than

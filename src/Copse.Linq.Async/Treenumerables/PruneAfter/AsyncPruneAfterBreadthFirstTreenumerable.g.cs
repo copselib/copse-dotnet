@@ -65,18 +65,11 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncBreadthFirstTreenumerable<TOuterResult> IAsyncSelectWhereBreadthFirstTreenumerable<TNode>.Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      => ComposeCore<TOuterResult, TOuterSelector>(outerSelector, relabels);
-
-    private IAsyncBreadthFirstTreenumerable<TOuterResult> ComposeCore<TOuterResult, TOuterSelector>(
-      TOuterSelector outerSelector,
-      bool relabels)
-      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>
     {
       return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TNode, TNode, TOuterResult, PruneAfterResultSelector<TNode>, TOuterSelector>(
-          new PruneAfterResultSelector<TNode>(_Predicate), outerSelector),
-        relabels);
+          new PruneAfterResultSelector<TNode>(_Predicate), outerSelector));
     }
 
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE

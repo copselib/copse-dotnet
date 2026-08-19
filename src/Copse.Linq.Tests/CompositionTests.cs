@@ -218,8 +218,7 @@ namespace Copse.Linq.Tests
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
-              : NodeTraversalStrategies.TraverseAll)),
-        relabels: true);
+              : NodeTraversalStrategies.TraverseAll)));
 
       var nodes = rehearsedPruneAfter
         .GetTraversal(TreeTraversalStrategy.DepthFirst)
@@ -241,8 +240,7 @@ namespace Copse.Linq.Tests
             nodeContext.Node,
             nodeContext.Node == "b"
               ? NodeTraversalStrategies.SkipDescendants
-              : NodeTraversalStrategies.TraverseAll)),
-        relabels: true);
+              : NodeTraversalStrategies.TraverseAll)));
 
       var nodes = rehearsedPruneAfter
         .GetTraversal(TreeTraversalStrategy.BreadthFirst)
@@ -292,8 +290,7 @@ namespace Copse.Linq.Tests
                 nodeContext.Node,
                 nodeContext.Node == target
                   ? NodeTraversalStrategies.SkipDescendants
-                  : NodeTraversalStrategies.TraverseAll)),
-            relabels: true);
+                  : NodeTraversalStrategies.TraverseAll)));
 
           var expected = Tree(treeString).PruneAfter(n => n == target)
             .GetTraversal(strategy, Selector)

@@ -79,18 +79,11 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      => ComposeCore<TOuterResult, TOuterSelector>(outerSelector, relabels);
-
-    private IAsyncTreenumerable<TOuterResult> ComposeCore<TOuterResult, TOuterSelector>(
-      TOuterSelector outerSelector,
-      bool relabels)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
     {
       return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>(
-          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector),
-        relabels);
+          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector));
     }
 
     /// <inheritdoc/>

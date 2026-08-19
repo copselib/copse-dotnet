@@ -554,3 +554,32 @@ directly.
 Net −248 lines across 38 files; the composition surface drops from six doors to five.
 Behavior-neutral by construction (a member with no callers), and confirmed by the Stage 0
 representation pins and the full battery, 24,598 green.
+
+## The driver's `_Relabels` goes (2026-08-19) — one consumer left
+
+**Status: SHIPPED on main.** Continues "the door move" above: that change made `Relabels`
+private state; this one removes the state wherever it was never read.
+
+The door move left `_Relabels` as a private field on every driver, monotonically OR-ing in
+each joining operator's bit and feeding it to successors. In the `SelectWhere` driver
+family that field was **write-only in the closure sense**: nothing read it to decide
+anything, and the only thing it fed was the identical write-only field of the next driver.
+The door move's own note explains why — a driver exists *because* something rejected, so
+its position-reading doors stack unconditionally and never ask.
+
+Removed from `SelectWhereTreenumerable` and its two narrow twins: the field, the
+constructor parameter, and the argument at every construction site (the `Where` and
+`PruneBefore` overloads, the light tier's splices, the middle tier's, the scan machine's
+stack site, and three test rehearsals). The private `ComposeCore` helpers in the light
+wrappers went with it — with the Func door gone they had a single caller each, so their
+bodies moved into the struct door.
+
+**What survives, and where.** The `relabels` parameter stays on the interface doors: it is
+a splicing operator reporting on *itself*, and one member still needs to hear it —
+`ScanWhere`, whose relabeling is genuinely variable (a rejecting operator builds it with
+`true`; a rootfix citizen's blind door builds it with `false`). Every other member answers
+from its representation. So the bit now has exactly one consumer in the whole algebra,
+which is the honest scope of the question it asks.
+
+Net −121 lines across 33 files. Behavior-neutral: removing a field nothing reads cannot
+change a result. Stage 0 representation pins unchanged, full battery 24,598 green.

@@ -95,7 +95,7 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
       => _Relabels
-        ? new SelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector, relabels)
+        ? new SelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector)
         : Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
     // The public projection door: the same leg, value-flavored, returning the composed

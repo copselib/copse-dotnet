@@ -55,8 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
       return new AsyncSelectWhereDepthFirstTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, FuncResultSelector<TSource, TResult>, TOuterSelector>(
-          new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector),
-        relabels);
+          new FuncResultSelector<TSource, TResult>(_ResultSelector), outerSelector));
     }
 
     // A prune-after composes in-tier.

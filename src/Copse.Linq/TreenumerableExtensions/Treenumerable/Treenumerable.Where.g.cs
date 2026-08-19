@@ -29,7 +29,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -74,7 +74,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     public static IDepthFirstTreenumerable<TNode> Where<TNode>(
@@ -95,7 +95,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -114,7 +114,7 @@ namespace Copse.Linq
           new WhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, WhereResultSelector<TNode>>(
-        source, new WhereResultSelector<TNode>(predicate), relabels: true);
+        source, new WhereResultSelector<TNode>(predicate));
     }
 
     public static IBreadthFirstTreenumerable<TNode> Where<TNode>(
@@ -133,7 +133,7 @@ namespace Copse.Linq
           new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalWhereResultSelector<TNode>>(
-        source, new PositionalWhereResultSelector<TNode>(predicate), relabels: true);
+        source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
   }
