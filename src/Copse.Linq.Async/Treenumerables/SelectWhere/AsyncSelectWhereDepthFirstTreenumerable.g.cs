@@ -8,9 +8,9 @@ using System;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The reified operator chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result monad"): one wrapper
-  // holding the Kleisli-composed result of every composed operator, so chains of any
-  // length and order collapse to ONE layer over the source. Plain operators
+  // The reified operator chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result
+  // monad"): one wrapper holding the Kleisli-composed result of every composed operator, so
+  // chains of any length and order collapse to ONE layer over the source. Plain operators
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
   // composed chains nest those structs in the TYPE via ComposedResultSelector (a user
   // delegate enters only as a FuncResultSelector leaf). Splicing is total: every legality
@@ -75,9 +75,9 @@ namespace Copse.Linq.Async.Treenumerables
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
       => new AsyncSelectWhereDepthFirstTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector);
 
-    // The context-shaped prune-after door: the in-tier-only boundary ruling (2026-08-04,
-    // the surviving half) -- the light prune wrapper STACKS over the driver rather than
-    // demoting its representation for a layer that costs almost nothing.
+    // The context-shaped prune-after door: prune-afters compose in-tier only, so the light
+    // prune wrapper STACKS over the driver rather than demoting its representation for a
+    // layer that costs almost nothing.
     public IAsyncDepthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
       => new AsyncPruneAfterDepthFirstTreenumerable<TResult>(this, predicate);
   }

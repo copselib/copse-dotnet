@@ -7,48 +7,41 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The composition recipe surface (design-docs/OPERATOR_COMPOSITION_DESIGN.md): appending an operator is
-  // ONE call -- the wrapper unwraps its own mapping, composes the result selector onto it, discards
-  // itself, and constructs the successor treenumerable. The operator composes with bare
-  // lambdas -- it knows its own FLAVOR, so it picks the door; the wrapper, which knows the
-  // erased source type, binds it and constructs.
+  // The composition recipe surface (design-docs/OPERATOR_COMPOSITION_DESIGN.md): appending an
+  // operator is ONE call -- the wrapper unwraps its own mapping, composes the result selector
+  // onto it, discards itself, and constructs the successor treenumerable. The operator
+  // composes with bare lambdas -- it knows its own FLAVOR, so it picks the door; the wrapper,
+  // which knows the erased source type, binds it and constructs.
   //
-  // THE TWO DOORS (the door move, 2026-08-19): Compose is position-BLIND and always splices.
-  // ComposePositional is position-READING, and the MEMBER decides splice-or-stack -- only it
-  // knows whether its own representation moves labels. The join rule ("a positional leg is
-  // entitled to its input tree's emitted labels, so it may splice only while the chain is
-  // label-preserving") therefore has ONE home per member instead of being re-derived from a
-  // published Relabels flag at every positional call site. The flag survives as private state
-  // where a member still needs it; it is no longer part of this contract.
+  // THE TWO DOORS. Compose is position-BLIND and always splices. ComposePositional is
+  // position-READING, and the MEMBER decides splice-or-stack -- only it knows whether its own
+  // representation moves labels. So the join rule -- a positional leg is entitled to its input
+  // tree's emitted labels, and may splice only while the chain is label-preserving -- has one
+  // home per member, and a caller never asks.
   //
-  // ONE method covers the whole selector algebra: a projection is just a result selector that never
-  // rejects (its results carry TraverseAll), and the composition law handles it without
-  // being told. The light projection-only representation is not this contract's business --
-  // it is the capability of the one wrapper that has it (AsyncSelectTreenumerable).
+  // The selector algebra needs no special case for projection: a projection is a result
+  // selector that never rejects (its results carry TraverseAll), and the composition law
+  // handles it without being told. The light projection-only representation is not this
+  // contract's business -- it is the capability of the one wrapper that has it
+  // (AsyncSelectTreenumerable).
   //
   // Deliberately INTERNAL: a public recipe would make these operators' correctness depend on
   // foreign implementations, and the older TFMs' lack of default interface members would make
   // every evolution a breaking change.
   //
-  // THE REVERSED HIERARCHY (PUBLIC_COMPOSITION_SURFACE_DESIGN.md): this interface EXTENDS
+  // THE HIERARCHY (design-docs/PUBLIC_COMPOSITION_SURFACE_DESIGN.md): this interface EXTENDS
   // the public capability bases -- the strategy-expressible fragment (projection,
   // prune-after) is public at the root; the driver algebra (rejection, relabeling, the
   // struct splice) is this internal layer above it. Every member of this surface therefore
   // answers the public doors, each with ITS OWN best machinery (the door-optimality law:
   // the light wrappers stay light, the driver nests a leg, the scan citizens re-plant).
-  // The narrow twins strip the public bases in the fan-out -- narrow parity is deferred,
-  // so the public doors are composite-width only.
+  // The narrow twins strip the public bases in the fan-out, so the public doors are
+  // composite-width only (narrow parity is deferred until demand).
   internal interface ISelectWhereTreenumerable<TNode>
     : ITreenumerable<TNode>,
       ISelectTreenumerable<TNode>,
       IPruneAfterTreenumerable<TNode>
   {
-    // THE JOIN RULE IS NOT A QUESTION ANYONE ASKS (the door move, 2026-08-19). Whether a
-    // member relabels used to be a public bit that every positional call site read before
-    // deciding to splice; it is now each member's private business, answered at its own
-    // ComposePositional door below. What was a law callers had to know became a promise
-    // machines keep about themselves.
-    //
     // Compose a result selector onto the accumulated mapping and return the successor
     // treenumerable. The outer piece arrives as an inlinable selector struct, so the
     // successor's composed chain nests in the TYPE and the splice costs no delegate hops;
@@ -84,10 +77,10 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
 
-    // The context-shaped prune-after door (same absorption). Per the in-tier-only boundary
-    // ruling (2026-08-04, the surviving half): light wrappers merge in-tier; every other
-    // member STACKS the light prune wrapper over itself -- joining would demote its
-    // representation for a layer that costs almost nothing.
+    // The context-shaped prune-after door (same absorption). Prune-afters compose IN-TIER
+    // ONLY: light wrappers merge the predicate into themselves; every other member STACKS
+    // the light prune wrapper over itself, because joining would demote its representation
+    // for a layer that costs almost nothing (measured; OPERATOR_COMPOSITION_DESIGN.md).
     ITreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> predicate);
   }
 }

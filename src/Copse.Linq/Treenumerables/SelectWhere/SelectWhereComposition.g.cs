@@ -7,23 +7,22 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The composition algebra, written once (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result
-  // monad"): every way two adjacent arrows compose into one, named [inner]Then[outer] in
-  // execution order. The algebra is dimension-blind -- arrows never touch a treenumerator --
-  // so the composite-width wrappers and both narrow-width (single-dimension) wrappers compose
+  // The LIGHT tier's composition arrows, written once (design-docs/OPERATOR_COMPOSITION_DESIGN.md,
+  // "the result monad"): every way two adjacent light arrows compose into one, named
+  // [inner]Then[outer] in execution order. These are closure-bound by nature -- only
+  // composition produces the light wrappers, and their pieces are user lambdas.
+  //
+  // The GENERAL law -- inner-first, SkipNode short-circuits, strategies union -- is not here:
+  // it lives in ComposedResultSelector, the struct-composed arrow, which is its one home.
+  // Every splice that crosses into the driver routes through that, a closure piece riding as
+  // a FuncResultSelector leaf.
+  //
+  // The arrows are dimension-blind -- they never touch a treenumerator -- so the
+  // composite-width wrappers and both narrow-width (single-dimension) wrappers compose
   // through these same methods; the wrappers own only representation choice (which successor
   // type to build) and acquisition (which driver to hand the composed arrow).
   internal static class SelectWhereComposition
   {
-    // (The composition law itself -- inner-first, SkipNode short-circuits, strategies union
-    // -- lives in ComposedResultSelector, the struct-composed arrow: since the reunification
-    // (2026-08-18) every general splice routes through it, Func pieces riding as
-    // FuncResultSelector leaves, so the closure spellings of the general law
-    // (ResultSelectorThenResultSelector, SelectThenResultSelector) went dead and were
-    // deleted. This class keeps the LIGHT tier's in-tier arrows, which are closure-bound by
-    // nature: only composition produces the light wrappers, and their pieces are user
-    // lambdas.)
-
     // A projection composed onto a projection is still a projection.
     public static Func<NodeContext<TSource>, TOuterResult> SelectThenSelect<TSource, TResult, TOuterResult>(
       Func<NodeContext<TSource>, TResult> innerSelector,
@@ -110,9 +109,8 @@ namespace Copse.Linq.Treenumerables
       };
     }
 
-    // (Cross-tier splices carry no arrow here: since the seal opened (2026-08-18) a
-    // rejecting operator splices over a light wrapper through the inherited struct Compose
-    // -- the chain rides as struct legs in ComposedResultSelector, the general law's one
-    // home.)
+    // (Cross-tier splices carry no arrow here: a rejecting operator splices over a light
+    // wrapper through the struct Compose door, so the chain rides as struct legs in
+    // ComposedResultSelector.)
   }
 }

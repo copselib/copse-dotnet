@@ -63,9 +63,9 @@ namespace Copse.Linq
       Func<TSource, TResult> selector)
       => SelectBuffer(source, selector);
 
-    // The thin shape (2026-08-17): a citizen composes its selector (a projected buffer over
-    // a projected buffer would double-map; ComposeSelect keeps one map over the original
-    // source); any other buffer becomes the first projection.
+    // A citizen composes its selector -- a projected buffer over a projected buffer would
+    // double-map, where ComposeSelect keeps one map over the original source; any other
+    // buffer becomes the first projection.
     private static ITreenumerableBuffer<TResult> SelectBuffer<TSource, TResult>(
       ITreenumerableBuffer<TSource> source,
       Func<TSource, TResult> selector)

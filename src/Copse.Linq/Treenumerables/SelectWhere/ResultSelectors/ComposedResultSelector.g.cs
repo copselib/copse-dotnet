@@ -6,14 +6,13 @@ using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
-  // THE STRUCT-COMPOSED ARROW (the reunification gate, OPERATOR_COMPOSITION_DESIGN.md 2.9's
-  // recorded exit): the general composition law as a TYPE -- the closure spelling it
-  // replaced (ResultSelectorThenResultSelector) is deleted; this is the law's one home. Both
-  // legs arrive as struct type parameters, so the JIT specializes and inlines the whole
-  // composed chain per visit -- user lambdas remain leaf calls, but the composition PLUMBING
-  // costs nothing, which is the property whose absence exiled the light tier (the
-  // all-delegate FuncResultSelector chain). Chains nest in the type:
-  // Composed<Composed<A,B>,C> -- depth is compile-time structure, not delegate hops.
+  // THE STRUCT-COMPOSED ARROW: the general composition law as a TYPE, and the law's one home
+  // (design-docs/OPERATOR_COMPOSITION_DESIGN.md). Both legs arrive as struct type parameters,
+  // so the JIT specializes and inlines the whole composed chain per visit -- user lambdas
+  // remain leaf calls, but the composition PLUMBING costs nothing. That property is the
+  // point: an all-delegate chain de-inlines and measurably regresses the splice. Chains nest
+  // in the type: Composed<Composed<A,B>,C> -- depth is compile-time structure, not delegate
+  // hops.
   //
   // The law is the algebra's one law, verbatim: the fold stops at the first
   // SkipNode-carrying result (that node left the logical tree, so the outer leg never sees

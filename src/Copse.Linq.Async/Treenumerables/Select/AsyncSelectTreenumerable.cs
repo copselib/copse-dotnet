@@ -43,11 +43,10 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly IAsyncTreenumerable<TSource> _Source;
     private readonly Func<NodeContext<TSource>, TResult> _Selector;
 
-    // ---- The internal algebra, explicit (the visibility audit: the public surface is
-    // the ctor and the public doors; the driver recipe stays internal) ----
+    // ---- The internal algebra, explicitly implemented: the public surface of this class is
+    // its constructor and its public doors; the driver recipe stays internal ----
 
-    // Projections never relabel.
-    // Never moves a label, so the position-reading doors ARE the blind doors.
+    // A projection never moves a label, so the position-reading doors ARE the blind doors.
     IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
       => ((IAsyncSelectWhereTreenumerable<TResult>)this).Compose(selector);
 
@@ -72,10 +71,11 @@ namespace Copse.Linq.Async.Treenumerables
         _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, predicate));
     }
 
-    // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
-    // gate's decisive case: the tier seal existed because this wrapper's pieces used to
-    // arrive as bare Funcs and de-inlined the whole splice chain; here its projection rides
-    // an inlinable struct leg, the user lambda staying a leaf call).
+    // A rejecting operator splices over this wrapper: the projection is donated as an
+    // inlinable STRUCT leg (the user lambda staying a leaf call), so the composed chain the
+    // driver ends up holding is delegate-free plumbing. A leg donated as a bare Func would
+    // de-inline the whole chain -- measured, and the reason the struct seam exists
+    // (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
     IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)

@@ -19,12 +19,12 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      // ONE sniff (PUBLIC_COMPOSITION_SURFACE_DESIGN.md): every member's ComposePruneAfter
-      // is that member's best machinery under the in-tier-only boundary ruling (2026-08-04,
-      // the surviving half) -- the light tier merges in-tier and keeps no-promotion
-      // machinery; every other internal member STACKS the light wrapper over itself, since
-      // joining would demote its representation for a layer that costs almost nothing;
-      // foreign citizens absorb into their recipe.
+      // ONE sniff (design-docs/PUBLIC_COMPOSITION_SURFACE_DESIGN.md): every member's
+      // ComposePruneAfter is that member's best machinery, and prune-afters compose in-tier
+      // only -- the light tier merges in-tier and keeps no-promotion machinery; every other
+      // internal member STACKS the light wrapper over itself, since joining would demote its
+      // representation for a layer that costs almost nothing; foreign citizens absorb into
+      // their recipe.
       if (source is IAsyncPruneAfterTreenumerable<T> pruneComposableSource)
         return pruneComposableSource.ComposePruneAfter(predicate);
 

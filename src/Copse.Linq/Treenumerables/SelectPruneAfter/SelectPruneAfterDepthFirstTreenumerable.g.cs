@@ -17,8 +17,8 @@ namespace Copse.Linq.Treenumerables
   // passthrough driver -- no promotion machinery, no path state, one driver class for both
   // dimensions. Only composition produces this wrapper (plain Select and plain PruneAfter
   // keep their own cheapest machinery), so its IN-TIER arrow is delegate-bound by nature;
-  // spliced over through the inherited general Compose, its chain rides as one
-  // FuncResultSelector leaf under struct plumbing (the open seal).
+  // when a rejecting operator splices over it, its chain rides as one FuncResultSelector
+  // leaf under struct plumbing.
   internal sealed partial class SelectPruneAfterDepthFirstTreenumerable<TSource, TResult> : ISelectWhereDepthFirstTreenumerable<TResult>
   {
     public SelectPruneAfterDepthFirstTreenumerable(
@@ -32,8 +32,7 @@ namespace Copse.Linq.Treenumerables
     private readonly IDepthFirstTreenumerable<TSource> _Source;
     private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
-    // A projection composes in-tier.
-    // Never moves a label, so the position-reading doors ARE the blind doors.
+    // This tier never moves a label, so the position-reading doors ARE the blind doors.
     public IDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
       => Compose(selector);
 
@@ -48,8 +47,7 @@ namespace Copse.Linq.Treenumerables
         _Source, SelectWhereComposition.SelectPruneAfterThenSelect(_ResultSelector, selector));
     }
 
-    // The general surface (inherited): light chains never relabel.
-    // The struct splice (the open seal): the chain's composed closure rides as one
+    // A rejecting operator splices over this chain: the composed closure rides as one
     // FuncResultSelector leaf; the splice plumbing and the outer leg are structs.
     public IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,

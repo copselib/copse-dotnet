@@ -50,11 +50,10 @@ namespace Copse.Linq.Treenumerables
     private readonly IDepthFirstTreenumerable<TNode> _Source;
     private readonly Func<NodeContext<TNode>, bool> _Predicate;
 
-    // ---- The internal algebra, explicit (the visibility audit: the public surface is
-    // the ctor and the public doors; the driver recipe stays internal) ----
+    // ---- The internal algebra, explicitly implemented: the public surface of this class is
+    // its constructor and its public doors; the driver recipe stays internal ----
 
-    // The general surface: light wrappers never relabel.
-    // Never moves a label, so the position-reading doors ARE the blind doors.
+    // A prune-after never moves a label, so the position-reading doors ARE the blind doors.
     IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePositional<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
       => ((ISelectWhereDepthFirstTreenumerable<TNode>)this).Compose(selector);
 
@@ -63,8 +62,8 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       => ((ISelectWhereDepthFirstTreenumerable<TNode>)this).Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
 
-    // The struct splice (the open seal): the predicate rides its own struct leaf -- this
-    // wrapper's donation is delegate-free plumbing (one leaf lambda, as always).
+    // A rejecting operator splices over this wrapper: the predicate rides its own struct
+    // leaf, so this wrapper's donation is delegate-free plumbing (one leaf lambda, as always).
     IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
