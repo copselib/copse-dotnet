@@ -21,8 +21,10 @@ namespace Copse.Linq
     /// <b>nothing per pull</b>.
     /// <para>
     /// This is the scope that serves what <c>Hide</c> is normally reached for -- forcing a
-    /// composition barrier -- and the right choice unless a caller specifically needs the
-    /// concrete treenumerator type concealed too.
+    /// composition barrier -- but it is an OPT-OUT, not the default: choosing it accepts that the
+    /// concrete machine type stays visible, and that a future treenumerator-level probe would see
+    /// through it. Choose it where the per-pull cost is what is being measured or where the
+    /// caller controls both ends (the benchmark corpus takes every tree through it).
     /// </para>
     /// </summary>
     Treenumerable,
@@ -32,10 +34,20 @@ namespace Copse.Linq
     /// visit stream is forwarded through a wrapper, so the concrete machine type is concealed
     /// from a caller who reaches past the treenumerable to inspect it.
     /// <para>
-    /// That wrapper is a real layer on every <c>MoveNext</c>. Nothing in Copse itself sniffs a
-    /// treenumerator type -- every probe in the library is at the treenumerable layer -- so this
-    /// scope is for defending against foreign code that does. Historical default: the no-argument
-    /// <c>Hide()</c> overload selects it.
+    /// That wrapper is a real layer on every <c>MoveNext</c>, and <b>this is the default</b> -- the
+    /// no-argument <c>Hide()</c> overload selects it. Deliberately, as policy: <c>Hide</c> is a
+    /// DEFENSIVE operator, so it conceals everything by default and a caller opts OUT of the part
+    /// they do not need.
+    /// </para>
+    /// <para>
+    /// The reason is forward compatibility, not present need. Nothing in Copse sniffs a
+    /// treenumerator today -- every probe in the library is at the treenumerable layer -- so this
+    /// scope currently defends only against foreign code. But if a later version adds a
+    /// treenumerator-level probe (a bulk-pull fast path, a chunked drain), a shallow default would
+    /// silently demote every existing <c>Hide()</c> call site from a complete barrier at upgrade
+    /// time, with no diagnostic. Under this default they stay correct, and adding such a probe
+    /// stays a non-breaking change. Cost has an explicit opt-out; correctness cannot be opted into
+    /// retroactively.
     /// </para>
     /// </summary>
     Treenumerator,

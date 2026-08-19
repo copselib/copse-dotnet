@@ -16,9 +16,10 @@ namespace Copse.Linq
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>
-    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>), the historical
-    /// behavior. Prefer <c>Hide(HideScope.Treenumerable)</c> when the barrier is what you want:
-    /// it is the same barrier at no per-pull cost.
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>) -- the safe default
+    /// for a defensive operator, so callers opt OUT rather than in. <c>Hide(HideScope.Treenumerable)</c>
+    /// is the same composition barrier at no per-pull cost, for callers who accept that the concrete
+    /// machine type stays visible; see <see cref="HideScope"/> for why that is not the default.
     /// </para>
     /// </summary>
     public static ITreenumerable<TNode> Hide<TNode>(
