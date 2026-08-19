@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787119489000,
+  "lastUpdate": 1787119489801,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -85978,6 +85978,112 @@ window.BENCHMARK_DATA = {
             "value": 560863.1766764323,
             "unit": "ns",
             "range": "± 599.2571536126942"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd",
+            "email": "jason.boyd.ce@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "51950ea3bb9de1a8d8e72e8f38da675674210465",
+          "message": "Carry the door move into the prose it invalidated\n\nThe merge brought the code but not its documentation. Three places still\ndescribed Relabels as an interface member callers read.\n\nCode comments (async sources; sync twins regenerated):\n- IAsyncSelectWhereTreenumerable's header said the operator \"knows its\n  own flavor and reads Relabels for the join rule\". It no longer reads\n  anything: it knows its flavor, which is what PICKS THE DOOR, and the\n  member decides. Replaced with THE TWO DOORS -- Compose is\n  position-blind and always splices; ComposePositional is\n  position-reading and the member decides splice-or-stack, because only\n  it knows whether its representation moves labels.\n- IAsyncSelectTreenumerable (PUBLIC) told third-party citizens that the\n  positional Select flavor takes the wrapper \"the same guard the internal\n  lattice applies through Relabels\". Now: through its ComposePositional\n  door. This one mattered most -- it is the contract text an implementer\n  reads.\n\nLeft alone deliberately: AsyncSelectWhereTreenumerable's\n\"see _Relabels, proven always true\" cites the surviving PRIVATE field to\nexplain why the driver's door consults no flag. Still accurate, and the\npoint of the comment.\n\nDesign docs:\n- OPERATOR_COMPOSITION_DESIGN.md gains a closing \"The door move\" section\n  (the rule unchanged, the enforcement relocated, what each tier decides,\n  and why stack-always is exact rather than conservative -- the driver's\n  Relabels was proven always true by a throw-on-false probe against the\n  full battery on two branches). The \"interface is Relabels plus ONE\n  total method\" line is marked superseded rather than rewritten, since it\n  records a dated decision.\n- PUBLIC_COMPOSITION_SURFACE_DESIGN.md's stage-3 audit question (\"does\n  any internal-concept member have a public-typed signature? Relabels is\n  the known one\") is marked RESOLVED: it left the interface entirely\n  rather than being hand-checked into an explicit implementation, so\n  there is nothing left to audit.\n\n24,598 green; no codegen drift.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T05:17:58Z",
+          "url": "https://github.com/copselib/copse-dotnet/commit/51950ea3bb9de1a8d8e72e8f38da675674210465"
+        },
+        "date": 1787119489710,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 1934179.8000837055,
+            "unit": "ns",
+            "range": "± 3098.4389578450314"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1628015.4098557692,
+            "unit": "ns",
+            "range": "± 1917.6265935741544"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 3747222.759207589,
+            "unit": "ns",
+            "range": "± 3861.2658522616266"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3378120.034007353,
+            "unit": "ns",
+            "range": "± 67133.4060559376"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 594608.0412109375,
+            "unit": "ns",
+            "range": "± 2949.866404574818"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 611412.1014873798,
+            "unit": "ns",
+            "range": "± 666.2527964751536"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 412315.8269981971,
+            "unit": "ns",
+            "range": "± 303.3362832896036"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 3417233.43671875,
+            "unit": "ns",
+            "range": "± 23668.822870445994"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 2718458.8854166665,
+            "unit": "ns",
+            "range": "± 4610.700594365367"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 10395316.476041667,
+            "unit": "ns",
+            "range": "± 99158.8348338082"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 6301242.454166667,
+            "unit": "ns",
+            "range": "± 68019.44435616958"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1300044.1039341518,
+            "unit": "ns",
+            "range": "± 4632.978375607983"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 948384.0773577009,
+            "unit": "ns",
+            "range": "± 713.429040129551"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 829909.2479166667,
+            "unit": "ns",
+            "range": "± 3750.3261772898163"
           }
         ]
       }
