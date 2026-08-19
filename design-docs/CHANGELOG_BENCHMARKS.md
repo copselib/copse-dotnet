@@ -243,3 +243,27 @@ single-Select row proves today's collapse; a double-materializing route shows as
 `Twice_Dft_Chain` — scan-of-scan; the second scan currently misses the span fast path's
 concrete-type sniff and folds through the walker probes (baseline 231.9 ms / 272 MB — the
 priced downgrade); the refactor's return to plain buffers heals it as a visible step down.
+
+---
+
+## Date: 2026-08-19 — The canonical trees are built with operators (finding, no rows changed)
+
+No benchmark was added, renamed or rerouted. What changed is how the existing rows must be
+READ, and it is significant enough to sit in the log so a future reader hits it before
+trusting an era comparison.
+
+`MegaTriangleTree()` is `new TriangleTree().PruneAfter((n, position) => …)` and
+`MegaBinaryTree()` is `new CompleteBinaryTree().PruneBefore((n, position) => …)`. The prune
+wrapper is a light-tier citizen, so a row's next operator does not stack on top of it — it
+COMPOSES WITH IT, into a single machine over the raw generator. Every Triangle/Binary row
+therefore measures its own operator plus a prune, one operator longer than its name; the Compose
+family's chains are each one longer than advertised; and the tier-seal ruling (`e30bffc`) was
+calibrated on `Where.Triangle_Mixed`, whose "light tier Func-donor" was this scaffolding rather
+than a user-written operator. Same-run ratios within a family remain valid for the chains they
+actually measured — nothing in the record is wrong, the labels are just short by one operator.
+
+Ruled the same day: bound the generators natively (`TriangleTree(maxDepth)`,
+`CompleteBinaryTree(maxDepth)`), identical node counts, no prune, no barrier. That lands as a
+CORPUS EPOCH — every absolute shifts, Bencher's thresholds re-learn, and the gh-pages series
+needs a marker at the boundary. Full analysis, measurements and rejected alternatives:
+design-docs/BENCHMARKING.md, "What the canonical trees actually measure".

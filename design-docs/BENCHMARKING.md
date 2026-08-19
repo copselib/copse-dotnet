@@ -132,6 +132,86 @@ three-arm profile resolved it — the "regression" was a measurement artifact):
   suite deliberately (BDN ceremony is unnecessary for A/B/C on one box): a ~40-line
   console app, 3 warmup + 20 timed iterations per arm, arms interleaved to catch drift.
 
+## What the canonical trees actually measure (doctrine, 2026-08-19)
+
+Discovered while asking a much smaller question — whether the suite exercised the positional
+overloads of the operators at all.
+
+**The canonical trees are built WITH OPERATORS, and those operators join the chain under
+test.**
+
+```csharp
+MegaTriangleTree() = new TriangleTree().PruneAfter((n, position) => position.Depth == 1448)
+MegaBinaryTree()   = new CompleteBinaryTree().PruneBefore((n, position) => position.Depth == 20)
+```
+
+`MegaChainTree` (`ToTrivialForest`) and `MegaDeepChainsTree` (`DeepTree`) are prune-free,
+which is exactly why they make good controls.
+
+**They FUSE — they do not merely sit underneath.** The positional `PruneAfter` builds an
+`AsyncPruneAfterTreenumerable`: a light-tier citizen with `Relabels == false`. The row's next
+operator probes `IAsyncSelectWhereTreenumerable`, finds it, passes the join-rule guard, and
+composes — producing ONE driver over the raw `TriangleTree` carrying
+`ComposedResultSelector(PruneAfterResultSelector, <the row's own leg>)`. The scaffolding
+wrapper disappears *into* the machine being measured.
+
+**Consequences for the historical record.** No past conclusion is wrong — same-run ratios
+within a family remain valid for the chains they actually measured — but the labels
+understate chain length by one:
+
+- `Where.Dft_Triangle_Mixed` is `TriangleTree → positional PruneAfter → positional Where`,
+  fused into one driver. **The tier-seal ruling (`e30bffc`, 2026-08-04) was calibrated on
+  this row**, diagnosed as "the light tier is the one Func-donor splice participant" — and
+  that participant is the canonical tree's own prune, i.e. scaffolding rather than a
+  user-written operator. The mechanism was identified correctly, and the shape is realistic
+  (bound-by-depth-then-filter is ordinary code); what was invisible is that it was there at
+  all.
+- Every Compose row is one operator longer than its name. `SelectWhere_Composed` is
+  prune+Select+Where; `FiveOperators_Composed` is six operators; the reunification's
+  1.1x → 2.9x collapse was measured on a six-operator chain.
+- **Any change to prune machinery moves every row in the suite at once.** Observed
+  2026-08-19: converting the positional overloads to a different spelling inflated every
+  Triangle and Binary row across unrelated families, and was initially misread as machine
+  load.
+
+**Measured cost of the scaffolding participating** (`CountNodes`, whose own operator was
+untouched; the prune-free trees held within 1.3% across builds, confirming machine state):
+
+| row | main | positional overloads rerouted |
+|---|---|---|
+| `Dft_Binary` (PruneBefore base) | 100.6 ms / 2995 B | 109.3 ms / 3299 B |
+| `Dft_Triangle` (PruneAfter base) | 31.5 ms | 59.2 ms |
+
+Reverting *only* PruneBefore's reroute returned `Dft_Binary` to 99.96 ms and **2995 B —
+allocation matching main byte for byte**. Allocation is a machinery fingerprint that does not
+drift with load; when a timing comparison is in doubt, it is the more trustworthy signal.
+
+**The fix (ruled 2026-08-19; the historical shift is accepted): bound the generators
+natively.** `new TriangleTree(maxDepth: 1448)` and `new CompleteBinaryTree(maxDepth: 19)`
+instead of unbounded-plus-prune. Node counts are identical (1449 × 1450 / 2 is exactly the
+`MegaTriangle` constant), so no shape moves; what disappears is a per-node positional
+predicate and a wrapper that silently joined every chain under test.
+
+Rejected alternatives, and why:
+
+- `Materialize().Hide()` — changes the workload FAMILY (engine tree → flat store, a
+  substantially faster decode path), so every row would answer a different question than the
+  corpus was built to ask. Its laziness is separately awkward: the build would land inside the
+  first measured invocation unless hoisted to `[GlobalSetup]` and forced.
+- `Hide()` alone — correctly isolates composition (it is the isolation barrier and claims no
+  doors), but keeps the prune's per-node cost in every baseline and adds a wrapper layer per
+  pull.
+
+**The rule going forward: scaffolding must not be an operator.** If a corpus tree ever needs a
+shape the generators cannot produce, isolate it with `Hide()` so it cannot join the algebra,
+and say so in the row's comment. Separately, now that prune-fused-with-filter is known to be a
+real and common shape, it deserves a few DELIBERATE labelled rows rather than accidental
+coverage.
+
+When the fix lands it is a corpus epoch: every absolute shifts, so mark the commit for the
+dashboard (see `CHANGELOG_BENCHMARKS.md`) and expect Bencher's thresholds to re-learn — the
+same class of event the per-CPU testbeds already handle for fleet changes.
+
 ## References
 
 - [BenchmarkDotNet](https://benchmarkdotnet.org/)

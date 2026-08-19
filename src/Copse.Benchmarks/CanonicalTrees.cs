@@ -85,6 +85,16 @@ namespace Copse.Benchmarks
     public static ITreenumerable<int> MegaForest()
       => Enumerable.Range(0, MegaChain).ToTrivialForest();
 
+    // WARNING -- THE SCAFFOLDING IS AN OPERATOR (design-docs/BENCHMARKING.md, "What the
+    // canonical trees actually measure"): the two bounded trees below are built with
+    // POSITIONAL PRUNES, and those prunes do not merely sit underneath a row -- the prune
+    // wrapper is a light-tier citizen, so the row's next operator COMPOSES WITH IT into one
+    // machine. Every Triangle/Binary row therefore measures its own operator PLUS a prune --
+    // one operator longer than the row name suggests -- and any change to prune machinery
+    // moves the whole suite at once. Ruled 2026-08-19: bound the generators natively so the
+    // scaffolding stops joining the algebra under test. Until that lands, read these rows
+    // accordingly. (MegaChainTree and MegaDeepChainsTree are prune-free -- good controls.)
+
     /// <summary>The complete binary tree: balanced branching, log-depth.</summary>
     public static ITreenumerable<int> MegaBinaryTree()
       => new CompleteBinaryTree()
