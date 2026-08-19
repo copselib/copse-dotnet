@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787160667385,
+  "lastUpdate": 1787160668046,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -140806,6 +140806,102 @@ window.BENCHMARK_DATA = {
             "value": 82011989.16190477,
             "unit": "ns",
             "range": "± 752000.8570137193"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9e376c728012bf2184d2b26bcc8d679f8279e4c3",
+          "message": "The Func door goes: one splice shape, not two\n\nThe composition interface carried both shapes of the general splice -- the struct door\nand a Func door taking Func<NodeContext<T>, SelectWhereResult<TOut>>. The simplify pass\n(c235c55) reduced every Func door to a one-line forward wrapping its delegate in a\nFuncResultSelector and left the forwards standing.\n\nThe audit found the Func door has NO CALLER anywhere in the repo. Where and PruneBefore\ntake the struct door; projection and prune-after have their own doors; TakeSubtreesWhere,\nthe one operator that genuinely needs a closure-shaped leg, builds its own\nFuncResultSelector and takes the struct door too. It survived as 15 async implementations\nof a forward nobody called, mirrored to sync by codegen.\n\nDeleted. The general splice now has one shape, and a closure-bound piece enters it as a\nFuncResultSelector leaf -- which is exactly what each deleted forward did to its\nargument. FuncResultSelector stays: the middle tier rides its composed chain as one leaf,\nand TakeSubtreesWhere builds one directly.\n\nThe surface drops from six doors to five, net -248 lines of code across 38 files.\nBehavior-neutral by construction; the Stage 0 representation pins are unchanged and the\nfull battery is 24,598 green.\n\nDocs: a dated section in OPERATOR_COMPOSITION_DESIGN.md (the convention \"the door move\"\nset), and a supersession note on PUBLIC_COMPOSITION_SURFACE_DESIGN.md's hierarchy sketch,\nwhich was also still showing Relabels as an interface member.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:13:42Z",
+          "tree_id": "7d549279f1beccf6e6b3ffc52bfdf1aa20db8bec",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9e376c728012bf2184d2b26bcc8d679f8279e4c3"
+        },
+        "date": 1787160667911,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 74327722.7809524,
+            "unit": "ns",
+            "range": "± 711743.5233977049"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 66115033.683673464,
+            "unit": "ns",
+            "range": "± 543356.5376346523"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 177557886.42222223,
+            "unit": "ns",
+            "range": "± 2569318.6822760445"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 190195344.19047618,
+            "unit": "ns",
+            "range": "± 3312840.1525232517"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 156992859.984375,
+            "unit": "ns",
+            "range": "± 2900921.3749047457"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 141787798.77142859,
+            "unit": "ns",
+            "range": "± 4459439.031676471"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 88563614.45502645,
+            "unit": "ns",
+            "range": "± 4061709.9551707413"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 65275489.411184214,
+            "unit": "ns",
+            "range": "± 2219337.3167975186"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 401312556.36,
+            "unit": "ns",
+            "range": "± 24681946.313305985"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 399838897.2903226,
+            "unit": "ns",
+            "range": "± 12192226.438373685"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 81199109.07142857,
+            "unit": "ns",
+            "range": "± 2058217.8261260178"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 60068420.16666667,
+            "unit": "ns",
+            "range": "± 1551653.676777868"
           }
         ]
       }
