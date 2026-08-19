@@ -21,7 +21,7 @@ namespace Copse.Linq
     /// Deferred; streams with O(depth)/O(width) state.
     ///
     /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
-    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md, ratified 2026-08-04): a callback
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
     /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
     /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
     /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
@@ -61,7 +61,7 @@ namespace Copse.Linq
 
     /// <summary>
     /// The per-root flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a different
-    /// spelling of it (THE NORTH STAR, 2026-08-05: boundary flavors mean the same thing on
+    /// spelling of it (THE NORTH STAR: boundary flavors mean the same thing on
     /// both tiers -- design-docs/SCANRESULT_DESIGN.md): every root's ACCUMULATION is
     /// <paramref name="rootNodeSelector"/>'s return, set DIRECTLY -- the fold fires only at
     /// non-roots -- exactly as RootfixDispatch's selector sets each root's arrival directly,
@@ -184,7 +184,7 @@ namespace Copse.Linq
           default));
 
     // The engine adapter: the engines run BARE -- their state is the fold's own width (THE
-    // EMISSION MINT, 2026-08-17: the pairing is constructed per emission from the inner's
+    // EMISSION MINT: the pairing is constructed per emission from the inner's
     // node-in-hand, never stored) -- while the user accumulator speaks the minimal
     // (accumulate, node) basis; this lifts it to the engine's context shape.
     private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulator<TNode, TAccumulate>(
@@ -193,14 +193,13 @@ namespace Copse.Linq
 
     // The root boundary, written once so consumers never hand-roll the forest-root check: a
     // root (parent context parked at the virtual forest root) takes the selector's return AS
-    // its accumulation -- the bypass instrument, THE NORTH STAR's scan half (2026-08-05):
+    // its accumulation -- the bypass instrument, THE NORTH STAR's scan half:
     // cross-tier flavor coherence selects these semantics, because the dispatch selector sets
     // roots' arrivals directly and arrival IS the value there, so the fold-encoded dispatch
-    // and this scan agree at roots only if the selector bypasses the fold. (The one-day
-    // arrival-semantics detour -- fold(selector(root), root) -- optimized the lesser,
-    // intra-tier equivalence and was reversed; its real motivation, the merged DoScan's
-    // silent root landing, died with the quartet.) The unused sentinel seed is default --
-    // the selector branch is the only reader of roots.
+    // and this scan agree at roots only if the selector bypasses the fold. The alternative,
+    // fold(selector(root), root), buys the lesser intra-tier equivalence at the cost of the
+    // cross-tier one. The unused sentinel seed is default -- the selector branch is the only
+    // reader of roots.
     private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulatorWithRootSelector<TNode, TAccumulate>(
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)

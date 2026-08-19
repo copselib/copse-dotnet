@@ -43,7 +43,7 @@ namespace Copse.Linq.Async
     }
 
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
-    // Context-shaped (2026-08-18, the rootfix door): the door's surrendered projectors are
+    // Context-shaped (the rootfix door): the door's surrendered projectors are
     // NodeContext-shaped (positional Selects included), and the engine has the inner
     // position in hand at every emission -- the pair context is minted transiently.
     private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;

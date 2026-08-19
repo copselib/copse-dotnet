@@ -24,45 +24,34 @@ namespace Copse.Linq
     /// other; a fold that only needs one child at a time belongs to LeaffixScan (sugar over
     /// this operator).
     ///
-    /// <para>THE READINESS CLAUSE (2026-08-05): a survey fires when its data is ready -- here,
-    /// after its children complete -- so every child's survey precedes its parent's, and each
-    /// view's sibling order is guaranteed; the TOTAL cross-node sequence is deliberately
-    /// UNSPECIFIED (a pure callback cannot observe it, and pinning it would foreclose parallel
-    /// builds). Do not depend on the current reverse-preorder. (A COLLAPSED single-walk build
-    /// firing surveys at subtree close was built and MEASURED OUT 2026-08-05: it lost to the
-    /// three sequential array passes on every cell -- time and memory, chains and triangles --
-    /// because the walk's fine-grained bookkeeping outweighs re-iterating flat arrays the
-    /// prefetcher loves. The pass structure is settled by evidence.)</para>
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here, after its
+    /// children complete -- so every child's survey precedes its parent's, and each view's
+    /// sibling order is guaranteed. The TOTAL cross-node sequence is deliberately UNSPECIFIED
+    /// (a pure callback cannot observe it, and pinning it would foreclose parallel builds):
+    /// do not depend on the current reverse-preorder.</para>
     ///
-    /// <para>FULL PARTICIPATION (ratified 2026-08-04 -- boundary-shape-follows-tier-shape):
-    /// leaves are not a special case -- the internal pass surveys EVERY node, a leaf's sources
-    /// view simply EMPTY. The public surface leads with the leafNodeSelector flavors (a
-    /// survey-only overload existed briefly and was DELETED 2026-08-05: the family's one
-    /// fixer-less signature -- TAccumulate appears only inside the lambda, so inference
-    /// always failed, the type-fixer-first grammar enforced by the compiler itself -- and the
-    /// use-case survey showed the sibling-comparative workloads this tier exists for need a
-    /// leaf rule anyway, while formula-shaped fringes belong to LeaffixScan's dual fold).
-    /// The selector wraps the survey with a leaf branch
-    /// (<c>sources.Count == 0 ? boundary : survey</c>).</para>
+    /// <para>FULL PARTICIPATION (boundary-shape-follows-tier-shape): leaves are not a special
+    /// case -- the internal pass surveys EVERY node, a leaf's sources view simply EMPTY. The
+    /// public surface leads with the leafNodeSelector flavors, whose selector wraps the survey
+    /// with a leaf branch (<c>sources.Count == 0 ? boundary : survey</c>); there is no
+    /// survey-only flavor, because TAccumulate would appear only inside the lambda and
+    /// inference would always fail -- the type-fixer-first grammar, enforced by the compiler
+    /// itself. Formula-shaped fringes belong to LeaffixScan's dual fold.</para>
     ///
-    /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR, 2026-08-05): a SEED is the value
-    /// that PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
+    /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR): a seed is the value that
+    /// PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
     /// surveyed -- and upward flow has no pre-fringe channel for one to enter through; the
-    /// leaffix survey has no arrival seat. The old broadcast-seed overload was the bypass
-    /// instrument wearing the seed's name (identically <c>_ =&gt; x</c>, the constant
-    /// selector) and was deleted so the boundary grammar reads the same on every tier: a seed
-    /// exists only where the flow has an entry channel for it; where values are set directly,
-    /// the instrument is a SELECTOR. (Generalized 2026-08-06 by THE VIRTUAL-ROOT RULE,
-    /// docs/SCANRESULT_DESIGN.md: seeds belong to the virtual forest root, the family's one
-    /// tree-lawful virtual node -- the leaffix boundary is selector-only on BOTH tiers, so
-    /// the flavor inventory reads off the group, not the callback shape.)</para>
+    /// leaffix survey has no arrival seat. A seed exists only where the flow has an entry
+    /// channel for it; where values are set directly, the instrument is a SELECTOR. So the
+    /// leaffix boundary is selector-only on BOTH tiers (THE VIRTUAL-ROOT RULE,
+    /// design-docs/SCANRESULT_DESIGN.md: seeds belong to the virtual forest root, the family's
+    /// one tree-lawful virtual node).</para>
     ///
-    /// <para>VALUE-flavored (2026-08-02, the NodeAccumulation sweep): the survey receives the node's
-    /// VALUE; the leaf boundary is arity-split (value selector | positional
-    /// selector). Returns the CANONICAL PAIRING: a buffer of
-    /// <see cref="NodeAccumulation{TSource, TAccumulate}"/>s in the source tree's shape -- it
-    /// DECORATES rather than replaces; project <c>.Accumulate</c> for values. For mutable
-    /// nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
+    /// <para>VALUE-flavored: the survey receives the node's VALUE; the leaf boundary is
+    /// arity-split (value selector | positional selector). Returns the CANONICAL PAIRING: a
+    /// buffer of <see cref="NodeAccumulation{TSource, TAccumulate}"/>s in the source tree's
+    /// shape -- it DECORATES rather than replaces; project <c>.Accumulate</c> for values. For
+    /// mutable nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
     /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
     /// visit.Node.Accumulate; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
@@ -73,14 +62,14 @@ namespace Copse.Linq
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
     /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
-    /// so a streamed narrow source can leaffix. Build shape (the NodeAccumulation sweep): one raw
-    /// capture, the shared child-index, then a reverse-preorder fold -- the same passes as the
-    /// rootfix dispatch build, genuinely shared.</para>
-    /// </summary>
-    /// <summary>
-    /// The per-leaf seeding form: sugar wrapping <paramref name="survey"/> with a leaf branch --
-    /// every leaf's accumulation comes from <paramref name="leafNodeSelector"/>, the fringe
-    /// answering for itself, mirroring rootfix's rootNodeSelector at the other end of the tree.
+    /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
+    /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
+    /// build, genuinely shared.</para>
+    ///
+    /// <para>This overload is the per-leaf seeding form: sugar wrapping <paramref name="survey"/>
+    /// with a leaf branch -- every leaf's accumulation comes from
+    /// <paramref name="leafNodeSelector"/>, the fringe answering for itself, mirroring rootfix's
+    /// rootNodeSelector at the other end of the tree.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this IDepthFirstTreenumerable<TSource> source,
@@ -116,7 +105,7 @@ namespace Copse.Linq
       => PairBuffer(new LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
         () => BuildLeaffixDispatchFromBreadthFirst(source, LeafBoundedSurvey(leafNodeSelector, survey))));
 
-    /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
+    /// <summary>Disambiguation overloads for full trees: a full tree is consumed depth-first.</summary>
     public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
@@ -130,8 +119,7 @@ namespace Copse.Linq
       => LeaffixDispatch((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
 
     // The boundary flavors' adapter: the in-band leaf branch. sources.Count == 0 IS the leaf
-    // test -- the same fact the old pass read off the subtree sizes, now speaking the view's
-    // own vocabulary.
+    // test, stated in the view's own vocabulary.
     private static Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> LeafBoundedSurvey<TSource, TAccumulate>(
       Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
       Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
@@ -140,17 +128,18 @@ namespace Copse.Linq
         ? leafNodeSelector(node, position)
         : survey(node, sources);
 
-    // Preorder for BOTH dimensions, deliberately: pinning a level-order layout on a
-    // breadth-first-first pull was built and MEASURED OUT -- over raw array stores the
-    // breadth-first cross-decode tax is only ~1.08x, so the transpose plus transient double
-    // storage needs ~5 replays to break even and taxes the common single-drain case ~8%.
+    // Preorder for BOTH dimensions, deliberately: a level-order layout pinned on a
+    // breadth-first-first pull costs more than it saves. The breadth-first cross-decode tax
+    // is only ~1.08x over raw array stores, so the transpose plus transient double storage
+    // needs ~5 replays to break even and taxes the common single-drain case ~8% (measured;
+    // design-docs/SCANRESULT_DESIGN.md).
     //
-    // Probes-at-birth (the 2026-08-15 reclaim, applied to this tier 2026-08-17): the result
-    // buffer's adjacency rides the SAME lazy store its visit stream builds, so a downstream
-    // receiver-smart consumer (a second scan, a projected buffer's counted map) reaches the
-    // raw store through TryGetPreorderStoreAsync. The former Tree.Lazy wrapping hid the
-    // store behind the composite, and every such consumer paid a full second capture.
-    // Deferral is the lazy store's own (build pinned to the first pull, run once).
+    // PROBES AT BIRTH: the result buffer's adjacency rides the SAME lazy store its visit
+    // stream builds, so a downstream receiver-smart consumer (a second scan, a projected
+    // buffer's counted map) reaches the raw store through TryGetPreorderStoreAsync. Wrapping
+    // the store behind a composite would hide it, and every such consumer would pay a full
+    // second capture. Deferral is the lazy store's own (build pinned to the first pull, run
+    // once).
     private static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> PairBuffer<TSource, TAccumulate>(
       LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>> surveyed)
       => new TreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
@@ -188,10 +177,9 @@ namespace Copse.Linq
     // positions array as its slices fill (parents precede children in preorder, so depth
     // threads through the build for free), then the REVERSE-preorder fold -- descendants sit
     // after their parent, so the backward walk completes every child before its parent's
-    // survey runs, with zero walk state. (A forward close-stack walk deriving positions was
-    // built and MEASURED OUT: O(depth) entries are O(n) on chains.) Full participation
-    // (2026-08-04): the survey fires on every node -- a leaf's sources view is empty, not
-    // skipped.
+    // survey runs, with zero walk state. The alternative, a forward close-stack walk deriving
+    // positions, holds O(depth) entries, which is O(n) on chains. Full participation: the
+    // survey fires on every node -- a leaf's sources view is empty, not skipped.
     private static (TSource[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations) RunLeaffixDispatchPass<TSource, TAccumulate>(
       IDepthFirstTreenumerable<TSource> source,
       Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
@@ -201,12 +189,12 @@ namespace Copse.Linq
 
       var (childOffsets, childIndices, positions) = DispatchChildIndex.BuildWithPositions(subtreeSizes);
 
-      // THE PRISTINE-LOOP RULE (profiled 2026-08-17): NOTHING extra rides this loop. An
-      // in-loop erased-writer call was tried for composed products and pessimized the whole
-      // loop on net8 (the virtual call resisted devirtualization AND taxed the survey
-      // lambda around it: +22% build time), while a SEPARATE direct-array pass over the hot
-      // outputs costs ~1ms/million nodes (the pair zip in the finisher is the proof).
-      // Anything derived from the outputs runs as its own pass after this returns.
+      // THE PRISTINE-LOOP RULE: NOTHING extra rides this loop. An in-loop erased-writer call
+      // for composed products pessimizes the whole loop on net8 -- the virtual call resists
+      // devirtualization AND taxes the survey lambda around it, +22% build time -- while a
+      // SEPARATE direct-array pass over the hot outputs costs ~1ms/million nodes (the pair zip
+      // in the finisher is the proof). Anything derived from the outputs runs as its own pass
+      // after this returns.
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)
         accumulations[nodeIndex] = nodeSurvey(

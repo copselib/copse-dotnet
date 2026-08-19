@@ -15,7 +15,7 @@ namespace Copse.Linq.Async
   /// parent's accumulation -- emitting the canonical pairing; all accumulation state is
   /// synchronous stacks.
   ///
-  /// <para>THE EMISSION MINT (2026-08-17, the state-width reclaim): the stacks carry BARE
+  /// <para>THE EMISSION MINT (the state-width floor): the stacks carry BARE
   /// accumulates -- the fold's own width, the O(depth) information floor -- and the emitted
   /// pairing is constructed per emission from <c>InnerTreenumerator.Node</c>, which is the
   /// current node at every 1:1-decorated emission, scheduling and re-visits alike. The pair

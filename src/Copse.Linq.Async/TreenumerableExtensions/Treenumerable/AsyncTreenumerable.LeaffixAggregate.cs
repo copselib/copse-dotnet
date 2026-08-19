@@ -15,15 +15,14 @@ namespace Copse.Linq
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
     /// sequence -- one <see cref="NodeAccumulation{TSource, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
-    /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape, 2026-08-05 -- the
-    /// NodeContext-flavored map-then-combine signatures are retired). The mechanism is
+    /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
     /// accumulations in sibling order (first child as the start),
     /// <paramref name="nodeAccumulator"/> folds the node in once --
     /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c> -- and at the fringe
     /// <paramref name="leafNodeSelector"/> sets each leaf's accumulation directly, the node
-    /// accumulator bypassed (selector flavors only -- THE VIRTUAL-ROOT RULE, 2026-08-06:
-    /// see LeaffixScan's doc; a formula-shaped fringe is
+    /// accumulator bypassed (selector flavors only -- THE VIRTUAL-ROOT RULE, see
+    /// LeaffixScan's doc; a formula-shaped fringe is
     /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>). Lazy per root -- a root is emitted the
     /// moment its subtree closes, and the flat buffers are then reused for the next root, so
     /// peak memory is the largest root subtree (not the whole forest) and a consumer that
@@ -107,9 +106,9 @@ namespace Copse.Linq
       var path = new Stack<PendingNode<TSource>>();
       var currentRoot = default(TSource);
 
-      // Both branch facts are INDEX ARITHMETIC, not stored state (the parallel has-children
-      // list and flag-carrying frames were each built and measured out -- per-node bookkeeping
-      // on one side, chain-deep fat frames on the other): a closing node has children iff
+      // Both branch facts are INDEX ARITHMETIC, not stored state -- the alternatives cost
+      // per-node bookkeeping (a parallel has-children list) or chain-deep fat frames
+      // (flag-carrying frames): a closing node has children iff
       // anything was scheduled after it before its close, and a closing child is its parent's
       // FIRST iff it sits immediately after the parent in preorder (children close in sibling
       // order, and closes fire before the next sibling schedules).

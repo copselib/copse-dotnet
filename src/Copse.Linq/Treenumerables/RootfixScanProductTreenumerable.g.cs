@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerables
     private readonly Func<ITreenumerator<TNode>> _InnerBreadthFirstFactory;
     private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
     private readonly TAccumulate _Seed;
-    // Context-shaped since the rootfix door (2026-08-18): the door surrenders
+    // Context-shaped by the rootfix door: the door surrenders
     // NodeContext-shaped projectors; value-shaped composition wraps at the seams below.
     private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
 

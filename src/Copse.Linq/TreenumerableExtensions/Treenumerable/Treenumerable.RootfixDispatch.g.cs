@@ -30,13 +30,13 @@ namespace Copse.Linq
     /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
     /// its assignment callback.
     ///
-    /// <para>THE READINESS CLAUSE (2026-08-05): a survey fires when its data is ready -- here,
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here,
     /// after the family's arrival lands -- so every parent's survey precedes its children's,
     /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
     /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
     /// foreclose parallel builds). Do not depend on the current preorder.</para>
     ///
-    /// <para>FULL PARTICIPATION (2026-08-04; unified same day -- the boundary is an
+    /// <para>FULL PARTICIPATION (the boundary is an
     /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
     /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
     /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
@@ -45,7 +45,7 @@ namespace Copse.Linq
     /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
     /// the boundary's sugar for roots that follow a different, per-root rule.</para>
     ///
-    /// <para>THE SUBJECT SEAT, REMOVED (2026-08-04 -- the seat rule, aimed at the survey): the
+    /// <para>THERE IS NO SUBJECT SEAT (the seat rule, aimed at the survey): the
     /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
     /// authored at its parent's dispatch site, where that node is in hand as the target's
     /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
@@ -56,7 +56,7 @@ namespace Copse.Linq
     ///
     /// <para>The result pairs every source value with what ARRIVED at it
     /// (<see cref="NodeArrival{TSource, TDispatch}"/>, the family's INPUT pairing -- the
-    /// recording rule made type-level 2026-08-06, design-docs/SCANRESULT_DESIGN.md) in the source
+    /// recording rule, type-level; design-docs/SCANRESULT_DESIGN.md) in the source
     /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
     /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
     /// what its family's survey dispatched to it -- because the survey's outputs are
@@ -86,7 +86,7 @@ namespace Copse.Linq
 
     /// <summary>
     /// The per-root seeding flavor -- A DIFFERENT INSTRUMENT than the seed flavor, not a
-    /// different spelling of it (ruled 2026-08-04): every root's arrival comes from
+    /// different spelling of it: every root's arrival comes from
     /// <paramref name="rootNodeSelector"/> DIRECTLY, bypassing the survey -- set each root's
     /// seed explicitly (known per-root budgets) -- where the seed flavor hands ONE value to
     /// your survey at the virtual family to divide among the roots (one budget, divvied).
@@ -252,7 +252,7 @@ namespace Copse.Linq
       // encoding) buys the survey view its honestly-O(1) Count and indexer.
       var (childOffsets, childIndices) = DispatchChildIndex.Build(subtreeSizes);
 
-      // FULL PARTICIPATION (2026-08-04): the virtual forest root's family goes first, through
+      // FULL PARTICIPATION: the virtual forest root's family goes first, through
       // the same survey as every other family (the seed flavor) or the selector sugar -- the
       // roots gathered into a one-family index so the boundary speaks the same
       // sibling-complete view and obeys the same exactly-once protocol.

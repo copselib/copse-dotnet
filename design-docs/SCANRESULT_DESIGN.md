@@ -444,3 +444,30 @@ Any future operator pair gets this audit before shipping.
   it remains LeaffixAggregate-D's, whose bespoke build is untouched.
 - Positional accumulator flavors stay deferred to the signature workstream; the
   boundary selectors (root/leaf) carry value | positional flavors now.
+
+## Measured build constraints (recorded 2026-08-19; measurements as dated)
+
+The build passes carry guardrails whose numbers belong in a record rather than in the
+comments that enforce them. Each is stated in the code as a constraint; the evidence is here.
+
+- **Preorder layout for BOTH dimensions** (2026-08-17). Pinning a level-order layout on a
+  breadth-first-first pull was built and measured out: over raw array stores the
+  breadth-first cross-decode tax is only ~1.08x, so the transpose plus transient double
+  storage needs ~5 replays to break even, and it taxes the common single-drain case ~8%.
+
+- **The pristine-loop rule** (profiled 2026-08-17). An in-loop erased-writer call was tried
+  in the dispatch fold for composed products and pessimized the whole loop on net8: the
+  virtual call resisted devirtualization and additionally taxed the survey lambda around it,
+  +22% build time. A separate direct-array pass over the hot outputs costs ~1ms/million nodes
+  (the pair zip in the finisher is the standing proof). Anything derived from the outputs
+  therefore runs as its own pass.
+
+- **Reverse-preorder over a forward close-stack walk** (2026-08-05). A forward close-stack
+  walk deriving positions was built and measured out: it holds O(depth) entries, which is
+  O(n) on chains, where the backward walk completes every child before its parent with zero
+  walk state.
+
+- **Probes at birth** (2026-08-15, applied to the dispatch tier 2026-08-17). The result
+  buffer's adjacency rides the same lazy store its visit stream builds. The former Tree.Lazy
+  wrapping hid the store behind the composite, and every receiver-smart consumer paid a full
+  second capture.

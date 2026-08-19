@@ -39,7 +39,7 @@ namespace Copse.Linq
         .GetLeaves();
     }
 
-    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
+    /// <summary>Disambiguation overload for full trees: a full tree is consumed depth-first.</summary>
     public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       TAccumulate seed,
@@ -73,7 +73,7 @@ namespace Copse.Linq
         .GetLeaves();
     }
 
-    /// <summary>Disambiguation overload for full trees; keeps the historical depth-first behavior.</summary>
+    /// <summary>Disambiguation overload for full trees: a full tree is consumed depth-first.</summary>
     public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> RootfixAggregate<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,

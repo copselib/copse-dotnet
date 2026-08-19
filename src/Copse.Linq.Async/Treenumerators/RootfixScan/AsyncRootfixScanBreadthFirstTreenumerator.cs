@@ -15,7 +15,7 @@ namespace Copse.Linq.Async
   /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
   /// are decoupled; all level/skip state is synchronous.
   ///
-  /// <para>THE EMISSION MINT (2026-08-17; the depth-first twin's doc carries the full
+  /// <para>THE EMISSION MINT (the depth-first twin's doc carries the full
   /// rationale): the level buffers and skip stack carry BARE accumulates -- the parent lookup
   /// only ever reads an entry's accumulate and position -- and the emitted pairing is
   /// constructed per emission from <c>InnerTreenumerator.Node</c>. The pair never lands in the

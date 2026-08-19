@@ -15,8 +15,8 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// The fold tier of the leaffix pair -- RootfixScan's TRUE DUAL (reshaped 2026-08-05,
-    /// design-docs/SCANRESULT_DESIGN.md THE NORTH STAR): flow reversal flips the upstream
+    /// The fold tier of the leaffix pair -- RootfixScan's TRUE DUAL
+    /// (design-docs/SCANRESULT_DESIGN.md, THE NORTH STAR): flow reversal flips the upstream
     /// multiplicity (one parent down, n children up), so the upward fold decomposes into two
     /// callbacks -- <paramref name="edgeAccumulator"/> reduces the children's COMPLETED
     /// accumulations in sibling order (left-fold from the first child, firing k-1 times, so
@@ -25,13 +25,13 @@ namespace Copse.Linq
     /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c>. The node accumulator is
     /// LITERALLY RootfixScan's fold shape, <c>(TAccumulate, TSource)</c> -- the same fold,
     /// fed by the parent's accumulate going down and by the children's reduced accumulate
-    /// going up. (The former map-then-combine shape folded the boundary INTO the map itself -- "both
-    /// an accumulator and a generator" -- and was replaced by this honest decomposition.)
+    /// going up. The decomposition is the point: a single map-then-combine callback would be
+    /// "both an accumulator and a generator", folding the boundary into the map itself.
     ///
     /// <para>THE BOUNDARY: selector flavors only -- <paramref name="leafNodeSelector"/> sets
     /// each leaf's accumulation directly, the node accumulator bypassed at the fringe. There
     /// is NO seed flavor at the leaffix boundary, either tier (THE VIRTUAL-ROOT RULE,
-    /// 2026-08-06, design-docs/SCANRESULT_DESIGN.md): a seed is the arrival from a boundary's
+    /// design-docs/SCANRESULT_DESIGN.md): a seed is the arrival from a boundary's
     /// virtual node, and only the rootfix boundary has one -- the virtual forest root is a
     /// single tree-lawful node, while a singular virtual node below all leaves would need n
     /// parents, which is no tree. The fringe's honest instrument is the per-leaf rule; a
@@ -59,14 +59,12 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
     {
-      // The receiver sniff (the Materialize / LINQ-Count idiom; the 2026-08-14 experiment's
-      // collapse): ANY capture folds IN PLACE over its own adjacency -- no second capture,
-      // no layout condition (Stage B's stance fold assigns its own preorder numbering, so
-      // the receiver's handle space is never assumed; the old preorder-only guard died with
-      // the migration). A concrete preorder buffer takes the span fast path inside; every
+      // The receiver sniff (the Materialize / LINQ-Count idiom): ANY capture folds IN PLACE
+      // over its own adjacency -- no second capture, and no layout condition, because the
+      // stance fold assigns its own preorder numbering and never assumes the receiver's
+      // handle space. A concrete preorder buffer takes the span fast path inside; every
       // other capture takes the walker fold. True streams take the dispatch delegation.
-      // Only the VALUE-selector flavor folds in place (re-keyed from the seed flavor when
-      // the virtual-root rule retired it -- the leaf slot is position-free either way): the
+      // Only the VALUE-selector flavor folds in place (its leaf slot is position-free): the
       // positional flavor needs per-node positions, which the engine derives and the
       // in-place fold deliberately does not.
       if (source is ITreenumerableBuffer<TSource> buffer)
@@ -114,7 +112,7 @@ namespace Copse.Linq
       Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
-    /// <summary>Disambiguation overloads for full trees; keep the historical depth-first consumption.</summary>
+    /// <summary>Disambiguation overloads for full trees: a full tree is consumed depth-first.</summary>
     public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
       this ITreenumerable<TSource> source,
       Func<TSource, TAccumulate> leafNodeSelector,
