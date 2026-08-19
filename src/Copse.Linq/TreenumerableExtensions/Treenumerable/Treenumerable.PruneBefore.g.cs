@@ -43,8 +43,8 @@ namespace Copse.Linq
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
@@ -82,12 +82,12 @@ namespace Copse.Linq
 
       // The join rule, as in the composite positional overload: splice only while the chain
       // is label-preserving.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
-      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource && !depthFirstSelectWhereSource.Relabels)
-        return depthFirstSelectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
@@ -120,12 +120,12 @@ namespace Copse.Linq
       if (predicate == null)
         return source;
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource && !selectWhereSource.Relabels)
-        return selectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
+        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
-      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource && !breadthFirstSelectWhereSource.Relabels)
-        return breadthFirstSelectWhereSource.Compose<T, PositionalPruneBeforeResultSelector<T>>(
+      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
           new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
 
       return new SelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(

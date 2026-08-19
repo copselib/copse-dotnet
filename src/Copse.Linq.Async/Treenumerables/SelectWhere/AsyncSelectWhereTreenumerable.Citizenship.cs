@@ -16,7 +16,7 @@ namespace Copse.Linq.Async.Treenumerables
         _Source,
         new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, SelectResultSelector<TResult, TOuterResult>>(
           _ResultSelector, new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node))),
-        Relabels);
+        _Relabels);
     }
 
     public IAsyncPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)

@@ -33,6 +33,15 @@ namespace Copse.Linq.Treenumerables
     private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
     // A projection composes in-tier.
+    // Never moves a label, so the position-reading doors ARE the blind doors.
+    public IDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+      => Compose(selector);
+
+    public IDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
+      TOuterSelector outerSelector,
+      bool relabels)
+      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
     public IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
       return new SelectPruneAfterDepthFirstTreenumerable<TSource, TOuterResult>(
@@ -40,8 +49,6 @@ namespace Copse.Linq.Treenumerables
     }
 
     // The general surface (inherited): light chains never relabel.
-    public bool Relabels => false;
-
     // The struct splice (the open seal): the chain's composed closure rides as one
     // FuncResultSelector leaf; the splice plumbing and the outer leg are structs.
     public IDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
