@@ -79,14 +79,24 @@ namespace Copse
     /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
     /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToParent()
-      => (Topology.TryGetParent(Focus))
-        .Map(Topology, (topology, parent) => new TreeWalker<TValue, THandle>(topology, parent));
+    {
+      var parentResult = Topology.TryGetParent(Focus);
+
+      return parentResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, parentResult.Value))
+        : default;
+    }
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or an empty result past the last child.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToChild(int childIndex)
-      => (Topology.TryGetChildAt(Focus, childIndex))
-        .Map(Topology, (topology, child) => new TreeWalker<TValue, THandle>(topology, child.Node));
+    {
+      var childResult = Topology.TryGetChildAt(Focus, childIndex);
+
+      return childResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, childResult.Value.Node))
+        : default;
+    }
 
     /// <summary>The third step: a stance at the root at <paramref name="rootIndex"/> of the
     /// SAME topology. Roots share no parent/child edge, so this is the one adjacency the other
@@ -95,8 +105,13 @@ namespace Copse
     /// the step set covers the topology's whole probe surface, so a walker never has to be
     /// opened up for its topology.</summary>
     public Option<TreeWalker<TValue, THandle>> MoveToRoot(int rootIndex)
-      => (Topology.TryGetRootAt(rootIndex))
-        .Map(Topology, (topology, root) => new TreeWalker<TValue, THandle>(topology, root.Node));
+    {
+      var rootResult = Topology.TryGetRootAt(rootIndex);
+
+      return rootResult.HasValue
+        ? new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(Topology, rootResult.Value.Node))
+        : default;
+    }
 
   }
 }
