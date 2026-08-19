@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787160673298,
+  "lastUpdate": 1787160673967,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -201997,6 +201997,230 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
             "value": 1044,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9e376c728012bf2184d2b26bcc8d679f8279e4c3",
+          "message": "The Func door goes: one splice shape, not two\n\nThe composition interface carried both shapes of the general splice -- the struct door\nand a Func door taking Func<NodeContext<T>, SelectWhereResult<TOut>>. The simplify pass\n(c235c55) reduced every Func door to a one-line forward wrapping its delegate in a\nFuncResultSelector and left the forwards standing.\n\nThe audit found the Func door has NO CALLER anywhere in the repo. Where and PruneBefore\ntake the struct door; projection and prune-after have their own doors; TakeSubtreesWhere,\nthe one operator that genuinely needs a closure-shaped leg, builds its own\nFuncResultSelector and takes the struct door too. It survived as 15 async implementations\nof a forward nobody called, mirrored to sync by codegen.\n\nDeleted. The general splice now has one shape, and a closure-bound piece enters it as a\nFuncResultSelector leaf -- which is exactly what each deleted forward did to its\nargument. FuncResultSelector stays: the middle tier rides its composed chain as one leaf,\nand TakeSubtreesWhere builds one directly.\n\nThe surface drops from six doors to five, net -248 lines of code across 38 files.\nBehavior-neutral by construction; the Stage 0 representation pins are unchanged and the\nfull battery is 24,598 green.\n\nDocs: a dated section in OPERATOR_COMPOSITION_DESIGN.md (the convention \"the door move\"\nset), and a supersession note on PUBLIC_COMPOSITION_SURFACE_DESIGN.md's hierarchy sketch,\nwhich was also still showing Relabels as an interface member.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:13:42Z",
+          "tree_id": "7d549279f1beccf6e6b3ffc52bfdf1aa20db8bec",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9e376c728012bf2184d2b26bcc8d679f8279e4c3"
+        },
+        "date": 1787160673831,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Composed",
+            "value": 27241,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Composed",
+            "value": 29689844,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_SelectWhere_Stacked",
+            "value": 27521,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_SelectWhere_Stacked",
+            "value": 29692648,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Composed",
+            "value": 27605,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Composed",
+            "value": 29689521,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_FiveOperators_Stacked",
+            "value": 88339,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_FiveOperators_Stacked",
+            "value": 59323416,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_ScanWhere_Composed",
+            "value": 126585,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_ScanWhere_Composed",
+            "value": 562130,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Dft_Triangle_ScanWhere_Stacked",
+            "value": 159770,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Compose.Bft_Triangle_ScanWhere_Stacked",
+            "value": 595234,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Forest_All",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Forest_All",
+            "value": 1286,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Forest_All",
+            "value": 556,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Forest_All",
+            "value": 1038,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Dft_Triangle_HalfDepth",
+            "value": 30732,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Dft_Triangle_HalfDepth",
+            "value": 60420,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneAfter.Bft_Triangle_HalfDepth",
+            "value": 116623,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PruneBefore.Bft_Triangle_HalfDepth",
+            "value": 240575,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Forest_Composition",
+            "value": 1271,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Forest_Composition",
+            "value": 1271,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Dft_Binary",
+            "value": 3755,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Select.Bft_Binary",
+            "value": 27503259,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Dft_Triangle_Streamed",
+            "value": 59707,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Dft_Triangle_Buffered",
+            "value": 59619,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Bft_Triangle",
+            "value": 461980,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Dft_Chain_Streamed_DeepMatch",
+            "value": 8408471,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Dft_Chain_Buffered_DeepMatch",
+            "value": 8408383,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.TakeSubtreesWhere.Bft_Chain_DeepMatch",
+            "value": 1051098,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Triangle_Mixed",
+            "value": 72821,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Triangle_Mixed",
+            "value": 478349,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_KeepAll",
+            "value": 37908350,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_KeepAll",
+            "value": 1803,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Chain_DropAll",
+            "value": 1540,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Chain_DropAll",
+            "value": 8391643,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_KeepAll",
+            "value": 1303,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_KeepAll",
+            "value": 1311,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Dft_Forest_DropAll",
+            "value": 1286,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Where.Bft_Forest_DropAll",
+            "value": 1038,
             "unit": "bytes"
           }
         ]
