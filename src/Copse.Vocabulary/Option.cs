@@ -36,19 +36,11 @@ namespace Copse
     /// is the one this type asks for.</summary>
     public readonly TValue Value;
 
-    /// <summary>The value if present, otherwise <paramref name="fallback"/>. The total read.</summary>
-    public TValue GetValueOrDefault(TValue fallback) => HasValue ? Value : fallback;
-
-    /// <summary>The value if present, otherwise <c>default</c>. Never use this where the value's
-    /// <c>default</c> is a legitimate answer -- an ordinal handle's <c>default</c> is the root,
-    /// and the miss would masquerade as it.</summary>
-    public TValue GetValueOrDefault() => Value;
-
     /// <summary>Test and bind in one expression, for the one place C# offers nothing else: a
     /// loop condition demands a <c>bool</c> and gives no way to name the value it guards. This is
     /// not a second door -- the door's miss is already typed, and this option IS that miss; it is
     /// the adapter between the type and the language's statement grammar. Anywhere a statement
-    /// will do, read <see cref="HasValue"/> and <see cref="Value"/> instead, or take the algebra.
+    /// will do, read <see cref="HasValue"/> and <see cref="Value"/> instead.
     ///
     /// <para>Assigns <paramref name="value"/> on the miss too (<c>default</c>, the try-pattern's
     /// own contract), so a loop that reuses its stance as the target ends holding a default. Fine
@@ -60,54 +52,14 @@ namespace Copse
       return HasValue;
     }
 
-    /// <summary>Relabel the value in place, leaving the miss a miss. The functor map: a step whose
-    /// result is fed to a total transformation, without opening the option to do it.</summary>
-    public Option<TResult> Map<TResult>(Func<TValue, TResult> selector)
-      => HasValue ? new Option<TResult>(selector(Value)) : default;
-
     /// <summary>The capture-free map: <paramref name="state"/> is handed to the selector instead of
     /// closed over, so the delegate stays a cached static and a step in a loop allocates nothing.
     /// The shape hot code uses when it wants the algebra.</summary>
     public Option<TResult> Map<TState, TResult>(TState state, Func<TState, TValue, TResult> selector)
       => HasValue ? new Option<TResult>(selector(state, Value)) : default;
 
-    /// <summary>Chain a second partial step onto this one, short-circuiting the miss. The monadic
-    /// bind: what a climb, a probe sequence, or any run of steps-that-may-fail composes with.</summary>
-    public Option<TResult> Bind<TResult>(Func<TValue, Option<TResult>> selector)
-      => HasValue ? selector(Value) : default;
-
-    /// <summary>The capture-free bind -- see <see cref="Map{TState,TResult}(TState, Func{TState, TValue, TResult})"/>
-    /// for why the state travels as an argument.</summary>
-    public Option<TResult> Bind<TState, TResult>(TState state, Func<TState, TValue, Option<TResult>> selector)
-      => HasValue ? selector(state, Value) : default;
-
-    /// <summary>Answer both cases at once, so neither is forgotten and neither reads
-    /// <see cref="Value"/> unguarded.</summary>
-    public TResult Match<TResult>(Func<TValue, TResult> onValue, Func<TResult> onMiss)
-      => HasValue ? onValue(Value) : onMiss();
-
-    /// <summary>This option if it is inhabited, otherwise <paramref name="fallback"/> -- the first
-    /// hit among alternatives.</summary>
-    public Option<TValue> Or(Option<TValue> fallback) => HasValue ? this : fallback;
-
-    /// <summary>Keep the value only when it satisfies <paramref name="predicate"/>; a rejected
-    /// value becomes a miss.</summary>
-    public Option<TValue> Where(Func<TValue, bool> predicate)
-      => HasValue && predicate(Value) ? this : default;
-
     /// <summary>An inhabited option is its value; the miss reads as a word, never as a blank.</summary>
     public override string ToString() => HasValue ? $"{Value}" : "none";
   }
-
-  /// <summary>Creation surface for <see cref="Option{TValue}"/>: the two constructors as words,
-  /// with <see cref="Some{TValue}"/> inferring its type argument where the constructor cannot.</summary>
-  public static class Option
-  {
-    /// <summary>The inhabited option carrying <paramref name="value"/>.</summary>
-    public static Option<TValue> Some<TValue>(TValue value) => new Option<TValue>(value);
-
-    /// <summary>The absent option -- the same value as <c>default</c>, spelled for readability at
-    /// a <c>return</c>.</summary>
-    public static Option<TValue> None<TValue>() => default;
-  }
 }
+

@@ -27,9 +27,10 @@ namespace Copse.Linq
       var door = await source.TryGetTreeWalkerAsync().ConfigureAwait(false);
 
       // Root 0 is the door's own stance -- answer it without a second probe.
-      return rootIndex == 0
-        ? door
-        : await door.BindAsync(rootIndex, (index, walker) => walker.MoveToRootAsync(index)).ConfigureAwait(false);
+      if (rootIndex == 0 || !door.HasValue)
+        return door;
+
+      return await door.Value.MoveToRootAsync(rootIndex).ConfigureAwait(false);
     }
   }
 }

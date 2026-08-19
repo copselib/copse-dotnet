@@ -34,6 +34,7 @@ namespace Copse.Linq
 
       while (pending.Count > 0)
       {
+
         var stance = pending.Pop();
 
         yield return new HandleAndValue<THandle, TValue>(stance.Focus, stance.GetValue());

@@ -29,9 +29,10 @@ namespace Copse.Linq
       var door = source.TryGetTreeWalker();
 
       // Root 0 is the door's own stance -- answer it without a second probe.
-      return rootIndex == 0
-        ? door
-        : door.Bind(rootIndex, (index, walker) => walker.MoveToRoot(index));
+      if (rootIndex == 0 || !door.HasValue)
+        return door;
+
+      return door.Value.MoveToRoot(rootIndex);
     }
   }
 }

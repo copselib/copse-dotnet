@@ -33,6 +33,8 @@ namespace Copse.Linq
 
       while (pending.Count > 0)
       {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var stance = pending.Pop();
 
         yield return new HandleAndValue<THandle, TValue>(stance.Focus, await stance.GetValueAsync().ConfigureAwait(false));
