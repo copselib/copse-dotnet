@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787167598074,
+  "lastUpdate": 1787167598736,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -144634,6 +144634,102 @@ window.BENCHMARK_DATA = {
             "value": 80593588.36974789,
             "unit": "ns",
             "range": "± 1573584.5193385922"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0d94ccb24f1833c562c33a3da2f4883f293ab335",
+          "message": "Park the XML doc pass in the repo, not just in a session note\n\nThe parked work was recorded in Claude's memory directory, which lives inside this\ncodespace and dies with it. Jason: \"We'll need to put it in the repo somewhere, we can\nclean it up later.\"\n\ndesign-docs/XML_DOC_PASS.md carries the scope (200 flagged lines / 106 authored files,\nroughly half genuine, priority slice = public /// docs on packable projects), the finder\ncommand with its two caveats, the worked example (AsyncTreeWalker and why THE INVARIANT\nparagraph was kept as the contrast case), the timing argument, and the three open rulings\nthat should not get silently decided by whoever picks this up.\n\nThe timing argument is the part worth not losing: no project sets\nGenerateDocumentationFile, so these docs do not ship to IntelliSense today. Turning that\nproperty on is the forcing function -- run the pass first or in the same push.\n\nMarked as a working note, not a ratified design record.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T19:11:50Z",
+          "tree_id": "cabaa6c257602a2f5f896a14b9be09a031573f65",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0d94ccb24f1833c562c33a3da2f4883f293ab335"
+        },
+        "date": 1787167598595,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106851419.24615385,
+            "unit": "ns",
+            "range": "± 259764.7016386194"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 87646558.87179488,
+            "unit": "ns",
+            "range": "± 259454.84421971173"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 261614416.92307693,
+            "unit": "ns",
+            "range": "± 1028787.4488952364"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 265068306.5,
+            "unit": "ns",
+            "range": "± 1239330.8584827136"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 192186383.11111113,
+            "unit": "ns",
+            "range": "± 1920856.72208199"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 203586635.35185182,
+            "unit": "ns",
+            "range": "± 4267404.704963015"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 111056555.96666664,
+            "unit": "ns",
+            "range": "± 1190494.1354533613"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 86006557.75555557,
+            "unit": "ns",
+            "range": "± 947673.7034956967"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 498306593.28571427,
+            "unit": "ns",
+            "range": "± 2214624.5402895804"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 483203733.21428573,
+            "unit": "ns",
+            "range": "± 991137.452003674"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 102634570.64615385,
+            "unit": "ns",
+            "range": "± 339984.67241766624"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79082145.23611112,
+            "unit": "ns",
+            "range": "± 1121006.2053612089"
           }
         ]
       }
