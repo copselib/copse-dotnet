@@ -234,5 +234,55 @@ single-digit engine improvement would partly disappear into the scaffolding. Not
 sniffs a treenumerator type (every probe is at the treenumerable layer), so leaving it visible reroutes nothing -- pinned by
 `RepresentationPinTests.HideScopeLaw_*`.
 
-**No epoch.** Because the barrier is free, the historical series stays comparable across this change
-— the rows measure what they always did, minus the composition contamination.
+**PARTIAL EPOCH -- corrected 2026-08-19 after the first CI A/B.** The barrier itself is free, but
+that is not the same as the change being neutral: the whole point was to stop the prune COMPOSING, so
+every row where it had been composing necessarily moves. See the measured A/B below.
+
+### The measured effect (CI A/B, 2026-08-19): which rows broke and which did not
+
+`2acd8e2` was the last full CI run on the contaminated corpus and `d2b4d14` the first on the
+isolated one, same fleet — a clean A/B.
+
+**Prune-free rows are the control.** `Chain` and `Forest` are built from `ToDegenerateTree` /
+`ToTrivialForest` with no prune, so isolation cannot affect them. They span −4.8% to +3.8%,
+mean ≈ +0.3% — normal fleet variation, and the two runs are comparable.
+
+**Pruned rows moved well outside that band:**
+
+| row | contaminated | isolated | Δ |
+|---|---|---|---|
+| `Where.Dft_Triangle_Mixed` | 52.3 ms | 59.8 ms | **+14.2%** |
+| `Where.Bft_Triangle_Mixed` | 56.7 ms | 64.4 ms | **+13.4%** |
+| `Compose.Bft_Triangle_SelectWhere_Composed` | 62.1 ms | 73.2 ms | **+17.8%** |
+| `Compose.Bft_Triangle_FiveOperators_Composed` | 66.9 ms | 75.7 ms | **+13.2%** |
+
+That is the accidental prune leaving the chain, working as intended: those rows were absorbing
+an operator for free and now pay for it. `Where.Triangle_Mixed` — the row the tier-seal ruling
+(`e30bffc`) was calibrated on — was running ~14% faster than its name implied.
+
+**Allocation corroborates the mechanism.** Every row rose by a fixed 32–150 B and nothing
+proportional to node count, on rows allocating from hundreds of bytes to 37 MB. That is one
+extra treenumerator object per acquisition — the un-composed prune — not a per-node cost.
+
+**What survived**: the `FiveOperators` DFT collapse holds at 2.86× (was 2.90×), so that
+headline was never an artifact. The `SelectWhere` composed/stacked ratio softened, 0.79 → 0.88
+DFT, because the composed spelling lost a free absorbed operator while the stacked one did not.
+
+**The rule for reading history**: prune-free rows (`Chain`, `Forest`) are continuous across
+`3aef7e0`. Every `Triangle`- and `Binary`-derived row is **not**, and wants a dashboard marker
+there.
+
+**Methodological note, recorded because it nearly shipped as a wrong conclusion**: the local
+verification used the `CountNodes` family as its control and found no change — but `CountNodes`
+applies no operator, so the prune had nothing to compose *with* there. It was the one family
+structurally incapable of showing the effect. Verifying a composition change requires a row
+that composes.
+
+### The relabels door move (`51950ea`, 2026-08-19): a measured no-op
+
+Same corpus both sides, so this isolates the door move. Timings moved within ±4.3% (most within
+±2%, mean ≈ −0.7%, no systematic direction), and **38 of 41 Streaming allocations were
+byte-identical**; the three that differed moved 43 B, 61 B and 1,628 B on rows allocating 3.8 KB
+to 27.5 MB — diagnoser jitter, not machinery. The door move builds the same machines, which is
+what the throw-on-false probe predicted: with the driver's `Relabels` always true, "stack
+always" is the identical answer, not a conservative one.

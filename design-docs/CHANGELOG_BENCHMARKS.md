@@ -278,8 +278,10 @@ The unscoped `Hide()` was tried first and rejected on measurement: it also wraps
 which costs on every pull (+31% `Forest`, +17-25% `Chain` on `CountNodes`, plus +48 B/row) and would
 have diluted every future single-digit engine win. That prompted the `HideScope` parameter, so the
 benchmarks now use the shipped operator rather than a local copy. The scoped barrier reproduces the
-pre-barrier numbers on the rows this box can resolve, so **no series is broken and no dashboard
-marker is needed.**
+pre-barrier numbers on the rows this box can resolve. **CORRECTED 2026-08-19 after the first CI
+A/B: the BARRIER is free, but isolation is not neutral -- prune-free rows (Chain, Forest) are
+continuous, while Triangle/Binary rows shifted +13-18% as the accidental prune left the chain.
+Those rows DO need a dashboard marker at 3aef7e0. Full A/B in BENCHMARKING.md.**
 
 Also removed: `Treenumerables.cs` / `TreeShape.cs`, a dead parallel tree factory carrying the same
 contamination, and `Union`'s private `HalfForest`, which moved into the factory as `MegaHalfForest`.
