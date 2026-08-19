@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787161892640,
+  "lastUpdate": 1787161893161,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -87134,6 +87134,114 @@ window.BENCHMARK_DATA = {
             "value": 1048406.7227864583,
             "unit": "ns",
             "range": "± 2527.7457540665487"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e394b3238a895ca56358d77bfd03405f45127cb",
+          "message": "The driver's _Relabels goes: one consumer left in the algebra\n\nThe door move (4673265) made Relabels private state instead of a published interface bit.\nThis removes the state wherever nothing ever read it.\n\nIn the SelectWhere driver family the field was write-only in the closure sense: no code\nread it to decide anything, and the only thing it fed was the identical write-only field\nof the next driver. The reason is the door move's own: a driver exists BECAUSE something\nrejected, so its position-reading doors stack unconditionally and never ask.\n\nGone from SelectWhereTreenumerable and its two narrow twins -- the field, the constructor\nparameter, and the argument at every construction site (the Where and PruneBefore\noverloads, the light tier's splices, the middle tier's, the scan machine's stack site, and\nthree test rehearsals). The private ComposeCore helpers in the light wrappers went with\nit: with the Func door gone they had one caller each, so their bodies moved into the\nstruct door.\n\nWhat survives: the relabels PARAMETER on the interface doors, which is a splicing operator\nreporting on itself. One member still needs to hear it -- ScanWhere, whose relabeling is\ngenuinely variable (a rejecting operator builds it true, a rootfix citizen's blind door\nbuilds it false). Every other member answers from its representation. The bit now has\nexactly one consumer in the whole algebra, which is the honest scope of the question.\n\nNet -103 lines of code across 39 files. Behavior-neutral: a field nothing reads cannot\nchange a result. Stage 0 representation pins unchanged, full battery 24,598 green.\n\nDocs: a dated section in OPERATOR_COMPOSITION_DESIGN.md continuing the door move, and the\ninterface comment now names who consults relabels and who answers from representation.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-19T17:26:43Z",
+          "tree_id": "4bb6debf55a9250c9f89962529256f16c955ad6a",
+          "url": "https://github.com/copselib/copse-dotnet/commit/0e394b3238a895ca56358d77bfd03405f45127cb"
+        },
+        "date": 1787161893048,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2260838.046614583,
+            "unit": "ns",
+            "range": "± 11154.202352104581"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1821565.6710379464,
+            "unit": "ns",
+            "range": "± 1297.205164690122"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4494511.913504465,
+            "unit": "ns",
+            "range": "± 5772.435363039989"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 4153883.5479166666,
+            "unit": "ns",
+            "range": "± 20159.461482849307"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 652328.7392578125,
+            "unit": "ns",
+            "range": "± 1191.6232672743806"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 685545.7907151442,
+            "unit": "ns",
+            "range": "± 338.22981231013415"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 414613.3743652344,
+            "unit": "ns",
+            "range": "± 1330.6144401230874"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4184516.8041666667,
+            "unit": "ns",
+            "range": "± 22437.920399367238"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3261361.4921875,
+            "unit": "ns",
+            "range": "± 3211.2523535445152"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14309178.44375,
+            "unit": "ns",
+            "range": "± 17698.23187073992"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7714326.158482143,
+            "unit": "ns",
+            "range": "± 54356.117336719966"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1385683.7283653845,
+            "unit": "ns",
+            "range": "± 1703.4616988629853"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1129643.6821664663,
+            "unit": "ns",
+            "range": "± 1475.9922836667915"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1033935.2212611607,
+            "unit": "ns",
+            "range": "± 1699.7148277715796"
           }
         ]
       }
