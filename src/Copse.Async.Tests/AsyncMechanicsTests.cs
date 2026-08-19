@@ -483,14 +483,14 @@ namespace Copse.Async.Tests
       private int _i;
       public SyncPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; _i = 0; }
 
-      public Copse.Stores.PreorderRead<int> TryReadNext()
+      public Option<Copse.Stores.PreorderRead<int>> TryReadNext()
       {
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new Copse.Stores.PreorderRead<int>(v, d);
+        return new Option<Copse.Stores.PreorderRead<int>>(new Copse.Stores.PreorderRead<int>(v, d));
       }
 
-      public Copse.Stores.PreorderRead<int> TrySkipToDepth(int maxDepth)
+      public Option<Copse.Stores.PreorderRead<int>> TrySkipToDepth(int maxDepth)
       {
         while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
         return TryReadNext();
@@ -505,21 +505,21 @@ namespace Copse.Async.Tests
       private int _i;
       public SuspendingPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; }
 
-      public async ValueTask<PreorderRead<int>> TryReadNextAsync()
+      public async ValueTask<Option<PreorderRead<int>>> TryReadNextAsync()
       {
         await Task.Yield(); // force real asynchrony on the read seam
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new PreorderRead<int>(v, d);
+        return new Option<PreorderRead<int>>(new PreorderRead<int>(v, d));
       }
 
-      public async ValueTask<PreorderRead<int>> TrySkipToDepthAsync(int maxDepth)
+      public async ValueTask<Option<PreorderRead<int>>> TrySkipToDepthAsync(int maxDepth)
       {
         await Task.Yield();
         while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new PreorderRead<int>(v, d);
+        return new Option<PreorderRead<int>>(new PreorderRead<int>(v, d));
       }
 
       public ValueTask DisposeAsync() => default;

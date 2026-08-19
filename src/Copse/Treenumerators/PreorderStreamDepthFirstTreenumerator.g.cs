@@ -254,7 +254,7 @@ namespace Copse.Treenumerators
     }
 
     // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
-    private bool ConsumeRead(PreorderRead<TValue> read)
+    private bool ConsumeRead(Option<PreorderRead<TValue>> read)
     {
       if (!read.HasValue)
       {
@@ -262,14 +262,14 @@ namespace Copse.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value;
-      _LookaheadDepth = read.Depth;
+      _LookaheadValue = read.Value.Value;
+      _LookaheadDepth = read.Value.Depth;
       _HasLookahead = true;
 
       return true;
     }
 
-    private bool ConsumeSkip(PreorderRead<TValue> read)
+    private bool ConsumeSkip(Option<PreorderRead<TValue>> read)
     {
       if (!read.HasValue)
       {
@@ -278,8 +278,8 @@ namespace Copse.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value;
-      _LookaheadDepth = read.Depth;
+      _LookaheadValue = read.Value.Value;
+      _LookaheadDepth = read.Value.Depth;
 
       return true;
     }

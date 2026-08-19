@@ -204,18 +204,18 @@ namespace Copse.Benchmarks
       private readonly int[] _Depths;
       private int _Position;
 
-      public PreorderRead<int> TryReadNext()
+      public Option<PreorderRead<int>> TryReadNext()
       {
         if (_Position >= _Values.Length)
           return default;
 
-        var read = new PreorderRead<int>(_Values[_Position], _Depths[_Position]);
+        var read = new Option<PreorderRead<int>>(new PreorderRead<int>(_Values[_Position], _Depths[_Position]));
         _Position++;
 
         return read;
       }
 
-      public PreorderRead<int> TrySkipToDepth(int maxDepth)
+      public Option<PreorderRead<int>> TrySkipToDepth(int maxDepth)
       {
         while (_Position < _Values.Length && _Depths[_Position] > maxDepth)
           _Position++;

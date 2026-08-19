@@ -32,16 +32,16 @@ namespace Copse.Linq.Tests
 
       public bool Disposed { get; private set; }
 
-      public PreorderRead<string> TryReadNext()
+      public Option<PreorderRead<string>> TryReadNext()
       {
         if (_Cursor >= _Nodes.Length)
           return default;
 
         var (value, depth) = _Nodes[_Cursor++];
-        return new PreorderRead<string>(value, depth);
+        return new Option<PreorderRead<string>>(new PreorderRead<string>(value, depth));
       }
 
-      public PreorderRead<string> TrySkipToDepth(int maxDepth)
+      public Option<PreorderRead<string>> TrySkipToDepth(int maxDepth)
       {
         while (_Cursor < _Nodes.Length && _Nodes[_Cursor].Depth > maxDepth)
           _Cursor++;

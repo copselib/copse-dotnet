@@ -276,7 +276,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
-    private bool ConsumeRead(PreorderRead<TValue> read)
+    private bool ConsumeRead(Option<PreorderRead<TValue>> read)
     {
       if (!read.HasValue)
       {
@@ -284,14 +284,14 @@ namespace Copse.Async.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value;
-      _LookaheadDepth = read.Depth;
+      _LookaheadValue = read.Value.Value;
+      _LookaheadDepth = read.Value.Depth;
       _HasLookahead = true;
 
       return true;
     }
 
-    private bool ConsumeSkip(PreorderRead<TValue> read)
+    private bool ConsumeSkip(Option<PreorderRead<TValue>> read)
     {
       if (!read.HasValue)
       {
@@ -300,8 +300,8 @@ namespace Copse.Async.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value;
-      _LookaheadDepth = read.Depth;
+      _LookaheadValue = read.Value.Value;
+      _LookaheadDepth = read.Value.Depth;
 
       return true;
     }
@@ -401,7 +401,7 @@ namespace Copse.Async.Treenumerators
       return await TryPushNextChildAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<PreorderRead<TValue>> pendingRead, int maxDepth)
+    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TValue>>> pendingRead, int maxDepth)
     {
       if (!ConsumeRead(await pendingRead.ConfigureAwait(false)))
         return false;
@@ -409,7 +409,7 @@ namespace Copse.Async.Treenumerators
       return await TryEnsureLookaheadAtOrAboveAsync(maxDepth).ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<PreorderRead<TValue>> pendingSkip, int maxDepth)
+    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TValue>>> pendingSkip, int maxDepth)
     {
       if (!ConsumeSkip(await pendingSkip.ConfigureAwait(false)))
         return false;
