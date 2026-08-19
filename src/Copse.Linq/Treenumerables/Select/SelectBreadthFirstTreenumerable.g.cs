@@ -79,13 +79,6 @@ namespace Copse.Linq.Treenumerables
         _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, predicate));
     }
 
-    // The Func splice: the struct splice with the closure as its one leaf.
-    IBreadthFirstTreenumerable<TOuterResult> ISelectWhereBreadthFirstTreenumerable<TResult>.Compose<TOuterResult>(
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => ComposeCore<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
-        new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
-
     // The struct-composed form -- THE LIGHT TIER DONATING A STRUCT LEG (the reunification
     // gate's decisive case: the tier seal existed because this wrapper's pieces used to
     // arrive as bare Funcs and de-inlined the whole splice chain; here its projection rides

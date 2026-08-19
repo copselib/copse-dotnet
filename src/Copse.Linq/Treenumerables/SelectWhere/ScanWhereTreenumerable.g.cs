@@ -75,13 +75,6 @@ namespace Copse.Linq.Treenumerables
         _Relabels | relabels);
     }
 
-    // The Func form is the struct form with the closure as its one leaf.
-    public ITreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
-        new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
-
     // The context-shaped projection door: the projection nests as a struct leg onto the
     // selector chain, over the pair (this machine is not in the narrow fan-out, so all
     // four doors live in this file).

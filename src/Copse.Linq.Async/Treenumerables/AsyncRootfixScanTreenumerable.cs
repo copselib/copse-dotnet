@@ -62,12 +62,6 @@ namespace Copse.Linq.Async.Treenumerables
       => new AsyncScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, TOuterSelector>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, outerSelector, relabels);
 
-    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => Compose<TOuterResult, FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
-        new FuncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(resultSelector), relabels);
-
     // The context-shaped projection door (a positional leg, join-rule-cleared by the
     // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
     // Never moves a label, so the position-reading doors ARE the blind doors.

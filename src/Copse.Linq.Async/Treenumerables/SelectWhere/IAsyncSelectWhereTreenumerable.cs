@@ -45,17 +45,12 @@ namespace Copse.Linq.Async.Treenumerables
     // ComposePositional door below. What was a law callers had to know became a promise
     // machines keep about themselves.
     //
-    // Compose a result selector onto the accumulated mapping and return the successor treenumerable.
+    // Compose a result selector onto the accumulated mapping and return the successor
+    // treenumerable. The outer piece arrives as an inlinable selector struct, so the
+    // successor's composed chain nests in the TYPE and the splice costs no delegate hops;
+    // a piece that is inherently a closure rides as a FuncResultSelector leaf.
     // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneBefore do;
     // PruneAfter and projections do not).
-    IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels);
-
-    // The STRUCT-composed form (the reunification gate): the outer piece arrives as an
-    // inlinable selector struct, so the successor's composed chain nests in the TYPE and the
-    // splice costs no delegate hops. The Func form above remains for pieces that are
-    // inherently closures.
     IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)

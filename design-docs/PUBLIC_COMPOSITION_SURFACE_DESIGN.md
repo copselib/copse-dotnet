@@ -60,6 +60,12 @@ internal ISelectWhereTreenumerable<TNode> : ISelectTreenumerable<TNode>,
          — the struct algebra: struct/Func Compose, Relabels, the splice surface
 ```
 
+> **Superseded (2026-08-19), twice, by OPERATOR_COMPOSITION_DESIGN.md:** "the door move"
+> took `Relabels` off this interface (it survives as private state and as the `relabels`
+> parameter), and "the Func door goes" deleted the Func splice shape. The internal
+> interface's algebra is now: struct `Compose`, the two `ComposePositional` doors, the
+> context-shaped projection and prune-after doors.
+
 Rulings:
 
 - **Split over chain** (the diamond): capabilities are claimed independently. Evidence:

@@ -525,3 +525,32 @@ whether *it* relabels. What left is the published getter.
 **Why it is safe**: the driver's `Relabels` was proven always true by a throw-on-false probe
 run against the full battery on two independent branches, so the stack-always rule is not a
 conservative approximation — it is the same answer the flag gave.
+
+## The Func door goes (2026-08-19) — one splice shape, not two
+
+**Status: SHIPPED on main.** Supersedes every description above of the composition
+interface as carrying two general splice shapes.
+
+The interface carried both shapes of the general splice: the struct door
+(`Compose<TOuterResult, TOuterSelector>(TOuterSelector, bool)`) and a Func door
+(`Compose<TOuterResult>(Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>>, bool)`).
+The Func door was the original — the "ONE total method" of the result monad — and the
+struct door arrived at the reunification gate beside it. The simplify pass (`c235c55`)
+then found every Func door reducible to a one-line forward wrapping its delegate in a
+`FuncResultSelector`, and left the forwards in place.
+
+**What the audit found**: the Func door has no caller anywhere in the repo. Where and
+PruneBefore take the struct door; the projection and prune-after doors are separate
+members; the one operator that genuinely needs a closure-shaped leg
+(`TakeSubtreesWhere`) builds its own `FuncResultSelector` and takes the struct door too.
+It survived as 15 async implementations of a forward nobody called, mirrored to sync.
+
+**The move**: the Func door is deleted. The general splice has one shape — the struct
+door — and a closure-bound piece enters it as a `FuncResultSelector` leaf, which is what
+every deleted forward did to its argument anyway. `FuncResultSelector` itself stays: the
+middle tier rides its composed chain as one leaf, and `TakeSubtreesWhere` builds one
+directly.
+
+Net −248 lines across 38 files; the composition surface drops from six doors to five.
+Behavior-neutral by construction (a member with no callers), and confirmed by the Stage 0
+representation pins and the full battery, 24,598 green.

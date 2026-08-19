@@ -63,13 +63,6 @@ namespace Copse.Linq.Treenumerables
         relabels);
     }
 
-    // The Func splice (inherited): the struct splice with the closure as its one leaf.
-    public IBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(
-      Func<NodeContext<TResult>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => Compose<TOuterResult, FuncResultSelector<TResult, TOuterResult>>(
-        new FuncResultSelector<TResult, TOuterResult>(resultSelector), relabels);
-
     // A prune-after composes in-tier.
     public IBreadthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
     {

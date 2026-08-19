@@ -75,13 +75,6 @@ namespace Copse.Linq.Async.Treenumerables
         relabels);
     }
 
-    // The Func splice: the struct splice with the closure as its one leaf.
-    IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TNode>.Compose<TOuterResult>(
-      Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> resultSelector,
-      bool relabels)
-      => ComposeCore<TOuterResult, FuncResultSelector<TNode, TOuterResult>>(
-        new FuncResultSelector<TNode, TOuterResult>(resultSelector), relabels);
-
     // PruneAfter over PruneAfter stays on the bespoke driver: the pair merges into ONE
     // wrapper by predicate union.
     IAsyncTreenumerable<TNode> IAsyncSelectWhereTreenumerable<TNode>.ComposePruneAfter(Func<NodeContext<TNode>, bool> outerPredicate)
