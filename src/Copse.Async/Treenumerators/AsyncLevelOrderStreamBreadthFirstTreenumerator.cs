@@ -704,7 +704,7 @@ namespace Copse.Async.Treenumerators
     private async ValueTask<bool> AwaitThenOpenNextGroupAsync(ValueTask<bool> pendingAdvance)
       => OpenNextGroup(await pendingAdvance.ConfigureAwait(false));
 
-    private async ValueTask<bool> AwaitReadThenAppendOrAdvanceAsync(ValueTask<LevelOrderRead<TValue>> pendingRead)
+    private async ValueTask<bool> AwaitReadThenAppendOrAdvanceAsync(ValueTask<Option<TValue>> pendingRead)
     {
       var read = await pendingRead.ConfigureAwait(false);
 

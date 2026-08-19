@@ -238,7 +238,7 @@ namespace Copse.Benchmarks
       private int _Group;
       private int _Item;
 
-      public LevelOrderRead<int> TryReadNextInGroup()
+      public Option<int> TryReadNextInGroup()
       {
         var group = _Groups[_Group];
 
@@ -248,7 +248,7 @@ namespace Copse.Benchmarks
         var value = group[_Item];
         _Item++;
 
-        return new LevelOrderRead<int>(value);
+        return new Option<int>(value);
       }
 
       public int SkipGroupRemainder()

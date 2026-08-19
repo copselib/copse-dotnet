@@ -65,12 +65,12 @@ namespace Copse.Linq.Tests
 
       public bool Disposed { get; private set; }
 
-      public LevelOrderRead<string> TryReadNextInGroup()
+      public Option<string> TryReadNextInGroup()
       {
         if (_Group >= _Groups.Length || _Item >= _Groups[_Group].Length)
           return default;
 
-        return new LevelOrderRead<string>(_Groups[_Group][_Item++]);
+        return new Option<string>(_Groups[_Group][_Item++]);
       }
 
       public int SkipGroupRemainder()

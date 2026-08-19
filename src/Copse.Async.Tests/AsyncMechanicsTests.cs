@@ -533,10 +533,10 @@ namespace Copse.Async.Tests
       private int _g, _i;
       public SyncLevelOrderStream(int[][] groups) { _groups = groups; _g = 0; _i = 0; }
 
-      public Copse.Stores.LevelOrderRead<int> TryReadNextInGroup()
+      public Option<int> TryReadNextInGroup()
       {
         if (_g >= _groups.Length || _i >= _groups[_g].Length) return default;
-        return new Copse.Stores.LevelOrderRead<int>(_groups[_g][_i++]);
+        return new Option<int>(_groups[_g][_i++]);
       }
 
       public int SkipGroupRemainder()
@@ -562,11 +562,11 @@ namespace Copse.Async.Tests
       private int _g, _i;
       public SuspendingLevelOrderStream(int[][] groups) { _groups = groups; }
 
-      public async ValueTask<LevelOrderRead<int>> TryReadNextInGroupAsync()
+      public async ValueTask<Option<int>> TryReadNextInGroupAsync()
       {
         await Task.Yield();
         if (_g >= _groups.Length || _i >= _groups[_g].Length) return default;
-        return new LevelOrderRead<int>(_groups[_g][_i++]);
+        return new Option<int>(_groups[_g][_i++]);
       }
 
       public async ValueTask<int> SkipGroupRemainderAsync()

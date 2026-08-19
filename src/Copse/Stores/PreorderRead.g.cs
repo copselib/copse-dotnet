@@ -10,6 +10,12 @@ namespace Copse.Stores
   // IChildEnumerator's out-style child pull), and the sync twin is generated from this file so
   // both colors read identically. Small and transient (returned and immediately consumed, never
   // stored per-frame), so it carries no allocation cost.
+  //
+  // Not an option over TValue, deliberately: the read carries the value AND its depth, so the
+  // option form would have to mint a named pair for the payload -- one type traded for another,
+  // plus a hop at every read. An option replaces a miss-carrier for free only when the payload is
+  // already one named thing: the child pull's was (NodeAndSiblingIndex), and LevelOrderRead's
+  // was the bare value, so both are gone; this one is not that case.
   public readonly struct PreorderRead<TValue>
   {
     public PreorderRead(TValue value, int depth)

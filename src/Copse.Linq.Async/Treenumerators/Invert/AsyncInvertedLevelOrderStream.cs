@@ -54,15 +54,15 @@ namespace Copse.Linq.Async.Treenumerators
     private bool _InnerExhausted;
     private int _CollectorLevelDepth;
 
-    public ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
+    public ValueTask<Option<TValue>> TryReadNextInGroupAsync()
     {
       if (!_TierInstalled)
         return CollectThenReadNextInGroupAsync();
 
-      return new ValueTask<LevelOrderRead<TValue>>(ReadNextInGroupFromTier());
+      return new ValueTask<Option<TValue>>(ReadNextInGroupFromTier());
     }
 
-    private async ValueTask<LevelOrderRead<TValue>> CollectThenReadNextInGroupAsync()
+    private async ValueTask<Option<TValue>> CollectThenReadNextInGroupAsync()
     {
       if (!await TryCollectNextTierAsync().ConfigureAwait(false))
         return default;
@@ -70,7 +70,7 @@ namespace Copse.Linq.Async.Treenumerators
       return ReadNextInGroupFromTier();
     }
 
-    private LevelOrderRead<TValue> ReadNextInGroupFromTier()
+    private Option<TValue> ReadNextInGroupFromTier()
     {
       if (_Group >= _TierFamilyEnds.Count)
         return default;
@@ -85,7 +85,7 @@ namespace Copse.Linq.Async.Treenumerators
       var value = _TierValues[end - 1 - _Item];
       _Item++;
 
-      return new LevelOrderRead<TValue>(value);
+      return new Option<TValue>(value);
     }
 
     public ValueTask<int> SkipGroupRemainderAsync()

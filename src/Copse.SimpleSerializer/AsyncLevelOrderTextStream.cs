@@ -32,7 +32,7 @@ namespace Copse.SimpleSerializer
     // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
     // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
     // the scan answered inline or through the pending continuation.
-    public ValueTask<LevelOrderRead<TValue>> TryReadNextInGroupAsync()
+    public ValueTask<Option<TValue>> TryReadNextInGroupAsync()
     {
       if (_GroupEnded || _Exhausted)
         return default;
@@ -45,13 +45,13 @@ namespace Copse.SimpleSerializer
           return AwaitThenFinishReadAsync(scanned);
 
         if (TryCommitRead(scanned.Result, out var read))
-          return new ValueTask<LevelOrderRead<TValue>>(read);
+          return new ValueTask<Option<TValue>>(read);
       }
     }
 
     // Land one scanned event: yield a value or the group/stream end (true, with the read), or
     // note an empty slot and keep scanning (false).
-    private bool TryCommitRead(ScanEvent ev, out LevelOrderRead<TValue> read)
+    private bool TryCommitRead(ScanEvent ev, out Option<TValue> read)
     {
       if (!ev.Ok)
       {
@@ -66,7 +66,7 @@ namespace Copse.SimpleSerializer
         case ',':
           if (ev.HasValue)
           {
-            read = new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
+            read = new Option<TValue>(_Map(_Scanner.GetValue()));
             return true;
           }
 
@@ -76,7 +76,7 @@ namespace Copse.SimpleSerializer
         case ';':
           _GroupEnded = true;
 
-          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
           return true;
 
         case '(':
@@ -89,7 +89,7 @@ namespace Copse.SimpleSerializer
           _Exhausted = true;
           _GroupEnded = true;
 
-          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
           return true;
       }
 
@@ -184,7 +184,7 @@ namespace Copse.SimpleSerializer
     // The suspension continuations. A scan ADVANCES the reader, so each consumes the pending
     // event through the same commit helper as the fast path, then re-enters its probing loop
     // (the skip's running count rides as the core's parameter).
-    private async ValueTask<LevelOrderRead<TValue>> AwaitThenFinishReadAsync(ValueTask<ScanEvent> pendingScan)
+    private async ValueTask<Option<TValue>> AwaitThenFinishReadAsync(ValueTask<ScanEvent> pendingScan)
     {
       if (TryCommitRead(await pendingScan.ConfigureAwait(false), out var read))
         return read;

@@ -55,7 +55,7 @@ namespace Copse.Linq.Treenumerators
     private bool _InnerExhausted;
     private int _CollectorLevelDepth;
 
-    public LevelOrderRead<TValue> TryReadNextInGroup()
+    public Option<TValue> TryReadNextInGroup()
     {
       if (!_TierInstalled)
         return CollectThenReadNextInGroup();
@@ -63,7 +63,7 @@ namespace Copse.Linq.Treenumerators
       return ReadNextInGroupFromTier();
     }
 
-    private LevelOrderRead<TValue> CollectThenReadNextInGroup()
+    private Option<TValue> CollectThenReadNextInGroup()
     {
       if (!TryCollectNextTier())
         return default;
@@ -71,7 +71,7 @@ namespace Copse.Linq.Treenumerators
       return ReadNextInGroupFromTier();
     }
 
-    private LevelOrderRead<TValue> ReadNextInGroupFromTier()
+    private Option<TValue> ReadNextInGroupFromTier()
     {
       if (_Group >= _TierFamilyEnds.Count)
         return default;
@@ -86,7 +86,7 @@ namespace Copse.Linq.Treenumerators
       var value = _TierValues[end - 1 - _Item];
       _Item++;
 
-      return new LevelOrderRead<TValue>(value);
+      return new Option<TValue>(value);
     }
 
     public int SkipGroupRemainder()

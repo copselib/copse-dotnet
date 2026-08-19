@@ -33,7 +33,7 @@ namespace Copse.SimpleSerializer
     // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
     // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
     // the scan answered inline or through the pending continuation.
-    public LevelOrderRead<TValue> TryReadNextInGroup()
+    public Option<TValue> TryReadNextInGroup()
     {
       if (_GroupEnded || _Exhausted)
         return default;
@@ -49,7 +49,7 @@ namespace Copse.SimpleSerializer
 
     // Land one scanned event: yield a value or the group/stream end (true, with the read), or
     // note an empty slot and keep scanning (false).
-    private bool TryCommitRead(ScanEvent ev, out LevelOrderRead<TValue> read)
+    private bool TryCommitRead(ScanEvent ev, out Option<TValue> read)
     {
       if (!ev.Ok)
       {
@@ -64,7 +64,7 @@ namespace Copse.SimpleSerializer
         case ',':
           if (ev.HasValue)
           {
-            read = new LevelOrderRead<TValue>(_Map(_Scanner.GetValue()));
+            read = new Option<TValue>(_Map(_Scanner.GetValue()));
             return true;
           }
 
@@ -74,7 +74,7 @@ namespace Copse.SimpleSerializer
         case ';':
           _GroupEnded = true;
 
-          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
           return true;
 
         case '(':
@@ -87,7 +87,7 @@ namespace Copse.SimpleSerializer
           _Exhausted = true;
           _GroupEnded = true;
 
-          read = ev.HasValue ? new LevelOrderRead<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
           return true;
       }
 

@@ -7,7 +7,7 @@ using System;
 namespace Copse.Stores
 {
   // Async, struct-return source of ILevelOrderStream (the generated sync twin): the forward-only level-order
-  // protocol read asynchronously. The value read returns LevelOrderRead<TValue> -- the
+  // protocol read asynchronously. The value read returns Option<TValue> -- the
   // struct-return shape is mandatory (out params can't cross an await) and is the single codegen
   // source the generator transcribes into the sync ILevelOrderStream twin. The skip-count and
   // group-boundary signals stay int / bool. IAsyncDisposable: the
@@ -15,7 +15,7 @@ namespace Copse.Stores
   public interface ILevelOrderStream<TValue> : IDisposable
   {
     // Read the next value in the current group. HasValue == false at the end of the group.
-    LevelOrderRead<TValue> TryReadNextInGroup();
+    Option<TValue> TryReadNextInGroup();
 
     // Discard the remainder of the current group -- WITHOUT materializing values -- and return
     // how many entries were discarded.
