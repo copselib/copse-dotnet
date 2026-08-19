@@ -13,22 +13,54 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
     /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
-    /// for) the concrete source type. Deferred.
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>), the historical
+    /// behavior. Prefer <c>Hide(HideScope.Treenumerable)</c> when the barrier is what you want:
+    /// it is the same barrier at no per-pull cost.
+    /// </para>
     /// </summary>
     public static ITreenumerable<TNode> Hide<TNode>(
       this ITreenumerable<TNode> source)
-    {
-      return new HideTreenumerable<TNode>(source);
-    }
+      => Hide(source, HideScope.Treenumerator);
+
+    /// <summary>Async <c>Hide</c> to an explicit <see cref="HideScope"/>.</summary>
+    public static ITreenumerable<TNode> Hide<TNode>(
+      this ITreenumerable<TNode> source,
+      HideScope scope)
+      => new HideTreenumerable<TNode>(source, scope);
 
     public static IDepthFirstTreenumerable<TNode> Hide<TNode>(
       this IDepthFirstTreenumerable<TNode> source)
-      => Tree.CreateDepthFirst(
+      => Hide(source, HideScope.Treenumerator);
+
+    public static IDepthFirstTreenumerable<TNode> Hide<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      HideScope scope)
+    {
+      // The narrow barrier needs no bespoke type: AsyncTree.CreateDepthFirst returns a
+      // delegating treenumerable that claims nothing beyond its one dimension.
+      if (scope == HideScope.Treenumerable)
+        return Tree.CreateDepthFirst(source.GetDepthFirstTreenumerator);
+
+      return Tree.CreateDepthFirst(
         () => new HideTreenumerator<TNode>(source.GetDepthFirstTreenumerator));
+    }
 
     public static IBreadthFirstTreenumerable<TNode> Hide<TNode>(
       this IBreadthFirstTreenumerable<TNode> source)
-      => Tree.CreateBreadthFirst(
+      => Hide(source, HideScope.Treenumerator);
+
+    public static IBreadthFirstTreenumerable<TNode> Hide<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      HideScope scope)
+    {
+      if (scope == HideScope.Treenumerable)
+        return Tree.CreateBreadthFirst(source.GetBreadthFirstTreenumerator);
+
+      return Tree.CreateBreadthFirst(
         () => new HideTreenumerator<TNode>(source.GetBreadthFirstTreenumerator));
+    }
   }
 }

@@ -159,5 +159,48 @@ namespace Copse.Linq.Tests
       AssertMachine(hidden.Select(n => n.Length),
         typeof(SelectTreenumerable<,>), "Hide.Select takes the wrapper fallback");
     }
+
+    // ---- The HideScope law (2026-08-19): the barrier is a property of the TREENUMERABLE, so
+    // BOTH scopes strip the composition surface identically. What the scope selects is only
+    // whether the treenumerATOR is wrapped too -- which is why Treenumerable can forward
+    // acquisition untouched and still be a complete barrier, at no per-pull cost. ----
+
+    [TestMethod]
+    public void HideScopeLaw_BothScopes_ClaimNoCompositionSurface()
+    {
+      foreach (var scope in new[] { HideScope.Treenumerable, HideScope.Treenumerator })
+      {
+        var hidden = Plain().Select(n => n + "!").Hide(scope);
+
+        Assert.IsFalse(hidden is ISelectTreenumerable<string>, $"{scope}: must strip the Select citizenship");
+        Assert.IsFalse(hidden is IPruneAfterTreenumerable<string>, $"{scope}: must strip the PruneAfter citizenship");
+        Assert.IsFalse(hidden is ISelectWhereTreenumerable<string>, $"{scope}: must strip the general surface");
+
+        AssertMachine(hidden.Select(n => n.Length),
+          typeof(SelectTreenumerable<,>), $"Hide({scope}).Select takes the wrapper fallback");
+      }
+    }
+
+    [TestMethod]
+    public void HideScopeLaw_TreenumerableScope_AddsNoTreenumeratorLayer()
+    {
+      var source = Plain();
+      var nativeMachine = source.GetDepthFirstTreenumerator().GetType();
+
+      // The zero-cost property, pinned as a type fact: the barrier hands back the source's own
+      // machine, so there is no extra MoveNext hop. This is what makes the scope safe where
+      // per-pull cost is measured -- the benchmark corpus takes every tree through it.
+      using (var shallow = source.Hide(HideScope.Treenumerable).GetDepthFirstTreenumerator())
+        Assert.AreEqual(nativeMachine, shallow.GetType(),
+          "HideScope.Treenumerable must forward the treenumerator untouched");
+
+      using (var deep = source.Hide(HideScope.Treenumerator).GetDepthFirstTreenumerator())
+        Assert.AreEqual(typeof(Treenumerators.HideTreenumerator<string>), deep.GetType(),
+          "HideScope.Treenumerator must wrap the treenumerator");
+
+      using (var historical = source.Hide().GetDepthFirstTreenumerator())
+        Assert.AreEqual(typeof(Treenumerators.HideTreenumerator<string>), historical.GetType(),
+          "the no-arg overload must keep its historical scope");
+    }
   }
 }

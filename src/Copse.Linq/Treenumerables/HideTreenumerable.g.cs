@@ -7,19 +7,29 @@ using Copse.Linq.Treenumerators;
 
 namespace Copse.Linq
 {
+  // The barrier itself: a plain-contract wrapper, so the result claims no composition door and
+  // nothing downstream can compose into or reroute on the source. That property belongs to THIS
+  // type, not to the treenumerator -- which is why HideScope.Treenumerable can forward
+  // acquisition untouched and still be a complete barrier.
   internal class HideTreenumerable<TNode> : ITreenumerable<TNode>
   {
-    public HideTreenumerable(ITreenumerable<TNode> innerTreenumerable)
+    public HideTreenumerable(ITreenumerable<TNode> innerTreenumerable, HideScope scope)
     {
       _InnerTreenumerable = innerTreenumerable;
+      _Scope = scope;
     }
 
     private readonly ITreenumerable<TNode> _InnerTreenumerable;
+    private readonly HideScope _Scope;
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
-      => new HideTreenumerator<TNode>(_InnerTreenumerable.GetBreadthFirstTreenumerator);
+      => _Scope == HideScope.Treenumerator
+        ? new HideTreenumerator<TNode>(_InnerTreenumerable.GetBreadthFirstTreenumerator)
+        : _InnerTreenumerable.GetBreadthFirstTreenumerator();
 
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
-      => new HideTreenumerator<TNode>(_InnerTreenumerable.GetDepthFirstTreenumerator);
+      => _Scope == HideScope.Treenumerator
+        ? new HideTreenumerator<TNode>(_InnerTreenumerable.GetDepthFirstTreenumerator)
+        : _InnerTreenumerable.GetDepthFirstTreenumerator();
   }
 }

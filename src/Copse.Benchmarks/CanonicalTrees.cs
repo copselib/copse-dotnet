@@ -79,19 +79,21 @@ namespace Copse.Benchmarks
 
     /// <summary>A single degenerate chain: maximum depth, one node per level.</summary>
     public static ITreenumerable<int> MegaChainTree()
-      => Enumerable.Range(0, MegaChain).ToDegenerateTree().Isolate();
+      => Enumerable.Range(0, MegaChain).ToDegenerateTree().Hide(HideScope.Treenumerable);
 
     /// <summary>A trivial forest: maximum breadth, every node a root.</summary>
     public static ITreenumerable<int> MegaForest()
-      => Enumerable.Range(0, MegaChain).ToTrivialForest().Isolate();
+      => Enumerable.Range(0, MegaChain).ToTrivialForest().Hide(HideScope.Treenumerable);
 
     // THE MEASUREMENT BOUNDARY (design-docs/BENCHMARKING.md, "What the canonical trees
-    // actually measure"): EVERY factory below ends in .Isolate(). Without it the scaffolding is
+    // actually measure"): EVERY factory below ends in .Hide(HideScope.Treenumerable). Without it the scaffolding is
     // an operator -- the bounded trees are built with positional prunes, the prune wrapper is
     // a light-tier citizen, and a row's next operator COMPOSES WITH IT into one machine. Rows
     // then measure their own operator plus a prune, and any change to prune machinery moves
-    // the whole suite at once (observed 2026-08-19). Isolate is the barrier: it claims no composition doors -- and, unlike Copse.Linq.Hide, adds
-    // no treenumerator layer, so it costs nothing per pull (MeasurementBoundary.cs). The rule:
+    // the whole suite at once (observed 2026-08-19). Hide(HideScope.Treenumerable) is the barrier: the result claims no composition doors, so
+    // construction can never join the algebra under test, and forwarding the treenumerator
+    // untouched means it costs NOTHING per pull -- a fixed per-pull layer would shrink every
+    // measured win by the fraction of the row it occupied. The rule:
     // a benchmark tree is only ever handed out isolated, and every benchmark takes its trees
     // from this factory.
 
@@ -99,39 +101,39 @@ namespace Copse.Benchmarks
     public static ITreenumerable<int> MegaBinaryTree()
       => new CompleteBinaryTree()
         .PruneBefore((n, position) => position.Depth == MegaBinaryDepth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
 
     /// <summary>The triangle tree: level width grows linearly with depth.</summary>
     public static ITreenumerable<int> MegaTriangleTree()
       => new TriangleTree()
         .PruneAfter((n, position) => position.Depth == MegaTriangleDepth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
 
     /// <summary>Twenty chains of geometrically increasing length; the deep-path stressor.</summary>
     public static ITreenumerable<int> MegaDeepChainsTree()
-      => new DeepTree(MegaDeepChainsWidth).Isolate();
+      => new DeepTree(MegaDeepChainsWidth).Hide(HideScope.Treenumerable);
 
 
     /// <summary>Half a trivial forest; the asymmetric arm for the set-operation rows.</summary>
     public static ITreenumerable<int> MegaHalfForest()
-      => Enumerable.Range(0, MegaChain / 2).ToTrivialForest().Isolate();
+      => Enumerable.Range(0, MegaChain / 2).ToTrivialForest().Hide(HideScope.Treenumerable);
 
     // ----- Stress tier (engine-traversal scaling rows only) -----
 
     public static ITreenumerable<int> StressChainTree()
-      => Enumerable.Range(0, StressChain).ToDegenerateTree().Isolate();
+      => Enumerable.Range(0, StressChain).ToDegenerateTree().Hide(HideScope.Treenumerable);
 
     public static ITreenumerable<int> StressForest()
-      => Enumerable.Range(0, StressChain).ToTrivialForest().Isolate();
+      => Enumerable.Range(0, StressChain).ToTrivialForest().Hide(HideScope.Treenumerable);
 
     public static ITreenumerable<int> StressBinaryTree()
       => new CompleteBinaryTree()
         .PruneBefore((n, position) => position.Depth == StressBinaryDepth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
 
     public static ITreenumerable<int> StressTriangleTree()
       => new TriangleTree()
         .PruneAfter((n, position) => position.Depth == StressTriangleDepth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
   }
 }

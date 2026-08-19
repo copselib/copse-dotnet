@@ -64,12 +64,12 @@ namespace Copse.Benchmarks
           node => node,
           RootAsync())
         .PruneBefore((n, position) => position.Depth == depth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
 
     public static ITreenumerable<int> GetSyncBinaryTree(int depth)
       => new CompleteBinaryTree()
         .PruneBefore((n, position) => position.Depth == depth)
-        .Isolate();
+        .Hide(HideScope.Treenumerable);
 
     private static async IAsyncEnumerable<int> RootAsync()
     {

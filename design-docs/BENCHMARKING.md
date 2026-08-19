@@ -220,21 +220,19 @@ same class of event the per-CPU testbeds already handle for fleet changes.
 
 ### The fix that shipped: an isolation barrier with no per-pull cost
 
-Every factory in `CanonicalTrees` now ends in `.Isolate()` (`Copse.Benchmarks/MeasurementBoundary.cs`),
-and so do the async/sync pair builders. `Isolate` wraps the treenumerable in a type that claims no
-composition doors, so scaffolding can never join the algebra under test, and it forwards acquisition
-and nothing else.
+Every factory in `CanonicalTrees` now ends in `.Hide(HideScope.Treenumerable)`, and so do the
+async/sync pair builders. That result claims no composition doors, so scaffolding can never join the
+algebra under test, and it forwards acquisition and nothing else.
 
 **It is deliberately not `Copse.Linq`'s `Hide`.** `Hide` does two jobs: its treenumerABLE strips the
 doors (the isolation, free — one virtual call per acquisition), and its treenumerATOR wrapper hides
 the concrete type too (a real cost on every `MoveNext`). Benchmarks need only the first. Measured on
 `CountNodes`, `Hide` cost +17-25% on `Chain` and +31% on `Forest` — worst exactly where margins are
-thinnest, on the cheap shapes that measure little more than the engine — while `Isolate` reproduces
-the pre-barrier numbers to within noise on all eight rows. That distinction matters beyond tidiness:
+thinnest, on the cheap shapes that measure little more than the engine — while the scoped barrier reproduces the pre-barrier numbers to within noise on all eight rows. That distinction matters beyond tidiness:
 a fixed per-pull layer shrinks every measured win by the fraction of the row it occupies, so a
 single-digit engine improvement would partly disappear into the scaffolding. Nothing in the library
-sniffs a treenumerator type (every probe is at the treenumerable layer), so leaving it visible
-reroutes nothing.
+sniffs a treenumerator type (every probe is at the treenumerable layer), so leaving it visible reroutes nothing -- pinned by
+`RepresentationPinTests.HideScopeLaw_*`.
 
 **No epoch.** Because the barrier is free, the historical series stays comparable across this change
 — the rows measure what they always did, minus the composition contamination.

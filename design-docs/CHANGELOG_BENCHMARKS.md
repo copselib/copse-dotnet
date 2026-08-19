@@ -271,13 +271,15 @@ design-docs/BENCHMARKING.md, "What the canonical trees actually measure".
 ### 2026-08-19 (amended same day) — the barrier shipped, no rows renamed, no epoch
 
 The corpus finding above is fixed. Every `CanonicalTrees` factory and the async/sync pair builders
-now end in `.Isolate()` — a benchmark-local barrier (`MeasurementBoundary.cs`) that strips the
-composition doors and forwards acquisition, nothing else.
+now end in `.Hide(HideScope.Treenumerable)` — the shipped operator, scoped to strip the composition
+doors and forward acquisition, nothing else.
 
-`Copse.Linq`'s `Hide` was tried first and rejected on measurement: it also wraps the treenumerator,
-which costs on every pull (+17-25% `Chain`, +31% `Forest` on `CountNodes`) and would have diluted
-every future single-digit engine win. `Isolate` reproduces the pre-barrier numbers within noise on
-all eight control rows, so **no series is broken and no dashboard marker is needed.**
+The unscoped `Hide()` was tried first and rejected on measurement: it also wraps the treenumerator,
+which costs on every pull (+31% `Forest`, +17-25% `Chain` on `CountNodes`, plus +48 B/row) and would
+have diluted every future single-digit engine win. That prompted the `HideScope` parameter, so the
+benchmarks now use the shipped operator rather than a local copy. The scoped barrier reproduces the
+pre-barrier numbers on the rows this box can resolve, so **no series is broken and no dashboard
+marker is needed.**
 
 Also removed: `Treenumerables.cs` / `TreeShape.cs`, a dead parallel tree factory carrying the same
 contamination, and `Union`'s private `HalfForest`, which moved into the factory as `MegaHalfForest`.

@@ -10,22 +10,54 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
     /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
-    /// for) the concrete source type. Deferred.
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>), the historical
+    /// behavior. Prefer <c>Hide(HideScope.Treenumerable)</c> when the barrier is what you want:
+    /// it is the same barrier at no per-pull cost.
+    /// </para>
     /// </summary>
     public static IAsyncTreenumerable<TNode> Hide<TNode>(
       this IAsyncTreenumerable<TNode> source)
-    {
-      return new AsyncHideTreenumerable<TNode>(source);
-    }
+      => Hide(source, HideScope.Treenumerator);
+
+    /// <summary>Async <c>Hide</c> to an explicit <see cref="HideScope"/>.</summary>
+    public static IAsyncTreenumerable<TNode> Hide<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      HideScope scope)
+      => new AsyncHideTreenumerable<TNode>(source, scope);
 
     public static IAsyncDepthFirstTreenumerable<TNode> Hide<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source)
-      => AsyncTree.CreateDepthFirst(
+      => Hide(source, HideScope.Treenumerator);
+
+    public static IAsyncDepthFirstTreenumerable<TNode> Hide<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      HideScope scope)
+    {
+      // The narrow barrier needs no bespoke type: AsyncTree.CreateDepthFirst returns a
+      // delegating treenumerable that claims nothing beyond its one dimension.
+      if (scope == HideScope.Treenumerable)
+        return AsyncTree.CreateDepthFirst(source.GetAsyncDepthFirstTreenumerator);
+
+      return AsyncTree.CreateDepthFirst(
         () => new AsyncHideTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator));
+    }
 
     public static IAsyncBreadthFirstTreenumerable<TNode> Hide<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source)
-      => AsyncTree.CreateBreadthFirst(
+      => Hide(source, HideScope.Treenumerator);
+
+    public static IAsyncBreadthFirstTreenumerable<TNode> Hide<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      HideScope scope)
+    {
+      if (scope == HideScope.Treenumerable)
+        return AsyncTree.CreateBreadthFirst(source.GetAsyncBreadthFirstTreenumerator);
+
+      return AsyncTree.CreateBreadthFirst(
         () => new AsyncHideTreenumerator<TNode>(source.GetAsyncBreadthFirstTreenumerator));
+    }
   }
 }
