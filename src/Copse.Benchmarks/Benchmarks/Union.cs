@@ -12,9 +12,6 @@ namespace Copse.Benchmarks
   [BenchmarkCategory("Merge", "Union")]
   public class Union
   {
-    private static ITreenumerable<int> HalfForest()
-      => Enumerable.Range(0, CanonicalTrees.MegaChain / 2).ToTrivialForest();
-
     [Benchmark]
     public void Dft_IdenticalTriangles() =>
       CanonicalTrees.MegaTriangleTree().Union(CanonicalTrees.MegaTriangleTree())
@@ -57,12 +54,12 @@ namespace Copse.Benchmarks
 
     [Benchmark]
     public void Dft_ForestVsHalfForest() =>
-      CanonicalTrees.MegaForest().Union(HalfForest())
+      CanonicalTrees.MegaForest().Union(CanonicalTrees.MegaHalfForest())
         .Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
     public void Bft_ForestVsHalfForest() =>
-      CanonicalTrees.MegaForest().Union(HalfForest())
+      CanonicalTrees.MegaForest().Union(CanonicalTrees.MegaHalfForest())
         .Consume(TreeTraversalStrategy.BreadthFirst);
   }
 }

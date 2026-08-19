@@ -79,50 +79,59 @@ namespace Copse.Benchmarks
 
     /// <summary>A single degenerate chain: maximum depth, one node per level.</summary>
     public static ITreenumerable<int> MegaChainTree()
-      => Enumerable.Range(0, MegaChain).ToDegenerateTree();
+      => Enumerable.Range(0, MegaChain).ToDegenerateTree().Isolate();
 
     /// <summary>A trivial forest: maximum breadth, every node a root.</summary>
     public static ITreenumerable<int> MegaForest()
-      => Enumerable.Range(0, MegaChain).ToTrivialForest();
+      => Enumerable.Range(0, MegaChain).ToTrivialForest().Isolate();
 
-    // WARNING -- THE SCAFFOLDING IS AN OPERATOR (design-docs/BENCHMARKING.md, "What the
-    // canonical trees actually measure"): the two bounded trees below are built with
-    // POSITIONAL PRUNES, and those prunes do not merely sit underneath a row -- the prune
-    // wrapper is a light-tier citizen, so the row's next operator COMPOSES WITH IT into one
-    // machine. Every Triangle/Binary row therefore measures its own operator PLUS a prune --
-    // one operator longer than the row name suggests -- and any change to prune machinery
-    // moves the whole suite at once. Ruled 2026-08-19: bound the generators natively so the
-    // scaffolding stops joining the algebra under test. Until that lands, read these rows
-    // accordingly. (MegaChainTree and MegaDeepChainsTree are prune-free -- good controls.)
+    // THE MEASUREMENT BOUNDARY (design-docs/BENCHMARKING.md, "What the canonical trees
+    // actually measure"): EVERY factory below ends in .Isolate(). Without it the scaffolding is
+    // an operator -- the bounded trees are built with positional prunes, the prune wrapper is
+    // a light-tier citizen, and a row's next operator COMPOSES WITH IT into one machine. Rows
+    // then measure their own operator plus a prune, and any change to prune machinery moves
+    // the whole suite at once (observed 2026-08-19). Isolate is the barrier: it claims no composition doors -- and, unlike Copse.Linq.Hide, adds
+    // no treenumerator layer, so it costs nothing per pull (MeasurementBoundary.cs). The rule:
+    // a benchmark tree is only ever handed out isolated, and every benchmark takes its trees
+    // from this factory.
 
     /// <summary>The complete binary tree: balanced branching, log-depth.</summary>
     public static ITreenumerable<int> MegaBinaryTree()
       => new CompleteBinaryTree()
-        .PruneBefore((n, position) => position.Depth == MegaBinaryDepth);
+        .PruneBefore((n, position) => position.Depth == MegaBinaryDepth)
+        .Isolate();
 
     /// <summary>The triangle tree: level width grows linearly with depth.</summary>
     public static ITreenumerable<int> MegaTriangleTree()
       => new TriangleTree()
-        .PruneAfter((n, position) => position.Depth == MegaTriangleDepth);
+        .PruneAfter((n, position) => position.Depth == MegaTriangleDepth)
+        .Isolate();
 
     /// <summary>Twenty chains of geometrically increasing length; the deep-path stressor.</summary>
     public static ITreenumerable<int> MegaDeepChainsTree()
-      => new DeepTree(MegaDeepChainsWidth);
+      => new DeepTree(MegaDeepChainsWidth).Isolate();
+
+
+    /// <summary>Half a trivial forest; the asymmetric arm for the set-operation rows.</summary>
+    public static ITreenumerable<int> MegaHalfForest()
+      => Enumerable.Range(0, MegaChain / 2).ToTrivialForest().Isolate();
 
     // ----- Stress tier (engine-traversal scaling rows only) -----
 
     public static ITreenumerable<int> StressChainTree()
-      => Enumerable.Range(0, StressChain).ToDegenerateTree();
+      => Enumerable.Range(0, StressChain).ToDegenerateTree().Isolate();
 
     public static ITreenumerable<int> StressForest()
-      => Enumerable.Range(0, StressChain).ToTrivialForest();
+      => Enumerable.Range(0, StressChain).ToTrivialForest().Isolate();
 
     public static ITreenumerable<int> StressBinaryTree()
       => new CompleteBinaryTree()
-        .PruneBefore((n, position) => position.Depth == StressBinaryDepth);
+        .PruneBefore((n, position) => position.Depth == StressBinaryDepth)
+        .Isolate();
 
     public static ITreenumerable<int> StressTriangleTree()
       => new TriangleTree()
-        .PruneAfter((n, position) => position.Depth == StressTriangleDepth);
+        .PruneAfter((n, position) => position.Depth == StressTriangleDepth)
+        .Isolate();
   }
 }

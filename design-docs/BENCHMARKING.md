@@ -148,7 +148,7 @@ MegaBinaryTree()   = new CompleteBinaryTree().PruneBefore((n, position) => posit
 `MegaChainTree` (`ToTrivialForest`) and `MegaDeepChainsTree` (`DeepTree`) are prune-free,
 which is exactly why they make good controls.
 
-**They FUSE — they do not merely sit underneath.** The positional `PruneAfter` builds an
+**They COMPOSE -- they do not merely sit underneath.** The positional `PruneAfter` builds an
 `AsyncPruneAfterTreenumerable`: a light-tier citizen with `Relabels == false`. The row's next
 operator probes `IAsyncSelectWhereTreenumerable`, finds it, passes the join-rule guard, and
 composes — producing ONE driver over the raw `TriangleTree` carrying
@@ -160,7 +160,7 @@ within a family remain valid for the chains they actually measured — but the l
 understate chain length by one:
 
 - `Where.Dft_Triangle_Mixed` is `TriangleTree → positional PruneAfter → positional Where`,
-  fused into one driver. **The tier-seal ruling (`e30bffc`, 2026-08-04) was calibrated on
+  collapsed into one driver. **The tier-seal ruling (`e30bffc`, 2026-08-04) was calibrated on
   this row**, diagnosed as "the light tier is the one Func-donor splice participant" — and
   that participant is the canonical tree's own prune, i.e. scaffolding rather than a
   user-written operator. The mechanism was identified correctly, and the shape is realistic
@@ -204,7 +204,7 @@ Rejected alternatives, and why:
 
 **The rule going forward: scaffolding must not be an operator.** If a corpus tree ever needs a
 shape the generators cannot produce, isolate it with `Hide()` so it cannot join the algebra,
-and say so in the row's comment. Separately, now that prune-fused-with-filter is known to be a
+and say so in the row's comment. Separately, now that prune-composed-with-filter is known to be a
 real and common shape, it deserves a few DELIBERATE labelled rows rather than accidental
 coverage.
 
@@ -217,3 +217,24 @@ same class of event the per-CPU testbeds already handle for fleet changes.
 - [BenchmarkDotNet](https://benchmarkdotnet.org/)
 - [github-action-benchmark](https://github.com/benchmark-action/github-action-benchmark)
 - [Bencher](https://bencher.dev/docs/)
+
+### The fix that shipped: an isolation barrier with no per-pull cost
+
+Every factory in `CanonicalTrees` now ends in `.Isolate()` (`Copse.Benchmarks/MeasurementBoundary.cs`),
+and so do the async/sync pair builders. `Isolate` wraps the treenumerable in a type that claims no
+composition doors, so scaffolding can never join the algebra under test, and it forwards acquisition
+and nothing else.
+
+**It is deliberately not `Copse.Linq`'s `Hide`.** `Hide` does two jobs: its treenumerABLE strips the
+doors (the isolation, free — one virtual call per acquisition), and its treenumerATOR wrapper hides
+the concrete type too (a real cost on every `MoveNext`). Benchmarks need only the first. Measured on
+`CountNodes`, `Hide` cost +17-25% on `Chain` and +31% on `Forest` — worst exactly where margins are
+thinnest, on the cheap shapes that measure little more than the engine — while `Isolate` reproduces
+the pre-barrier numbers to within noise on all eight rows. That distinction matters beyond tidiness:
+a fixed per-pull layer shrinks every measured win by the fraction of the row it occupies, so a
+single-digit engine improvement would partly disappear into the scaffolding. Nothing in the library
+sniffs a treenumerator type (every probe is at the treenumerable layer), so leaving it visible
+reroutes nothing.
+
+**No epoch.** Because the barrier is free, the historical series stays comparable across this change
+— the rows measure what they always did, minus the composition contamination.
