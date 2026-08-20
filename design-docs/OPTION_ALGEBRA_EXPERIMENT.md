@@ -22,6 +22,8 @@
 | `2d4e3dfb` | **D** | the buffer's two internal tuple doors (`TryGetPreorderStore`, `TryGetNodeCount`) take the option; the admission rule's "shape follows audience" clause corrected |
 | `07bf23ad` | **E** | every call site rewritten for readability over terseness: eleven guards and loops go back to probe-guard-use |
 | `f077bfcf` | **F** | `LevelOrderRead` deleted for `Option<TValue>` (field-for-field the same type); `PreorderRead` kept, with the criterion written down |
+| `8dd2462f` | **G** | the option cut to the members with callers; `AsyncOption` deleted; the two unobserved cancellation tokens fixed |
+| `7c649601` | **H** | `PreorderRead` loses its flag and becomes the payload: the streams read `Option<PreorderRead<TValue>>` |
 
 `Option<TValue>` is a `readonly struct` carrying a public `HasValue` flag beside a public
 `Value` field -- deliberately the same shape the deleted family had, so stage A measures
@@ -93,6 +95,10 @@ replay streams, and the serializer. Means in ms, two runs a side:
 | Deserialize_Chain_100K | 14.49, 14.47 | 14.26, 14.27 |
 | Deserialize_Forest_ToInt_StringMap | 69.7, 74.1 | 74.2, 73.5 |
 | Deserialize_Forest_ToInt_SpanMap | 54.4, 54.2 | 54.7, 54.6 |
+
+Stage H (`PreorderRead` as a payload) was measured the same way, two runs, and reads the same:
+FlatDecode Sync 3.77, 3.73 against 3.78, 3.84; Dft_over_Preorder 25.8, 25.9 against 26.2, 26.6;
+Serialize_Forest 53.2, 52.7 against 53.5, 54.0. Nothing outside the spread, in either direction.
 
 No impact, as the identical layouts predict. Two rows looked like a result on the first
 pass -- `Deserialize_Forest` down 6% and `..._StringMap` up 6% -- and a second run of the
