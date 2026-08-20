@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Copse.Async
 {
   /// <summary>

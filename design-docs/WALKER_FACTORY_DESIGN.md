@@ -1,6 +1,6 @@
 # The Walker Factory Design: the door-only walkable, the topology SPI, and the receipts rollout
 
-**Status:** EXECUTED THROUGH STAGE C (A: 16c464e, B: 777adec + c9810c6, C: 2026-08-15 -- the cut). The walkable is a one-member factory; the probes are provider SPI; the walker is the entire public navigation surface. Supersedes
+**Status:** EXECUTED THROUGH STAGE C (A: 16c464e, B: 777adec + c9810c6, C: 2026-08-15 -- the cut), then §11 (the sentinel completion, 2026-08-20) EXECUTED: the door is TOTAL (`GetTreeWalker()` -- the unfocused stance), the steps answer in `TreeWalkerResult`, and "void" left the vocabulary. Sections 1-10 record the Stage A-C shape; where they disagree with §11, §11 is current. The walkable is a one-member factory; the probes are provider SPI; the walker is the entire public navigation surface. Supersedes
 WALKABLE_CONTRACT_DESIGN.md §1a's contract shape (and resurrects its withdrawn topology
 split in a corrected role); completes §12's two-audience policy; instantiates
 CATEGORY_THEORY_SURVEY.md §10's foundation.
@@ -11,6 +11,8 @@ CATEGORY_THEORY_SURVEY.md §10's foundation.
 > — the charter, verbatim (Jason, 2026-08-14)
 
 ## 1. The contract
+
+> Stage-C shape; §11 made the door total: `TreeWalker<TValue, THandle> GetTreeWalker()`.
 
 ```csharp
 public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>
@@ -56,6 +58,10 @@ at a root steps to the next root through the same sibling machinery as any other
 group. The contract's door is sugar over `TryGetRootAt(0)`.
 
 ## 3. The walker
+
+> Stage-C shape; §11 grew the carrier by exactly one discriminator bit (`_HasFocus`, the
+> unfocused stance) and `Focus` became a guarded property -- the "no new state" clause
+> below held until the algebra itself demanded the completed carrier.
 
 ```csharp
 public readonly struct TreeWalker<TValue, THandle>       // Core; two fields, unchanged count

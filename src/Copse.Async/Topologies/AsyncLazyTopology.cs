@@ -1,4 +1,3 @@
-using Copse.Async;
 using System.Threading.Tasks;
 
 namespace Copse.Async.Topologies

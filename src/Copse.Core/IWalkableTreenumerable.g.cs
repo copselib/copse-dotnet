@@ -45,15 +45,12 @@ namespace Copse
   /// source is DEMAND -- it may pull the underlying feed just far enough to answer (the
   /// grow-precedes-read protocol); a completed source answers immediately.</para>
   /// </summary>
-  // THE CHARTER, final form (Stage C of design-docs/WALKER_FACTORY_DESIGN.md, the cut;
-  // the door made TOTAL by §11, the sentinel completion): ITreenumerable is an enumerator
-  // factory; IWalkableTreenumerable is a TREE WALKER factory. One member, and it cannot
-  // miss -- both factories are total. The probes live on IAsyncTreeTopology -- the
-  // provider SPI, which this contract does not expose to consumers: the walker is the
-  // entire public navigation surface, the topology is bound at the door, and the walkable
-  // appears in no navigation call path. BREAKING (pre-beta, release-notes flag): the door
-  // was result-typed (`TryGetTreeWalkerAsync`) when the empty forest was a miss; the unfocused
-  // stance made emptiness an answer, so the Try exits per the grammar.
+  // THE CHARTER (design-docs/WALKER_FACTORY_DESIGN.md, Stage C + §11): ITreenumerable is
+  // an enumerator factory; IWalkableTreenumerable is a TREE WALKER factory. One member,
+  // and it cannot miss -- both factories are total. The probes live on
+  // IAsyncTreeTopology -- the provider SPI, which this contract does not expose to
+  // consumers: the walker is the entire public navigation surface, the topology is bound
+  // at the door, and the walkable appears in no navigation call path.
   public interface IWalkableTreenumerable<TValue, THandle> : ITreenumerable<TValue>
   {
     /// <summary>

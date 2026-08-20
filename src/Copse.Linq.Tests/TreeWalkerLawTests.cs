@@ -150,12 +150,12 @@ namespace Copse.Linq.Tests
       }
     }
 
-    // The boundary case that forced the carrier split: the empty forest inhabits the
-    // walkable type (topology may be empty) but can never yield a comonad value (a walker
-    // must stand on an actual node). Both doors refuse honestly -- the root door in its
-    // result type, the handle door by never having issued a handle to ask with.
+    // The empty forest at the walker tier: the door answers (the unfocused stance alone --
+    // UnfocusedStanceTests pins that), but no FOCUSED walker exists. The root door misses
+    // in its result type, the handle door never opens (no handle was ever issued), and the
+    // deferred topology's probes miss honestly.
     [TestMethod]
-    public void TheEmptyForest_GrantsNoWalker()
+    public void TheEmptyForest_HasNoFocusedWalker()
     {
       foreach (var provider in new[]
       {
@@ -174,10 +174,12 @@ namespace Copse.Linq.Tests
 
     private static int Depth(TreeWalker<string, int> walker)
     {
+      // Proper ancestors only: the climb tops out on the unfocused stance, which is a
+      // stance, not an ancestor.
       var depth = 0;
       var stepped = walker.MoveToParent();
 
-      while (stepped.HasValue)
+      while (stepped.HasValue && stepped.Value.HasFocus)
       {
         depth++;
         stepped = stepped.Value.MoveToParent();

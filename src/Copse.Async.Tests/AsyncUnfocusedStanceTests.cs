@@ -3,7 +3,6 @@ using Copse.Core.Async;
 using Copse.Linq;
 using Copse.SimpleSerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;

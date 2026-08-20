@@ -124,7 +124,7 @@ namespace Copse.Async.Tests
       Assert.IsFalse((await forest.TryGetTreeWalkerAtRootIndexAsync(3)).HasValue, "past the last root: no walker");
 
       var empty = AsyncTree.Empty<string>().Memoize();
-      Assert.IsFalse((await empty.TryGetTreeWalkerAtRootIndexAsync()).HasValue, "the empty forest grants no walker");
+      Assert.IsFalse((await empty.TryGetTreeWalkerAtRootIndexAsync()).HasValue, "the empty forest's root door misses: no focused walker to grant");
     }
 
     [TestMethod]

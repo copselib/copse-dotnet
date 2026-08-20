@@ -10,7 +10,7 @@ using System.Linq;
 namespace Copse.Linq.Tests
 {
   // The sentinel completion's acceptance pins (design-docs/WALKER_FACTORY_DESIGN.md §11;
-  // the theory is CATEGORY_THEORY_SURVEY.md §12): the ruling's worked mappings, run over
+  // the theory is CATEGORY_THEORY_SURVEY.md §12): the worked mapping tables, run over
   // the three example forests -- the empty forest, the two-root forest a,b, and the tree
   // a(b(d,e),c). The unfocused stance is a walker STATE: the door lands on it, climbs top out
   // standing on it, the roots are its child group, and its own parent is the algebra's one
