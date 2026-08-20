@@ -145,12 +145,54 @@ collapse. Three shapes carried nearly all of it:
   `GetHandles`, `GetHandlesWithValues`, `Invert`, `LeaffixScan` and the axes shed their
   break-guard and their temporary the same way.
 
-**The criterion the replacement turns on** (stage F): an option displaces a bespoke
-miss-carrier FOR FREE only when the payload is already one named thing. `ChildResult`
-carried a `NodeAndSiblingIndex`, `LevelOrderRead` carried a bare value, and both are gone
-at no cost. `PreorderRead` carries a value AND a depth, so the option form would mint a
-named pair for the payload -- one type traded for another, plus a hop at every read; it
-stays, and so do the serializer's `ScanEvent`/`TryScanEvent` for the same reason.
+**The criterion the replacement turns on**, in two clauses -- the first found at stage F,
+the second at stage H when `MergeNode` was weighed and refused:
+
+1. **The flag must govern the WHOLE carrier.** An option answers "did this operation produce
+   a value?" -- `false` means the caller gets nothing. Where the flag governs a COMPONENT of
+   a compound answer, and the components are correlated, the thing is a variant, not an
+   option, and two independent options cannot express it.
+2. **The payload must already be one named thing**, or the option form mints a type for it --
+   one type traded for another, plus a hop at every read.
+
+| carrier | clause 1 | clause 2 | outcome |
+|---|---|---|---|
+| `ChildResult`, `ParentResult`, `TreeWalkerResult` | ✓ | ✓ (`NodeAndSiblingIndex`, a bare handle, a walker) | converted, stage A |
+| `LevelOrderRead` | ✓ | ✓ (a bare value) | deleted outright, stage F -- it WAS the option |
+| the buffer's two tuple doors | ✓ | ✓ | converted, stage D |
+| `PreorderRead` | ✓ | ✗ as it stood | converted by DEMOTING it to the payload, stage H |
+| `MergeNode` | **✗** | ✓ | **left alone** |
+| `ScanEvent` | ✓ for `Ok`, ✗ for the inner flag | ✗ | left alone (and internal) |
+
+**The inventory is closed** (swept 2026-08-20 with both clauses in hand: every try-pattern
+method, every tuple carrying a flag, every `bool Has*`/`Ok`/`Is*` on a library type, and every
+null-as-absence return). Nothing else qualifies:
+
+- **Converted**: `ChildResult`, `ParentResult`, `TreeWalkerResult`, `TryGetPreorderStore`,
+  `TryGetNodeCount`, `LevelOrderRead`, `PreorderRead` (demoted to the payload).
+- **Refused, with the reason recorded at the type**: `MergeNode` (a variant -- clause 1),
+  `ScanEvent` (internal, and its inner flag governs a component -- both clauses),
+  `ValueTokenStringScanner.TryScanEvent` (two `out`s and a span payload; not option-shaped),
+  the serializer's private `TryCommit*` loop helpers (their `bool` is a keep-scanning signal,
+  not a miss).
+- **Not applicable**: the state predicates -- `IsBuilt`, `IsComplete`, `IsDisposed`,
+  `IsEmpty`, `HasScheduledNode`. They answer a question about an object, and carry no payload
+  whose presence is in doubt.
+- **Left as null**: the private reference-typed sentinels (`_Topology`, `_Build`, `_dispose`).
+  For a reference type `null` already IS the absent case, so an option there would add a flag
+  to say what the reference says on its own.
+
+The last bullet is worth keeping in view for the ruling: the option earns its place on
+STRUCT payloads and on generic `TValue`s that may be structs. Where the payload is a class,
+C# already has the encoding.
+
+`MergeNode` is the instructive refusal. Its node always exists; `HasLeft` is PROVENANCE --
+which side of the merge this node came from -- so the type is a three-state variant
+(left-only, right-only, both). A pair of options admits `(None, None)`, a node from neither
+tree, which the merge can never produce, and loses the conjunction the domain names
+(`HasLeftAndRight`). C# has no discriminated union to encode it properly, so flags with an
+invariant are the honest encoding. Converting it would also cost published API a rewrite in
+exchange for `node.Left.Value` where `node.Left` stands today.
 
 Explicit `.HasValue` reads in hand-written sources: **117 → 115** (stage B drove it to 97;
 stage E put the guards back).
