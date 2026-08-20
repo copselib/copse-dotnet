@@ -126,11 +126,15 @@ costs, and no other call-site tier shows up."** The doors run once per walk, the
 scans once per child group. This finding applies to ANY algebra the library adds, not just
 this one.
 
-Two caveats stand: `Walk_over_MaterializedPreorder` is bimodal on identical code (7.9 ms
-and 20.7 ms from the same baseline; any claim about it needs the CI testbed), and the CI
-testbed has not seen any of these numbers — every figure is one container's draw. The pull
-path was measured only through the control family; no benchmark drives a foreign
-provider's child enumerator.
+The CI testbed confirmed the readings on 2026-08-20 (branch run 32405236533 against main
+runs on matching CPU models): BufferProbes and MaterializeReplay within 1.3% on the same
+testbed model, FlatDecode and AsyncOverhead flat with matching sync/async ratio pairs, and
+Serialization inside the envelope that two same-model MAIN runs span on their own (up to
+~16% between machines of one model — same-run ratios remain the only trustworthy numbers).
+`Walk_over_MaterializedPreorder`, bimodal in the dev container, reads stable on the
+testbed; the bimodality was the container's. One caveat stands: the pull path was measured
+only through the control family — no benchmark drives a foreign provider's child
+enumerator.
 
 ## 4. What the conversion is made of
 
@@ -182,8 +186,6 @@ Costs the build turned up, all standing:
 
 ## 6. What remains open
 
-- **The CI testbed has not confirmed any number here**; the first post-merge CI runs of
-  BufferProbes and the store families are the check.
 - **The public surface breaks** (pre-beta): every walkable/topology signature that spoke a
   result struct now speaks an option — release-notes flag.
 - **The naming loss is real and accepted**: `HasChild` false said "past the last child";
