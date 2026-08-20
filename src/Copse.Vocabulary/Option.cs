@@ -52,9 +52,14 @@ namespace Copse
       return HasValue;
     }
 
-    /// <summary>The capture-free map: <paramref name="state"/> is handed to the selector instead of
-    /// closed over, so the delegate stays a cached static and a step in a loop allocates nothing.
-    /// The shape hot code uses when it wants the algebra.</summary>
+    /// <summary>Relabel the value in place, leaving the miss a miss -- a probe's hit becoming the
+    /// thing the caller wanted, without opening the option to do it. <paramref name="state"/> is
+    /// handed to the selector rather than closed over, so the lambda captures nothing and its
+    /// delegate is cached once instead of allocated per call.
+    ///
+    /// <para>Not for per-node code: a delegate CALL there costs more than the allocation this
+    /// avoids (measured -- the walker's steps went back to a ternary for exactly that reason).
+    /// This is for the once-per-acquisition doors, where it reads better than the branch.</para></summary>
     public Option<TResult> Map<TState, TResult>(TState state, Func<TState, TValue, TResult> selector)
       => HasValue ? new Option<TResult>(selector(state, Value)) : default;
 
