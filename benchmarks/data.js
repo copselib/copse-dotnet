@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787253798474,
+  "lastUpdate": 1787253799125,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -145910,6 +145910,102 @@ window.BENCHMARK_DATA = {
             "value": 79082145.23611112,
             "unit": "ns",
             "range": "± 1121006.2053612089"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "766da5ab7749e632fc3ea504164d7aa2ba3de78d",
+          "message": "Record the CI confirmation\n\nBranch run 32405236533 (2026-08-20), read against main runs on matching\nCPU models: BufferProbes and MaterializeReplay within 1.3% on the same\ntestbed model (9V74 vs 9V74, main run 32170282105); FlatDecode and\nAsyncOverhead flat on a shared 7763 with matching sync/async ratio pairs;\nSerialization inside the envelope two same-model main runs span on their\nown (151-176ms on SpanMap between two 9V74 boxes -- the same-run-ratios\nrule, re-proven). Walk_over_MaterializedPreorder reads a stable ~10.9ms\non the testbed: the bimodality was the dev container's, not the code's.\n\nThe type swap is free, now on the record's own terms. What remains open\nin OPTION_DESIGN.md 6 is the release-notes flag and the merge ruling.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-20T19:06:51Z",
+          "tree_id": "0e1067a0f6aaf497d055d7376c64d87a32ca9b20",
+          "url": "https://github.com/copselib/copse-dotnet/commit/766da5ab7749e632fc3ea504164d7aa2ba3de78d"
+        },
+        "date": 1787253798987,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106986872.58666664,
+            "unit": "ns",
+            "range": "± 572794.7259038539"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 88202734.66666667,
+            "unit": "ns",
+            "range": "± 547404.7613135115"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 241704584.66666663,
+            "unit": "ns",
+            "range": "± 3162500.766503442"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 269322104.4230769,
+            "unit": "ns",
+            "range": "± 3977374.7098715645"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 192779551.8148148,
+            "unit": "ns",
+            "range": "± 3923576.890396486"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 209171531.42857143,
+            "unit": "ns",
+            "range": "± 1797550.727809077"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 112946884.03076924,
+            "unit": "ns",
+            "range": "± 1201971.5996350446"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 85250583.23333332,
+            "unit": "ns",
+            "range": "± 741943.954757477"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 491077290.9230769,
+            "unit": "ns",
+            "range": "± 1755925.7487764806"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 495325897.4285714,
+            "unit": "ns",
+            "range": "± 1014189.7006175546"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 101430575.83333333,
+            "unit": "ns",
+            "range": "± 127910.45062411597"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 78203729.57142857,
+            "unit": "ns",
+            "range": "± 704436.8647087213"
           }
         ]
       }
