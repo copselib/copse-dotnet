@@ -121,13 +121,8 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public async ValueTask<Option<AsyncTreeWalker<TValue, int>>> TryGetTreeWalkerAsync()
-    {
-      var topology = EnsureTopology();
-      var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
-
-      return rootResult.Map(topology, (boundTopology, root) => new AsyncTreeWalker<TValue, int>(boundTopology, root.Node));
-    }
+    public ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TValue, int>>(new AsyncTreeWalker<TValue, int>(EnsureTopology()));
 
     private AsyncMemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
     {

@@ -45,11 +45,7 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
     // The door (walker factory design, Stage A): the relabeled view is its own topology.
-    public async ValueTask<Option<AsyncTreeWalker<TResult, THandle>>> TryGetTreeWalkerAsync()
-    {
-      var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
-
-      return rootResult.Map(this, (topology, root) => new AsyncTreeWalker<TResult, THandle>(topology, root.Node));
-    }
+    public ValueTask<AsyncTreeWalker<TResult, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TResult, THandle>>(new AsyncTreeWalker<TResult, THandle>(this));
   }
 }

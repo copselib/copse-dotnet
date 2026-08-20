@@ -8,15 +8,23 @@ namespace Copse.Linq
 {
   public static partial class TreeWalker
   {
-    /// <summary>The reverse door: the treenumerable this stance denotes -- the subtree
-    /// rooted at the focus, as a severed re-rooted view sharing the source's handles.
-    /// Identical to the label <c>Subtrees()</c> stamps at this focus (pinned). The round
-    /// trip tree → root walker → <c>Subtree()</c> recovers the tree (the counit in
-    /// interchange clothing); the other round trip lands at the same focus but FORGETS the
-    /// upward context (severance is the cofree forgetting -- deliberate, and the reason the
-    /// two round trips are not symmetric).</summary>
+    /// <summary>The reverse door -- the inclusive hoist: the treenumerable this stance
+    /// denotes. At a node, the subtree rooted at the focus, as a severed re-rooted view
+    /// sharing the source's handles -- identical to the label <c>Subtrees()</c> stamps at
+    /// this focus (pinned). At the UNFOCUSED STANCE, the source forest itself: there is nothing
+    /// above it to sever, and it contributes no row of its own -- it has no
+    /// value, and a valueless node has no spelling in the treenumerable, so the focus drops
+    /// out by type, never by rule. The round trip source → door → <c>Subtree()</c> recovers
+    /// the source (the identity, with no case analysis); the interior round trip lands at
+    /// the same focus but FORGETS the upward context (severance is the cofree forgetting --
+    /// deliberate, and the reason the two round trips are not symmetric).</summary>
     public static IWalkableTreenumerable<TValue, THandle> Subtree<TValue, THandle>(
       this TreeWalker<TValue, THandle> walker)
-      => new SubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
+    {
+      if (!walker.HasFocus)
+        return new TopologyWalkable<TValue, THandle>(walker.Topology);
+
+      return new SubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
+    }
   }
 }

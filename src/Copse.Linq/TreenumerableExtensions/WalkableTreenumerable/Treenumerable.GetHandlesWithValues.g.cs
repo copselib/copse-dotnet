@@ -20,11 +20,14 @@ namespace Copse.Linq
     public static IEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
     {
+      // One knock; the roots are the unfocused stance's child group. The unfocused stance itself gets no
+      // row -- it has no handle and no value, so the scan excludes it by type.
+      var door = source.GetTreeWalker();
       var pending = new Stack<TreeWalker<TValue, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootStance = source.TryGetTreeWalkerAtRootIndex(rootIndex);
+        var rootStance = door.MoveToChild(rootIndex);
 
         if (!rootStance.HasValue)
           break;

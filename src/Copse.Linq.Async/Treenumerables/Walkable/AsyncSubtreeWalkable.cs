@@ -50,10 +50,9 @@ namespace Copse.Linq.Async.Treenumerables
         ? new ValueTask<Option<NodeAndSiblingIndex<THandle>>>(new Option<NodeAndSiblingIndex<THandle>>(new NodeAndSiblingIndex<THandle>(_Root, 0)))
         : default;
 
-    // The door (walker factory design, Stage A): the severed view has exactly one root --
-    // the walker stands there, never missing.
-    public ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> TryGetTreeWalkerAsync()
-      => new ValueTask<Option<AsyncTreeWalker<TValue, THandle>>>(
-        new Option<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this, _Root)));
+    // The door: this view's OWN unfocused stance -- above the severed root, where the severing
+    // put the top of the world. The single root is its child group.
+    public ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this));
   }
 }

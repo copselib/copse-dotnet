@@ -20,7 +20,7 @@ namespace Copse.Async.Tests
   {
     // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
     private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
-      => (await walkable.TryGetTreeWalkerAsync()).Value.Topology;
+      => (await walkable.GetTreeWalkerAsync()).Topology;
 
     private static IAsyncWalkableTreenumerable<string, int> W(string tree)
       => TreeSerializer.DeserializeDepthFirstTreeAsync(() => new StringReader(tree)).Memoize();
@@ -64,12 +64,20 @@ namespace Copse.Async.Tests
         await PreorderValuesAsync(spanning.Value.Subtree()),
         "the spanning subtree, preorder");
 
-      // The misses are facts, same as the sync twins pin: no targets, and disjoint trees.
+      // The one miss left is a fact, same as the sync twins pin: no targets. Disjoint
+      // trees ANSWER now -- their common ancestor is the unfocused stance.
       Assert.IsFalse((await walkable.SpanningSubtreeAsync(Enumerable.Empty<int>())).HasValue, "k = 0 is an honest miss");
 
       var forest = W("a(b),c(d)");
       var disjointTargets = await HandlesWhereAsync(forest, value => value == "b" || value == "d");
-      Assert.IsFalse((await forest.SpanningSubtreeAsync(disjointTargets)).HasValue, "disjoint targets: an honest miss");
+      var disjoint = await forest.SpanningSubtreeAsync(disjointTargets);
+
+      Assert.IsTrue(disjoint.HasValue, "disjoint targets answer");
+      Assert.IsFalse(disjoint.Value.HasFocus, "the spanning of disjoint targets stands at the unfocused stance");
+      CollectionAssert.AreEqual(
+        new[] { "a", "b", "c", "d" },
+        await PreorderValuesAsync(disjoint.Value.Subtree()),
+        "the spanning forest under the unfocused walker, hoisted");
     }
 
     [TestMethod]

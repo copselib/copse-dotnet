@@ -123,8 +123,8 @@ namespace Copse.Linq.Async.Treenumerables
     // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
     // The door (walker factory design, Stage A): the settled capture manufactures the walker,
     // so the stance rides the settled topology directly.
-    public async ValueTask<Option<AsyncTreeWalker<TValue, int>>> TryGetTreeWalkerAsync()
-      => await (await SettleAsync().ConfigureAwait(false)).TryGetTreeWalkerAsync().ConfigureAwait(false);
+    public async ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
+      => await (await SettleAsync().ConfigureAwait(false)).GetTreeWalkerAsync().ConfigureAwait(false);
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.
   }

@@ -14,25 +14,13 @@ namespace Copse.Linq
     /// the try-pattern (<c>out</c> cannot cross an <c>await</c>). The name spells RootIndex
     /// because the int here is a root ordinal, not a handle -- the door that takes a handle
     /// is <see cref="GetTreeWalkerAt{TValue, THandle}"/>, and when <c>THandle</c> is
-    /// <c>int</c> only the names keep the two questions apart. The no-unfocused-walker
-    /// DOOR MACHINERY CLAUSE (Stage B): doors may touch the topology -- this one probes the
-    /// root group directly; consumers never need to, and post-Stage-C this body reaches the
-    /// topology through the walker seam rather than the contract.
-    /// invariant, kept at the door.
+    /// <c>int</c> only the names keep the two questions apart. Sugar over the door: the
+    /// roots are the unfocused stance's child group, so this is one knock and one downward step,
+    /// and the answer is the step family's own result shape.
     /// </summary>
-    public static Option<TreeWalker<TValue, THandle>> TryGetTreeWalkerAtRootIndex<TValue, THandle>(
+    public static TreeWalkerResult<TValue, THandle> TryGetTreeWalkerAtRootIndex<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       int rootIndex = 0)
-    {
-      // Stage C: the door clause in action -- knock once, then reach the bound topology
-      // through the walker seam for the k-th root (the sentinel's child group).
-      var door = source.TryGetTreeWalker();
-
-      // Root 0 is the door's own stance -- answer it without a second probe.
-      if (rootIndex == 0 || !door.HasValue)
-        return door;
-
-      return door.Value.MoveToRoot(rootIndex);
-    }
+      => (source.GetTreeWalker()).MoveToChild(rootIndex);
   }
 }

@@ -60,13 +60,8 @@ namespace Copse.Linq.Treenumerables
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
-    public Option<TreeWalker<TValue, int>> TryGetTreeWalker()
-    {
-      var topology = EnsureTopology();
-      var rootResult = topology.TryGetRootAt(0);
-
-      return rootResult.Map(topology, (boundTopology, root) => new TreeWalker<TValue, int>(boundTopology, root.Node));
-    }
+    public TreeWalker<TValue, int> GetTreeWalker()
+      => new TreeWalker<TValue, int>(EnsureTopology());
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order

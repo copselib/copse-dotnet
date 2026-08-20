@@ -52,9 +52,9 @@ namespace Copse.Linq.Treenumerables
         ? new Option<NodeAndSiblingIndex<THandle>>(new NodeAndSiblingIndex<THandle>(_Root, 0))
         : default;
 
-    // The door (walker factory design, Stage A): the severed view has exactly one root --
-    // the walker stands there, never missing.
-    public Option<TreeWalker<TValue, THandle>> TryGetTreeWalker()
-      => new Option<TreeWalker<TValue, THandle>>(new TreeWalker<TValue, THandle>(this, _Root));
+    // The door: this view's OWN unfocused stance -- above the severed root, where the severing
+    // put the top of the world. The single root is its child group.
+    public TreeWalker<TValue, THandle> GetTreeWalker()
+      => new TreeWalker<TValue, THandle>(this);
   }
 }

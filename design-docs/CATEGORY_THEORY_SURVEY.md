@@ -320,6 +320,11 @@ phrased carrier-neutrally so the DAG branch instantiates it unchanged:
 
 ## 11. The duality, closed: two factory formulas, one category, one conserved miss (2026-08-15)
 
+> **SUPERSEDED IN PART by §12 (2026-08-20).** Jason reopened his own closing ruling and
+> reversed it. The Par account, the conserved-miss account, and the sentinel refusal below
+> are retracted; the factory formulas, the walkable-as-dual, and graft↔Subtrees stand. §11
+> is kept as the record of the considered position; §12 is current truth.
+
 Jason's decade-old epiphany was a type: **`IEnumerable` is `M<() => IEnumerator>`** — the
 monad's value reached through a thunk of a *process you consume*. The walker factory
 design's charter turned out to be its dual, and the chat that closed the story found the
@@ -385,3 +390,89 @@ The closing sentence, decade to decade: *a treenumerable is a monadic process yo
 a walkable treenumerable is a comonadic space you inhabit; both arrive as one-door
 factories; and the void's one honest miss is conserved — the library chose to pay it at
 the door, typed, once.*
+
+## 12. The duality, corrected: the unfocused stance, two hoists, Par retracted (2026-08-20)
+
+Jason reopened §11's closing ruling himself — "I think my reasoning was incorrect" — and
+the reversal survived the adversarial pass. The sentinel completion is now the design,
+under one decisive reframing: **the sentinel is a stance, not a node. It lives in the
+comonad's carrier only, and it is a walker STATE, reachable by traversal.** The refusal's
+every cost — the mystery node in a leaffix result, `Where` dropping it, re-pinned visit
+streams, the fringe demanding a sink — priced *node*-materialization in the monad's
+carrier, which nobody needed. Stance-materialization in the comonad's carrier costs none
+of it.
+
+**The forcing argument (the a,b forest).** Hoist a walker back to the monad. Standing on
+`b` in the forest `a,b` must return a b-shaped answer; by uniformity, standing on `a`
+returns an a-shaped one; so no real-node stance can return the whole forest — recovering
+`a,b` requires the unfocused stance. The multi-focus ruling supplies the other half: counit
+arity is one, and a forest has zero-or-many roots, so there is no lawful choice among
+them. Together: **the unfocused stance is forced at every forest, not just the empty one.** §11
+mis-scoped the completion as buying totality at k=0 — academic correctness for the empty
+forest. In fact the walkable-as-dual's outer extract was broken at every genuine forest,
+and the Store presentation's "sidestep" was living off the unpaid debt.
+
+**The corrected formal picture.** The completed carrier is **rooted trees over a free
+label type**; forests embed at `Option<TValue>` with `None` exactly at the root. On that
+carrier the comonad — extract, duplicate, extend — is **total, in Set. Par exits the
+story.** §11's "the category is Par, and the Try law is its declaration" was rent on an
+unbuilt room: the partiality it excused was an artifact of the missing stance, not a
+property of the algebra. The Try grammar survives as what it always really was — the
+honest spelling of *boundary* answers (parent-of-the-unfocused-stance, child bounds) — not as a category
+choice. `Option` lives in the embedding, not the algebra (and shipped — OPTION_DESIGN.md —
+the day before the embedding needed naming). Duplicate of a forest is a **tree**, rooted
+at the unfocused stance, so the outer extract forests used to break now holds on the nose: the
+duplicated carrier's root label IS the walkable. Both counits and coassociativity check at
+every focus, the unfocused stance included, with no conditional clauses.
+
+**Two hoists, one division of labor.** The walker→monad tier crossing has two lawful
+spellings, and they agree exactly where the fear lived — at the unfocused stance:
+
+- **Exclusive** (the algebra's factoring half): the forest strictly below the focus.
+  Total and uniformly forest-valued — interior stances produce multi-root forests
+  routinely, so the unfocused row was never special. Reaches `Tree.Empty` at every leaf; under
+  the inclusive reading the monad's zero had no preimage at all, in hindsight the first
+  sign §11's mapping was wrong. Pairs with extract as the tree constructor, opened:
+  severed subtree = `Node(extract, below)`, nothing double-counted, and the one
+  underivable case (the unfocused stance) is exactly the node that must not exist. The enumerator
+  dual is exact: a stance is (Current, remainder); the remainder excludes Current; and
+  Current THROWS at the before-first stance. The unfocused walker is `IEnumerator`'s
+  before-first position, given comonadic citizenship.
+- **Inclusive** (the surface): the value-bearing nodes at-or-below the focus, topology
+  kept. This is what consumers mean — 2016's AndSelf variants, XPath's
+  `descendant-or-self`, the catalog's re-entry rows — and it already ships as the
+  `Subtree()` lens. At the unfocused stance it is the whole forest, NOT a sentinel-headed tree,
+  because the sentinel has no value to include and **the mystery node has no spelling in
+  `ITreenumerable` at all**. The focus drops out by type, never by rule. Ruling (Jason):
+  inclusive is the surface; exclusive earns law pins and doc chapters, not a marquee name.
+
+Relationship, one line: inclusive = exclusive + the focus's own row, and the focus
+contributes a row exactly when it has a value.
+
+**The one pressure point, and its resolution.** `extract ∘ extend = f` forces a lawful
+completed extend to relabel every position including the unfocused stance, so its output's root
+carries `f(unfocused stance)` — for a subtree-fold observer, the whole-forest grand total.
+Shipped `Extend`/`Subtrees` keep outer-shape = source-shape and do not move: they are the
+**interior part** of the completed extend — a classification, not a change. The unfocused row
+is recoverable by direct application: extend exists to apply f at all stances while
+keeping shape; applying f at one stance is a function call. Completed extend = root
+`f(unfocusedWalker)` + interiors `Extend(f)` — derived, one line, lawful by construction.
+
+**What §11 keeps and what it loses.** Keeps: the factory formulas, the walkable as THE
+dual, graft↔Subtrees and the waiting SelectMany oracle, the species test, and the
+boundary-instrument account of the seeds (`RootfixScan`'s seed is still what arrives from
+the virtual root — the completion explains the instruments rather than replacing them).
+Loses: the Par claim; the conserved miss ("the miss is conserved; only its address moves"
+— retracted: with the room built, each algebra pays one boundary miss at its natural
+edge, `MoveNext` false at the stream's end ↔ parent-of-the-unfocused-stance at the climb's top, and
+NEITHER pays at entry); and the refusal itself (the escalation argument also dissolves —
+the fringe demands no citizenship, because child-bounds misses at leaves were always paid
+gracefully; the fringe was only ever the monad's boundary, and the monad's is paid by
+protocol).
+
+The corrected closing sentence: *a treenumerable is a monadic process you consume; a
+walkable treenumerable is a comonadic space you inhabit; both factories are total; and
+the space includes the place you stand before you step, exactly as the process includes
+the stance before the first `MoveNext`.*
+
+Build spec: WALKER_FACTORY_DESIGN.md §11 (the total door).

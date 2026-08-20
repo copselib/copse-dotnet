@@ -55,11 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
-    public async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> TryGetTreeWalkerAsync()
-    {
-      var rootResult = await TryGetRootAtAsync(0).ConfigureAwait(false);
-
-      return rootResult.Map(this, (topology, root) => new AsyncTreeWalker<TValue, THandle>(topology, root.Node));
-    }
+    public ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this));
   }
 }

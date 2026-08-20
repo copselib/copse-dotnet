@@ -52,9 +52,10 @@ namespace Copse.Tests
       public ITreenumerator<string> GetBreadthFirstTreenumerator() => _Streaming.GetBreadthFirstTreenumerator();
 
       // The door: the provider mint in its natural habitat. Construction is the trust door --
-      // the topology flows in, the walker comes out, no family type participates.
-      public Option<TreeWalker<string, string>> TryGetTreeWalker()
-        => new Option<TreeWalker<string, string>>(new TreeWalker<string, string>(this, "a"));
+      // the topology flows in, the unfocused walker comes out (the total door), no family
+      // type participates.
+      public TreeWalker<string, string> GetTreeWalker()
+        => new TreeWalker<string, string>(this);
 
       public string GetValue(string handle) => handle;
 
@@ -77,17 +78,17 @@ namespace Copse.Tests
     [TestMethod]
     public void TheDoorMintsOverNativeAdjacency()
     {
-      var door = new FamilyFreeTree().TryGetTreeWalker();
+      var door = new FamilyFreeTree().GetTreeWalker();
 
-      Assert.IsTrue(door.HasValue);
-      Assert.AreEqual("a", door.Value.Focus);
-      Assert.AreEqual("a", door.Value.GetValue());
+      Assert.IsFalse(door.HasFocus, "the door stands at the unfocused stance, above the roots");
+      Assert.AreEqual("a", door.MoveToChild(0).Value.Focus, "the root is the unfocused stance's first child");
+      Assert.AreEqual("a", door.MoveToChild(0).Value.GetValue());
     }
 
     [TestMethod]
     public void StepsWalkTheProviderTopology()
     {
-      var walker = new FamilyFreeTree().TryGetTreeWalker().Value;
+      var walker = new FamilyFreeTree().GetTreeWalker().MoveToChild(0).Value;
 
       var firstChild = walker.MoveToChild(0);
       Assert.IsTrue(firstChild.HasValue);
@@ -106,13 +107,19 @@ namespace Copse.Tests
       Assert.AreEqual("c", secondChild.Value.Focus);
 
       Assert.IsFalse(walker.MoveToChild(2).HasValue);
-      Assert.IsFalse(walker.MoveToParent().HasValue);
+
+      // The climb tops out standing on the unfocused stance -- an answer -- and stepping up from it
+      // is the algebra's one upward miss.
+      var top = walker.MoveToParent();
+      Assert.IsTrue(top.HasValue, "a root's parent is the unfocused stance");
+      Assert.IsFalse(top.Value.HasFocus);
+      Assert.IsFalse(top.Value.MoveToParent().HasValue, "stepping up from the unfocused stance is the one upward miss");
     }
 
     [TestMethod]
     public void TheJumpReEntersOnStoredProviderHandles()
     {
-      var walker = new FamilyFreeTree().TryGetTreeWalker().Value;
+      var walker = new FamilyFreeTree().GetTreeWalker();
 
       Assert.AreEqual("d", walker.At("d").GetValue());
       Assert.AreEqual("b", walker.At("d").MoveToParent().Value.Focus);
@@ -127,7 +134,7 @@ namespace Copse.Tests
         new[] { "a", "b", "d", "c" },
         tree.GetPreorderTraversal().ToArray());
 
-      Assert.AreEqual("d", tree.TryGetTreeWalker().Value.At("b").MoveToChild(0).Value.Focus);
+      Assert.AreEqual("d", tree.GetTreeWalker().At("b").MoveToChild(0).Value.Focus);
     }
   }
 }

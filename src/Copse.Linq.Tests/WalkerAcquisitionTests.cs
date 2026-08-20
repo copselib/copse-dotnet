@@ -59,7 +59,7 @@ namespace Copse.Linq.Tests
       // The point of keeping handles: jump straight in -- the walker spelling (Stage B):
       // a stored handle becomes a stance again through a vantage already held (the jump),
       // and navigation speaks steps, never probes. d's parent is b; g's parent is c.
-      var stance = walkable.TryGetTreeWalker().Value;
+      var stance = walkable.GetTreeWalker();
 
       Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Value.GetValue());
       Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Value.GetValue());
@@ -81,23 +81,27 @@ namespace Copse.Linq.Tests
         levelOrder.GetHandlesWithValues().Select(pair => pair.Value).ToList());
     }
 
-    // The contract's door (walker factory design, Stage A): every citizen manufactures a
-    // walker standing at the first root, with the topology bound at birth; the empty forest
-    // is the honest miss, kept at the door.
+    // The contract's door, total (walker factory design §11, the sentinel completion):
+    // every citizen manufactures a walker at the UNFOCUSED STANCE with the topology bound at
+    // birth -- the roots are its child group, and the empty forest is the unfocused stance
+    // alone, an answer rather than a miss (its child group is empty).
     [TestMethod]
-    public void TheDoor_EveryCitizen_AndTheEmptyForestMiss()
+    public void TheDoor_EveryCitizen_AndTheEmptyForestAnswers()
     {
       foreach (var walkable in WalkerLawProviders.Walkables("a(b,c)"))
       {
-        var door = walkable.TryGetTreeWalker();
+        var door = walkable.GetTreeWalker();
 
-        Assert.IsTrue(door.HasValue);
-        Assert.AreEqual("a", door.Value.GetValue(), "the door stands at the first root");
-        Assert.AreEqual("b", door.Value.MoveToChild(0).Value.GetValue(), "and the stance navigates");
+        Assert.IsFalse(door.HasFocus, "the door stands at the unfocused stance, above the roots");
+        Assert.AreEqual("a", door.MoveToChild(0).Value.GetValue(), "the first root is the unfocused stance's first child");
+        Assert.AreEqual("b", door.MoveToChild(0).Value.MoveToChild(0).Value.GetValue(), "and the stance navigates");
       }
 
       var empty = TreeSerializer.DeserializeDepthFirstTree("a").Where(context => false).Materialize(BufferLayout.Preorder);
-      Assert.IsFalse(empty.TryGetTreeWalker().HasValue, "the empty forest misses at the door");
+      var emptyDoor = empty.GetTreeWalker();
+
+      Assert.IsFalse(emptyDoor.HasFocus, "the empty forest is the unfocused stance alone");
+      Assert.IsFalse(emptyDoor.MoveToChild(0).HasValue, "with an empty child group -- the miss moved from the door to the boundary");
     }
 
     // The search law (naming grammar, 2026-08-14): searches are not surface. FindHandles and

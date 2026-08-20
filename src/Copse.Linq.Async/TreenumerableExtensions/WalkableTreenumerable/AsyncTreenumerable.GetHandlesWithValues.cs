@@ -19,11 +19,14 @@ namespace Copse.Linq
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+      // One knock; the roots are the unfocused stance's child group. The unfocused stance itself gets no
+      // row -- it has no handle and no value, so the scan excludes it by type.
+      var door = await source.GetTreeWalkerAsync().ConfigureAwait(false);
       var pending = new Stack<AsyncTreeWalker<TValue, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var rootStance = await source.TryGetTreeWalkerAtRootIndexAsync(rootIndex).ConfigureAwait(false);
+        var rootStance = await door.MoveToChildAsync(rootIndex).ConfigureAwait(false);
 
         if (!rootStance.HasValue)
           break;

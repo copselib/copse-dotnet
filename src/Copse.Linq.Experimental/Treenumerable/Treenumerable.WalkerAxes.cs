@@ -19,7 +19,9 @@ namespace Copse.Linq.Experimental
     {
       var stance = source.GetTreeWalkerAt(handle);
 
-      while (stance.MoveToParent().TryGetValue(out stance))
+      // Value axes exclude the unfocused stance: it has no handle to yield (climbs top out
+      // there; the axis stops one step earlier).
+      while (stance.MoveToParent().TryGetValue(out stance) && stance.HasFocus)
         yield return stance.Focus;
     }
 
@@ -39,7 +41,7 @@ namespace Copse.Linq.Experimental
     {
       var walker = source.GetTreeWalkerAt(handle);
 
-      while (walker.MoveToParent().TryGetValue(out var parent))
+      while (walker.MoveToParent().TryGetValue(out var parent) && parent.HasFocus)
         walker = parent;
 
       return walker.Focus;
@@ -53,7 +55,7 @@ namespace Copse.Linq.Experimental
       var depth = 0;
       var stance = source.GetTreeWalkerAt(handle);
 
-      while (stance.MoveToParent().TryGetValue(out stance))
+      while (stance.MoveToParent().TryGetValue(out stance) && stance.HasFocus)
         depth++;
 
       return depth;

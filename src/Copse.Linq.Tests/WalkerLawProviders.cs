@@ -21,11 +21,11 @@ namespace Copse.Linq.Tests
   {
     // The SPI seam for coherence checks (Stage C): tests that verify walker steps against
     // raw topology answers reach the bound topology through the door's walker -- the same
-    // family seam the extensions use. Callers guarantee a nonempty tree. The identity
-    // overload lets sweeps wrap every probe receiver uniformly: already-topology-typed
-    // receivers pass through.
+    // family seam the extensions use. Total like the door itself. The identity overload
+    // lets sweeps wrap every probe receiver uniformly: already-topology-typed receivers
+    // pass through.
     public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(IWalkableTreenumerable<TValue, THandle> walkable)
-      => walkable.TryGetTreeWalker().Value.Topology;
+      => walkable.GetTreeWalker().Topology;
 
     public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(ITreeTopology<TValue, THandle> topology)
       => topology;

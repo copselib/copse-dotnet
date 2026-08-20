@@ -2,7 +2,6 @@
 //   Generated from AsyncLazyTopology.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using System;
 
 namespace Copse.Topologies
 {
@@ -12,12 +11,11 @@ namespace Copse.Topologies
   // once, at the first probe (Tree.Lazy's semantics at the topology tier: cached, never
   // re-knocked -- the contract does not promise cheap or idempotent doors, so the cache
   // is what keeps a view honest against the weakest citizen), and every answer after
-  // flows through the walker the knock produced. The empty forest needs no special
-  // citizen: its door misses, so the result-typed probes miss honestly (no roots, no
-  // parents, no children) and the one probe that MUST produce a value (GetValue) throws
-  // -- on an empty forest every handle is forged, so the ask is a violation, not a miss
-  // (the two-channel doctrine). Internal sealed like every topology implementation: the
-  // factory hands out the contract, never the encoding (the store policy's rule).
+  // flows through the topology the knock bound. The door is total (the void stance), so
+  // the empty forest needs no special citizen here either: its bound topology answers the
+  // probes itself -- no roots, no parents, no children, and GetValue's own violation
+  // channel. Internal sealed like every topology implementation: the factory hands out
+  // the contract, never the encoding (the store policy's rule).
   internal sealed class LazyTopology<TValue, THandle> : ITreeTopology<TValue, THandle>
   {
     public LazyTopology(IWalkableTreenumerable<TValue, THandle> source)
@@ -27,52 +25,31 @@ namespace Copse.Topologies
 
     private readonly IWalkableTreenumerable<TValue, THandle> _Source;
     private ITreeTopology<TValue, THandle> _Topology;
-    private bool _Resolved;
 
     private ITreeTopology<TValue, THandle> Resolve()
     {
-      if (_Resolved)
+      if (_Topology != null)
         return _Topology;
 
-      var door = _Source.TryGetTreeWalker();
+      var door = _Source.GetTreeWalker();
 
-      // The door yields a vantage; its public Topology property is the bound physics
-      // (the frame-of-reference ruling, 2026-08-15).
-      _Topology = door.HasValue ? door.Value.Topology : null;
-      _Resolved = true;
+      // The door yields a stance; its public Topology property is the bound physics
+      // (the frame-of-reference ruling).
+      _Topology = door.Topology;
 
       return _Topology;
     }
 
     public TValue GetValue(THandle handle)
-    {
-      var topology = Resolve();
-
-      if (topology == null)
-        throw new InvalidOperationException("The empty forest has no nodes; no handle can be valid here (the foreign-handle clause).");
-
-      return topology.GetValue(handle);
-    }
+      => (Resolve()).GetValue(handle);
 
     public Option<THandle> TryGetParent(THandle handle)
-    {
-      var topology = Resolve();
-
-      return topology == null ? default : topology.TryGetParent(handle);
-    }
+      => (Resolve()).TryGetParent(handle);
 
     public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
-    {
-      var topology = Resolve();
-
-      return topology == null ? default : topology.TryGetChildAt(handle, childIndex);
-    }
+      => (Resolve()).TryGetChildAt(handle, childIndex);
 
     public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
-    {
-      var topology = Resolve();
-
-      return topology == null ? default : topology.TryGetRootAt(rootIndex);
-    }
+      => (Resolve()).TryGetRootAt(rootIndex);
   }
 }

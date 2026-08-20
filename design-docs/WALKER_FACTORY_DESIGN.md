@@ -341,3 +341,108 @@ citizen) — but two of his observations relocated and renamed it:
 
 Copse.Linq.Topologies — created, populated, and emptied within one night — is deleted.
 The operator tier owns zero topology classes.
+
+## 11. The total door — the sentinel completion, reversed into the design (2026-08-20)
+
+Ruling (Jason, reversing the sentinel refusal recorded in CATEGORY_THEORY_SURVEY §11; his
+conditions — "the algebra hangs together and the code comes out clean" — discharged in
+survey §12): **the sentinel is a walker state, the unfocused stance, and the door goes total.**
+
+**EXECUTED 2026-08-20** (full suite 24,607 green — 24,548 plus the new pins; async sources
+authored, sync twins regenerated). The build followed this spec with three pleasant
+surprises: (1) every door implementation COLLAPSED to pure construction — the root-0
+probe and the `Option` plumbing deleted everywhere, and the three memo doors became
+synchronous (`new ValueTask<>(new TreeWalker<>(EnsureTopology()))` — no probe, no await);
+(2) `LazyTopology` lost its null-topology branches (the total door always binds physics,
+so the empty forest's own topology answers); (3) the acquisition scans went from one
+knock PER ROOT to one knock total (roots seeded from the unfocused stance's child group).
+`TryGetTreeWalkerAtRootIndex` is spelled door + `MoveToChild(k)` — the sentinel's
+MoveToChild literally, per the old §1a resolution. One new citizen as specified:
+`TopologyWalkable`, the identity view behind the unfocused stance's `Subtree()`. Pins landed
+in `UnfocusedStanceTests` (sync, the mapping tables below) + `AsyncUnfocusedStanceTests` (color
+mechanics); the flipped pins were exactly the predicted ones (up-step parity in the law
+suites, the foreign-provider climb, the spanning disjoint miss). `HasFocus` shipped under
+its placeholder name — the rename window is open until the pre-beta signature pass.
+
+**The four-item delta** (all inside the alpha breaking window, all release-notes flagged):
+
+1. **Door total.** `TryGetTreeWalker()` → `GetTreeWalker()`, returning the unfocused walker
+   always; the empty forest is the unfocused walker alone (born inhabited). Try exits per the
+   grammar — the acquisition can no longer miss. Breaking on the §1 charter member, and
+   the charter reaches its final, `GetEnumerator`-symmetric form: both factories total,
+   emptiness answered at the boundary, never at entry.
+2. **`MoveToParent` from a root = answer** (the unfocused walker); stepping up from it = the one
+   remaining upward miss. **CLIMB HAZARD — the review item to watch**: "step up while it
+   succeeds" now terminates standing ON the unfocused stance, one step later than today, where
+   `GetValue` throws. Walkers need a focus-detection affordance (`HasFocus`; name open) or
+   the `TryGetValue` test, and the climb idiom gets respelled in the XML docs.
+3. **`GetValue` throws at the unfocused stance** — the violation channel; `IEnumerator.Current`
+   before the first `MoveNext` is the platform precedent. `TryGetValue` (`Option<TValue>`
+   shaped) is the lawful value-altitude extract: `None` exactly at the unfocused stance.
+4. **Downstream misses become answers.** LCA of disjoint targets = the unfocused stance;
+   `SpanningSubtree` of targets in different trees = the spanning under an unfocused walker (miss arity
+   drops 2→1 — only the empty-target case remains); the `HasValue` propagation through
+   the LCA helpers simplifies away.
+
+**What does not change**: streams and the visit protocol, `Where`, the scan/dispatch
+tier, `Extend`, `Subtrees`, all interior walker behavior, every green law pin. Shipped
+`Extend`/`Subtrees` are the interior part of the completed extend (survey §12); the
+completed form is derived, never an operator. Machinery note: the virtual-root child
+group already answers MoveToChild from the unfocused stance (the birth-bound index) — the unfocused stance is
+a state of the existing struct over the existing topology. New public surface: the total
+door spelling, the focus-detection affordance, and nothing else until receipts demand it.
+
+**Hoist ruling** (survey §12): inclusive is the surface — `Subtree()` at the unfocused walker
+IS the source forest, and door-then-hoist is the identity round trip with no case
+analysis. Exclusive (strictly-below) stays in the derivation layer as the factoring half.
+
+**Acceptance pins** (transcribed from the ruling conversation's worked mappings; run over
+three providers — the empty forest `()`, the forest `a,b`, the tree `a(b(d,e),c)`):
+
+| pin | statement |
+|---|---|
+| door totality | `GetTreeWalker()` answers on all three sources, empty included |
+| round trip | door then inclusive hoist ≡ source (visit-stream conformance), all three |
+| stance table, `a,b` | unfocused: `TryGetValue` misses, hoist = `a,b`; at `a`/`b`: value answers, hoist = single-root forest |
+| stance table, `a(b(d,e),c)` | at `a`: hoist single-rooted at a; at `b`: hoist = `b(d,e)`; no unfocused special case anywhere in the map |
+| climb | from `d`: `MoveToParent` answers ×3 (b, a, unfocused), misses ×4; HasFocus false only at the top |
+| counit unfocused | duplicate of the unfocused walker: label at focus = the walker itself — the outer extract forests used to break |
+| completed extend | root `f(unfocusedWalker)` + interiors `Extend(f)` satisfies extract∘extend = f at every focus, the unfocused stance included |
+| violation channel | `GetValue` at the unfocused stance throws; `TryGetValue` misses; both pinned |
+| spanning | disjoint targets answer unfocused; empty targets still miss |
+
+**Open for the build**: the focus-detection affordance's name; whether
+`TryGetTreeWalkerAtRootIndex` respells now that the door beneath it is total; the axis
+self-inclusion grammar (NOT ruled here — the completion gives the catalog's AndSelf
+question a principled frame: or-self = +focus row, contributed exactly when valued — but
+the axis default is its own decision).
+
+### §11 perf addendum — the promotion cliff and the flat step result (2026-08-20)
+
+The BufferProbes history-bench (pre-sentinel HEAD vs the completion, same box) found the
+warm walker sweep at ~2x (8 → 15–27 ms/1M nodes, run-dependent) with the topology layer
+untouched (direct probes identical) and real-workload rows mild (memos +10–20%, span
+paths flat). Scratchpad-harness bisection decomposed it:
+
+- **The nesting, not the guards.** `Option<TreeWalker>` was always 24 bytes and always
+  memory-class on the SysV ABI; the baseline survived on inlining + struct promotion.
+  Adding the walker's focus bool took the nested aggregate from 3 leaf fields to 4,
+  off the JIT's promotion path — a 2-field control walker restored baseline exactly,
+  and a 16-byte/3-leaf flags prototype ran the FULL unfocused-guard semantics at ~9 ms.
+  Ruled-out suspects, each measured ~nil: inline `throw new` (ThrowHelper fix),
+  `AggressiveInlining`, cold-arm extraction.
+- **The shipped consequence: `TreeWalkerResult`** (resurrected name) — the step family's
+  flat three-state answer (missed / focused / unfocused in one outcome byte packed in
+  the walker's padding; 16 bytes, three fields; internal mints, option-shaped surface:
+  `HasValue`/`Value`/`TryGetValue`, so call sites carried over textually). Steps and the
+  root-index door speak it; `SpanningSubtree` stays `Option`-spoken (an operation, not a
+  step). The `Option` grammar rule stands; the step family holds a measured exemption.
+- **The honest residual: a JIT devirtualization roulette.** With the focus bit present in
+  ANY 3-leaf spelling, the sweep's steady state lands process-by-process anywhere in
+  9–18 ms (guarded devirt + PGO either fully inline the probe chain or partially don't);
+  only the discriminator-free two-field layout rolled a reliable 8. Absolute scale: ~3.5 ns per
+  step-op at the slow end, on the most walker-hostile pattern that exists. Doctrine
+  unchanged: the walker is the readable vocabulary; bulk sweeps belong to the span paths
+  and to `walker.Topology` (public). Bencher watch: the BufferProbes family's warm rows
+  will read noisy across CI runs until the roulette is understood; judge same-run ratios
+  only. Revisit hook: .NET's physical-promotion work may erode the cliff from under us.

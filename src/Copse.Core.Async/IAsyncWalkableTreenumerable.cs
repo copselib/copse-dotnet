@@ -42,24 +42,27 @@ namespace Copse.Async
   /// source is DEMAND -- it may pull the underlying feed just far enough to answer (the
   /// grow-precedes-read protocol); a completed source answers immediately.</para>
   /// </summary>
-  // THE CHARTER, final form (Stage C of design-docs/WALKER_FACTORY_DESIGN.md, the cut):
-  // ITreenumerable is an enumerator factory; IWalkableTreenumerable is a TREE WALKER
-  // factory. One member. The probes live on IAsyncTreeTopology -- the provider SPI, which
-  // this contract no longer exposes to consumers: the walker is the entire public
-  // navigation surface, the topology is bound at the door, and the walkable appears in no
-  // navigation call path. BREAKING (pre-beta, release-notes flag): consumers who probed a
-  // walkable directly now navigate through the walker; providers implement the SPI and
-  // this door.
+  // THE CHARTER, final form (Stage C of design-docs/WALKER_FACTORY_DESIGN.md, the cut;
+  // the door made TOTAL by §11, the sentinel completion): ITreenumerable is an enumerator
+  // factory; IWalkableTreenumerable is a TREE WALKER factory. One member, and it cannot
+  // miss -- both factories are total. The probes live on IAsyncTreeTopology -- the
+  // provider SPI, which this contract does not expose to consumers: the walker is the
+  // entire public navigation surface, the topology is bound at the door, and the walkable
+  // appears in no navigation call path. BREAKING (pre-beta, release-notes flag): the door
+  // was result-typed (`TryGetTreeWalkerAsync`) when the empty forest was a miss; the unfocused
+  // stance made emptiness an answer, so the Try exits per the grammar.
   public interface IAsyncWalkableTreenumerable<TValue, THandle> : IAsyncTreenumerable<TValue>
   {
     /// <summary>
-    /// The door: a walker standing at the first root, or an empty result for the empty
-    /// forest (the honest miss; the no-unfocused-walker invariant kept at the door). The
-    /// factory binds the walker's TOPOLOGY at birth -- the best physics this source affords
-    /// (a capture hands its adjacency index, a memo its pull-through, a lens its rewritten
-    /// view) -- and then exits the story: the walkable appears in no navigation call path,
-    /// exactly as <c>IEnumerable</c> after <c>GetEnumerator</c>.
+    /// The door: a walker at the UNFOCUSED STANCE -- above the roots, before the first downward
+    /// step -- exactly as <c>GetEnumerator</c> hands back a machine at the before-first
+    /// position. Total: the empty forest is the unfocused stance alone (its child group is
+    /// empty), so there is nothing here to miss. The factory binds the walker's TOPOLOGY at
+    /// birth -- the best physics this source affords (a capture hands its adjacency index,
+    /// a memo its pull-through, a lens its rewritten view) -- and then exits the story: the
+    /// walkable appears in no navigation call path, exactly as <c>IEnumerable</c> after
+    /// <c>GetEnumerator</c>.
     /// </summary>
-    ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> TryGetTreeWalkerAsync();
+    ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync();
   }
 }

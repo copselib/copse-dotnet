@@ -54,8 +54,8 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TResult> GetBreadthFirstTreenumerator()
       => _Inner.GetBreadthFirstTreenumerator();
 
-    public Option<TreeWalker<TResult, int>> TryGetTreeWalker()
-      => _Inner.TryGetTreeWalker();
+    public TreeWalker<TResult, int> GetTreeWalker()
+      => _Inner.GetTreeWalker();
 
     public ISelectComposableTreenumerableBuffer<TNext> ComposeSelect<TNext>(Func<TResult, TNext> selector)
     {

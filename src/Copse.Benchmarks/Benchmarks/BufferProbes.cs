@@ -84,16 +84,13 @@ namespace Copse.Benchmarks
     // is the adjacency engine's own story.
     private static long WalkSweep(IWalkableTreenumerable<int, int> walkable)
     {
-      var door = walkable.TryGetTreeWalker();
-
-      if (!door.HasValue)
-        return 0;
+      var door = walkable.GetTreeWalker();
 
       var checksum = 0L;
 
       for (var rootIndex = 0; ; rootIndex++)
       {
-        var root = door.Value.MoveToRoot(rootIndex);
+        var root = door.MoveToRoot(rootIndex);
 
         if (!root.HasValue)
           break;

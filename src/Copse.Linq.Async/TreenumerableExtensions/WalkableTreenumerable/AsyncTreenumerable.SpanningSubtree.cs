@@ -12,61 +12,57 @@ namespace Copse.Linq
     /// The capstone, distilled (UC-32): the minimum spanning subtree of the target nodes --
     /// every node on a path between targets, re-rooted at their lowest common ancestor --
     /// returned as a WALKER standing at the spanning root. Result-typed because the
-    /// operation is partial exactly twice, and each miss is a fact: NO TARGETS (the
-    /// spanning subtree of nothing is nothing -- guarded here, where the semantics live,
-    /// not inside a seedless fold's vocabulary-free exception) and DISJOINT TREES (targets
-    /// in different trees of a forest have no common ancestor). One target is not a miss:
-    /// its spanning subtree is the node alone.
+    /// operation is partial exactly once: NO TARGETS (the spanning subtree of nothing is
+    /// nothing -- guarded here, where the semantics live, not inside a seedless fold's
+    /// vocabulary-free exception). Targets in different trees are NOT a miss: their common
+    /// ancestor is the unfocused stance, and the answer is the spanning FOREST --
+    /// one spanning subtree per touched tree, the returned walker unfocused above them. One target is not a miss either: its spanning subtree is the node alone.
     ///
     /// <para>The result stands on a NEW capture of the spanning subtree (preorder,
     /// O(kept)): its handles are that capture's own ordinals, NOT the source's -- the
     /// per-capture clause. The construction composes shipped pieces end to end:
-    /// walker-climbed LCA folding (stances in, stance out; the kept-set falls out of the
-    /// same climbs), the severed re-root, the HANDLE-DECORATED STREAM for the membership
-    /// clamp (Extend stamps every node with its own (handle, value) pair, PruneBefore cuts
-    /// off-path subtrees in handle-space -- membership is downward-closed, so prune
-    /// semantics are exactly right -- and Select projects back), and one Materialize. A
-    /// future membership LENS makes the clamp adjacency-side and this zero-copy; the
-    /// semantics are fixed here. Target handles are presumed to be the source's own (the
-    /// foreign-handle clause).</para>
+    /// walker-climbed LCA folding (stances in, stance out; climbs terminate at the unfocused stance,
+    /// so the fold is total; the kept-set falls out of the same climbs), the hoist
+    /// (<c>Subtree()</c> -- severed re-root at a node, the whole forest at the unfocused stance), the
+    /// HANDLE-DECORATED STREAM for the membership clamp (Extend stamps every node with its
+    /// own (handle, value) pair, PruneBefore cuts off-path subtrees in handle-space --
+    /// membership is downward-closed, so prune semantics are exactly right -- and Select
+    /// projects back), and one Materialize. A future membership LENS makes the clamp
+    /// adjacency-side and this zero-copy; the semantics are fixed here. Target handles are
+    /// presumed to be the source's own (the foreign-handle clause).</para>
     /// </summary>
     public static async ValueTask<Option<AsyncTreeWalker<TValue, int>>> SpanningSubtreeAsync<TValue, THandle>(
       this IAsyncWalkableTreenumerable<TValue, THandle> source,
       IEnumerable<THandle> targets)
     {
-      // Stage C: one knock at the door, then the jump lifts every stored handle into a
-      // stance (a valid target implies a nonempty forest, the trust door's usual bargain).
       var targetList = targets.ToList();
 
       if (targetList.Count == 0)
         return default;
 
-      var door = await source.TryGetTreeWalkerAsync().ConfigureAwait(false);
-      var targetWalkers = targetList.Select(handle => door.Value.At(handle)).ToList();
+      // One knock at the door, then the jump lifts every stored handle into a stance.
+      var door = await source.GetTreeWalkerAsync().ConfigureAwait(false);
+      var targetWalkers = targetList.Select(handle => door.At(handle)).ToList();
 
-      var spanningRootResult = new Option<AsyncTreeWalker<TValue, THandle>>(targetWalkers[0]);
+      var spanningRoot = targetWalkers[0];
 
-      for (var index = 1; index < targetWalkers.Count; index++)
-      {
-        spanningRootResult = await LowestCommonAncestorAsync(spanningRootResult.Value, targetWalkers[index]).ConfigureAwait(false);
-
-        if (!spanningRootResult.HasValue)
-          return default;
-      }
-
-      var spanningRoot = spanningRootResult.Value;
+      for (var index = 1; index < targetWalkers.Count && spanningRoot.HasFocus; index++)
+        spanningRoot = await LowestCommonAncestorAsync(spanningRoot, targetWalkers[index]).ConfigureAwait(false);
 
       // The kept-set: every node on a target-to-root path, recorded by the climbs. Each
       // climb stops at the first already-kept ancestor (shared path segments are walked
-      // once), and cannot walk past a root: the spanning root is a proven ancestor of
-      // every target, and it is seeded first.
-      var keptHandles = new HashSet<THandle> { spanningRoot.Focus };
+      // once) or at the unfocused stance -- the spanning root is a proven ancestor of every target,
+      // and when it is a node it is seeded first.
+      var keptHandles = new HashSet<THandle>();
+
+      if (spanningRoot.HasFocus)
+        keptHandles.Add(spanningRoot.Focus);
 
       foreach (var target in targetWalkers)
       {
         var stance = target;
 
-        while (!keptHandles.Contains(stance.Focus))
+        while (stance.HasFocus && !keptHandles.Contains(stance.Focus))
         {
           keptHandles.Add(stance.Focus);
           stance = (await stance.MoveToParentAsync().ConfigureAwait(false)).Value;
@@ -78,7 +74,18 @@ namespace Copse.Linq
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Value);
 
-      return await clamped.Materialize(BufferLayout.Preorder).TryGetTreeWalkerAtRootIndexAsync().ConfigureAwait(false);
+      var capture = clamped.Materialize(BufferLayout.Preorder);
+
+      // Disjoint targets: the spanning walker comes back unfocused --
+      // its child group is the per-tree spanning roots. A node-rooted spanning stands at
+      // its root, ordinal zero of the capture (the per-capture clause, pinned; the kept
+      // set is nonempty by construction, so the step's answer is present).
+      if (!spanningRoot.HasFocus)
+        return new Option<AsyncTreeWalker<TValue, int>>(await capture.GetTreeWalkerAsync().ConfigureAwait(false));
+
+      var captureRoot = await capture.TryGetTreeWalkerAtRootIndexAsync().ConfigureAwait(false);
+
+      return new Option<AsyncTreeWalker<TValue, int>>(captureRoot.Value);
     }
 
     // The handle-decorated stream's stamp, as a named observer so both colors read the same:
@@ -88,44 +95,34 @@ namespace Copse.Linq
       THandle handle)
       => new HandleAndValue<THandle, TValue>(handle, await topology.GetValueAsync(handle).ConfigureAwait(false));
 
-    // The binary LCA, walker-first and result-typed (the axis wave will promote this to a
-    // public extension; the spanning fold is its first consumer): collect one stance's
-    // root path into a handle set, climb the other until the first membership hit. The
-    // miss -- disjoint trees -- is a fact, never a default walker. Same-topology is
-    // presumed (the walkers' topology is private even to this assembly; the check becomes
-    // possible when the axis wave lands in the walker's own assembly).
-    private static async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> LowestCommonAncestorAsync<TValue, THandle>(
+    // The binary LCA, walker-first and TOTAL (the axis wave will promote this to a public
+    // extension; the spanning fold is its first consumer): collect one stance's root path
+    // into a handle set, climb the other until the first membership hit or the top. Two
+    // nodes in different trees meet at the unfocused stance -- an answer, not a miss (the unfocused
+    // stance is every node's ancestor). Same-topology is presumed. Unfocused in, unfocused
+    // out: it is already every node's ancestor, so it is already the answer.
+    private static async ValueTask<AsyncTreeWalker<TValue, THandle>> LowestCommonAncestorAsync<TValue, THandle>(
       AsyncTreeWalker<TValue, THandle> first,
       AsyncTreeWalker<TValue, THandle> second)
     {
+      if (!first.HasFocus)
+        return first;
+
       var firstRootPath = new HashSet<THandle>();
       var stance = first;
 
-      while (true)
+      while (stance.HasFocus)
       {
         firstRootPath.Add(stance.Focus);
-
-        var parent = await stance.MoveToParentAsync().ConfigureAwait(false);
-
-        if (!parent.HasValue)
-          break;
-
-        stance = parent.Value;
+        stance = (await stance.MoveToParentAsync().ConfigureAwait(false)).Value;
       }
 
       var candidate = second;
 
-      while (!firstRootPath.Contains(candidate.Focus))
-      {
-        var parent = await candidate.MoveToParentAsync().ConfigureAwait(false);
+      while (candidate.HasFocus && !firstRootPath.Contains(candidate.Focus))
+        candidate = (await candidate.MoveToParentAsync().ConfigureAwait(false)).Value;
 
-        if (!parent.HasValue)
-          return default;
-
-        candidate = parent.Value;
-      }
-
-      return new Option<AsyncTreeWalker<TValue, THandle>>(candidate);
+      return candidate;
     }
   }
 }

@@ -10,8 +10,8 @@ namespace Copse.Linq.Tests
   // UC-32, the capstone, as an OPERATION: SpanningSubtree(targets) -- the minimum spanning
   // subtree of k nodes, returned as a walker standing at the spanning root over a fresh
   // O(kept) capture (design-docs/WALKER_USE_CASES.md §G). The suite pins the operation's whole
-  // semantic surface -- the happy paths, both honest misses (no targets; disjoint trees),
-  // and the k = 1 degenerate -- and keeps the DECOMPOSED arc as its own test: the
+  // semantic surface -- the happy paths, the one honest miss (no targets), the unfocused-walker
+  // answer for disjoint trees, and the k = 1 degenerate -- and keeps the DECOMPOSED arc as its own test: the
   // floor-by-floor walkthrough that proves the operation is a composition of shipped
   // pieces, not new machinery.
   [TestClass]
@@ -77,10 +77,18 @@ namespace Copse.Linq.Tests
         DrainScheduleOrder(single.Value.Subtree()),
         "the spanning subtree of one node is the node");
 
-      // Disjoint trees in a forest: no common ancestor exists, and the type says so.
-      var forest = TreeSerializer.DeserializeDepthFirstTree("a(b),c(d)").Materialize(BufferLayout.Preorder);
+      // Disjoint trees in a forest: the common ancestor is the UNFOCUSED STANCE, and the answer
+      // is the spanning forest under an unfocused walker -- one spanning subtree per touched tree, the
+      // off-path subtree (e) clamped away like any other.
+      var forest = TreeSerializer.DeserializeDepthFirstTree("a(b,e),c(d)").Materialize(BufferLayout.Preorder);
       var disjoint = forest.SpanningSubtree(forest.GetHandlesWithValues().Where(row => row.Value == "b" || row.Value == "d").Select(row => row.Handle));
-      Assert.IsFalse(disjoint.HasValue, "disjoint targets: an honest miss, never a default walker");
+
+      Assert.IsTrue(disjoint.HasValue, "disjoint targets answer");
+      Assert.IsFalse(disjoint.Value.HasFocus, "the spanning of disjoint targets stands at the unfocused stance");
+      CollectionAssert.AreEqual(
+        DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("a(b),c(d)")),
+        DrainScheduleOrder(disjoint.Value.Subtree()),
+        "the spanning forest under the unfocused walker, hoisted");
     }
 
     // The per-capture clause, made visible at the operation's seam: the returned walker
@@ -118,7 +126,7 @@ namespace Copse.Linq.Tests
 
       var lca = targets
         .Select(handle => walkable.GetTreeWalkerAt(handle))
-        .Aggregate((left, right) => LowestCommonAncestor(left, right).Value);
+        .Aggregate((left, right) => LowestCommonAncestor(left, right));
 
       Assert.AreEqual("a", lca.GetValue(), "the three targets' LCA");
 
@@ -142,37 +150,29 @@ namespace Copse.Linq.Tests
 
     // ---------------------------------------------------------------- the hand-rolled axes
     // Retained for the decomposed walkthrough; the OPERATION carries its own copies, and
-    // the axis wave promotes them to public extensions. Walker-first, result-typed, loud
-    // on precondition violation -- the review's spec, in its target dialect.
+    // the axis wave promotes them to public extensions. Walker-first and TOTAL: climbs top
+    // out on the unfocused stance, so disjoint trees meet there -- an answer, not a miss.
 
-    private static Option<TreeWalker<string, int>> LowestCommonAncestor(TreeWalker<string, int> first, TreeWalker<string, int> second)
+    private static TreeWalker<string, int> LowestCommonAncestor(TreeWalker<string, int> first, TreeWalker<string, int> second)
     {
+      if (!first.HasFocus)
+        return first;
+
       var firstPath = new HashSet<int>();
       var stance = first;
 
-      while (true)
+      while (stance.HasFocus)
       {
         firstPath.Add(stance.Focus);
-
-        var up = stance.MoveToParent();
-        if (!up.HasValue)
-          break;
-
-        stance = up.Value;
+        stance = stance.MoveToParent().Value;
       }
 
       var candidate = second;
 
-      while (!firstPath.Contains(candidate.Focus))
-      {
-        var up = candidate.MoveToParent();
-        if (!up.HasValue)
-          return default;   // disjoint trees: an honest miss, never a default walker
+      while (candidate.HasFocus && !firstPath.Contains(candidate.Focus))
+        candidate = candidate.MoveToParent().Value;
 
-        candidate = up.Value;
-      }
-
-      return new Option<TreeWalker<string, int>>(candidate);
+      return candidate;
     }
 
     private static IEnumerable<int> PathToAncestor(TreeWalker<string, int> descendant, int ancestorFocus)
@@ -183,12 +183,12 @@ namespace Copse.Linq.Tests
       {
         yield return stance.Focus;
 
-        var up = stance.MoveToParent();
-        if (!up.HasValue)
+        var up = stance.MoveToParent().Value;
+        if (!up.HasFocus)
           throw new System.InvalidOperationException(
-            "the given focus is not an ancestor of the starting stance -- a poisoned handle would have walked past a root here");
+            "the given focus is not an ancestor of the starting stance -- a poisoned handle would have climbed to the unfocused stance here");
 
-        stance = up.Value;
+        stance = up;
       }
     }
 

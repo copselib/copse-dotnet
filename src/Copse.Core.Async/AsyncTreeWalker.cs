@@ -1,33 +1,44 @@
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Copse.Async
 {
   /// <summary>
-  /// A walkable plus a focus: one node of a tree, together with everything needed to navigate
-  /// away from it. Two words of data, held by value and owning nothing, and stepping never
-  /// mutates: every move returns a NEW walker, so a walker is a value, not a cursor. (It is
-  /// the carrier of the full-context Store comonad; design-docs/CATEGORY_THEORY_SURVEY.md §4
-  /// has the theory, which you do not need in order to use it.)
+  /// A topology plus a stance on it: one node of a tree together with everything needed to
+  /// navigate away from it -- or the UNFOCUSED STANCE, the place above the roots where every
+  /// walk begins. Held by value and owning nothing, and stepping never mutates: every move
+  /// returns a NEW walker, so a walker is a value, not a cursor. (It is the carrier of the
+  /// completed Store comonad; design-docs/CATEGORY_THEORY_SURVEY.md §4 and §12 have the
+  /// theory, which you do not need in order to use it.)
   ///
   /// <para>THE TOPOLOGY IS THE INVARIANT SUBJECT: all walkers of one comonad stand on the
   /// SAME topology, by definition -- mutate the topology and you fall out of the comonad. No
-  /// member here can change it: the constructor is the only way a topology enters, and every
+  /// member here can change it: the constructors are the only way a topology enters, and every
   /// step and every jump carries this walker's <see cref="Topology"/> through to the walker it
-  /// returns. What varies is the focus, which is the whole point.</para>
+  /// returns. What varies is the stance, which is the whole point.</para>
   ///
-  /// <para>THE INVARIANT: a walker is always focused on an actual node. "Not yet positioned"
-  /// is traversal-protocol state (the forest-root convention, the treenumerator's
-  /// before-first stance) and deliberately has no walker spelling -- extract must always
-  /// have a value to return, so the unfocused state is not a member of the carrier. Every
-  /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
-  /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
-  /// <c>default</c> instances anyway; that value is invalid and must not be used.</para>
+  /// <para>THE UNFOCUSED STANCE is a real stance, not a node: it is where a walker stands
+  /// before its first downward step -- the enumerator's before-first position, given
+  /// citizenship. The roots are its child group (<see cref="MoveToChildAsync"/> walks them
+  /// from there), a root's parent IS the unfocused stance (climbs terminate standing on it,
+  /// never missing), and the one upward miss left in the algebra is stepping up from it. It
+  /// stands on no node, so it has no handle and no value: <see cref="Focus"/> and
+  /// <see cref="GetValueAsync"/> throw there (the violation channel --
+  /// <c>IEnumerator.Current</c> before the first <c>MoveNext</c> is the platform precedent),
+  /// and <see cref="TryGetValueAsync"/> is the lawful read (absent exactly there). Test
+  /// <see cref="HasFocus"/> when a climb may have topped out.</para>
+  ///
+  /// <para>The runtime manufactures <c>default</c> instances anyway; that value has no
+  /// topology, is invalid, and must not be used -- the unfocused stance is not
+  /// <c>default</c>, it has a topology like any other stance.</para>
   ///
   /// <para>This type carries the CARRIER and the navigation the contract alone affords:
-  /// <see cref="GetValueAsync"/> reads the focused value, and the step members move the focus.
-  /// The operator algebra over walkers -- <c>Extend</c>, <c>Duplicate</c>, <c>Subtree</c>, and
-  /// the acquisition doors -- lives in the Linq tier as extension methods, the same way
-  /// <c>ITreenumerable</c> lives here while <c>Select</c> and <c>Where</c> live there.</para>
+  /// <see cref="GetValueAsync"/> reads the focused value, and the step members move the
+  /// stance. The operator algebra over walkers -- <c>Extend</c>, <c>Duplicate</c>,
+  /// <c>Subtree</c>, and the acquisition doors -- lives in the Linq tier as extension
+  /// methods, the same way <c>ITreenumerable</c> lives here while <c>Select</c> and
+  /// <c>Where</c> live there.</para>
   ///
   /// <para>Navigation is bidirectional: <see cref="MoveToParentAsync"/> is legal because the
   /// focus keeps its ancestors, which is what separates this presentation from the severed
@@ -35,77 +46,145 @@ namespace Copse.Async
   /// </summary>
   public readonly struct AsyncTreeWalker<TValue, THandle>
   {
-    /// <summary>The provider's mint: construction is pure pairing -- the topology flows in,
-    /// the walker flows out -- and it exposes the topology to nobody who did not already hold
-    /// it. Two audiences, two mints: consumers get walkers from the acquisition doors and
-    /// from <see cref="At"/>, while a provider implementing
-    /// <see cref="IAsyncWalkableTreenumerable{TValue, THandle}"/> mints here to answer its own
-    /// door. Validity is the caller's oath, exactly as at the jump: <paramref name="focus"/>
-    /// is presumed a real node of <paramref name="topology"/>, a forged one detonates at the
-    /// first probe, and <c>default</c> remains the one invalid inhabitant.
+    /// <summary>The provider's focused mint: construction is pure pairing -- the topology
+    /// flows in, the walker flows out -- and it exposes the topology to nobody who did not
+    /// already hold it. Two audiences, two mints: consumers get walkers from the acquisition
+    /// doors and from <see cref="At"/>, while a provider implementing
+    /// <see cref="IAsyncWalkableTreenumerable{TValue, THandle}"/> mints here or at the
+    /// unfocused overload to answer its own door. Validity is the caller's oath, exactly as
+    /// at the jump: <paramref name="focus"/> is presumed a real node of
+    /// <paramref name="topology"/>, a forged one detonates at the first probe, and
+    /// <c>default</c> remains the one invalid inhabitant.
     /// (design-docs/WALKER_FACTORY_DESIGN.md §10 records why the mint is public.)</summary>
     public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology, THandle focus)
     {
       Topology = topology;
-      Focus = focus;
+      _FocusHandle = focus;
+      _HasFocus = true;
+    }
+
+    /// <summary>The unfocused mint: the stance above the roots of
+    /// <paramref name="topology"/>. This is what the door returns -- total, like
+    /// <c>GetEnumerator</c>: the empty forest is the unfocused stance alone, so there is
+    /// nothing here to miss.</summary>
+    public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology)
+    {
+      Topology = topology;
+      _FocusHandle = default;
+      _HasFocus = false;
     }
 
     /// <summary>The topology this walker stands on, exposed so builders and providers can
     /// navigate without a focus. The two surfaces differ by SIGNATURE, which is how you choose
     /// between them: a topology navigates relative to ANY handle, so its methods take one; a
-    /// walker navigates relative to its own focus, so its methods do not. Same physics, two
+    /// walker navigates relative to its own stance, so its methods do not. Same physics, two
     /// frames. Holding a topology grants no extra power -- probes are read-only and wholesale
     /// views are read-only.</summary>
     public readonly IAsyncTreeTopology<TValue, THandle> Topology;
 
-    /// <summary>The handle this walker stands at. Always an actual node -- see the invariant.</summary>
-    public readonly THandle Focus;
+    // The focus, flattened rather than held as an Option<THandle>: the flat pair packs the
+    // struct to 16 bytes for ordinal handles (ref + int + bool), where the nested option
+    // pads to 24 -- and every step result copies a struct of this shape (measured on the
+    // BufferProbes sweeps; WALKER_FACTORY_DESIGN.md §11's perf addendum).
+    private readonly THandle _FocusHandle;
+    private readonly bool _HasFocus;
 
-    /// <summary>Extract: the value at the focus. Always valid -- a walker cannot be unfocused.
-    /// (A probe, hence a method: on a growing source the read is demand.)</summary>
-    public ValueTask<TValue> GetValueAsync() => Topology.GetValueAsync(Focus);
+    /// <summary>Whether this walker stands on a node. <c>false</c> exactly at the unfocused
+    /// stance -- above the roots, no node, no handle, no value. The guard for
+    /// <see cref="Focus"/>, as <c>HasValue</c> guards <c>Value</c> on the platform's own
+    /// nullable; the climb idiom reads it directly: step up while the step answers and the
+    /// stance has focus.</summary>
+    public bool HasFocus => _HasFocus;
+
+    /// <summary>The handle this walker stands at. Throws at the unfocused stance -- there is
+    /// no node there, so any handle read would be forged (test <see cref="HasFocus"/> first).
+    /// Never silently <c>default</c>: on an ordinal-handle topology a defaulted handle is
+    /// somebody else's root.</summary>
+    public THandle Focus
+      => _HasFocus ? _FocusHandle : ThrowUnfocusedHasNoHandle();
+
+    /// <summary>Extract: the value at the focus. Throws at the unfocused stance (the
+    /// violation channel; the lawful read is <see cref="TryGetValueAsync"/>, whose miss is
+    /// that stance's honest answer). (A probe, hence a method: on a growing source the read
+    /// is demand.)</summary>
+    public ValueTask<TValue> GetValueAsync()
+      => _HasFocus ? Topology.GetValueAsync(_FocusHandle) : ThrowUnfocusedHasNoValueAsync();
+
+    /// <summary>The lawful extract over the whole carrier: the value at the focus, or the
+    /// typed miss at the unfocused stance -- the one stance with no value to read. Total
+    /// where <see cref="GetValueAsync"/> is not; on focused stances the two agree.</summary>
+    public async ValueTask<Option<TValue>> TryGetValueAsync()
+      => _HasFocus
+        ? new Option<TValue>(await Topology.GetValueAsync(_FocusHandle).ConfigureAwait(false))
+        : default;
+
+    // The throw helpers keep `throw new` (allocation + message string) out of the readers'
+    // bodies: an inline throw blows the JIT's inline budget on the per-node hot path (the
+    // BCL's ThrowHelper pattern; WALKER_FACTORY_DESIGN.md §11's perf addendum).
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static THandle ThrowUnfocusedHasNoHandle()
+      => throw new InvalidOperationException(
+        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus before reading Focus.");
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static ValueTask<TValue> ThrowUnfocusedHasNoValueAsync()
+      => throw new InvalidOperationException(
+        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetValueAsync, whose miss is typed.");
 
     /// <summary>The jump: a sibling stance on the SAME topology, standing at
     /// <paramref name="handle"/>. This is how a stored handle becomes a stance again. No probe
     /// fires and nothing is validated: <paramref name="handle"/> is presumed to be this
-    /// topology's own, and the foreign-handle clause applies.</summary>
+    /// topology's own, and the foreign-handle clause applies. Always lands on a node -- the
+    /// unfocused stance has no handle, so no jump reaches it; climbs do.</summary>
     public AsyncTreeWalker<TValue, THandle> At(THandle handle)
       => new AsyncTreeWalker<TValue, THandle>(Topology, handle);
 
-    /// <summary>Single upward step. The STEP can fail (a root has no parent); the stance
-    /// cannot -- so the result is a by-value maybe, never an unfocused walker.</summary>
-    public async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> MoveToParentAsync()
+    /// <summary>Single upward step, answered as the step family's flat result (the three
+    /// outcomes in one 16-byte struct -- <see cref="AsyncTreeWalkerResult{TValue, THandle}"/>
+    /// records why the shape matters). From a node below a node, the parent; from a root,
+    /// THE UNFOCUSED STANCE (an answer -- the climb tops out standing above the roots, it
+    /// does not miss); from the unfocused stance, the miss -- the algebra's one upward
+    /// miss.</summary>
+    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()
     {
-      var parentResult = await Topology.TryGetParentAsync(Focus).ConfigureAwait(false);
+      if (!_HasFocus)
+        return default;
+
+      var parentResult = await Topology.TryGetParentAsync(_FocusHandle).ConfigureAwait(false);
 
       return parentResult.HasValue
-        ? new Option<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(Topology, parentResult.Value))
-        : default;
+        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, parentResult.Value)
+        : new AsyncTreeWalkerResult<TValue, THandle>(Topology);
     }
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
-    /// order, or an empty result past the last child.</summary>
-    public async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> MoveToChildAsync(int childIndex)
+    /// order, or the miss past the last child. From the unfocused stance the children are
+    /// the ROOTS -- the forest is that stance's child group, which is what makes the door's
+    /// stance a place to walk from rather than a special case (the unfocused arm delegates to
+    /// <see cref="MoveToRootAsync"/> -- same probe, same wrap -- keeping this body the
+    /// focused fast path).</summary>
+    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex)
     {
-      var childResult = await Topology.TryGetChildAtAsync(Focus, childIndex).ConfigureAwait(false);
+      if (!_HasFocus)
+        return await MoveToRootAsync(childIndex).ConfigureAwait(false);
+
+      var childResult = await Topology.TryGetChildAtAsync(_FocusHandle, childIndex).ConfigureAwait(false);
 
       return childResult.HasValue
-        ? new Option<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(Topology, childResult.Value.Node))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, childResult.Value.Node)
         : default;
     }
 
-    /// <summary>The third step: a stance at the root at <paramref name="rootIndex"/> of the
-    /// SAME topology. Roots share no parent/child edge, so this is the one adjacency the other
-    /// steps cannot reach -- it walks the virtual forest root's child group exactly as
-    /// <see cref="MoveToChildAsync"/> walks a node's. Empty result past the last root. With it,
-    /// the step set covers the topology's whole probe surface, so a walker never has to be
-    /// opened up for its topology.</summary>
-    public async ValueTask<Option<AsyncTreeWalker<TValue, THandle>>> MoveToRootAsync(int rootIndex)
+    /// <summary>The root jump: a stance at the root at <paramref name="rootIndex"/> of the
+    /// SAME topology, from anywhere -- the root group addressed without first standing above
+    /// it. The miss past the last root. With it, the step set covers the topology's whole
+    /// probe surface, so a walker never has to be opened up for its topology.</summary>
+    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToRootAsync(int rootIndex)
     {
       var rootResult = await Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
       return rootResult.HasValue
-        ? new Option<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(Topology, rootResult.Value.Node))
+        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, rootResult.Value.Node)
         : default;
     }
 

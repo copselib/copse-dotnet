@@ -57,11 +57,7 @@ namespace Copse.Linq.Treenumerables
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
-    public Option<TreeWalker<TValue, THandle>> TryGetTreeWalker()
-    {
-      var rootResult = TryGetRootAt(0);
-
-      return rootResult.Map(this, (topology, root) => new TreeWalker<TValue, THandle>(topology, root.Node));
-    }
+    public TreeWalker<TValue, THandle> GetTreeWalker()
+      => new TreeWalker<TValue, THandle>(this);
   }
 }

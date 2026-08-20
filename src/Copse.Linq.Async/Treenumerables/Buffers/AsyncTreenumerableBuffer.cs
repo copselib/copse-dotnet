@@ -58,13 +58,8 @@ namespace Copse.Linq.Async.Treenumerables
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
-    public async ValueTask<Option<AsyncTreeWalker<TValue, int>>> TryGetTreeWalkerAsync()
-    {
-      var topology = await EnsureTopologyAsync().ConfigureAwait(false);
-      var rootResult = await topology.TryGetRootAtAsync(0).ConfigureAwait(false);
-
-      return rootResult.Map(topology, (boundTopology, root) => new AsyncTreeWalker<TValue, int>(boundTopology, root.Node));
-    }
+    public async ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
+      => new AsyncTreeWalker<TValue, int>(await EnsureTopologyAsync().ConfigureAwait(false));
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order

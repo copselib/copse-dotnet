@@ -11,19 +11,27 @@ namespace Copse.Linq
   {
     /// <summary>
     /// Co-bind on the carrier: relabel the whole topology by an observation of every focus,
-    /// and keep standing where you are. The observer receives a walker, so it can extract,
-    /// step, and extend -- anything a vantage affords. An extension rather than a struct
-    /// member by the carriers-in-Core/algebras-in-Linq split: the result is a walkable,
-    /// walkables stream, and streaming needs the Walk adapter -- which lives here, not in
-    /// Core (the same reason <c>ITreenumerable</c> carries no <c>Select</c>).
+    /// and keep standing where you are -- the unfocused stance included (the result walker stands
+    /// where this one does). The observer receives a walker, so it can extract, step, and
+    /// extend -- anything a stance affords. Observers fire at NODES: this is the interior
+    /// part of the completed extend, whose one remaining row -- the observation AT the unfocused stance
+    /// -- is a direct application, <c>observer(unfocusedWalker)</c>, never an operator
+    /// (CATEGORY_THEORY_SURVEY.md §12). An extension rather than a struct member by the
+    /// carriers-in-Core/algebras-in-Linq split: the result is a walkable, walkables stream,
+    /// and streaming needs the Walk adapter -- which lives here, not in Core (the same
+    /// reason <c>ITreenumerable</c> carries no <c>Select</c>).
     /// </summary>
     public static TreeWalker<TResult, THandle> Extend<TValue, THandle, TResult>(
       this TreeWalker<TValue, THandle> walker,
       Func<TreeWalker<TValue, THandle>, TResult> observer)
-      => new TreeWalker<TResult, THandle>(
-        new ExtendWalkable<TValue, THandle, TResult>(
-          walker.Topology,
-          (topology, handle) => observer(new TreeWalker<TValue, THandle>(topology, handle))),
-        walker.Focus);
+    {
+      var relabeled = new ExtendWalkable<TValue, THandle, TResult>(
+        walker.Topology,
+        (topology, handle) => observer(new TreeWalker<TValue, THandle>(topology, handle)));
+
+      return !walker.HasFocus
+        ? new TreeWalker<TResult, THandle>(relabeled)
+        : new TreeWalker<TResult, THandle>(relabeled, walker.Focus);
+    }
   }
 }

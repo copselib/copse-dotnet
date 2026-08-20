@@ -54,12 +54,7 @@ namespace Copse.Linq.Treenumerables
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public Option<TreeWalker<TValue, int>> TryGetTreeWalker()
-    {
-      var topology = EnsureTopology();
-      var rootResult = topology.TryGetRootAt(0);
-
-      return rootResult.Map(topology, (boundTopology, root) => new TreeWalker<TValue, int>(boundTopology, root.Node));
-    }
+    public TreeWalker<TValue, int> GetTreeWalker()
+      => new TreeWalker<TValue, int>(EnsureTopology());
   }
 }

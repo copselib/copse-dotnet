@@ -15,8 +15,8 @@ namespace Copse.Linq.Tests
   // stream-draining needed. (Extend's deep laws -- co-associativity over neighborhood
   // observers -- are inherited: walker.Extend delegates to the walkable Extend those tests
   // pin; this suite pins what the CARRIER adds: the counit as an equality, steps commuting
-  // with duplicate, the observer receiving a genuine walker, and the doors' no-unfocused
-  // invariant.)
+  // with duplicate, the observer receiving a genuine walker, and the root door's bounds.
+  // The unfocused stance's own pins live in UnfocusedStanceTests.)
   [TestClass]
   public class TreeWalkerLawTests
   {
@@ -86,7 +86,8 @@ namespace Copse.Linq.Tests
           var upSteppedDuplicated = duplicated.MoveToParent();
 
           Assert.AreEqual(upStepped.HasValue, upSteppedDuplicated.HasValue, $"parent step parity [{tree}]");
-          if (upStepped.HasValue)
+          Assert.AreEqual(upStepped.Value.HasFocus, upSteppedDuplicated.Value.HasFocus, $"duplicate commutes with topping out [{tree}]");
+          if (upStepped.Value.HasFocus)
             Assert.AreEqual(upStepped.Value, upSteppedDuplicated.Value.GetValue(), $"duplicate commutes with parent step [{tree}]");
         }
       }
@@ -122,7 +123,10 @@ namespace Copse.Linq.Tests
           var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
           var stepped = walkable.GetTreeWalkerAt(handle).MoveToParent();
 
-          Assert.AreEqual(parentResult.HasValue, stepped.HasValue, $"up-step parity [{tree}]");
+          // Up-steps from nodes always answer: the probe's miss at a root is the step's
+          // unfocused stance -- the climb tops out standing above the roots.
+          Assert.IsTrue(stepped.HasValue, $"up-step answers from every node [{tree}]");
+          Assert.AreEqual(parentResult.HasValue, stepped.Value.HasFocus, $"probe miss <=> unfocused stance [{tree}]");
           if (parentResult.HasValue)
             Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(parentResult.Value), stepped.Value.GetValue(), $"up-step value [{tree}]");
         }
@@ -130,7 +134,7 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void TheDoors_KeepTheNoUnfocusedInvariant()
+    public void TheRootDoor_AnswersInBounds_MissesPastTheLastRoot()
     {
       foreach (var walkable in WalkerLawProviders.Walkables("a,b(d),c(e(f))"))
       {
@@ -142,7 +146,7 @@ namespace Copse.Linq.Tests
         Assert.IsTrue(thirdRoot.HasValue);
         Assert.AreEqual("c", thirdRoot.Value.GetValue());
 
-        Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasValue, "past the last root: no walker, never a walker standing nowhere");
+        Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasValue, "past the last root: the unfocused stance's child group is exhausted");
       }
     }
 

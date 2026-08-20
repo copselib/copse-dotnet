@@ -12,14 +12,15 @@ namespace Copse.Async.Tests
   // Thin MECHANICS check for the async walker (the comonad's laws are pinned once, on the
   // generated sync twins, by the walker law suites and their provider fan-out): the async
   // carrier must extract, step, extend with ASYNC observers, duplicate to a typed-identity
-  // counit, and keep the no-unfocused invariant at the doors -- exercised over a genuinely
-  // async walkable, a narrow-source memo whose probes drive the capture (pull-through).
+  // counit, and honor the root door's bounds -- exercised over a genuinely async walkable,
+  // a narrow-source memo whose probes drive the capture (pull-through). The unfocused stance's
+  // async mechanics live in AsyncUnfocusedStanceTests.
   [TestClass]
   public class AsyncTreeWalkerLawTests
   {
     // The SPI seam (Stage C): coherence checks reach the bound topology through the door.
     private static async ValueTask<IAsyncTreeTopology<string, int>> TopologyOf(IAsyncWalkableTreenumerable<string, int> walkable)
-      => (await walkable.TryGetTreeWalkerAsync()).Value.Topology;
+      => (await walkable.GetTreeWalkerAsync()).Topology;
 
     private static readonly string[] Trees =
     {
@@ -76,7 +77,10 @@ namespace Copse.Async.Tests
           var parentResult = await (await TopologyOf(walkable)).TryGetParentAsync(handle);
           var stepped = await (await walkable.GetTreeWalkerAtAsync(handle)).MoveToParentAsync();
 
-          Assert.AreEqual(parentResult.HasValue, stepped.HasValue, $"up-step parity [{tree}]");
+          // Up-steps from nodes always answer: the probe's miss at a root is the step's
+          // unfocused stance -- the climb tops out standing above the roots.
+          Assert.IsTrue(stepped.HasValue, $"up-step answers from every node [{tree}]");
+          Assert.AreEqual(parentResult.HasValue, stepped.Value.HasFocus, $"probe miss <=> unfocused stance [{tree}]");
           if (parentResult.HasValue)
             Assert.AreEqual(
               await (await TopologyOf(walkable)).GetValueAsync(parentResult.Value),
@@ -109,7 +113,7 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
-    public async Task TheDoors_KeepTheNoUnfocusedInvariant()
+    public async Task TheRootDoor_AnswersInBounds_MissesPastTheLastRoot()
     {
       var forest = W("a,b,c");
 
