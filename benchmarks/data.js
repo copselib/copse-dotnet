@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787167608507,
+  "lastUpdate": 1787253796607,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -17692,6 +17692,150 @@ window.BENCHMARK_DATA = {
             "value": 203620164.5925926,
             "unit": "ns",
             "range": "± 3854901.5153520433"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "766da5ab7749e632fc3ea504164d7aa2ba3de78d",
+          "message": "Record the CI confirmation\n\nBranch run 32405236533 (2026-08-20), read against main runs on matching\nCPU models: BufferProbes and MaterializeReplay within 1.3% on the same\ntestbed model (9V74 vs 9V74, main run 32170282105); FlatDecode and\nAsyncOverhead flat on a shared 7763 with matching sync/async ratio pairs;\nSerialization inside the envelope two same-model main runs span on their\nown (151-176ms on SpanMap between two 9V74 boxes -- the same-run-ratios\nrule, re-proven). Walk_over_MaterializedPreorder reads a stable ~10.9ms\non the testbed: the bimodality was the dev container's, not the code's.\n\nThe type swap is free, now on the record's own terms. What remains open\nin OPTION_DESIGN.md 6 is the release-notes flag and the merge ruling.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-20T19:06:51Z",
+          "tree_id": "0e1067a0f6aaf497d055d7376c64d87a32ca9b20",
+          "url": "https://github.com/copselib/copse-dotnet/commit/766da5ab7749e632fc3ea504164d7aa2ba3de78d"
+        },
+        "date": 1787253765953,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 8915422.43125,
+            "unit": "ns",
+            "range": "± 42230.9232691928"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 14727758.683035715,
+            "unit": "ns",
+            "range": "± 48570.280574218144"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 4251092.415104167,
+            "unit": "ns",
+            "range": "± 20840.35604679911"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 4155472.4658854166,
+            "unit": "ns",
+            "range": "± 29982.863678957892"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 74372042.58095239,
+            "unit": "ns",
+            "range": "± 81005.96629424323"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 86604507.16666667,
+            "unit": "ns",
+            "range": "± 214697.54117498262"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 31649540.894230768,
+            "unit": "ns",
+            "range": "± 36880.88537775354"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 36244786.46190476,
+            "unit": "ns",
+            "range": "± 421416.415624886"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 43761865.307692304,
+            "unit": "ns",
+            "range": "± 135103.20914159738"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 24313849.03348214,
+            "unit": "ns",
+            "range": "± 48550.65487441384"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 17455560.47596154,
+            "unit": "ns",
+            "range": "± 31711.285608820996"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 14270689.996651785,
+            "unit": "ns",
+            "range": "± 53271.24229318529"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 36495458.78571428,
+            "unit": "ns",
+            "range": "± 326896.65601614694"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 55579112.02197801,
+            "unit": "ns",
+            "range": "± 133096.88060001723"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 16686043.19419643,
+            "unit": "ns",
+            "range": "± 182592.5583833755"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 16596442.519791666,
+            "unit": "ns",
+            "range": "± 273980.68920009997"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 294957961.14285713,
+            "unit": "ns",
+            "range": "± 1303702.5838099676"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 370046583.61538464,
+            "unit": "ns",
+            "range": "± 471516.8240131237"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 126241228.3030303,
+            "unit": "ns",
+            "range": "± 575356.8074637031"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 144992270.74358976,
+            "unit": "ns",
+            "range": "± 1491835.9823434416"
           }
         ]
       }
