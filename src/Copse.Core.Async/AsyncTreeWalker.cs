@@ -21,8 +21,7 @@ namespace Copse.Async
   /// have a value to return, so the unfocused state is not a member of the carrier. Every
   /// creation path (the <c>GetTreeWalkerAt</c>/<c>TryGetTreeWalkerAtRootIndex</c> doors, the step results,
   /// <c>Duplicate</c>'s labels) supplies a real handle. The runtime manufactures
-  /// <c>default</c> instances anyway; per the <see cref="ChildResult{TNode}"/> convention,
-  /// that value is invalid and must not be used.</para>
+  /// <c>default</c> instances anyway; that value is invalid and must not be used.</para>
   ///
   /// <para>This type carries the CARRIER and the navigation the contract alone affords:
   /// <see cref="GetValueAsync"/> reads the focused value, and the step members move the focus.

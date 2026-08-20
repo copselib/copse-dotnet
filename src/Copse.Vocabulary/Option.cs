@@ -20,7 +20,7 @@ namespace Copse
   public readonly struct Option<TValue>
   {
     /// <summary>The inhabited option carrying <paramref name="value"/>. The absent one is
-    /// <c>default</c> (or <see cref="Option.None{TValue}"/>, which reads as a word).</summary>
+    /// <c>default</c>.</summary>
     public Option(TValue value)
     {
       HasValue = true;

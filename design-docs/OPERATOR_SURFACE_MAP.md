@@ -23,7 +23,7 @@ and the rulings below — new surface must name itself by these:
 |---|---|---|
 | *(none)* | **The algebra** — transformations and operators, LINQ's verb/noun tradition (`Select`…`Extend`, `Subtrees`, `SpanningSubtree`, `Materialize`) | returns an algebra citizen; partiality is typed in the result (`Try` never joins an algebra name — the BCL has no `TrySelect`) |
 | `Get` | **Acquisition or read** — the `GetEnumerator` sense: reads (`GetValue`, `GetLeaves`, `GetHandles`) AND minting doors (`GetDepthFirstTreenumerator`, `GetTreeWalkerAt`) | bare `Get` is total or THROWING — if it can fail, failure is a violation (malformed question, exception channel), never a typed miss |
-| `TryGet` | **Acquisition whose miss is typed** (`TryGetParent`, `TryGetChildAt`, `TryGetRootAt`, `TryGetTreeWalkerAtRootIndex`) | the miss is an expected "no" carried in a result struct — the async spelling of the BCL try-pattern (`out` cannot cross an `await`); `TryGet` ⇔ result-typed miss is the TWO-CHANNEL DOCTRINE in the name |
+| `TryGet` | **Acquisition whose miss is typed** (`TryGetParent`, `TryGetChildAt`, `TryGetRootAt`, `TryGetTreeWalkerAtRootIndex`) | the miss is an expected "no" carried in an `Option` — the async spelling of the BCL try-pattern (`out` cannot cross an `await`); `TryGet` ⇔ result-typed miss is the TWO-CHANNEL DOCTRINE in the name |
 | `Take`/`Skip` | **Selection reshapings** — LINQ heritage (`TakeTrees`, `TakeNodesUntil`) | positional/conditional selection; same kind in and out |
 | `To` | **Representation conversion, eager** (`ToFormattedLines`, `ToDegenerateTree`) | name, return shape, and cost agree — the honest-eager rule |
 | `Move` | **Walker steps** — stance verbs, result-typed (`MoveToParent`, `MoveToChild`) | partial but unmarked, on `IEnumerator.MoveNext`'s precedent (the BCL's original unmarked-partial movement verb; ruled pragmatic 2026-08-14 — a full Try-everything pass was considered and deferred) |
@@ -40,26 +40,26 @@ one receiver-recovery exception), and its honest miss is the **empty sequence** 
 into a result-typed consumer to keep the miss typed. Never `FirstOrDefault` over ordinal
 handles: handle 0 is the root, and the miss masquerades as it.
 
-**The result-struct admission rule** (ratified 2026-08-16, closing the result-struct-vs-
-`Option` question): *a result struct earns its own name when its miss has domain meaning.*
-`ParentResult.HasParent` false says "this handle is a root"; `ChildResult.HasChild` false
-says "past the last child"; `TreeWalkerResult.HasWalker` false says "the step had nowhere
-to stand." Three different noes, three names — the recording rule applied to misses. A
-single generic `Option<T>`/`Maybe<T>` across the surface was considered and DECLINED: it
-collapses those noes into one indistinguishable absence and erases the very fact the
-caller reads next. (The unrelated `Option`-labelled sentinel completion of the carrier is
-a separate question, canonized as semantics and refused as representation in
-CATEGORY_THEORY_SURVEY.md §11.) Two clauses follow from the rule:
+**The typed-miss rule**: *an operation whose miss is an expected answer returns
+`Option<TValue>`* (Copse.Vocabulary) — a flag beside a named payload, BY VALUE, never
+`out`: the shape stores nothing (no frame bloat) and is legal in an async method, which is
+why one hand-written type serves both colors with no generated twin. The exception channel
+stays reserved for malformed questions. This SUPERSEDES the 2026-08-16 bespoke-carrier
+rule that stood here (`ParentResult`/`ChildResult`/`TreeWalkerResult`, one named type per
+miss, a generic `Option<T>` declined): the refused alternative was then built and
+measured — the type swap is free, and one vocabulary type replaced three sources, three
+generated twins, and the buffer's two internal tuple doors. OPTION_DESIGN.md holds the
+criterion, the closed inventory, and the measurements. (The unrelated `Option`-labelled
+sentinel completion of the carrier is a separate question, canonized as semantics and
+refused as representation in CATEGORY_THEORY_SURVEY.md §11.) Two clauses govern what is
+option-shaped:
 
-- **The internal tuples are a debt, not a dialect.** Two internal doors on
-  `TreenumerableBuffer` answer with a `(bool Has…, T)` tuple: `TryGetPreorderStore` and
-  `TryGetNodeCount`. The 2026-08-16 chat named the first a WART and made its repair
-  conditional — it becomes a result struct if that door is ever published — and never named
-  the second at all. Nothing here licenses the shape for new surface: a tuple in this
-  position is what was already there, not a sanctioned alternative to a named miss.
-- **By value, never `out`.** The result struct is the async spelling of the try-pattern —
-  it stores nothing (no frame bloat) and is legal in an async method, which is why one
-  shape serves both colors.
+- **The flag must govern the WHOLE carrier** — `false` means the caller gets nothing.
+  Where the flag governs a COMPONENT of a compound answer, the thing is a variant, not an
+  option (`MergeNode` stays bespoke for exactly this).
+- **The payload must already be one named thing** — otherwise the option form mints a type
+  to wrap, one type traded for another plus a hop at every read (`PreorderRead` converted
+  by DEMOTING it to the payload).
 
 **One extension class per color** (`Treenumerable` / `AsyncTreenumerable`, the
 `Enumerable`-idiom name — the folder wears the `*Extensions` suffix, the class does not):
@@ -134,10 +134,10 @@ is the seam everything below rides: the four adjacency probes are provider SPI
 | Subtree() | TreeWalker | IWalkableTreenumerable | lazy (lens view) | the severed re-rooted view at the focus — the walker-side spelling of the same lens |
 | Duplicate() | TreeWalker | TreeWalker\<TreeWalker, THandle\> | lazy | `Extend(focus => focus)` — extend of the identity, the definition; one line |
 | GetTreeWalkerAt(handle) | IWalkableTreenumerable | **TreeWalker** (bare) | O(1) | the TRUST door: door-then-jump (`walker.At(handle)`); pure construction, cannot fail — a forged handle detonates at the first probe (per-capture clause); stored handles re-enter here |
-| TryGetTreeWalkerAtRootIndex(k) | IWalkableTreenumerable | TreeWalkerResult | O(1), honest miss | door + `MoveToRoot(k)` (the walker's third step, 2026-08-15 — derived, never a contract member); RootIndex spelled out so ordinal-vs-handle stays visible when THandle = int |
+| TryGetTreeWalkerAtRootIndex(k) | IWalkableTreenumerable | Option\<TreeWalker\> | O(1), honest miss | door + `MoveToRoot(k)` (the walker's third step, 2026-08-15 — derived, never a contract member); RootIndex spelled out so ordinal-vs-handle stays visible when THandle = int |
 | GetHandles / GetHandlesWithValues | IWalkableTreenumerable | IEnumerable\<THandle\> / \<HandleAndValue\> | streams (pure stance walk) | acquisition scans: doors + steps, the walk assigns its own preorder numbering (any-layout receivers fold in place); WithValues = the search law's ONE earned exception (receiver-recovery: a value predicate mid-chain can't reach the walker without naming the receiver twice) |
 | PruneAfter lens | IWalkableTreenumerable | pair-citizen view | lazy | stream half delegates to the streaming operator; adjacency half is its own topology (the lens family; crossed colors 2026-08-14 — async source, generated sync twin) |
-| SpanningSubtree(targets) | IWalkableTreenumerable | **TreeWalkerResult\<TValue, int\>** | **capture (O(kept), at the call's end)** | **NEW 2026-08-14 (UC-32 distilled — the capstone as an operation)**: minimum spanning subtree of the targets, returned as a walker at the spanning root over a FRESH preorder capture (handles are the new capture's ordinals — the per-capture clause, pinned by test). Result-typed twice: k = 0 (spanning of ∅ is ∅) and disjoint trees (no common ancestor) are honest misses; k = 1 = the node alone. Composition of shipped pieces: walker-first LCA fold + path-recording climbs (the kept-set), severed re-root, the handle-decorated-stream clamp (Extend → PruneBefore in handle-space → Select), one Materialize. Future membership LENS makes it zero-copy; semantics fixed here. The private walker-first LCA is the axis wave's first promotion candidate. Crossed colors 2026-08-14 (async SpanningSubtreeAsync = the source; the sync twin generated) |
+| SpanningSubtree(targets) | IWalkableTreenumerable | **Option\<TreeWalker\<TValue, int\>\>** | **capture (O(kept), at the call's end)** | **NEW 2026-08-14 (UC-32 distilled — the capstone as an operation)**: minimum spanning subtree of the targets, returned as a walker at the spanning root over a FRESH preorder capture (handles are the new capture's ordinals — the per-capture clause, pinned by test). Result-typed twice: k = 0 (spanning of ∅ is ∅) and disjoint trees (no common ancestor) are honest misses; k = 1 = the node alone. Composition of shipped pieces: walker-first LCA fold + path-recording climbs (the kept-set), severed re-root, the handle-decorated-stream clamp (Extend → PruneBefore in handle-space → Select), one Materialize. Future membership LENS makes it zero-copy; semantics fixed here. The private walker-first LCA is the axis wave's first promotion candidate. Crossed colors 2026-08-14 (async SpanningSubtreeAsync = the source; the sync twin generated) |
 
 | Factory | Behavior |
 |---|---|
