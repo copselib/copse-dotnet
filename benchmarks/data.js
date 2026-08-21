@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787356238084,
+  "lastUpdate": 1787356238747,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -73172,6 +73172,66 @@ window.BENCHMARK_DATA = {
             "value": 76694848.54945055,
             "unit": "ns",
             "range": "± 134209.29127101836"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e28b5dc3d177aa0a933ec12dbb88698e10aa36f2",
+          "message": "Record the BFT streaming ruling for SelectMany\n\nPossible, not blocked, deferred on demand. The route: inherit Where-BFT's\nskipped-ancestor prefix carry for promotion's pull-ahead, composite\nforests in the composite overload's expansion for a breadth-first cursor\nper open forest, and the visit protocol over mixed parents as Where-BFT's\nmanufactured visits generalized. Sized as an arc; waits until a consumer\nneeds general forests in BFT over a tree too big to materialize.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-21T23:29:16Z",
+          "tree_id": "c9766fb0e7ce3fdc4dd2c67f5f0362a36c1dbc2c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e28b5dc3d177aa0a933ec12dbb88698e10aa36f2"
+        },
+        "date": 1787356238605,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 66933966.567307696,
+            "unit": "ns",
+            "range": "± 206867.2817242513"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9534533.682692308,
+            "unit": "ns",
+            "range": "± 35897.7753887726"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 135627448.69642857,
+            "unit": "ns",
+            "range": "± 720993.8002042348"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17579145.20089286,
+            "unit": "ns",
+            "range": "± 109478.2279628266"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 176733651.96551728,
+            "unit": "ns",
+            "range": "± 1895297.4650313987"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 155899338.1125,
+            "unit": "ns",
+            "range": "± 2196598.911788109"
           }
         ]
       }
