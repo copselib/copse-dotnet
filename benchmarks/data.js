@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787356236117,
+  "lastUpdate": 1787356236792,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -148522,6 +148522,102 @@ window.BENCHMARK_DATA = {
             "value": 82476877.71111111,
             "unit": "ns",
             "range": "± 1427179.6812930405"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e28b5dc3d177aa0a933ec12dbb88698e10aa36f2",
+          "message": "Record the BFT streaming ruling for SelectMany\n\nPossible, not blocked, deferred on demand. The route: inherit Where-BFT's\nskipped-ancestor prefix carry for promotion's pull-ahead, composite\nforests in the composite overload's expansion for a breadth-first cursor\nper open forest, and the visit protocol over mixed parents as Where-BFT's\nmanufactured visits generalized. Sized as an arc; waits until a consumer\nneeds general forests in BFT over a tree too big to materialize.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-21T23:29:16Z",
+          "tree_id": "c9766fb0e7ce3fdc4dd2c67f5f0362a36c1dbc2c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e28b5dc3d177aa0a933ec12dbb88698e10aa36f2"
+        },
+        "date": 1787356236648,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 104177012.83999999,
+            "unit": "ns",
+            "range": "± 1307224.738190318"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 90569013.92307694,
+            "unit": "ns",
+            "range": "± 246391.09780466903"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 264809114.0357143,
+            "unit": "ns",
+            "range": "± 1104574.6339366687"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 271080507.1923077,
+            "unit": "ns",
+            "range": "± 568307.3749822632"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 189756844.26666662,
+            "unit": "ns",
+            "range": "± 666798.7385543744"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 230122649.66666672,
+            "unit": "ns",
+            "range": "± 766165.0655160272"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 105248981.32,
+            "unit": "ns",
+            "range": "± 177423.95744251716"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 85908296.08333333,
+            "unit": "ns",
+            "range": "± 1831130.0171822628"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 473517217.71428573,
+            "unit": "ns",
+            "range": "± 1551177.0300766116"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 490662992.46153843,
+            "unit": "ns",
+            "range": "± 1697767.9259863824"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 100195441.78461538,
+            "unit": "ns",
+            "range": "± 150191.35848286745"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79681298.79831932,
+            "unit": "ns",
+            "range": "± 1629661.336977004"
           }
         ]
       }
