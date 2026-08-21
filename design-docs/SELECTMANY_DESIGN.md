@@ -319,6 +319,33 @@ theorems) and `Of(forest, placement)`; `default` = `Drop`. Overloads: the depth-
 narrow form streams; the composite form's breadth-first dimension is a DOCUMENTED CAPTURE
 (each BFT acquisition captures the DFT result, preorder, and replays it).
 
+**BFT streaming is possible, not blocked -- deferred on demand, route recorded (ruled
+2026-08-21).** The output's level order is well defined and the reference model already
+computes it (the oracle is free). What makes it hard is three difficulties stacked, one
+of them solved: (1) promotion's unbounded pull-ahead -- `AfterRoots` puts a source node's
+children at its own roots' depth, so a chain of promotes lands a deep node on level 0 and
+a level cannot close until no pending promoted node can still contribute to it -- is
+exactly Where-BFT's problem, solved there by the skipped-ancestor prefix carry
+(`WhereBreadthFirstPath`, O(width)), to be INHERITED, not re-derived; (2) forests with
+depth -- a replacement spans levels L..L+k, so its nodes at L+j merge in positional order
+with other forests' nodes and with source descendants' roots landing there: a live
+breadth-first cursor per source node whose forest is still open (O(width × forest depth)
+cursors where Where holds O(width) structs), which requires BFT-enumerable forests -- the
+composite overload's expansion would carry a composite forest (`Expansion.Forest` is
+depth-first-typed today); (3) the visit protocol over mixed parents -- in BFT, parent
+visits interleave with the next level's schedulings, and a level-(L+1) node's parent may
+be a forest node, a forest's last root (its own children first, then the splice), or a
+slot-owner from a different source node: Where-BFT's deferred/manufactured/suppressed
+visits, generalized. Sizing: the hardest single machine in the library -- Where-BFT along
+two axes at once; an arc with its own benchmark consult, not a pass. Why it waits: the
+workloads that most want it are theorem-shaped, and those already stream breadth-first as
+`Select`/`Where`/`PruneBefore`/`PruneAfter` -- the composition story gets them for free,
+both colors, no new machinery; the capture is correct and benches at ~1.6x the DFT (348 vs
+220 ms), a tax, not a cliff. Build it when a consumer arrives with general forests AND a
+BFT requirement AND a tree too big to materialize, all three; then: composite forests in
+the composite overload's expansion, the machine grown from `WhereBreadthFirstPath`, and a
+level-order conformance suite from the existing oracle before a line of the merge.
+
 **The placements shipped are the lookahead-free set over a visit stream**:
 `AfterRoots` (children as trailing roots beside the expansion's — promotion on an empty
 forest), `UnderLastRoot` (under the last root, after its own children — the Data.Tree
@@ -356,7 +383,7 @@ counterexample lawful on the real operator, the four derived operators byte-for-
 two contract pins; `AsyncSelectManyTests` for the async color. Green first run.
 
 **Queued**: the deferred placements (declared lookahead), discovered placements, the
-strategy matrix, narrow BFT (a true streaming BFT wrapper — Where-BFT-class work),
+strategy matrix, the streaming BFT wrapper (possible, deferred on demand -- route above),
 `Subtrees` as join's coherence oracle (graft ↔ Subtrees), the `ExpandNodes`/`Graft`
 experimental reconciliation, and the composition story (bind as the front door to the
 local collapse lattice, survey §12's open item).
