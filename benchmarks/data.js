@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787271322463,
+  "lastUpdate": 1787271323162,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -106758,6 +106758,102 @@ window.BENCHMARK_DATA = {
             "value": 28308835.78125,
             "unit": "ns",
             "range": "± 78108.53829638594"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a5f473004ebd3fd55fe9e4afce28138c2e907e6a",
+          "message": "Distill the sentinel completion\n\n- Unused usings: the result struct's Tasks import (no async members), the identity\n  view's and severed view's Treenumerables imports (AsyncTree lives in Copse.Async),\n  LazyTopology's parent-namespace import, the async stance suite's System.\n- Stale doctrine: the charter comment drops its journey clause (the record lives in\n  WALKER_FACTORY_DESIGN section 11); TheEmptyForest_GrantsNoWalker renamed\n  TheEmptyForest_HasNoFocusedWalker with its carrier-split-era comment rewritten --\n  the door answers now; what the empty forest lacks is a FOCUSED walker.\n- Correctness in a test helper: TreeWalkerLawTests.Depth counted the top-out step as\n  an ancestor (the climb now answers at the unfocused stance); guarded to proper\n  ancestors only.\n- WALKER_FACTORY_DESIGN: the status header records section 11 executed; sections 1\n  and 3 carry supersession pointers (section 3's \"no new state\" clause held until\n  the algebra itself demanded the completed carrier).\n\nFull suite 24,607 green, all target frameworks.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-20T23:38:27Z",
+          "tree_id": "83a9c6b72f0fdc6f75e4c3fdcbd5fc440e135664",
+          "url": "https://github.com/copselib/copse-dotnet/commit/a5f473004ebd3fd55fe9e4afce28138c2e907e6a"
+        },
+        "date": 1787271323009,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26673547.734375,
+            "unit": "ns",
+            "range": "± 190657.17461779414"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8193644.255580357,
+            "unit": "ns",
+            "range": "± 18880.539055207006"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 149279092.8392857,
+            "unit": "ns",
+            "range": "± 455291.4868689745"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 58232736.64102565,
+            "unit": "ns",
+            "range": "± 127090.33496152173"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21828270.68028846,
+            "unit": "ns",
+            "range": "± 28899.27888731925"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12030926.713169644,
+            "unit": "ns",
+            "range": "± 37196.239012149956"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 96327056.61904763,
+            "unit": "ns",
+            "range": "± 311016.8901128218"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30075427.90401786,
+            "unit": "ns",
+            "range": "± 49754.709085889794"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11299343.420572916,
+            "unit": "ns",
+            "range": "± 12607.945463671604"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6238821.498798077,
+            "unit": "ns",
+            "range": "± 10191.325474797499"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 94374281.32142857,
+            "unit": "ns",
+            "range": "± 321250.906540723"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26101753.723214287,
+            "unit": "ns",
+            "range": "± 101663.88107110845"
           }
         ]
       }
