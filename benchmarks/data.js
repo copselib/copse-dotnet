@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787356244714,
+  "lastUpdate": 1787356245381,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -80081,6 +80081,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
             "value": 8391289,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e28b5dc3d177aa0a933ec12dbb88698e10aa36f2",
+          "message": "Record the BFT streaming ruling for SelectMany\n\nPossible, not blocked, deferred on demand. The route: inherit Where-BFT's\nskipped-ancestor prefix carry for promotion's pull-ahead, composite\nforests in the composite overload's expansion for a breadth-first cursor\nper open forest, and the visit protocol over mixed parents as Where-BFT's\nmanufactured visits generalized. Sized as an arc; waits until a consumer\nneeds general forests in BFT over a tree too big to materialize.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-21T23:29:16Z",
+          "tree_id": "c9766fb0e7ce3fdc4dd2c67f5f0362a36c1dbc2c",
+          "url": "https://github.com/copselib/copse-dotnet/commit/e28b5dc3d177aa0a933ec12dbb88698e10aa36f2"
+        },
+        "date": 1787356245238,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 29206356,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 6147834,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 53729046,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 8056921,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 49534477,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 8391368,
             "unit": "bytes"
           }
         ]
