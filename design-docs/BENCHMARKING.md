@@ -12,7 +12,7 @@ so the CI legs partition the suite by construction:
 | `Traversal` | Traversal, TraversalScaling | The raw engine drain (the baseline everything else is implicitly measured against); Scaling holds the only Stress-tier rows |
 | `VisitStream` | Preorder/Postorder/LevelOrderTraversal | The filtered visit-stream adapters (dimension-locked) |
 | `Query` | CountNodes, AllNodes, GetLeaves | Predicate/extraction terminals |
-| `Streaming` | Where, PruneAfter, PruneBefore, Select | The streaming operator spine |
+| `Streaming` | Where, PruneAfter, PruneBefore, Select, SelectMany | The streaming operator spine |
 | `Merge` | Union, SymmetricDifference | Structural merge; SymmetricDifference-on-identical is the suppression pole of the Union-on-identical emission pole (their gap isolates emission cost) |
 | `Buffer` | Materialize, Memoize, Invert | Capture builds and replays (capture-dimension × drain-dimension) |
 | `Aggregate` | Leaffix/RootfixScan, Leaffix/RootfixAggregate | The cumulative-scan and aggregation duals |
