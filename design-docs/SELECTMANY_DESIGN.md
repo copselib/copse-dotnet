@@ -375,9 +375,23 @@ rows: two-root forest under the last root at every node -- Triangle 262 ms / Cha
 (Gen2 promotions: a million live frames) / Binary 379 ms, ~230-250 MB; the composite
 overload's breadth-first capture 400 ms vs the DFT's 262 on the same work.
 
-**The remaining allocation is the frame**: a `Frame` object per open source node plus a
-`Slot` object per `UnderLastRoot` expansion -- ~140 B/node. The next distill is the house
-pattern: frames and slots as structs in a `RefSemiDeque` (slots addressed by frame index
-rather than shared by reference), which should take the theorem rows near the allocation
-floor of the machines they reproduce. Not done in this pass -- it reshapes the machine's
-state and wants its own review.
+**The struct-frame distill (same day, the pass after the commit).** The ~140 B/node left was
+two heap objects per node: a `Frame` per open source node and a `Slot` per `UnderLastRoot`
+expansion, shared by reference down the frame chain. The house pattern replaced both:
+frames are structs in a `RefSemiDeque`, and slots are a SECOND stack (the root slot at its
+bottom) rather than index-addressed -- a frame that realizes a slot pushes one and pops it
+when it pops, so the top slot is always where the top frame's children go, and the slot
+beneath (when the top frame owns the top slot) is where its own roots went. Two fields fell
+out as derivable: `SourceDepth` (the frame stack IS the open source path, count = depth + 1)
+and `Emission.ScheduledBy` (consumer strategies always bind to the top frame, because nothing
+is pulled between a scheduling and the next pull). Shape constraint: by-reference locals are
+illegal in async methods (CS8177), so the async methods are thin seams around the awaits and
+every mutation is a synchronous helper taking refs into the deques -- which is also the
+cleaner codegen story. Same-run ShortRun, local EPYC: **2.3x `Select` (114 vs 49 ms), 1.7x
+`Where` (104 vs 62 ms), 1.4x `PruneBefore` (117 vs 83 ms)**, theorem rows at **220 KB total,
+zero Gen0** (the shipped neighbours: 58-115 KB; the rest is deque partitions). Forest rows
+Triangle 220 / Chain 240 (was 513: the Gen2 promotions of a million frame objects are gone)
+/ Binary 325 ms at ~82 MB (was ~230: what remains is a real treenumerator per node); the BFT
+capture 348. The allocation floor is reached; the time left over a collapsed operator is the
+general machine's per-event work (pending queue, two stacks), the baseline the composition
+dispatch is measured against.

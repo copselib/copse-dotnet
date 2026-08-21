@@ -10,8 +10,9 @@ namespace Copse.Linq.Async
   // The pointed bind, depth-first and streaming: every source node is replaced in place by
   // its expansion's forest, and the node's own children -- each replaced the same way --
   // re-hang at the expansion's slot. Source nodes never appear in the output; their visits
-  // are structure only, carried by a stack of FRAMES (one per open source node) that says
-  // where that node's replacement went and where its children go.
+  // are structure only, carried by a stack of FRAMES (one per open source node, so the stack
+  // is the open source path and its count is the top node's depth plus one) that says where
+  // that node's replacement went and where its children go.
   //
   // The driver is the lab's stack of paused enumerators one carrier up: a frame drains its
   // forest's visit stream (roots re-indexed into the frame's SLOT, deeper nodes offset by the
@@ -21,6 +22,14 @@ namespace Copse.Linq.Async
   // same order, never an inversion -- because a visit stream cannot say which visit of a root
   // is its last without that next event, and the last root's last visit is where UnderLastRoot
   // opens its slot.
+  //
+  // Slots are a second stack, the root slot at its bottom: a frame that realizes a slot under
+  // its last root pushes one, and pops it when it pops. So the top slot is always where the
+  // top frame's children go (its own slot, or -- when it realized none -- the slot it was
+  // itself emitted into), and when the top frame owns the top slot, the slot beneath is the
+  // one its roots went into. Frames and slots are structs addressed by ref; the async methods
+  // are thin seams around the awaits because by-reference locals are illegal there (CS8177),
+  // and every mutation lives in a synchronous helper.
   //
   // Visits of the node that OWNS a slot are manufactured here, one after each root emitted
   // into the slot, continuing that node's own visit count: the output obeys the visit
@@ -35,23 +44,23 @@ namespace Copse.Linq.Async
     {
       _Source = sourceTreenumeratorFactory();
       _Selector = selector;
-      _RootSlot = new Slot(depth: 0);
+      _Slots.AddLast(new Slot(depth: 0));
     }
 
     private readonly IAsyncTreenumerator<TSource> _Source;
     private readonly Func<TSource, AsyncExpansion<TResult>> _Selector;
-    private readonly Slot _RootSlot;
-    private readonly List<Frame> _Frames = new List<Frame>();
+    private readonly RefSemiDeque<Frame> _Frames = new RefSemiDeque<Frame>();
+    private readonly RefSemiDeque<Slot> _Slots = new RefSemiDeque<Slot>();
     private readonly Queue<Emission> _Pending = new Queue<Emission>();
     private bool _SourceExhausted;
-    private Frame _LastScheduledFrame;
 
     // A slot: an output depth, a running sibling index for the roots emitted there, and --
     // when the slot is under a node -- that node, for the visits manufactured after each root.
-    private sealed class Slot
+    private struct Slot
     {
       public Slot(int depth)
       {
+        this = default;
         Depth = depth;
       }
 
@@ -80,22 +89,27 @@ namespace Copse.Linq.Async
       SkippingChildren,
     }
 
-    private sealed class Frame
+    private struct Frame
     {
-      public int SourceDepth;
+      public Frame(SlotPlacement placement, IAsyncTreenumerator<TResult> forest)
+      {
+        this = default;
+        Placement = placement;
+        Forest = forest;
+        SkipSpliceCandidateRoot = -1;
+      }
+
       public SlotPlacement Placement;
       public bool SingleValuePending;                   // a one-node forest, scheduled, its visit not yet released
       public TResult SingleValue;
       public IAsyncTreenumerator<TResult> Forest;        // null: no forest, or drained
-      public Slot ForestSlot;                            // where the forest's roots go
-      public Slot ChildSlot;                             // where the children's replacements go
-      public Phase Phase;
-      public NodeTraversalStrategies ForestStrategies = NodeTraversalStrategies.TraverseAll;
+      public Phase Phase;                                // default: DrainingForest
+      public NodeTraversalStrategies ForestStrategies;   // default: TraverseAll
       public bool HasHeld;
       public Emission Held;                              // a forest root's visit, awaiting the next event
       public int CurrentRootSiblingIndex;                // the output index of the forest root now open
-      public int SkipSpliceCandidateRoot = -1;           // a root the consumer skipped the descendants of
-      public bool LastRootReceivesSplice;                // UnderLastRoot realized on a nonempty forest
+      public int SkipSpliceCandidateRoot;                // a root the consumer skipped the descendants of
+      public bool OwnsSlot;                              // UnderLastRoot realized on a nonempty forest: this frame pushed a slot
       public bool SkipDescendantsOwed;                   // the next source pull skips the node's subtree
     }
 
@@ -105,16 +119,19 @@ namespace Copse.Linq.Async
       public NodePosition Position;
       public int VisitCount;
       public TreenumeratorMode Mode;
-      public Frame ScheduledBy;
     }
+
+    // Where the top frame's roots went. (Where its children go is the top slot itself.)
+    private ref Slot ForestSlot => ref _Slots.GetFromBack(_Frames.GetLast().OwnsSlot ? 1 : 0);
 
     protected override async ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      // Consumer strategies bind to the last SCHEDULED node, always a forest node; visits take none.
+      // Consumer strategies bind to the last scheduled node, always a forest node of the top
+      // frame (nothing is pulled between a scheduling and the next MoveNext); visits take none.
       if (Mode == TreenumeratorMode.SchedulingNode
         && nodeTraversalStrategies != NodeTraversalStrategies.TraverseAll
-        && _LastScheduledFrame != null)
-        NoteStrategies(_LastScheduledFrame, nodeTraversalStrategies);
+        && _Frames.Count > 0)
+        NoteStrategies(nodeTraversalStrategies);
 
       while (true)
       {
@@ -133,56 +150,79 @@ namespace Copse.Linq.Async
           continue;
         }
 
-        var top = _Frames[_Frames.Count - 1];
-
-        if (top.Phase == Phase.DrainingForest)
+        if (_Frames.GetLast().Phase == Phase.DrainingForest)
         {
-          await DrainForestAsync(top).ConfigureAwait(false);
+          await DrainForestAsync().ConfigureAwait(false);
           continue;
         }
 
-        var strategies = top.SkipDescendantsOwed ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll;
-        top.SkipDescendantsOwed = false;
-
-        await PullSourceAsync(strategies).ConfigureAwait(false);
+        await PullSourceAsync(TakeOwedSourceStrategies()).ConfigureAwait(false);
       }
     }
 
-    private void NoteStrategies(Frame frame, NodeTraversalStrategies strategies)
+    private void NoteStrategies(NodeTraversalStrategies strategies)
     {
+      ref var frame = ref _Frames.GetLast();
+
       frame.ForestStrategies = strategies;
 
-      if (Position.Depth == frame.ForestSlot.Depth
+      if (Position.Depth == ForestSlot.Depth
         && strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
         frame.SkipSpliceCandidateRoot = frame.CurrentRootSiblingIndex;
     }
 
-    private async ValueTask DrainForestAsync(Frame frame)
+    private NodeTraversalStrategies TakeOwedSourceStrategies()
     {
-      if (frame.SingleValuePending)
-      {
-        ReleaseSingleValue(frame);
-        return;
-      }
+      ref var frame = ref _Frames.GetLast();
 
-      if (frame.Forest == null)
-      {
-        OnForestDrained(frame);
-        return;
-      }
+      var strategies = frame.SkipDescendantsOwed ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll;
+      frame.SkipDescendantsOwed = false;
+
+      return strategies;
+    }
+
+    private NodeTraversalStrategies TakeForestStrategies()
+    {
+      ref var frame = ref _Frames.GetLast();
 
       var strategies = frame.ForestStrategies;
       frame.ForestStrategies = NodeTraversalStrategies.TraverseAll;
 
-      if (!await frame.Forest.MoveNextAsync(strategies).ConfigureAwait(false))
+      return strategies;
+    }
+
+    private async ValueTask DrainForestAsync()
+    {
+      if (_Frames.GetLast().SingleValuePending)
       {
-        await frame.Forest.DisposeAsync().ConfigureAwait(false);
-        frame.Forest = null;
-        OnForestDrained(frame);
+        ReleaseSingleValue();
         return;
       }
 
-      var forest = frame.Forest;
+      var forest = _Frames.GetLast().Forest;
+
+      if (forest == null)
+      {
+        OnForestDrained();
+        return;
+      }
+
+      if (!await forest.MoveNextAsync(TakeForestStrategies()).ConfigureAwait(false))
+      {
+        await forest.DisposeAsync().ConfigureAwait(false);
+        _Frames.GetLast().Forest = null;
+        OnForestDrained();
+        return;
+      }
+
+      OnForestEvent(forest);
+    }
+
+    private void OnForestEvent(IAsyncTreenumerator<TResult> forest)
+    {
+      ref var frame = ref _Frames.GetLast();
+      ref var slot = ref ForestSlot;
+
       var isRoot = forest.Position.Depth == 0;
       var startsRoot = isRoot && forest.Mode == TreenumeratorMode.SchedulingNode;
 
@@ -192,11 +232,11 @@ namespace Copse.Linq.Async
         _Pending.Enqueue(frame.Held);
 
         if (startsRoot)
-          EnqueueSlotParentVisit(frame.ForestSlot);    // the previous root completed
+          EnqueueSlotParentVisit(ref slot);              // the previous root completed
       }
 
       if (startsRoot)
-        frame.CurrentRootSiblingIndex = frame.ForestSlot.NextSiblingIndex++;
+        frame.CurrentRootSiblingIndex = slot.NextSiblingIndex++;
 
       var emission = new Emission
       {
@@ -205,8 +245,7 @@ namespace Copse.Linq.Async
         VisitCount = forest.VisitCount,
         Position = new NodePosition(
           isRoot ? frame.CurrentRootSiblingIndex : forest.Position.SiblingIndex,
-          frame.ForestSlot.Depth + forest.Position.Depth),
-        ScheduledBy = frame,
+          slot.Depth + forest.Position.Depth),
       };
 
       if (isRoot && forest.Mode == TreenumeratorMode.VisitingNode)
@@ -224,9 +263,12 @@ namespace Copse.Linq.Async
     // has had its say about the scheduled node -- hold the visit (unless the node was skipped)
     // and fall through to the drained state. Same timing as the treenumerator path, no
     // treenumerator.
-    private void ScheduleSingleValue(Frame frame, TResult value)
+    private void ScheduleSingleValue(TResult value)
     {
-      frame.CurrentRootSiblingIndex = frame.ForestSlot.NextSiblingIndex++;
+      ref var frame = ref _Frames.GetLast();
+      ref var slot = ref ForestSlot;
+
+      frame.CurrentRootSiblingIndex = slot.NextSiblingIndex++;
       frame.SingleValue = value;
       frame.SingleValuePending = true;
 
@@ -235,13 +277,14 @@ namespace Copse.Linq.Async
         Node = value,
         Mode = TreenumeratorMode.SchedulingNode,
         VisitCount = 0,
-        Position = new NodePosition(frame.CurrentRootSiblingIndex, frame.ForestSlot.Depth),
-        ScheduledBy = frame,
+        Position = new NodePosition(frame.CurrentRootSiblingIndex, slot.Depth),
       });
     }
 
-    private void ReleaseSingleValue(Frame frame)
+    private void ReleaseSingleValue()
     {
+      ref var frame = ref _Frames.GetLast();
+
       frame.SingleValuePending = false;
 
       if (!frame.ForestStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
@@ -252,16 +295,18 @@ namespace Copse.Linq.Async
           Node = frame.SingleValue,
           Mode = TreenumeratorMode.VisitingNode,
           VisitCount = 1,
-          Position = new NodePosition(frame.CurrentRootSiblingIndex, frame.ForestSlot.Depth),
+          Position = new NodePosition(frame.CurrentRootSiblingIndex, ForestSlot.Depth),
         };
       }
 
       frame.ForestStrategies = NodeTraversalStrategies.TraverseAll;
-      OnForestDrained(frame);
+      OnForestDrained();
     }
 
-    private void OnForestDrained(Frame frame)
+    private void OnForestDrained()
     {
+      ref var frame = ref _Frames.GetLast();
+
       if (frame.HasHeld)
       {
         frame.HasHeld = false;
@@ -269,22 +314,22 @@ namespace Copse.Linq.Async
 
         if (frame.Placement == SlotPlacement.UnderLastRoot)
         {
-          frame.LastRootReceivesSplice = true;
-          frame.ChildSlot = new Slot(
+          frame.OwnsSlot = true;
+          _Slots.AddLast(new Slot(
             depth: frame.Held.Position.Depth + 1,
             parent: frame.Held.Node,
             parentSiblingIndex: frame.Held.Position.SiblingIndex,
             parentVisitCount: frame.Held.VisitCount,
-            nextSiblingIndex: frame.Held.VisitCount - 1);
+            nextSiblingIndex: frame.Held.VisitCount - 1));
         }
         else
         {
-          EnqueueSlotParentVisit(frame.ForestSlot);      // the last root completed
+          EnqueueSlotParentVisit(ref ForestSlot);        // the last root completed
         }
       }
 
-      if (!frame.LastRootReceivesSplice)
-        frame.ChildSlot = frame.ForestSlot;              // AfterRoots, None, or UnderLastRoot on nothing
+      // Otherwise the children go where the roots went: AfterRoots, None, or UnderLastRoot on
+      // nothing -- the top slot, unchanged.
 
       var skipSplice = frame.Placement == SlotPlacement.None
         || (frame.SkipSpliceCandidateRoot >= 0 && frame.SkipSpliceCandidateRoot == frame.CurrentRootSiblingIndex);
@@ -302,28 +347,25 @@ namespace Copse.Linq.Async
         return;
       }
 
+      OnSourceEvent();
+    }
+
+    private void OnSourceEvent()
+    {
       var depth = _Source.Position.Depth;
 
       if (_Source.Mode == TreenumeratorMode.SchedulingNode)
       {
         PopFramesDeeperThan(depth - 1);
 
-        var parent = _Frames.Count > 0 ? _Frames[_Frames.Count - 1] : null;
         var expansion = _Selector(_Source.Node);
 
-        var frame = new Frame
-        {
-          SourceDepth = depth,
-          Placement = expansion.Placement,
-          Forest = expansion.HasSingleValue ? null : expansion.Forest?.GetAsyncDepthFirstTreenumerator(),
-          ForestSlot = parent == null ? _RootSlot : parent.ChildSlot,
-          Phase = Phase.DrainingForest,
-        };
-
-        _Frames.Add(frame);
+        _Frames.AddLast(new Frame(
+          expansion.Placement,
+          expansion.HasSingleValue ? null : expansion.Forest?.GetAsyncDepthFirstTreenumerator()));
 
         if (expansion.HasSingleValue)
-          ScheduleSingleValue(frame, expansion.SingleValue);
+          ScheduleSingleValue(expansion.SingleValue);
       }
       else
       {
@@ -333,17 +375,17 @@ namespace Copse.Linq.Async
 
     private void PopFramesDeeperThan(int depth)
     {
-      while (_Frames.Count > 0 && _Frames[_Frames.Count - 1].SourceDepth > depth)
+      while (_Frames.Count > depth + 1)
       {
-        var frame = _Frames[_Frames.Count - 1];
-        _Frames.RemoveAt(_Frames.Count - 1);
-
-        if (frame.LastRootReceivesSplice)
-          EnqueueSlotParentVisit(frame.ForestSlot);      // the slot-owning root completed
+        if (_Frames.RemoveLast().OwnsSlot)
+        {
+          _Slots.RemoveLast();
+          EnqueueSlotParentVisit(ref _Slots.GetLast()); // the slot-owning root completed
+        }
       }
     }
 
-    private void EnqueueSlotParentVisit(Slot slot)
+    private void EnqueueSlotParentVisit(ref Slot slot)
     {
       if (!slot.HasParent)
         return;
@@ -363,20 +405,19 @@ namespace Copse.Linq.Async
       Position = emission.Position;
       VisitCount = emission.VisitCount;
       Mode = emission.Mode;
-
-      if (emission.Mode == TreenumeratorMode.SchedulingNode)
-        _LastScheduledFrame = emission.ScheduledBy;
     }
 
     protected override async ValueTask OnDisposingAsync()
     {
       await base.OnDisposingAsync().ConfigureAwait(false);
 
-      foreach (var frame in _Frames)
-        if (frame.Forest != null)
-          await frame.Forest.DisposeAsync().ConfigureAwait(false);
+      while (_Frames.Count > 0)
+      {
+        var forest = _Frames.RemoveLast().Forest;
 
-      _Frames.Clear();
+        if (forest != null)
+          await forest.DisposeAsync().ConfigureAwait(false);
+      }
 
       await _Source.DisposeAsync().ConfigureAwait(false);
     }
