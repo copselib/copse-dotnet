@@ -15,7 +15,7 @@ namespace Copse.Dags
   /// transpose adjacency is built lazily once and back-linked, so transposing back costs an
   /// O(n) value reversal and no adjacency work at all.
   /// </summary>
-  public sealed class DagBuffer<TNode, TEdge> : IDagnumerable<TNode, TEdge>
+  public sealed class DagBuffer<TNode, TEdge> : IWalkableDagnumerable<TNode, int, TEdge>
   {
     internal DagBuffer(TNode[] values, DagStructure<TEdge> structure, int[] sourceOrdinals)
     {
@@ -43,6 +43,13 @@ namespace Copse.Dags
 
     public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
       new TopologicalDagnumerator<TNode, TEdge>(_Values, Structure.OutOffsets, Structure.OutTargets, Structure.OutPayloads);
+
+    private DagBufferTopology<TNode, TEdge> _Topology;
+
+    // The door (the buffer re-parent, dag-side: captures are never address-poor): the unfocused
+    // walker over the CSR skeleton, built once, handles = dense ordinals.
+    public DagWalker<TNode, int, TEdge> GetDagWalker()
+      => new DagWalker<TNode, int, TEdge>(_Topology ??= new DagBufferTopology<TNode, TEdge>(_Values, Structure));
 
     /// <summary>
     /// The orientation flip -- the operator the retired backward dimension became: the same

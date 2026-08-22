@@ -389,6 +389,9 @@ them.
 | Set operations (`Union`, …) | DO NOT carry — they align by position; DAGs have none. Absent, not approximated |
 | No node identity anywhere | bends ONCE, at the adapter boundary (sources must key their nodes); the stream uses ordinals |
 | Two-phase strategies (`SkipNode`/`SkipDescendants`/`SkipSiblings`) | needs its own design — see open questions; skips become liveness votes, and per-EDGE skips (impossible on trees) want to exist |
+| Walker tier: `ITreeTopology` / `IWalkableTreenumerable` / `TreeWalker` / `TreeWalkerResult` | ✅ carries (2026-08-22, DAG_WALKER_DESIGN.md): `IDagTopology` (three indexed probes — the parent step is the IN-EDGE GROUP, the tree's single parent its arity-one collapse), `IWalkableDagnumerable` (one total member), `DagWalker` (edge-atomic steps: `MoveToParent(inEdgeIndex)` / `MoveToChild(outEdgeIndex)` / `MoveToSource(sourceIndex)`), `DagWalkerResult` (flat, carries the `Edge` crossed); `DagBuffer` and the builder `Dag` are walkable; the unfocused stance IS the virtual source |
+| `Extend` / `Subtrees` / `Subtree()` / `Duplicate` / `GetHandles` / `PruneAfter` lens / `Tree.FromTopology` | ✅ carry (2026-08-22): `Extend` / `Downstreams()` / `Downstream()` / `Duplicate` / `GetHandles` (dedup by handle — set semantics) / `PruneAfter` lens / `Dag.FromTopology` (Kahn over probes); PLUS two the tree lacks: `Upstream()` (the transpose-conjugate cone) and the walker `Transpose()` (the FREE lens — two method references trading places); laws over a five-citizen fan-out incl. skeleton-direct + foreign provider; `SourcefixScan ≡ Extend(in-paths fold)` and `SinkfixScan ≡ Extend(out-paths fold)` pinned |
+| `SpanningSubtree` | DOES NOT carry: uniqueness fails on a dag (closures overlap); "what lies between" is a region intersection, a different lens class — absent, not approximated |
 
 ## The edge dual (ratified 2026-07-28; tier 1 built)
 

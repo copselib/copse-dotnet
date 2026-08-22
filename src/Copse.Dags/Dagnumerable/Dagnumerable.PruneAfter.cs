@@ -76,3 +76,28 @@ namespace Copse.Dags
     public void Dispose() => _Inner.Dispose();
   }
 }
+
+namespace Copse.Dags
+{
+  public static partial class Dagnumerable
+  {
+    /// <summary>
+    /// PruneAfter over a WALKABLE stays walkable: the restriction lens, resolved statically by
+    /// the receiver's type -- the stream half is the streaming operator above, the adjacency
+    /// half a matched node's empty out-edge group and the in-edge groups filtered to match
+    /// (the pair agree on every edge). Lenses stack; no lattice, nothing to collapse. A null
+    /// predicate keeps everything -- the source itself.
+    /// </summary>
+    public static IWalkableDagnumerable<TNode, THandle, TEdge> PruneAfter<TNode, THandle, TEdge>(
+      this IWalkableDagnumerable<TNode, THandle, TEdge> source,
+      Func<TNode, bool> predicate)
+    {
+      if (source == null)
+        throw new ArgumentNullException(nameof(source));
+
+      return predicate == null
+        ? source
+        : new DagPruneAfterWalkable<TNode, THandle, TEdge>(source, predicate);
+    }
+  }
+}

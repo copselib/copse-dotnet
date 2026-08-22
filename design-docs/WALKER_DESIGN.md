@@ -65,6 +65,12 @@ one whole.
 | Tree walker | `GetChildren` | `GetParent` |
 | DAG walker | `GetInEdges` | `GetOutEdges` |
 
+
+> **CORRECTED 2026-08-22 (DAG_WALKER_DESIGN.md §2):** the note below has the orientation
+> inverted. On the dag branch out-edges point DOWNSTREAM (sources toward sinks, the
+> dispatch direction), so `GetChildren` corresponds to the out-edge group and `GetParent` to
+> the in-edge group; `TakeUpstreamWhere` follows in-edges back toward the sources. The
+> collapse law stands unchanged.
 (Edge orientation follows the DAG branch's convention: out-edges point upstream,
 so `GetParent` corresponds to `GetOutEdges`.)
 
