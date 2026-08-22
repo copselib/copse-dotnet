@@ -3,8 +3,9 @@
 > **Status: BUILT 2026-08-22 on `experimental/dag`, in one arc, to parity with the tree
 > family's walker tier** (WALKER_FACTORY_DESIGN.md §1–§4 and §11; CATEGORY_THEORY_SURVEY.md
 > §10 and §12). Every tree-side citizen has its dual below, the laws run over a five-citizen
-> fan-out, and the five findings the build surfaced are recorded in §8. Names marked
-> PROVISIONAL await Jason's ruling; nothing else is open.
+> fan-out, and the five findings the build surfaced are recorded in §8. The cone
+> vocabulary is RATIFIED (§9); `DagStep` and `MoveToParent(int)` still await the ruling;
+> nothing else is open.
 
 ## 1. The one sentence
 
@@ -32,9 +33,9 @@ outside it), which is the descendant-information law's price made concrete.
 | `ITreenumerableBuffer : IWalkableTreenumerable<TValue, int>` | `DagBuffer : IWalkableDagnumerable<TNode, int, TEdge>` | the buffer re-parent; handles = dense ordinals; `DagBufferTopology` over the CSR + the lazy in-adjacency |
 | (builder not walkable) | `Dag<TValue, TEdge> : IWalkableDagnumerable<TValue, DagNode, TEdge>` | `DagNodeTopology`: the node is its own handle (self-sufficiency); membership, stray-parent filtering, and discovery-ordered in-groups memoized per knock (§8.1) |
 | `Extend(observer)` on walkable / walker | `Extend` on walkable (`IDagTopology, THandle`) / walker (`DagWalker`) | `DagExtendWalkable`; self-feeds through `Dag.FromTopology(this)` |
-| `Subtrees()` — the cofree duplicate | `Downstreams()` PROVISIONAL | labels = downstream cones (`DagDownstreamWalkable`), sharing kept inside, severed at the boundary |
-| `Subtree()` — the inclusive hoist | `Downstream()` PROVISIONAL | at a node, the cone with the focus as sole source; at the unfocused stance, the whole dag (`DagTopologyWalkable`) |
-| — (trees have no upward cone) | `Upstream()` PROVISIONAL | `Transpose ∘ Downstream ∘ Transpose` — no new lens type; ≡ `TakeUpstreamWhere` at one node (pinned) |
+| `Subtrees()` — the cofree duplicate | `Downstreams()` | labels = downstream cones (`DagDownstreamWalkable`), sharing kept inside, severed at the boundary |
+| `Subtree()` — the inclusive hoist | `Downstream()` | at a node, the cone with the focus as sole source; at the unfocused stance, the whole dag (`DagTopologyWalkable`) |
+| — (trees have no upward cone) | `Upstream()` | `Transpose ∘ Downstream ∘ Transpose` — no new lens type; ≡ `TakeUpstreamWhere` at one node (pinned) |
 | — (tree transpose is an order-algebra operator) | `Transpose()` on the walker | the FREE lens (`DagTransposeTopology`): groups trade places, involutive by unwrapping; the transpose's source group = the sinks, one sweep memoized |
 | `Duplicate()` | `Duplicate()` | `Extend(focus => focus)` |
 | `GetHandles` / `GetHandlesWithValues` | same | stance walks with a visited set — dedup by handle equality (set semantics, the dag axis default) |
@@ -147,9 +148,10 @@ rebuilt from the visit stream — sources in order, out-groups in dispatch order
 
 ## 9. Open for Jason's ruling (names only; semantics are pinned)
 
-- `Downstreams()` / `Downstream()` / `Upstream()` — the cone vocabulary (vs `Subdags`,
-  `Cone`, `Reach`). `Downstream()` is the hoist; the house flow grammar (sources, sinks,
-  Sourcefix, Sinkfix, TakeDownstreamWhere) argued for it.
+- ~~`Downstreams()` / `Downstream()` / `Upstream()`~~ — **RATIFIED (Jason, 2026-08-22)**: the
+  cone vocabulary stands; singular = one cone from one stance (the hoist), plural = every cone
+  as labels (the cofree duplicate), the tree's `Subtree()`/`Subtrees()` pairing carried on the
+  house flow grammar (sources, sinks, Sourcefix, Sinkfix, TakeDownstreamWhere).
 - `DagStep` for the probe answer (vs `DagNeighbor`, `DagAdjacency`).
 - `MoveToParent(int inEdgeIndex)` — the tree's `MoveToParent()` grown an index, same name;
   alternatively `MoveToParentAt`. Kept nameless-of-`At` to mirror `MoveToChild(int)`.
