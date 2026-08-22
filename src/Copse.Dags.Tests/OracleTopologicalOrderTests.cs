@@ -4,8 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
+  // The oracle's own sort, pinned in isolation: the conformance battery trusts
+  // OracleTopologicalOrder as the independent statement of topological order (parents before
+  // children, each node once, discovery-biased; cycles named), so the oracle must be right on
+  // its own terms before it can judge the walk. Node-identity assertions, since the oracle
+  // answers in owned nodes.
   [TestClass]
-  public class DagTraversalTests
+  public class OracleTopologicalOrderTests
   {
     [TestMethod]
     public void TopologicalOrder_Diamond_ParentsBeforeChildren_SharedNodeOnce()
@@ -17,7 +22,7 @@ namespace Copse.Dags.Tests
       left.AddChild(shared);
       right.AddChild(shared);
 
-      var topologicalOrder = new Dag<string, int>(apex).GetTopologicalOrder();
+      var topologicalOrder = new Dag<string, int>(apex).OracleTopologicalOrder();
 
       Assert.AreEqual(4, topologicalOrder.Count);
       Assert.AreSame(apex, topologicalOrder[0]);
@@ -37,7 +42,7 @@ namespace Copse.Dags.Tests
       var deep = middle.AddChild("deep");
       rootA.AddChild(deep); // long-way-around: also a direct edge
 
-      var topologicalOrder = new Dag<string, int>(rootA, rootB).GetTopologicalOrder();
+      var topologicalOrder = new Dag<string, int>(rootA, rootB).OracleTopologicalOrder();
       var indexByNode = topologicalOrder
         .Select((node, index) => (node, index))
         .ToDictionary(pair => pair.node, pair => pair.index);
@@ -55,7 +60,7 @@ namespace Copse.Dags.Tests
       var second = new DagNode<string, int>("second");
       first.AddChild(second);
 
-      var topologicalOrder = new Dag<string, int>(first, second).GetTopologicalOrder();
+      var topologicalOrder = new Dag<string, int>(first, second).OracleTopologicalOrder();
 
       Assert.AreEqual(2, topologicalOrder.Count);
       Assert.AreSame(first, topologicalOrder[0]);
@@ -67,7 +72,7 @@ namespace Copse.Dags.Tests
     {
       var root = new DagNode<string, int>("root");
 
-      Assert.AreEqual(1, new Dag<string, int>(root, root).GetTopologicalOrder().Count);
+      Assert.AreEqual(1, new Dag<string, int>(root, root).OracleTopologicalOrder().Count);
     }
 
     [TestMethod]
@@ -79,7 +84,7 @@ namespace Copse.Dags.Tests
       bottom.AddChild(middle);
 
       var exception = Assert.ThrowsException<DagCycleException>(
-        () => new Dag<string, int>(top).GetTopologicalOrder());
+        () => new Dag<string, int>(top).OracleTopologicalOrder());
 
       StringAssert.Contains(exception.Message, "middle -> bottom -> middle");
     }
@@ -90,7 +95,7 @@ namespace Copse.Dags.Tests
       var node = new DagNode<string, int>("node");
       node.AddChild(node);
 
-      Assert.ThrowsException<DagCycleException>(() => new Dag<string, int>(node).GetTopologicalOrder());
+      Assert.ThrowsException<DagCycleException>(() => new Dag<string, int>(node).OracleTopologicalOrder());
     }
 
     [TestMethod]
@@ -103,7 +108,7 @@ namespace Copse.Dags.Tests
       for (var depth = 1; depth < chainLength; depth++)
         current = current.AddChild(depth);
 
-      var topologicalOrder = new Dag<int, int>(root).GetTopologicalOrder();
+      var topologicalOrder = new Dag<int, int>(root).OracleTopologicalOrder();
 
       Assert.AreEqual(chainLength, topologicalOrder.Count);
       Assert.AreSame(root, topologicalOrder[0]);
@@ -116,11 +121,11 @@ namespace Copse.Dags.Tests
       var root = new DagNode<string, int>("root");
       var dag = new Dag<string, int>(root);
 
-      Assert.AreEqual(1, dag.GetTopologicalOrder().Count);
+      Assert.AreEqual(1, dag.OracleTopologicalOrder().Count);
 
       root.AddChild("lateArrival");
 
-      Assert.AreEqual(2, dag.GetTopologicalOrder().Count);
+      Assert.AreEqual(2, dag.OracleTopologicalOrder().Count);
     }
   }
 }

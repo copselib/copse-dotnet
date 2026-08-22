@@ -126,7 +126,7 @@ namespace Copse.Dags.Tests
           inflows.Count == 0
             ? 1m
             : inflows.Select((inflow, index) => inflow * node.ParentEdges[index].Value).Sum())
-        .GetTopologicalOrder().Select(n => n.Value).ToList();
+        .OracleTopologicalOrder().Select(n => n.Value).ToList();
 
       CollectionAssert.AreEqual(oracle, contract);
     }

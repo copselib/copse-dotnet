@@ -11,9 +11,9 @@ namespace Copse.Dags
   /// LAZY BUILDER RULING): Kahn on demand over the live node graph, no snapshot,
   /// no cycle check -- a cyclic graph streams its maximal acyclic prefix and throws
   /// <see cref="DagCycleException"/> at exhaustion; <c>Materialize</c> is the validator and
-  /// the completed buffer is the certificate. (The owned-node
-  /// <see cref="GetTopologicalOrder"/> view below is that same walk drained into a list of
-  /// nodes -- a completed list IS a drain, so it throws where the drain starves.)
+  /// the completed buffer is the certificate. The builder has no owned-node order view of its
+  /// own: <c>GetTopologicalOrder</c> is the contract extension, values in entry order, and the
+  /// nodes themselves are the walker tier's handles (<c>GetHandles</c>).
   ///
   /// <para>Deliberately NOT a frozen snapshot: it holds only the sources, and every
   /// acquisition walks the live node graph. Mutate the nodes -- relink, sort children -- and
@@ -45,28 +45,6 @@ namespace Copse.Dags
 
 
     /// <summary>
-    /// Every node reachable from the sources, parents before children, each exactly once (this is
-    /// also the "distinct nodes" enumeration -- sum over it for shared-counted-once semantics):
-    /// the entry order of the builder's one walk, read as nodes -- deterministic, discovery-biased
-    /// (sources first-to-last, siblings first-to-last) wherever the edge constraints allow. A
-    /// completed list is a drain, so a cyclic graph throws <see cref="DagCycleException"/> here at
-    /// the starvation point, the loop named. This is the owned-node view; the contract-level
-    /// value view is the <c>GetTopologicalOrder</c> extension on
-    /// <see cref="IDagnumerable{TNode, TEdge}"/> -- on a builder receiver THIS overload binds.
-    /// </summary>
-    public IReadOnlyList<DagNode<TValue, TEdge>> GetTopologicalOrder()
-    {
-      var topologicalOrder = new List<DagNode<TValue, TEdge>>();
-      using var walk = new TopologyWalkDagnumerator<TValue, DagNode<TValue, TEdge>, TEdge>(new DagNodeTopology<TValue, TEdge>(_Sources), _Sources);
-
-      while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
-        if (walk.Mode == DagnumeratorMode.EnteringNode)
-          topologicalOrder.Add(walk.CurrentHandle);
-
-      return topologicalOrder;
-    }
-
-    /// <summary>
     /// Stably sorts EVERY reachable node's out-edges in place, ascending by a key of the child
     /// node -- each node once, even when shared. Purely an edge reorder (payloads travel with
     /// their edges); no back-links move.
@@ -76,8 +54,11 @@ namespace Copse.Dags
       if (keySelector == null)
         throw new ArgumentNullException(nameof(keySelector));
 
-      foreach (var node in GetTopologicalOrder())
-        node.SortChildrenBy(keySelector);
+      using var walk = new TopologyWalkDagnumerator<TValue, DagNode<TValue, TEdge>, TEdge>(new DagNodeTopology<TValue, TEdge>(_Sources), _Sources);
+
+      while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
+        if (walk.Mode == DagnumeratorMode.EnteringNode)
+          walk.CurrentHandle.SortChildrenBy(keySelector);
     }
 
   }

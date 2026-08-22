@@ -134,7 +134,7 @@ namespace Copse.Dags.Tests
 
       var oracle = Diamond()
         .OracleSinkfixScan<string, decimal, int>((node, childResults) => 1 + childResults.Sum())
-        .GetTopologicalOrder().Select(n => n.Value).ToList();
+        .OracleTopologicalOrder().Select(n => n.Value).ToList();
 
       CollectionAssert.AreEqual(oracle, contract);
     }

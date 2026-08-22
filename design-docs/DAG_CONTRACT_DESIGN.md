@@ -20,7 +20,9 @@
 > Product surface principle, same date: everything an operation can be, it is — an
 > extension on the contract (`Dagnumerable.*`, including `GetTopologicalOrder`'s value view
 > and `GetEdges`); the builder keeps only construction, mutation (sorts), acquisition, and
-> the owned-node `GetTopologicalOrder` view.
+> its walker door. (The owned-node `GetTopologicalOrder` view it once kept is gone -- ruled
+> 2026-08-22: one name, one meaning; the nodes themselves are the walker tier's handles, and
+> the conformance oracle carries its own sort.)
 >
 > **Dispatch provenance (2026-07-27, work-integration-driven):** dispatch inflows are
 > `DagDispatchInflow` and carry their **Dispatcher** — the node that wrote the slot (parent

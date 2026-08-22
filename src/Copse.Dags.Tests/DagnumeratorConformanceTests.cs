@@ -10,9 +10,9 @@ namespace Copse.Dags.Tests
   // (design-docs/DAG_CONTRACT_DESIGN.md): exact-stream pins on the canonical shapes, protocol
   // invariants over a corpus, the transpose duality (Transpose()'s walk must present every
   // forward edge reversed -- orientation is an OPERATOR, not a dimension), the topological
-  // oracle (entry order must match
-  // GetTopologicalOrder -- the builder is the family's oracle), and the strategy semantics,
-  // rehearsal-tested at birth per the tree family's lesson.
+  // oracle (entry order must match the oracle's own sort, OracleTopologicalOrder -- disjoint
+  // machinery), and the strategy semantics, rehearsal-tested at birth per the tree family's
+  // lesson.
   [TestClass]
   public class DagnumeratorConformanceTests
   {
@@ -198,7 +198,7 @@ namespace Copse.Dags.Tests
       foreach (var dag in Corpus())
       {
         var visits = Drain(dag.GetDagnumerator());
-        var topologicalOrder = dag.GetTopologicalOrder();
+        var topologicalOrder = dag.OracleTopologicalOrder();
 
         for (var ordinal = 0; ordinal < topologicalOrder.Count; ordinal++)
         {
@@ -247,7 +247,7 @@ namespace Copse.Dags.Tests
           .ToList();
 
         CollectionAssert.AreEqual(
-          dag.GetTopologicalOrder().Select(n => n.Value).ToList(),
+          dag.OracleTopologicalOrder().Select(n => n.Value).ToList(),
           entries);
       }
     }
@@ -260,7 +260,7 @@ namespace Copse.Dags.Tests
       foreach (var dag in Corpus())
       {
         var visits = Drain(dag.Transpose().GetDagnumerator());
-        var reversedOrder = dag.GetTopologicalOrder().Reverse().ToList();
+        var reversedOrder = dag.OracleTopologicalOrder().Reverse().ToList();
         var entered = new HashSet<int>();
 
         foreach (var visit in visits)
@@ -298,7 +298,7 @@ namespace Copse.Dags.Tests
           .ToList();
 
         CollectionAssert.AreEqual(
-          dag.GetTopologicalOrder().Reverse().Select(n => n.Value).ToList(),
+          dag.OracleTopologicalOrder().Reverse().Select(n => n.Value).ToList(),
           entries);
       }
     }

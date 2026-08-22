@@ -187,7 +187,7 @@ namespace Copse.Dags.Tests
       var oracle = Diamond().OraclePruneBefore(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
-        oracle.GetTopologicalOrder().Select(n => n.Value).ToList(),
+        oracle.OracleTopologicalOrder().Select(n => n.Value).ToList(),
         contract.Where(v => v.Mode == DagnumeratorMode.EnteringNode).Select(v => v.Node).ToList());
 
       var contractValuesByOrdinal = contract
@@ -197,7 +197,7 @@ namespace Copse.Dags.Tests
         .Where(v => v.Mode == DagnumeratorMode.DiscoveringNode && v.ParentOrdinal >= 0)
         .Select(v => (Parent: contractValuesByOrdinal[v.ParentOrdinal], Child: v.Node, v.Edge))
         .OrderBy(edge => edge).ToList();
-      var oracleEdges = oracle.GetTopologicalOrder()
+      var oracleEdges = oracle.OracleTopologicalOrder()
         .SelectMany(n => n.ChildEdges.Select(e => (Parent: n.Value, Child: e.Child.Value, Edge: e.Value)))
         .OrderBy(edge => edge).ToList();
 
@@ -254,7 +254,7 @@ namespace Copse.Dags.Tests
       var oracle = Diamond().OraclePruneAfter(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
-        oracle.GetTopologicalOrder().Select(n => n.Value).ToList(),
+        oracle.OracleTopologicalOrder().Select(n => n.Value).ToList(),
         contract.Where(v => v.Mode == DagnumeratorMode.EnteringNode).Select(v => v.Node).ToList());
     }
 

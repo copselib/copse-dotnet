@@ -138,13 +138,13 @@ namespace Copse.Dags.Tests
       root.AddChild("a");
       var dag = new Dag<string, int>(root);
 
-      CollectionAssert.AreEqual(new[] { "root", "a" }, dag.GetTopologicalOrder().Select(n => n.Value).ToArray());
+      CollectionAssert.AreEqual(new[] { "root", "a" }, dag.GetTopologicalOrder().ToArray());
 
       root.AddChild("b");
 
       CollectionAssert.AreEqual(
         new[] { "root", "a", "b" },
-        ((IDagnumerable<string, int>)dag).GetTopologicalOrder().ToArray());
+        dag.GetTopologicalOrder().ToArray());
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ namespace Copse.Dags.Tests
 
       CollectionAssert.AreEqual(
         new[] { "apex", "left", "right", "venture" },
-        new Dag<string, decimal>(apex).GetTopologicalOrder().Select(n => n.Value).ToArray());
+        new Dag<string, decimal>(apex).GetTopologicalOrder().ToArray());
     }
   }
 }

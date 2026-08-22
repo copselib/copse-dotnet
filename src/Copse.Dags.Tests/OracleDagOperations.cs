@@ -26,7 +26,7 @@ namespace Copse.Dags.Tests
     {
       var resultsByNode = NewNodeKeyedDictionary<TValue, TEdge, TResult>();
 
-      foreach (var node in dag.GetTopologicalOrder().Reverse())
+      foreach (var node in dag.OracleTopologicalOrder().Reverse())
       {
         var childResults = node.Children.Select(child => resultsByNode[child]).ToList();
         resultsByNode.Add(node, aggregate(node, childResults));
@@ -49,7 +49,7 @@ namespace Copse.Dags.Tests
       var allocationsByNode = NewNodeKeyedDictionary<TValue, TEdge, TAllocation>();
       var inflowsByNode = NewNodeKeyedDictionary<TValue, TEdge, List<TAllocation>>();
 
-      foreach (var node in dag.GetTopologicalOrder())
+      foreach (var node in dag.OracleTopologicalOrder())
       {
         inflowsByNode.TryGetValue(node, out var inflows);
         var mergedAllocation = mergeInflows(node, (IReadOnlyList<TAllocation>)inflows ?? Array.Empty<TAllocation>());
@@ -124,7 +124,7 @@ namespace Copse.Dags.Tests
       Func<DagNode<TValue, TEdge>, bool> prune,
       bool keepMatchedNode)
     {
-      var topologicalOrder = dag.GetTopologicalOrder();
+      var topologicalOrder = dag.OracleTopologicalOrder();
 
       var sourceSet = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
       foreach (var source in dag.Sources)
@@ -184,7 +184,7 @@ namespace Copse.Dags.Tests
       Func<DagNode<TValue, TEdge>, TResultValue> valueForNode,
       Func<DagNode<TValue, TEdge>, DagEdge<TValue, TEdge>, TResultEdge> valueForEdge)
     {
-      var topologicalOrder = dag.GetTopologicalOrder();
+      var topologicalOrder = dag.OracleTopologicalOrder();
       var cloneByNode = new Dictionary<DagNode<TValue, TEdge>, DagNode<TResultValue, TResultEdge>>(ReferenceEqualityComparer.Instance);
 
       foreach (var node in topologicalOrder)
@@ -199,6 +199,80 @@ namespace Copse.Dags.Tests
 
     private static Dictionary<DagNode<TValue, TEdge>, TEntry> NewNodeKeyedDictionary<TValue, TEdge, TEntry>() =>
       new Dictionary<DagNode<TValue, TEdge>, TEntry>(ReferenceEqualityComparer.Instance);
+
+    /// <summary>
+    /// The oracle's own topological sort -- nodes, parents before children, each once: an
+    /// iterative depth-first postorder (explicit frames, an on-path set for cycle detection, a
+    /// visited set for sharing) reversed, with sources and children walked in REVERSE so the
+    /// order comes out discovery-biased, sources first-to-last and siblings first-to-last.
+    /// Disjoint from the product's Kahn walk by construction, which is what lets the
+    /// conformance battery pin the walk's entry order against it. Throws
+    /// <see cref="DagCycleException"/> naming the cycle.
+    /// </summary>
+    public static IReadOnlyList<DagNode<TValue, TEdge>> OracleTopologicalOrder<TValue, TEdge>(this Dag<TValue, TEdge> dag)
+    {
+      var visitedNodes = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
+      var nodesOnPath = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
+      var postorder = new List<DagNode<TValue, TEdge>>();
+      var pathFrames = new List<PathFrame<TValue, TEdge>>();
+
+      for (var sourceIndex = dag.Sources.Count - 1; sourceIndex >= 0; sourceIndex--)
+      {
+        var source = dag.Sources[sourceIndex];
+
+        if (!visitedNodes.Add(source))
+          continue;
+
+        nodesOnPath.Add(source);
+        pathFrames.Add(new PathFrame<TValue, TEdge>(source));
+
+        while (pathFrames.Count > 0)
+        {
+          var frameIndex = pathFrames.Count - 1;
+          var frame = pathFrames[frameIndex];
+
+          if (frame.NextChildIndex < 0)
+          {
+            pathFrames.RemoveAt(frameIndex);
+            nodesOnPath.Remove(frame.Node);
+            postorder.Add(frame.Node);
+            continue;
+          }
+
+          var child = frame.Node.Children[frame.NextChildIndex];
+          frame.NextChildIndex--;
+          pathFrames[frameIndex] = frame;
+
+          if (nodesOnPath.Contains(child))
+          {
+            var cycleStart = pathFrames.FindIndex(pathFrame => ReferenceEquals(pathFrame.Node, child));
+            var cycle = string.Join(" -> ", pathFrames.Skip(cycleStart).Select(pathFrame => pathFrame.Node.Value?.ToString() ?? "<null>"));
+            throw new DagCycleException($"Cycle detected: {cycle} -> {child.Value?.ToString() ?? "<null>"}");
+          }
+
+          if (visitedNodes.Add(child))
+          {
+            nodesOnPath.Add(child);
+            pathFrames.Add(new PathFrame<TValue, TEdge>(child));
+          }
+        }
+      }
+
+      postorder.Reverse();
+      return postorder;
+    }
+
+    private struct PathFrame<TValue, TEdge>
+    {
+      public PathFrame(DagNode<TValue, TEdge> node)
+      {
+        Node = node;
+        NextChildIndex = node.Children.Count - 1;
+      }
+
+      public readonly DagNode<TValue, TEdge> Node;
+      public int NextChildIndex;
+    }
   }
 
 }
