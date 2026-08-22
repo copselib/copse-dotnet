@@ -3,7 +3,7 @@ using System;
 namespace Copse.Dags
 {
   /// <summary>
-  /// Node replacement's element (NODE REPLACEMENT, 2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md):
+  /// Node replacement's element (NODE REPLACEMENT, design-docs/SUBSTITUTION_TAXONOMY.md):
   /// what one node becomes under <see cref="Dagnumerable.ReplaceNodes"/> -- a small acyclic
   /// graph with implicit wiring. The original's in-edges fan to the replacement's SOURCES; its
   /// out-edges fan from EVERY replacement node -- the lawful multiplicative pair (the

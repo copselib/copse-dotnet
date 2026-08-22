@@ -1,7 +1,7 @@
 namespace Copse.Dags
 {
   // The builder's adapter to the traversal contract (design-docs/DAG_CONTRACT_DESIGN.md, THE LAZY
-  // BUILDER RULING 2026-08-06): Dag is the family's first IDagnumerable, and its acquisition is
+  // BUILDER RULING): Dag is the family's first IDagnumerable, and its acquisition is
   // LAZY -- no topological snapshot, no CSR arrays, no cycle check. The walk is Kahn on demand
   // (BuilderDagnumerator) over the live node graph; acquisition runs one light counting pass
   // (membership + member-in-degree -- the stray-parent affordance makes in-degree a
@@ -12,7 +12,7 @@ namespace Copse.Dags
   // validator (the completed DagBuffer is the certificate). The no-snapshot ethos is unchanged:
   // mutate the builder, then acquire again -- each drain sees the graph as it is then. There is
   // no backward acquisition: the backward walk is forward-of-the-transpose, an operator's
-  // business (the 2026-08-02 re-founding).
+  // business (the re-founding).
   public sealed partial class Dag<TValue, TEdge> : IDagnumerable<TValue, TEdge>
   {
     public IDagnumerator<TValue, TEdge> GetDagnumerator() =>

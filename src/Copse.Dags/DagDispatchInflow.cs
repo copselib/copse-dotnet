@@ -4,7 +4,7 @@ namespace Copse.Dags
   /// One edge's delivery as a dispatch SURVEY sees it -- the callback-time arrival view
   /// element: the value that arrived, the edge payload it rode, and the DISPATCHER -- the node
   /// that wrote it (the parent downward, the child upward). This view is the Dispatcher's ONE
-  /// home (the split-homes ruling, 2026-08-05): mid-pass there is no buffer to consult, so the
+  /// home (the split-homes ruling): mid-pass there is no buffer to consult, so the
   /// context rides the seat, immediate and consumed in place; the TRAVELING result
   /// (<see cref="DagDispatchResult{TNode, TDispatch}"/>) carries no provenance, because there
   /// "who wrote arrival i of node n" is index arithmetic over the buffer's transpose

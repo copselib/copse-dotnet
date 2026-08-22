@@ -4,7 +4,7 @@ namespace Copse.Dags
 {
   /// <summary>
   /// The arrival protocol (design-docs/DAG_CONTRACT_DESIGN.md; the successor model, direction
-  /// ratified 2026-07-28; vocabulary provisional): one <see cref="DagNodeEvent{TNode, TEdge}"/>
+  /// the successor model): one <see cref="DagNodeEvent{TNode, TEdge}"/>
   /// per live node, in topological order -- the grouped presentation the visit protocol's
   /// every consumer regroups into anyway. The protocol stays a DIALOGUE: between an event and
   /// the next <see cref="MoveNext"/> the consumer may answer it with per-edge verdicts --

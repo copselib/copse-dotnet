@@ -7,8 +7,8 @@ namespace Copse.Dags
     /// <summary>
     /// Selects the sub-dag downstream of the matching nodes: every match, everything reachable
     /// from a match, and the edges among them -- one result dag, the matches re-rooted
-    /// (TakeSubtreesWhere' dag analog; ratified 2026-08-06, design-docs/DAG_CONTRACT_DESIGN.md THE
-    /// SUBGRAPH SELECTION CLUSTER; renamed from <c>TakeSubgraphsWhere</c> 2026-08-09 -- a
+    /// (TakeSubtreesWhere' dag analog; ratified, design-docs/DAG_CONTRACT_DESIGN.md THE
+    /// SUBGRAPH SELECTION CLUSTER -- a
     /// subgraph is any subset, the name must say the flow direction). The tree operator's
     /// no-nested-matches flag is EMERGENT here, not a rule: a match reachable from another
     /// match has an in-edge inside the closure, so it comes out an interior node; the result's

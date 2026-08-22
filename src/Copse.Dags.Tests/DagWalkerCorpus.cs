@@ -95,8 +95,5 @@ namespace Copse.Dags.Tests
       }
       return visits;
     }
-
-    public static Dictionary<string, TValue> Labeling<THandle, TValue>(IWalkableDagnumerable<TValue, THandle, decimal> walkable, Func<THandle, string> nameOf)
-      => walkable.GetHandles().ToDictionary(nameOf, handle => walkable.GetDagWalkerAt(handle).GetValue());
   }
 }

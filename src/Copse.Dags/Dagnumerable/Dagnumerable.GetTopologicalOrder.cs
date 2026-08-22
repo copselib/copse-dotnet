@@ -7,7 +7,7 @@ namespace Copse.Dags
     /// <summary>
     /// The topological order as a VALUE view over any forward source: entered values in entry
     /// order, one per node (shared or not). The DRAIN validates acyclicity (THE LAZY BUILDER
-    /// RULING, 2026-08-06): this method consumes the whole walk, so calling it on a cyclic
+    /// RULING): this method consumes the whole walk, so calling it on a cyclic
     /// source throws <see cref="DagCycleException"/> at the starvation point -- the
     /// contract-level cycle check, now paid at exhaustion rather than acquisition. The
     /// builder's instance method remains the owned-node view (it returns

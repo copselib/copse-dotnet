@@ -6,7 +6,7 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// The family's <c>Where</c> homolog (2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md,
+    /// The family's <c>Where</c> homolog (design-docs/SUBSTITUTION_TAXONOMY.md,
     /// resolving DAG_CONTRACT_DESIGN.md open question 5): VERTEX BYPASS with caller edge
     /// composition -- the tree's child promotion translated to shared parentage. LINQ
     /// polarity (true = keep). A filtered node DISSOLVES: for each of its (in-edge,

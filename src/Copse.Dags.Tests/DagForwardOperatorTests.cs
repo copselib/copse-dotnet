@@ -324,7 +324,7 @@ namespace Copse.Dags.Tests
         {
           var arrived = arrivals.Sum(arrival => arrival.Value);
 
-          // The virtual source family fires first (full participation, 2026-08-05): its targets
+          // The virtual source family fires first (full participation): its targets
           // are the sources and carry no payload, so there is no weight to normalize by -- the
           // seed reaches each source verbatim, the pre-re-founding semantics, now authored.
           if (subject is null)

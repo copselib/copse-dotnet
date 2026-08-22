@@ -8,7 +8,7 @@ namespace Copse.Dags
     /// The survey-shaped UPWARD pass -- per-owner attribution through shared entities, the
     /// diamond's anti-double-count (each node decides what travels up EACH in-edge, so what a
     /// child sent up an edge IS that parent's share, by construction). Sourcefix-of-the-
-    /// transpose, served by the same survey core read upward (the 2026-08-05 derivation
+    /// transpose, served by the same survey core read upward (the derivation
     /// ruling). Destructured seats: each node with live in-edges is surveyed once, in
     /// readiness order (children's upflows complete first), receiving its value, its
     /// edge-paired upflow arrivals (the children's writes, in out-edge order; empty at sinks

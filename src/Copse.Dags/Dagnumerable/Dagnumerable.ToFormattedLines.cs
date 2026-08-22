@@ -107,7 +107,8 @@ namespace Copse.Dags
     /// <summary>
     /// <see cref="ToFormattedLines{TNode, TEdge}(IDagnumerable{TNode, TEdge})"/> joined
     /// into one newline-separated string -- the dump-me shape (LinqPad's <c>Dump()</c>, a
-    /// console write, a log line).
+    /// console write, a log line). Kept on the exploratory receipt, not on a call-site count:
+    /// this is the form a LinqPad session reaches for.
     /// </summary>
     public static string ToFormattedString<TNode, TEdge>(this IDagnumerable<TNode, TEdge> source)
       => string.Join(Environment.NewLine, source.ToFormattedLines());

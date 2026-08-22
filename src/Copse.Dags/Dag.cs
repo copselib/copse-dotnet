@@ -9,7 +9,7 @@ namespace Copse.Dags
   /// The owned, mutation-friendly builder -- a DAG held by its SOURCE nodes (in-degree zero;
   /// the graph-theoretic vocabulary: sources and sinks, design-docs/DAG_CONTRACT_DESIGN.md) -- and the
   /// family's concrete <see cref="IDagnumerable{TNode, TEdge}"/>. Acquisition is LAZY (THE
-  /// LAZY BUILDER RULING, 2026-08-06): Kahn on demand over the live node graph, no snapshot,
+  /// LAZY BUILDER RULING): Kahn on demand over the live node graph, no snapshot,
   /// no cycle check -- a cyclic graph streams its maximal acyclic prefix and throws
   /// <see cref="DagCycleException"/> at exhaustion; <c>Materialize</c> is the validator and
   /// the completed buffer is the certificate. (The owned-node
@@ -44,8 +44,6 @@ namespace Copse.Dags
 
     public IReadOnlyList<DagNode<TValue, TEdge>> Sources => _Sources;
 
-    [Obsolete("Renamed to " + nameof(Sources) + " -- the node-set vocabulary is graph-theoretic (source/sink).")]
-    public IReadOnlyList<DagNode<TValue, TEdge>> Roots => Sources;
 
     /// <summary>
     /// Every node reachable from the sources, parents before children, each exactly once (this is
@@ -75,26 +73,6 @@ namespace Copse.Dags
 
       foreach (var node in GetTopologicalOrder())
         node.SortChildrenBy(keySelector);
-    }
-
-    /// <summary>As <see cref="SortChildrenBy{TKey}"/> keyed on whole edges, payload included.</summary>
-    public void SortChildEdgesBy<TKey>(Func<DagEdge<TValue, TEdge>, TKey> keySelector)
-    {
-      if (keySelector == null)
-        throw new ArgumentNullException(nameof(keySelector));
-
-      foreach (var node in GetTopologicalOrder())
-        node.SortChildEdgesBy(keySelector);
-    }
-
-    /// <summary>As <see cref="SortChildrenBy{TKey}"/> with an explicit comparer.</summary>
-    public void SortChildren(IComparer<DagNode<TValue, TEdge>> comparer)
-    {
-      if (comparer == null)
-        throw new ArgumentNullException(nameof(comparer));
-
-      foreach (var node in GetTopologicalOrder())
-        node.SortChildren(comparer);
     }
 
     /// <summary>

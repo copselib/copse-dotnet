@@ -47,7 +47,7 @@ namespace Copse.Dags.Tests
     }
 
     // The post-pass arrival read, edge context included. Provenance no longer travels ON the
-    // result (the split-homes ruling, 2026-08-05): "who wrote arrival i of node n" is the
+    // result (the split-homes ruling): "who wrote arrival i of node n" is the
     // GetEdges join on in-edge index -- never a payload comparison, so parallel edges stay
     // unambiguous.
     private static (string From, decimal Amount, decimal Edge)[] ArrivalsAt(
@@ -159,7 +159,7 @@ namespace Copse.Dags.Tests
     {
       var arrived = arrivals.Sum(arrival => arrival.Value);
 
-      // The virtual source family, surveyed first (full participation, 2026-08-05): its single
+      // The virtual source family, surveyed first (full participation): its single
       // dispatcher-less arrival IS the seed and its targets are the sources, carrying no payload
       // -- so the seed reaches each source verbatim, exactly the pre-re-founding semantics.
       if (subject is null)
@@ -257,7 +257,7 @@ namespace Copse.Dags.Tests
     public void SourcefixDispatch_ArrivalsCorrelateToTheirDispatcher_ByInEdgeIndex()
     {
       // Provenance from the API, never smuggled in the payload -- but it does not TRAVEL on the
-      // result (the split-homes ruling, 2026-08-05): who wrote arrival i is the GetEdges join.
+      // result (the split-homes ruling): who wrote arrival i is the GetEdges join.
       // The apex's lone arrival is the virtual family's, so no edge names it: authored outside.
       var moved = Diamond().SourcefixDispatch(1000m, ProRata);
 

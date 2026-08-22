@@ -7,7 +7,7 @@ namespace Copse.Dags
   {
     /// <summary>
     /// Upward cumulative scan over the contract -- SOURCEFIX-OF-THE-TRANSPOSE, served by the
-    /// same fold core read upward (the 2026-08-05 derivation ruling; the transpose law is
+    /// same fold core read upward (the derivation ruling; the transpose law is
     /// pinned by the coherence battery): <paramref name="accumulate"/> receives each node and
     /// one EDGE-PAIRED result per live out-edge -- the child's accumulated result with the
     /// payload of the edge to it, in OUT-EDGE order; empty at sinks, which is the call that

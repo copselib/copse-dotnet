@@ -3,12 +3,11 @@ using System.Collections.Generic;
 
 namespace Copse.Dags
 {
-  // The reference walk behind the contract (design-docs/DAG_CONTRACT_DESIGN.md): handed an
-  // acquisition-time topological snapshot as flat CSR adjacency (the 2026-08-05 constitution
-  // alignment: sequential flat-array passes are the measured winner), emits the Discover/Enter
+  // The buffer's walk (design-docs/DAG_CONTRACT_DESIGN.md): handed a captured dag as flat CSR
+  // adjacency (sequential flat-array passes are the measured winner), emits the Discover/Enter
   // stream with the liveness fold running as it goes. The walk is orientation-blind — a
   // transpose walk is the same class over the transpose's adjacency; direction was resolved by
-  // whoever built the arrays. Ordinals are snapshot indices: dense here, though the CONTRACT
+  // whoever built the arrays. Ordinals are the buffer's dense indices, though the CONTRACT
   // does not promise density (wrappers preserve their source's ordinals, so pruned streams
   // carry gaps).
   //

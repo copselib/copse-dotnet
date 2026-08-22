@@ -56,7 +56,7 @@ namespace Copse.Dags.Tests
     // The post-pass upflow read at one node. An upward pass's arrivals sit in OUT-edge order, and
     // GetEdges yields a parent's out-edges contiguously in that same order -- so position within
     // the parent's block IS the arrival index. Provenance is the join, not a field on the result
-    // (the split-homes ruling, 2026-08-05).
+    // (the split-homes ruling).
     private static (string From, decimal Amount, decimal Edge)[] UpflowsAt(
       DagBuffer<DagDispatchResult<(string Name, decimal Holding), decimal>, decimal> attributed,
       string entity)

@@ -12,8 +12,8 @@ namespace Copse.Dags
   // O(frontier) state, plus the source set). The inner walk is answered TraverseAll
   // throughout; sever/suppress liveness is this layer's own fold, layered on top: a dead
   // candidate's event never fires and its block never commits, which cascades. Perf posture
-  // is the reference walk's (per-event allocation; the buffer-reuse discipline is the
-  // migration's business, recorded in the design doc).
+  // is reference-walk: per-event allocation. Walk-owned, reused arrival/departure buffers
+  // belong to a native arrival walk, not to this grouping adapter.
   internal sealed class ArrivalDagnumerator<TNode, TEdge> : IArrivalDagnumerator<TNode, TEdge>
   {
     public ArrivalDagnumerator(IDagnumerator<TNode, TEdge> inner)

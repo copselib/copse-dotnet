@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // EDGE REPLACEMENT (2026-08-07): every edge becomes the path the selector returns. The
+  // EDGE REPLACEMENT: every edge becomes the path the selector returns. The
   // load-bearing pins: interior nodes are fresh and placed topologically (right after their
   // parent), with SourceOrdinal -1 (born here); Drop follows the family's liveness rule --
   // PruneEdges is the replacement's streaming special case and their contents must agree; Keep with

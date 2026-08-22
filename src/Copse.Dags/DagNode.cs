@@ -155,18 +155,6 @@ namespace Copse.Dags
       _ChildEdges.AddRange(sortedEdges);
     }
 
-    /// <summary>Stably sorts this node's out-edges in place with an explicit child-node comparer.</summary>
-    public void SortChildren(IComparer<DagNode<TValue, TEdge>> comparer)
-    {
-      if (comparer == null)
-        throw new ArgumentNullException(nameof(comparer));
-
-      var sortedEdges = _ChildEdges.OrderBy(edge => edge.Child, comparer).ToList();
-
-      _ChildEdges.Clear();
-      _ChildEdges.AddRange(sortedEdges);
-    }
-
     public override string ToString() => Value?.ToString() ?? "(null)";
   }
 

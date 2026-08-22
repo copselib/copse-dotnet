@@ -5,14 +5,14 @@ namespace Copse.Dags
 {
   /// <summary>
   /// The survey tier's pairing -- a DISTINCT type from <see cref="DagScanResult{TNode, TAccumulate}"/>
-  /// by design (the recording rule made type-level, 2026-08-05): a survey is the family's
+  /// by design (the recording rule made type-level): a survey is the family's
   /// 1-in-n-out shape with no node-grained output, so it records its INPUT -- the node's
   /// complete arrival group -- and the two tiers never overload one field with two meanings.
   /// <see cref="Arrivals"/> is a no-copy view over the result buffer's flat arrival array,
   /// aligned with in-edge order (element i arrived on in-edge i; a source's single element is
   /// the virtual family's delivery). Provenance is NOT carried here -- who dispatched arrival
   /// i is index arithmetic over the buffer's transpose adjacency (the Dispatcher seat's split
-  /// homes, 2026-08-05); the callback-time view keeps it.
+  /// homes); the callback-time view keeps it.
   /// </summary>
   public readonly struct DagDispatchResult<TNode, TDispatch>
   {

@@ -8,7 +8,7 @@ namespace Copse.Dags
     /// The edge-result flavor of the upward survey pass (the edge dual, tier 2) -- the
     /// GROUP-scoped edge writer: what each survey dispatches BECOMES the result's edge
     /// payloads. Sourcefix-of-the-transpose, served by the same edge-writer core read upward
-    /// (the 2026-08-05 derivation ruling). Destructured seats: every node with in-edges is
+    /// (the derivation ruling). Destructured seats: every node with in-edges is
     /// surveyed once, in readiness order, receiving its value, its OUT-edges'
     /// already-rewritten payloads as arrivals (the children's writes -- the cascade; empty at
     /// sinks), and one exactly-once target per IN-edge (parent value, old payload; discovery
@@ -19,7 +19,7 @@ namespace Copse.Dags
     /// the caller owns the payload algebra, the library owns completeness, order, and
     /// strictness. No boundary, no seed (no virtual edges exist to rewrite): deliberately
     /// fixer-less. Returns node values unchanged over the same shape with each payload PAIRED
-    /// (THE EDGE-PAIRING AMENDMENT, 2026-08-06 -- aggregation pairs, projection replaces):
+    /// (THE EDGE-PAIRING AMENDMENT -- aggregation pairs, projection replaces):
     /// the original payload with the value the survey dispatched along the edge, as
     /// <see cref="DagEdgeResult{TEdge, TDispatch}"/>. Project
     /// <c>.SelectEdges(e =&gt; e.Edge.Accumulate)</c> when only the computed values should

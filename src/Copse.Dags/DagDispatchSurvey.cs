@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The dispatch survey's seats, destructured (the seat rule, 2026-08-05 -- no bundled
+  /// The dispatch survey's seats, destructured (the seat rule -- no bundled
   /// node-plus-arrivals parameter): the SUBJECT (kept in both directions, forced by n-ary
   /// in-flow -- with multiple parents no single authoring site holds a node's whole arrival,
   /// so node-grained facts are underivable at any dispatch site; every DAG node is input-side

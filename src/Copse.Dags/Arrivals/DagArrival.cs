@@ -2,8 +2,8 @@ namespace Copse.Dags
 {
   /// <summary>
   /// One ARRIVAL -- the arrival protocol's atom (design-docs/DAG_CONTRACT_DESIGN.md, the arrival
-  /// protocol; vocabulary provisional): a node reached together with the in-edge that brought
-  /// you, relative to the traversal dimension. Carries the dispatching far endpoint (value and
+  /// protocol): a node reached together with the in-edge that brought
+  /// you, relative to the walk's orientation. Carries the dispatching far endpoint (value and
   /// ordinal -- provenance from the API, never smuggled in payloads) and the edge payload. The
   /// arrival unifies what the visit protocol spells five ways (inflows, dispatch inflows, edge
   /// contexts, seeded inflows, conventional discoveries); a source's event simply has no

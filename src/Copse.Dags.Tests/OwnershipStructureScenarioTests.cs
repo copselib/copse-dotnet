@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The library's origin problem, written against the contract operators (docs/
+  // The library's origin problem, written against the contract operators (design-docs/
   // DAG_CONTRACT_DESIGN.md, phase 6's seed): an anonymized legal-entity ownership structure --
   // two funds co-investing through a shared JV (the DAG-ness), a blocker entity, whole-cent
   // amounts with a largest-remainder penny-exact allocator -- exercising the real flows:
@@ -82,7 +82,7 @@ namespace Copse.Dags.Tests
     {
       var arrived = arrivals.Sum(arrival => arrival.Value);
 
-      // The virtual source family, surveyed first (full participation, 2026-08-05): its targets
+      // The virtual source family, surveyed first (full participation): its targets
       // are the funds and carry no ownership weight, so there is nothing to allocate pro rata --
       // the seed reaches each source verbatim, exactly the pre-re-founding semantics. (Each
       // fund's OWN contribution is added at its own survey, below.)
@@ -115,7 +115,7 @@ namespace Copse.Dags.Tests
       => result.Node.ContributionCents + result.Arrivals.ToArray().Sum();
 
     // The post-pass arrival read with edge context: provenance no longer travels ON the result
-    // (the split-homes ruling, 2026-08-05), so "what arrived on which edge" is the GetEdges join
+    // (the split-homes ruling), so "what arrived on which edge" is the GetEdges join
     // keyed by in-edge index -- never a payload comparison.
     private static (decimal Amount, decimal Edge)[] ArrivalsAt(
       DagBuffer<DagDispatchResult<Entity, decimal>, decimal> dispatched, string entity)

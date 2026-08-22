@@ -5,8 +5,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The subgraph-selection cluster (2026-08-06; flow-direction naming + the upstream mirror
-  // 2026-08-09): GetSources / GetSinks (the boundary drains) and the closure selectors
+  // The subgraph-selection cluster (flow-direction naming + the upstream mirror): GetSources /
+  // GetSinks (the boundary drains) and the closure selectors
   // TakeDownstreamWhere / TakeUpstreamWhere. The load-bearing pins: the result's boundary is
   // EMERGENT (downstream: a match reachable from another match comes out interior, so result
   // sources are the unswept matches; upstream: a match that reaches another match comes out

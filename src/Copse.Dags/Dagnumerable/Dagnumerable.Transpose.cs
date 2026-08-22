@@ -4,7 +4,7 @@ namespace Copse.Dags
   {
     /// <summary>
     /// The orientation flip -- the operator the retired backward dimension became
-    /// (the 2026-08-02 re-founding): the same nodes and edges with every arrow reversed,
+    /// (the re-founding): the same nodes and edges with every arrow reversed,
     /// presented in the transpose's own topological order. <c>Materialize().Transpose()</c>,
     /// spelled once: MATERIALIZES by definition when the source is not already a buffer --
     /// the return type declares it (the laziness policy's documented-when-not clause), because

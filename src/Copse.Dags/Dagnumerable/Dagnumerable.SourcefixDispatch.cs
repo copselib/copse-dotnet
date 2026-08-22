@@ -7,7 +7,7 @@ namespace Copse.Dags
   {
     /// <summary>
     /// The survey-shaped downward pass (the work API's shape: a setter-callback allocator
-    /// plugs in verbatim), re-founded on FULL PARTICIPATION (2026-08-05, matching the tree
+    /// plugs in verbatim), re-founded on FULL PARTICIPATION (matching the tree
     /// family): the boundary is an INVOCATION, not a callback -- the same
     /// <paramref name="survey"/> fires FIRST for the virtual source family
     /// (<c>default</c> subject, the seed as its single dispatcher-less arrival, the sources as

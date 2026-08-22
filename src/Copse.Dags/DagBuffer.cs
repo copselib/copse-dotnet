@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The capture tier (the 2026-08-02 re-founding; design-docs/DAG_CONTRACT_DESIGN.md): an owned,
+  /// The capture tier (the re-founding; design-docs/DAG_CONTRACT_DESIGN.md): an owned,
   /// immutable CSR capture of a dag -- <see cref="Values"/> in entry (topological) order with
   /// the DENSE INDEX as the ordinal, out-adjacency as flat parallel arrays preserving
   /// per-parent out-edge order, and a <see cref="SourceOrdinal"/> back-map when captured from
-  /// a gapped stream. One type, four roles: <c>Materialize</c>'s return, the folds' result
-  /// shape, the serializer's in-memory target, the flat store. Composes through the fluent
+  /// a gapped stream. One type, three roles: <c>Materialize</c>'s return, the folds' result
+  /// shape, the flat store -- and the family's walkable buffer (dense ordinals as handles). Composes through the fluent
   /// surface (it IS an <see cref="IDagnumerable{TNode, TEdge}"/>), so materialization breaks
   /// laziness, never fluency. <see cref="Transpose"/> is free in the amortized sense: the
   /// transpose adjacency is built lazily once and back-linked, so transposing back costs an
@@ -28,7 +28,6 @@ namespace Copse.Dags
     private readonly int[] _SourceOrdinals;
 
     internal DagStructure<TEdge> Structure { get; }
-    internal TNode[] ValuesArray => _Values;
 
     public int Count => _Values.Length;
     public IReadOnlyList<TNode> Values => _Values;

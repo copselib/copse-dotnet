@@ -6,7 +6,7 @@ namespace Copse.Dags
   {
     /// <summary>
     /// Acquires the ARRIVAL-PROTOCOL presentation of a forward source
-    /// (design-docs/DAG_CONTRACT_DESIGN.md, the arrival protocol; phase 1, vocabulary provisional):
+    /// (design-docs/DAG_CONTRACT_DESIGN.md, the arrival protocol):
     /// one <see cref="DagNodeEvent{TNode, TEdge}"/> per live node in topological order --
     /// arrival group, node, departure group -- with per-edge sever/suppress verdicts
     /// answering each event. Synthesized as a grouping layer over the visit protocol

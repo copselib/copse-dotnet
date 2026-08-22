@@ -8,7 +8,7 @@ namespace Copse.Dags
     /// Selects the sub-dag upstream of the matching nodes: every match, everything that
     /// REACHES a match, and the edges among them -- one result dag, the matches its outlets
     /// (<see cref="TakeDownstreamWhere{TNode, TEdge}"/>' flow-reversed mirror; ratified
-    /// 2026-08-09, the closure-question sitting -- the viewer's per-sink structures made the
+    ///, the closure-question sitting -- the viewer's per-sink structures made the
     /// transpose sandwich the hot path). The mirror of the downstream emergence holds: a match
     /// that reaches another match keeps an out-edge inside the closure, so it comes out an
     /// interior node; the result's SINKS are exactly the matches that reach no further match.

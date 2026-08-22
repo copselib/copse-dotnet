@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Copse.Dags
 {
-  // The builder's demand-driven walk (THE LAZY BUILDER RULING, 2026-08-06,
+  // The builder's demand-driven walk (THE LAZY BUILDER RULING,
   // design-docs/DAG_CONTRACT_DESIGN.md): Kahn's algorithm run on demand over the live node graph --
   // the visit protocol IS Kahn's trace (pop a ready node = entry; dispatch its out-edges =
   // discoveries, each decrementing a child's pending count; a child settling becomes ready).
-  // No topological snapshot, no CSR arrays, no cycle check at acquisition: the eager
-  // acquisition was a smuggled buffer, and cycle detection is STARVATION -- the ready stack
+  // No topological snapshot, no CSR arrays, no cycle check at acquisition: cycle detection
+  // is STARVATION -- the ready stack
   // drains with members unsettled -- surfacing as DagCycleException at exhaustion, after the
   // maximal acyclic downward-closed prefix has been published, deterministically per drain
   // (the exception names one concrete cycle, found by a failure-path-only walk of the
@@ -22,15 +22,15 @@ namespace Copse.Dags
   // O(consumed).
   //
   // Ordinals are assigned at FIRST DISCOVERY (dense in discovery order): a lazy walk cannot
-  // cite a node's future entry index, so the eager walk's entries-carry-increasing-ordinals
-  // presentation is narrowed to the contract's real promise -- a stable per-enumeration
-  // correlation key, entries in topological order.
+  // cite a node's future entry index, so the contract's promise is what the walk keeps -- a
+  // stable per-enumeration correlation key, entries in topological order (entry-indexed
+  // ordinals are the buffer's presentation).
   //
   // Liveness is the reference walk's, stated once there: a node enters iff at least one of
   // its discoveries was emitted and not severed; a dead or dispatch-suppressed node still
   // settles its targets' pending counts silently, cascading -- the stream shows only the
-  // live structure. Entry discipline is depth-biased to match the eager walk's
-  // discovery-order bias: each phase's newly ready nodes push onto the stack in reverse, so
+  // live structure. Entry discipline is depth-biased to match the buffer walk's
+  // discovery-order bias (TopologicalDagnumerator): each phase's newly ready nodes push onto the stack in reverse, so
   // the first-dispatched ready child is entered first and chains run deep before siblings.
   internal sealed class BuilderDagnumerator<TValue, TEdge> : IDagnumerator<TValue, TEdge>
   {

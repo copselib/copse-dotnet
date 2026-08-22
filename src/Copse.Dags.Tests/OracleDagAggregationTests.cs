@@ -121,7 +121,7 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void SourcefixAllocate_RootsSeedWithEmptyInflows()
+    public void SourcefixAllocate_SourcesSeedWithEmptyInflows()
     {
       var root = new DagNode<string, int>("root");
       var sawEmptyInflowsAtRoot = false;

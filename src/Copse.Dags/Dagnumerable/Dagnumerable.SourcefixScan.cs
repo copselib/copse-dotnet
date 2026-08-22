@@ -9,7 +9,7 @@ namespace Copse.Dags
     /// Downward cumulative scan over the contract: <paramref name="accumulate"/> receives each
     /// node and one EDGE-PAIRED inflow per live in-edge -- the parent's accumulated result with
     /// the payload it arrived on, in discovery order; empty at sources, which is the call that
-    /// seeds the scan (the fused-callback shape, A/B-ruled 2026-08-05: kept; the four-seat
+    /// seeds the scan (the fused-callback shape, A/B-ruled: kept; the four-seat
     /// dual fold is logged for the future). Runs the pass NOW -- a scan's value is an
     /// entry-time fact under multiple parentage, so a lazy dag of results cannot honestly
     /// exist (design-docs/DAG_CONTRACT_DESIGN.md, open question 7) -- and returns the CANONICAL

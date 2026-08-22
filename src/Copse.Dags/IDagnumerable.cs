@@ -2,7 +2,7 @@ namespace Copse.Dags
 {
   /// <summary>
   /// THE DAG traversal contract (design-docs/DAG_CONTRACT_DESIGN.md; the trio collapsed to one by the
-  /// 2026-08-02 re-founding): a source affording the forward-topological walk — the canonical
+  /// re-founding): a source affording the forward-topological walk — the canonical
   /// linear presentation, the order a streaming pass wants, the order a flat encoding stores.
   /// There is no backward dimension: the backward walk is definitionally forward-of-the-
   /// transpose, which makes orientation-flipping an OPERATOR — <c>Transpose()</c>, free on

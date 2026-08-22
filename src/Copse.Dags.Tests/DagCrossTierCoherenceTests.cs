@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The coherence battery (the 2026-08-05 constitution alignment; the tree family's
+  // The coherence battery (the constitution alignment; the tree family's
   // CrossTierCoherenceTests, twinned): the laws every operator flavor must keep, pinned so
   // they never drift. Two laws:
   //
