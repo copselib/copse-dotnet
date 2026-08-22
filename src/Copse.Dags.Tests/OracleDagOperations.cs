@@ -6,33 +6,21 @@ using Copse.Dags;
 namespace Copse.Dags.Tests
 {
   /// <summary>
-  /// The conformance oracle: the spike-era builder operators, relocated out of the product (the
-  /// EngineTree precedent -- the oracle lives with the tests so the product carries ONE spelling
-  /// of every operator, the contract's). Each is an independent implementation of its contract
-  /// twin's semantics over the owned nodes directly -- non-destructive shape clones, sharing and
-  /// parallel edges preserved, payloads carried -- which is exactly what makes them worth
-  /// diffing against: same answers, disjoint machinery.
+  /// The conformance oracle (the EngineTree precedent -- the oracle lives with the tests so the
+  /// product carries ONE spelling of every operator, the contract's): independent
+  /// implementations of four contract operators' semantics over the owned nodes directly --
+  /// non-destructive shape clones, sharing and parallel edges preserved, payloads carried --
+  /// which is what makes them worth diffing against: same answers, disjoint machinery. Only
+  /// the operators a differential pin consumes live here: the two prunes and the two scans.
   /// </summary>
   public static class OracleDagOperations
   {
-    /// <summary>Shape-preserving map over node values; the selector runs once per node, shared or not.</summary>
-    public static Dag<TResult, TEdge> OracleSelect<TValue, TEdge, TResult>(
-      this Dag<TValue, TEdge> dag,
-      Func<DagNode<TValue, TEdge>, TResult> selector)
-      => dag.CloneShape(selector, (parent, edge) => edge.Value);
-
-    /// <summary>The edge-side dual: node values carried, payloads replaced.</summary>
-    public static Dag<TValue, TEdgeResult> OracleSelectEdges<TValue, TEdge, TEdgeResult>(
-      this Dag<TValue, TEdge> dag,
-      Func<DagNode<TValue, TEdge>, DagEdge<TValue, TEdge>, TEdgeResult> edgeSelector)
-      => dag.CloneShape(node => node.Value, edgeSelector);
-
     /// <summary>
     /// Upward fold: children before parents, each node computed exactly once; a shared child's
     /// (single, reused) result appears in EACH parent's list, parallel edges twice; empty at
     /// sinks. The bare-list ancestor of the contract's edge-paired SinkfixScan.
     /// </summary>
-    public static IReadOnlyDictionary<DagNode<TValue, TEdge>, TResult> OracleSinkfixAggregate<TValue, TEdge, TResult>(
+    private static IReadOnlyDictionary<DagNode<TValue, TEdge>, TResult> OracleSinkfixAggregate<TValue, TEdge, TResult>(
       this Dag<TValue, TEdge> dag,
       Func<DagNode<TValue, TEdge>, IReadOnlyList<TResult>, TResult> aggregate)
     {
@@ -53,7 +41,7 @@ namespace Copse.Dags.Tests
     /// that call seeds); <paramref name="allocateToChildren"/> must return exactly one outflow
     /// per out-edge. The ancestor of the contract's SourcefixDispatch.
     /// </summary>
-    public static IReadOnlyDictionary<DagNode<TValue, TEdge>, TAllocation> OracleSourcefixAllocate<TValue, TEdge, TAllocation>(
+    private static IReadOnlyDictionary<DagNode<TValue, TEdge>, TAllocation> OracleSourcefixAllocate<TValue, TEdge, TAllocation>(
       this Dag<TValue, TEdge> dag,
       Func<DagNode<TValue, TEdge>, IReadOnlyList<TAllocation>, TAllocation> mergeInflows,
       Func<DagNode<TValue, TEdge>, TAllocation, IReadOnlyList<TAllocation>> allocateToChildren)
@@ -115,44 +103,6 @@ namespace Copse.Dags.Tests
       var resultsByNode = dag.OracleSinkfixAggregate(aggregate);
 
       return dag.CloneShape(node => resultsByNode[node], (parent, edge) => edge.Value);
-    }
-
-    /// <summary>
-    /// The survey-shaped downward pass over the builder: exactly-once per-edge dispatch slots;
-    /// the ancestor of the contract's SourcefixDispatch, decorated as <see cref="DispatchNode{TValue, TDispatch}"/>.
-    /// </summary>
-    public static Dag<DispatchNode<TValue, TDispatch>, TEdge> OracleSourcefixDispatch<TValue, TEdge, TDispatch>(
-      this Dag<TValue, TEdge> dag,
-      Func<DagNode<TValue, TEdge>, IReadOnlyList<TDispatch>, TDispatch> mergeInflows,
-      Action<DagNode<TValue, TEdge>, TDispatch, IReadOnlyList<DispatchTarget<TValue, TEdge, TDispatch>>> survey)
-    {
-      var dispatchedByNode = dag.OracleSourcefixAllocate(
-        mergeInflows,
-        allocateToChildren: (node, dispatched) =>
-        {
-          var targets = node.ChildEdges
-            .Select(edge => new DispatchTarget<TValue, TEdge, TDispatch>(edge.Child, edge.Value))
-            .ToList();
-
-          survey(node, dispatched, targets);
-
-          return targets.Select(target => target.GetDispatchedOrThrow()).ToList();
-        });
-
-      return dag.CloneShape(
-        node => new DispatchNode<TValue, TDispatch>(node.Value, dispatchedByNode[node]),
-        (parent, edge) => edge.Value);
-    }
-
-    /// <summary>Eager side-effect pass, parents before children, each node once.</summary>
-    public static Dag<TValue, TEdge> OracleDo<TValue, TEdge>(
-      this Dag<TValue, TEdge> dag,
-      Action<DagNode<TValue, TEdge>> action)
-    {
-      foreach (var node in dag.GetTopologicalOrder())
-        action(node);
-
-      return dag;
     }
 
     /// <summary>Prune polarity (true = prune): the node vanishes with every edge through it; survivors need another live path.</summary>
@@ -251,56 +201,4 @@ namespace Copse.Dags.Tests
       new Dictionary<DagNode<TValue, TEdge>, TEntry>(ReferenceEqualityComparer.Instance);
   }
 
-  /// <summary>
-  /// The oracle dispatch decoration (spike-era; the contract's DagDispatchResult superseded it in
-  /// the product): a source value paired with what the pass delivered.
-  /// </summary>
-  public readonly struct DispatchNode<TValue, TDispatch>
-  {
-    public DispatchNode(TValue value, TDispatch dispatched)
-    {
-      Value = value;
-      Dispatched = dispatched;
-    }
-
-    public readonly TValue Value;
-    public readonly TDispatch Dispatched;
-
-    public override string ToString() => $"{Value} <- {Dispatched}";
-  }
-
-  /// <summary>The oracle's exactly-once write-side handle (spike-era; see DagDispatchTarget for the contract's).</summary>
-  public sealed class DispatchTarget<TValue, TEdge, TDispatch>
-  {
-    internal DispatchTarget(DagNode<TValue, TEdge> node, TEdge edge)
-    {
-      Node = node;
-      Edge = edge;
-    }
-
-    public DagNode<TValue, TEdge> Node { get; }
-    public TEdge Edge { get; }
-
-    private bool _HasDispatched;
-    private TDispatch _Dispatched;
-
-    public void Dispatch(TDispatch value)
-    {
-      if (_HasDispatched)
-        throw new InvalidOperationException(
-          $"'{Node}' was dispatched to twice; each target accepts exactly one Dispatch per survey.");
-
-      _HasDispatched = true;
-      _Dispatched = value;
-    }
-
-    internal TDispatch GetDispatchedOrThrow()
-    {
-      if (!_HasDispatched)
-        throw new InvalidOperationException(
-          $"The survey completed without dispatching to '{Node}'; every out-edge must receive exactly one Dispatch.");
-
-      return _Dispatched;
-    }
-  }
 }

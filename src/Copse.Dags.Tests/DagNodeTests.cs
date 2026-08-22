@@ -144,5 +144,22 @@ namespace Copse.Dags.Tests
       Assert.AreSame(firstWithEqualKey, parent.Children[1]);
       Assert.AreSame(secondWithEqualKey, parent.Children[2]);
     }
+
+    [TestMethod]
+    public void SortChildrenBy_DagLevel_SortsEveryReachableNodesChildList()
+    {
+      var root = new DagNode<int, int>(0);
+      var bigChild = root.AddChild(9);
+      var smallChild = root.AddChild(3);
+      bigChild.AddChild(8);
+      bigChild.AddChild(2);
+
+      new Dag<int, int>(root).SortChildrenBy(node => node.Value);
+
+      Assert.AreSame(smallChild, root.Children[0]);
+      Assert.AreSame(bigChild, root.Children[1]);
+      Assert.AreEqual(2, bigChild.Children[0].Value);
+      Assert.AreEqual(8, bigChild.Children[1].Value);
+    }
   }
 }
