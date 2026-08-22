@@ -865,7 +865,7 @@ untouched: projection and filtering are not aggregations. The ownership workload
 the pairing's payoff directly: a conditioned or flow-labeled edge carries its original
 stake beside the computed value — nothing reconstructed, nothing smuggled.
 
-## EDGE REPLACEMENT (ratified and built 2026-08-07 — ReplaceEdges; SelectMany stays reserved)
+## EDGE REPLACEMENT (ratified and built 2026-08-07 — ReplaceEdges; since derived from the bind, see THE BIND)
 
 Born from the PoC's SIP diagnosis (path-dependent queries mean the model is missing
 nodes; reify the anchors) and generalized by Jason from the drafted `ExpandEdgesWhere`:
@@ -934,3 +934,48 @@ single-project scale. One operator, one file stays the requirement inside `Exten
 | `Extensions/DagWalker/` | the `DagWalker` partial static class — the walker-receiver operators |
 | `Arrivals/` | the arrival-protocol grouping layer |
 | `Internal/` | `DagRelationshipTracker`, the `ReferenceEqualityComparer` polyfill |
+
+## THE BIND (built 2026-08-22 — `SelectMany`, the pointed node substitution; the reshapings derived)
+
+Jason's bar: *"I won't believe the algebra is complete until we've implemented bind and
+proven the other methods could be implemented by bind."* Cleared, both grains.
+
+**The shape.** `SelectMany(selector: TNode → DagExpansion<TResult, TEdge>, edgeComposer)` →
+`DagBuffer`. An expansion is a fragment (nodes, forward edges) and a `DagSlot`: zero or more
+ATTACHMENTS — each from a fragment node or FROM OUTSIDE (the original's in-edge parents:
+promotion, the bypass), each with an OPTIONAL payload. In-edges reach the fragment's
+sources; out-edges re-attach at every attachment. A payload-less attachment passes the
+out-edge through unchanged (`Return` rewrites nothing); a payload composes in front through
+the composer, which is what a later promotion of a holding node produces — the free identity
+adjoined to the composer, so no identity is demanded of `TEdge` and the composer's
+associativity is the bind's law. More than one attachment is SHARING (children get two
+in-edges), which is why the tree's arity-two exclusion has no dag counterpart. Reach: a node
+is reached iff it is a source or some parent's expansion has a slot; liveness unchanged.
+
+**The quartet** `Return` / `Leaf` / `Drop` / `Promote` — and the derivations, content-exact
+over the corpus (`DagSelectManyDerivationTests`, `DagSubdivisionTests`):
+
+| operator | is the bind of | on |
+|---|---|---|
+| `Select(f)` | `Return(f(n))` | nodes |
+| `PruneBefore(p)` | `p(n) ? Drop : Return(n)` | nodes |
+| `PruneAfter(p)` | `p(n) ? Leaf(n) : Return(n)` | nodes |
+| `Where(p, ∘)` | `p(n) ? Return(n) : Promote`, same composer | nodes |
+| `SelectEdges(f)` | `Return(edge with f(ctx))` | edge elements of `Subdivide()` |
+| `PruneEdges(p)` | `p(ctx) ? Drop : Return` | edge elements |
+| `ReplaceEdges(s)` | the path as a chain-shaped expansion, slot under the last edge element | edge elements |
+| `ReplaceNodes` | **not derivable** — the broadcast citizen (out-edges from every replacement node), lawful on its own battery | — |
+
+**The edge grain is the node grain on the subdivision.** `Subdivide()` reifies every edge
+as a `DagElement` node between its endpoints over `Unit` edges (the arrival protocol's
+bijection, made an operator); `Unsubdivide()` reads it back under the PARITY PREDICATE, which
+refuses with coordinates exactly what the family refuses by principle — a promoted edge
+element is edge CONTRACTION, a leafed one a dangling edge. One algebra; the `*Edges`
+operators are its native fast paths, and the suffix now has one meaning (the grain the
+selector sees), with `DispatchEdges`'s result-grain suffix the remaining inconsistency.
+
+**Laws** (`DagSelectManyLawTests`): left and right identity; associativity over three dags
+and ten selectors squared, against the FUSED selector computed by the operator itself over
+the first expansion with its slot as a phantom node and the outside as a phantom source
+(the tree family's proof device, grown the one node a dag needs). String payloads under
+concatenation — associative, non-commutative — so composition order is pinned.

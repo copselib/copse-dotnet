@@ -7,8 +7,9 @@ namespace Copse.Dags
   {
     /// <summary>
     /// NODE REPLACEMENT (design-docs/SUBSTITUTION_TAXONOMY.md -- the node-channel row of
-    /// the substitution taxonomy; deliberately NOT SelectMany, whose name stays reserved
-    /// pending its own naming sitting -- the law battery, DagNodeSubstitutionLawTests, is green): every node becomes the
+    /// the substitution taxonomy; the BROADCAST citizen beside the bind -- out-edges fan from
+    /// EVERY replacement node, where <c>SelectMany</c> re-attaches them at a slot; lawful, pinned
+    /// by DagNodeSubstitutionLawTests, and not derivable from the bind): every node becomes the
     /// <see cref="DagNodeGraph{TNode, TEdge}"/> the selector returns -- kept in its seat,
     /// split into alternatives, stretched into a chain, expanded into a graph, or dropped.
     ///

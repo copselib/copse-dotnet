@@ -120,11 +120,10 @@ lawful rows *linear* instead of exponential.
 - **Seat preservation**: a single-node replacement (`Keep`) occupies the original's seat
   (its `SourceOrdinal` carries; value rewrite is `Select`'s content); multi-node
   replacements are wholly born-here (−1) — fresh identity, cycle-safe by construction.
-- **`SelectMany` stays reserved.** The name is a law claim, gated on the battery
-  (`DagNodeSubstitutionLawTests`) *and* a naming sitting: DAG_CONTRACT_DESIGN.md's EDGE
-  REPLACEMENT section sketched the future node bind as inheriting root-graft; the
-  algebra session found the DAG-native lawful pair is every-node + liveness. That
-  tension is a decision for its own sitting, not a default.
+- **`SelectMany` BUILT (2026-08-22; DAG_CONTRACT_DESIGN.md, THE BIND).** The tension
+  dissolved the way the tree's did: neither root-graft nor every-node is the bind -- the
+  POINTED form is, with a structural slot (attachments from fragment nodes or from outside,
+  payload-optional). Every-node wiring stays as `ReplaceNodes`, the broadcast citizen.
 
 `Where` decisions, recorded (resolving DAG_CONTRACT_DESIGN.md open question 5):
 

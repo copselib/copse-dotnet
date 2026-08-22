@@ -7,8 +7,9 @@ namespace Copse.Dags
   {
     /// <summary>
     /// EDGE REPLACEMENT (design-docs/DAG_CONTRACT_DESIGN.md -- graph rewriting's own
-    /// term; deliberately NOT SelectMany, which stays reserved for the true node-channel
-    /// bind): every edge becomes the
+    /// term; the bind restricted to edge elements -- <c>Subdivide().SelectMany(path as a
+    /// chain-shaped expansion).Unsubdivide()</c>, pinned content-exact -- kept as the native
+    /// fast path): every edge becomes the
     /// <see cref="DagEdgePath{TNode, TEdge}"/> the selector returns -- kept, rewritten,
     /// subdivided through fresh interior nodes, or dropped. The node channel is untouched
     /// except as paths dictate: interior nodes are BORN here (their

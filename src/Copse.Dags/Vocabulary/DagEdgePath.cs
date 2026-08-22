@@ -59,9 +59,9 @@ namespace Copse.Dags
       return new(firstEdge, links);
     }
 
-    internal bool IsDrop => !_HasEdges;
-    internal TEdge FirstEdge => _FirstEdge;
-    internal IReadOnlyList<DagEdgePathLink<TNode, TEdge>> Links =>
+    public bool IsDrop => !_HasEdges;
+    public TEdge FirstEdge => _FirstEdge;
+    public IReadOnlyList<DagEdgePathLink<TNode, TEdge>> Links =>
       _Links ?? Array.Empty<DagEdgePathLink<TNode, TEdge>>();
   }
 
