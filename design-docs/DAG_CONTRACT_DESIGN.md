@@ -180,7 +180,7 @@
 > **The domain this serves:** legal-entity ownership structures — the library's origin
 > problem. Nodes are entities, edge payloads are ownership fractions, flows run money down
 > (allocation) and attribution up (lookthrough). The structures became DAG-shaped when
-> entities gained multiple owners; the spike's `MoneyMovementScenarioTests` is the living
+> entities gained multiple owners; `OwnershipStructureScenarioTests` is the living
 > statement of the workload.
 
 ## The one observation everything follows from
@@ -733,7 +733,7 @@ buffer materializations around one mark-and-compact.
 
 ## THE LAZY BUILDER RULING (ratified 2026-08-06 — eager validation drops; Materialize is the certificate)
 
-**BUILT same day** (`BuilderDagnumerator`; the eager CSR acquisition deleted). Two
+**BUILT same day** (the builder walk -- since folded into `TopologyWalkDagnumerator`, the family's one demand-driven walk, the builder streaming through `DagNodeTopology`; the eager CSR acquisition deleted). Two
 implementation facts refined the ruling as written:
 
 1. **Acquisition keeps ONE light counting pass** (membership + member-in-degree, a

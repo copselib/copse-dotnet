@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Copse.Dags
 {
-  // The Walk adapter's engine (Dag.FromTopology): Kahn's algorithm on demand over a topology's
-  // probes -- the builder's demand-driven walk (BuilderDagnumerator) with DagNode's edge lists
-  // replaced by the indexed out-edge probe, and membership keyed by handle equality. The visit
+  // The family's one demand-driven walk (Dag.FromTopology's engine, and the builder's through
+  // DagNodeTopology -- THE LAZY BUILDER RULING, design-docs/DAG_CONTRACT_DESIGN.md): Kahn's
+  // algorithm on demand over a topology's probes, membership keyed by handle equality. The visit
   // protocol is Kahn's trace: pop a ready node = entry; its out-edge group = the dispatch block
   // (discoveries, each decrementing a child's pending count); a child settling becomes ready.
   // Acquisition runs one counting sweep (membership = the closure of the source group over
@@ -14,29 +14,44 @@ namespace Copse.Dags
   // topology's in-edge group is never consulted, so a provider whose in-groups disagree with
   // its out-groups streams by its out-groups, and the conformance battery is where that lie
   // surfaces). A cyclic topology publishes its maximal acyclic prefix and throws
-  // DagCycleException at starvation, naming one loop. Ordinals are assigned at first discovery,
-  // dense in discovery order; liveness and entry discipline are the builder walk's, stated there.
+  // DagCycleException at starvation, naming one loop (starvation is the failure, exhaustion is
+  // the proof; Materialize is the validator). Ordinals are assigned at first discovery, dense
+  // in discovery order -- a lazy walk cannot cite a node's future entry index, so the contract
+  // promises a stable per-enumeration correlation key, entries in topological order.
+  //
+  // Liveness, stated once: a node enters iff at least one of its discoveries was emitted and
+  // not severed; a dead or dispatch-suppressed node still settles its targets' pending counts
+  // silently, cascading -- the stream shows only the live structure. Entry discipline is
+  // depth-biased to match the buffer walk's discovery-order bias (TopologicalDagnumerator):
+  // each phase's newly ready nodes push onto the stack in reverse, so the first-dispatched
+  // ready child is entered first and chains run deep before siblings.
   internal sealed class TopologyWalkDagnumerator<TValue, THandle, TEdge> : IDagnumerator<TValue, TEdge>
   {
     public TopologyWalkDagnumerator(IDagTopology<TValue, THandle, TEdge> topology)
+      : this(topology, SourceGroupOf(topology))
+    {
+    }
+
+    // Membership SEEDS apart from the source group: the closure walked is the seeds' closure, and
+    // the walk's sources are the seeds nothing in that closure points to. For a topology the
+    // seeds ARE its source group; the builder hands over its LISTED sources instead, so a listed
+    // node another listed node reaches is a member (not a source), and a graph whose every listed
+    // node sits on a cycle has an empty acyclic prefix and STARVES -- it does not stream empty.
+    // Materialize stays the validator.
+    internal TopologyWalkDagnumerator(IDagTopology<TValue, THandle, TEdge> topology, IReadOnlyList<THandle> membershipSeeds)
     {
       _Topology = topology;
 
       var membershipWalk = new Stack<THandle>();
 
-      for (var sourceIndex = 0; ; sourceIndex++)
+      foreach (var seed in membershipSeeds)
       {
-        var sourceStep = topology.TryGetSourceAt(sourceIndex);
-
-        if (!sourceStep.HasValue)
-          break;
-
-        if (_States.ContainsKey(sourceStep.Handle))
+        if (_States.ContainsKey(seed))
           continue;
 
-        _States.Add(sourceStep.Handle, new NodeState());
-        _WalkSources.Add(sourceStep.Handle);
-        membershipWalk.Push(sourceStep.Handle);
+        _States.Add(seed, new NodeState());
+        _WalkSources.Add(seed);
+        membershipWalk.Push(seed);
       }
 
       while (membershipWalk.Count > 0)
@@ -74,6 +89,16 @@ namespace Copse.Dags
       EdgeIndex = 0;
     }
 
+    private static List<THandle> SourceGroupOf(IDagTopology<TValue, THandle, TEdge> topology)
+    {
+      var sources = new List<THandle>();
+
+      for (var sourceStep = topology.TryGetSourceAt(0); sourceStep.HasValue; sourceStep = topology.TryGetSourceAt(sourceStep.EdgeIndex + 1))
+        sources.Add(sourceStep.Handle);
+
+      return sources;
+    }
+
     private readonly IDagTopology<TValue, THandle, TEdge> _Topology;
     private readonly Dictionary<THandle, NodeState> _States = new();
     private readonly List<THandle> _WalkSources = new();
@@ -89,6 +114,11 @@ namespace Copse.Dags
     private int _OutEdgeIndex;
     private bool _SuppressDispatch;
     private THandle _LastDiscovered;
+
+    // The handle behind the current visit -- the family's own seam (the protocol publishes
+    // values; a topology walk knows which handle it stands on, and the builder's owned-node
+    // views read it here instead of re-deriving it from the stream).
+    internal THandle CurrentHandle { get; private set; }
 
     public DagnumeratorMode Mode { get; private set; }
     public TValue Node { get; private set; }
@@ -268,6 +298,7 @@ namespace Copse.Dags
 
       _LastDiscovered = handle;
       Mode = DagnumeratorMode.DiscoveringNode;
+      CurrentHandle = handle;
       Node = _Topology.GetValue(handle);
       Ordinal = state.Ordinal;
       Edge = edge;
@@ -278,6 +309,7 @@ namespace Copse.Dags
     private void PublishEntry(THandle handle, NodeState state)
     {
       Mode = DagnumeratorMode.EnteringNode;
+      CurrentHandle = handle;
       Node = _Topology.GetValue(handle);
       Ordinal = state.Ordinal;
       Edge = default;
@@ -285,7 +317,7 @@ namespace Copse.Dags
       EdgeIndex = 0;
     }
 
-    // Starvation names the loop (the builder walk's argument, restated): every unsettled member
+    // Starvation names the loop: every unsettled member
     // waits on an undelivered in-edge whose parent is itself unsettled, so a DFS restricted to
     // the starved members always closes a loop.
     private string DescribeStarvation()

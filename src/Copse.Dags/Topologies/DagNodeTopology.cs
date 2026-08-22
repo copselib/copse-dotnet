@@ -89,41 +89,16 @@ namespace Copse.Dags
       return ordered;
     }
 
-    // The builder's own walk, drained once for the entry order that discovery order follows.
+    // The walk over this very topology, drained once for the entry order that discovery order
+    // follows (the walk reads only sources and out-edge groups, so no probe recurses here).
     private Dictionary<DagNode<TValue, TEdge>, int> LearnEntryOrder()
     {
       var entryOrder = new Dictionary<DagNode<TValue, TEdge>, int>(ReferenceEqualityComparer.Instance);
-      var byOrdinal = new Dictionary<int, DagNode<TValue, TEdge>>();
-      var membersByValueOrdinal = new Dictionary<int, DagNode<TValue, TEdge>>();
-
-      // The walk publishes values, not nodes; the ordinal is the correlation key, and the
-      // membership sweep already knows the nodes -- so pair ordinals to nodes through the
-      // dispatch: a discovery's parent ordinal is the last entered node, whose out-edges are the
-      // discovered children in order.
-      using var walk = new BuilderDagnumerator<TValue, TEdge>(_ListedSources);
-      var sourceIndex = 0;
-      DagNode<TValue, TEdge> lastEntered = null;
-      var outEdgeIndex = 0;
-      var entered = 0;
+      using var walk = new TopologyWalkDagnumerator<TValue, DagNode<TValue, TEdge>, TEdge>(this, _ListedSources);
 
       while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
-      {
         if (walk.Mode == DagnumeratorMode.EnteringNode)
-        {
-          lastEntered = byOrdinal[walk.Ordinal];
-          outEdgeIndex = 0;
-          entryOrder[lastEntered] = entered++;
-          continue;
-        }
-
-        if (walk.ParentOrdinal < 0)
-        {
-          byOrdinal[walk.Ordinal] = _Sources[sourceIndex++];
-          continue;
-        }
-
-        byOrdinal[walk.Ordinal] = lastEntered.ChildEdges[outEdgeIndex++].Child;
-      }
+          entryOrder[walk.CurrentHandle] = entryOrder.Count;
 
       return entryOrder;
     }
