@@ -5,27 +5,27 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// <c>PruneAfter</c> over node VALUES (prune polarity: true = prune): a matching node is
+    /// <c>PruneNodesAfter</c> over node VALUES (prune polarity: true = prune): a matching node is
     /// KEPT -- it enters as usual -- but dispatches nothing; what lies below survives only
     /// where another live path reaches it. Deferred, streaming -- the wrapper adds
     /// <see cref="DagTraversalStrategies.SkipOutEdges"/> to its answer at a matching entry,
     /// and the source's liveness fold does the rest. The predicate is evaluated once per
     /// entered node.
     /// </summary>
-    public static IDagnumerable<TNode, TEdge> PruneAfter<TNode, TEdge>(
+    public static IDagnumerable<TNode, TEdge> PruneNodesAfter<TNode, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return new PruneAfterForwardDagnumerable<TNode, TEdge>(source, predicate);
+      return new PruneNodesAfterDagnumerable<TNode, TEdge>(source, predicate);
     }
   }
 
-  internal sealed class PruneAfterForwardDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
+  internal sealed class PruneNodesAfterDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
   {
-    public PruneAfterForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
+    public PruneNodesAfterDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
@@ -35,12 +35,12 @@ namespace Copse.Dags
     private readonly Func<TNode, bool> _Predicate;
 
     public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
-      new PruneAfterDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
+      new PruneNodesAfterDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
-  internal sealed class PruneAfterDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class PruneNodesAfterDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
   {
-    public PruneAfterDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
+    public PruneNodesAfterDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
     {
       _Inner = inner;
       _Predicate = predicate;
@@ -88,7 +88,7 @@ namespace Copse.Dags
     /// (the pair agree on every edge). Lenses stack; no lattice, nothing to collapse. A null
     /// predicate keeps everything -- the source itself.
     /// </summary>
-    public static IWalkableDagnumerable<TNode, THandle, TEdge> PruneAfter<TNode, THandle, TEdge>(
+    public static IWalkableDagnumerable<TNode, THandle, TEdge> PruneNodesAfter<TNode, THandle, TEdge>(
       this IWalkableDagnumerable<TNode, THandle, TEdge> source,
       Func<TNode, bool> predicate)
     {

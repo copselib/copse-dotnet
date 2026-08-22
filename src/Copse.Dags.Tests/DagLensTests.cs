@@ -18,14 +18,14 @@ namespace Copse.Dags.Tests
     {
       foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(DagWalkerCorpus.Diamond))
         Assert.AreEqual(
-          DagWalkerCorpus.Content(((IDagnumerable<string, decimal>)walkable).PruneAfter(node => node == "left")),
-          DagWalkerCorpus.Content(walkable.PruneAfter(node => node == "left")),
+          DagWalkerCorpus.Content(((IDagnumerable<string, decimal>)walkable).PruneNodesAfter(node => node == "left")),
+          DagWalkerCorpus.Content(walkable.PruneNodesAfter(node => node == "left")),
           name);
 
       foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(DagWalkerCorpus.SharedLeaf))
         Assert.AreEqual(
-          DagWalkerCorpus.Content(((IDagnumerable<string, decimal>)walkable).PruneAfter(node => node == "alpha")),
-          DagWalkerCorpus.Content(walkable.PruneAfter(node => node == "alpha")),
+          DagWalkerCorpus.Content(((IDagnumerable<string, decimal>)walkable).PruneNodesAfter(node => node == "alpha")),
+          DagWalkerCorpus.Content(walkable.PruneNodesAfter(node => node == "alpha")),
           name);
     }
 
@@ -34,7 +34,7 @@ namespace Copse.Dags.Tests
     {
       foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(DagWalkerCorpus.Diamond))
       {
-        var pruned = walkable.PruneAfter(node => node == "left");
+        var pruned = walkable.PruneNodesAfter(node => node == "left");
         var rows = pruned.GetHandlesWithValues().ToDictionary(row => row.Value, row => row.Handle);
 
         Assert.IsFalse(pruned.GetDagWalkerAt(rows["left"]).MoveToChild(0).HasValue, $"a matched node hands out no out-edges [{name}]");
@@ -52,8 +52,8 @@ namespace Copse.Dags.Tests
     {
       foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(DagWalkerCorpus.Diamond))
       {
-        var stacked = walkable.PruneAfter(node => node == "left").PruneAfter(node => node == "right");
-        var streamed = ((IDagnumerable<string, decimal>)walkable).PruneAfter(node => node == "left").PruneAfter(node => node == "right");
+        var stacked = walkable.PruneNodesAfter(node => node == "left").PruneNodesAfter(node => node == "right");
+        var streamed = ((IDagnumerable<string, decimal>)walkable).PruneNodesAfter(node => node == "left").PruneNodesAfter(node => node == "right");
         Assert.AreEqual(DagWalkerCorpus.Content(streamed), DagWalkerCorpus.Content(stacked), name);
         Assert.AreEqual("nodes[apex,left,right] edges[apex->left:0.60,apex->right:0.40] sources[apex]", DagWalkerCorpus.Content(stacked), $"the venture starves [{name}]");
         Assert.AreEqual(0, stacked.GetHandlesWithValues().Count(row => row.Value == "venture"), $"the starved node is handed out by no probe [{name}]");
@@ -112,10 +112,10 @@ namespace Copse.Dags.Tests
     {
       foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(DagWalkerCorpus.SharedLeaf))
       {
-        var pruned = walkable.PruneAfter(node => node == "middle");
+        var pruned = walkable.PruneNodesAfter(node => node == "middle");
         var alpha = pruned.GetDagWalkerAt(pruned.GetHandlesWithValues().Single(row => row.Value == "alpha").Handle);
         Assert.AreEqual(
-          DagWalkerCorpus.Content(DagWalkerCorpus.SharedLeaf().PruneAfter(node => node == "middle").TakeDownstreamWhere(node => node == "alpha")),
+          DagWalkerCorpus.Content(DagWalkerCorpus.SharedLeaf().PruneNodesAfter(node => node == "middle").TakeDownstreamWhere(node => node == "alpha")),
           DagWalkerCorpus.Content(alpha.Downstream()),
           name);
         Assert.AreEqual("nodes[alpha,middle,sharedLeaf] edges[alpha->middle:0.50,alpha->sharedLeaf:0.10] sources[alpha]", DagWalkerCorpus.Content(alpha.Downstream()), name);

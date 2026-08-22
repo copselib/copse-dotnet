@@ -201,7 +201,7 @@ namespace Copse.Dags.Tests
       // The grouping layer sits over ANY forward source. Pruning right removes ordinal 2;
       // the surviving events keep their source ordinals, gaps and all, and the venture's
       // arrival group shows only the live path.
-      using var events = Diamond().PruneBefore(node => node == "right").GetArrivalDagnumerator();
+      using var events = Diamond().PruneNodesBefore(node => node == "right").GetArrivalDagnumerator();
       var witnessed = Drain(events);
 
       CollectionAssert.AreEqual(new[] { 0, 1, 3 }, witnessed.Select(nodeEvent => nodeEvent.Ordinal).ToList());

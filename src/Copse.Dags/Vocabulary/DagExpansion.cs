@@ -8,9 +8,9 @@ namespace Copse.Dags
   /// FRAGMENT (nodes and the forward edges among them) and a <see cref="DagSlot{TEdge}"/>
   /// saying where the original's out-edges re-attach. The original's in-edges reach the
   /// fragment's sources; the out-edges reach the slot. The quartet every reshaping is made of:
-  /// <see cref="Return"/> (the node, slot beneath it -- <c>Select</c>), <see cref="Leaf"/>
-  /// (the node, no slot -- <c>PruneAfter</c>), <see cref="Drop"/> (nothing, no slot --
-  /// <c>PruneBefore</c>), <see cref="Promote"/> (nothing, slot as source -- <c>Where</c>'s
+  /// <see cref="Return"/> (the node, slot beneath it -- <c>SelectNodes</c>), <see cref="Leaf"/>
+  /// (the node, no slot -- <c>PruneNodesAfter</c>), <see cref="Drop"/> (nothing, no slot --
+  /// <c>PruneNodesBefore</c>), <see cref="Promote"/> (nothing, slot as source -- <c>Where</c>'s
   /// bypass). <see cref="Of"/> is the general form. Single-node expansions keep the original's
   /// seat (its source ordinal carries); everything else is born here.
   /// </summary>

@@ -19,8 +19,8 @@ namespace Copse.Dags
     /// node to the child replacement's sources. Payloads duplicate across a fan -- payload
     /// algebra over constrained groups stays the caller's business, the <c>PruneEdges</c>
     /// caveat's posture. <c>Drop</c> follows the family's one liveness rule (a node losing
-    /// its last inbound path dies unless it was an original source), so <c>PruneBefore</c> is
-    /// this operator's all-<c>Keep</c>-or-<c>Drop</c> special case, as <c>Select</c> is its
+    /// its last inbound path dies unless it was an original source), so <c>PruneNodesBefore</c> is
+    /// this operator's all-<c>Keep</c>-or-<c>Drop</c> special case, as <c>SelectNodes</c> is its
     /// all-seat-keeping special case -- different cost classes, not aliases.</para>
     ///
     /// <para>The selector runs once per LIVE node (a dead node's replacement is never

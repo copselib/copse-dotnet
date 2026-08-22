@@ -5,27 +5,27 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// <c>PruneBefore</c> over node VALUES (prune polarity: true = prune): a matching node
+    /// <c>PruneNodesBefore</c> over node VALUES (prune polarity: true = prune): a matching node
     /// leaves the logical dag and its edges die with it; what lies below survives only where
     /// another live path reaches it. Deferred, streaming -- the wrapper answers
     /// <see cref="DagTraversalStrategies.SkipEdge"/> to every discovery of a pruned node and
     /// suppresses those visits, and the source's own liveness fold does the rest. The predicate
     /// is evaluated per discovery (counts unspecified; purity expected).
     /// </summary>
-    public static IDagnumerable<TNode, TEdge> PruneBefore<TNode, TEdge>(
+    public static IDagnumerable<TNode, TEdge> PruneNodesBefore<TNode, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return new PruneBeforeForwardDagnumerable<TNode, TEdge>(source, predicate);
+      return new PruneNodesBeforeDagnumerable<TNode, TEdge>(source, predicate);
     }
   }
 
-  internal sealed class PruneBeforeForwardDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
+  internal sealed class PruneNodesBeforeDagnumerable<TNode, TEdge> : IDagnumerable<TNode, TEdge>
   {
-    public PruneBeforeForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
+    public PruneNodesBeforeDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
@@ -35,12 +35,12 @@ namespace Copse.Dags
     private readonly Func<TNode, bool> _Predicate;
 
     public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
-      new PruneBeforeDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
+      new PruneNodesBeforeDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
-  internal sealed class PruneBeforeDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class PruneNodesBeforeDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
   {
-    public PruneBeforeDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
+    public PruneNodesBeforeDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
     {
       _Inner = inner;
       _Predicate = predicate;

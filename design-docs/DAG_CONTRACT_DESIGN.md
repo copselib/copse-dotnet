@@ -979,3 +979,22 @@ and ten selectors squared, against the FUSED selector computed by the operator i
 the first expansion with its slot as a phantom node and the outside as a phantom source
 (the tree family's proof device, grown the one node a dag needs). String payloads under
 concatenation — associative, non-commutative — so composition order is pinned.
+
+## THE GRAIN IN THE NAME (ruled 2026-08-22 — where an operator is split by grain, both names say theirs)
+
+Jason: *"if we're going to have this split, the split names should be specific."* The rule:
+an operator that exists at both grains carries the grain in BOTH names — `SelectNodes` /
+`SelectEdges`, `PruneNodesBefore` / `PruneNodesAfter` / `PruneEdges`, `ReplaceNodes` /
+`ReplaceEdges`, `ExpandNodesWhere` / `ExpandEdgesWhere`. Operators with no edge twin keep the
+bare name: `Where` (its edge twin would be contraction, refused), `SelectMany` (the bind;
+the edge grain reaches it through `Subdivide()`), `Do` (event grain: visits are both).
+The suffix means the grain the selector sees, everywhere — with one residual exception,
+`SourcefixDispatchEdges` / `SinkfixDispatchEdges`, whose suffix names the RESULT grain
+(the survey is the same both sides). Renamed in place; the sections above keep the names
+they were written under.
+
+Whether the split is NECESSARY at all is a question about the carrier, not the names: the
+arrival protocol's grouped event (arrivals, node, departures) holds both grains in one
+element, and over that element a single projection and a single verdict subsume the
+node/edge pairs. The split is an artifact of the node being the element. That question is
+THICKET's (the arrival-protocol migration), and stays open.

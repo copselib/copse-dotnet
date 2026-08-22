@@ -13,8 +13,8 @@ namespace Copse.Dags
     /// out-edges directly with payloads composed by <paramref name="edgeComposer"/>
     /// (<c>upstream ∘ downstream</c>) -- the composer's associativity is the bind's law, and
     /// a payload-bearing attachment composes the same way. The quartet derives the
-    /// reshapings: <c>Return</c> is <c>Select</c>, <c>Leaf</c> is <c>PruneAfter</c>,
-    /// <c>Drop</c> is <c>PruneBefore</c>, <c>Promote</c> is <c>Where</c> -- pinned
+    /// reshapings: <c>Return</c> is <c>SelectNodes</c>, <c>Leaf</c> is <c>PruneNodesAfter</c>,
+    /// <c>Drop</c> is <c>PruneNodesBefore</c>, <c>Promote</c> is <c>Where</c> -- pinned
     /// content-exact in the derivation battery. Liveness is the family's one rule: a node is
     /// reached iff it is an original source or some parent's expansion conducts (has a slot);
     /// an unreached node's selector is never consulted and its fragment never exists.

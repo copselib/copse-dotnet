@@ -11,12 +11,12 @@ namespace Copse.Dags
   /// is exactly what keeps deletion local and the laws intact). The shapes, by factory:
   ///
   /// <para><see cref="Keep"/> -- one node occupying the original's SEAT (its
-  /// <c>SourceOrdinal</c> carries; a value rewrite is <c>Select</c>'s content).
+  /// <c>SourceOrdinal</c> carries; a value rewrite is <c>SelectNodes</c>'s content).
   /// <see cref="Split"/> -- k fresh disconnected nodes: the node-division move (every
   /// alternative inherits every in- and out-edge). <see cref="Chain"/> -- a fresh path.
   /// <see cref="Graph"/> -- the general form: values plus forward internal edges.
   /// <see cref="Drop"/> (the <c>default</c> value) -- the node is deleted; downstream
-  /// survival follows the family's LIVENESS rule, exactly as <c>PruneBefore</c>'s does.</para>
+  /// survival follows the family's LIVENESS rule, exactly as <c>PruneNodesBefore</c>'s does.</para>
   ///
   /// <para>Replacement nodes are FRESH except the seat-keeping <see cref="Keep"/> (no value
   /// comparison, so no existing node can be referenced). The seat rule is FACTORY-based, not
@@ -43,7 +43,7 @@ namespace Copse.Dags
 
     /// <summary>
     /// The seat-keeping identity: the node survives with <paramref name="value"/> as its value
-    /// (same seat, same <c>SourceOrdinal</c>; a rewrite is <c>Select</c>'s content).
+    /// (same seat, same <c>SourceOrdinal</c>; a rewrite is <c>SelectNodes</c>'s content).
     /// </summary>
     public static DagNodeGraph<TNode, TEdge> Keep(TNode value) =>
       new(new[] { value }, null, keepsSeat: true);

@@ -2,7 +2,7 @@ using System;
 
 namespace Copse.Dags
 {
-  // The restriction lens: PruneAfter over a walkable, as a PAIR -- the ORDER half is the shipped
+  // The restriction lens: PruneNodesAfter over a walkable, as a PAIR -- the ORDER half is the shipped
   // streaming operator, delegated wholesale, and the ADJACENCY half is the rewritten groups: a
   // matched node hands out no out-edges, and every in-edge group omits the edges from matched
   // parents (the pair agree: an edge a matched node does not dispatch does not exist, in either
@@ -26,7 +26,7 @@ namespace Copse.Dags
       _Predicate = predicate;
       // Via the streaming EXTENSION on the plain contract, so the walkable overload's own
       // caller does not win betterness and recurse.
-      _PrunedStream = ((IDagnumerable<TValue, TEdge>)source).PruneAfter(predicate);
+      _PrunedStream = ((IDagnumerable<TValue, TEdge>)source).PruneNodesAfter(predicate);
     }
 
     private readonly IDagTopology<TValue, THandle, TEdge> _Source;

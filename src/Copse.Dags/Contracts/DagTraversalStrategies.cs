@@ -7,7 +7,7 @@ namespace Copse.Dags
   /// of the tree family's NodeTraversalStrategies, reshaped by one fact: when a visit is
   /// published, everything about it has already been witnessed, so a consumer can only shape the
   /// FUTURE. Hence there is deliberately no consumer skip-node: an entry cannot be retracted,
-  /// and removing a node from the logical dag is operator business (PruneBefore), not a consumer
+  /// and removing a node from the logical dag is operator business (PruneNodesBefore), not a consumer
   /// verdict. A node whose every potential discovery is severed or never emitted simply never
   /// enters — consumer skips compose with the traversal's liveness fold.
   ///

@@ -48,9 +48,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void Forward_PruneBefore_RemovesTheNodeAndItsExclusiveDescendantSide()
+    public void Forward_PruneNodesBefore_RemovesTheNodeAndItsExclusiveDescendantSide()
     {
-      var pruned = Chain().PruneBefore(node => node == "b");
+      var pruned = Chain().PruneNodesBefore(node => node == "b");
 
       using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
@@ -59,9 +59,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void Forward_PruneAfter_KeepsTheNodeAsANewSink()
+    public void Forward_PruneNodesAfter_KeepsTheNodeAsANewSink()
     {
-      var pruned = Chain().PruneAfter(node => node == "b");
+      var pruned = Chain().PruneNodesAfter(node => node == "b");
 
       using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
@@ -71,23 +71,23 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void Backward_PruneBefore_RemovesTheNodeAndItsExclusiveAncestorSide()
+    public void Backward_PruneNodesBefore_RemovesTheNodeAndItsExclusiveAncestorSide()
     {
       // Backward = the transpose walked forward (order c, b, a): pruning b before entry kills
       // b, and a -- b's exclusive reach in this orientation -- dies with it.
-      using var dagnumerator = Chain().Transpose().PruneBefore(node => node == "b").GetDagnumerator();
+      using var dagnumerator = Chain().Transpose().PruneNodesBefore(node => node == "b").GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "c" }, EnteredNodes(visits));
     }
 
     [TestMethod]
-    public void Backward_PruneAfter_KeepsTheNodeAsANewSource()
+    public void Backward_PruneNodesAfter_KeepsTheNodeAsANewSource()
     {
       // b enters, then dispatches nothing backward: a starves. In original orientation the
       // survivor is b->c, the mirror of the forward-after pin -- same predicate, opposite
       // half removed.
-      using var dagnumerator = Chain().Transpose().PruneAfter(node => node == "b").GetDagnumerator();
+      using var dagnumerator = Chain().Transpose().PruneNodesAfter(node => node == "b").GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "c", "b" }, EnteredNodes(visits));
@@ -95,7 +95,7 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void PruneBefore_MaySplitTheDagIntoComponents_LegallyNotHazardously()
+    public void PruneNodesBefore_MaySplitTheDagIntoComponents_LegallyNotHazardously()
     {
       // alpha -> x, alpha -> mid, beta -> mid, beta -> y: pruning mid disconnects the dag
       // into two islands, alpha->x and beta->y. Multi-component dags are first-class from
@@ -108,7 +108,7 @@ namespace Copse.Dags.Tests
       beta.AddChild("y", 1m);
       var dag = new Dag<string, decimal>(alpha, beta);
 
-      var pruned = dag.PruneBefore(node => node == "mid");
+      var pruned = dag.PruneNodesBefore(node => node == "mid");
 
       using var dagnumerator = pruned.GetDagnumerator();
       var entered = EnteredNodes(Drain(dagnumerator));

@@ -46,29 +46,29 @@ namespace Copse.Dags.Tests
     {
       foreach (var (name, factory) in Corpus())
         Assert.AreEqual(
-          DagWalkerCorpus.Content(factory().Select(node => node.ToUpperInvariant())),
+          DagWalkerCorpus.Content(factory().SelectNodes(node => node.ToUpperInvariant())),
           DagWalkerCorpus.Content(factory().SelectMany(node => DagExpansion<string, decimal>.Return(node.ToUpperInvariant()), Times)),
           name);
     }
 
     [TestMethod]
-    public void PruneBefore_IsBindOfDropOrReturn()
+    public void PruneNodesBefore_IsBindOfDropOrReturn()
     {
       foreach (var (name, factory) in Corpus())
         foreach (var predicate in Predicates())
           Assert.AreEqual(
-            DagWalkerCorpus.Content(factory().PruneBefore(predicate)),
+            DagWalkerCorpus.Content(factory().PruneNodesBefore(predicate)),
             DagWalkerCorpus.Content(factory().SelectMany(node => predicate(node) ? DagExpansion<string, decimal>.Drop : DagExpansion<string, decimal>.Return(node), Times)),
             name);
     }
 
     [TestMethod]
-    public void PruneAfter_IsBindOfLeafOrReturn()
+    public void PruneNodesAfter_IsBindOfLeafOrReturn()
     {
       foreach (var (name, factory) in Corpus())
         foreach (var predicate in Predicates())
           Assert.AreEqual(
-            DagWalkerCorpus.Content(factory().PruneAfter(predicate)),
+            DagWalkerCorpus.Content(factory().PruneNodesAfter(predicate)),
             DagWalkerCorpus.Content(factory().SelectMany(node => predicate(node) ? DagExpansion<string, decimal>.Leaf(node) : DagExpansion<string, decimal>.Return(node), Times)),
             name);
     }

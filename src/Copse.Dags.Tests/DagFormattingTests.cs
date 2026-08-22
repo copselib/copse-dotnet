@@ -112,7 +112,7 @@ namespace Copse.Dags.Tests
     {
       // Pruning right leaves the single live path -- and venture's live in-degree is now 1,
       // so its #ordinal tag disappears with the sharing.
-      var lines = Diamond().PruneBefore(node => node == "right").ToFormattedLines(node => node, InvariantEdge);
+      var lines = Diamond().PruneNodesBefore(node => node == "right").ToFormattedLines(node => node, InvariantEdge);
 
       CollectionAssert.AreEqual(
         new[]

@@ -58,7 +58,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Hide_ComposesThroughTheFluentSurface()
     {
-      var upper = Chain().Hide().Select(n => n.ToUpperInvariant()).PruneBefore(n => n == "C");
+      var upper = Chain().Hide().SelectNodes(n => n.ToUpperInvariant()).PruneNodesBefore(n => n == "C");
 
       CollectionAssert.AreEqual(new[] { "A", "B" }, upper.GetTopologicalOrder().ToArray());
     }

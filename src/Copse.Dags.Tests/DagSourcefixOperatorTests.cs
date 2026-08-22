@@ -103,7 +103,7 @@ namespace Copse.Dags.Tests
     {
       // The blocker composition: with left pruned, the venture's only inflow rides right.
       var ownership = Diamond()
-        .PruneBefore(entity => entity == "left")
+        .PruneNodesBefore(entity => entity == "left")
         .SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
 
       CollectionAssert.AreEqual(
@@ -195,7 +195,7 @@ namespace Copse.Dags.Tests
       // The MoveMoney shape: blockers pruned first, so their edges are never surveyed and
       // nothing is allocated toward them.
       var moved = Diamond()
-        .PruneBefore(entity => entity == "left")
+        .PruneNodesBefore(entity => entity == "left")
         .SourcefixDispatch(1000m, ProRata);
 
       Assert.AreEqual(3, moved.Count, "left is gone");
@@ -211,7 +211,7 @@ namespace Copse.Dags.Tests
       // The decorate-then-choose composition: the full pipeline down to plain received totals.
       var received = Diamond()
         .SourcefixDispatch(1000m, ProRata)
-        .Select(result => (Entity: result.Node, Received: result.Arrivals.ToArray().Sum()));
+        .SelectNodes(result => (Entity: result.Node, Received: result.Arrivals.ToArray().Sum()));
 
       var entries = new List<(string, decimal)>();
       using var walk = received.GetDagnumerator();

@@ -70,11 +70,11 @@ namespace Copse.Dags.Tests
     public void GetSources_ComposesOverAWrapper()
     {
       // Pruning the apex kills everything (closure death via the liveness fold): no sources.
-      Assert.AreEqual(0, Diamond().PruneBefore(n => n == "apex").GetSources().Count());
+      Assert.AreEqual(0, Diamond().PruneNodesBefore(n => n == "apex").GetSources().Count());
 
       // Pruning the venture leaves the apex the sole source, untouched.
       CollectionAssert.AreEqual(
-        new[] { "apex" }, Diamond().PruneBefore(n => n == "venture").GetSources().ToArray());
+        new[] { "apex" }, Diamond().PruneNodesBefore(n => n == "venture").GetSources().ToArray());
     }
 
     // ---------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ namespace Copse.Dags.Tests
       // The result is an IDagnumerable like any other: operators chain on it.
       var reselected = Diamond()
         .TakeDownstreamWhere(n => n == "left" || n == "right")
-        .Select(n => n.ToUpperInvariant())
+        .SelectNodes(n => n.ToUpperInvariant())
         .TakeDownstreamWhere(n => n == "RIGHT");
 
       CollectionAssert.AreEqual(new[] { "RIGHT", "VENTURE" }, reselected.GetTopologicalOrder().ToArray());
@@ -279,7 +279,7 @@ namespace Copse.Dags.Tests
     {
       var reselected = Diamond()
         .TakeUpstreamWhere(n => n == "left" || n == "right")
-        .Select(n => n.ToUpperInvariant())
+        .SelectNodes(n => n.ToUpperInvariant())
         .TakeUpstreamWhere(n => n == "RIGHT");
 
       CollectionAssert.AreEqual(new[] { "APEX", "RIGHT" }, reselected.GetTopologicalOrder().ToArray());

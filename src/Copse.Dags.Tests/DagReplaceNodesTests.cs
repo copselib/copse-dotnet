@@ -56,7 +56,7 @@ namespace Copse.Dags.Tests
     public void Keep_WithARewrittenValue_IsSelectContent()
     {
       var byReplacement = Diamond().ReplaceNodes(node => DagNodeGraph<string, decimal>.Keep(node.ToUpperInvariant()));
-      var byProjection = Diamond().Select(node => node.ToUpperInvariant());
+      var byProjection = Diamond().SelectNodes(node => node.ToUpperInvariant());
 
       CollectionAssert.AreEqual(
         byProjection.GetTopologicalOrder().ToArray(),
@@ -164,7 +164,7 @@ namespace Copse.Dags.Tests
         node == "left" ? DagNodeGraph<string, decimal>.Drop : DagNodeGraph<string, decimal>.Keep(node));
 
       CollectionAssert.AreEqual(
-        Diamond().PruneBefore(node => node == "left").GetTopologicalOrder().ToArray(),
+        Diamond().PruneNodesBefore(node => node == "left").GetTopologicalOrder().ToArray(),
         oneDropped.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(new[] { "apex", "right", "venture" }, oneDropped.GetTopologicalOrder().ToArray());
 

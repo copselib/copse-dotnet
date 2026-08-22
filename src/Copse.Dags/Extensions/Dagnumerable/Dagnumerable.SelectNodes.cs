@@ -16,20 +16,20 @@ namespace Copse.Dags
     /// discoveries and entry each see it run; invocation counts are unspecified -- purity
     /// expected, the house contract).
     /// </summary>
-    public static IDagnumerable<TResult, TEdge> Select<TNode, TResult, TEdge>(
+    public static IDagnumerable<TResult, TEdge> SelectNodes<TNode, TResult, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       Func<TNode, TResult> selector)
     {
       if (selector == null)
         throw new ArgumentNullException(nameof(selector));
 
-      return new SelectForwardDagnumerable<TNode, TResult, TEdge>(source, selector);
+      return new SelectNodesDagnumerable<TNode, TResult, TEdge>(source, selector);
     }
   }
 
-  internal sealed class SelectForwardDagnumerable<TNode, TResult, TEdge> : IDagnumerable<TResult, TEdge>
+  internal sealed class SelectNodesDagnumerable<TNode, TResult, TEdge> : IDagnumerable<TResult, TEdge>
   {
-    public SelectForwardDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, TResult> selector)
+    public SelectNodesDagnumerable(IDagnumerable<TNode, TEdge> source, Func<TNode, TResult> selector)
     {
       _Source = source;
       _Selector = selector;
@@ -39,12 +39,12 @@ namespace Copse.Dags
     private readonly Func<TNode, TResult> _Selector;
 
     public IDagnumerator<TResult, TEdge> GetDagnumerator() =>
-      new SelectDagnumerator<TNode, TResult, TEdge>(_Source.GetDagnumerator(), _Selector);
+      new SelectNodesDagnumerator<TNode, TResult, TEdge>(_Source.GetDagnumerator(), _Selector);
   }
 
-  internal sealed class SelectDagnumerator<TNode, TResult, TEdge> : IDagnumerator<TResult, TEdge>
+  internal sealed class SelectNodesDagnumerator<TNode, TResult, TEdge> : IDagnumerator<TResult, TEdge>
   {
-    public SelectDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, TResult> selector)
+    public SelectNodesDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, TResult> selector)
     {
       _Inner = inner;
       _Selector = selector;

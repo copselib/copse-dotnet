@@ -63,7 +63,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Select_MapsValues_AndForwardsEverythingElse()
     {
-      var mapped = Drain(Diamond().Select(n => n.ToUpperInvariant()).GetDagnumerator());
+      var mapped = Drain(Diamond().SelectNodes(n => n.ToUpperInvariant()).GetDagnumerator());
       var source = Drain(Diamond().GetDagnumerator());
 
       CollectionAssert.AreEqual(
@@ -75,8 +75,8 @@ namespace Copse.Dags.Tests
     public void Select_Chains()
     {
       var chained = Diamond()
-        .Select(n => n.Length)
-        .Select(length => $"#{length}");
+        .SelectNodes(n => n.Length)
+        .SelectNodes(length => $"#{length}");
 
       var entries = Drain(chained.GetDagnumerator())
         .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
@@ -139,7 +139,7 @@ namespace Copse.Dags.Tests
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void PruneBefore_DiamondLeft_IsPinned_WithTheOrdinalGap()
+    public void PruneNodesBefore_DiamondLeft_IsPinned_WithTheOrdinalGap()
     {
       // left leaves the logical dag: its discovery is swallowed, its dispatch never happens,
       // and the venture arrives through right alone. Ordinal 1 is a GAP -- operators preserve
@@ -154,22 +154,22 @@ namespace Copse.Dags.Tests
           Discover("venture", 3, parentOrdinal: 2, edgeIndex: 0, edge: 0.30m),
           Enter("venture", 3),
         },
-        Drain(Diamond().PruneBefore(n => n == "left").GetDagnumerator()));
+        Drain(Diamond().PruneNodesBefore(n => n == "left").GetDagnumerator()));
     }
 
     [TestMethod]
-    public void PruneBefore_TheApex_EmptiesTheStream()
+    public void PruneNodesBefore_TheApex_EmptiesTheStream()
     {
       CollectionAssert.AreEqual(
         Array.Empty<Visit>(),
-        Drain(Diamond().PruneBefore(n => n == "apex").GetDagnumerator()));
+        Drain(Diamond().PruneNodesBefore(n => n == "apex").GetDagnumerator()));
     }
 
     [TestMethod]
-    public void PruneBefore_BothMiddles_KillsTheVentureToo()
+    public void PruneNodesBefore_BothMiddles_KillsTheVentureToo()
     {
       var visits = Drain(
-        Diamond().PruneBefore(n => n == "left" || n == "right").GetDagnumerator());
+        Diamond().PruneNodesBefore(n => n == "left" || n == "right").GetDagnumerator());
 
       CollectionAssert.AreEqual(
         new[] { Discover("apex", 0, parentOrdinal: -1, edgeIndex: 0), Enter("apex", 0) },
@@ -178,12 +178,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void PruneBefore_MatchesTheBuilderOracle_OnContent()
+    public void PruneNodesBefore_MatchesTheBuilderOracle_OnContent()
     {
       // The blocker scenario shape: prune the middle tier's matching entities; compare the
       // logical dag against the builder's own PruneBefore clone -- entered values and the
       // surviving (parent, child, payload) edge multiset.
-      var contract = Drain(Diamond().PruneBefore(n => n == "left").GetDagnumerator());
+      var contract = Drain(Diamond().PruneNodesBefore(n => n == "left").GetDagnumerator());
       var oracle = Diamond().OraclePruneBefore(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
@@ -209,7 +209,7 @@ namespace Copse.Dags.Tests
     // ---------------------------------------------------------------------------------------
 
     [TestMethod]
-    public void PruneAfter_DiamondLeft_KeepsLeft_AndTheVentureArrivesThroughRight()
+    public void PruneNodesAfter_DiamondLeft_KeepsLeft_AndTheVentureArrivesThroughRight()
     {
       CollectionAssert.AreEqual(
         new[]
@@ -223,18 +223,18 @@ namespace Copse.Dags.Tests
           Discover("venture", 3, parentOrdinal: 2, edgeIndex: 0, edge: 0.30m),
           Enter("venture", 3),
         },
-        Drain(Diamond().PruneAfter(n => n == "left").GetDagnumerator()),
+        Drain(Diamond().PruneNodesAfter(n => n == "left").GetDagnumerator()),
         "left enters but dispatches nothing");
     }
 
     [TestMethod]
-    public void PruneAfter_OnTheOnlyPath_TheNodeBelowNeverAppears()
+    public void PruneNodesAfter_OnTheOnlyPath_TheNodeBelowNeverAppears()
     {
       var chainRoot = new DagNode<string, decimal>("a");
       chainRoot.AddChild("b", 1m).AddChild("c", 1m);
 
       var visits = Drain(
-        new Dag<string, decimal>(chainRoot).PruneAfter(n => n == "b").GetDagnumerator());
+        new Dag<string, decimal>(chainRoot).PruneNodesAfter(n => n == "b").GetDagnumerator());
 
       CollectionAssert.AreEqual(
         new[]
@@ -248,9 +248,9 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void PruneAfter_MatchesTheBuilderOracle_OnContent()
+    public void PruneNodesAfter_MatchesTheBuilderOracle_OnContent()
     {
-      var contract = Drain(Diamond().PruneAfter(n => n == "left").GetDagnumerator());
+      var contract = Drain(Diamond().PruneNodesAfter(n => n == "left").GetDagnumerator());
       var oracle = Diamond().OraclePruneAfter(node => node.Value == "left");
 
       CollectionAssert.AreEquivalent(
@@ -352,8 +352,8 @@ namespace Copse.Dags.Tests
     {
       var entries = Drain(
         Diamond()
-          .PruneBefore(n => n == "left")
-          .Select(n => n.ToUpperInvariant())
+          .PruneNodesBefore(n => n == "left")
+          .SelectNodes(n => n.ToUpperInvariant())
           .GetDagnumerator())
         .Where(v => v.Mode == DagnumeratorMode.EnteringNode)
         .Select(v => v.Node)
@@ -368,7 +368,7 @@ namespace Copse.Dags.Tests
       // The consumer suppresses LEFT's dispatch through a Select wrapper: the wrapper forwards
       // the verdict, and the venture arrives via right alone.
       var visits = Drain(
-        Diamond().Select(n => n.ToUpperInvariant()).GetDagnumerator(),
+        Diamond().SelectNodes(n => n.ToUpperInvariant()).GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.EnteringNode && visit.Node == "LEFT"
           ? DagTraversalStrategies.SkipOutEdges
           : DagTraversalStrategies.TraverseAll);
@@ -385,7 +385,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void WrongModeStrategies_StillThrow_ThroughWrappers()
     {
-      using var dagnumerator = Diamond().Select(n => n).GetDagnumerator();
+      using var dagnumerator = Diamond().SelectNodes(n => n).GetDagnumerator();
 
       Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll));
       Assert.AreEqual(DagnumeratorMode.DiscoveringNode, dagnumerator.Mode);

@@ -156,7 +156,7 @@ namespace Copse.Dags.Tests
       // shared JV survives on the remaining route. The scan CARRIES the entity name in its
       // accumulation -- the report is one composed lambda.
       static Dictionary<string, decimal> Lookthrough(string prunedFund) => Structure()
-        .PruneBefore(entity => entity.Name == prunedFund)
+        .PruneNodesBefore(entity => entity.Name == prunedFund)
         .SourcefixScan<Entity, (string Name, decimal Ownership), decimal>(
           (entity, inflows) => (
             entity.Name,
@@ -186,7 +186,7 @@ namespace Copse.Dags.Tests
       // The MoveMoney shape: blockers pruned first, so nothing is ever allocated toward them
       // -- the allocator renormalizes over LIVE edges by construction, no special case.
       var moved = Structure()
-        .PruneBefore(entity => entity.IsBlocker)
+        .PruneNodesBefore(entity => entity.IsBlocker)
         .SourcefixDispatch(0m, MoveMoneySurvey);
       var byName = ByName(moved);
 
@@ -216,7 +216,7 @@ namespace Copse.Dags.Tests
       // The other blocker policy: PruneAfter -- the blocker takes its allocation and passes
       // nothing through. Money is trapped there, visibly, and still conserved.
       var moved = ByName(Structure()
-        .PruneAfter(entity => entity.IsBlocker)
+        .PruneNodesAfter(entity => entity.IsBlocker)
         .SourcefixDispatch(0m, MoveMoneySurvey));
 
       // FundA now splits 50:50 (equal weights); the odd cent breaks the tie toward HoldCo
@@ -238,7 +238,7 @@ namespace Copse.Dags.Tests
     public void MoveMoney_EveryIntermediateForwardsExactlyWhatItReceived()
     {
       var moved = Structure()
-        .PruneBefore(entity => entity.IsBlocker)
+        .PruneNodesBefore(entity => entity.IsBlocker)
         .SourcefixDispatch(0m, MoveMoneySurvey);
 
       // Conservation locally, not just at the ends: for every entity with children, what went

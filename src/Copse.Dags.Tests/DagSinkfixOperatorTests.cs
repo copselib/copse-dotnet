@@ -143,7 +143,7 @@ namespace Copse.Dags.Tests
     public void SinkfixScan_ComposesWithAnUpstreamPrune()
     {
       var counts = Diamond()
-        .PruneBefore(entity => entity == "left")
+        .PruneNodesBefore(entity => entity == "left")
         .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value));
 
       CollectionAssert.AreEqual(
@@ -409,7 +409,7 @@ namespace Copse.Dags.Tests
     {
       // Blocker on the left: only the right route attributes upward.
       var attributed = ValuedDiamond()
-        .PruneBefore(entity => entity.Name == "left")
+        .PruneNodesBefore(entity => entity.Name == "left")
         .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
 
       CollectionAssert.AreEqual(
