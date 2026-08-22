@@ -1,6 +1,8 @@
 using Copse.Async;
 using Copse.Core;
 using Copse.Core.Async;
+using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -36,19 +38,23 @@ namespace Copse.Linq.Async
   // protocol (a parent is visited between and after its children) whatever forest the
   // children came from. A pending queue carries manufactured and released emissions, one
   // per pull.
-  internal sealed class AsyncSelectManyDepthFirstTreenumerator<TSource, TResult> : AsyncTreenumeratorBase<TResult>
+  internal sealed class AsyncSelectManyDepthFirstTreenumerator<TSource, TResult, TExpansionSelector> : AsyncTreenumeratorBase<TResult>
+    where TExpansionSelector : struct, IAsyncExpansionSelector<TSource, TResult>
   {
     public AsyncSelectManyDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TSource>> sourceTreenumeratorFactory,
-      Func<TSource, AsyncExpansion<TResult>> selector)
+      TExpansionSelector expansionSelector)
     {
       _Source = sourceTreenumeratorFactory();
-      _Selector = selector;
+      _ExpansionSelector = expansionSelector;
       _Slots.AddLast(new Slot(depth: 0));
     }
 
     private readonly IAsyncTreenumerator<TSource> _Source;
-    private readonly Func<TSource, AsyncExpansion<TResult>> _Selector;
+
+    // The selector as a struct leg (the user's selector alone, or a collapsed chain's arrow
+    // folded ahead of it): the per-node call inlines.
+    private readonly TExpansionSelector _ExpansionSelector;
     private readonly RefSemiDeque<Frame> _Frames = new RefSemiDeque<Frame>();
     private readonly RefSemiDeque<Slot> _Slots = new RefSemiDeque<Slot>();
     private readonly Queue<Emission> _Pending = new Queue<Emission>();
@@ -358,7 +364,7 @@ namespace Copse.Linq.Async
       {
         PopFramesDeeperThan(depth - 1);
 
-        var expansion = _Selector(_Source.Node);
+        var expansion = _ExpansionSelector.GetExpansion(_Source.ToNodeContext());
 
         _Frames.AddLast(new Frame(
           expansion.Placement,

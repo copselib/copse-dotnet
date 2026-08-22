@@ -35,6 +35,13 @@ namespace Copse.Linq
       SingleValue = singleValue;
     }
 
+    // The Leaf row of the quartet's composition table (SELECTMANY_DESIGN.md Addendum V): a
+    // prune-after ahead of this expansion drops the slot, keeping the forest.
+    internal AsyncExpansion<TResult> WithoutSlot()
+      => HasSingleValue
+        ? new AsyncExpansion<TResult>(SingleValue, SlotPlacement.None)
+        : new AsyncExpansion<TResult>(Forest, SlotPlacement.None);
+
     internal bool HasSingleValue { get; }
 
     internal TResult SingleValue { get; }

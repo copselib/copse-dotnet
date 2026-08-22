@@ -24,7 +24,9 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TSource> source,
       Func<TSource, Expansion<TResult>> selector)
       => Tree.CreateDepthFirst(
-        () => new SelectManyDepthFirstTreenumerator<TSource, TResult>(source.GetDepthFirstTreenumerator, selector));
+        () => new SelectManyDepthFirstTreenumerator<TSource, TResult, FuncExpansionSelector<TSource, TResult>>(
+          source.GetDepthFirstTreenumerator,
+          new FuncExpansionSelector<TSource, TResult>(selector)));
 
     /// <summary>
     /// The composite form. The depth-first dimension streams; the breadth-first dimension
@@ -35,11 +37,92 @@ namespace Copse.Linq
       this ITreenumerable<TSource> source,
       Func<TSource, Expansion<TResult>> selector)
     {
-      var depthFirst = ((IDepthFirstTreenumerable<TSource>)source).SelectMany(selector);
+      // The left door (SELECTMANY_DESIGN.md Addendum V): a collapsed chain, a prune-after
+      // layer, or a projection wrapper surrenders its raw inner and its arrow, and ONE bind
+      // machine runs over the inner with the arrow folded ahead of the selector -- the four
+      // reshapings are bind's own special values, so the fold is pointwise. The consumer
+      // recurses: if the surrendered inner can surrender too, the arrows compose (the
+      // lattice's own Kleisli composition) and the fold continues down to the raw source.
+      if (source is IResultSource<TSource> resultSource)
+        return resultSource.CaptureThrough(new BindConsumer<TSource, TResult>(selector));
 
-      return Tree.Create(
-        () => depthFirst.Materialize().GetBreadthFirstTreenumerator(),
-        depthFirst.GetDepthFirstTreenumerator);
+      if (source is IProjectionSource<TSource> projectionSource)
+        return projectionSource.CaptureThrough(new BindConsumer<TSource, TResult>(selector));
+
+      return new SelectManyTreenumerable<TSource, TResult, FuncExpansionSelector<TSource, TResult>>(
+        source.GetDepthFirstTreenumerator,
+        new FuncExpansionSelector<TSource, TResult>(selector));
+    }
+
+    // The fold's step: an arrow into the selector's domain over some inner source. Recurse
+    // while the inner can surrender; otherwise the bind over the inner with the arrow nested
+    // in the type ahead of the selector.
+    private static ITreenumerable<TResult> BindThroughArrow<TInner, TMid, TResult, TArrow>(
+      ITreenumerable<TInner> innerSource,
+      TArrow arrow,
+      Func<TMid, Expansion<TResult>> selector)
+      where TArrow : struct, IResultSelector<TInner, TMid>
+    {
+      if (innerSource is IResultSource<TInner> resultSource)
+        return resultSource.CaptureThrough(new BindComposingConsumer<TInner, TMid, TResult, TArrow>(arrow, selector));
+
+      if (innerSource is IProjectionSource<TInner> projectionSource)
+        return projectionSource.CaptureThrough(new BindComposingConsumer<TInner, TMid, TResult, TArrow>(arrow, selector));
+
+      return new SelectManyTreenumerable<TInner, TResult, FoldedExpansionSelector<TInner, TMid, TResult, TArrow>>(
+        innerSource.GetDepthFirstTreenumerator,
+        new FoldedExpansionSelector<TInner, TMid, TResult, TArrow>(arrow, selector));
+    }
+
+    // The first hop: the source's own arrow, nothing to compose with yet.
+    private sealed class BindConsumer<TMid, TResult>
+      : IResultConsumer<TMid, ITreenumerable<TResult>>,
+        IProjectionConsumer<TMid, ITreenumerable<TResult>>
+    {
+      public BindConsumer(Func<TMid, Expansion<TResult>> selector)
+      {
+        _Selector = selector;
+      }
+
+      private readonly Func<TMid, Expansion<TResult>> _Selector;
+
+      public ITreenumerable<TResult> Consume<TInner, TArrow>(ITreenumerable<TInner> innerSource, TArrow arrow)
+        where TArrow : struct, IResultSelector<TInner, TMid>
+        => BindThroughArrow<TInner, TMid, TResult, TArrow>(innerSource, arrow, _Selector);
+
+      public ITreenumerable<TResult> Consume<TInner>(ITreenumerable<TInner> innerSource, Func<NodeContext<TInner>, TMid> projector)
+        => BindThroughArrow<TInner, TMid, TResult, SelectResultSelector<TInner, TMid>>(
+          innerSource, new SelectResultSelector<TInner, TMid>(projector), _Selector);
+    }
+
+    // Every later hop: the surrendered arrow composes INSIDE the one carried so far.
+    private sealed class BindComposingConsumer<TOuterInner, TMid, TResult, TOuterArrow>
+      : IResultConsumer<TOuterInner, ITreenumerable<TResult>>,
+        IProjectionConsumer<TOuterInner, ITreenumerable<TResult>>
+      where TOuterArrow : struct, IResultSelector<TOuterInner, TMid>
+    {
+      public BindComposingConsumer(TOuterArrow outerArrow, Func<TMid, Expansion<TResult>> selector)
+      {
+        _OuterArrow = outerArrow;
+        _Selector = selector;
+      }
+
+      private readonly TOuterArrow _OuterArrow;
+      private readonly Func<TMid, Expansion<TResult>> _Selector;
+
+      public ITreenumerable<TResult> Consume<TInner, TArrow>(ITreenumerable<TInner> innerSource, TArrow arrow)
+        where TArrow : struct, IResultSelector<TInner, TOuterInner>
+        => BindThroughArrow<TInner, TMid, TResult, ComposedResultSelector<TInner, TOuterInner, TMid, TArrow, TOuterArrow>>(
+          innerSource,
+          new ComposedResultSelector<TInner, TOuterInner, TMid, TArrow, TOuterArrow>(arrow, _OuterArrow),
+          _Selector);
+
+      public ITreenumerable<TResult> Consume<TInner>(ITreenumerable<TInner> innerSource, Func<NodeContext<TInner>, TOuterInner> projector)
+        => BindThroughArrow<TInner, TMid, TResult, ComposedResultSelector<TInner, TOuterInner, TMid, SelectResultSelector<TInner, TOuterInner>, TOuterArrow>>(
+          innerSource,
+          new ComposedResultSelector<TInner, TOuterInner, TMid, SelectResultSelector<TInner, TOuterInner>, TOuterArrow>(
+            new SelectResultSelector<TInner, TOuterInner>(projector), _OuterArrow),
+          _Selector);
     }
   }
 }

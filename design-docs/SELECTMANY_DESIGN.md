@@ -422,3 +422,112 @@ Triangle 220 / Chain 240 (was 513: the Gen2 promotions of a million frame object
 capture 348. The allocation floor is reached; the time left over a collapsed operator is the
 general machine's per-event work (pending queue, two stacks), the baseline the composition
 dispatch is measured against.
+
+## ADDENDUM V (2026-08-21) — the composition story: the quartet is bind's sub-monoid
+
+> **Status: IN PROGRESS on `feature/bind-composition`.** The account below is settled and
+> pinned (`QuartetKleisliClosureTests`); the doors are the work.
+
+**The closure fact.** The four special expansions -- `Return`, `Promote`, `Drop`, `Leaf`,
+the library's reshapings as theorems -- are closed under Kleisli composition. Bind an
+expansion of one kind through a selector of another and the composite is again one of the
+four:
+
+| `f(x)` \ `g(a)` | `Return(b)` | `Promote` | `Drop` | `Leaf(b)` |
+|---|---|---|---|---|
+| `Return(a)` | `Return(b)` | `Promote` | `Drop` | `Leaf(b)` |
+| `Leaf(a)` | `Leaf(b)` | `Drop` | `Drop` | `Leaf(b)` |
+| `Promote` | `Promote` | `Promote` | `Promote` | `Promote` |
+| `Drop` | `Drop` | `Drop` | `Drop` | `Drop` |
+
+The phantom's inheritance does the work: `Leaf` then `Promote` is `Drop` because `Leaf`
+already dropped the slot the promotion would have handed the children to; `Promote` and
+`Drop` absorb because nothing of theirs reaches `g`. `Return` is the unit and the table is
+associative -- a monoid, the quartet as a sub-monoid of the Kleisli category. Pinned on the
+real operator: all sixteen cases on the law-test forest set, the pointwise form (selectors
+choosing a kind per node compose by the table per node), and the monoid laws on the table.
+
+**This is the composition design's result monad, recognized.** OPERATOR_COMPOSITION_DESIGN.md's
+carrier is `Result<T> = (value, strategies)`, a Writer over the strategy monoid with
+`Rejected ⇔ SkipNode ∈ strategies`. That carrier IS the quartet, encoded:
+
+| expansion | result |
+|---|---|
+| `Return(v)` | `(v, ∅)` |
+| `Leaf(v)` | `(v, SkipDescendants)` |
+| `Promote` | `(_, SkipNode)` |
+| `Drop` | `(_, SkipNodeAndDescendants)` |
+
+and its composition law -- `Accepted(v, s₁)` then `Accepted(v₂, s₂)` is `Accepted(v₂, s₁ ∪ s₂)`,
+a rejection short-circuits -- is the table above, read off the bit-union
+(`SkipDescendants ∪ SkipNode = SkipNodeAndDescendants` is the `Leaf`-then-`Promote` cell).
+So "any chain of Select/Where/PruneBefore/PruneAfter collapses to one struct-composed arrow"
+was never an operator-by-operator discovery: the collapse lattice is bind restricted to the
+quartet, and `ComposedResultSelector` is Kleisli composition on the sub-monoid. Two design
+docs, one algebra.
+
+**What the doors buy, and what they do not.** No dispatch can see inside a delegate, so
+`SelectMany(x => Return(f(x)))` always pays the general machine over `Select(f)` -- the
+theorem rows' 2.3x / 1.7x / 1.4x are the honest price of writing bind where a collapsed
+operator would do, and they stay on the dashboard as exactly that. What composition
+recovers is bind participating in a chain at zero added layers:
+
+1. **The left door** -- operators BEFORE bind fold into its selector, pointwise, because a
+   quartet-valued left factor composes into a general selector with no machinery:
+   `Where(p).SelectMany(f)` is `SelectMany(x => p(x) ? f(x) : Promote())`; `Select(g)` is
+   `f ∘ g`; `PruneBefore` is `Drop`; `PruneAfter(q)` is `f(x)` with its placement overridden
+   to `None` (the `Leaf` row of the table, for a general `g`: `(F, P)` becomes `(F, None)`).
+   Generally: the collapsed chain's arrow gives `(v, s)` per source context; `SkipNode ∈ s`
+   yields `Promote` or (with `SkipDescendants`) `Drop`; otherwise `f(v)`, slotless when
+   `SkipDescendants ∈ s`. The chain surrenders its raw inner and its struct arrow (the
+   rootfix door's shape, `IAsyncProjectionSource`, generalized to the result arrow) and ONE
+   bind machine runs over the raw inner with the folded selector. Correct by the theorems
+   plus associativity. The bind's selector is value-only, so it joins any chain under the
+   join rule; the chain's positional legs keep reading the source context they always read.
+2. **`Select` on the right** -- re-plant the projection at the bind's emission (the
+   projection-citizen pattern): one selector call per emission, no wrapper layer.
+3. **`Where`/prune on the right** -- by associativity, bind each expansion forest through
+   the arrow; but that decides the PLACEMENT at drain time (a rejected last root promotes
+   its phantom into root position: `UnderLastRoot` becomes `AfterRoots`), which is the
+   discovered-placements item in another hat. Waits for it. The alternative -- Where
+   machinery over bind's output in one driver -- removes a layer, not work.
+
+Expectation going in (Jason's, shared): none of this beats the hand-built drivers when the
+user writes `Select`/`Where`; those stay the fast path. The measurement is whether bind can
+sit in a chain without adding a layer.
+
+**The left door, built (same day).** Three surrender parts and one recursive consumer:
+
+- `IAsyncResultSource<TResult>` / `IAsyncResultConsumer<TResult, TOut>` -- the rejecting twin of
+  the projection door: `Consume<TInner, TArrow>(inner, arrow)`, the arrow a struct leg. Implemented
+  as explicit partial parts (outside the CompositeToNarrow fan-out, composite-width, internal) by
+  the collapsed chain (`AsyncSelectWhereTreenumerable`: its `_Source` and its nested struct arrow),
+  the prune-after light wrapper (`AsyncPruneAfterTreenumerable`: its predicate as the
+  `PruneAfterResultSelector` it already is -- the lattice keeps prune-after as a layer because
+  joining would demote its representation, but a consumer that ENDS the chain has no representation
+  to demote), and the middle tier (`AsyncSelectPruneAfterTreenumerable`: its delegate-bound
+  in-tier arrow as the `FuncResultSelector` leaf it already rides under a splice). Plain `Select`
+  surrenders through the existing projection door.
+- The bind driver is generic over a struct `IAsyncExpansionSelector` (context-shaped): the bare
+  leg `AsyncFuncExpansionSelector` (the user's selector, value-only), or
+  `AsyncFoldedExpansionSelector<TInner, TMid, TResult, TArrow>` -- the table lookup above the
+  user's selector. `AsyncExpansion.WithoutSlot()` is the Leaf row for a general expansion.
+- The consumer RECURSES: the first hop takes the source's arrow; every later hop composes the newly
+  surrendered arrow INSIDE the one carried so far (`ComposedResultSelector` -- the lattice's own
+  Kleisli composition, nested in the type) and asks the surrendered inner whether it can
+  surrender too. So any stack of chain / prune-after layer / projection wrapper folds down to the
+  raw source and ONE bind machine. The composite overload returns a named
+  `AsyncSelectManyTreenumerable<TSource, TResult, TExpansionSelector>` so the seam pins can read
+  the folded leg off the type.
+
+**Pinned (`SelectManyLeftDoorTests`, twelve chain shapes × eight trees)**: the door equals the
+stacked spelling (the same chain behind an opaque `Tree.Create`, which cannot surrender)
+byte-for-byte in both dimensions, under a general selector exercising forests, every placement
+and the quartet; the door is TAKEN for every shape (the type carries `FoldedExpansionSelector`,
+the bare source carries `FuncExpansionSelector`); and the fold changes no effect order.
+
+**A finding from the effect pin.** The middle-tier passthrough driver re-evaluates its pure legs
+(projection, prune-after predicate) on EVERY emission event of a node, while the fold evaluates
+each leg once per node at its scheduling -- as the lattice's Where driver does. The door's effect
+log is therefore the stacked log's first-occurrence sequence: same effects, same order, each once.
+Fewer calls, never reordered; the pin states exactly that.

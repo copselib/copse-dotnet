@@ -3,6 +3,8 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Core;
+using Copse.Linq.Treenumerables;
+using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -37,19 +39,23 @@ namespace Copse.Linq.Treenumerators
   // protocol (a parent is visited between and after its children) whatever forest the
   // children came from. A pending queue carries manufactured and released emissions, one
   // per pull.
-  internal sealed class SelectManyDepthFirstTreenumerator<TSource, TResult> : TreenumeratorBase<TResult>
+  internal sealed class SelectManyDepthFirstTreenumerator<TSource, TResult, TExpansionSelector> : TreenumeratorBase<TResult>
+    where TExpansionSelector : struct, IExpansionSelector<TSource, TResult>
   {
     public SelectManyDepthFirstTreenumerator(
       Func<ITreenumerator<TSource>> sourceTreenumeratorFactory,
-      Func<TSource, Expansion<TResult>> selector)
+      TExpansionSelector expansionSelector)
     {
       _Source = sourceTreenumeratorFactory();
-      _Selector = selector;
+      _ExpansionSelector = expansionSelector;
       _Slots.AddLast(new Slot(depth: 0));
     }
 
     private readonly ITreenumerator<TSource> _Source;
-    private readonly Func<TSource, Expansion<TResult>> _Selector;
+
+    // The selector as a struct leg (the user's selector alone, or a collapsed chain's arrow
+    // folded ahead of it): the per-node call inlines.
+    private readonly TExpansionSelector _ExpansionSelector;
     private readonly RefSemiDeque<Frame> _Frames = new RefSemiDeque<Frame>();
     private readonly RefSemiDeque<Slot> _Slots = new RefSemiDeque<Slot>();
     private readonly Queue<Emission> _Pending = new Queue<Emission>();
@@ -359,7 +365,7 @@ namespace Copse.Linq.Treenumerators
       {
         PopFramesDeeperThan(depth - 1);
 
-        var expansion = _Selector(_Source.Node);
+        var expansion = _ExpansionSelector.GetExpansion(_Source.ToNodeContext());
 
         _Frames.AddLast(new Frame(
           expansion.Placement,

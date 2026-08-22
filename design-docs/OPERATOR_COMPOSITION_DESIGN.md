@@ -613,3 +613,14 @@ removes two duplicate constructions and adds four helpers, because the narrow tw
 the helper through the fan-out without having a citizenship part to dedupe against. The win
 is that a composed successor is constructed in exactly one place per class, and that all
 three driver classes read alike.
+
+## The result monad is bind's sub-monoid (2026-08-21)
+
+The carrier above -- `Result<T> = (value, strategies)`, Writer over the strategy monoid with
+rejection as a derived view -- is the tree monad's bind restricted to its four special
+expansions: `Return(v) = (v, ∅)`, `Leaf(v) = (v, SkipDescendants)`, `Promote = (_, SkipNode)`,
+`Drop = (_, SkipNodeAndDescendants)`; the composition law (union on accept, short-circuit
+on reject) is the quartet's Kleisli composition table, closed -- a sub-monoid of the Kleisli
+category. So the collapse lattice is bind on the quartet, and `ComposedResultSelector` is
+Kleisli composition there. The account, the table, the pin (`QuartetKleisliClosureTests`),
+and the doors that let a general bind join this lattice: SELECTMANY_DESIGN.md Addendum V.

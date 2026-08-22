@@ -192,6 +192,12 @@ namespace Copse.CodeGen
         ["AsyncRootfixScanProductTreenumerable"] = "RootfixScanProductTreenumerable",
         ["IAsyncProjectionSource"] = "IProjectionSource",
         ["IAsyncProjectionConsumer"] = "IProjectionConsumer",
+        ["IAsyncResultSource"] = "IResultSource",
+        ["IAsyncResultConsumer"] = "IResultConsumer",
+        ["IAsyncExpansionSelector"] = "IExpansionSelector",
+        ["AsyncFuncExpansionSelector"] = "FuncExpansionSelector",
+        ["AsyncFoldedExpansionSelector"] = "FoldedExpansionSelector",
+        ["AsyncSelectManyTreenumerable"] = "SelectManyTreenumerable",
       };
 
       private static readonly HashSet<string> DroppedUsings = new()
