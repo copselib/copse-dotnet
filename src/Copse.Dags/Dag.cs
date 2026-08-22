@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Copse.Dags
 {
@@ -13,8 +12,8 @@ namespace Copse.Dags
   /// no cycle check -- a cyclic graph streams its maximal acyclic prefix and throws
   /// <see cref="DagCycleException"/> at exhaustion; <c>Materialize</c> is the validator and
   /// the completed buffer is the certificate. (The owned-node
-  /// <see cref="GetTopologicalOrder"/> view below remains eager and cycle-throwing -- it
-  /// returns a completed list, so it IS a drain.)
+  /// <see cref="GetTopologicalOrder"/> view below is that same walk drained into a list of
+  /// nodes -- a completed list IS a drain, so it throws where the drain starves.)
   ///
   /// <para>Deliberately NOT a frozen snapshot: it holds only the sources, and every
   /// acquisition walks the live node graph. Mutate the nodes -- relink, sort children -- and
@@ -47,17 +46,23 @@ namespace Copse.Dags
 
     /// <summary>
     /// Every node reachable from the sources, parents before children, each exactly once (this is
-    /// also the "distinct nodes" enumeration -- sum over it for shared-counted-once semantics).
-    /// Deterministic, and biased toward discovery order (sources first-to-last, siblings
-    /// first-to-last) wherever the edge constraints allow.
-    /// Throws <see cref="DagCycleException"/> if the reachable graph has a cycle.
-    /// This is the owned-node view; the contract-level value view is the
-    /// <c>GetTopologicalOrder</c> extension on <see cref="IDagnumerable{TNode, TEdge}"/>.
+    /// also the "distinct nodes" enumeration -- sum over it for shared-counted-once semantics):
+    /// the entry order of the builder's one walk, read as nodes -- deterministic, discovery-biased
+    /// (sources first-to-last, siblings first-to-last) wherever the edge constraints allow. A
+    /// completed list is a drain, so a cyclic graph throws <see cref="DagCycleException"/> here at
+    /// the starvation point, the loop named. This is the owned-node view; the contract-level
+    /// value view is the <c>GetTopologicalOrder</c> extension on
+    /// <see cref="IDagnumerable{TNode, TEdge}"/> -- on a builder receiver THIS overload binds.
     /// </summary>
     public IReadOnlyList<DagNode<TValue, TEdge>> GetTopologicalOrder()
     {
-      var topologicalOrder = GetPostorder();
-      topologicalOrder.Reverse();
+      var topologicalOrder = new List<DagNode<TValue, TEdge>>();
+      using var walk = new TopologyWalkDagnumerator<TValue, DagNode<TValue, TEdge>, TEdge>(new DagNodeTopology<TValue, TEdge>(_Sources), _Sources);
+
+      while (walk.MoveNext(DagTraversalStrategies.TraverseAll))
+        if (walk.Mode == DagnumeratorMode.EnteringNode)
+          topologicalOrder.Add(walk.CurrentHandle);
+
       return topologicalOrder;
     }
 
@@ -75,84 +80,5 @@ namespace Copse.Dags
         node.SortChildrenBy(keySelector);
     }
 
-    /// <summary>
-    /// The discovery walk acquisition rides: iterative depth-first (an explicit frame stack,
-    /// so recursion depth is bounded by heap not call stack) with a visited set for sharing and an
-    /// on-path set for cycle detection. Children before parents in the returned list.
-    /// </summary>
-    private List<DagNode<TValue, TEdge>> GetPostorder()
-    {
-      var visitedNodes = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
-      var nodesOnPath = new HashSet<DagNode<TValue, TEdge>>(ReferenceEqualityComparer.Instance);
-      var postorder = new List<DagNode<TValue, TEdge>>();
-      var pathFrames = new List<PathFrame>();
-
-      // Sources and children are walked in REVERSE so that the reversed postorder comes out in
-      // discovery order (sources first-to-last, siblings first-to-last) wherever the edge
-      // constraints allow -- a plain forward walk would put later siblings first.
-      for (var sourceIndex = _Sources.Count - 1; sourceIndex >= 0; sourceIndex--)
-      {
-        var source = _Sources[sourceIndex];
-
-        if (!visitedNodes.Add(source))
-          continue;
-
-        nodesOnPath.Add(source);
-        pathFrames.Add(new PathFrame(source));
-
-        while (pathFrames.Count > 0)
-        {
-          var frameIndex = pathFrames.Count - 1;
-          var frame = pathFrames[frameIndex];
-
-          if (frame.NextChildIndex == frame.Node.Children.Count)
-          {
-            pathFrames.RemoveAt(frameIndex);
-            nodesOnPath.Remove(frame.Node);
-            postorder.Add(frame.Node);
-            continue;
-          }
-
-          var child = frame.Node.Children[frame.Node.Children.Count - 1 - frame.NextChildIndex];
-          frame.NextChildIndex++;
-          pathFrames[frameIndex] = frame;
-
-          if (nodesOnPath.Contains(child))
-            throw new DagCycleException(DescribeCycle(pathFrames, child));
-
-          if (!visitedNodes.Add(child))
-            continue;
-
-          nodesOnPath.Add(child);
-          pathFrames.Add(new PathFrame(child));
-        }
-      }
-
-      return postorder;
-    }
-
-    private static string DescribeCycle(List<PathFrame> pathFrames, DagNode<TValue, TEdge> reencounteredNode)
-    {
-      var cycleStartIndex = pathFrames.FindIndex(frame => ReferenceEquals(frame.Node, reencounteredNode));
-      var cycleDescription = new StringBuilder("Cycle detected: ");
-
-      for (var frameIndex = cycleStartIndex; frameIndex < pathFrames.Count; frameIndex++)
-        cycleDescription.Append(pathFrames[frameIndex].Node).Append(" -> ");
-
-      cycleDescription.Append(reencounteredNode);
-      return cycleDescription.ToString();
-    }
-
-    private struct PathFrame
-    {
-      public PathFrame(DagNode<TValue, TEdge> node)
-      {
-        Node = node;
-        NextChildIndex = 0;
-      }
-
-      public readonly DagNode<TValue, TEdge> Node;
-      public int NextChildIndex;
-    }
   }
 }
