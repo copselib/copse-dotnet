@@ -917,3 +917,20 @@ EDGE REPLACEMENT. The operator family reads `SelectEdges` / `PruneEdges` /
   operation, dag-side first because the field workload asked. Placement of interior
   nodes is topological by construction (immediately after the parent), so the result's
   dense order needs no re-sort.
+
+## PROJECT LAYOUT (2026-08-22 — the root emptied; folders organize, the namespace does not split)
+
+One namespace (`Copse.Dags`), one project; the folders mirror the tree family's shape at
+single-project scale. One operator, one file stays the requirement inside `Extensions/`.
+
+| Folder | Holds |
+|---|---|
+| `Contracts/` | `IDagnumerable`, `IDagnumerator`, `DagnumeratorMode`, `DagTraversalStrategies`, `IDagTopology`, `IWalkableDagnumerable`, `DagCycleException` |
+| `Vocabulary/` | the value types the contracts and operators speak: `DagStep`, `DagHandleAndValue`, `DagInflow`, `DagScanResult`, `DagDispatch{Inflow,Result,Survey,Target}`, `DagEdge{Context,Path,Result}`, `DagNodeGraph`, `DagVisit`, `DagFlowOrientation` |
+| `Builder/` | `Dag` (the three partials: builder, stream door, walker door) and `DagNode` |
+| `Buffers/` | `DagBuffer`, `DagStructure`, `TopologicalDagnumerator` (the buffer's walk) |
+| `Walker/` | `DagWalker`, `DagWalkerResult`, `DagTopology`, `Dag.FromTopology`, `TopologyWalkDagnumerator` (the one demand-driven walk); `Topologies/` (the lazy, buffer, builder, transpose topologies); `Walkable/` (the lens views) |
+| `Extensions/Dagnumerable/` | the `Dagnumerable` partial static class — one operator per file, each operator's private wrapper types inside its file |
+| `Extensions/DagWalker/` | the `DagWalker` partial static class — the walker-receiver operators |
+| `Arrivals/` | the arrival-protocol grouping layer |
+| `Internal/` | `DagRelationshipTracker`, the `ReferenceEqualityComparer` polyfill |
