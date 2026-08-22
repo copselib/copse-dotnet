@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // Prune is TEMPORAL, not spatial (docs/DAG_CONTRACT_DESIGN.md, the prune clause,
+  // Prune is TEMPORAL, not spatial (design-docs/DAG_CONTRACT_DESIGN.md, the prune clause,
   // 2026-07-28): "before"/"after" mean before/after the node in TRAVERSAL order, so the
   // prunes are dimension-relative. The 2x2 on the chain a->b->c is the whole theorem in
   // four pins: forward-before {a}, forward-after {a->b}, backward-before {c},
@@ -53,7 +53,7 @@ namespace Copse.Dags.Tests
     {
       var pruned = Chain().PruneBefore(node => node == "b");
 
-      using var dagnumerator = pruned.GetForwardDagnumerator();
+      using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "a" }, EnteredNodes(visits));
@@ -64,7 +64,7 @@ namespace Copse.Dags.Tests
     {
       var pruned = Chain().PruneAfter(node => node == "b");
 
-      using var dagnumerator = pruned.GetForwardDagnumerator();
+      using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "a", "b" }, EnteredNodes(visits));
@@ -74,9 +74,9 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Backward_PruneBefore_RemovesTheNodeAndItsExclusiveAncestorSide()
     {
-      // Backward traversal order is c, b, a: severing every discovery of b kills b, and a
+      // Backward = the transpose walked forward (order c, b, a): severing every discovery of b kills b, and a
       // -- b's exclusive reach IN THIS DIMENSION -- dies with it.
-      using var dagnumerator = Chain().GetBackwardDagnumerator();
+      using var dagnumerator = Chain().Transpose().GetDagnumerator();
 
       var visits = Drain(
         dagnumerator,
@@ -93,7 +93,7 @@ namespace Copse.Dags.Tests
       // b enters, then dispatches nothing backward: a starves. In original orientation the
       // survivor is b->c, the mirror of the forward-after pin -- same predicate, opposite
       // half removed.
-      using var dagnumerator = Chain().GetBackwardDagnumerator();
+      using var dagnumerator = Chain().Transpose().GetDagnumerator();
 
       var visits = Drain(
         dagnumerator,
@@ -121,7 +121,7 @@ namespace Copse.Dags.Tests
 
       var pruned = dag.PruneBefore(node => node == "mid");
 
-      using var dagnumerator = pruned.GetForwardDagnumerator();
+      using var dagnumerator = pruned.GetDagnumerator();
       var entered = EnteredNodes(Drain(dagnumerator));
 
       CollectionAssert.AreEquivalent(new[] { "alpha", "beta", "x", "y" }, entered);

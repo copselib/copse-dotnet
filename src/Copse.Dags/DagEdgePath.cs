@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Copse.Dags
 {
   /// <summary>
-  /// Edge replacement's element (EDGE REPLACEMENT, 2026-08-07, docs/DAG_CONTRACT_DESIGN.md): what
+  /// Edge replacement's element (EDGE REPLACEMENT, 2026-08-07, design-docs/DAG_CONTRACT_DESIGN.md): what
   /// one edge becomes under <see cref="Dagnumerable.ReplaceEdges"/> -- a PATH with implicit
   /// endpoints. The substitute for <c>u -(f)-> v</c> starts at <c>u</c>, runs through zero or
   /// more fresh interior nodes, and ends at <c>v</c>: a first payload, then one

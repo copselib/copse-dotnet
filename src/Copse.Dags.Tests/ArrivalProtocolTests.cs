@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The arrival protocol's birth pins (docs/DAG_CONTRACT_DESIGN.md, the arrival protocol,
+  // The arrival protocol's birth pins (design-docs/DAG_CONTRACT_DESIGN.md, the arrival protocol,
   // phase 1): the grouped event stream exactly on the diamond, the bijection anchors (event
   // order == the visit protocol's entry order; flattened departures == GetEdges), the verdict
   // dialogue (suppress starves exclusive reach, shared targets survive via the other path,
@@ -109,7 +109,7 @@ namespace Copse.Dags.Tests
       var eventOrdinals = Drain(events).Select(nodeEvent => nodeEvent.Ordinal).ToList();
 
       var entryOrdinals = new List<int>();
-      using var dagnumerator = DiamondWithTail().GetForwardDagnumerator();
+      using var dagnumerator = DiamondWithTail().GetDagnumerator();
       while (dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll))
         if (dagnumerator.Mode == DagnumeratorMode.EnteringNode)
           entryOrdinals.Add(dagnumerator.Ordinal);

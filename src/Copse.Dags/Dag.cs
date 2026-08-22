@@ -7,7 +7,7 @@ namespace Copse.Dags
 {
   /// <summary>
   /// The owned, mutation-friendly builder -- a DAG held by its SOURCE nodes (in-degree zero;
-  /// the graph-theoretic vocabulary: sources and sinks, docs/DAG_CONTRACT_DESIGN.md) -- and the
+  /// the graph-theoretic vocabulary: sources and sinks, design-docs/DAG_CONTRACT_DESIGN.md) -- and the
   /// family's concrete <see cref="IDagnumerable{TNode, TEdge}"/>. Acquisition is LAZY (THE
   /// LAZY BUILDER RULING, 2026-08-06): Kahn on demand over the live node graph, no snapshot,
   /// no cycle check -- a cyclic graph streams its maximal acyclic prefix and throws

@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The upward operators (docs/DAG_CONTRACT_DESIGN.md, phase 3): SinkfixScan (per-use
+  // The upward operators (design-docs/DAG_CONTRACT_DESIGN.md, phase 3): SinkfixScan (per-use
   // roll-ups; the shared child appears in each parent's list -- the documented diamond
   // choice) and SinkfixDispatch -- the attribution dual that closes the deferred
   // upward-diamond semantic: each node decides what travels up each in-edge, so shared

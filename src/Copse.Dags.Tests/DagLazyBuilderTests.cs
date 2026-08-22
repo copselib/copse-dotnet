@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // THE LAZY BUILDER RULING (2026-08-06, docs/DAG_CONTRACT_DESIGN.md): builder acquisition is
+  // THE LAZY BUILDER RULING (2026-08-06, design-docs/DAG_CONTRACT_DESIGN.md): builder acquisition is
   // Kahn on demand -- no snapshot, no cycle check. A cyclic graph streams its maximal acyclic
   // downward-closed prefix and throws DagCycleException at the starvation point,
   // deterministically per drain; Materialize is the validator (a completed buffer is the

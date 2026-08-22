@@ -9,7 +9,7 @@ namespace Copse.Dags
     /// the node-channel twin of <see cref="ExpandEdgesWhere"/>: matching nodes expand to the
     /// graph <paramref name="expansion"/> returns; everything else keeps its seat untouched.
     /// The <c>Where</c> suffix marks the predicate, per the grammar. The canonical workload
-    /// is the cell-division move (docs/SUBSTITUTION_TAXONOMY.md): a node divides into
+    /// is the cell-division move (design-docs/SUBSTITUTION_TAXONOMY.md): a node divides into
     /// alternatives or stretches into a chain, and every incident edge divides with it --
     /// each replacement node keeps its own edge to each neighbor, sharing making the
     /// operation linear where the tree unfolding would pay copies. All of the replacement's

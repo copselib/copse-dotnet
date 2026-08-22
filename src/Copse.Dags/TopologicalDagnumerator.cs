@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Copse.Dags
 {
-  // The reference walk behind the contract (docs/DAG_CONTRACT_DESIGN.md): handed an
+  // The reference walk behind the contract (design-docs/DAG_CONTRACT_DESIGN.md): handed an
   // acquisition-time topological snapshot as flat CSR adjacency (the 2026-08-05 constitution
   // alignment: sequential flat-array passes are the measured winner), emits the Discover/Enter
   // stream with the liveness fold running as it goes. The walk is orientation-blind — a

@@ -2,7 +2,7 @@ namespace Copse.Dags
 {
   /// <summary>
   /// The edge tier's pairing (THE EDGE-PAIRING AMENDMENT, 2026-08-06,
-  /// docs/DAG_CONTRACT_DESIGN.md): one edge's original payload with the value the pass
+  /// design-docs/DAG_CONTRACT_DESIGN.md): one edge's original payload with the value the pass
   /// dispatched along it -- what the <c>DispatchEdges</c> twins' buffers hold. The rule that
   /// forces it: PROJECTION REPLACES, AGGREGATION PAIRS. <c>SelectEdges</c> replaces payloads
   /// lawfully (consumer-authored, each output derivable from its own input), but a dispatch's

@@ -6,7 +6,7 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// EDGE REPLACEMENT (2026-08-07, docs/DAG_CONTRACT_DESIGN.md -- graph rewriting's own
+    /// EDGE REPLACEMENT (2026-08-07, design-docs/DAG_CONTRACT_DESIGN.md -- graph rewriting's own
     /// term; deliberately NOT SelectMany, which stays reserved for the true node-channel
     /// bind): every edge becomes the
     /// <see cref="DagEdgePath{TNode, TEdge}"/> the selector returns -- kept, rewritten,

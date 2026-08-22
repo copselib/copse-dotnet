@@ -3,7 +3,7 @@ using System;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The DAG visit-stream protocol (docs/DAG_CONTRACT_DESIGN.md): a stateful walk over a dag's
+  /// The DAG visit-stream protocol (design-docs/DAG_CONTRACT_DESIGN.md): a stateful walk over a dag's
   /// topological presentation, publishing <see cref="DagnumeratorMode.DiscoveringNode"/> once per
   /// in-edge and <see cref="DagnumeratorMode.EnteringNode"/> once per node, entries strictly
   /// after their last discovery. Sources with zero in-edges (the walk's roots) are discovered by

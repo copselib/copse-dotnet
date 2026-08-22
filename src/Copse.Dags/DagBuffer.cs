@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The capture tier (the 2026-08-02 re-founding; docs/DAG_CONTRACT_DESIGN.md): an owned,
+  /// The capture tier (the 2026-08-02 re-founding; design-docs/DAG_CONTRACT_DESIGN.md): an owned,
   /// immutable CSR capture of a dag -- <see cref="Values"/> in entry (topological) order with
   /// the DENSE INDEX as the ordinal, out-adjacency as flat parallel arrays preserving
   /// per-parent out-edge order, and a <see cref="SourceOrdinal"/> back-map when captured from

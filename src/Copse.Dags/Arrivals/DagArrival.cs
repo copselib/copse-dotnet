@@ -1,7 +1,7 @@
 namespace Copse.Dags
 {
   /// <summary>
-  /// One ARRIVAL -- the arrival protocol's atom (docs/DAG_CONTRACT_DESIGN.md, the arrival
+  /// One ARRIVAL -- the arrival protocol's atom (design-docs/DAG_CONTRACT_DESIGN.md, the arrival
   /// protocol; vocabulary provisional): a node reached together with the in-edge that brought
   /// you, relative to the traversal dimension. Carries the dispatching far endpoint (value and
   /// ordinal -- provenance from the API, never smuggled in payloads) and the edge payload. The

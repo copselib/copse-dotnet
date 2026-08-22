@@ -5,7 +5,7 @@ namespace Copse.Dags
     /// <summary>
     /// Drains the walk completely and keeps nothing -- the tree family's Consume, dag-side,
     /// and the family's drain-without-residency VALIDATOR (THE LAZY BUILDER RULING,
-    /// 2026-08-06, docs/DAG_CONTRACT_DESIGN.md): a full drain of a cyclic source throws
+    /// 2026-08-06, design-docs/DAG_CONTRACT_DESIGN.md): a full drain of a cyclic source throws
     /// <see cref="DagCycleException"/> at the starvation point, so completing is the proof --
     /// O(queue) memory, no capture. Three postures, zero new vocabulary: any full drain
     /// validates, <c>Materialize</c> validates and keeps the certificate, <c>Consume</c>

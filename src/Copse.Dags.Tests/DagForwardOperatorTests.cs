@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The forward streaming operators (docs/DAG_CONTRACT_DESIGN.md, phase 2): exact-stream pins
+  // The forward streaming operators (design-docs/DAG_CONTRACT_DESIGN.md, phase 2): exact-stream pins
   // on the ownership diamond (ordinal GAPS pinned deliberately -- operators preserve source
   // ordinals), chains, consumer-strategy passthrough, and content differentials against the
   // builder's own operator clones -- the spike earning its oracle role. Content, not stream:

@@ -5,7 +5,7 @@ using System.Text;
 namespace Copse.Dags
 {
   // The builder's demand-driven walk (THE LAZY BUILDER RULING, 2026-08-06,
-  // docs/DAG_CONTRACT_DESIGN.md): Kahn's algorithm run on demand over the live node graph --
+  // design-docs/DAG_CONTRACT_DESIGN.md): Kahn's algorithm run on demand over the live node graph --
   // the visit protocol IS Kahn's trace (pop a ready node = entry; dispatch its out-edges =
   // discoveries, each decrementing a child's pending count; a child settling becomes ready).
   // No topological snapshot, no CSR arrays, no cycle check at acquisition: the eager

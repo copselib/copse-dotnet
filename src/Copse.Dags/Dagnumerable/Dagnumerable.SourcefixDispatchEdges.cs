@@ -7,7 +7,7 @@ namespace Copse.Dags
   {
     /// <summary>
     /// The edge-result flavor of the downward survey pass -- <see cref="SinkfixDispatchEdges"/>'s
-    /// mirror (docs/DAG_CONTRACT_DESIGN.md, the edge dual, tier 2): what each survey dispatches
+    /// mirror (design-docs/DAG_CONTRACT_DESIGN.md, the edge dual, tier 2): what each survey dispatches
     /// BECOMES the result's edge payloads. Every node with out-edges is surveyed once, in
     /// readiness order, with the destructured seats (2026-08-05): its value, its IN-edges'
     /// already-rewritten payloads as edge-paired arrivals (ancestors' cascade; empty at

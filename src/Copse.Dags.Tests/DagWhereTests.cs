@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // WHERE, the family homolog (2026-08-08, docs/SUBSTITUTION_TAXONOMY.md, resolving
+  // WHERE, the family homolog (2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md, resolving
   // DAG_CONTRACT_DESIGN.md open question 5): vertex bypass with caller edge composition,
   // LINQ polarity (true = keep). The load-bearing pins: through-edges compose in-edge ∘
   // out-edge per path (left-fold along filtered chains); BYPASS IS NOT REMOVAL -- kept nodes

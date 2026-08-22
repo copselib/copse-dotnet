@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // NODE REPLACEMENT (2026-08-08, docs/SUBSTITUTION_TAXONOMY.md): every node becomes the graph
+  // NODE REPLACEMENT (2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md): every node becomes the graph
   // the selector returns. The load-bearing pins: the WIRING RULE (in-edges to the replacement's
   // sources, out-edges from EVERY replacement node -- the cell-division signature: shared
   // children gain edges, never copies); Keep occupies the original's seat (SourceOrdinal

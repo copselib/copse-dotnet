@@ -7,7 +7,7 @@ namespace Copse.Dags
     /// <see cref="IDagnumerable{TNode, TEdge}"/> contract, so callers can't downcast to (or
     /// feature-test for) the concrete source type -- the tree family's Hide, dag-side. Its
     /// seat in the three-tier stability story (THE LAZY BUILDER RULING, 2026-08-06,
-    /// docs/DAG_CONTRACT_DESIGN.md): the mutable builder guarantees nothing, Hide guarantees
+    /// design-docs/DAG_CONTRACT_DESIGN.md): the mutable builder guarantees nothing, Hide guarantees
     /// the CONSUMER can't mutate (no cast back to <see cref="Dag{TValue, TEdge}"/>), and only
     /// the buffer guarantees nobody can. Deliberately NOT a stability promise: the owner can
     /// still mutate behind it, and drains lawfully differ -- Hide launders identity, the

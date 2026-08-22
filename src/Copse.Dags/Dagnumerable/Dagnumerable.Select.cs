@@ -3,7 +3,7 @@ using System;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The streaming operators over the DAG traversal contract (docs/DAG_CONTRACT_DESIGN.md,
+  /// The streaming operators over the DAG traversal contract (design-docs/DAG_CONTRACT_DESIGN.md,
   /// phase 2): composable wrappers over <see cref="IDagnumerable{TNode, TEdge}"/>.
   /// Operators preserve their source's ordinals (no relabeling exists to do -- ordinals are
   /// correlation keys, not coordinates), so pruned streams carry gaps, harmlessly.

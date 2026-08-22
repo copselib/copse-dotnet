@@ -1,6 +1,6 @@
 namespace Copse.Dags
 {
-  // The builder's adapter to the traversal contract (docs/DAG_CONTRACT_DESIGN.md, THE LAZY
+  // The builder's adapter to the traversal contract (design-docs/DAG_CONTRACT_DESIGN.md, THE LAZY
   // BUILDER RULING 2026-08-06): Dag is the family's first IDagnumerable, and its acquisition is
   // LAZY -- no topological snapshot, no CSR arrays, no cycle check. The walk is Kahn on demand
   // (BuilderDagnumerator) over the live node graph; acquisition runs one light counting pass

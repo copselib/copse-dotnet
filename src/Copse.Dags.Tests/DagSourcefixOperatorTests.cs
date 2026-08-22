@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // The downward money operators over the contract (docs/DAG_CONTRACT_DESIGN.md, phase 2b):
+  // The downward money operators over the contract (design-docs/DAG_CONTRACT_DESIGN.md, phase 2b):
   // SourcefixScan (edge-paired inflows -- effective-ownership lookthrough is the headline) and
   // SourcefixDispatch (the survey-shaped allocation pass; exactly-once slots; live edges only,
   // so pruning blockers upstream composes into the allocation). Differentials against the

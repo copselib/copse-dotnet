@@ -6,7 +6,7 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// NODE REPLACEMENT (2026-08-08, docs/SUBSTITUTION_TAXONOMY.md -- the node-channel row of
+    /// NODE REPLACEMENT (2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md -- the node-channel row of
     /// the substitution taxonomy; deliberately NOT SelectMany, whose name stays reserved
     /// pending the law battery and its own naming sitting): every node becomes the
     /// <see cref="DagNodeGraph{TNode, TEdge}"/> the selector returns -- kept in its seat,

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Copse.Dags.Tests
 {
   // The visit-stream conformance battery for the DAG traversal contract
-  // (docs/DAG_CONTRACT_DESIGN.md): exact-stream pins on the canonical shapes, protocol
+  // (design-docs/DAG_CONTRACT_DESIGN.md): exact-stream pins on the canonical shapes, protocol
   // invariants over a corpus, the transpose duality (Transpose()'s walk must present every
   // forward edge reversed -- orientation is an OPERATOR, not a dimension), the topological
   // oracle (entry order must match

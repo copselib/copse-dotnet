@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
-  // THE LAW BATTERY (2026-08-08, docs/SUBSTITUTION_TAXONOMY.md): the monad laws for
+  // THE LAW BATTERY (2026-08-08, design-docs/SUBSTITUTION_TAXONOMY.md): the monad laws for
   // ReplaceNodes over value-dependent selectors -- the gate on the reserved SelectMany name.
   // Return is Keep; bind is ReplaceNodes; the fused selector x => bind(f(x), g) is computed by
   // running ReplaceNodes over f(x) as a standalone dag (the operator verifying itself).

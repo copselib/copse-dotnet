@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Copse.Dags
 {
   /// <summary>
-  /// The arrival protocol's ONE element kind (docs/DAG_CONTRACT_DESIGN.md, the arrival
+  /// The arrival protocol's ONE element kind (design-docs/DAG_CONTRACT_DESIGN.md, the arrival
   /// protocol): a node's single event, fired once per live node in topological order, carrying
   /// the complete in-arrival group (empty at sources), the node, and the out-departure group
   /// (empty at sinks) -- the CSR row as a stream element. This is the shape every survey pass

@@ -1,7 +1,7 @@
 namespace Copse.Dags
 {
   /// <summary>
-  /// The DAG visit protocol's two phases (docs/DAG_CONTRACT_DESIGN.md) — the tree family's
+  /// The DAG visit protocol's two phases (design-docs/DAG_CONTRACT_DESIGN.md) — the tree family's
   /// scheduling/visiting split, generalized to shared parentage: a node is DISCOVERED once per
   /// in-edge (as each already-entered parent dispatches its out-edges) and ENTERED exactly once,
   /// after its last discovery. Topological order is precisely the guarantee that entry is

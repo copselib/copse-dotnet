@@ -12,7 +12,7 @@ namespace Copse.Dags
     /// seeds the scan (the fused-callback shape, A/B-ruled 2026-08-05: kept; the four-seat
     /// dual fold is logged for the future). Runs the pass NOW -- a scan's value is an
     /// entry-time fact under multiple parentage, so a lazy dag of results cannot honestly
-    /// exist (docs/DAG_CONTRACT_DESIGN.md, open question 7) -- and returns the CANONICAL
+    /// exist (design-docs/DAG_CONTRACT_DESIGN.md, open question 7) -- and returns the CANONICAL
     /// PAIRING: a <see cref="DagBuffer{TNode, TEdge}"/> of
     /// <see cref="DagScanResult{TNode, TAccumulate}"/>s over the source's SHARED structure
     /// (project <c>.Accumulate</c> for values). Callbacks fire when their data is ready
