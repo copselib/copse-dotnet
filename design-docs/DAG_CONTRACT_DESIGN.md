@@ -998,3 +998,58 @@ arrival protocol's grouped event (arrivals, node, departures) holds both grains 
 element, and over that element a single projection and a single verdict subsume the
 node/edge pairs. The split is an artifact of the node being the element. That question is
 THICKET's (the arrival-protocol migration), and stays open.
+
+## THE EVENT GRAIN (built 2026-08-22 — the bind owns its departures; the group-aware relabels are extends; the PoC's receipt)
+
+The work PoC (legal-entity ownership: `CashMovementService`, `LegalEntityFinancingService2`)
+read against the algebra. Its lift is the structure layer — one world graph, `Materialize` as
+the validator, `TakeDownstreamWhere → GetSinks → TakeUpstreamWhere` as the structure finder,
+`ExpandEdgesWhere` as the synthetic anchors, the lookthrough as one scan. Its weight was three
+shapes: result pairings nesting across passes (`DagDispatchResult<DagDispatchResult<…>>`,
+`.Node.Node`, explicit type arguments everywhere because `Action`-shaped surveys infer
+nothing); **dispatch as the only way to condition an edge group** — `ExcludeEdges`,
+`StopAtFundBlockers`, `ApplyReallocationPolicy` move no value, they rewrite each in-edge given
+the node's whole in-group, and were forced into survey + exactly-once slots + a pairing +
+an immediate `.SelectEdges(e => e.Edge.Accumulate)` unwrap (and in one case a MUTATED payload
+object); and per-edge flow results re-joined by hand (`First(a => a.Dispatcher == owned)`)
+where `SinkfixDispatchEdges` would have put them on the edges.
+
+**Reading the group is extend's job, not bind's.** The bind's law is locality — a node's fate
+decided at the node — and a selector that reads its arrivals makes the fused selector
+non-local. So:
+
+- **The bind owns its departures.** A `DagSlotAttachment` may ANSWER for the out-edges it
+  re-attaches — keep / rewrite / suppress — by a LOCAL function of (index, payload).
+  `SelectOutEdges` and `PruneOutEdges` are `Return` answering `Rewrite` / `Suppress`
+  (pinned). **Lawful in the promotion-free fragment**: an answer that depends on index or
+  payload cannot follow an earlier pass's promotion beneath it, because promotion composes a
+  suffix onto the edge the answer would have to see — `promoteMiddles` then
+  `rewriteDepartures` on the diamond gives `acr0` stepwise and `ar0c` fused, and no local
+  answer reproduces the former (pinned as a principled non-law; the dag's reading of the
+  sequence lab's suffix-free fragment). Answering then promoting, answering then answering,
+  and a promotion answering its own departures all associate — the battery runs every pair
+  outside promotion-then-answering.
+- **The event-grain relabels are extends**, destructured seats `(arrivals, node, departures)`
+  as `DagEdgeContext` groups, return-shaped, no slots: `SelectNodes` over the event (≡ the
+  walker's `Extend` with a one-hop observation, pinned — the extend half on the same seats),
+  `SelectInEdges` / `SelectOutEdges` (one payload per arrival / departure; the result payload
+  type free), `PruneInEdges` / `PruneOutEdges` (one verdict per edge, forward liveness).
+  `SelectInEdges` is the transpose-conjugate of `SelectOutEdges` (pinned). The prunes are NOT
+  conjugate — liveness is orientation-bound (prune is temporal): pruning an in-edge from the
+  child's seat keeps a parent the sources still reach, where the same cut on the transpose
+  kills it (pinned as a principled non-law). The stateless `SelectEdges` / `PruneEdges` are
+  the group-aware ones ignoring the group (pinned).
+- **The receipt.** The PoC's `ApplyReallocationPolicy` as `SelectInEdges` — zero the excluded
+  owners, redistribute per capita over the survivors — equals its dispatch spelling,
+  content-exact, with no slots, no pairing, no unwrap, and `decimal` inferred. `ExcludeEdges`
+  and `StopAtFundBlockers` collapse the same way; `DispatchAmounts` and
+  `DispatchFundStructures` are real flows and stay dispatches.
+
+**The completeness sentence, as it now stands.** One element — the node with its arrivals and
+departures — and two operations over it: the bind (reshape; owns the node and its departures,
+locally) and extend (relabel; reads the group). Every node flavor of Select, Where, and Prune
+is the bind's quartet; every out-edge flavor is the bind answering; every in-edge flavor is
+the transpose-conjugate or the extend; the subdivision says the same thing with edges as
+nodes and no composer. What the bind cannot do — rewrite an edge by its payload after a
+promotion composed beneath it, or read a neighbor — is exactly what the laws say it must
+not, and the extend does instead.

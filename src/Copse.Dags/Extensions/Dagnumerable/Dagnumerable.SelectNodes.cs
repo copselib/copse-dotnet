@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Copse.Dags
 {
@@ -82,5 +83,38 @@ namespace Copse.Dags
     }
 
     public void Dispose() => _Inner.Dispose();
+  }
+}
+
+namespace Copse.Dags
+{
+  public static partial class Dagnumerable
+  {
+    /// <summary>
+    /// The node projection at the EVENT grain: every node relabeled from its whole event --
+    /// the arrivals that reached it, its value, the departures it dispatches -- each group
+    /// complete, once per node. This is an extend (a relabel from a one-hop vantage), not a
+    /// bind; it is what the dispatch tier was being used for whenever a pass needed the group
+    /// but moved no value. Destructured seats, return-shaped: the result type is inferred from
+    /// the lambda. Capture-shaped: the groups are the buffer's.
+    /// </summary>
+    public static DagBuffer<TResult, TEdge> SelectNodes<TNode, TEdge, TResult>(
+      this IDagnumerable<TNode, TEdge> source,
+      Func<IReadOnlyList<DagEdgeContext<TNode, TEdge>>, TNode, IReadOnlyList<DagEdgeContext<TNode, TEdge>>, TResult> selector)
+    {
+      if (source == null)
+        throw new ArgumentNullException(nameof(source));
+      if (selector == null)
+        throw new ArgumentNullException(nameof(selector));
+
+      var buffer = DagBuffer<TNode, TEdge>.From(source);
+      DagEventSeats.Build(buffer, out var arrivals, out var departures, out _);
+
+      var values = new TResult[buffer.Count];
+      for (var ordinal = 0; ordinal < values.Length; ordinal++)
+        values[ordinal] = selector(arrivals[ordinal], buffer[ordinal], departures[ordinal]);
+
+      return buffer.WithValues(values);
+    }
   }
 }
