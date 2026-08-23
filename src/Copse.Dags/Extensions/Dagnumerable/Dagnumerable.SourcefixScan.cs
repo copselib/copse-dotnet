@@ -19,7 +19,7 @@ namespace Copse.Dags
     /// (arrivals complete); only the per-group order is contract -- the total cross-node
     /// order is deliberately unspecified.
     /// </summary>
-    public static DagBuffer<DagScanResult<TNode, TResult>, TEdge> SourcefixScan<TNode, TResult, TEdge>(
+    internal static DagBuffer<DagScanResult<TNode, TResult>, TEdge> SourcefixScan<TNode, TResult, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
     {

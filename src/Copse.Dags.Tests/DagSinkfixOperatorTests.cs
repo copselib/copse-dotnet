@@ -75,7 +75,7 @@ namespace Copse.Dags.Tests
       // Per-use semantics: the venture's (single, memoized) result rides up BOTH edges, so a
       // naive roll-up counts it twice -- 1 + 2 + 2 = 5 over four nodes. That is the documented
       // caller's choice; SinkfixDispatch is the anti-double-count tool.
-      var counts = Diamond().SinkfixScan<string, int, decimal>(
+      var counts = Diamond().Sinkfix().Scan<int>(
         (node, childResults) => 1 + childResults.Sum(child => child.Value));
 
       CollectionAssert.AreEqual(
@@ -88,7 +88,7 @@ namespace Copse.Dags.Tests
     {
       var computed = new List<string>();
 
-      Diamond().SinkfixScan<string, int, decimal>((node, childResults) =>
+      Diamond().Sinkfix().Scan<int>((node, childResults) =>
       {
         computed.Add(node);
         return 0;
@@ -101,7 +101,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_PreservesShapeAndEdges()
     {
-      var scanned = Diamond().SinkfixScan<string, string, decimal>((node, _) => node.ToUpperInvariant());
+      var scanned = Diamond().Sinkfix().Scan<string>((node, _) => node.ToUpperInvariant());
 
       CollectionAssert.AreEqual(
         new[] { "APEX" },
@@ -129,7 +129,7 @@ namespace Copse.Dags.Tests
     public void SinkfixScan_MatchesTheBuilderOracle()
     {
       var contract = Diamond()
-        .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value))
+        .Sinkfix().Scan<int>((node, childResults) => 1 + childResults.Sum(c => c.Value))
         .Values.Select(pairing => pairing.Accumulate).ToList();
 
       var oracle = Diamond()
@@ -144,7 +144,7 @@ namespace Copse.Dags.Tests
     {
       var counts = Diamond()
         .PruneNodesBefore(entity => entity == "left")
-        .SinkfixScan<string, int, decimal>((node, childResults) => 1 + childResults.Sum(c => c.Value));
+        .Sinkfix().Scan<int>((node, childResults) => 1 + childResults.Sum(c => c.Value));
 
       CollectionAssert.AreEqual(
         new[] { 3, 2, 1 },
@@ -173,7 +173,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixDispatch_AttributesTheVentureToItsUltimateOwner()
     {
-      var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+      var attributed = ValuedDiamond().Sinkfix().Dispatch<decimal>(AttributeUp);
 
       var byEntity = attributed.Values.ToDictionary(result => result.Node.Name, result => result);
 
@@ -201,12 +201,12 @@ namespace Copse.Dags.Tests
       // fraction the DOWNWARD scan computes, times the holding, equals the attribution the
       // UPWARD dispatch delivers to the apex.
       var ownershipDown = Diamond()
-        .SourcefixScan<string, decimal, decimal>((entity, inflows) =>
+        .Sourcefix().Scan<decimal>((entity, inflows) =>
           inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge))
         .Values.Last().Accumulate;
 
       var attributedUp = ValuedDiamond()
-        .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp)
+        .Sinkfix().Dispatch<decimal>(AttributeUp)
         .Values.Single(result => result.Node.Name == "apex")
         .Arrivals.ToArray().Sum();
 
@@ -218,7 +218,7 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(
+      ValuedDiamond().Sinkfix().Dispatch<decimal>(
         (subject, arrivals, targets) =>
         {
           surveyed.Add(subject.Name);
@@ -236,7 +236,7 @@ namespace Copse.Dags.Tests
       // The retired IsSource decoration's replacement: source-ness is a stream fact, read off
       // the result buffer's own walk -- and upward it is exactly the never-surveyed node set
       // whose resolved arrivals ARE the attribution.
-      var attributed = ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+      var attributed = ValuedDiamond().Sinkfix().Dispatch<decimal>(AttributeUp);
 
       CollectionAssert.AreEqual(
         new[] { "apex" },
@@ -274,7 +274,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixDispatchEdges_ConditionsTheOwnershipDistribution()
     {
-      var conditioned = GpSliver().SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp);
+      var conditioned = GpSliver().Sinkfix().DispatchEdges<decimal>(ConditionOutGp);
 
       // Edges rewritten in place: GP's stays, at zero, visible; the fund absorbs; nodes and
       // shape untouched; groups still sum to one. The result payloads are PAIRINGS (the
@@ -292,7 +292,7 @@ namespace Copse.Dags.Tests
       // (Project the pairing away first -- the doc's own idiom for values traveling on.)
       var lookthrough = conditioned
         .SelectEdges(e => e.Edge.Accumulate)
-        .SourcefixScan<string, decimal, decimal>(
+        .Sourcefix().Scan<decimal>(
           (entity, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
 
       foreach (var pairing in lookthrough.Values)
@@ -303,9 +303,9 @@ namespace Copse.Dags.Tests
     public void SinkfixDispatchEdges_MoneyFollowsTheConditionedEdges()
     {
       var moved = GpSliver()
-        .SinkfixDispatchEdges<string, decimal, decimal>(ConditionOutGp)
+        .Sinkfix().DispatchEdges<decimal>(ConditionOutGp)
         .SelectEdges(e => e.Edge.Accumulate)
-        .SourcefixDispatch(1_000m, (subject, arrivals, targets) =>
+        .Sourcefix().Dispatch(1_000m, (subject, arrivals, targets) =>
         {
           var arrived = arrivals.Sum(arrival => arrival.Value);
 
@@ -341,7 +341,7 @@ namespace Copse.Dags.Tests
       // write among its out-edge results -- dispatcher, new payload, old payload.
       var seenAtX = new List<(string Dispatcher, decimal NewPayload, decimal OldPayload)>();
 
-      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
+      GpSliver().Sinkfix().DispatchEdges<decimal>((subject, arrivals, owners) =>
       {
         if (subject == "X")
           seenAtX.AddRange(arrivals.Select(i => (i.Dispatcher, i.Value, i.Edge)));
@@ -361,7 +361,7 @@ namespace Copse.Dags.Tests
       top.AddChild(bottom, 0.75m);
 
       var doubled = new Dag<string, decimal>(top)
-        .SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
+        .Sinkfix().DispatchEdges<decimal>((subject, arrivals, owners) =>
         {
           foreach (var owner in owners)
             owner.Dispatch(owner.Edge * 2);
@@ -378,7 +378,7 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) =>
+      GpSliver().Sinkfix().DispatchEdges<decimal>((subject, arrivals, owners) =>
       {
         surveyed.Add(subject);
         foreach (var owner in owners)
@@ -393,14 +393,14 @@ namespace Copse.Dags.Tests
     public void SinkfixDispatchEdges_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        GpSliver().SinkfixDispatchEdges<string, decimal, decimal>((subject, arrivals, owners) => { }));
+        GpSliver().Sinkfix().DispatchEdges<decimal>((subject, arrivals, owners) => { }));
     }
 
     [TestMethod]
     public void SinkfixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        ValuedDiamond().SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(
+        ValuedDiamond().Sinkfix().Dispatch<decimal>(
           (subject, arrivals, targets) => { }));
     }
 
@@ -410,7 +410,7 @@ namespace Copse.Dags.Tests
       // Blocker on the left: only the right route attributes upward.
       var attributed = ValuedDiamond()
         .PruneNodesBefore(entity => entity.Name == "left")
-        .SinkfixDispatch<(string Name, decimal Holding), decimal, decimal>(AttributeUp);
+        .Sinkfix().Dispatch<decimal>(AttributeUp);
 
       CollectionAssert.AreEqual(
         new[] { ("right", 120m, 0.40m) },

@@ -20,7 +20,7 @@ namespace Copse.Dags
     /// graph precedes the first result) and returns the CANONICAL PAIRING over the source's
     /// shared structure, in the source's own orientation.
     /// </summary>
-    public static DagBuffer<DagScanResult<TNode, TResult>, TEdge> SinkfixScan<TNode, TResult, TEdge>(
+    internal static DagBuffer<DagScanResult<TNode, TResult>, TEdge> SinkfixScan<TNode, TResult, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
     {

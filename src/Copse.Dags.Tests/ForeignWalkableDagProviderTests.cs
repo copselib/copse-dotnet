@@ -56,7 +56,7 @@ namespace Copse.Dags.Tests
       CollectionAssert.AreEqual(new[] { "apex", "left", "right", "venture" }, dag.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(new[] { "apex->left:0.60", "apex->right:0.40", "left->venture:0.70", "right->venture:0.30" }, DagWalkerCorpus.Edges(dag));
       Assert.AreEqual("venture", dag.GetDagWalker().At("left").MoveToChild(0).Value.Focus);
-      Assert.AreEqual(0.54m, dag.SourcefixScan<string, decimal, decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge)).GetTopologicalOrder().Single(result => result.Node == "venture").Accumulate, "the streaming algebra runs over the foreign provider: lookthrough 54%");
+      Assert.AreEqual(0.54m, dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge)).GetTopologicalOrder().Single(result => result.Node == "venture").Accumulate, "the streaming algebra runs over the foreign provider: lookthrough 54%");
     }
   }
 }

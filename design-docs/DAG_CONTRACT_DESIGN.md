@@ -1095,3 +1095,25 @@ algebra's home. (Offered as "capture-first"; Jason has not bought the strong for
 counter-case is the serialization/interchange role, O(frontier) drains on graphs large
 enough to care, and incremental failure at the acquisition walk. The narrow form above is
 theorems; the posture stays open.)
+
+## THE FLOW DOORS ARE THE SURFACE (ruled 2026-08-22 — "I definitely don't want both")
+
+`dag.Sourcefix()` / `dag.Sinkfix()` return a `DagFlow<TNode, TEdge>` — a two-field struct
+that does nothing but fix the receiver's type arguments — from which the flow family is one
+call with one type argument: `.Scan<TResult>(…)`, `.Dispatch(seed, …)` / `.Dispatch<TDispatch>(…)`,
+`.DispatchEdges<TDispatch>(…)`. The three-argument spellings (`SourcefixScan<TNode, TResult, TEdge>`
+and kin) exist only because `TResult` / `TDispatch` appear solely inside the lambda's
+parameter types, which C# cannot infer from; the door is the language-level fix. Ruled: the
+doors are the surface, the flat forms are the engines behind them — internal — and never
+both. Every test and the PoC rewrite speak the doors. The fold family is return-shaped on
+the doors (one value per target, count-checked), with the slot form kept for setter-shaped
+callers; `Scan` was return-shaped from birth.
+
+The 2×2 the surface now states plainly: {relabel, fold} × {node grain, edge grain} —
+`SelectNodes(event)` / `Scan` and `SelectInEdges`/`SelectOutEdges` / `Dispatch`/`DispatchEdges`
+— with the fold row marked by exactly one difference: its arrivals carry this pass's results.
+A relabel cannot do the fold purely (the smuggle is a closure dictionary keyed by node value,
+relying on the pass's evaluation order — purity, order-as-API, and value identity, three
+pledges at once); the fold is that threading given a lawful home. Scan stays as the
+node-valued fold: derivable from dispatch (the coherence battery's oldest pin) and kept
+because one-fact-per-node is the majority shape.

@@ -115,7 +115,7 @@ namespace Copse.Dags.Tests
       foreach (var factory in new Func<Dag<string, decimal>>[] { DagWalkerCorpus.Diamond, DagWalkerCorpus.SharedLeaf, DagWalkerCorpus.Chain })
         foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(factory))
         {
-          var viaScan = factory().SourcefixScan<string, decimal, decimal>(
+          var viaScan = factory().Sourcefix().Scan<decimal>(
             (node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge))
             .GetTopologicalOrder().ToDictionary(result => result.Node, result => result.Accumulate);
 
@@ -150,7 +150,7 @@ namespace Copse.Dags.Tests
       foreach (var factory in new Func<Dag<string, decimal>>[] { DagWalkerCorpus.Diamond, DagWalkerCorpus.SharedLeaf, DagWalkerCorpus.TwoIslands })
         foreach (var (name, walkable) in DagWalkerLawProviders.IntHandled(factory))
         {
-          var viaScan = factory().SinkfixScan<string, int, decimal>((node, inflows) => 1 + inflows.Sum(inflow => inflow.Value))
+          var viaScan = factory().Sinkfix().Scan<int>((node, inflows) => 1 + inflows.Sum(inflow => inflow.Value))
             .GetTopologicalOrder().ToDictionary(result => result.Node, result => result.Accumulate);
 
           var viaExtend = ByName(walkable.Extend((topology, handle) => PathCountedSize(topology, handle)), walkable);

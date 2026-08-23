@@ -9,9 +9,9 @@ namespace Copse.Dags
   /// and <c>TEdge</c> are fixed by the receiver here, so <c>Scan&lt;TResult&gt;</c> and
   /// <c>Dispatch&lt;TDispatch&gt;</c> name only the result type C# cannot infer (it appears
   /// only inside the lambda's parameter types). <c>dag.Sourcefix().Scan&lt;decimal&gt;((node,
-  /// inflows) => …)</c> beside <c>dag.SourcefixScan&lt;Entity, decimal, Edge&gt;(…)</c>: the same
-  /// operator, the same semantics, the same laws; the prefix has become the door. Every
-  /// member delegates to its flat twin.
+  /// inflows) => …)</c> is the family's one spelling of the sourcefix scan: the doors are the
+  /// surface, the three-argument engines behind them are internal (ruled: never both -- one
+  /// name, one meaning). The prefix has become the door.
   /// </summary>
   public readonly struct DagFlow<TNode, TEdge>
   {
@@ -24,13 +24,13 @@ namespace Copse.Dags
     public IDagnumerable<TNode, TEdge> Source { get; }
     internal DagFlowOrientation Orientation { get; }
 
-    /// <summary>The fold: each node's accumulate from its inflows in flow order (<c>SourcefixScan</c> / <c>SinkfixScan</c>).</summary>
+    /// <summary>The fold: each node's accumulate from its inflows in flow order -- the sourcefix scan downward, the sinkfix scan upward.</summary>
     public DagBuffer<DagScanResult<TNode, TResult>, TEdge> Scan<TResult>(Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
       => Orientation == DagFlowOrientation.Sourcefix
         ? Source.SourcefixScan(accumulate)
         : Source.SinkfixScan(accumulate);
 
-    /// <summary>The seeded downward survey (<c>SourcefixDispatch</c>); sinkfix has no seed -- see <see cref="Dispatch{TDispatch}(DagDispatchSurvey{TNode, TDispatch, TEdge})"/>.</summary>
+    /// <summary>The seeded downward survey; sinkfix has no seed -- see <see cref="Dispatch{TDispatch}(DagDispatchSurvey{TNode, TDispatch, TEdge})"/>.</summary>
     public DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> Dispatch<TDispatch>(TDispatch seed, DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {
       if (Orientation != DagFlowOrientation.Sourcefix)
@@ -45,7 +45,7 @@ namespace Copse.Dags
         ? Source.SourcefixDispatch(default(TDispatch), survey)
         : Source.SinkfixDispatch(survey);
 
-    /// <summary>The edge-paired survey: what each survey dispatched, riding the edge beside its original payload (<c>SourcefixDispatchEdges</c> / <c>SinkfixDispatchEdges</c>).</summary>
+    /// <summary>The edge-paired survey: what each survey dispatched, riding the edge beside its original payload.</summary>
     public DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> DispatchEdges<TDispatch>(DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
       => Orientation == DagFlowOrientation.Sourcefix
         ? Source.SourcefixDispatchEdges(survey)

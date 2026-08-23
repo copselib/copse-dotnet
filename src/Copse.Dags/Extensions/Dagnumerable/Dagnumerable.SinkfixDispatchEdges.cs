@@ -25,7 +25,7 @@ namespace Copse.Dags
     /// <c>.SelectEdges(e =&gt; e.Edge.Accumulate)</c> when only the computed values should
     /// travel on.
     /// </summary>
-    public static DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> SinkfixDispatchEdges<TNode, TEdge, TDispatch>(
+    internal static DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> SinkfixDispatchEdges<TNode, TEdge, TDispatch>(
       this IDagnumerable<TNode, TEdge> source,
       DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {

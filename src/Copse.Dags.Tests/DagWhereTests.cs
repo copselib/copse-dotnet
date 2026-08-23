@@ -31,7 +31,7 @@ namespace Copse.Dags.Tests
       dag.GetEdges().Select(e => $"{e.Parent}->{e.Child}:{e.Edge}").ToArray();
 
     private static decimal Lookthrough(IDagnumerable<string, decimal> dag) =>
-      dag.SourcefixScan<string, decimal, decimal>(
+      dag.Sourcefix().Scan<decimal>(
            (node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge))
          .GetSinks()
          .Single()

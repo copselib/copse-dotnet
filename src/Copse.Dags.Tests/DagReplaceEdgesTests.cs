@@ -135,7 +135,7 @@ namespace Copse.Dags.Tests
       // presentation, never the arithmetic -- effective ownership at the venture is 54%
       // before and after.
       static decimal Lookthrough(IDagnumerable<string, decimal> dag) =>
-        dag.SourcefixScan<string, decimal, decimal>(
+        dag.Sourcefix().Scan<decimal>(
              (node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge))
            .GetSinks()
            .Single()
@@ -183,7 +183,7 @@ namespace Copse.Dags.Tests
         expanded.GetTopologicalOrder().ToArray());
 
       // Effective ownership per anchor: each program node's lookthrough of the venture.
-      var lookthrough = expanded.SinkfixScan<string, decimal, decimal>(
+      var lookthrough = expanded.Sinkfix().Scan<decimal>(
         (node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(i => i.Value * i.Edge));
 
       CollectionAssert.AreEqual(

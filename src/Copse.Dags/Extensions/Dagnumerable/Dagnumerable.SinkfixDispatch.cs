@@ -19,7 +19,7 @@ namespace Copse.Dags
     /// surveyed; their arrival groups in the result ARE the attribution. Returns the survey
     /// tier's pairing over the source's shared structure, in the source's own orientation.
     /// </summary>
-    public static DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> SinkfixDispatch<TNode, TDispatch, TEdge>(
+    internal static DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> SinkfixDispatch<TNode, TDispatch, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {

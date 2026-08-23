@@ -320,7 +320,7 @@ namespace Copse.Dags.Tests
       // the operator only removes.)
       var moved = Diamond()
         .PruneEdges(e => e.Parent == "left" && e.Child == "venture")
-        .SourcefixDispatch(1000m, (subject, arrivals, targets) =>
+        .Sourcefix().Dispatch(1000m, (subject, arrivals, targets) =>
         {
           var arrived = arrivals.Sum(arrival => arrival.Value);
 

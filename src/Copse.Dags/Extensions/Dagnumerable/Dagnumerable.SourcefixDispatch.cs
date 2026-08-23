@@ -22,7 +22,7 @@ namespace Copse.Dags
     /// the source's shared structure. Only live edges are surveyed, so pruning blockers
     /// upstream composes into the allocation for free.
     /// </summary>
-    public static DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> SourcefixDispatch<TNode, TDispatch, TEdge>(
+    internal static DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> SourcefixDispatch<TNode, TDispatch, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
       TDispatch seed,
       DagDispatchSurvey<TNode, TDispatch, TEdge> survey)

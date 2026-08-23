@@ -201,7 +201,7 @@ namespace Copse.Dags.Tests
         Func<string, bool> excluded = owner => owner == "gp";
 
         var viaDispatch = factory()
-          .SinkfixDispatchEdges<string, decimal, decimal>((entity, arrivals, owners) =>
+          .Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
           {
             var excludedOwners = owners.Where(owner => excluded(owner.Value)).ToList();
             var split = owners.Count - excludedOwners.Count == 0 ? 0m : excludedOwners.Sum(owner => owner.Edge) / (owners.Count - excludedOwners.Count);

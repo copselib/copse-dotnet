@@ -68,12 +68,12 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in new[] { Diamond(), TwoSourceMesh() })
       {
-        var scan = dag.SourcefixScan<string, decimal, decimal>(EffectiveOwnership);
+        var scan = dag.Sourcefix().Scan<decimal>(EffectiveOwnership);
 
         // The same-node fold encoding: each family's survey computes the subject's own
         // accumulation from its AUTHORED arrivals (the dispatcher-less filter recovers the
         // scan's empty-at-sources boundary) and dispatches it down every edge.
-        var dispatch = dag.SourcefixDispatch<string, decimal, decimal>(
+        var dispatch = dag.Sourcefix().Dispatch<decimal>(
           0m,
           (subject, arrivals, targets) =>
           {
@@ -115,13 +115,13 @@ namespace Copse.Dags.Tests
     {
       foreach (var dag in new[] { Diamond(), TwoSourceMesh() })
       {
-        var scan = dag.SinkfixScan<string, decimal, decimal>(
+        var scan = dag.Sinkfix().Scan<decimal>(
           (entity, childResults) => 1m + childResults.Sum(result => result.Value * result.Edge));
 
         // Upward there is no boundary invocation and no filter to apply: sinks see empty
         // arrivals in both tiers, and each node dispatches its own accumulation up every
         // in-edge.
-        var dispatch = dag.SinkfixDispatch<string, decimal, decimal>(
+        var dispatch = dag.Sinkfix().Dispatch<decimal>(
           (subject, arrivals, targets) =>
           {
             var upflows = new DagInflow<decimal, decimal>[arrivals.Count];
@@ -185,10 +185,10 @@ namespace Copse.Dags.Tests
         // Order-insensitive fold (sum), because the two paths present arrival groups in
         // different per-group orders: direct sinkfix in OUT-EDGE order (structural), the
         // literal transpose walk in its own discovery order.
-        var direct = dag.SinkfixScan<string, decimal, decimal>(
+        var direct = dag.Sinkfix().Scan<decimal>(
           (entity, childResults) => 1m + childResults.Sum(result => result.Value * result.Edge));
 
-        var viaTranspose = dag.Transpose().SourcefixScan<string, decimal, decimal>(
+        var viaTranspose = dag.Transpose().Sourcefix().Scan<decimal>(
           (entity, inflows) => 1m + inflows.Sum(inflow => inflow.Value * inflow.Edge));
 
         var directByName = direct.Values.ToDictionary(pair => pair.Node, pair => pair.Accumulate);
@@ -214,7 +214,7 @@ namespace Copse.Dags.Tests
     {
       // Budget-across-sources with the SAME callback that allocates everywhere else -- the
       // capability the manufactured per-source seed inflow could not express.
-      var dispatched = TwoSourceMesh().SourcefixDispatch<string, decimal, decimal>(
+      var dispatched = TwoSourceMesh().Sourcefix().Dispatch<decimal>(
         900m,
         (subject, arrivals, targets) =>
         {
@@ -243,7 +243,7 @@ namespace Copse.Dags.Tests
       var dispatcherlessSubjects = new List<string>();
       var seenDispatchers = new List<string>();
 
-      Diamond().SourcefixDispatch<string, decimal, decimal>(
+      Diamond().Sourcefix().Dispatch<decimal>(
         100m,
         (subject, arrivals, targets) =>
         {
@@ -292,10 +292,10 @@ namespace Copse.Dags.Tests
       mid.AddChild("bottom", 1.00m);
       var dag = new Dag<string, decimal>(top);
 
-      var downward = dag.SourcefixScan<string, (string Name, decimal[] EdgeOrder), decimal>(
+      var downward = dag.Sourcefix().Scan<(string Name, decimal[] EdgeOrder)>(
         (entity, inflows) => (entity, inflows.Select(inflow => inflow.Edge).ToArray()));
 
-      var upward = dag.SinkfixScan<string, (string Name, decimal[] EdgeOrder), decimal>(
+      var upward = dag.Sinkfix().Scan<(string Name, decimal[] EdgeOrder)>(
         (entity, childResults) => (entity, childResults.Select(result => result.Edge).ToArray()));
 
       var mid2 = downward.Values.Single(pair => pair.Node == "mid").Accumulate;

@@ -19,7 +19,7 @@ namespace Copse.Dags.Tests
       var dag = DagWalkerCorpus.Diamond();
 
       var viaDoor = dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
-      var viaFlat = dag.SourcefixScan<string, decimal, decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
+      var viaFlat = dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
 
       CollectionAssert.AreEqual(viaFlat.Values.Select(pairing => pairing.Accumulate).ToList(), viaDoor.Values.Select(pairing => pairing.Accumulate).ToList());
       Assert.AreEqual(0.54m, viaDoor.Values.Single(pairing => pairing.Node == "venture").Accumulate);
@@ -38,7 +38,7 @@ namespace Copse.Dags.Tests
         foreach (var owner in owners)
           owner.Dispatch(owner.Edge * 2);
       });
-      var viaFlat = dag.SinkfixDispatchEdges<string, decimal, decimal>((entity, arrivals, owners) =>
+      var viaFlat = dag.Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
       {
         foreach (var owner in owners)
           owner.Dispatch(owner.Edge * 2);
