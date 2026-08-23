@@ -1054,3 +1054,44 @@ the transpose-conjugate or the extend; the subdivision says the same thing with 
 nodes and no composer. What the bind cannot do — rewrite an edge by its payload after a
 promotion composed beneath it, or read a neighbor — is exactly what the laws say it must
 not, and the extend does instead.
+
+## WHY NOT THE TREE'S SCHEDULE (2026-08-22 — the question asked directly, and closed)
+
+Jason's challenge, in two rounds, with the diamond `a: b,c / b: d / c: d`:
+
+**"Why not the tree's S/V traversal?"** (`Sa Va Sb Vb Sd Vd Vb Va Sc Vc Vd …`). That stream
+has a name in the taxonomy: it is the traversal of the UNFOLDING — the tree of paths, `d`
+once per root-path. Two theorems close it. (1) The downward flows are impossible on it: when
+the walk first stands on `d` (under `b`), `d`'s other arrival (via `c`) has not happened —
+anything computed there is incomplete, and no local rule repairs it. The only schedule where
+every node's in-group is complete at entry IS topological order, by definition. The tree's
+S/V pattern is local because in-degree is one — the arity-one collapse, again. (2) Either
+revisit convention inherits its pathology: full re-expansion is path semantics (exponential,
+and it double-counts — the pre-DAG LegalEntityFinancingService's per-branch-then-re-merge
+architecture was exactly this traversal's price); a visited-set skip makes the stream lie to
+the second parent and carries global state anyway. Where the instinct IS lawful the family
+already does it: `GetHandles` is DFS with a visited set (enumeration needs no in-groups),
+`ToFormattedLines` is DFS with refs, `SinkfixScan`'s shared-child-once is the memoized
+children-first fold. An `Unfold()` bridge (the dag as a lazy treenumerable of its paths —
+the one dag view that genuinely streams, because paths are local) is expressible over the
+walker topology the day a workload wants path semantics on purpose; not built.
+
+**"Then maybe BFT only?"** Breadth-first fixes the diamond only because the diamond is
+GRADED. One skip edge — `a: b,d / b: c / c: d` — and BFS visits `d` at level 1 via the
+direct edge while its arrival from `c` lands at level 2: the same incomplete in-group, one
+level deeper. The BFT that always works places each node at 1 + max parent level —
+longest-path layering — and that IS a topological order presented level by level; Kahn's
+ready-batches ARE those levels. So both tree schedules fail on dags for one reason — they
+are local, and arrival-completeness is global — and the family's walk is the unique repair,
+with exactly one genuine choice left inside it: the tie-break discipline. The walk pushes
+ready nodes on a STACK (depth-biased, matching discovery order); a QUEUE gives the
+level-biased presentation — the carry table's deferred "depth- vs level-biased topological
+order" row, now understood as a knob on one walk rather than a second dimension. Unshipped
+until asked for.
+
+Corollary, stated while the question was live: scheduling on a dag is global, so the
+algebra's results reside in captures; the stream is the transport and the validator, not the
+algebra's home. (Offered as "capture-first"; Jason has not bought the strong form — the
+counter-case is the serialization/interchange role, O(frontier) drains on graphs large
+enough to care, and incremental failure at the acquisition walk. The narrow form above is
+theorems; the posture stays open.)
