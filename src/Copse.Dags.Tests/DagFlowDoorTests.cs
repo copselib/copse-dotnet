@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -69,6 +71,38 @@ namespace Copse.Dags.Tests
           owner.Dispatch(holding * owner.Edge);
       });
       Assert.AreEqual(540m, upward.Values.Single(result => result.Node == "apex").Arrivals.ToArray().Sum(), "the venture's 1000 attributed upward to the apex: 540");
+    }
+
+    [TestMethod]
+    public void ReturnShapedFolds_EqualTheirSlotSpellings_AndCountIsChecked()
+    {
+      var dag = DagWalkerCorpus.Diamond();
+
+      // The reallocation-shaped fold, both spellings.
+      var viaSlots = dag.Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
+      {
+        foreach (var owner in owners)
+          owner.Dispatch(owner.Edge * 2);
+      });
+      var viaReturn = dag.Sinkfix().DispatchEdges<decimal>((arrivals, entity, owners) => owners.Select(owner => owner.Edge * 2).ToList());
+
+      CollectionAssert.AreEqual(
+        viaSlots.GetEdges().Select(edge => $"{edge.Parent}->{edge.Child}:{edge.Edge.Accumulate}").ToList(),
+        viaReturn.GetEdges().Select(edge => $"{edge.Parent}->{edge.Child}:{edge.Edge.Accumulate}").ToList());
+
+      // The seeded money fold, return-shaped: the boundary passes the seed through.
+      var downward = dag.Sourcefix().Dispatch(1000m, (arrivals, entity, targets) =>
+      {
+        var holding = arrivals.ToArray().Sum(arrival => arrival.Value);
+        return targets.Select(target => entity == null ? holding : holding * target.Edge).ToList();
+      });
+      Assert.AreEqual(540m, downward.Values.Single(result => result.Node == "venture").Arrivals.ToArray().Sum());
+
+      // One value per target, or the seats refuse.
+      StringAssert.Contains(
+        Assert.ThrowsException<InvalidOperationException>(() =>
+          dag.Sinkfix().DispatchEdges<decimal>((arrivals, entity, owners) => new List<decimal>())).Message,
+        "one per target");
     }
   }
 }

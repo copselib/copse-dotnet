@@ -50,5 +50,41 @@ namespace Copse.Dags
       => Orientation == DagFlowOrientation.Sourcefix
         ? Source.SourcefixDispatchEdges(survey)
         : Source.SinkfixDispatchEdges(survey);
+
+    /// <summary>
+    /// The seeded downward survey, RETURN-SHAPED: one dispatched value per target, in target
+    /// order, count-checked -- the fold speaking the relabel family's convention (arrivals,
+    /// node, targets), with the one marked difference that the arrivals carry THIS pass's
+    /// results. The slot form stays as the setter-friendly spelling (allocators that write
+    /// through callbacks); this form infers, composes, and cannot double- or under-dispatch.
+    /// </summary>
+    public DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> Dispatch<TDispatch>(
+      TDispatch seed,
+      Func<IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>>, TNode, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>, IReadOnlyList<TDispatch>> survey)
+      => Dispatch(seed, AsSlotSurvey(survey));
+
+    /// <summary>The unseeded survey, return-shaped (sinkfix natively; sourcefix with a default seed).</summary>
+    public DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> Dispatch<TDispatch>(
+      Func<IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>>, TNode, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>, IReadOnlyList<TDispatch>> survey)
+      => Dispatch(AsSlotSurvey(survey));
+
+    /// <summary>The edge-paired survey, return-shaped: the dispatched values ride the edges beside their original payloads.</summary>
+    public DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> DispatchEdges<TDispatch>(
+      Func<IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>>, TNode, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>, IReadOnlyList<TDispatch>> survey)
+      => DispatchEdges(AsSlotSurvey(survey));
+
+    private static DagDispatchSurvey<TNode, TDispatch, TEdge> AsSlotSurvey<TDispatch>(
+      Func<IReadOnlyList<DagDispatchInflow<TNode, TDispatch, TEdge>>, TNode, IReadOnlyList<DagDispatchTarget<TNode, TDispatch, TEdge>>, IReadOnlyList<TDispatch>> survey)
+      => (subject, arrivals, targets) =>
+      {
+        var values = survey(arrivals, subject, targets);
+
+        if (values == null || values.Count != targets.Count)
+          throw new InvalidOperationException(
+            $"A return-shaped survey answered {values?.Count.ToString() ?? "null"} values for {targets.Count} targets; one per target, in target order.");
+
+        for (var index = 0; index < targets.Count; index++)
+          targets[index].Dispatch(values[index]);
+      };
   }
 }
