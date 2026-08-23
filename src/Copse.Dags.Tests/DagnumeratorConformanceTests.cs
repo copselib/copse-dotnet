@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using static Copse.Dags.Tests.Visits;
 
 namespace Copse.Dags.Tests
 {
@@ -16,46 +17,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagnumeratorConformanceTests
   {
-    private readonly record struct Visit(
-      DagnumeratorMode Mode, string Node, int Ordinal, int ParentOrdinal, int EdgeIndex, decimal Edge);
-
-    private static Visit Discover(string node, int ordinal, int parentOrdinal, int edgeIndex, decimal edge = 0m)
-      => new(DagnumeratorMode.DiscoveringNode, node, ordinal, parentOrdinal, edgeIndex, edge);
-
-    private static Visit Enter(string node, int ordinal)
-      => new(DagnumeratorMode.EnteringNode, node, ordinal, -1, 0, 0m);
-
-    private static List<Visit> Drain(
-      IDagnumerator<string, decimal> dagnumerator,
-      Func<Visit, DagTraversalStrategies> strategySelector = null)
-    {
-      var visits = new List<Visit>();
-      var strategies = DagTraversalStrategies.TraverseAll;
-
-      while (dagnumerator.MoveNext(strategies))
-      {
-        var visit = new Visit(
-          dagnumerator.Mode, dagnumerator.Node, dagnumerator.Ordinal,
-          dagnumerator.ParentOrdinal, dagnumerator.EdgeIndex, dagnumerator.Edge);
-        visits.Add(visit);
-        strategies = strategySelector?.Invoke(visit) ?? DagTraversalStrategies.TraverseAll;
-      }
-
-      return visits;
-    }
-
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     private static IEnumerable<Dag<string, decimal>> Corpus()
     {
       // Single node.
@@ -67,7 +28,7 @@ namespace Copse.Dags.Tests
       yield return new Dag<string, decimal>(chainRoot);
 
       // The diamond.
-      yield return Diamond();
+      yield return DagWalkerCorpus.Diamond();
 
       // Shared leaf under three parents, two of them roots.
       var alpha = new DagNode<string, decimal>("alpha");
@@ -100,7 +61,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void PreEnumerationConvention_IsTheSentinel()
     {
-      using var dagnumerator = Diamond().GetDagnumerator();
+      using var dagnumerator = DagWalkerCorpus.Diamond().GetDagnumerator();
 
       Assert.AreEqual(DagnumeratorMode.DiscoveringNode, dagnumerator.Mode);
       Assert.AreEqual(-1, dagnumerator.Ordinal);
@@ -115,7 +76,7 @@ namespace Copse.Dags.Tests
     {
       // Topological order (discovery-biased): apex, left, right, venture. The venture's entry
       // fires only after BOTH discoveries -- the protocol's defining guarantee.
-      using var dagnumerator = Diamond().GetDagnumerator();
+      using var dagnumerator = DagWalkerCorpus.Diamond().GetDagnumerator();
 
       CollectionAssert.AreEqual(
         new[]
@@ -140,7 +101,7 @@ namespace Copse.Dags.Tests
       // re-founding): sources are the sinks; ordinals index the transpose's OWN topological
       // order, which is the reverse of the forward one (venture 0, right 1, left 2, apex 3), so
       // the old backward stream carries over verbatim; the apex enters last with two discoveries.
-      using var dagnumerator = Diamond().Transpose().GetDagnumerator();
+      using var dagnumerator = DagWalkerCorpus.Diamond().Transpose().GetDagnumerator();
 
       CollectionAssert.AreEqual(
         new[]
@@ -344,7 +305,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnOneDiamondInEdge_TheSharedNodeStillEnters()
     {
       var visits = Drain(
-        Diamond().GetDagnumerator(),
+        DagWalkerCorpus.Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.DiscoveringNode && visit.Node == "venture" && visit.ParentOrdinal == 1
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -357,7 +318,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnEveryInEdge_TheNodeNeverEnters()
     {
       var visits = Drain(
-        Diamond().GetDagnumerator(),
+        DagWalkerCorpus.Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.DiscoveringNode && visit.Node == "venture"
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -371,7 +332,7 @@ namespace Copse.Dags.Tests
     public void SkipEdge_OnASourceDiscovery_KillsTheComponentReachableOnlyThroughIt()
     {
       var visits = Drain(
-        Diamond().GetDagnumerator(),
+        DagWalkerCorpus.Diamond().GetDagnumerator(),
         visit => visit.Node == "apex" && visit.Mode == DagnumeratorMode.DiscoveringNode
           ? DagTraversalStrategies.SkipEdge
           : DagTraversalStrategies.TraverseAll);
@@ -387,7 +348,7 @@ namespace Copse.Dags.Tests
     {
       // Suppress left's dispatch: the venture must still enter, via right's edge alone.
       var visits = Drain(
-        Diamond().GetDagnumerator(),
+        DagWalkerCorpus.Diamond().GetDagnumerator(),
         visit => visit.Mode == DagnumeratorMode.EnteringNode && visit.Node == "left"
           ? DagTraversalStrategies.SkipOutEdges
           : DagTraversalStrategies.TraverseAll);
@@ -418,7 +379,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void WrongModeStrategies_Throw()
     {
-      using (var dagnumerator = Diamond().GetDagnumerator())
+      using (var dagnumerator = DagWalkerCorpus.Diamond().GetDagnumerator())
       {
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll));
         Assert.AreEqual(DagnumeratorMode.DiscoveringNode, dagnumerator.Mode);
@@ -426,7 +387,7 @@ namespace Copse.Dags.Tests
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipOutEdges));
       }
 
-      using (var dagnumerator = Diamond().GetDagnumerator())
+      using (var dagnumerator = DagWalkerCorpus.Diamond().GetDagnumerator())
       {
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll)); // sentinel -> D(apex)
         Assert.IsTrue(dagnumerator.MoveNext(DagTraversalStrategies.TraverseAll)); // D(apex) -> E(apex)
@@ -435,7 +396,7 @@ namespace Copse.Dags.Tests
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipEdge));
       }
 
-      using (var dagnumerator = Diamond().GetDagnumerator())
+      using (var dagnumerator = DagWalkerCorpus.Diamond().GetDagnumerator())
       {
         Assert.ThrowsException<ArgumentException>(
           () => dagnumerator.MoveNext(DagTraversalStrategies.SkipEdge));

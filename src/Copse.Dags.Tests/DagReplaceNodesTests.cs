@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -15,18 +14,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagReplaceNodesTests
   {
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     // a(b, c): one parent, two exclusive children -- the conversation's own division example.
     private static Dag<string, decimal> Fork()
     {
@@ -42,10 +29,10 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void KeepEverything_IsTheContentIdentity_SeatsIncluded()
     {
-      var kept = Diamond().ReplaceNodes(DagNodeGraph<string, decimal>.Keep);
+      var kept = DagWalkerCorpus.Diamond().ReplaceNodes(DagNodeGraph<string, decimal>.Keep);
 
       CollectionAssert.AreEqual(new[] { "apex", "left", "right", "venture" }, kept.GetTopologicalOrder().ToArray());
-      CollectionAssert.AreEqual(Edges(Diamond()), Edges(kept));
+      CollectionAssert.AreEqual(Edges(DagWalkerCorpus.Diamond()), Edges(kept));
 
       // Seat preservation: single-node replacements occupy the originals' seats.
       for (var ordinal = 0; ordinal < kept.Count; ordinal++)
@@ -55,8 +42,8 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Keep_WithARewrittenValue_IsSelectContent()
     {
-      var byReplacement = Diamond().ReplaceNodes(node => DagNodeGraph<string, decimal>.Keep(node.ToUpperInvariant()));
-      var byProjection = Diamond().SelectNodes(node => node.ToUpperInvariant());
+      var byReplacement = DagWalkerCorpus.Diamond().ReplaceNodes(node => DagNodeGraph<string, decimal>.Keep(node.ToUpperInvariant()));
+      var byProjection = DagWalkerCorpus.Diamond().SelectNodes(node => node.ToUpperInvariant());
 
       CollectionAssert.AreEqual(
         byProjection.GetTopologicalOrder().ToArray(),
@@ -86,7 +73,7 @@ namespace Copse.Dags.Tests
     {
       // Dividing an interior node: every in-edge fans to every alternative (all are sources
       // of the replacement), every out-edge fans from every alternative.
-      var divided = Diamond().ReplaceNodes(node =>
+      var divided = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
         node == "left"
           ? DagNodeGraph<string, decimal>.Split("l0", "l1")
           : DagNodeGraph<string, decimal>.Keep(node));
@@ -141,7 +128,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void BornHere_MultiNodeReplacements_KeepNoSeat()
     {
-      var divided = Diamond().ReplaceNodes(node =>
+      var divided = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
         node == "left"
           ? DagNodeGraph<string, decimal>.Split("l0", "l1")
           : DagNodeGraph<string, decimal>.Keep(node));
@@ -160,15 +147,15 @@ namespace Copse.Dags.Tests
       // Dropping one of the venture's parents spares it (another live path remains);
       // dropping both kills it. Contents must agree with PruneBefore exactly (prune
       // polarity: true = prune).
-      var oneDropped = Diamond().ReplaceNodes(node =>
+      var oneDropped = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
         node == "left" ? DagNodeGraph<string, decimal>.Drop : DagNodeGraph<string, decimal>.Keep(node));
 
       CollectionAssert.AreEqual(
-        Diamond().PruneNodesBefore(node => node == "left").GetTopologicalOrder().ToArray(),
+        DagWalkerCorpus.Diamond().PruneNodesBefore(node => node == "left").GetTopologicalOrder().ToArray(),
         oneDropped.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(new[] { "apex", "right", "venture" }, oneDropped.GetTopologicalOrder().ToArray());
 
-      var bothDropped = Diamond().ReplaceNodes(node =>
+      var bothDropped = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
         node == "left" || node == "right"
           ? DagNodeGraph<string, decimal>.Drop
           : DagNodeGraph<string, decimal>.Keep(node));
@@ -184,7 +171,7 @@ namespace Copse.Dags.Tests
       // the result is the empty dag.
       var consulted = 0;
 
-      var result = Diamond().ReplaceNodes(node =>
+      var result = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
       {
         consulted++;
         Assert.AreEqual("apex", node, "a dead node's replacement is never consulted");
@@ -223,24 +210,24 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void OperatorGuards_NullSeatsThrow()
     {
-      Assert.ThrowsException<ArgumentNullException>(() => Diamond().ReplaceNodes(null));
+      Assert.ThrowsException<ArgumentNullException>(() => DagWalkerCorpus.Diamond().ReplaceNodes(null));
       Assert.ThrowsException<ArgumentNullException>(() =>
-        Diamond().ExpandNodesWhere(null, node => DagNodeGraph<string, decimal>.Keep(node)));
+        DagWalkerCorpus.Diamond().ExpandNodesWhere(null, node => DagNodeGraph<string, decimal>.Keep(node)));
       Assert.ThrowsException<ArgumentNullException>(() =>
-        Diamond().ExpandNodesWhere(node => true, null));
+        DagWalkerCorpus.Diamond().ExpandNodesWhere(node => true, null));
       Assert.ThrowsException<ArgumentNullException>(() =>
-        Diamond().Where(null, (inEdge, outEdge) => inEdge));
-      Assert.ThrowsException<ArgumentNullException>(() => Diamond().Where(node => true, null));
+        DagWalkerCorpus.Diamond().Where(null, (inEdge, outEdge) => inEdge));
+      Assert.ThrowsException<ArgumentNullException>(() => DagWalkerCorpus.Diamond().Where(node => true, null));
     }
 
     [TestMethod]
     public void ExpandNodesWhere_IsTheReplacementWithAKeepBranch()
     {
-      var viaSugar = Diamond().ExpandNodesWhere(
+      var viaSugar = DagWalkerCorpus.Diamond().ExpandNodesWhere(
         node => node == "left",
         node => DagNodeGraph<string, decimal>.Split("l0", "l1"));
 
-      var viaReplacement = Diamond().ReplaceNodes(node =>
+      var viaReplacement = DagWalkerCorpus.Diamond().ReplaceNodes(node =>
         node == "left"
           ? DagNodeGraph<string, decimal>.Split("l0", "l1")
           : DagNodeGraph<string, decimal>.Keep(node));

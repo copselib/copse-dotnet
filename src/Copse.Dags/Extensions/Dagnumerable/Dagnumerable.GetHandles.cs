@@ -18,10 +18,18 @@ namespace Copse.Dags
       if (source == null)
         throw new ArgumentNullException(nameof(source));
 
-      return GetHandlesIterator(source);
+      return HandlesOf(source);
     }
 
-    private static IEnumerable<THandle> GetHandlesIterator<TValue, THandle, TEdge>(
+    private static IEnumerable<THandle> HandlesOf<TValue, THandle, TEdge>(IWalkableDagnumerable<TValue, THandle, TEdge> source)
+    {
+      foreach (var stance in Stances(source))
+        yield return stance.Focus;
+    }
+
+    // Every node's stance exactly once, each source's reach before the next's (a depth-first
+    // order over the handle set; parents are not guaranteed before children).
+    internal static IEnumerable<DagWalker<TValue, THandle, TEdge>> Stances<TValue, THandle, TEdge>(
       IWalkableDagnumerable<TValue, THandle, TEdge> source)
     {
       var door = source.GetDagWalker();
@@ -43,7 +51,7 @@ namespace Copse.Dags
       {
         var stance = pending.Pop();
 
-        yield return stance.Focus;
+        yield return stance;
 
         for (var outEdgeIndex = 0; ; outEdgeIndex++)
         {

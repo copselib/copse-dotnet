@@ -17,44 +17,14 @@ namespace Copse.Dags
       if (source == null)
         throw new ArgumentNullException(nameof(source));
 
-      return GetHandlesWithValuesIterator(source);
+      return HandlesWithValuesOf(source);
     }
 
-    private static IEnumerable<DagHandleAndValue<THandle, TValue>> GetHandlesWithValuesIterator<TValue, THandle, TEdge>(
+    private static IEnumerable<DagHandleAndValue<THandle, TValue>> HandlesWithValuesOf<TValue, THandle, TEdge>(
       IWalkableDagnumerable<TValue, THandle, TEdge> source)
     {
-      var door = source.GetDagWalker();
-      var seen = new HashSet<THandle>();
-      var pending = new Stack<DagWalker<TValue, THandle, TEdge>>();
-
-      for (var sourceIndex = 0; ; sourceIndex++)
-      {
-        var sourceStance = door.MoveToChild(sourceIndex);
-
-        if (!sourceStance.HasValue)
-          break;
-
-        if (seen.Add(sourceStance.Value.Focus))
-          pending.Push(sourceStance.Value);
-      }
-
-      while (pending.Count > 0)
-      {
-        var stance = pending.Pop();
-
+      foreach (var stance in Stances(source))
         yield return new DagHandleAndValue<THandle, TValue>(stance.Focus, stance.GetValue());
-
-        for (var outEdgeIndex = 0; ; outEdgeIndex++)
-        {
-          var childStance = stance.MoveToChild(outEdgeIndex);
-
-          if (!childStance.HasValue)
-            break;
-
-          if (seen.Add(childStance.Value.Focus))
-            pending.Push(childStance.Value);
-        }
-      }
     }
   }
 }

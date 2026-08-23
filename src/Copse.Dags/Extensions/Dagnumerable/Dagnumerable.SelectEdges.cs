@@ -5,7 +5,7 @@ namespace Copse.Dags
   public static partial class Dagnumerable
   {
     /// <summary>
-    /// The edge-side dual of <see cref="Select"/> (design-docs/DAG_CONTRACT_DESIGN.md, the edge dual):
+    /// The edge-side dual of <c>SelectNodes</c> (design-docs/DAG_CONTRACT_DESIGN.md, the edge dual):
     /// maps each edge's payload, forwarding the visit stream otherwise unchanged (node values,
     /// structure, ordinals). The selector receives the full relationship context -- dispatching
     /// parent, discovered child, payload, in-edge index -- and is evaluated once per published

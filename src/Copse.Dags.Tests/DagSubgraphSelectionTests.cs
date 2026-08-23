@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -16,19 +15,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagSubgraphSelectionTests
   {
-    // The ownership diamond of the forward-operator battery: apex owns left 60% / right 40%;
-    // each owns the venture (70%/30%). Source ordinals: apex 0, left 1, right 2, venture 3.
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     // Two disconnected chains sharing nothing: a->b and c (a lone source-sink).
     private static Dag<string, decimal> ChainAndLoner()
     {
@@ -47,13 +33,13 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void GetSources_Diamond_IsTheApex()
     {
-      CollectionAssert.AreEqual(new[] { "apex" }, Diamond().GetSources().ToArray());
+      CollectionAssert.AreEqual(new[] { "apex" }, DagWalkerCorpus.Diamond().GetSources().ToArray());
     }
 
     [TestMethod]
     public void GetSinks_Diamond_IsTheVenture()
     {
-      CollectionAssert.AreEqual(new[] { "venture" }, Diamond().GetSinks().ToArray());
+      CollectionAssert.AreEqual(new[] { "venture" }, DagWalkerCorpus.Diamond().GetSinks().ToArray());
     }
 
     [TestMethod]
@@ -70,11 +56,11 @@ namespace Copse.Dags.Tests
     public void GetSources_ComposesOverAWrapper()
     {
       // Pruning the apex kills everything (closure death via the liveness fold): no sources.
-      Assert.AreEqual(0, Diamond().PruneNodesBefore(n => n == "apex").GetSources().Count());
+      Assert.AreEqual(0, DagWalkerCorpus.Diamond().PruneNodesBefore(n => n == "apex").GetSources().Count());
 
       // Pruning the venture leaves the apex the sole source, untouched.
       CollectionAssert.AreEqual(
-        new[] { "apex" }, Diamond().PruneNodesBefore(n => n == "venture").GetSources().ToArray());
+        new[] { "apex" }, DagWalkerCorpus.Diamond().PruneNodesBefore(n => n == "venture").GetSources().ToArray());
     }
 
     // ---------------------------------------------------------------------------------------
@@ -83,7 +69,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeDownstreamWhere_OneMiddle_TakesItsClosure_AndTheOutsideEdgeDies()
     {
-      var selected = Diamond().TakeDownstreamWhere(n => n == "left");
+      var selected = DagWalkerCorpus.Diamond().TakeDownstreamWhere(n => n == "left");
 
       CollectionAssert.AreEqual(new[] { "left", "venture" }, selected.GetTopologicalOrder().ToArray());
       // right->venture died with its outside parent; left's whole block survived.
@@ -95,7 +81,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeDownstreamWhere_BothMiddles_ShareTheVentureOnce()
     {
-      var selected = Diamond().TakeDownstreamWhere(n => n == "left" || n == "right");
+      var selected = DagWalkerCorpus.Diamond().TakeDownstreamWhere(n => n == "left" || n == "right");
 
       // One result dag, two sources, the shared descendant present ONCE with both in-edges --
       // a second path into included structure is an edge, not a copy.
@@ -110,7 +96,7 @@ namespace Copse.Dags.Tests
     {
       // venture matches too, but left's closure already holds it: it comes out an interior
       // node, NOT a second source -- the no-nested-matches rule, emergent from in-degree.
-      var selected = Diamond().TakeDownstreamWhere(n => n == "left" || n == "venture");
+      var selected = DagWalkerCorpus.Diamond().TakeDownstreamWhere(n => n == "left" || n == "venture");
 
       CollectionAssert.AreEqual(new[] { "left", "venture" }, selected.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(new[] { "left" }, selected.GetSources().ToArray());
@@ -120,7 +106,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeDownstreamWhere_MatchingNothing_IsEmpty()
     {
-      var selected = Diamond().TakeDownstreamWhere(_ => false);
+      var selected = DagWalkerCorpus.Diamond().TakeDownstreamWhere(_ => false);
 
       Assert.AreEqual(0, selected.Count);
       Assert.AreEqual(0, selected.GetTopologicalOrder().Count);
@@ -132,7 +118,7 @@ namespace Copse.Dags.Tests
     {
       // Matching the apex sweeps in everything; on a buffer source the operator returns the
       // buffer (immutable, so identity is safe -- Materialize's own convention).
-      var buffer = Diamond().Materialize();
+      var buffer = DagWalkerCorpus.Diamond().Materialize();
 
       Assert.AreSame(buffer, buffer.TakeDownstreamWhere(n => n == "apex"));
       Assert.AreEqual(4, buffer.TakeDownstreamWhere(n => n == "apex").Count);
@@ -141,7 +127,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeDownstreamWhere_SourceOrdinals_CorrelateBackToTheCapturedStream()
     {
-      var selected = Diamond().TakeDownstreamWhere(n => n == "left");
+      var selected = DagWalkerCorpus.Diamond().TakeDownstreamWhere(n => n == "left");
 
       // Result ordinals 0,1 are the capture's 1 (left) and 3 (venture).
       Assert.AreEqual(1, selected.SourceOrdinal(0));
@@ -152,7 +138,7 @@ namespace Copse.Dags.Tests
     public void TakeDownstreamWhere_ResultComposes_ThroughTheFluentSurface()
     {
       // The result is an IDagnumerable like any other: operators chain on it.
-      var reselected = Diamond()
+      var reselected = DagWalkerCorpus.Diamond()
         .TakeDownstreamWhere(n => n == "left" || n == "right")
         .SelectNodes(n => n.ToUpperInvariant())
         .TakeDownstreamWhere(n => n == "RIGHT");
@@ -163,7 +149,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeDownstreamWhere_NullPredicate_Throws()
     {
-      Assert.ThrowsException<ArgumentNullException>(() => Diamond().TakeDownstreamWhere(null));
+      Assert.ThrowsException<ArgumentNullException>(() => DagWalkerCorpus.Diamond().TakeDownstreamWhere(null));
     }
 
     // ---------------------------------------------------------------------------------------
@@ -172,7 +158,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_OneMiddle_TakesItsAncestry_AndTheOutsideEdgeDies()
     {
-      var selected = Diamond().TakeUpstreamWhere(n => n == "left");
+      var selected = DagWalkerCorpus.Diamond().TakeUpstreamWhere(n => n == "left");
 
       CollectionAssert.AreEqual(new[] { "apex", "left" }, selected.GetTopologicalOrder().ToArray());
       // apex->right died with its outside child; left->venture died below the match.
@@ -184,7 +170,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_BothMiddles_ShareTheApexOnce()
     {
-      var selected = Diamond().TakeUpstreamWhere(n => n == "left" || n == "right");
+      var selected = DagWalkerCorpus.Diamond().TakeUpstreamWhere(n => n == "left" || n == "right");
 
       // One result dag, two sinks, the shared ancestor present ONCE with both out-edges.
       Assert.AreEqual(3, selected.Count);
@@ -208,7 +194,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_MatchingNothing_IsEmpty()
     {
-      var selected = Diamond().TakeUpstreamWhere(_ => false);
+      var selected = DagWalkerCorpus.Diamond().TakeUpstreamWhere(_ => false);
 
       Assert.AreEqual(0, selected.Count);
       Assert.AreEqual(0, selected.GetTopologicalOrder().Count);
@@ -219,7 +205,7 @@ namespace Copse.Dags.Tests
     public void TakeUpstreamWhere_FullClosure_ReturnsTheBufferItself()
     {
       // Matching the venture sweeps in everything upstream of it -- the whole diamond.
-      var buffer = Diamond().Materialize();
+      var buffer = DagWalkerCorpus.Diamond().Materialize();
 
       Assert.AreSame(buffer, buffer.TakeUpstreamWhere(n => n == "venture"));
       Assert.AreEqual(4, buffer.TakeUpstreamWhere(n => n == "venture").Count);
@@ -228,7 +214,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_SourceOrdinals_CorrelateBackToTheCapturedStream()
     {
-      var selected = Diamond().TakeUpstreamWhere(n => n == "right");
+      var selected = DagWalkerCorpus.Diamond().TakeUpstreamWhere(n => n == "right");
 
       // Result ordinals 0,1 are the capture's 0 (apex) and 2 (right).
       Assert.AreEqual(0, selected.SourceOrdinal(0));
@@ -249,8 +235,8 @@ namespace Copse.Dags.Tests
                  _ => false,
                })
       {
-        var direct = Diamond().TakeUpstreamWhere(predicate);
-        var conjugate = Diamond().Transpose().TakeDownstreamWhere(predicate).Transpose();
+        var direct = DagWalkerCorpus.Diamond().TakeUpstreamWhere(predicate);
+        var conjugate = DagWalkerCorpus.Diamond().Transpose().TakeDownstreamWhere(predicate).Transpose();
 
         CollectionAssert.AreEqual(
           direct.GetTopologicalOrder().OrderBy(n => n).ToArray(),
@@ -266,7 +252,7 @@ namespace Copse.Dags.Tests
     {
       // "Downstream of left, upstream of the venture": every path from left down to the
       // venture and nothing else -- the between-graph, free as a composition.
-      var between = Diamond()
+      var between = DagWalkerCorpus.Diamond()
         .TakeDownstreamWhere(n => n == "left")
         .TakeUpstreamWhere(n => n == "venture");
 
@@ -277,7 +263,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_ResultComposes_ThroughTheFluentSurface()
     {
-      var reselected = Diamond()
+      var reselected = DagWalkerCorpus.Diamond()
         .TakeUpstreamWhere(n => n == "left" || n == "right")
         .SelectNodes(n => n.ToUpperInvariant())
         .TakeUpstreamWhere(n => n == "RIGHT");
@@ -288,7 +274,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void TakeUpstreamWhere_NullPredicate_Throws()
     {
-      Assert.ThrowsException<ArgumentNullException>(() => Diamond().TakeUpstreamWhere(null));
+      Assert.ThrowsException<ArgumentNullException>(() => DagWalkerCorpus.Diamond().TakeUpstreamWhere(null));
     }
   }
 }

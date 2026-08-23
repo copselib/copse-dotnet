@@ -10,7 +10,7 @@ namespace Copse.Dags
   // Walk adapter driving this view's own adjacency under the observer's labeling (self-feed:
   // GetValue IS the observation). Laws pinned by the dag walker comonad law suites.
   internal sealed class DagExtendWalkable<TValue, THandle, TEdge, TResult>
-    : IWalkableDagnumerable<TResult, THandle, TEdge>, IDagTopology<TResult, THandle, TEdge>
+    : DagLensWalkable<TResult, THandle, TEdge>
   {
     public DagExtendWalkable(
       IDagTopology<TValue, THandle, TEdge> source,
@@ -18,24 +18,16 @@ namespace Copse.Dags
     {
       _Source = source;
       _Observer = observer;
-      _Walk = Dag.FromTopology(this);
     }
 
     private readonly IDagTopology<TValue, THandle, TEdge> _Source;
     private readonly Func<IDagTopology<TValue, THandle, TEdge>, THandle, TResult> _Observer;
-    private readonly IDagnumerable<TResult, TEdge> _Walk;
+    public override TResult GetValue(THandle handle) => _Observer(_Source, handle);
 
-    public IDagnumerator<TResult, TEdge> GetDagnumerator() => _Walk.GetDagnumerator();
+    public override DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex) => _Source.TryGetParentAt(handle, inEdgeIndex);
 
-    public TResult GetValue(THandle handle) => _Observer(_Source, handle);
+    public override DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => _Source.TryGetChildAt(handle, outEdgeIndex);
 
-    public DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex) => _Source.TryGetParentAt(handle, inEdgeIndex);
-
-    public DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => _Source.TryGetChildAt(handle, outEdgeIndex);
-
-    public DagStep<THandle, TEdge> TryGetSourceAt(int sourceIndex) => _Source.TryGetSourceAt(sourceIndex);
-
-    public DagWalker<TResult, THandle, TEdge> GetDagWalker()
-      => new DagWalker<TResult, THandle, TEdge>(this);
+    public override DagStep<THandle, TEdge> TryGetSourceAt(int sourceIndex) => _Source.TryGetSourceAt(sourceIndex);
   }
 }

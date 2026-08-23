@@ -13,7 +13,7 @@ namespace Copse.Dags
       this DagWalker<TValue, THandle, TEdge> walker)
     {
       if (!walker.HasFocus)
-        return new DagTopologyWalkable<TValue, THandle, TEdge>(walker.Topology);
+        return walker.Downstream();
 
       var transposedCone = new DagDownstreamWalkable<TValue, THandle, TEdge>(
         DagTransposeTopology<TValue, THandle, TEdge>.Over(walker.Topology),

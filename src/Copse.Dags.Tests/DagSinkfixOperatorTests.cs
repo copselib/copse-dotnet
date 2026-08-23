@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -15,18 +14,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagSinkfixOperatorTests
   {
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     // The valued diamond: same shape, the venture holding 1000, everyone else nothing.
     private static Dag<(string Name, decimal Holding), decimal> ValuedDiamond()
     {
@@ -75,7 +62,7 @@ namespace Copse.Dags.Tests
       // Per-use semantics: the venture's (single, memoized) result rides up BOTH edges, so a
       // naive roll-up counts it twice -- 1 + 2 + 2 = 5 over four nodes. That is the documented
       // caller's choice; SinkfixDispatch is the anti-double-count tool.
-      var counts = Diamond().Sinkfix().Scan<int>(
+      var counts = DagWalkerCorpus.Diamond().Sinkfix().Scan<int>(
         (node, childResults) => 1 + childResults.Sum(child => child.Value));
 
       CollectionAssert.AreEqual(
@@ -88,7 +75,7 @@ namespace Copse.Dags.Tests
     {
       var computed = new List<string>();
 
-      Diamond().Sinkfix().Scan<int>((node, childResults) =>
+      DagWalkerCorpus.Diamond().Sinkfix().Scan<int>((node, childResults) =>
       {
         computed.Add(node);
         return 0;
@@ -101,7 +88,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_PreservesShapeAndEdges()
     {
-      var scanned = Diamond().Sinkfix().Scan<string>((node, _) => node.ToUpperInvariant());
+      var scanned = DagWalkerCorpus.Diamond().Sinkfix().Scan<string>((node, _) => node.ToUpperInvariant());
 
       CollectionAssert.AreEqual(
         new[] { "APEX" },
@@ -128,11 +115,11 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_MatchesTheBuilderOracle()
     {
-      var contract = Diamond()
+      var contract = DagWalkerCorpus.Diamond()
         .Sinkfix().Scan<int>((node, childResults) => 1 + childResults.Sum(c => c.Value))
         .Values.Select(pairing => pairing.Accumulate).ToList();
 
-      var oracle = Diamond()
+      var oracle = DagWalkerCorpus.Diamond()
         .OracleSinkfixScan<string, decimal, int>((node, childResults) => 1 + childResults.Sum())
         .OracleTopologicalOrder().Select(n => n.Value).ToList();
 
@@ -142,7 +129,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_ComposesWithAnUpstreamPrune()
     {
-      var counts = Diamond()
+      var counts = DagWalkerCorpus.Diamond()
         .PruneNodesBefore(entity => entity == "left")
         .Sinkfix().Scan<int>((node, childResults) => 1 + childResults.Sum(c => c.Value));
 
@@ -200,7 +187,7 @@ namespace Copse.Dags.Tests
       // The duality that closes the deferred diamond semantic: the effective-ownership
       // fraction the DOWNWARD scan computes, times the holding, equals the attribution the
       // UPWARD dispatch delivers to the apex.
-      var ownershipDown = Diamond()
+      var ownershipDown = DagWalkerCorpus.Diamond()
         .Sourcefix().Scan<decimal>((entity, inflows) =>
           inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge))
         .Values.Last().Accumulate;

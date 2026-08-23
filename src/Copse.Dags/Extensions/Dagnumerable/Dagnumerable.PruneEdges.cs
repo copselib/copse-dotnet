@@ -48,37 +48,29 @@ namespace Copse.Dags
       new PruneEdgesDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
-  internal sealed class PruneEdgesDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class PruneEdgesDagnumerator<TNode, TEdge> : ForwardingDagnumerator<TNode, TEdge>
   {
     public PruneEdgesDagnumerator(
       IDagnumerator<TNode, TEdge> inner,
       Func<DagEdgeContext<TNode, TEdge>, bool> predicate)
+      : base(inner)
     {
-      _Inner = inner;
       _Predicate = predicate;
       _RelationshipContext = new DagRelationshipTracker<TNode, TEdge>();
     }
 
-    private readonly IDagnumerator<TNode, TEdge> _Inner;
     private readonly Func<DagEdgeContext<TNode, TEdge>, bool> _Predicate;
     private readonly DagRelationshipTracker<TNode, TEdge> _RelationshipContext;
 
-    public DagnumeratorMode Mode => _Inner.Mode;
-    public TNode Node => _Inner.Node;
-    public int Ordinal => _Inner.Ordinal;
-    public TEdge Edge => _Inner.Edge;
-    public int ParentOrdinal => _Inner.ParentOrdinal;
-    public int EdgeIndex => _Inner.EdgeIndex;
-
-    public bool MoveNext(DagTraversalStrategies strategies)
+    public override bool MoveNext(DagTraversalStrategies strategies)
     {
       // The consumer's verdict answers the visit the consumer saw; the wrapper's own SkipEdge
       // verdicts answer the discoveries it swallowed. The source's liveness fold does the rest.
       var verdict = strategies;
 
-      while (_Inner.MoveNext(verdict))
+      while (Inner.MoveNext(verdict))
       {
-        if (_RelationshipContext.TryTrack(_Inner, out var relationship) && _Predicate(relationship))
+        if (_RelationshipContext.TryTrack(Inner, out var relationship) && _Predicate(relationship))
         {
           verdict = DagTraversalStrategies.SkipEdge;
           continue;
@@ -89,7 +81,5 @@ namespace Copse.Dags
 
       return false;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }

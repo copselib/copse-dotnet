@@ -10,8 +10,7 @@ namespace Copse.Dags
     public static void Build<TNode, TEdge>(
       DagBuffer<TNode, TEdge> buffer,
       out DagEdgeContext<TNode, TEdge>[][] arrivals,
-      out DagEdgeContext<TNode, TEdge>[][] departures,
-      out int[] inEdgeIndexOfOutSlot)
+      out DagEdgeContext<TNode, TEdge>[][] departures)
     {
       var structure = buffer.Structure;
       var nodeCount = structure.NodeCount;
@@ -19,8 +18,8 @@ namespace Copse.Dags
       var outTargets = structure.OutTargets;
       var outPayloads = structure.OutPayloads;
       var (inOffsets, inParents, inEdgeOutSlots) = structure.InAdjacency();
+      var inEdgeIndexOfOutSlot = structure.InEdgeIndexOfOutSlot();
 
-      inEdgeIndexOfOutSlot = new int[outTargets.Length];
       arrivals = new DagEdgeContext<TNode, TEdge>[nodeCount][];
 
       for (var ordinal = 0; ordinal < nodeCount; ordinal++)
@@ -30,7 +29,6 @@ namespace Copse.Dags
         for (var index = 0; index < group.Length; index++)
         {
           var inSlot = inOffsets[ordinal] + index;
-          inEdgeIndexOfOutSlot[inEdgeOutSlots[inSlot]] = index;
           group[index] = new DagEdgeContext<TNode, TEdge>(buffer[inParents[inSlot]], buffer[ordinal], outPayloads[inEdgeOutSlots[inSlot]], index);
         }
 

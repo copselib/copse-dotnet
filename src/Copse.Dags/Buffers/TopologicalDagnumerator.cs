@@ -54,7 +54,7 @@ namespace Copse.Dags
     private readonly int[] _LiveDiscoveries;
     private readonly List<int> _Sources = new();
 
-    private WalkPhase _Phase = WalkPhase.NotStarted;
+    private DagWalkPhase _Phase = DagWalkPhase.NotStarted;
     private int _SourceIndex;
     private int _TopoIndex;
     private int _OutEdgeIndex;
@@ -75,11 +75,11 @@ namespace Copse.Dags
       {
         switch (_Phase)
         {
-          case WalkPhase.NotStarted:
-            _Phase = WalkPhase.SourceDiscoveries;
+          case DagWalkPhase.NotStarted:
+            _Phase = DagWalkPhase.SourceDiscoveries;
             continue;
 
-          case WalkPhase.SourceDiscoveries:
+          case DagWalkPhase.SourceDiscoveries:
             if (_SourceIndex < _Sources.Count)
             {
               var sourceOrdinal = _Sources[_SourceIndex];
@@ -89,14 +89,14 @@ namespace Copse.Dags
               return true;
             }
 
-            _Phase = WalkPhase.Entering;
+            _Phase = DagWalkPhase.Entering;
             _TopoIndex = 0;
             continue;
 
-          case WalkPhase.Entering:
+          case DagWalkPhase.Entering:
             if (_TopoIndex >= _Values.Length)
             {
-              _Phase = WalkPhase.Done;
+              _Phase = DagWalkPhase.Done;
               continue;
             }
 
@@ -117,11 +117,11 @@ namespace Copse.Dags
 
             _SuppressDispatch = false;
             PublishEntry(_TopoIndex);
-            _Phase = WalkPhase.Dispatching;
+            _Phase = DagWalkPhase.Dispatching;
             _OutEdgeIndex = 0;
             return true;
 
-          case WalkPhase.Dispatching:
+          case DagWalkPhase.Dispatching:
             if (_SuppressDispatch)
             {
               DecrementTargetsSilently(_TopoIndex, _OutEdgeIndex);
@@ -139,10 +139,10 @@ namespace Copse.Dags
             }
 
             _TopoIndex++;
-            _Phase = WalkPhase.Entering;
+            _Phase = DagWalkPhase.Entering;
             continue;
 
-          case WalkPhase.Done:
+          case DagWalkPhase.Done:
             return false;
 
           default:
@@ -158,36 +158,18 @@ namespace Copse.Dags
     // suppression is recorded for the dispatch phase about to run.
     private void ApplyStrategiesToCurrentVisit(DagTraversalStrategies strategies)
     {
-      if ((strategies & ~(DagTraversalStrategies.SkipEdge | DagTraversalStrategies.SkipOutEdges)) != 0)
-        throw new ArgumentException($"Unknown strategy flags: {strategies}.", nameof(strategies));
+      DagWalkVerdicts.Require(strategies, _Phase, Mode);
 
-      if (_Phase == WalkPhase.NotStarted || _Phase == WalkPhase.Done)
-      {
-        // The pre-enumeration sentinel (and the exhausted stream) accept only TraverseAll.
-        if (strategies != DagTraversalStrategies.TraverseAll)
-          throw new ArgumentException(
-            $"{strategies} answers no visit -- the dagnumerator has not published one.", nameof(strategies));
+      if (_Phase == DagWalkPhase.NotStarted || _Phase == DagWalkPhase.Done)
         return;
-      }
 
       if (Mode == DagnumeratorMode.DiscoveringNode)
       {
-        if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
-          throw new ArgumentException(
-            "SkipOutEdges answers an entry; the current visit is a discovery.", nameof(strategies));
-
         if (!strategies.HasFlag(DagTraversalStrategies.SkipEdge))
           _LiveDiscoveries[Ordinal]++;
       }
-      else
-      {
-        if (strategies.HasFlag(DagTraversalStrategies.SkipEdge))
-          throw new ArgumentException(
-            "SkipEdge answers a discovery; the current visit is an entry.", nameof(strategies));
-
-        if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
-          _SuppressDispatch = true;
-      }
+      else if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
+        _SuppressDispatch = true;
     }
 
     private void PublishDiscovery(int ordinal, int parentOrdinal, int edgeIndex, TEdge edge)
@@ -218,15 +200,6 @@ namespace Copse.Dags
 
     public void Dispose()
     {
-    }
-
-    private enum WalkPhase
-    {
-      NotStarted,
-      SourceDiscoveries,
-      Entering,
-      Dispatching,
-      Done,
     }
   }
 }

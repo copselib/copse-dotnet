@@ -1,5 +1,3 @@
-using System;
-
 namespace Copse.Dags
 {
   // A dag's shape as flat CSR arrays -- the structural half of DagBuffer, split out so result
@@ -31,6 +29,40 @@ namespace Copse.Dags
     private int[] _InParents;
     private int[] _InEdgeOutSlots;
 
+    private int[] _InDegrees;
+    private int[] _InEdgeIndexOfOutSlot;
+
+    /// <summary>Each node's in-degree, built once (the count pass every liveness sweep opens with).</summary>
+    public int[] InDegrees()
+    {
+      if (_InDegrees != null)
+        return _InDegrees;
+
+      var inDegrees = new int[NodeCount];
+      for (var slot = 0; slot < OutTargets.Length; slot++)
+        inDegrees[OutTargets[slot]]++;
+
+      return _InDegrees = inDegrees;
+    }
+
+    /// <summary>
+    /// For each out-slot, the edge's index among its CHILD's in-edges in discovery order -- the
+    /// edge context's correlation key, derived once from the in-adjacency (the relationship
+    /// tracker streams the same integer without a buffer).
+    /// </summary>
+    public int[] InEdgeIndexOfOutSlot()
+    {
+      if (_InEdgeIndexOfOutSlot != null)
+        return _InEdgeIndexOfOutSlot;
+
+      var (inOffsets, _, inEdgeOutSlots) = InAdjacency();
+      var indexOfSlot = new int[OutTargets.Length];
+      for (var child = 0; child < NodeCount; child++)
+        for (var inSlot = inOffsets[child]; inSlot < inOffsets[child + 1]; inSlot++)
+          indexOfSlot[inEdgeOutSlots[inSlot]] = inSlot - inOffsets[child];
+
+      return _InEdgeIndexOfOutSlot = indexOfSlot;
+    }
     /// <summary>
     /// The in-adjacency in THIS structure's ordinal space, built lazily once by the same
     /// slot-order counting fill as the transpose (so per-group order is in-edge DISCOVERY

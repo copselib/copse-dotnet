@@ -1,5 +1,4 @@
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -13,34 +12,22 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagReplaceEdgesTests
   {
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     private static string[] Edges(IDagnumerable<string, decimal> dag) =>
       dag.GetEdges().Select(e => $"{e.Parent}->{e.Child}:{e.Edge}").ToArray();
 
     [TestMethod]
     public void KeepEverything_IsTheContentIdentity()
     {
-      var kept = Diamond().ReplaceEdges(e => DagEdgePath<string, decimal>.Keep(e.Edge));
+      var kept = DagWalkerCorpus.Diamond().ReplaceEdges(e => DagEdgePath<string, decimal>.Keep(e.Edge));
 
       CollectionAssert.AreEqual(new[] { "apex", "left", "right", "venture" }, kept.GetTopologicalOrder().ToArray());
-      CollectionAssert.AreEqual(Edges(Diamond()), Edges(kept));
+      CollectionAssert.AreEqual(Edges(DagWalkerCorpus.Diamond()), Edges(kept));
     }
 
     [TestMethod]
     public void Through_InterposesAFreshNode_PlacedAfterItsParent()
     {
-      var expanded = Diamond().ReplaceEdges(e =>
+      var expanded = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Parent == "left" && e.Child == "venture"
           ? DagEdgePath<string, decimal>.Through(e.Edge, "sip", 1m)
           : DagEdgePath<string, decimal>.Keep(e.Edge));
@@ -58,7 +45,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Through_BornHereNodes_HaveNoSourceOrdinal()
     {
-      var expanded = Diamond().ReplaceEdges(e =>
+      var expanded = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Parent == "left" && e.Child == "venture"
           ? DagEdgePath<string, decimal>.Through(e.Edge, "sip", 1m)
           : DagEdgePath<string, decimal>.Keep(e.Edge));
@@ -77,25 +64,25 @@ namespace Copse.Dags.Tests
     {
       // Dropping one of the venture's in-edges spares it (another live path remains);
       // dropping both kills it. Both must agree with PruneEdges' content exactly.
-      var oneDropped = Diamond().ReplaceEdges(e =>
+      var oneDropped = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Parent == "left" && e.Child == "venture"
           ? DagEdgePath<string, decimal>.Drop
           : DagEdgePath<string, decimal>.Keep(e.Edge));
 
       CollectionAssert.AreEqual(
-        Diamond().PruneEdges(e => e.Parent == "left" && e.Child == "venture").GetTopologicalOrder().ToArray(),
+        DagWalkerCorpus.Diamond().PruneEdges(e => e.Parent == "left" && e.Child == "venture").GetTopologicalOrder().ToArray(),
         oneDropped.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(
-        Edges(Diamond().PruneEdges(e => e.Parent == "left" && e.Child == "venture")),
+        Edges(DagWalkerCorpus.Diamond().PruneEdges(e => e.Parent == "left" && e.Child == "venture")),
         Edges(oneDropped));
 
-      var bothDropped = Diamond().ReplaceEdges(e =>
+      var bothDropped = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Child == "venture"
           ? DagEdgePath<string, decimal>.Drop
           : DagEdgePath<string, decimal>.Keep(e.Edge));
 
       CollectionAssert.AreEqual(
-        Diamond().PruneEdges(e => e.Child == "venture").GetTopologicalOrder().ToArray(),
+        DagWalkerCorpus.Diamond().PruneEdges(e => e.Child == "venture").GetTopologicalOrder().ToArray(),
         bothDropped.GetTopologicalOrder().ToArray());
       CollectionAssert.AreEqual(new[] { "apex", "left", "right" }, bothDropped.GetTopologicalOrder().ToArray());
     }
@@ -103,8 +90,8 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Keep_WithARewrittenPayload_IsSelectEdgesContent()
     {
-      var doubledByBind = Diamond().ReplaceEdges(e => DagEdgePath<string, decimal>.Keep(e.Edge * 2));
-      var doubledByProjection = Diamond().SelectEdges(e => e.Edge * 2);
+      var doubledByBind = DagWalkerCorpus.Diamond().ReplaceEdges(e => DagEdgePath<string, decimal>.Keep(e.Edge * 2));
+      var doubledByProjection = DagWalkerCorpus.Diamond().SelectEdges(e => e.Edge * 2);
 
       CollectionAssert.AreEqual(Edges(doubledByProjection), Edges(doubledByBind));
     }
@@ -112,7 +99,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Chain_InterposesInOrder()
     {
-      var chained = Diamond().ReplaceEdges(e =>
+      var chained = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Parent == "left" && e.Child == "venture"
           ? DagEdgePath<string, decimal>.Chain(
               e.Edge,
@@ -141,23 +128,23 @@ namespace Copse.Dags.Tests
            .Single()
            .Accumulate;
 
-      var expanded = Diamond().ReplaceEdges(e =>
+      var expanded = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Child == "venture"
           ? DagEdgePath<string, decimal>.Through(e.Edge, $"via-{e.Parent}", 1m)
           : DagEdgePath<string, decimal>.Keep(e.Edge));
 
-      Assert.AreEqual(Lookthrough(Diamond()), Lookthrough(expanded));
+      Assert.AreEqual(Lookthrough(DagWalkerCorpus.Diamond()), Lookthrough(expanded));
       Assert.AreEqual(0.54m, Lookthrough(expanded));
     }
 
     [TestMethod]
     public void ExpandEdgesWhere_IsTheBindWithAKeepBranch()
     {
-      var viaSugar = Diamond().ExpandEdgesWhere(
+      var viaSugar = DagWalkerCorpus.Diamond().ExpandEdgesWhere(
         e => e.Child == "venture",
         e => DagEdgePath<string, decimal>.Through(e.Edge, $"via-{e.Parent}", 1m));
 
-      var viaBind = Diamond().ReplaceEdges(e =>
+      var viaBind = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
         e.Child == "venture"
           ? DagEdgePath<string, decimal>.Through(e.Edge, $"via-{e.Parent}", 1m)
           : DagEdgePath<string, decimal>.Keep(e.Edge));
@@ -174,7 +161,7 @@ namespace Copse.Dags.Tests
       // query becomes a per-node one. PLACEMENT MATTERS for attribution: the stake rides the
       // leg BELOW the anchor (the owner wholly owns its program position; the position owns
       // the stake of the target), so the anchor's own lookthrough IS the stake.
-      var expanded = Diamond().ExpandEdgesWhere(
+      var expanded = DagWalkerCorpus.Diamond().ExpandEdgesWhere(
         e => e.Child == "venture",
         e => DagEdgePath<string, decimal>.Through(1m, $"program-{e.Parent}", e.Edge));
 
@@ -201,7 +188,7 @@ namespace Copse.Dags.Tests
       // consulted -- and the venture survives through right alone.
       var consulted = 0;
 
-      var result = Diamond().ReplaceEdges(e =>
+      var result = DagWalkerCorpus.Diamond().ReplaceEdges(e =>
       {
         Assert.AreNotEqual("left", e.Parent, "a dead parent's edges are never consulted");
         consulted++;

@@ -1,5 +1,3 @@
-using System;
-
 namespace Copse.Dags
 {
   public static partial class Dagnumerable

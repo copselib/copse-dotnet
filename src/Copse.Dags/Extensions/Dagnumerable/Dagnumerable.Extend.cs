@@ -24,11 +24,5 @@ namespace Copse.Dags
 
       return new DagExtendWalkable<TValue, THandle, TEdge, TResult>(DagTopology.Lazy(source), observer);
     }
-
-    // The topology-receiver form: the algebra at SPI altitude, for machinery holding a topology.
-    internal static IWalkableDagnumerable<TResult, THandle, TEdge> Extend<TValue, THandle, TEdge, TResult>(
-      this IDagTopology<TValue, THandle, TEdge> source,
-      Func<IDagTopology<TValue, THandle, TEdge>, THandle, TResult> observer)
-      => new DagExtendWalkable<TValue, THandle, TEdge, TResult>(source, observer);
   }
 }

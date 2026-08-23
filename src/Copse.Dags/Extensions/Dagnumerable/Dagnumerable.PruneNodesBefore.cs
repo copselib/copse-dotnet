@@ -38,34 +38,26 @@ namespace Copse.Dags
       new PruneNodesBeforeDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
-  internal sealed class PruneNodesBeforeDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class PruneNodesBeforeDagnumerator<TNode, TEdge> : ForwardingDagnumerator<TNode, TEdge>
   {
     public PruneNodesBeforeDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
+      : base(inner)
     {
-      _Inner = inner;
       _Predicate = predicate;
     }
 
-    private readonly IDagnumerator<TNode, TEdge> _Inner;
     private readonly Func<TNode, bool> _Predicate;
 
-    public DagnumeratorMode Mode => _Inner.Mode;
-    public TNode Node => _Inner.Node;
-    public int Ordinal => _Inner.Ordinal;
-    public TEdge Edge => _Inner.Edge;
-    public int ParentOrdinal => _Inner.ParentOrdinal;
-    public int EdgeIndex => _Inner.EdgeIndex;
-
-    public bool MoveNext(DagTraversalStrategies strategies)
+    public override bool MoveNext(DagTraversalStrategies strategies)
     {
       // The consumer's verdict answers the visit the consumer saw; the wrapper's own verdicts
       // answer the visits it swallowed. A pruned node's every discovery is severed, so it never
       // enters and its dispatches never happen -- the source's liveness fold is the machinery.
       var verdict = strategies;
 
-      while (_Inner.MoveNext(verdict))
+      while (Inner.MoveNext(verdict))
       {
-        if (_Inner.Mode == DagnumeratorMode.DiscoveringNode && _Predicate(_Inner.Node))
+        if (Inner.Mode == DagnumeratorMode.DiscoveringNode && _Predicate(Inner.Node))
         {
           verdict = DagTraversalStrategies.SkipEdge;
           continue;
@@ -76,7 +68,5 @@ namespace Copse.Dags
 
       return false;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }

@@ -1,5 +1,4 @@
 using System;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests

@@ -37,34 +37,24 @@ namespace Copse.Dags
       new DoDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Action);
   }
 
-  internal sealed class DoDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class DoDagnumerator<TNode, TEdge> : ForwardingDagnumerator<TNode, TEdge>
   {
     public DoDagnumerator(IDagnumerator<TNode, TEdge> inner, Action<DagVisit<TNode, TEdge>> action)
+      : base(inner)
     {
-      _Inner = inner;
       _Action = action;
     }
 
-    private readonly IDagnumerator<TNode, TEdge> _Inner;
     private readonly Action<DagVisit<TNode, TEdge>> _Action;
 
-    public DagnumeratorMode Mode => _Inner.Mode;
-    public TNode Node => _Inner.Node;
-    public int Ordinal => _Inner.Ordinal;
-    public TEdge Edge => _Inner.Edge;
-    public int ParentOrdinal => _Inner.ParentOrdinal;
-    public int EdgeIndex => _Inner.EdgeIndex;
-
-    public bool MoveNext(DagTraversalStrategies strategies)
+    public override bool MoveNext(DagTraversalStrategies strategies)
     {
-      if (!_Inner.MoveNext(strategies))
+      if (!Inner.MoveNext(strategies))
         return false;
 
       _Action(new DagVisit<TNode, TEdge>(
-        _Inner.Mode, _Inner.Node, _Inner.Ordinal, _Inner.Edge, _Inner.ParentOrdinal, _Inner.EdgeIndex));
+        Inner.Mode, Inner.Node, Inner.Ordinal, Inner.Edge, Inner.ParentOrdinal, Inner.EdgeIndex));
       return true;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }

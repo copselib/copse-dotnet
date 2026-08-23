@@ -120,33 +120,11 @@ namespace Copse.Dags
     internal (int From, int To, TEdge Edge)[] EdgesArray => _Edges;
 
     /// <summary>The replacement's sources (no internal in-edge), in node order -- where the original's in-edges land.</summary>
-    internal int[] SourceIndices()
-    {
-      // The dominant shapes short-circuit: no internal edges means every node is a source.
-      if (_Edges == null)
-      {
-        var all = new int[_Values.Length];
-        for (var nodeIndex = 0; nodeIndex < all.Length; nodeIndex++)
-          all[nodeIndex] = nodeIndex;
-        return all;
-      }
+    internal int[] SourceIndices() => DagFragment.SourceIndices(_Values.Length, _Edges);
 
-      var hasInternalIn = new bool[_Values.Length];
-      foreach (var edge in _Edges)
-        hasInternalIn[edge.To] = true;
-
-      var sourceCount = 0;
-      foreach (var has in hasInternalIn)
-        if (!has)
-          sourceCount++;
-
-      var sources = new int[sourceCount];
-      var cursor = 0;
-      for (var nodeIndex = 0; nodeIndex < hasInternalIn.Length; nodeIndex++)
-        if (!hasInternalIn[nodeIndex])
-          sources[cursor++] = nodeIndex;
-
-      return sources;
-    }
+    // ReplaceNodes is the bind whose attachments are the whole fragment: the original's in-edges
+    // reach the fragment's sources, every out-edge leaves from every fragment node.
+    internal DagExpansion<TNode, TEdge> AsExpansion() =>
+      IsDrop ? DagExpansion<TNode, TEdge>.Drop : DagExpansion<TNode, TEdge>.Broadcast(_Values, _Edges, _KeepsSeat);
   }
 }

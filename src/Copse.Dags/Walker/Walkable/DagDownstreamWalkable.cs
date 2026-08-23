@@ -19,25 +19,21 @@ namespace Copse.Dags
   // with one is answered by delegation with the filter applied, unspecified like any foreign
   // handle.
   internal sealed class DagDownstreamWalkable<TValue, THandle, TEdge>
-    : IWalkableDagnumerable<TValue, THandle, TEdge>, IDagTopology<TValue, THandle, TEdge>
+    : DagLensWalkable<TValue, THandle, TEdge>
   {
     public DagDownstreamWalkable(IDagTopology<TValue, THandle, TEdge> source, THandle root)
     {
       _Source = source;
       _Root = root;
-      _Walk = Dag.FromTopology(this);
     }
 
     private readonly IDagTopology<TValue, THandle, TEdge> _Source;
     private readonly THandle _Root;
-    private readonly IDagnumerable<TValue, TEdge> _Walk;
     private HashSet<THandle> _Members;
 
-    public IDagnumerator<TValue, TEdge> GetDagnumerator() => _Walk.GetDagnumerator();
+    public override TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public TValue GetValue(THandle handle) => _Source.GetValue(handle);
-
-    public DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex)
+    public override DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex)
     {
       if (inEdgeIndex < 0 || EqualityComparer<THandle>.Default.Equals(handle, _Root))
         return default;
@@ -60,9 +56,9 @@ namespace Copse.Dags
       return default;
     }
 
-    public DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => _Source.TryGetChildAt(handle, outEdgeIndex);
+    public override DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => _Source.TryGetChildAt(handle, outEdgeIndex);
 
-    public DagStep<THandle, TEdge> TryGetSourceAt(int sourceIndex)
+    public override DagStep<THandle, TEdge> TryGetSourceAt(int sourceIndex)
       => sourceIndex == 0
         ? new DagStep<THandle, TEdge>(_Root, default, 0)
         : default;
@@ -87,9 +83,5 @@ namespace Copse.Dags
 
       _Members = members;
     }
-
-    // The door: this view's OWN unfocused stance -- above the severed root.
-    public DagWalker<TValue, THandle, TEdge> GetDagWalker()
-      => new DagWalker<TValue, THandle, TEdge>(this);
   }
 }

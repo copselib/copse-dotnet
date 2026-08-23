@@ -19,19 +19,16 @@ namespace Copse.Dags
     /// <para>BYPASS, NOT REMOVAL -- no liveness: kept nodes never die. A kept node whose
     /// every in-path ran through filtered SOURCES simply becomes a source -- the tree's
     /// filtered-root promotion, dag-side. (Graph theory's own name for the operation is
-    /// vertex bypass / smoothing; <c>Contract</c> was rejected for accuracy -- contraction
-    /// merges endpoints, which requires the value identity this library never asks for.)</para>
+    /// vertex bypass / smoothing -- not contraction, which merges endpoints and needs the value
+    /// identity this library never asks for.)</para>
     ///
     /// <para>COST CLASS, stated honestly: a filtered node manufactures in-degree ×
     /// out-degree edges; a filtered REGION manufactures one edge per through-path. The
     /// output is big because the answer is big.</para>
     ///
-    /// <para>Returns a buffer BY CONVENTION, not theorem: bypass synthesizes only EDGES (no
-    /// ordinal minting), but a manufactured discovery is learned at the filtered node's
-    /// entry, long after its origin parent's dispatch block closed -- emitting it there
-    /// would break the DISPATCH CONTIGUITY clause the edge-dual wrappers enforce. Streaming
-    /// <c>Where</c> waits on the contiguity amendment, logged in the taxonomy doc's ledger
-    /// alongside the ordinal-range and streaming-sources clauses.</para>
+    /// <para>Capture-shaped: a manufactured through-edge is learned at the filtered node's entry,
+    /// long after its origin parent's dispatch block closed, and emitting it there would break
+    /// the DISPATCH CONTIGUITY clause the streaming edge wrappers rely on.</para>
     /// </summary>
     public static DagBuffer<TNode, TEdge> Where<TNode, TEdge>(
       this IDagnumerable<TNode, TEdge> source,

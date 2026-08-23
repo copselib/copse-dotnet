@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
 {
   // The Walk adapter's conformance (Dag.FromTopology): the degenerate-tower pin -- walking the
-  // buffer's own topology reproduces the buffer's visit stream EXACTLY (ordinals, modes, edges,
+  // buffer's own topology reproduces the buffer's visit stream (ordinals, modes, edges,
   // dispatch contiguity), and walking the builder's topology reproduces the builder's; a cyclic
   // topology streams its acyclic prefix and throws DagCycleException at starvation, naming the
   // loop; the strategies are honored (a severed arrival is a liveness vote); a listed source

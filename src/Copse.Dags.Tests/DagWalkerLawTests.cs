@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -17,8 +16,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagWalkerLawTests
   {
-
-
     [TestMethod]
     public void Extract_IsTheValueAtTheFocus()
     {

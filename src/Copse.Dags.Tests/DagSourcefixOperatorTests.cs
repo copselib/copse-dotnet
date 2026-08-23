@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -14,18 +13,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagSourcefixOperatorTests
   {
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     // Effective ownership: a source owns itself outright; below, sum each inflow's owner
     // fraction times the edge it rides -- the sum-over-paths-of-products, computed in one pass.
     private static decimal EffectiveOwnership(string entity, IReadOnlyList<DagInflow<decimal, decimal>> inflows)
@@ -64,7 +51,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixScan_ComputesEffectiveOwnership_ThroughTheDiamond()
     {
-      var ownership = Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
+      var ownership = DagWalkerCorpus.Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
 
       CollectionAssert.AreEqual(
         new[] { 1m, 0.60m, 0.40m, 0.54m },
@@ -75,7 +62,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixScan_PreservesShapeAndEdges()
     {
-      var scanned = Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
+      var scanned = DagWalkerCorpus.Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
 
       Assert.AreEqual(1, Sources(scanned).Count);
       Assert.AreEqual(4, scanned.Count);
@@ -102,7 +89,7 @@ namespace Copse.Dags.Tests
     public void SourcefixScan_ComposesWithAnUpstreamPrune()
     {
       // The blocker composition: with left pruned, the venture's only inflow rides right.
-      var ownership = Diamond()
+      var ownership = DagWalkerCorpus.Diamond()
         .PruneNodesBefore(entity => entity == "left")
         .Sourcefix().Scan<decimal>(EffectiveOwnership);
 
@@ -117,11 +104,11 @@ namespace Copse.Dags.Tests
     {
       // Same accumulation both sides (the oracle's inflows are bare; the contract's carry
       // edges -- align by summing the same product via the node's parent edges).
-      var contract = Diamond()
+      var contract = DagWalkerCorpus.Diamond()
         .Sourcefix().Scan<decimal>(EffectiveOwnership)
         .Values.Select(pairing => pairing.Accumulate).ToList();
 
-      var oracle = Diamond()
+      var oracle = DagWalkerCorpus.Diamond()
         .OracleSourcefixScan<string, decimal, decimal>((node, inflows) =>
           inflows.Count == 0
             ? 1m
@@ -134,7 +121,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixScan_ResultIsACapture_BothOrientationsAfford()
     {
-      var scanned = Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
+      var scanned = DagWalkerCorpus.Diamond().Sourcefix().Scan<decimal>(EffectiveOwnership);
 
       // The result is a capture, so the orientation flip is free: Transpose() is a swap of which
       // adjacency the walk reads, not a second dimension to have been afforded up front.
@@ -176,7 +163,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixDispatch_MovesMoneyThroughTheDiamond()
     {
-      var moved = Diamond().Sourcefix().Dispatch(1000m, ProRata);
+      var moved = DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1000m, ProRata);
 
       var byEntity = moved.Values.ToDictionary(result => result.Node, result => result);
 
@@ -194,7 +181,7 @@ namespace Copse.Dags.Tests
     {
       // The MoveMoney shape: blockers pruned first, so their edges are never surveyed and
       // nothing is allocated toward them.
-      var moved = Diamond()
+      var moved = DagWalkerCorpus.Diamond()
         .PruneNodesBefore(entity => entity == "left")
         .Sourcefix().Dispatch(1000m, ProRata);
 
@@ -209,7 +196,7 @@ namespace Copse.Dags.Tests
     public void SourcefixDispatch_SelectsIntoAReceivedView()
     {
       // The decorate-then-choose composition: the full pipeline down to plain received totals.
-      var received = Diamond()
+      var received = DagWalkerCorpus.Diamond()
         .Sourcefix().Dispatch(1000m, ProRata)
         .SelectNodes(result => (Entity: result.Node, Received: result.Arrivals.ToArray().Sum()));
 
@@ -229,7 +216,7 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
+      DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
       {
         surveyed.Add(subject);
         foreach (var target in targets)
@@ -246,7 +233,7 @@ namespace Copse.Dags.Tests
     {
       // The retired IsSource decoration's replacement: source-ness is a stream fact, read off
       // the result buffer's own walk -- and it is exactly the node set the virtual family funds.
-      var moved = Diamond().Sourcefix().Dispatch(1000m, ProRata);
+      var moved = DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1000m, ProRata);
 
       CollectionAssert.AreEqual(
         new[] { "apex" },
@@ -259,7 +246,7 @@ namespace Copse.Dags.Tests
       // Provenance from the API, never smuggled in the payload -- but it does not TRAVEL on the
       // result (the split-homes ruling): who wrote arrival i is the GetEdges join.
       // The apex's lone arrival is the virtual family's, so no edge names it: authored outside.
-      var moved = Diamond().Sourcefix().Dispatch(1000m, ProRata);
+      var moved = DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1000m, ProRata);
 
       CollectionAssert.AreEqual(
         new[] { 1000m },
@@ -281,7 +268,7 @@ namespace Copse.Dags.Tests
       // arrival carrying the seed -- which is the in-band arrived-from-outside test.
       var arrivals = new List<(string At, string From, decimal Amount)>();
 
-      Diamond().Sourcefix().Dispatch(1000m, (subject, inflows, targets) =>
+      DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1000m, (subject, inflows, targets) =>
       {
         foreach (var inflow in inflows)
           arrivals.Add((subject, inflow.Dispatcher, inflow.Value));
@@ -313,7 +300,7 @@ namespace Copse.Dags.Tests
           ("left", "venture", 0.70m, 0),
           ("right", "venture", 0.30m, 1),
         },
-        Diamond().GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray());
+        DagWalkerCorpus.Diamond().GetEdges().Select(e => (e.Parent, e.Child, e.Edge, e.InEdgeIndex)).ToArray());
     }
 
     [TestMethod]
@@ -322,7 +309,7 @@ namespace Copse.Dags.Tests
       // The work-integration pattern: one transfer per edge, the amount recovered from the
       // child's inflows by IN-EDGE INDEX -- never by payload comparison (user values are never
       // compared; parallel edges stay unambiguous).
-      var transfers = Diamond()
+      var transfers = DagWalkerCorpus.Diamond()
         .Sourcefix().Dispatch(1000m, ProRata)
         .GetEdges()
         .Select(edge => (
@@ -366,7 +353,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixDispatchEdges_WritesPathCumulativeOwnershipOntoEdges()
     {
-      var cumulative = Diamond().Sourcefix().DispatchEdges<decimal>(CumulativeOwnership);
+      var cumulative = DagWalkerCorpus.Diamond().Sourcefix().DispatchEdges<decimal>(CumulativeOwnership);
 
       CollectionAssert.AreEqual(
         new[]
@@ -385,7 +372,7 @@ namespace Copse.Dags.Tests
     {
       var seenAtVentureParents = new List<(string At, string Dispatcher, decimal NewPayload)>();
 
-      Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) =>
+      DagWalkerCorpus.Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) =>
       {
         foreach (var inflow in arrivals)
           seenAtVentureParents.Add((subject, inflow.Dispatcher, inflow.Value));
@@ -404,7 +391,7 @@ namespace Copse.Dags.Tests
     {
       var surveyed = new List<string>();
 
-      Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) =>
+      DagWalkerCorpus.Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) =>
       {
         surveyed.Add(subject);
         foreach (var target in targets)
@@ -438,14 +425,14 @@ namespace Copse.Dags.Tests
     public void SourcefixDispatchEdges_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) => { }));
+        DagWalkerCorpus.Diamond().Sourcefix().DispatchEdges<decimal>((subject, arrivals, targets) => { }));
     }
 
     [TestMethod]
     public void SourcefixDispatch_AnUndispatchedTargetThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
+        DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
         {
           foreach (var target in targets.Skip(1))
             target.Dispatch(0m);
@@ -456,7 +443,7 @@ namespace Copse.Dags.Tests
     public void SourcefixDispatch_ADoubleDispatchThrows()
     {
       Assert.ThrowsException<InvalidOperationException>(() =>
-        Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
+        DagWalkerCorpus.Diamond().Sourcefix().Dispatch(1m, (subject, arrivals, targets) =>
         {
           foreach (var target in targets)
             target.Dispatch(0m);

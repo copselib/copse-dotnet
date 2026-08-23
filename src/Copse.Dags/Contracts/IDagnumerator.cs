@@ -13,7 +13,7 @@ namespace Copse.Dags
   /// Nodes are correlated by <see cref="Ordinal"/> — a stable per-enumeration key assigned at
   /// FIRST DISCOVERY — never by value identity: user values are never compared or hashed.
   /// Entries occur in topological order, but ordinals do not promise to be entry-monotone
-  /// (amended, THE LAZY BUILDER RULING: a lazy walk cannot cite a node's future
+  /// (a lazy walk cannot cite a node's future
   /// entry index at discovery, so the builder assigns ordinals dense in discovery order;
   /// entry-indexed ordinals are the BUFFER's presentation — its dense index is its entry
   /// order). Density is NOT promised either: operator wrappers preserve their source's

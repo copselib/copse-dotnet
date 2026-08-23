@@ -28,9 +28,7 @@ namespace Copse.Dags
       var outOffsets = structure.OutOffsets;
       var outTargets = structure.OutTargets;
 
-      var inDegrees = new int[elementCount];
-      for (var slot = 0; slot < outTargets.Length; slot++)
-        inDegrees[outTargets[slot]]++;
+      var inDegrees = structure.InDegrees();
 
       var nodeOrdinalOf = new int[elementCount];
       var values = new List<TNode>();

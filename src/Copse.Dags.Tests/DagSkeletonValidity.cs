@@ -10,7 +10,7 @@ namespace Copse.Dags.Tests
   // which is what makes the Sourcefix/Sinkfix folds one pass). A third leg, TRANSPOSE CONSISTENCY,
   // checks an in-adjacency against the out-adjacency it claims to reverse. Each lie gets a
   // coordinate-bearing message.
-  public static class DagSkeletonValidity
+  internal static class DagSkeletonValidity
   {
     public static void AssertValid(int nodeCount, int[] outOffsets, int[] outTargets)
     {

@@ -93,9 +93,8 @@ namespace Copse.Dags
     /// <summary>
     /// The node projection at the EVENT grain: every node relabeled from its whole event --
     /// the arrivals that reached it, its value, the departures it dispatches -- each group
-    /// complete, once per node. This is an extend (a relabel from a one-hop vantage), not a
-    /// bind; it is what the dispatch tier was being used for whenever a pass needed the group
-    /// but moved no value. Destructured seats, return-shaped: the result type is inferred from
+    /// complete, once per node. An extend (a relabel from a one-hop vantage), not a bind: the
+    /// home of every pass that needs the group but moves no value. Destructured seats, return-shaped: the result type is inferred from
     /// the lambda. Capture-shaped: the groups are the buffer's.
     /// </summary>
     public static DagBuffer<TResult, TEdge> SelectNodes<TNode, TEdge, TResult>(
@@ -108,7 +107,7 @@ namespace Copse.Dags
         throw new ArgumentNullException(nameof(selector));
 
       var buffer = DagBuffer<TNode, TEdge>.From(source);
-      DagEventSeats.Build(buffer, out var arrivals, out var departures, out _);
+      DagEventSeats.Build(buffer, out var arrivals, out var departures);
 
       var values = new TResult[buffer.Count];
       for (var ordinal = 0; ordinal < values.Length; ordinal++)

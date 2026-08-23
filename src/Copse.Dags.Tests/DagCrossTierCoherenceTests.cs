@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -29,18 +28,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagCrossTierCoherenceTests
   {
-    // The ownership diamond: apex owns left 60% / right 40%; each owns the venture (70%/30%).
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     // A two-source mesh with a shared middle -- sources with different fan-outs, a diamond,
     // and a deep tail, so the laws are pinned off the happy path too.
     private static Dag<string, decimal> TwoSourceMesh()
@@ -66,7 +53,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SourcefixScan_IsTheFoldShapedDispatch()
     {
-      foreach (var dag in new[] { Diamond(), TwoSourceMesh() })
+      foreach (var dag in new[] { DagWalkerCorpus.Diamond(), TwoSourceMesh() })
       {
         var scan = dag.Sourcefix().Scan<decimal>(EffectiveOwnership);
 
@@ -113,7 +100,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_IsTheFoldShapedDispatch()
     {
-      foreach (var dag in new[] { Diamond(), TwoSourceMesh() })
+      foreach (var dag in new[] { DagWalkerCorpus.Diamond(), TwoSourceMesh() })
       {
         var scan = dag.Sinkfix().Scan<decimal>(
           (entity, childResults) => 1m + childResults.Sum(result => result.Value * result.Edge));
@@ -180,7 +167,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void SinkfixScan_IsSourcefixOfTheTranspose()
     {
-      foreach (var dag in new[] { Diamond(), TwoSourceMesh() })
+      foreach (var dag in new[] { DagWalkerCorpus.Diamond(), TwoSourceMesh() })
       {
         // Order-insensitive fold (sum), because the two paths present arrival groups in
         // different per-group orders: direct sinkfix in OUT-EDGE order (structural), the
@@ -243,7 +230,7 @@ namespace Copse.Dags.Tests
       var dispatcherlessSubjects = new List<string>();
       var seenDispatchers = new List<string>();
 
-      Diamond().Sourcefix().Dispatch<decimal>(
+      DagWalkerCorpus.Diamond().Sourcefix().Dispatch<decimal>(
         100m,
         (subject, arrivals, targets) =>
         {

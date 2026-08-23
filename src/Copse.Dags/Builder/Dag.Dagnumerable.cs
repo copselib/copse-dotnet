@@ -1,7 +1,6 @@
 namespace Copse.Dags
 {
-  // The builder's adapter to the traversal contract (design-docs/DAG_CONTRACT_DESIGN.md, THE LAZY
-  // BUILDER RULING): Dag is the family's first IDagnumerable, and its acquisition is LAZY -- the
+  // The builder's adapter to the traversal contract: Dag is the family's first IDagnumerable, and its acquisition is LAZY -- the
   // one demand-driven walk (TopologyWalkDagnumerator) over the builder's own topology
   // (DagNodeTopology: the live node graph, membership and the stray-parent rule applied), so
   // the stream and the walker read the same physics. No topological snapshot, no CSR arrays, no

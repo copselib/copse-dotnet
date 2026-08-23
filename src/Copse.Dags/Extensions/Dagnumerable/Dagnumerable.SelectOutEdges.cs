@@ -23,7 +23,7 @@ namespace Copse.Dags
 
       var buffer = DagBuffer<TNode, TEdge>.From(source);
       var structure = buffer.Structure;
-      DagEventSeats.Build(buffer, out var arrivals, out var departures, out _);
+      DagEventSeats.Build(buffer, out var arrivals, out var departures);
 
       var payloads = new TEdgeResult[structure.EdgeCount];
 
@@ -31,9 +31,7 @@ namespace Copse.Dags
       {
         var rewritten = selector(arrivals[ordinal], buffer[ordinal], departures[ordinal]);
 
-        if (rewritten == null || rewritten.Count != departures[ordinal].Length)
-          throw new InvalidOperationException(
-            $"SelectOutEdges at ordinal {ordinal} returned {rewritten?.Count.ToString() ?? "null"} payloads for {departures[ordinal].Length} departures; one per departure, in departure order.");
+        DagSeats.RequireOnePerSeat(nameof(SelectOutEdges), ordinal, rewritten, departures[ordinal].Length, "payloads");
 
         for (var index = 0; index < rewritten.Count; index++)
           payloads[structure.OutOffsets[ordinal] + index] = rewritten[index];

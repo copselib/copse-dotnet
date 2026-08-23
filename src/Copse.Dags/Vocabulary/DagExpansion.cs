@@ -86,35 +86,16 @@ namespace Copse.Dags
         keepsSeat: values.Length == 1);
     }
 
-    /// <summary>The fragment's sources -- nodes with no internal in-edge -- in fragment order.</summary>
-    internal int[] SourceIndices()
+    internal static DagExpansion<TNode, TEdge> Broadcast(TNode[] values, (int From, int To, TEdge Edge)[] edges, bool keepsSeat)
     {
-      var values = ValuesArray;
+      var everyNode = new int[values.Length];
+      for (var index = 0; index < everyNode.Length; index++)
+        everyNode[index] = index;
 
-      if (_Edges == null)
-      {
-        var all = new int[values.Length];
-        for (var index = 0; index < all.Length; index++)
-          all[index] = index;
-        return all;
-      }
-
-      var hasInternalIn = new bool[values.Length];
-      foreach (var edge in _Edges)
-        hasInternalIn[edge.To] = true;
-
-      var count = 0;
-      for (var index = 0; index < values.Length; index++)
-        if (!hasInternalIn[index])
-          count++;
-
-      var sources = new int[count];
-      var fill = 0;
-      for (var index = 0; index < values.Length; index++)
-        if (!hasInternalIn[index])
-          sources[fill++] = index;
-
-      return sources;
+      return new DagExpansion<TNode, TEdge>(values, edges, DagSlot<TEdge>.Under(everyNode), keepsSeat);
     }
+
+    /// <summary>The fragment's sources -- nodes with no internal in-edge -- in fragment order.</summary>
+    internal int[] SourceIndices() => DagFragment.SourceIndices(ValuesArray.Length, _Edges);
   }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -22,17 +21,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagNodeSubstitutionLawTests
   {
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     private static Dag<string, decimal> Edge()
     {
       var a = new DagNode<string, decimal>("a");
@@ -194,9 +182,9 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void RightIdentity_KeepReconstructsTheDag()
     {
-      var kept = Diamond().ReplaceNodes(DagNodeGraph<string, decimal>.Keep);
+      var kept = DagWalkerCorpus.Diamond().ReplaceNodes(DagNodeGraph<string, decimal>.Keep);
 
-      AssertSameContent(Diamond(), kept);
+      AssertSameContent(DagWalkerCorpus.Diamond(), kept);
 
       // Stronger than content: Keep occupies the original seats, so presentation and
       // provenance survive too.
@@ -236,7 +224,7 @@ namespace Copse.Dags.Tests
       // The two lawful fragments mixed over shared structure -- the composition that
       // escapes both tree-side fragments in one fusion step.
       AssertAssociative(
-        Diamond(),
+        DagWalkerCorpus.Diamond(),
         node => node == "left" ? new Frag(new[] { "l.0", "l.1" }) : KeepFrag(node),
         node => node == "l.0" ? new Frag(new[] { "l.0.head", "l.0.tail" }, (0, 1, 1m)) : KeepFrag(node));
     }
@@ -247,7 +235,7 @@ namespace Copse.Dags.Tests
       // g drops every node of f's replacement: the fused selector must come out Drop, and
       // liveness must agree across the associations (venture survives via right).
       AssertAssociative(
-        Diamond(),
+        DagWalkerCorpus.Diamond(),
         node => node == "left" ? new Frag(new[] { "l.head", "l.tail" }, (0, 1, 1m)) : KeepFrag(node),
         node => node.StartsWith("l.") ? null : KeepFrag(node));
     }
@@ -258,7 +246,7 @@ namespace Copse.Dags.Tests
       // f drops a shared parent (liveness spares the venture through right); g then divides
       // the survivor's parent -- drops and expansions interleaved across passes.
       AssertAssociative(
-        Diamond(),
+        DagWalkerCorpus.Diamond(),
         node => node == "left" ? null : KeepFrag(node),
         node => node == "right" ? new Frag(new[] { "r.0", "r.1" }) : KeepFrag(node));
     }
@@ -268,7 +256,7 @@ namespace Copse.Dags.Tests
     {
       // The stress mix: a split, a chain, a drop, and seats kept, over shared structure.
       AssertAssociative(
-        Diamond(),
+        DagWalkerCorpus.Diamond(),
         node => node switch
         {
           "apex" => new Frag(new[] { "x.0", "x.1" }),

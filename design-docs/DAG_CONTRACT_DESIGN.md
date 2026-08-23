@@ -448,6 +448,14 @@ last-entered node; O(1) state).
 
 ## The arrival protocol (the successor model — direction ratified 2026-07-28)
 
+> **Status (2026-08-23, the distill pass):** the adapter layer (`Arrivals/`, `GetArrivalDagnumerator`,
+> `ArrivalProtocolTests`) is REMOVED — it had no consumer once the event grain landed. Its
+> successor is the capture-side event grain (`DagEventSeats` behind the event-shaped `SelectNodes`,
+> `SelectInEdges`/`SelectOutEdges`, `PruneInEdges`/`PruneOutEdges`): the same grouping, read by
+> EXTEND over the buffer rather than streamed. The reasoning below is kept as the record of why
+> the grouped presentation is the default; the streaming adapter can be restored from history if
+> a streaming consumer ever appears.
+
 > **Status:** direction ratified (Jason, 2026-07-28): the grouped model is the DEFAULT
 > presentation, "for all the other reasons" recorded here. Phase 1 BUILT the same day: the
 > grouping layer as an adapter over the existing protocol (`Arrivals/`,
@@ -932,8 +940,7 @@ single-project scale. One operator, one file stays the requirement inside `Exten
 | `Walker/` | `DagWalker`, `DagWalkerResult`, `DagTopology`, `Dag.FromTopology`, `TopologyWalkDagnumerator` (the one demand-driven walk); `Topologies/` (the lazy, buffer, builder, transpose topologies); `Walkable/` (the lens views) |
 | `Extensions/Dagnumerable/` | the `Dagnumerable` partial static class — one operator per file, each operator's private wrapper types inside its file |
 | `Extensions/DagWalker/` | the `DagWalker` partial static class — the walker-receiver operators |
-| `Arrivals/` | the arrival-protocol grouping layer |
-| `Internal/` | `DagRelationshipTracker`, the `ReferenceEqualityComparer` polyfill |
+| `Internal/` | the shared engines and seams no operator owns: `DagFlowEngines` (scan/dispatch behind the doors), `DagEventSeats` (the event grain's arrival/departure groups), `DagCompaction` (the one capture-to-capture compaction), `DagFragment`, `DagSeats`, `DagWalkPhase` + `DagWalkVerdicts` (shared by both Kahn walks), `ForwardingDagnumerator` (the streaming wrappers' base), `DagRelationshipTracker`, the `ReferenceEqualityComparer` polyfill |
 
 ## THE BIND (built 2026-08-22 — `SelectMany`, the pointed node substitution; the reshapings derived)
 

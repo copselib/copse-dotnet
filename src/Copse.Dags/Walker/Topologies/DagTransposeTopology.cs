@@ -10,25 +10,25 @@ namespace Copse.Dags
   // materialized reversal: in adjacency it is two method references trading places.
   internal sealed class DagTransposeTopology<TValue, THandle, TEdge> : IDagTopology<TValue, THandle, TEdge>
   {
-    public DagTransposeTopology(IDagTopology<TValue, THandle, TEdge> source)
+    private DagTransposeTopology(IDagTopology<TValue, THandle, TEdge> source)
     {
-      Source = source;
+      _Source = source;
     }
 
-    public IDagTopology<TValue, THandle, TEdge> Source { get; }
+    private readonly IDagTopology<TValue, THandle, TEdge> _Source;
 
     private List<THandle> _Sinks;
 
     public static IDagTopology<TValue, THandle, TEdge> Over(IDagTopology<TValue, THandle, TEdge> source)
       => source is DagTransposeTopology<TValue, THandle, TEdge> transposed
-        ? transposed.Source
+        ? transposed._Source
         : new DagTransposeTopology<TValue, THandle, TEdge>(source);
 
-    public TValue GetValue(THandle handle) => Source.GetValue(handle);
+    public TValue GetValue(THandle handle) => _Source.GetValue(handle);
 
-    public DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex) => Source.TryGetChildAt(handle, inEdgeIndex);
+    public DagStep<THandle, TEdge> TryGetParentAt(THandle handle, int inEdgeIndex) => _Source.TryGetChildAt(handle, inEdgeIndex);
 
-    public DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => Source.TryGetParentAt(handle, outEdgeIndex);
+    public DagStep<THandle, TEdge> TryGetChildAt(THandle handle, int outEdgeIndex) => _Source.TryGetParentAt(handle, outEdgeIndex);
 
     public DagStep<THandle, TEdge> TryGetSourceAt(int sourceIndex)
     {
@@ -53,7 +53,7 @@ namespace Copse.Dags
 
       for (var sourceIndex = 0; ; sourceIndex++)
       {
-        var sourceStep = Source.TryGetSourceAt(sourceIndex);
+        var sourceStep = _Source.TryGetSourceAt(sourceIndex);
 
         if (!sourceStep.HasValue)
           break;
@@ -69,7 +69,7 @@ namespace Copse.Dags
       {
         var handle = pending.Pop();
 
-        for (var childStep = Source.TryGetChildAt(handle, 0); childStep.HasValue; childStep = Source.TryGetChildAt(handle, childStep.EdgeIndex + 1))
+        for (var childStep = _Source.TryGetChildAt(handle, 0); childStep.HasValue; childStep = _Source.TryGetChildAt(handle, childStep.EdgeIndex + 1))
           if (visited.Add(childStep.Handle))
           {
             discovered.Add(childStep.Handle);
@@ -78,7 +78,7 @@ namespace Copse.Dags
       }
 
       foreach (var handle in discovered)
-        if (!Source.TryGetChildAt(handle, 0).HasValue)
+        if (!_Source.TryGetChildAt(handle, 0).HasValue)
           sinks.Add(handle);
 
       return sinks;

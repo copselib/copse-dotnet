@@ -17,7 +17,7 @@ namespace Copse.Dags
       if (source == null)
         throw new ArgumentNullException(nameof(source));
 
-      return source.GetDagWalker().MoveToChild(sourceIndex);
+      return source.GetDagWalker().MoveToSource(sourceIndex);
     }
   }
 }

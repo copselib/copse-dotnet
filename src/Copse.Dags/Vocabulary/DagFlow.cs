@@ -11,45 +11,41 @@ namespace Copse.Dags
   /// only inside the lambda's parameter types). <c>dag.Sourcefix().Scan&lt;decimal&gt;((node,
   /// inflows) => …)</c> is the family's one spelling of the sourcefix scan: the doors are the
   /// surface, the three-argument engines behind them are internal (ruled: never both -- one
-  /// name, one meaning). The prefix has become the door.
+  /// name, one meaning).
   /// </summary>
   public readonly struct DagFlow<TNode, TEdge>
   {
     internal DagFlow(IDagnumerable<TNode, TEdge> source, DagFlowOrientation orientation)
     {
-      Source = source ?? throw new ArgumentNullException(nameof(source));
-      Orientation = orientation;
+      _Source = source ?? throw new ArgumentNullException(nameof(source));
+      _Orientation = orientation;
     }
 
-    public IDagnumerable<TNode, TEdge> Source { get; }
-    internal DagFlowOrientation Orientation { get; }
+    private readonly IDagnumerable<TNode, TEdge> _Source;
+    private readonly DagFlowOrientation _Orientation;
+
+    private DagBuffer<TNode, TEdge> Buffer => DagBuffer<TNode, TEdge>.From(_Source);
 
     /// <summary>The fold: each node's accumulate from its inflows in flow order -- the sourcefix scan downward, the sinkfix scan upward.</summary>
     public DagBuffer<DagScanResult<TNode, TResult>, TEdge> Scan<TResult>(Func<TNode, IReadOnlyList<DagInflow<TResult, TEdge>>, TResult> accumulate)
-      => Orientation == DagFlowOrientation.Sourcefix
-        ? Source.SourcefixScan(accumulate)
-        : Source.SinkfixScan(accumulate);
+      => DagFlowEngines.ScanBuffer(Buffer, _Orientation, accumulate);
 
     /// <summary>The seeded downward survey; sinkfix has no seed -- see <see cref="Dispatch{TDispatch}(DagDispatchSurvey{TNode, TDispatch, TEdge})"/>.</summary>
     public DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> Dispatch<TDispatch>(TDispatch seed, DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
     {
-      if (Orientation != DagFlowOrientation.Sourcefix)
+      if (_Orientation != DagFlowOrientation.Sourcefix)
         throw new InvalidOperationException("A seed arrives from the virtual source; the sinkfix survey has none (holdings live in the nodes). Use Dispatch(survey).");
 
-      return Source.SourcefixDispatch(seed, survey);
+      return DagFlowEngines.DispatchBuffer(Buffer, seed, _Orientation, survey);
     }
 
     /// <summary>The unseeded survey: sinkfix natively; sourcefix with a default seed.</summary>
     public DagBuffer<DagDispatchResult<TNode, TDispatch>, TEdge> Dispatch<TDispatch>(DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
-      => Orientation == DagFlowOrientation.Sourcefix
-        ? Source.SourcefixDispatch(default(TDispatch), survey)
-        : Source.SinkfixDispatch(survey);
+      => DagFlowEngines.DispatchBuffer(Buffer, default(TDispatch), _Orientation, survey);
 
     /// <summary>The edge-paired survey: what each survey dispatched, riding the edge beside its original payload.</summary>
     public DagBuffer<TNode, DagEdgeResult<TEdge, TDispatch>> DispatchEdges<TDispatch>(DagDispatchSurvey<TNode, TDispatch, TEdge> survey)
-      => Orientation == DagFlowOrientation.Sourcefix
-        ? Source.SourcefixDispatchEdges(survey)
-        : Source.SinkfixDispatchEdges(survey);
+      => DagFlowEngines.DispatchEdgesBuffer(Buffer, _Orientation, survey);
 
     /// <summary>
     /// The seeded downward survey, RETURN-SHAPED: one dispatched value per target, in target

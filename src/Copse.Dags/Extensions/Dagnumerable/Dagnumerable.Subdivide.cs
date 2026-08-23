@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Copse.Dags
 {
@@ -37,7 +36,7 @@ namespace Copse.Dags
       var resultOffsets = new int[values.Length + 1];
       var resultTargets = new int[2 * outTargets.Length];
       var resultPayloads = new Unit[resultTargets.Length];
-      var inEdgeCounts = new int[nodeCount];
+      var inEdgeIndexOfOutSlot = structure.InEdgeIndexOfOutSlot();
       var fill = 0;
 
       for (var ordinal = 0; ordinal < nodeCount; ordinal++)
@@ -55,7 +54,7 @@ namespace Copse.Dags
           var child = outTargets[slot];
           var edgeElement = nodeElement + 1 + (slot - outOffsets[ordinal]);
           values[edgeElement] = DagElement<TNode, TEdge>.OfEdge(
-            new DagEdgeContext<TNode, TEdge>(buffer[ordinal], buffer[child], outPayloads[slot], inEdgeCounts[child]++));
+            new DagEdgeContext<TNode, TEdge>(buffer[ordinal], buffer[child], outPayloads[slot], inEdgeIndexOfOutSlot[slot]));
           sourceOrdinals[edgeElement] = -1;
           resultTargets[fill++] = child + outOffsets[child];
           resultOffsets[edgeElement + 1] = fill;

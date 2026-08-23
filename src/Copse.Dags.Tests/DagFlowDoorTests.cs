@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -14,39 +13,31 @@ namespace Copse.Dags.Tests
   public class DagFlowDoorTests
   {
     [TestMethod]
-    public void Scan_OneTypeArgument_EqualsTheFlatSpelling()
+    public void Scan_OneTypeArgument_ThroughBothDoors()
     {
       var dag = DagWalkerCorpus.Diamond();
 
-      var viaDoor = dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
-      var viaFlat = dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
-
-      CollectionAssert.AreEqual(viaFlat.Values.Select(pairing => pairing.Accumulate).ToList(), viaDoor.Values.Select(pairing => pairing.Accumulate).ToList());
-      Assert.AreEqual(0.54m, viaDoor.Values.Single(pairing => pairing.Node == "venture").Accumulate);
+      var downward = dag.Sourcefix().Scan<decimal>((node, inflows) => inflows.Count == 0 ? 1m : inflows.Sum(inflow => inflow.Value * inflow.Edge));
+      Assert.AreEqual(0.54m, downward.Values.Single(pairing => pairing.Node == "venture").Accumulate);
 
       var upward = dag.Sinkfix().Scan<int>((node, childResults) => 1 + childResults.Sum(result => result.Value));
       Assert.AreEqual(5, upward.Values.Single(pairing => pairing.Node == "apex").Accumulate, "the path-counted size, by the upward door");
     }
 
     [TestMethod]
-    public void DispatchEdges_OneTypeArgument_EqualsTheFlatSpelling()
+    public void DispatchEdges_OneTypeArgument_ThroughTheUpwardDoor()
     {
       var dag = DagWalkerCorpus.Diamond();
 
-      var viaDoor = dag.Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
-      {
-        foreach (var owner in owners)
-          owner.Dispatch(owner.Edge * 2);
-      });
-      var viaFlat = dag.Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
+      var doubled = dag.Sinkfix().DispatchEdges<decimal>((entity, arrivals, owners) =>
       {
         foreach (var owner in owners)
           owner.Dispatch(owner.Edge * 2);
       });
 
       CollectionAssert.AreEqual(
-        viaFlat.GetEdges().Select(edge => $"{edge.Parent}->{edge.Child}:{edge.Edge.Accumulate}").ToList(),
-        viaDoor.GetEdges().Select(edge => $"{edge.Parent}->{edge.Child}:{edge.Edge.Accumulate}").ToList());
+        new[] { "apex->left:1.20", "apex->right:0.80", "left->venture:1.40", "right->venture:0.60" },
+        doubled.GetEdges().Select(edge => $"{edge.Parent}->{edge.Child}:{edge.Edge.Accumulate}").ToList());
     }
 
     [TestMethod]

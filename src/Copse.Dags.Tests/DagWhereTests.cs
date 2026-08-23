@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -16,17 +15,6 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagWhereTests
   {
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     private static string[] Edges(IDagnumerable<string, decimal> dag) =>
       dag.GetEdges().Select(e => $"{e.Parent}->{e.Child}:{e.Edge}").ToArray();
 
@@ -40,10 +28,10 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void KeepEverything_IsTheIdentity()
     {
-      var kept = Diamond().Where(node => true, (inEdge, outEdge) => inEdge * outEdge);
+      var kept = DagWalkerCorpus.Diamond().Where(node => true, (inEdge, outEdge) => inEdge * outEdge);
 
       CollectionAssert.AreEqual(new[] { "apex", "left", "right", "venture" }, kept.GetTopologicalOrder().ToArray());
-      CollectionAssert.AreEqual(Edges(Diamond()), Edges(kept));
+      CollectionAssert.AreEqual(Edges(DagWalkerCorpus.Diamond()), Edges(kept));
 
       for (var ordinal = 0; ordinal < kept.Count; ordinal++)
         Assert.AreEqual(ordinal, kept.SourceOrdinal(ordinal));
@@ -52,7 +40,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void BypassOneMiddle_ComposesTheThroughEdge_AtTheFilteredSeat()
     {
-      var bypassed = Diamond().Where(node => node != "left", (inEdge, outEdge) => inEdge * outEdge);
+      var bypassed = DagWalkerCorpus.Diamond().Where(node => node != "left", (inEdge, outEdge) => inEdge * outEdge);
 
       CollectionAssert.AreEqual(new[] { "apex", "right", "venture" }, bypassed.GetTopologicalOrder().ToArray());
 
@@ -71,7 +59,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void BypassBothMiddles_YieldsParallelEdges_AndPreservesLookthrough()
     {
-      var bypassed = Diamond().Where(
+      var bypassed = DagWalkerCorpus.Diamond().Where(
         node => node == "apex" || node == "venture",
         (inEdge, outEdge) => inEdge * outEdge);
 
@@ -81,7 +69,7 @@ namespace Copse.Dags.Tests
         Edges(bypassed));
 
       // Dissolving pass-through entities changes presentation, never arithmetic.
-      Assert.AreEqual(Lookthrough(Diamond()), Lookthrough(bypassed));
+      Assert.AreEqual(Lookthrough(DagWalkerCorpus.Diamond()), Lookthrough(bypassed));
       Assert.AreEqual(0.54m, Lookthrough(bypassed));
     }
 
@@ -168,7 +156,7 @@ namespace Copse.Dags.Tests
       // topological order.
       var consulted = new List<string>();
 
-      Diamond().Where(
+      DagWalkerCorpus.Diamond().Where(
         node =>
         {
           consulted.Add(node);

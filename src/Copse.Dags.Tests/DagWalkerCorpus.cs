@@ -30,6 +30,17 @@ namespace Copse.Dags.Tests
       return new Dag<string, decimal>(a);
     }
 
+    // Parallel edges: top owns mid twice (25% + 75%) and bottom directly (10%); mid owns bottom 50%.
+    public static Dag<string, decimal> ParallelEdges()
+    {
+      var top = new DagNode<string, decimal>("top");
+      var mid = top.AddChild("mid", 0.25m);
+      top.AddChild(mid, 0.75m);
+      var bottom = mid.AddChild("bottom", 0.5m);
+      top.AddChild(bottom, 0.1m);
+      return new Dag<string, decimal>(top);
+    }
+
     public static Dag<string, decimal> TwoIslands()
     {
       var island1 = new DagNode<string, decimal>("island1");

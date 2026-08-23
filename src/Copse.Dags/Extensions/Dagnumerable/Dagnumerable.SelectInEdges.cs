@@ -8,9 +8,9 @@ namespace Copse.Dags
     /// <summary>
     /// Rewrite every node's IN-EDGES from the node's own seat, given its whole event: the
     /// selector returns one payload per arrival, in arrival order. The group-aware edge
-    /// projection the dispatch tier was standing in for (conditioning an owner group --
-    /// reallocating an excluded owner's fraction over the survivors -- is this, with no value
-    /// flowing, no slots, no pairing to unwrap). An extend, not a bind: the child reads its
+    /// projection: conditioning an owner group -- reallocating an excluded owner's fraction over
+    /// the survivors -- is this, with no value flowing, no slots, no pairing to unwrap. An
+    /// extend, not a bind: the child reads its
     /// group and relabels the edges arriving at it; equal to the transpose-conjugate of
     /// <see cref="SelectOutEdges"/> (pinned). Every edge is rewritten exactly once, at its
     /// child; shape and seats untouched.
@@ -26,7 +26,7 @@ namespace Copse.Dags
 
       var buffer = DagBuffer<TNode, TEdge>.From(source);
       var structure = buffer.Structure;
-      DagEventSeats.Build(buffer, out var arrivals, out var departures, out _);
+      DagEventSeats.Build(buffer, out var arrivals, out var departures);
       var (inOffsets, _, inEdgeOutSlots) = structure.InAdjacency();
 
       var payloads = new TEdgeResult[structure.EdgeCount];
@@ -35,9 +35,7 @@ namespace Copse.Dags
       {
         var rewritten = selector(arrivals[ordinal], buffer[ordinal], departures[ordinal]);
 
-        if (rewritten == null || rewritten.Count != arrivals[ordinal].Length)
-          throw new InvalidOperationException(
-            $"SelectInEdges at ordinal {ordinal} returned {rewritten?.Count.ToString() ?? "null"} payloads for {arrivals[ordinal].Length} arrivals; one per arrival, in arrival order.");
+        DagSeats.RequireOnePerSeat(nameof(SelectInEdges), ordinal, rewritten, arrivals[ordinal].Length, "payloads");
 
         for (var index = 0; index < rewritten.Count; index++)
           payloads[inEdgeOutSlots[inOffsets[ordinal] + index]] = rewritten[index];

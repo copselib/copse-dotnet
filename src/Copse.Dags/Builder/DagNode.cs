@@ -50,8 +50,9 @@ namespace Copse.Dags
   /// one parent) are permitted. <see cref="ParentEdges"/> is the maintained back-link: one entry
   /// per in-edge, so it too can contain duplicates.</para>
   ///
-  /// <para>Linking is unvalidated for cycles -- acyclicity is enforced when a <see cref="Dag{TValue, TEdge}"/>
-  /// operation walks the graph (see <see cref="Dag{TValue, TEdge}.GetTopologicalOrder"/>).</para>
+  /// <para>Linking is unvalidated for cycles -- acyclicity is enforced when a walk drains the
+  /// graph (<c>Materialize</c>, <c>GetTopologicalOrder</c>, any full drain), which throws
+  /// <see cref="DagCycleException"/> at the starvation point.</para>
   /// </summary>
   public sealed class DagNode<TValue, TEdge>
   {

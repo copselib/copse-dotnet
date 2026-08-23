@@ -38,42 +38,32 @@ namespace Copse.Dags
       new PruneNodesAfterDagnumerator<TNode, TEdge>(_Source.GetDagnumerator(), _Predicate);
   }
 
-  internal sealed class PruneNodesAfterDagnumerator<TNode, TEdge> : IDagnumerator<TNode, TEdge>
+  internal sealed class PruneNodesAfterDagnumerator<TNode, TEdge> : ForwardingDagnumerator<TNode, TEdge>
   {
     public PruneNodesAfterDagnumerator(IDagnumerator<TNode, TEdge> inner, Func<TNode, bool> predicate)
+      : base(inner)
     {
-      _Inner = inner;
       _Predicate = predicate;
     }
 
-    private readonly IDagnumerator<TNode, TEdge> _Inner;
     private readonly Func<TNode, bool> _Predicate;
     private DagTraversalStrategies _OwnVerdict = DagTraversalStrategies.TraverseAll;
 
-    public DagnumeratorMode Mode => _Inner.Mode;
-    public TNode Node => _Inner.Node;
-    public int Ordinal => _Inner.Ordinal;
-    public TEdge Edge => _Inner.Edge;
-    public int ParentOrdinal => _Inner.ParentOrdinal;
-    public int EdgeIndex => _Inner.EdgeIndex;
-
-    public bool MoveNext(DagTraversalStrategies strategies)
+    public override bool MoveNext(DagTraversalStrategies strategies)
     {
       // The wrapper's verdict rides along with the consumer's for the entry just shown (the
       // union is safe: both answer the same visit, and the mode check stays the source's).
       var verdict = strategies | _OwnVerdict;
       _OwnVerdict = DagTraversalStrategies.TraverseAll;
 
-      if (!_Inner.MoveNext(verdict))
+      if (!Inner.MoveNext(verdict))
         return false;
 
-      if (_Inner.Mode == DagnumeratorMode.EnteringNode && _Predicate(_Inner.Node))
+      if (Inner.Mode == DagnumeratorMode.EnteringNode && _Predicate(Inner.Node))
         _OwnVerdict = DagTraversalStrategies.SkipOutEdges;
 
       return true;
     }
-
-    public void Dispose() => _Inner.Dispose();
   }
 }
 

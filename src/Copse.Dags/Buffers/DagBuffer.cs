@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 
 namespace Copse.Dags
 {
   /// <summary>
-  /// The capture tier (the re-founding; design-docs/DAG_CONTRACT_DESIGN.md): an owned,
+  /// The capture tier (design-docs/DAG_CONTRACT_DESIGN.md): an owned,
   /// immutable CSR capture of a dag -- <see cref="Values"/> in entry (topological) order with
   /// the DENSE INDEX as the ordinal, out-adjacency as flat parallel arrays preserving
   /// per-parent out-edge order, and a <see cref="SourceOrdinal"/> back-map when captured from
@@ -26,6 +25,7 @@ namespace Copse.Dags
 
     private readonly TNode[] _Values;
     private readonly int[] _SourceOrdinals;
+    private DagBufferTopology<TNode, TEdge> _Topology;
 
     internal DagStructure<TEdge> Structure { get; }
 
@@ -43,35 +43,27 @@ namespace Copse.Dags
     public IDagnumerator<TNode, TEdge> GetDagnumerator() =>
       new TopologicalDagnumerator<TNode, TEdge>(_Values, Structure.OutOffsets, Structure.OutTargets, Structure.OutPayloads);
 
-    private DagBufferTopology<TNode, TEdge> _Topology;
-
     // The door (the buffer re-parent, dag-side: captures are never address-poor): the unfocused
     // walker over the CSR skeleton, built once, handles = dense ordinals.
     public DagWalker<TNode, int, TEdge> GetDagWalker()
       => new DagWalker<TNode, int, TEdge>(_Topology ??= new DagBufferTopology<TNode, TEdge>(_Values, Structure));
 
     /// <summary>
-    /// The orientation flip -- the operator the retired backward dimension became: the same
-    /// nodes and edges with every arrow reversed, presented in the transpose's own topological
+    /// The orientation flip: the same nodes and edges with every arrow reversed, presented in the transpose's own topological
     /// order (the reverse of this buffer's). The whole forward operator family now points
     /// upward through it; transpose back to return to this orientation.
     /// </summary>
     public DagBuffer<TNode, TEdge> Transpose()
     {
-      var count = _Values.Length;
-      var values = new TNode[count];
-      for (var ordinal = 0; ordinal < count; ordinal++)
-        values[count - 1 - ordinal] = _Values[ordinal];
+      return new DagBuffer<TNode, TEdge>(Reversed(_Values), Structure.Transpose(), _SourceOrdinals == null ? null : Reversed(_SourceOrdinals));
+    }
 
-      int[] sourceOrdinals = null;
-      if (_SourceOrdinals != null)
-      {
-        sourceOrdinals = new int[count];
-        for (var ordinal = 0; ordinal < count; ordinal++)
-          sourceOrdinals[count - 1 - ordinal] = _SourceOrdinals[ordinal];
-      }
-
-      return new DagBuffer<TNode, TEdge>(values, Structure.Transpose(), sourceOrdinals);
+    private static T[] Reversed<T>(T[] array)
+    {
+      var reversed = new T[array.Length];
+      for (var index = 0; index < array.Length; index++)
+        reversed[array.Length - 1 - index] = array[index];
+      return reversed;
     }
 
     /// <summary>A fold's result: fresh values over this buffer's SHARED structure.</summary>

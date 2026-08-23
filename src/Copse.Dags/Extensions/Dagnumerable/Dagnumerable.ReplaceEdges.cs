@@ -27,10 +27,9 @@ namespace Copse.Dags
     /// CONSTRUCTION: the result buffer inherits its source's acyclicity certificate without
     /// revalidation.</para>
     ///
-    /// <para>Returns a buffer BY CONVENTION, not theorem (the lazy-builder distinction):
-    /// streaming subdivision is visit-protocol-legal, but synthesized nodes need ordinals a
-    /// wrapper cannot know are free -- the reserved-range amendment, logged for its sitting,
-    /// would make this streamable. Until then: capture in, capture out, one pass each way.</para>
+    /// <para>Capture-shaped: synthesized nodes need ordinals a streaming wrapper cannot know are
+    /// free (a reserved ordinal range would lift this). Capture in, capture out, one pass each
+    /// way.</para>
     /// </summary>
     public static DagBuffer<TNode, TEdge> ReplaceEdges<TNode, TEdge>(
       this IDagnumerable<TNode, TEdge> source,
@@ -46,13 +45,8 @@ namespace Copse.Dags
       var outTargets = structure.OutTargets;
       var outPayloads = structure.OutPayloads;
 
-      // Each slot's index among its child's in-edges, in discovery order -- the context's
-      // correlation key, by the same arithmetic the relationship tracker streams.
-      var (inOffsets, _, inEdgeOutSlots) = structure.InAdjacency();
-      var slotInEdgeIndex = new int[structure.EdgeCount];
-      for (var child = 0; child < nodeCount; child++)
-        for (var inSlot = inOffsets[child]; inSlot < inOffsets[child + 1]; inSlot++)
-          slotInEdgeIndex[inEdgeOutSlots[inSlot]] = inSlot - inOffsets[child];
+      var (inOffsets, _, _) = structure.InAdjacency();
+      var slotInEdgeIndex = structure.InEdgeIndexOfOutSlot();
 
       // The liveness sweep: dense ordinals ARE a topological order, so every parent's fate is
       // settled before its children are reached. A node survives as an original source or by

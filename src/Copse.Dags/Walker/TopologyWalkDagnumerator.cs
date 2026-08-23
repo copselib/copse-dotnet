@@ -5,7 +5,7 @@ using System.Text;
 namespace Copse.Dags
 {
   // The family's one demand-driven walk (Dag.FromTopology's engine, and the builder's through
-  // DagNodeTopology -- THE LAZY BUILDER RULING, design-docs/DAG_CONTRACT_DESIGN.md): Kahn's
+  // DagNodeTopology): Kahn's
   // algorithm on demand over a topology's probes, membership keyed by handle equality. The visit
   // protocol is Kahn's trace: pop a ready node = entry; its out-edge group = the dispatch block
   // (discoveries, each decrementing a child's pending count); a child settling becomes ready.
@@ -105,7 +105,7 @@ namespace Copse.Dags
     private readonly Stack<THandle> _Ready = new();
     private readonly List<THandle> _ReadyBatch = new();
 
-    private WalkPhase _Phase = WalkPhase.NotStarted;
+    private DagWalkPhase _Phase = DagWalkPhase.NotStarted;
     private int _SourceIndex;
     private int _NextOrdinal;
     private int _SettledCount;
@@ -135,7 +135,7 @@ namespace Copse.Dags
       {
         switch (_Phase)
         {
-          case WalkPhase.SourceDiscoveries when _SourceIndex < _WalkSources.Count:
+          case DagWalkPhase.SourceDiscoveries when _SourceIndex < _WalkSources.Count:
             var source = _WalkSources[_SourceIndex];
             var sourceState = _States[source];
             sourceState.Pending--;
@@ -143,9 +143,9 @@ namespace Copse.Dags
             _SourceIndex++;
             return true;
 
-          case WalkPhase.NotStarted:
-          case WalkPhase.SourceDiscoveries:
-          case WalkPhase.Entering:
+          case DagWalkPhase.NotStarted:
+          case DagWalkPhase.SourceDiscoveries:
+          case DagWalkPhase.Entering:
             FlushReadyBatch();
 
             if (_Ready.Count == 0)
@@ -153,7 +153,7 @@ namespace Copse.Dags
               if (_SettledCount != _States.Count)
                 throw new DagCycleException(DescribeStarvation());
 
-              _Phase = WalkPhase.Done;
+              _Phase = DagWalkPhase.Done;
               continue;
             }
 
@@ -163,10 +163,10 @@ namespace Copse.Dags
             _OutEdgeIndex = 0;
             _SettledCount++;
             PublishEntry(_Current, _CurrentState);
-            _Phase = WalkPhase.Dispatching;
+            _Phase = DagWalkPhase.Dispatching;
             return true;
 
-          case WalkPhase.Dispatching:
+          case DagWalkPhase.Dispatching:
             if (_SuppressDispatch)
             {
               for (var childStep = _Topology.TryGetChildAt(_Current, _OutEdgeIndex); childStep.HasValue; childStep = _Topology.TryGetChildAt(_Current, ++_OutEdgeIndex))
@@ -184,10 +184,10 @@ namespace Copse.Dags
               return true;
             }
 
-            _Phase = WalkPhase.Entering;
+            _Phase = DagWalkPhase.Entering;
             continue;
 
-          case WalkPhase.Done:
+          case DagWalkPhase.Done:
             return false;
 
           default:
@@ -198,26 +198,17 @@ namespace Copse.Dags
 
     private void ApplyStrategiesToCurrentVisit(DagTraversalStrategies strategies)
     {
-      if ((strategies & ~(DagTraversalStrategies.SkipEdge | DagTraversalStrategies.SkipOutEdges)) != 0)
-        throw new ArgumentException($"Unknown strategy flags: {strategies}.", nameof(strategies));
+      DagWalkVerdicts.Require(strategies, _Phase, Mode);
 
-      if (_Phase == WalkPhase.NotStarted || _Phase == WalkPhase.Done)
+      if (_Phase == DagWalkPhase.NotStarted || _Phase == DagWalkPhase.Done)
       {
-        if (strategies != DagTraversalStrategies.TraverseAll)
-          throw new ArgumentException(
-            $"{strategies} answers no visit -- the dagnumerator has not published one.", nameof(strategies));
-
-        if (_Phase == WalkPhase.NotStarted)
-          _Phase = WalkPhase.SourceDiscoveries;
+        if (_Phase == DagWalkPhase.NotStarted)
+          _Phase = DagWalkPhase.SourceDiscoveries;
         return;
       }
 
       if (Mode == DagnumeratorMode.DiscoveringNode)
       {
-        if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
-          throw new ArgumentException(
-            "SkipOutEdges answers an entry; the current visit is a discovery.", nameof(strategies));
-
         var discoveredState = _States[_LastDiscovered];
 
         if (!strategies.HasFlag(DagTraversalStrategies.SkipEdge))
@@ -226,15 +217,8 @@ namespace Copse.Dags
         if (discoveredState.Pending == 0)
           RouteSettled(_LastDiscovered, discoveredState);
       }
-      else
-      {
-        if (strategies.HasFlag(DagTraversalStrategies.SkipEdge))
-          throw new ArgumentException(
-            "SkipEdge answers a discovery; the current visit is an entry.", nameof(strategies));
-
-        if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
-          _SuppressDispatch = true;
-      }
+      else if (strategies.HasFlag(DagTraversalStrategies.SkipOutEdges))
+        _SuppressDispatch = true;
     }
 
     private void RouteSettled(THandle handle, NodeState state)
@@ -406,15 +390,6 @@ namespace Copse.Dags
       public int Pending;
       public int Live;
       public int Ordinal = -1;
-    }
-
-    private enum WalkPhase
-    {
-      NotStarted,
-      SourceDiscoveries,
-      Entering,
-      Dispatching,
-      Done,
     }
 
     private struct StarvedPathFrame

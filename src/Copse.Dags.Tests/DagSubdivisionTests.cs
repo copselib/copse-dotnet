@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -18,17 +17,7 @@ namespace Copse.Dags.Tests
       => DagExpansion<DagElement<string, decimal>, Unit>.Return(element);
 
     private static IEnumerable<(string Name, Func<Dag<string, decimal>> Factory)> Corpus()
-      => DagWalkerCorpus.All().Concat(new[] { ("parallel", (Func<Dag<string, decimal>>)ParallelEdges) });
-
-    private static Dag<string, decimal> ParallelEdges()
-    {
-      var top = new DagNode<string, decimal>("top");
-      var mid = top.AddChild("mid", 0.25m);
-      top.AddChild(mid, 0.75m);
-      var bottom = mid.AddChild("bottom", 0.5m);
-      top.AddChild(bottom, 0.1m);
-      return new Dag<string, decimal>(top);
-    }
+      => DagWalkerCorpus.All().Concat(new[] { ("parallel", (Func<Dag<string, decimal>>)DagWalkerCorpus.ParallelEdges) });
 
     [TestMethod]
     public void TheShape_PinnedByHand()

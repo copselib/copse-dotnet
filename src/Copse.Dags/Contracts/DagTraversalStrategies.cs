@@ -3,8 +3,8 @@ using System;
 namespace Copse.Dags
 {
   /// <summary>
-  /// Consumer strategies for <see cref="IDagnumerator{TNode, TEdge}.MoveNext"/> — the DAG analog
-  /// of the tree family's NodeTraversalStrategies, reshaped by one fact: when a visit is
+  /// Consumer strategies for <see cref="IDagnumerator{TNode, TEdge}.MoveNext"/>, shaped by one
+  /// fact: when a visit is
   /// published, everything about it has already been witnessed, so a consumer can only shape the
   /// FUTURE. Hence there is deliberately no consumer skip-node: an entry cannot be retracted,
   /// and removing a node from the logical dag is operator business (PruneNodesBefore), not a consumer

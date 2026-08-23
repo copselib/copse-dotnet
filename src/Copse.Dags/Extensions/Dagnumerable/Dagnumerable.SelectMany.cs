@@ -39,9 +39,7 @@ namespace Copse.Dags
       var outTargets = structure.OutTargets;
       var outPayloads = structure.OutPayloads;
 
-      var inDegrees = new int[nodeCount];
-      for (var slot = 0; slot < outTargets.Length; slot++)
-        inDegrees[outTargets[slot]]++;
+      var inDegrees = structure.InDegrees();
 
       // The reach pass, in topological order: an original is reached as a source or through a
       // conducting parent; a reached original's expansion conducts iff it has a slot.

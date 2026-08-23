@@ -22,7 +22,7 @@ namespace Copse.Dags
 
       var buffer = DagBuffer<TNode, TEdge>.From(source);
       var structure = buffer.Structure;
-      DagEventSeats.Build(buffer, out var arrivals, out var departures, out _);
+      DagEventSeats.Build(buffer, out var arrivals, out var departures);
 
       var kept = new bool[structure.EdgeCount];
 
@@ -30,15 +30,13 @@ namespace Copse.Dags
       {
         var verdicts = predicate(arrivals[ordinal], buffer[ordinal], departures[ordinal]);
 
-        if (verdicts == null || verdicts.Count != departures[ordinal].Length)
-          throw new InvalidOperationException(
-            $"PruneOutEdges at ordinal {ordinal} returned {verdicts?.Count.ToString() ?? "null"} verdicts for {departures[ordinal].Length} departures; one per departure, in departure order.");
+        DagSeats.RequireOnePerSeat(nameof(PruneOutEdges), ordinal, verdicts, departures[ordinal].Length, "verdicts");
 
         for (var index = 0; index < verdicts.Count; index++)
           kept[structure.OutOffsets[ordinal] + index] = !verdicts[index];
       }
 
-      return DagEdgeCompaction.KeepEdges(buffer, kept);
+      return DagCompaction.KeepEdges(buffer, kept);
     }
   }
 }

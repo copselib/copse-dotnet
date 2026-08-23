@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 
 namespace Copse.Dags.Tests
 {
@@ -13,7 +12,7 @@ namespace Copse.Dags.Tests
   /// which is what makes them worth diffing against: same answers, disjoint machinery. Only
   /// the operators a differential pin consumes live here: the two prunes and the two scans.
   /// </summary>
-  public static class OracleDagOperations
+  internal static class OracleDagOperations
   {
     /// <summary>
     /// Upward fold: children before parents, each node computed exactly once; a shared child's
@@ -274,5 +273,4 @@ namespace Copse.Dags.Tests
       public int NextChildIndex;
     }
   }
-
 }

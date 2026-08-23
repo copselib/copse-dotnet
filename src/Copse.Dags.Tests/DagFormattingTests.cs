@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Copse.Dags.Tests
@@ -15,21 +14,10 @@ namespace Copse.Dags.Tests
   {
     private static string InvariantEdge(decimal edge) => edge.ToString(CultureInfo.InvariantCulture);
 
-    private static Dag<string, decimal> Diamond()
-    {
-      var apex = new DagNode<string, decimal>("apex");
-      var left = apex.AddChild("left", 0.60m);
-      var right = apex.AddChild("right", 0.40m);
-      var venture = new DagNode<string, decimal>("venture");
-      left.AddChild(venture, 0.70m);
-      right.AddChild(venture, 0.30m);
-      return new Dag<string, decimal>(apex);
-    }
-
     [TestMethod]
     public void Diamond_SharedNodeExpandsOnce_ThenReferences()
     {
-      var lines = Diamond().ToFormattedLines(node => node, InvariantEdge);
+      var lines = DagWalkerCorpus.Diamond().ToFormattedLines(node => node, InvariantEdge);
 
       CollectionAssert.AreEqual(
         new[]
@@ -112,7 +100,7 @@ namespace Copse.Dags.Tests
     {
       // Pruning right leaves the single live path -- and venture's live in-degree is now 1,
       // so its #ordinal tag disappears with the sharing.
-      var lines = Diamond().PruneNodesBefore(node => node == "right").ToFormattedLines(node => node, InvariantEdge);
+      var lines = DagWalkerCorpus.Diamond().PruneNodesBefore(node => node == "right").ToFormattedLines(node => node, InvariantEdge);
 
       CollectionAssert.AreEqual(
         new[]
@@ -127,7 +115,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void ToFormattedString_JoinsWithNewlines()
     {
-      var rendered = Diamond().ToFormattedString(node => node, InvariantEdge);
+      var rendered = DagWalkerCorpus.Diamond().ToFormattedString(node => node, InvariantEdge);
 
       Assert.AreEqual(5, rendered.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length);
       StringAssert.StartsWith(rendered, "apex");

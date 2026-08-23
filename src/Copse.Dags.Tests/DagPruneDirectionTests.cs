@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Copse.Dags;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using static Copse.Dags.Tests.Visits;
 
 namespace Copse.Dags.Tests
 {
@@ -18,39 +19,13 @@ namespace Copse.Dags.Tests
   [TestClass]
   public class DagPruneDirectionTests
   {
-    private sealed record Visit(DagnumeratorMode Mode, string Node);
-
-    private static List<Visit> Drain(
-      IDagnumerator<string, decimal> dagnumerator,
-      Func<Visit, DagTraversalStrategies> strategySelector = null)
-    {
-      var visits = new List<Visit>();
-      var strategies = DagTraversalStrategies.TraverseAll;
-
-      while (dagnumerator.MoveNext(strategies))
-      {
-        var visit = new Visit(dagnumerator.Mode, dagnumerator.Node);
-        visits.Add(visit);
-        strategies = strategySelector?.Invoke(visit) ?? DagTraversalStrategies.TraverseAll;
-      }
-
-      return visits;
-    }
-
     private static List<string> EnteredNodes(IEnumerable<Visit> visits) =>
       visits.Where(visit => visit.Mode == DagnumeratorMode.EnteringNode).Select(visit => visit.Node).ToList();
-
-    private static Dag<string, decimal> Chain()
-    {
-      var a = new DagNode<string, decimal>("a");
-      a.AddChild("b", 1m).AddChild("c", 1m);
-      return new Dag<string, decimal>(a);
-    }
 
     [TestMethod]
     public void Forward_PruneNodesBefore_RemovesTheNodeAndItsExclusiveDescendantSide()
     {
-      var pruned = Chain().PruneNodesBefore(node => node == "b");
+      var pruned = DagWalkerCorpus.Chain().PruneNodesBefore(node => node == "b");
 
       using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
@@ -61,7 +36,7 @@ namespace Copse.Dags.Tests
     [TestMethod]
     public void Forward_PruneNodesAfter_KeepsTheNodeAsANewSink()
     {
-      var pruned = Chain().PruneNodesAfter(node => node == "b");
+      var pruned = DagWalkerCorpus.Chain().PruneNodesAfter(node => node == "b");
 
       using var dagnumerator = pruned.GetDagnumerator();
       var visits = Drain(dagnumerator);
@@ -75,7 +50,7 @@ namespace Copse.Dags.Tests
     {
       // Backward = the transpose walked forward (order c, b, a): pruning b before entry kills
       // b, and a -- b's exclusive reach in this orientation -- dies with it.
-      using var dagnumerator = Chain().Transpose().PruneNodesBefore(node => node == "b").GetDagnumerator();
+      using var dagnumerator = DagWalkerCorpus.Chain().Transpose().PruneNodesBefore(node => node == "b").GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "c" }, EnteredNodes(visits));
@@ -87,7 +62,7 @@ namespace Copse.Dags.Tests
       // b enters, then dispatches nothing backward: a starves. In original orientation the
       // survivor is b->c, the mirror of the forward-after pin -- same predicate, opposite
       // half removed.
-      using var dagnumerator = Chain().Transpose().PruneNodesAfter(node => node == "b").GetDagnumerator();
+      using var dagnumerator = DagWalkerCorpus.Chain().Transpose().PruneNodesAfter(node => node == "b").GetDagnumerator();
       var visits = Drain(dagnumerator);
 
       CollectionAssert.AreEqual(new[] { "c", "b" }, EnteredNodes(visits));
