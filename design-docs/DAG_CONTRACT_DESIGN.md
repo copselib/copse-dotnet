@@ -1018,17 +1018,18 @@ where `SinkfixDispatchEdges` would have put them on the edges.
 decided at the node — and a selector that reads its arrivals makes the fused selector
 non-local. So:
 
-- **The bind owns its departures.** A `DagSlotAttachment` may ANSWER for the out-edges it
-  re-attaches — keep / rewrite / suppress — by a LOCAL function of (index, payload).
-  `SelectOutEdges` and `PruneOutEdges` are `Return` answering `Rewrite` / `Suppress`
-  (pinned). **Lawful in the promotion-free fragment**: an answer that depends on index or
-  payload cannot follow an earlier pass's promotion beneath it, because promotion composes a
-  suffix onto the edge the answer would have to see — `promoteMiddles` then
-  `rewriteDepartures` on the diamond gives `acr0` stepwise and `ar0c` fused, and no local
-  answer reproduces the former (pinned as a principled non-law; the dag's reading of the
-  sequence lab's suffix-free fragment). Answering then promoting, answering then answering,
-  and a promotion answering its own departures all associate — the battery runs every pair
-  outside promotion-then-answering.
+- **The bind owns NO edge payloads on the node carrier — ruled PURE (Jason, same day).** An
+  attempt gave slot attachments per-departure answers (keep / rewrite / suppress, a local
+  function of index and payload); the law device, grown phantom departure children, found
+  the boundary exactly: an answer depending on index or payload cannot follow an earlier
+  pass's PROMOTION beneath it, because promotion composes a suffix onto the edge the answer
+  would have to see and locality forbids reading it — `promoteMiddles` then
+  `rewriteDepartures` on the diamond gave `acr0` stepwise and `ar0c` fused, all twenty
+  failing pairs promotion-then-answering, every other pair lawful. A conditional law is one
+  feature too many: the answers were REMOVED, every bind law is unconditional again, and
+  the theorem stays here as the reason. The edge grain's bind-derivability has its one
+  proof, the subdivision (edges as nodes, no composer) — `SelectOutEdges` / `PruneOutEdges`
+  are pinned equal to the bind there.
 - **The event-grain relabels are extends**, destructured seats `(arrivals, node, departures)`
   as `DagEdgeContext` groups, return-shaped, no slots: `SelectNodes` over the event (≡ the
   walker's `Extend` with a one-hop observation, pinned — the extend half on the same seats),

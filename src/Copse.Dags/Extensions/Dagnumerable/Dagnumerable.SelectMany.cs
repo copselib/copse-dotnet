@@ -9,23 +9,16 @@ namespace Copse.Dags
     /// The dag monad's bind -- the pointed node substitution (SELECTMANY_DESIGN.md's verified
     /// semantics, dag-side): every node becomes the <see cref="DagExpansion{TNode, TEdge}"/>
     /// the selector returns; the node's in-edges reach the fragment's sources, its out-edges
-    /// re-attach at the fragment's slot. Through an attachment FROM OUTSIDE the in-edges meet
-    /// the out-edges directly with payloads composed by <paramref name="edgeComposer"/>
-    /// (<c>upstream ∘ downstream</c>) -- the composer's associativity is the bind's law, and a
-    /// payload-bearing attachment composes the same way. Each attachment may ANSWER for the
-    /// out-edges it re-attaches -- keep, rewrite the payload, suppress -- so the bind projects
-    /// and filters the edges it owns (the dispatching end's), locally -- lawful in the
-    /// PROMOTION-FREE fragment (an answer cannot follow an earlier pass's promotion beneath it;
-    /// the group-aware edge projections are extends for exactly this reason). The quartet derives the
-    /// node reshapings (<c>Return</c> is <c>SelectNodes</c>, <c>Leaf</c> is
-    /// <c>PruneNodesAfter</c>, <c>Drop</c> is <c>PruneNodesBefore</c>, <c>Promote</c> is
-    /// <c>Where</c>) and the answers derive the out-edge ones (<c>SelectOutEdges</c>,
-    /// <c>PruneOutEdges</c>); the in-edge ones are the transpose-conjugates -- all pinned
-    /// content-exact in the derivation batteries. Liveness is the family's one rule: a node is
-    /// reached iff it is an original source or some parent's expansion conducts an edge to it
-    /// (an attachment that does not suppress it); an unreached node's selector is never
-    /// consulted and its fragment never exists. Capture-shaped, like every substitution
-    /// operator: fresh ordinals need minting.
+    /// re-attach at the fragment's slot. Through a slot as source the in-edges meet the
+    /// out-edges directly with payloads composed by <paramref name="edgeComposer"/>
+    /// (<c>upstream ∘ downstream</c>) -- the composer's associativity is the bind's law, and
+    /// a payload-bearing attachment composes the same way. The quartet derives the
+    /// reshapings: <c>Return</c> is <c>SelectNodes</c>, <c>Leaf</c> is <c>PruneNodesAfter</c>,
+    /// <c>Drop</c> is <c>PruneNodesBefore</c>, <c>Promote</c> is <c>Where</c> -- pinned
+    /// content-exact in the derivation battery. Liveness is the family's one rule: a node is
+    /// reached iff it is an original source or some parent's expansion conducts (has a slot);
+    /// an unreached node's selector is never consulted and its fragment never exists.
+    /// Capture-shaped, like every substitution operator: fresh ordinals need minting.
     /// </summary>
     public static DagBuffer<TResult, TEdge> SelectMany<TNode, TEdge, TResult>(
       this IDagnumerable<TNode, TEdge> source,
@@ -51,8 +44,7 @@ namespace Copse.Dags
         inDegrees[outTargets[slot]]++;
 
       // The reach pass, in topological order: an original is reached as a source or through a
-      // conducting edge -- an out-edge of a reached parent that some attachment does not
-      // suppress.
+      // conducting parent; a reached original's expansion conducts iff it has a slot.
       var reached = new bool[nodeCount];
       var hasConductingInbound = new bool[nodeCount];
       var expansions = new DagExpansion<TResult, TEdge>[nodeCount];
@@ -66,10 +58,11 @@ namespace Copse.Dags
 
         expansions[ordinal] = selector(buffer[ordinal]);
 
-        foreach (var attachment in expansions[ordinal].Slot.Attachments)
-          for (var slot = outOffsets[ordinal]; slot < outOffsets[ordinal + 1]; slot++)
-            if (!attachment.Answer(slot - outOffsets[ordinal], outPayloads[slot]).IsSuppress)
-              hasConductingInbound[outTargets[slot]] = true;
+        if (!expansions[ordinal].HasSlot)
+          continue;
+
+        for (var slot = outOffsets[ordinal]; slot < outOffsets[ordinal + 1]; slot++)
+          hasConductingInbound[outTargets[slot]] = true;
       }
 
       // Placement: each reached original's fragment sits contiguously in its seat, fragment
@@ -98,9 +91,9 @@ namespace Copse.Dags
       }
 
       // Inlets, in reverse topological order: where an edge INTO an original lands -- the
-      // fragment's sources (payload passed through), plus, through every outside attachment,
-      // wherever the original's own out-edges land, each out-edge's payload (as answered)
-      // composed in front and the attachment's (if any) in front of that.
+      // fragment's sources (payload passed through), plus, through every outside attachment, wherever
+      // the original's own out-edges land, the out-edge's payload composed in front and the
+      // attachment's (if any) in front of that.
       var inlets = new List<(int Target, bool HasSuffix, TEdge Suffix)>[nodeCount];
 
       for (var ordinal = nodeCount - 1; ordinal >= 0; ordinal--)
@@ -124,12 +117,12 @@ namespace Copse.Dags
           {
             var child = outTargets[slot];
 
-            if (!reached[child] || !TryAnswer(attachment, slot - outOffsets[ordinal], outPayloads[slot], out var departurePayload))
+            if (!reached[child])
               continue;
 
             foreach (var inlet in inlets[child])
             {
-              var payload = inlet.HasSuffix ? edgeComposer(departurePayload, inlet.Suffix) : departurePayload;
+              var payload = inlet.HasSuffix ? edgeComposer(outPayloads[slot], inlet.Suffix) : outPayloads[slot];
               landing.Add((inlet.Target, true, attachment.HasPayload ? edgeComposer(attachment.Payload, payload) : payload));
             }
           }
@@ -140,8 +133,8 @@ namespace Copse.Dags
 
       // The out-blocks, in result order: each fragment node's internal edges first (own
       // children before inherited), then, for every slot attachment it holds, the original's
-      // out-edges in out-edge order as answered, each landing on its child's inlets with the
-      // attachment's payload (if any) composed in front.
+      // out-edges in out-edge order, each landing on its child's inlets with the attachment's
+      // payload (if any) composed in front.
       var resultOffsets = new List<int>(resultValues.Count + 1) { 0 };
       var resultTargets = new List<int>();
       var resultPayloads = new List<TEdge>();
@@ -179,12 +172,12 @@ namespace Copse.Dags
             {
               var child = outTargets[slot];
 
-              if (!reached[child] || !TryAnswer(attachment, slot - outOffsets[ordinal], outPayloads[slot], out var departurePayload))
+              if (!reached[child])
                 continue;
 
               foreach (var inlet in inlets[child])
               {
-                var payload = inlet.HasSuffix ? edgeComposer(departurePayload, inlet.Suffix) : departurePayload;
+                var payload = inlet.HasSuffix ? edgeComposer(outPayloads[slot], inlet.Suffix) : outPayloads[slot];
                 resultTargets.Add(inlet.Target);
                 resultPayloads.Add(attachment.HasPayload ? edgeComposer(attachment.Payload, payload) : payload);
               }
@@ -199,22 +192,6 @@ namespace Copse.Dags
         resultValues.ToArray(),
         new DagStructure<TEdge>(resultOffsets.ToArray(), resultTargets.ToArray(), resultPayloads.ToArray()),
         resultSourceOrdinals.ToArray());
-    }
-
-    // An attachment's answer for out-edge outEdgeIndex: false when suppressed, else the payload
-    // as kept or rewritten.
-    private static bool TryAnswer<TEdge>(DagSlotAttachment<TEdge> attachment, int outEdgeIndex, TEdge original, out TEdge payload)
-    {
-      var answer = attachment.Answer(outEdgeIndex, original);
-
-      if (answer.IsSuppress)
-      {
-        payload = default;
-        return false;
-      }
-
-      payload = answer.IsRewrite ? answer.Payload : original;
-      return true;
     }
   }
 }

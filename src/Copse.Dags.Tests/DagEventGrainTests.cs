@@ -44,8 +44,12 @@ namespace Copse.Dags.Tests
     }
 
     [TestMethod]
-    public void SelectOutEdges_IsBindOfReturnAnsweringRewrite()
+    public void SelectOutEdges_IsTheBindOnTheSubdivision_RewritingEdgeElements()
     {
+      // The bind owns no edge payloads on the node carrier (it would have to answer for an edge
+      // after a promotion beneath it composed a suffix it cannot see -- the fragment theorem);
+      // the edge grain is the bind on the SUBDIVISION, where an edge is a node and there is no
+      // composer. The group-aware rewrite is reached by seats built test-side.
       foreach (var (name, factory) in Corpus())
       {
         var buffer = factory().Materialize();
@@ -54,17 +58,17 @@ namespace Copse.Dags.Tests
 
         Assert.AreEqual(
           DagWalkerCorpus.Content(buffer.SelectOutEdges((arrivals, node, outgoing) => ScaledByGroup(outgoing))),
-          DagWalkerCorpus.Content(buffer.SelectMany(
-            node => DagExpansion<string, decimal>.Of(
-              new[] { node }, new (int, int, decimal)[0],
-              DagSlot<decimal>.Under(0).Answering((index, payload) => DagDepartureAnswer<decimal>.Rewrite(ScaledByGroup(departures[byValue[node]])[index]))),
-            Times)),
+          DagWalkerCorpus.Content(buffer.Subdivide()
+            .SelectMany(element => element.IsEdge
+              ? DagExpansion<DagElement<string, decimal>, Unit>.Return(DagElement<string, decimal>.OfEdge(new DagEdgeContext<string, decimal>(element.Edge.Parent, element.Edge.Child, ScaledByGroup(departures[byValue[element.Edge.Parent]])[IndexAmong(departures[byValue[element.Edge.Parent]], element.Edge)], element.Edge.InEdgeIndex)))
+              : DagExpansion<DagElement<string, decimal>, Unit>.Return(element), Unit.Compose)
+            .Unsubdivide()),
           name);
       }
     }
 
     [TestMethod]
-    public void PruneOutEdges_IsBindOfReturnAnsweringSuppress()
+    public void PruneOutEdges_IsTheBindOnTheSubdivision_DroppingEdgeElements()
     {
       foreach (var (name, factory) in Corpus())
       {
@@ -74,14 +78,18 @@ namespace Copse.Dags.Tests
 
         Assert.AreEqual(
           DagWalkerCorpus.Content(buffer.PruneOutEdges((arrivals, node, outgoing) => PruneSmallestOfMany(outgoing))),
-          DagWalkerCorpus.Content(buffer.SelectMany(
-            node => DagExpansion<string, decimal>.Of(
-              new[] { node }, new (int, int, decimal)[0],
-              DagSlot<decimal>.Under(0).Answering((index, payload) => PruneSmallestOfMany(departures[byValue[node]])[index] ? DagDepartureAnswer<decimal>.Suppress : DagDepartureAnswer<decimal>.Keep)),
-            Times)),
+          DagWalkerCorpus.Content(buffer.Subdivide()
+            .SelectMany(element => element.IsEdge && PruneSmallestOfMany(departures[byValue[element.Edge.Parent]])[IndexAmong(departures[byValue[element.Edge.Parent]], element.Edge)]
+              ? DagExpansion<DagElement<string, decimal>, Unit>.Drop
+              : DagExpansion<DagElement<string, decimal>, Unit>.Return(element), Unit.Compose)
+            .Unsubdivide()),
           name);
       }
     }
+
+    // The position of an edge within its parent's departure group (child + in-edge index identifies it).
+    private static int IndexAmong(DagEdgeContext<string, decimal>[] departures, DagEdgeContext<string, decimal> edge)
+      => Array.FindIndex(departures, departure => departure.Child == edge.Child && departure.InEdgeIndex == edge.InEdgeIndex);
 
     [TestMethod]
     public void InEdgeOperators_AreTheTransposeConjugates()
