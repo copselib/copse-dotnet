@@ -52,7 +52,7 @@ namespace Copse.Linq
     /// Deferred like every capture: nothing builds until the first pull.
     ///
     /// <para>The probe order (SELECT_INTO_CAPTURES_DESIGN.md): a PROJECTION CITIZEN
-    /// (<see cref="IAsyncSelectComposableTreenumerableBuffer{TNode}"/>) composes the
+    /// (<see cref="IAsyncSelectTreenumerableBuffer{TNode}"/>) composes the
     /// selector into its own machinery -- for a deferred scan product, into the pending
     /// build, so the un-projected intermediate never exists. Any other buffer takes the
     /// projected re-capture: one walk of the completed capture into a fresh buffer of
@@ -70,7 +70,7 @@ namespace Copse.Linq
       ITreenumerableBuffer<TSource> source,
       Func<TSource, TResult> selector)
     {
-      if (source is ISelectComposableTreenumerableBuffer<TSource> citizen)
+      if (source is ISelectTreenumerableBuffer<TSource> citizen)
         return citizen.ComposeSelect(selector);
 
       return new ProjectedTreenumerableBuffer<TSource, TResult>(source, selector);

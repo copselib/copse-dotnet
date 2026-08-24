@@ -23,7 +23,7 @@ namespace Copse.Linq.Async.Treenumerables
   // returns scan results to plain concrete buffers, restoring the span fast path for
   // scan-of-scan (the Twice_Dft_Chain witness).
   internal sealed class AsyncProjectedTreenumerableBuffer<TSource, TResult>
-    : IAsyncSelectComposableTreenumerableBuffer<TResult>
+    : IAsyncSelectTreenumerableBuffer<TResult>
   {
     public AsyncProjectedTreenumerableBuffer(
       IAsyncTreenumerableBuffer<TSource> source,
@@ -55,7 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
     public ValueTask<AsyncTreeWalker<TResult, int>> GetTreeWalkerAsync()
       => _Inner.GetTreeWalkerAsync();
 
-    public IAsyncSelectComposableTreenumerableBuffer<TNext> ComposeSelect<TNext>(Func<TResult, TNext> selector)
+    public IAsyncSelectTreenumerableBuffer<TNext> ComposeSelect<TNext>(Func<TResult, TNext> selector)
     {
       var currentSelector = _Selector;
 

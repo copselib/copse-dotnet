@@ -16,7 +16,7 @@ namespace Copse.Linq.Tests
   // citizenship is minted at the Select seam -- a scan returns a PLAIN buffer, and Select
   // over any buffer is the projected citizen, closed from there.
   [TestClass]
-  public class SelectComposableLawTests
+  public class SelectCompositionLawTests
   {
     private static readonly string[] Corpus =
     {
@@ -45,8 +45,8 @@ namespace Copse.Linq.Tests
 
         // The citizenship starts at the Select seam (the thin shape): the scan itself is a
         // plain buffer; its first Select is the citizen, and composition is closed from there.
-        Assert.IsInstanceOfType(scan.Select(x => x.Accumulate), typeof(ISelectComposableTreenumerableBuffer<int>), $"projected [{tree}]");
-        Assert.IsInstanceOfType(scan.Select(x => x.Accumulate).Select(count => count * 2), typeof(ISelectComposableTreenumerableBuffer<int>), $"chained [{tree}]");
+        Assert.IsInstanceOfType(scan.Select(x => x.Accumulate), typeof(ISelectTreenumerableBuffer<int>), $"projected [{tree}]");
+        Assert.IsInstanceOfType(scan.Select(x => x.Accumulate).Select(count => count * 2), typeof(ISelectTreenumerableBuffer<int>), $"chained [{tree}]");
       }
     }
 
@@ -379,7 +379,7 @@ namespace Copse.Linq.Tests
         var wrapperRoute = Tree.Defer(() => TreeSerializer.DeserializeDepthFirstTree(tree).Select(node => node + "!"))
           .LeaffixScan(leaf => 1, (left, right) => left + right, (accumulate, node) => accumulate + 1);
 
-        Assert.IsInstanceOfType(doorRoute.Select(pair => pair.Accumulate), typeof(ISelectComposableTreenumerableBuffer<int>), $"algebra [{tree}]");
+        Assert.IsInstanceOfType(doorRoute.Select(pair => pair.Accumulate), typeof(ISelectTreenumerableBuffer<int>), $"algebra [{tree}]");
 
         CollectionAssert.AreEqual(
           wrapperRoute.GetPreorderTraversal().Select(pair => (pair.Node, pair.Accumulate)).ToArray(),

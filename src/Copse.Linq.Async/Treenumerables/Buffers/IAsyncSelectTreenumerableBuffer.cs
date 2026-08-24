@@ -15,13 +15,13 @@ namespace Copse.Linq.Async.Treenumerables
   /// to a buffer, a streaming citizen to a treenumerable). Same minimal-and-FINAL
   /// contract, same laws, same battery -- see the streaming twin's remarks.</para>
   /// </summary>
-  public interface IAsyncSelectComposableTreenumerableBuffer<TNode> : IAsyncTreenumerableBuffer<TNode>
+  public interface IAsyncSelectTreenumerableBuffer<TNode> : IAsyncTreenumerableBuffer<TNode>
   {
     /// <summary>
     /// Compose <paramref name="selector"/> into this capture, returning a buffer citizen
     /// of projected values with this capture's exact shape. Deferred like every capture:
     /// composing builds nothing; the first pull does.
     /// </summary>
-    IAsyncSelectComposableTreenumerableBuffer<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
+    IAsyncSelectTreenumerableBuffer<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
   }
 }

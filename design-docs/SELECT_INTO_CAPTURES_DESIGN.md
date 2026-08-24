@@ -53,9 +53,9 @@ public interface IAsyncSelectComposableTreenumerable<TNode> : IAsyncTreenumerabl
   IAsyncSelectComposableTreenumerable<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
 }
 
-public interface IAsyncSelectComposableTreenumerableBuffer<TNode> : IAsyncTreenumerableBuffer<TNode>
+public interface IAsyncSelectTreenumerableBuffer<TNode> : IAsyncTreenumerableBuffer<TNode>
 {
-  IAsyncSelectComposableTreenumerableBuffer<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
+  IAsyncSelectTreenumerableBuffer<TResult> ComposeSelect<TResult>(Func<TNode, TResult> selector);
 }
 ```
 
