@@ -4,7 +4,8 @@
 > family's walker tier** (WALKER_FACTORY_DESIGN.md §1–§4 and §11; CATEGORY_THEORY_SURVEY.md
 > §10 and §12). Every tree-side citizen has its dual below, the laws run over a five-citizen
 > fan-out, and the five findings the build surfaced are recorded in §8. The cone
-> vocabulary is RATIFIED (§9); `DagStep` and `MoveToParent(int)` still await the ruling;
+> vocabulary is RATIFIED (§9), as is `MoveToParent(int)` (Jason, 2026-08-24: "MoveToParent with
+> index seems fine" — the tree's name, indexed like `MoveToChild(int)`); `DagStep` still awaits the ruling;
 > nothing else is open.
 
 ## 1. The one sentence
@@ -153,8 +154,8 @@ rebuilt from the visit stream — sources in order, out-groups in dispatch order
   as labels (the cofree duplicate), the tree's `Subtree()`/`Subtrees()` pairing carried on the
   house flow grammar (sources, sinks, Sourcefix, Sinkfix, TakeDownstreamWhere).
 - `DagStep` for the probe answer (vs `DagNeighbor`, `DagAdjacency`).
-- `MoveToParent(int inEdgeIndex)` — the tree's `MoveToParent()` grown an index, same name;
-  alternatively `MoveToParentAt`. Kept nameless-of-`At` to mirror `MoveToChild(int)`.
+- `MoveToParent(int inEdgeIndex)` — RATIFIED 2026-08-24: the tree's `MoveToParent()` grown an
+  index, same name, mirroring `MoveToChild(int)` (`MoveToParentAt` was the alternative).
 - The self-containment twins (`DagStep` instead of `Option`, `DagHandleAndValue`,
   `bool TryGetValue(out)`): forced by the no-references rule; a Vocabulary reference would be
   a mechanical swap if ever wanted.
