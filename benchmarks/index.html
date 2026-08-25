@@ -109,6 +109,33 @@ const SMALLER_IS_BETTER = true; // every metric here (time, memory) is smaller-b
 const state = { q:"", group:"suite", sort:"delta", showArchived:false, collapsed:new Set(), open:new Set(),
                 floorMs:null, floorKb:null }; // noise floors, OFF by default (blank inputs)
 
+// ---- epochs: comparability boundaries ----
+// An epoch marks a commit whose runs are NOT comparable to what came before -- a corpus
+// change, a measurement-boundary change, a fleet change. Declare one by adding a
+//     Benchmark-Epoch: <reason>
+// trailer to the benchmarked commit's message; events predating the convention can be
+// curated into EPOCHS below (sha = any unique prefix). Markers are GLOBAL -- an epoch
+// re-baselines the whole corpus. At the boundary the trend median restarts and the
+// Δ-since-prev is suppressed: a cross-epoch delta is exactly the fake regression the
+// marker exists to flag.
+const EPOCHS = [
+  // {sha:"abc1234", label:"why history broke here"},
+];
+const EPOCH_RE = /^Benchmark-Epoch:\s*(.+)$/m;
+function epochLabel(id, msg) {
+  const m = EPOCH_RE.exec(msg || "");
+  if (m) return m[1].trim();
+  const cur = EPOCHS.find(e => id && e.sha && id.startsWith(e.sha));
+  return cur ? cur.label : null;
+}
+// Contiguous [start, end) runs of a series between epoch boundaries.
+function epochSegments(pts) {
+  const segs = []; let start = 0;
+  for (let i = 1; i < pts.length; i++) if (pts[i].epoch != null) { segs.push([start, i]); start = i; }
+  segs.push([start, pts.length]);
+  return segs;
+}
+
 function dataset() { return window.BENCHMARK_DATA; }
 
 // ---- model: flatten entries{suite:[commit{benches[]}]} into one row per benchmark with a series ----
@@ -141,10 +168,11 @@ function buildRows() {
     const commits = data.entries[suite].slice().sort((a,b)=>a.date-b.date);
     const series = new Map();
     for (const c of commits) {
+      const cid = (c.commit&&c.commit.id)||"", cmsg = (c.commit&&c.commit.message)||"", curl = (c.commit&&c.commit.url)||"";
+      const epoch = epochLabel(cid, cmsg);
       for (const b of (c.benches||[])) {
         if (!series.has(b.name)) series.set(b.name, []);
-        series.get(b.name).push({ value:b.value, unit:b.unit, date:c.date,
-          id:(c.commit&&c.commit.id)||"", msg:(c.commit&&c.commit.message)||"", url:(c.commit&&c.commit.url)||"" });
+        series.get(b.name).push({ value:b.value, unit:b.unit, date:c.date, id:cid, msg:cmsg, url:curl, epoch });
       }
     }
     for (const [full, pts] of series) {
@@ -155,13 +183,15 @@ function buildRows() {
       const method = dot>=0 ? short.slice(dot+1) : "";
       const latest = pts[pts.length-1].value;
       const prev = pts.length>=2 ? pts[pts.length-2].value : null;
-      const deltaPct = (prev!=null && prev!==0) ? (latest-prev)/prev*100 : null;
+      // An epoch on the latest point severs it from prev -- no delta across the boundary.
+      const epochBreak = pts.length>=2 ? pts[pts.length-1].epoch : null;
+      const deltaPct = (epochBreak==null && prev!=null && prev!==0) ? (latest-prev)/prev*100 : null;
       const metric = unit==="bytes" ? "Memory" : "Time";
       const engine = /BreadthFirst|Bft|LevelOrder/i.test(short) ? "BFT"
                    : /DepthFirst|Dft|Preorder|PostOrder/i.test(short) ? "DFT" : "—";
       const lastSeen = pts[pts.length-1].date;
       const archived = suiteStale || lastSeen < suiteMax.get(suite);
-      rows.push({ suite, full, cls, method, short, unit, metric, engine, series:pts, latest, prev, deltaPct, archived, lastSeen });
+      rows.push({ suite, full, cls, method, short, unit, metric, engine, series:pts, latest, prev, deltaPct, epochBreak, archived, lastSeen });
     }
   }
   return rows;
@@ -207,9 +237,33 @@ function movingMedian(values, window=5) {
 function pathOf(values, x, y) {
   return values.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
 }
+// The trend restarts at every epoch boundary: each segment gets its own median window and its
+// own subpath, so the line visibly breaks where comparability does.
+function movingMedianSegmented(values, segs, window=5) {
+  const out = new Array(values.length);
+  for (const [s,e] of segs) {
+    const m = movingMedian(values.slice(s,e), window);
+    for (let i=s;i<e;i++) out[i]=m[i-s];
+  }
+  return out;
+}
+function segmentedPath(values, segs, x, y) {
+  return segs.filter(([s,e])=>e-s>=2)
+    .map(([s,e]) => values.slice(s,e).map((v,j)=>(j?"L":"M")+x(s+j).toFixed(1)+" "+y(v).toFixed(1)).join(" "))
+    .join(" ");
+}
+function epochRules(pts, x, y0, y1, dash, withTitles) {
+  let rules = "";
+  pts.forEach((p,i)=>{ if (p.epoch!=null && i>0) {
+    const xx = x(i).toFixed(1);
+    rules += `<line x1="${xx}" y1="${y0}" x2="${xx}" y2="${y1}" stroke="var(--bad)" stroke-opacity="0.55" stroke-dasharray="${dash}" stroke-width="1.25">`
+      + (withTitles ? `<title>epoch — ${esc(p.epoch)}</title>` : "") + `</line>`;
+  }});
+  return rules;
+}
 function sparkline(pts, archived) {
   if (pts.length<2) return '<svg class="spark" width="120" height="22"><text x="0" y="15">single point</text></svg>';
-  const vs = pts.map(p=>p.value), ma = movingMedian(vs);
+  const vs = pts.map(p=>p.value), segs = epochSegments(pts), ma = movingMedianSegmented(vs, segs);
   const mn=Math.min(...vs), mx=Math.max(...vs), W=120,H=22,P=2;
   const x=i=>P+i*(W-2*P)/(pts.length-1);
   const y=v=>mx===mn ? H/2 : H-P-(v-mn)/(mx-mn)*(H-2*P);
@@ -218,31 +272,36 @@ function sparkline(pts, archived) {
   const fill = archived ? "var(--muted)" : "var(--accent)";
   // Raw series in the accent; the trend as a SOLID semi-transparent red drawn BEHIND it
   // (the dashed gray was invisible at sparkline scale). Skipped for short histories, where
-  // it would just shadow the raw line.
+  // it would just shadow the raw line. The trend breaks at epoch boundaries; the raw line
+  // stays connected -- the vertical rule marks the seam.
   const maPath = (!archived && pts.length>=6)
-    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.45" stroke-width="2"/>` : "";
-  return `<svg class="spark" width="${W}" height="${H}">${maPath}<path d="${pathOf(vs,x,y)}" fill="none" ${stroke} stroke-width="1.5"/>`
+    ? `<path d="${segmentedPath(ma,segs,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.45" stroke-width="2"/>` : "";
+  return `<svg class="spark" width="${W}" height="${H}">${epochRules(pts,x,0,H,"2 2",false)}${maPath}<path d="${pathOf(vs,x,y)}" fill="none" ${stroke} stroke-width="1.5"/>`
        + `<circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="2" fill="${fill}"/></svg>`;
 }
 function bigChart(pts, unit) {
   if (pts.length<2) return '<div class="note">No history yet — only one commit recorded. (Toggle “Demo history” to see the trend UI populated.)</div>';
-  const vs=pts.map(p=>p.value), ma=movingMedian(vs), mn=Math.min(...vs), mx=Math.max(...vs);
+  const vs=pts.map(p=>p.value), segs=epochSegments(pts), ma=movingMedianSegmented(vs,segs), mn=Math.min(...vs), mx=Math.max(...vs);
   const W=640,H=190,L=70,R=14,T=14,B=28, iw=W-L-R, ih=H-T-B;
   const x=i=>L+i*iw/(pts.length-1);
   const y=v=>mx===mn ? T+ih/2 : T+ih-(v-mn)/(mx-mn)*ih;
   let g="";
   for (let k=0;k<=2;k++){ const v=mn+(mx-mn)*k/2, yy=y(v).toFixed(1);
     g+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)"/><text x="6" y="${(+yy+3).toFixed(1)}">${esc(fmtVal(v,unit))}</text>`; }
+  const rules = epochRules(pts, x, T, T+ih, "4 3", true);
   let dots="";
   pts.forEach((p,i)=>{ dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2.5" fill="var(--accent)">`
-    +`<title>${esc((p.id||"").slice(0,10))} · ${fmtDate(p.date)} — ${esc(fmtVal(p.value,unit))}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
+    +`<title>${esc((p.id||"").slice(0,10))} · ${fmtDate(p.date)} — ${esc(fmtVal(p.value,unit))}`
+    +`${p.epoch?`\nEPOCH — ${esc(p.epoch)}`:""}\n${esc(p.msg).slice(0,80)}</title></circle>`; });
   const maPath = pts.length>=6
-    ? `<path d="${pathOf(ma,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.4" stroke-width="2.5"/>` : "";
+    ? `<path d="${segmentedPath(ma,segs,x,y)}" fill="none" stroke="var(--bad)" stroke-opacity="0.4" stroke-width="2.5"/>` : "";
   const maLegend = pts.length>=6
     ? `<text x="${W-R}" y="${T-4}" text-anchor="end" style="fill:var(--bad);fill-opacity:.7">— 5-run median</text>` : "";
+  const epochLegend = rules
+    ? `<text x="${L}" y="${T-4}" style="fill:var(--bad);fill-opacity:.7">┆ epoch — history not comparable across</text>` : "";
   const d0=fmtDate(pts[0].date), d1=fmtDate(pts[pts.length-1].date);
-  return `<svg width="${W}" height="${H}" role="img">${g}${maPath}<path d="${pathOf(vs,x,y)}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
-       + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text>${maLegend}</svg>`;
+  return `<svg width="${W}" height="${H}" role="img">${g}${rules}${maPath}<path d="${pathOf(vs,x,y)}" fill="none" stroke="var(--accent)" stroke-width="1.75"/>${dots}`
+       + `<text x="${L}" y="${H-8}">${d0}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${d1}</text>${maLegend}${epochLegend}</svg>`;
 }
 
 // ---- render ----
@@ -298,7 +357,8 @@ function render() {
 }
 
 function rowHtml(r) {
-  const [ds,dc] = fmtDelta(r.deltaPct);
+  // A latest point on an epoch boundary has no honest Δ -- say why instead of showing "—".
+  const [ds,dc] = r.epochBreak ? ["epoch","flat"] : fmtDelta(r.deltaPct);
   // Open-state key is suite-qualified: the same benchmark name exists in a suite's time and
   // memory variants, and a bare-name key toggled both rows at once.
   const rowKey = r.suite + "|" + r.full;
@@ -308,12 +368,12 @@ function rowHtml(r) {
   let html = `<tr class="brow${r.archived?" archived":""}" data-full="${esc(rowKey)}"><td>${open?"▾":"▸"}</td>`
     + `<td class="name"><span class="cls">${esc(r.cls)}.</span>${esc(r.method)}${badge}</td>`
     + `<td class="num">${esc(fmtVal(r.latest,r.unit))}</td>`
-    + `<td class="num delta ${dc}">${esc(ds)}</td>`
+    + `<td class="num delta ${dc}"${r.epochBreak?` title="epoch — ${esc(r.epochBreak)}"`:""}>${esc(ds)}</td>`
     + `<td>${sparkline(r.series, r.archived)}</td></tr>`;
   if (open) html += `<tr class="detail"><td></td><td colspan="4"><div class="panel">`
     + (r.archived ? `<div class="note">Archived — last reported ${fmtDate(r.lastSeen)}; absent from the latest benchmark run (renamed or removed).</div>` : "")
     + `${bigChart(r.series,r.unit)}`
-    + `<div class="commits">${r.series.slice(-6).reverse().map(p=>`${fmtDate(p.date)}  ${esc((p.id||"").slice(0,8))}  ${esc(fmtVal(p.value,r.unit))}  ${esc(p.msg).slice(0,60)}`).join("<br>")}</div>`
+    + `<div class="commits">${r.series.slice(-6).reverse().map(p=>`${fmtDate(p.date)}  ${esc((p.id||"").slice(0,8))}  ${esc(fmtVal(p.value,r.unit))}  ${p.epoch?`<b>[epoch: ${esc(p.epoch)}]</b> `:""}${esc(p.msg).slice(0,60)}`).join("<br>")}</div>`
     + `</div></td></tr>`;
   return html;
 }
