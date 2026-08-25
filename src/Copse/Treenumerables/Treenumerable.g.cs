@@ -10,54 +10,59 @@ using Copse.Core;
 namespace Copse.Treenumerables
 {
   // Codegen source of truth for the sync engine base Copse.Treenumerables.Treenumerable<,,>.
+  //
+  // The engine is a pull-shaped topology: resolve (handleToNodeMap, the GetValue arrow),
+  // children (the child-enumerator factory), roots (the roots stream). The walkable tier's
+  // IAsyncTreeTopology is the same three ingredients with the child axis indexed instead of
+  // pulled, plus the parent probe that indexing makes affordable.
   /// <summary>
-  /// The engine-backed treenumerable over hierarchical data: give it a roots stream and a
-  /// child-enumerator factory, and it affords both traversal orders. Each traversal
-  /// re-enumerates the roots source from the start (an <see cref="IAsyncEnumerable{TNode}"/>
-  /// is cold, like its sync counterpart); a single-pass source should be memoized first.
-  /// <typeparamref name="TNode"/> is the traversed node type and
-  /// <typeparamref name="TValue"/> the surfaced value; <paramref name="nodeToValueMap"/> in
-  /// the constructor resolves one to the other per visit.
+  /// The engine-backed treenumerable over hierarchical data. The engine walks HANDLES -- each
+  /// node's navigable identity, whatever can produce a child enumerator (an index into a
+  /// store, an object reference, a handle-and-payload pair) -- and surfaces NODES, resolving
+  /// each handle through <c>handleToNodeMap</c> as it publishes. Where the node is its own
+  /// handle, use the two-parameter form. Each traversal re-enumerates the roots source from
+  /// the start (an <see cref="IAsyncEnumerable{THandle}"/> is cold, like its sync
+  /// counterpart); a single-pass source should be memoized first.
   /// </summary>
-  public class Treenumerable<TValue, TNode, TChildEnumerator>
-    : ITreenumerable<TValue>
-    where TChildEnumerator : IChildEnumerator<TNode>
+  public class Treenumerable<TNode, THandle, TChildEnumerator>
+    : ITreenumerable<TNode>
+    where TChildEnumerator : IChildEnumerator<THandle>
   {
     public Treenumerable(
-      Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
-      Func<TNode, TValue> nodeToValueMap,
-      IEnumerable<TNode> roots)
+      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap,
+      IEnumerable<THandle> roots)
     {
       _ChildEnumeratorFactory = childEnumeratorFactory;
-      _NodeToValueMap = nodeToValueMap;
+      _HandleToNodeMap = handleToNodeMap;
       _Roots = roots;
     }
 
-    private readonly IEnumerable<TNode> _Roots;
-    private readonly Func<NodeContext<TNode>, TChildEnumerator> _ChildEnumeratorFactory;
-    private readonly Func<TNode, TValue> _NodeToValueMap;
+    private readonly IEnumerable<THandle> _Roots;
+    private readonly Func<NodeContext<THandle>, TChildEnumerator> _ChildEnumeratorFactory;
+    private readonly Func<THandle, TNode> _HandleToNodeMap;
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
     {
       return
-        new BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>(
+        new BreadthFirstTreenumerator<TNode, THandle, TChildEnumerator>(
           _Roots,
           _ChildEnumeratorFactory,
-          _NodeToValueMap);
+          _HandleToNodeMap);
     }
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator()
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator()
     {
       return
-        new DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>(
+        new DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>(
           _Roots,
           _ChildEnumeratorFactory,
-          _NodeToValueMap);
+          _HandleToNodeMap);
     }
   }
 
-  /// <summary>The two-parameter form for trees whose node is its own surfaced value: the value
-  /// map is the identity, so callers don't supply one.</summary>
+  /// <summary>The two-parameter form for trees whose node is its own handle: the map is the
+  /// identity, so callers don't supply one.</summary>
   public class Treenumerable<TNode, TChildEnumerator>
     : Treenumerable<TNode, TNode, TChildEnumerator>
     where TChildEnumerator : IChildEnumerator<TNode>

@@ -5,10 +5,10 @@ namespace Copse
   /// <c>GetHandlesWithValues</c>) yield, so a predicate over values can pick out the handles it
   /// wants.
   /// </summary>
-  public readonly struct HandleAndValue<THandle, TValue>
+  public readonly struct HandleAndValue<THandle, TNode>
   {
     /// <summary>Pairs <paramref name="handle"/> with <paramref name="value"/>.</summary>
-    public HandleAndValue(THandle handle, TValue value)
+    public HandleAndValue(THandle handle, TNode value)
     {
       Handle = handle;
       Value = value;
@@ -18,7 +18,7 @@ namespace Copse
     public readonly THandle Handle;
 
     /// <summary>The node's value.</summary>
-    public readonly TValue Value;
+    public readonly TNode Value;
 
     public override string ToString() => $"{Handle}  {Value}";
   }

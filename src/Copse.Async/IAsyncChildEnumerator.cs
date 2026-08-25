@@ -4,19 +4,21 @@ using System.Threading.Tasks;
 namespace Copse.Async
 {
   /// <summary>
-  /// Async analog of <c>Copse.IChildEnumerator&lt;TNode&gt;</c>. The pull returns the next child BY VALUE
-  /// (an <see cref="Option{TValue}"/> over <see cref="NodeAndSiblingIndex{TNode}"/>) -- an <c>out</c>
-  /// param cannot cross an <c>await</c>, and a by-value result stores nothing between pulls (so the
-  /// enumerator struct stays small, unlike a stored <c>Current</c>). Its sync twin is
-  /// <c>Copse.IChildEnumerator</c> over the same option, so the async-&gt;sync transcription is a
-  /// pure <c>await</c>-strip.
+  /// Async analog of <c>Copse.IChildEnumerator&lt;THandle&gt;</c>: the pull yields the next
+  /// child's HANDLE -- the navigable identity the engine walks -- by value, as an
+  /// <see cref="Option{TValue}"/> over <see cref="NodeAndSiblingIndex{THandle}"/> (an
+  /// <c>out</c> param cannot cross an <c>await</c>, and a by-value result stores nothing
+  /// between pulls). Its sync twin is <c>Copse.IChildEnumerator</c> over the same option, so
+  /// the async-&gt;sync transcription is a pure <c>await</c>-strip.
   ///
   /// <para>Requires <see cref="IDisposable"/> in addition to <see cref="IAsyncDisposable"/> so the path
   /// (which disposes enumerators synchronously in this prototype) can tear them down. Proper async
   /// disposal is a follow-up that inverts disposal to the driver.</para>
   /// </summary>
-  public interface IAsyncChildEnumerator<TNode> : IDisposable, IAsyncDisposable
+  public interface IAsyncChildEnumerator<THandle> : IDisposable, IAsyncDisposable
   {
-    ValueTask<Option<NodeAndSiblingIndex<TNode>>> MoveNextAsync();
+    /// <summary>The next child's handle with its sibling index, or absent past the last
+    /// child.</summary>
+    ValueTask<Option<NodeAndSiblingIndex<THandle>>> MoveNextAsync();
   }
 }

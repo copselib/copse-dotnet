@@ -20,28 +20,28 @@ namespace Copse.Treenumerators
   /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
   /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
-  public sealed class DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>
-    : ITreenumerator<TValue>
-    where TChildEnumerator : IChildEnumerator<TNode>
+  public sealed class DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>
+    : ITreenumerator<TNode>
+    where TChildEnumerator : IChildEnumerator<THandle>
   {
     public DepthFirstTreenumerator(
-      IEnumerable<TNode> rootNodes,
-      Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
-      Func<TNode, TValue> map)
+      IEnumerable<THandle> rootNodes,
+      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = rootNodes.GetEnumerator();
-      _Path = new DepthFirstPathState<TNode, TChildEnumerator>(childEnumeratorFactory);
-      _Map = map;
+      _Path = new DepthFirstPathState<THandle, TChildEnumerator>(childEnumeratorFactory);
+      _Map = handleToNodeMap;
     }
 
-    private readonly IEnumerator<TNode> _RootsEnumerator;
-    private DepthFirstPathState<TNode, TChildEnumerator> _Path;
-    private readonly Func<TNode, TValue> _Map;
+    private readonly IEnumerator<THandle> _RootsEnumerator;
+    private DepthFirstPathState<THandle, TChildEnumerator> _Path;
+    private readonly Func<THandle, TNode> _Map;
 
     private bool _Finished;
     private bool _RootsEnumeratorFinished;
 
-    public TValue Node { get; private set; } = default;
+    public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
@@ -161,7 +161,7 @@ namespace Copse.Treenumerators
     }
 
     // Land a pulled child on the path; false when the enumerator was exhausted.
-    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<TNode>> result)
+    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
@@ -171,7 +171,7 @@ namespace Copse.Treenumerators
     }
 
 
-    private void Publish(ref DepthFirstNodeState<TNode> node)
+    private void Publish(ref DepthFirstNodeState<THandle> node)
     {
       Mode = node.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
       Node = _Map(node.Node);

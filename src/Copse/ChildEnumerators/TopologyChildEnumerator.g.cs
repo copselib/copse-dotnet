@@ -8,14 +8,15 @@ namespace Copse.ChildEnumerators
 {
   // The frame Tree.FromTopology hands the engine: one handle, one advancing child index --
   // the topology's indexed probe is the pull, and the label resolves during it (the
-  // engine's node is the (handle, value) pair; its map arrow is the synchronous .Value
-  // read). The pull method is NOT async, so the index mutation lands on the real struct
+  // engine's handle is the enriched (handle, value) pair, because the sync map arrow
+  // cannot await a value resolution; the map is the .Value read). The pull method is NOT
+  // async, so the index mutation lands on the real struct
   // (the engine's path state holds frames by ref); the awaited tail reads only readonly
   // fields from its state-machine copy.
-  internal struct TopologyChildEnumerator<TValue, THandle> : IChildEnumerator<HandleAndValue<THandle, TValue>>
+  internal struct TopologyChildEnumerator<TNode, THandle> : IChildEnumerator<HandleAndValue<THandle, TNode>>
   {
     public TopologyChildEnumerator(
-      ITreeTopology<TValue, THandle> topology,
+      ITreeTopology<TNode, THandle> topology,
       THandle parentHandle)
     {
       _Topology = topology;
@@ -23,18 +24,18 @@ namespace Copse.ChildEnumerators
       _NextChildIndex = 0;
     }
 
-    private readonly ITreeTopology<TValue, THandle> _Topology;
+    private readonly ITreeTopology<TNode, THandle> _Topology;
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 
-    public Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>> MoveNext()
+    public Option<NodeAndSiblingIndex<HandleAndValue<THandle, TNode>>> MoveNext()
     {
       var childIndex = _NextChildIndex;
       _NextChildIndex++;
       return Pull(childIndex);
     }
 
-    private Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>> Pull(int childIndex)
+    private Option<NodeAndSiblingIndex<HandleAndValue<THandle, TNode>>> Pull(int childIndex)
     {
       var childResult = _Topology.TryGetChildAt(_ParentHandle, childIndex);
 
@@ -43,9 +44,9 @@ namespace Copse.ChildEnumerators
 
       var value = _Topology.GetValue(childResult.Value.Node);
 
-      return new Option<NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>>(
-        new NodeAndSiblingIndex<HandleAndValue<THandle, TValue>>(
-          new HandleAndValue<THandle, TValue>(childResult.Value.Node, value),
+      return new Option<NodeAndSiblingIndex<HandleAndValue<THandle, TNode>>>(
+        new NodeAndSiblingIndex<HandleAndValue<THandle, TNode>>(
+          new HandleAndValue<THandle, TNode>(childResult.Value.Node, value),
           childResult.Value.SiblingIndex));
     }
 

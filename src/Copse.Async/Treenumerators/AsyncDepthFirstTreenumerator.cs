@@ -18,28 +18,28 @@ namespace Copse.Async.Treenumerators
   /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
   /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
-  public sealed class AsyncDepthFirstTreenumerator<TValue, TNode, TAsyncChildEnumerator>
-    : IAsyncTreenumerator<TValue>
-    where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
+  public sealed class AsyncDepthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
+    : IAsyncTreenumerator<TNode>
+    where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
     public AsyncDepthFirstTreenumerator(
-      IAsyncEnumerable<TNode> rootNodes,
-      Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
-      Func<TNode, TValue> map)
+      IAsyncEnumerable<THandle> rootNodes,
+      Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = rootNodes.GetAsyncEnumerator();
-      _Path = new DepthFirstPathState<TNode, TAsyncChildEnumerator>(childEnumeratorFactory);
-      _Map = map;
+      _Path = new DepthFirstPathState<THandle, TAsyncChildEnumerator>(childEnumeratorFactory);
+      _Map = handleToNodeMap;
     }
 
-    private readonly IAsyncEnumerator<TNode> _RootsEnumerator;
-    private DepthFirstPathState<TNode, TAsyncChildEnumerator> _Path;
-    private readonly Func<TNode, TValue> _Map;
+    private readonly IAsyncEnumerator<THandle> _RootsEnumerator;
+    private DepthFirstPathState<THandle, TAsyncChildEnumerator> _Path;
+    private readonly Func<THandle, TNode> _Map;
 
     private bool _Finished;
     private bool _RootsEnumeratorFinished;
 
-    public TValue Node { get; private set; } = default;
+    public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
@@ -177,7 +177,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a pulled child on the path; false when the enumerator was exhausted.
-    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<TNode>> result)
+    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
@@ -212,7 +212,7 @@ namespace Copse.Async.Treenumerators
       return true;
     }
 
-    private async ValueTask<bool> AwaitThenPushPulledChildAsync(ValueTask<Option<NodeAndSiblingIndex<TNode>>> pendingPull)
+    private async ValueTask<bool> AwaitThenPushPulledChildAsync(ValueTask<Option<NodeAndSiblingIndex<THandle>>> pendingPull)
     {
       return TryPushPulledChild(await pendingPull.ConfigureAwait(false));
     }
@@ -226,7 +226,7 @@ namespace Copse.Async.Treenumerators
     }
     // codegen: end async-only
 
-    private void Publish(ref DepthFirstNodeState<TNode> node)
+    private void Publish(ref DepthFirstNodeState<THandle> node)
     {
       Mode = node.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
       Node = _Map(node.Node);

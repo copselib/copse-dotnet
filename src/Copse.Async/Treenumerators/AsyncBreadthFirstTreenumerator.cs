@@ -22,29 +22,29 @@ namespace Copse.Async.Treenumerators
   /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
   /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
-  public sealed class AsyncBreadthFirstTreenumerator<TValue, TNode, TAsyncChildEnumerator>
-    : IAsyncTreenumerator<TValue>
-    where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
+  public sealed class AsyncBreadthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
+    : IAsyncTreenumerator<TNode>
+    where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
     public AsyncBreadthFirstTreenumerator(
-      IAsyncEnumerable<TNode> rootNodes,
-      Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
-      Func<TNode, TValue> map)
+      IAsyncEnumerable<THandle> rootNodes,
+      Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = rootNodes.GetAsyncEnumerator();
-      _Path = new BreadthFirstPathState<TNode, TAsyncChildEnumerator>(childEnumeratorFactory);
-      _Map = map;
+      _Path = new BreadthFirstPathState<THandle, TAsyncChildEnumerator>(childEnumeratorFactory);
+      _Map = handleToNodeMap;
     }
 
-    private readonly IAsyncEnumerator<TNode> _RootsEnumerator;
-    private BreadthFirstPathState<TNode, TAsyncChildEnumerator> _Path;
-    private readonly Func<TNode, TValue> _Map;
+    private readonly IAsyncEnumerator<THandle> _RootsEnumerator;
+    private BreadthFirstPathState<THandle, TAsyncChildEnumerator> _Path;
+    private readonly Func<THandle, TNode> _Map;
 
     private bool _Finished;
     private bool _RootsEnumeratorFinished = false;
     private bool _RootsScheduled = false;
 
-    public TValue Node { get; private set; } = default;
+    public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
@@ -203,7 +203,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a pulled child under the schedule-stack top; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfScheduleTop(Option<NodeAndSiblingIndex<TNode>> result)
+    private bool TrySchedulePulledChildOfScheduleTop(Option<NodeAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
@@ -213,7 +213,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a pulled child under the queue front; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfFront(Option<NodeAndSiblingIndex<TNode>> result)
+    private bool TrySchedulePulledChildOfFront(Option<NodeAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
@@ -270,12 +270,12 @@ namespace Copse.Async.Treenumerators
       return await AdvanceAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitThenScheduleChildOfScheduleTopAsync(ValueTask<Option<NodeAndSiblingIndex<TNode>>> pendingPull)
+    private async ValueTask<bool> AwaitThenScheduleChildOfScheduleTopAsync(ValueTask<Option<NodeAndSiblingIndex<THandle>>> pendingPull)
     {
       return TrySchedulePulledChildOfScheduleTop(await pendingPull.ConfigureAwait(false));
     }
 
-    private async ValueTask<bool> AwaitThenScheduleChildOfFrontAsync(ValueTask<Option<NodeAndSiblingIndex<TNode>>> pendingPull)
+    private async ValueTask<bool> AwaitThenScheduleChildOfFrontAsync(ValueTask<Option<NodeAndSiblingIndex<THandle>>> pendingPull)
     {
       return TrySchedulePulledChildOfFront(await pendingPull.ConfigureAwait(false));
     }
@@ -290,7 +290,7 @@ namespace Copse.Async.Treenumerators
     }
     // codegen: end async-only
 
-    private void Publish(ref BreadthFirstFrame<TNode, TAsyncChildEnumerator> frame)
+    private void Publish(ref BreadthFirstFrame<THandle, TAsyncChildEnumerator> frame)
     {
       Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
       Node = _Map(frame.Node);

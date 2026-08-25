@@ -12,22 +12,22 @@ namespace Copse.Traversal
   /// <para>This is the single shared piece of the codegen approach: the sync
   /// <c>DepthFirstDirectTreenumerator</c>, the async <c>AsyncDepthFirstTreenumerator</c>, and the
   /// generated sync twin all drive THIS. The push/pop/backtrack ops are ported from the original
-  /// <c>DepthFirstPath</c>. See <see cref="DepthFirstNodeState{TNode}"/> / <see cref="DepthFirstBacktrackStep"/>.</para>
+  /// <c>DepthFirstPath</c>. See <see cref="DepthFirstNodeState{THandle}"/> / <see cref="DepthFirstBacktrackStep"/>.</para>
   /// </summary>
-  internal struct DepthFirstPathState<TNode, TEnumerator> : IDisposable
+  internal struct DepthFirstPathState<THandle, TEnumerator> : IDisposable
     where TEnumerator : IDisposable
   {
-    public DepthFirstPathState(Func<NodeContext<TNode>, TEnumerator> childEnumeratorFactory)
+    public DepthFirstPathState(Func<NodeContext<THandle>, TEnumerator> childEnumeratorFactory)
     {
       _ChildEnumeratorFactory = childEnumeratorFactory;
-      _AcceptedNodes = new RefSemiDeque<DepthFirstNodeState<TNode>>();
+      _AcceptedNodes = new RefSemiDeque<DepthFirstNodeState<THandle>>();
       _Enumerators = new RefSemiDeque<TEnumerator>();
       _RootNodesSeen = 0;
       _DepthOfLastVisitedNode = -1;
     }
 
-    private readonly Func<NodeContext<TNode>, TEnumerator> _ChildEnumeratorFactory;
-    private readonly RefSemiDeque<DepthFirstNodeState<TNode>> _AcceptedNodes;
+    private readonly Func<NodeContext<THandle>, TEnumerator> _ChildEnumeratorFactory;
+    private readonly RefSemiDeque<DepthFirstNodeState<THandle>> _AcceptedNodes;
     private readonly RefSemiDeque<TEnumerator> _Enumerators;
     private int _RootNodesSeen;
     private int _DepthOfLastVisitedNode;
@@ -42,17 +42,17 @@ namespace Copse.Traversal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref DepthFirstNodeState<TNode> PushChild(TNode node, int siblingIndex)
+    public ref DepthFirstNodeState<THandle> PushChild(THandle node, int siblingIndex)
       => ref PushLevel(node, new NodePosition(siblingIndex, Depth + 1));
 
-    public ref DepthFirstNodeState<TNode> PushRoot(TNode node)
+    public ref DepthFirstNodeState<THandle> PushRoot(THandle node)
       => ref PushLevel(node, new NodePosition(_RootNodesSeen++, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref DepthFirstNodeState<TNode> PushLevel(TNode node, NodePosition position)
+    private ref DepthFirstNodeState<THandle> PushLevel(THandle node, NodePosition position)
     {
-      _AcceptedNodes.AddLast(new DepthFirstNodeState<TNode>(node, position));
-      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeContext<TNode>(node, position)));
+      _AcceptedNodes.AddLast(new DepthFirstNodeState<THandle>(node, position));
+      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeContext<THandle>(node, position)));
       return ref _AcceptedNodes.GetLast();
     }
 
@@ -61,7 +61,7 @@ namespace Copse.Traversal
     public void DisposeCurrentEnumerator() => _Enumerators.GetLast().Dispose();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref DepthFirstNodeState<TNode> TakeNextVisit()
+    public ref DepthFirstNodeState<THandle> TakeNextVisit()
     {
       ref var node = ref _AcceptedNodes.GetLast();
       node.VisitCount++;

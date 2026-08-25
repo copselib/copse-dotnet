@@ -4,10 +4,10 @@ using System;
 namespace Copse.Traversal
 {
   /// <summary>A scheduled node: its visit state and its child enumerator in one slot, only ever touched by ref.</summary>
-  internal struct BreadthFirstFrame<TNode, TEnumerator>
+  internal struct BreadthFirstFrame<THandle, TEnumerator>
     where TEnumerator : IDisposable
   {
-    public BreadthFirstFrame(TNode node, NodePosition position, TEnumerator childEnumerator)
+    public BreadthFirstFrame(THandle node, NodePosition position, TEnumerator childEnumerator)
     {
       Node = node;
       Position = position;
@@ -15,7 +15,7 @@ namespace Copse.Traversal
       ChildEnumerator = childEnumerator;
     }
 
-    public TNode Node;
+    public THandle Node;
     public NodePosition Position;
     public int VisitCount;
     public TEnumerator ChildEnumerator;

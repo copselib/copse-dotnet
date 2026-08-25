@@ -11,22 +11,22 @@ namespace Copse.Traversal
   /// (<see cref="ScheduleTop"/>, <see cref="Front"/>) by ref for the driver to advance; every other op is
   /// pure synchronous state.
   /// </summary>
-  internal struct BreadthFirstPathState<TNode, TEnumerator> : IDisposable
+  internal struct BreadthFirstPathState<THandle, TEnumerator> : IDisposable
     where TEnumerator : IDisposable
   {
-    public BreadthFirstPathState(Func<NodeContext<TNode>, TEnumerator> childEnumeratorFactory)
+    public BreadthFirstPathState(Func<NodeContext<THandle>, TEnumerator> childEnumeratorFactory)
     {
       _ChildEnumeratorFactory = childEnumeratorFactory;
-      _VisitQueue = new RefSemiDeque<BreadthFirstFrame<TNode, TEnumerator>>();
-      _ScheduleStack = new RefSemiDeque<BreadthFirstFrame<TNode, TEnumerator>>();
+      _VisitQueue = new RefSemiDeque<BreadthFirstFrame<THandle, TEnumerator>>();
+      _ScheduleStack = new RefSemiDeque<BreadthFirstFrame<THandle, TEnumerator>>();
       _RootNodesSeen = 0;
       _CurrentSlotEnqueuedNode = false;
     }
 
-    private readonly Func<NodeContext<TNode>, TEnumerator> _ChildEnumeratorFactory;
+    private readonly Func<NodeContext<THandle>, TEnumerator> _ChildEnumeratorFactory;
 
-    private readonly RefSemiDeque<BreadthFirstFrame<TNode, TEnumerator>> _VisitQueue;
-    private readonly RefSemiDeque<BreadthFirstFrame<TNode, TEnumerator>> _ScheduleStack;
+    private readonly RefSemiDeque<BreadthFirstFrame<THandle, TEnumerator>> _VisitQueue;
+    private readonly RefSemiDeque<BreadthFirstFrame<THandle, TEnumerator>> _ScheduleStack;
 
     private int _RootNodesSeen;
     private bool _CurrentSlotEnqueuedNode;
@@ -35,30 +35,30 @@ namespace Copse.Traversal
     public bool QueueIsEmpty => _VisitQueue.Count == 0;
     public bool FrontSlotEnqueuedNode => _CurrentSlotEnqueuedNode;
 
-    public ref BreadthFirstFrame<TNode, TEnumerator> ScheduleTop
+    public ref BreadthFirstFrame<THandle, TEnumerator> ScheduleTop
     {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       get => ref _ScheduleStack.GetLast();
     }
 
-    public ref BreadthFirstFrame<TNode, TEnumerator> Front
+    public ref BreadthFirstFrame<THandle, TEnumerator> Front
     {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       get => ref _VisitQueue.GetFirst();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref BreadthFirstFrame<TNode, TEnumerator> PushScheduledChild(int parentDepth, TNode node, int siblingIndex)
+    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledChild(int parentDepth, THandle node, int siblingIndex)
       => ref PushScheduled(node, new NodePosition(siblingIndex, parentDepth + 1));
 
-    public ref BreadthFirstFrame<TNode, TEnumerator> PushScheduledRoot(TNode node)
+    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledRoot(THandle node)
       => ref PushScheduled(node, new NodePosition(_RootNodesSeen++, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref BreadthFirstFrame<TNode, TEnumerator> PushScheduled(TNode node, NodePosition position)
+    private ref BreadthFirstFrame<THandle, TEnumerator> PushScheduled(THandle node, NodePosition position)
     {
       _ScheduleStack.AddLast(
-        new BreadthFirstFrame<TNode, TEnumerator>(node, position, _ChildEnumeratorFactory(new NodeContext<TNode>(node, position))));
+        new BreadthFirstFrame<THandle, TEnumerator>(node, position, _ChildEnumeratorFactory(new NodeContext<THandle>(node, position))));
       return ref _ScheduleStack.GetLast();
     }
 

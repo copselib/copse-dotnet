@@ -3,16 +3,16 @@ using Copse.Core;
 namespace Copse.Traversal
 {
   /// <summary>The visit-state of one accepted node on the depth-first path.</summary>
-  internal struct DepthFirstNodeState<TNode>
+  internal struct DepthFirstNodeState<THandle>
   {
-    public DepthFirstNodeState(TNode node, NodePosition position)
+    public DepthFirstNodeState(THandle node, NodePosition position)
     {
       Node = node;
       Position = position;
       VisitCount = 0;
     }
 
-    public TNode Node;
+    public THandle Node;
     public NodePosition Position;
     public int VisitCount;
   }
