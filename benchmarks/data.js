@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787625506621,
+  "lastUpdate": 1787625507319,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -108302,6 +108302,102 @@ window.BENCHMARK_DATA = {
             "value": 28623864.264583334,
             "unit": "ns",
             "range": "± 225143.69549502368"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "68bf269ad4c6bed7c70c1158af509399300572f7",
+          "message": ".claude is shared: ignore only personal *.local.json files\n\nThe folder carries repo-travelling content -- skills, and project\nsettings if they arrive -- so the blanket ignore inverts to the\nstandard shape: any *.local.json under .claude stays out, everything\nelse checks in.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-25T01:41:42Z",
+          "tree_id": "09526223ba62662f54129f31481e8ef30f438057",
+          "url": "https://github.com/copselib/copse-dotnet/commit/68bf269ad4c6bed7c70c1158af509399300572f7"
+        },
+        "date": 1787625507177,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26748103.418269232,
+            "unit": "ns",
+            "range": "± 115028.00418106592"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 9859495.947544644,
+            "unit": "ns",
+            "range": "± 105046.15330075331"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 148422545.66666666,
+            "unit": "ns",
+            "range": "± 917221.0459974897"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57737777.37606837,
+            "unit": "ns",
+            "range": "± 109123.25880274718"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21882872.479166668,
+            "unit": "ns",
+            "range": "± 46001.50729779751"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12209048.536458334,
+            "unit": "ns",
+            "range": "± 31683.995801143603"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 99001803.57142857,
+            "unit": "ns",
+            "range": "± 242693.7388895373"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 30028865.890625,
+            "unit": "ns",
+            "range": "± 44921.03959473303"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11530642.734375,
+            "unit": "ns",
+            "range": "± 35645.40622995768"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6244800.266225962,
+            "unit": "ns",
+            "range": "± 14040.421656010158"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 105330712.28888889,
+            "unit": "ns",
+            "range": "± 230535.01981171934"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26467499.06875,
+            "unit": "ns",
+            "range": "± 197750.8853299253"
           }
         ]
       }
