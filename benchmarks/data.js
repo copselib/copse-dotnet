@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787625508717,
+  "lastUpdate": 1787625509418,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -149858,6 +149858,102 @@ window.BENCHMARK_DATA = {
             "value": 79681298.79831932,
             "unit": "ns",
             "range": "± 1629661.336977004"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "68bf269ad4c6bed7c70c1158af509399300572f7",
+          "message": ".claude is shared: ignore only personal *.local.json files\n\nThe folder carries repo-travelling content -- skills, and project\nsettings if they arrive -- so the blanket ignore inverts to the\nstandard shape: any *.local.json under .claude stays out, everything\nelse checks in.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-25T01:41:42Z",
+          "tree_id": "09526223ba62662f54129f31481e8ef30f438057",
+          "url": "https://github.com/copselib/copse-dotnet/commit/68bf269ad4c6bed7c70c1158af509399300572f7"
+        },
+        "date": 1787625509261,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 106424862.95217393,
+            "unit": "ns",
+            "range": "± 523580.1853828399"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 88860323.78888889,
+            "unit": "ns",
+            "range": "± 934811.486692963"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 250289504.49999997,
+            "unit": "ns",
+            "range": "± 1689935.4899528157"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 268154627,
+            "unit": "ns",
+            "range": "± 312961.6488449503"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 201277422.6944445,
+            "unit": "ns",
+            "range": "± 6710528.723242663"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 198538969.57777774,
+            "unit": "ns",
+            "range": "± 2657867.613295692"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 109171312.55384614,
+            "unit": "ns",
+            "range": "± 189761.8847039496"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 88282066.64444444,
+            "unit": "ns",
+            "range": "± 625353.909228552"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 490413196,
+            "unit": "ns",
+            "range": "± 2470813.6452329904"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 493976754.46666664,
+            "unit": "ns",
+            "range": "± 5201460.460999815"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 109137519.86153844,
+            "unit": "ns",
+            "range": "± 272541.4434279719"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79189581.35238098,
+            "unit": "ns",
+            "range": "± 843289.7303721692"
           }
         ]
       }
