@@ -2,8 +2,13 @@
 
 namespace Copse
 {
+  /// <summary>
+  /// A node paired with its position -- the shape positional predicates and selectors receive,
+  /// so one lambda parameter carries both the value and where it sits.
+  /// </summary>
   public readonly struct NodeContext<TNode>
   {
+    /// <summary>Pairs <paramref name="node"/> with <paramref name="position"/>.</summary>
     public NodeContext(
       TNode node,
       NodePosition position)
@@ -12,7 +17,10 @@ namespace Copse
       Position = position;
     }
 
+    /// <summary>The node.</summary>
     public readonly TNode Node;
+
+    /// <summary>The node's position (sibling index and depth).</summary>
     public readonly NodePosition Position;
 
     public override string ToString() => $"{Position}  {Node}";
