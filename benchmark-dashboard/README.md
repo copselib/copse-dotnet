@@ -57,3 +57,21 @@ Without `data.js` the page still renders but shows "no data".
 
 If `gh-pages` is ever reset/orphaned, or you want to force a re-sync after an edit:
 **Actions → "Deploy Benchmark Dashboard" → Run workflow** (workflow_dispatch).
+
+## Epoch markers
+
+An **epoch** is a commit whose benchmark runs are not comparable to earlier history — a corpus
+change, a measurement-boundary change, a runner-fleet change. Declare one by adding a trailer
+to the benchmarked commit's message:
+
+```
+Benchmark-Epoch: <one-line reason>
+```
+
+Events predating the convention can be curated into the `EPOCHS` list at the top of
+`index.html` (`{sha, label}`, any unique sha prefix).
+
+Markers are global — an epoch re-baselines the whole corpus. On the dashboard: a dashed
+vertical rule in every chart (hover for the reason), the 5-run trend median restarts at the
+boundary, and the Δ-since-prev column and "biggest movers" suppress deltas that would cross
+it — a cross-epoch delta is exactly the fake regression the marker exists to flag.
