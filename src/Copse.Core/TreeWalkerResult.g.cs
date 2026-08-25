@@ -15,8 +15,7 @@ namespace Copse
   /// <para>Reads like an <see cref="Option{TValue}"/>: <see cref="HasValue"/> says whether the
   /// step answered, <see cref="Value"/> is the walker it produced (valid only on an answer;
   /// <c>default</c> otherwise, which must not be read), and <see cref="TryGetValue"/> adapts
-  /// to loop conditions. Deliberately not equatable, for the same reason the option is
-  /// not.</para>
+  /// to loop conditions.</para>
   /// </summary>
   public readonly struct TreeWalkerResult<TValue, THandle>
   {

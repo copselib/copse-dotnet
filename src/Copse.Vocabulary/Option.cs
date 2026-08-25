@@ -8,10 +8,6 @@ namespace Copse
   /// This is the library's standard way of answering a question whose miss is an expected
   /// outcome rather than an error -- the parent of a root, the child past the last one. When a
   /// member throws instead of returning an absent option, the call itself was invalid.
-  ///
-  /// <para>Deliberately not equatable: the library never compares node values, so consumers owe
-  /// it no <see cref="IEquatable{T}"/>, comparer, or <c>Equals</c>/<c>GetHashCode</c> override,
-  /// and an option over a value adds no equality of its own.</para>
   /// </summary>
   public readonly struct Option<TValue>
   {
