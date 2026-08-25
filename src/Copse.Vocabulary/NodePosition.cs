@@ -5,9 +5,12 @@ using System.Runtime.CompilerServices;
 namespace Copse.Core
 {
   /// <summary>
-  /// A node's location in its tree: its zero-based index among its siblings, and its depth
-  /// (roots are depth 0). Positions order depth-first-major: compared first by depth, then by
-  /// sibling index. Addition and subtraction combine positions component-wise, which is how
+  /// A node's local coordinates: its zero-based index among its siblings, and its depth
+  /// (roots are depth 0). A position is not a globally unique address -- it locates a node
+  /// only relative to its own family, and nodes in different families can share the same
+  /// (siblingIndex, depth) pair -- so it cannot serve as a lookup key. For durable node
+  /// identity, use a walkable capture's handles. Positions order by depth first, then by
+  /// sibling index; addition and subtraction combine them component-wise, which is how
   /// operators offset positions between a source tree and a derived one.
   /// </summary>
   public readonly struct NodePosition : IEqualityComparer<NodePosition>, IComparable<NodePosition>
