@@ -573,6 +573,17 @@ grep -rEn --include='*.cs' '^\s*(//|///)' src \
 
 Half of any such list is generated `.g.cs`; fix the async source and codegen carries it.
 
+**Ruled exemptions** (2026-08-24):
+
+- **Regression tests may name the bug they pin.** A regression test's subject IS the
+  historical bug; strip the name and the assertion looks arbitrary. Tests are not consumer
+  surface.
+- **Copse.Benchmarks keeps its dated pins.** Row renames and taxonomy dates carry Bencher
+  series continuity; they earn their keep.
+- **Breaking-change notices live in RELEASE_NOTES.md**, not in XML docs. When a breaking
+  change lands, add the entry there in the same commit; the doc describes only the current
+  contract.
+
 ## Testing
 
 - **Framework**: MSTest with `[DynamicData]` for data-driven tests
