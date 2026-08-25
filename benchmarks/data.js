@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787625514196,
+  "lastUpdate": 1787625514896,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -201151,6 +201151,130 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
             "value": 2373,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "68bf269ad4c6bed7c70c1158af509399300572f7",
+          "message": ".claude is shared: ignore only personal *.local.json files\n\nThe folder carries repo-travelling content -- skills, and project\nsettings if they arrive -- so the blanket ignore inverts to the\nstandard shape: any *.local.json under .claude stays out, everything\nelse checks in.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-25T01:41:42Z",
+          "tree_id": "09526223ba62662f54129f31481e8ef30f438057",
+          "url": "https://github.com/copselib/copse-dotnet/commit/68bf269ad4c6bed7c70c1158af509399300572f7"
+        },
+        "date": 1787625514745,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 740,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 951,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 486,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 486,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 3171,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 27502300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 26305,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 231401,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 652,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 684,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 395,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 395,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 3083,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 3209,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 26214,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 59055,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 27502188,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 2107759,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 2381,
             "unit": "bytes"
           }
         ]
