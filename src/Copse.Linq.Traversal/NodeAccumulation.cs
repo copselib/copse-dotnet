@@ -13,17 +13,17 @@ namespace Copse.Linq
   /// a stored position would go stale as soon as a later operator reshaped the tree, so
   /// positional context is only ever handed to callbacks, never recorded in results.
   /// </summary>
-  public readonly struct NodeAccumulation<TSource, TAccumulate>
+  public readonly struct NodeAccumulation<TNode, TAccumulate>
   {
     /// <summary>Pairs <paramref name="node"/> with <paramref name="accumulate"/>.</summary>
-    public NodeAccumulation(TSource node, TAccumulate accumulate)
+    public NodeAccumulation(TNode node, TAccumulate accumulate)
     {
       Node = node;
       Accumulate = accumulate;
     }
 
     /// <summary>The source node.</summary>
-    public readonly TSource Node;
+    public readonly TNode Node;
 
     /// <summary>The accumulation the pass computed for this node.</summary>
     public readonly TAccumulate Accumulate;

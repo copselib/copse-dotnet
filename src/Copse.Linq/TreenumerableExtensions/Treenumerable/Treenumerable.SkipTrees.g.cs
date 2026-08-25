@@ -9,18 +9,18 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>Drops the first <paramref name="count"/> root trees (prunes them before their first visit). Deferred.</summary>
-    public static ITreenumerable<T> SkipTrees<T>(
-      this ITreenumerable<T> source,
+    public static ITreenumerable<TNode> SkipTrees<TNode>(
+      this ITreenumerable<TNode> source,
       int count)
       => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
-    public static IDepthFirstTreenumerable<T> SkipTrees<T>(
-      this IDepthFirstTreenumerable<T> source,
+    public static IDepthFirstTreenumerable<TNode> SkipTrees<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
       int count)
       => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
-    public static IBreadthFirstTreenumerable<T> SkipTrees<T>(
-      this IBreadthFirstTreenumerable<T> source,
+    public static IBreadthFirstTreenumerable<TNode> SkipTrees<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
       int count)
       => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
   }

@@ -13,8 +13,8 @@ namespace Copse.Linq
     /// Drops the last <paramref name="count"/> root trees. Awaits a root count first (the source is
     /// enumerated once to count, then again to take), so it is a void-returning terminal-builder.
     /// </summary>
-    public static ITreenumerable<T> SkipLastTrees<T>(
-      this ITreenumerable<T> source,
+    public static ITreenumerable<TNode> SkipLastTrees<TNode>(
+      this ITreenumerable<TNode> source,
       int count)
     {
       var treeCount = source.CountTrees();
@@ -25,8 +25,8 @@ namespace Copse.Linq
     }
 
     /// <summary>The depth-first-narrow twin: the same two passes (count the roots, then take), staying narrow.</summary>
-    public static IDepthFirstTreenumerable<T> SkipLastTrees<T>(
-      this IDepthFirstTreenumerable<T> source,
+    public static IDepthFirstTreenumerable<TNode> SkipLastTrees<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
       int count)
     {
       var treeCount = source.CountTrees();
@@ -40,8 +40,8 @@ namespace Copse.Linq
     /// The breadth-first-narrow twin. The counting pass is nearly free in this dimension: the
     /// roots are the whole of level 0, so it drains one level and pulls nothing deeper.
     /// </summary>
-    public static IBreadthFirstTreenumerable<T> SkipLastTrees<T>(
-      this IBreadthFirstTreenumerable<T> source,
+    public static IBreadthFirstTreenumerable<TNode> SkipLastTrees<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
       int count)
     {
       var treeCount = source.CountTrees();

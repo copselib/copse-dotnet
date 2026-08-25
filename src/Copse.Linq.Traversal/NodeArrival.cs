@@ -10,17 +10,17 @@ namespace Copse.Linq
   /// dispatched to it. Carries no position; positional context is available inside the
   /// survey's own callback types.
   /// </summary>
-  public readonly struct NodeArrival<TSource, TDispatch>
+  public readonly struct NodeArrival<TNode, TDispatch>
   {
     /// <summary>Pairs <paramref name="node"/> with <paramref name="arrival"/>.</summary>
-    public NodeArrival(TSource node, TDispatch arrival)
+    public NodeArrival(TNode node, TDispatch arrival)
     {
       Node = node;
       Arrival = arrival;
     }
 
     /// <summary>The source node.</summary>
-    public readonly TSource Node;
+    public readonly TNode Node;
 
     /// <summary>The value dispatched to this node by its family's survey.</summary>
     public readonly TDispatch Arrival;

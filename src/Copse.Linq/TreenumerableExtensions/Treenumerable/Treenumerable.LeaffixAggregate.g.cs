@@ -14,7 +14,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one <see cref="NodeAccumulation{TSource, TAccumulate}"/> per root tree: the root's
+    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
@@ -30,19 +30,19 @@ namespace Copse.Linq
     /// stops early traverses fewer roots. Zero per-node alloc: the fold writes straight into
     /// the flat slots.
     /// </summary>
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixAggregateCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixAggregateCore(source, nodeContext => leafNodeSelector(nodeContext.Node, nodeContext.Position), edgeAccumulator, nodeAccumulator);
 
     /// <summary>
@@ -57,48 +57,48 @@ namespace Copse.Linq
     /// after it (the fold buffers are then reused per root, as in the depth-first entry).
     /// Per-root laziness is a depth-first affordance.
     /// </summary>
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator);
 
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node, nodeContext.Position), edgeAccumulator, nodeAccumulator);
 
     /// <summary>Disambiguation overloads for full trees; keep the depth-first consumption -- the per-root-lazy entry.</summary>
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this ITreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixAggregate((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
+      => LeaffixAggregate((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
-    public static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregate<TSource, TAccumulate>(
-      this ITreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixAggregate((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
+      => LeaffixAggregate((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
     // The depth-first core, per-root lazy. The dual fold is NODE-LAST, so a slot holds the
     // RUNNING EDGE-REDUCTION of its closed children until the node itself closes (the parallel
     // hasChildren list distinguishes "no child closed yet" from any real accumulate -- no
     // sentinel value is stolen from TAccumulate's range).
-    private static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregateCore<TSource, TAccumulate>(
-      IDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafValue,
+    private static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregateCore<TNode, TAccumulate>(
+      IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
       var accumulations = new List<TAccumulate>();
-      var path = new Stack<PendingNode<TSource>>();
-      var currentRoot = default(TSource);
+      var path = new Stack<PendingNode<TNode>>();
+      var currentRoot = default(TNode);
 
       // Both branch facts are INDEX ARITHMETIC, not stored state -- the alternatives cost
       // per-node bookkeeping (a parallel has-children list) or chain-deep fat frames
@@ -143,7 +143,7 @@ namespace Copse.Linq
 
           if (depth == 0 && accumulations.Count > 0)
           {
-            yield return new NodeAccumulation<TSource, TAccumulate>(currentRoot, accumulations[0]);
+            yield return new NodeAccumulation<TNode, TAccumulate>(currentRoot, accumulations[0]);
             accumulations.Clear();
           }
 
@@ -152,7 +152,7 @@ namespace Copse.Linq
           if (depth == 0)
             currentRoot = nodeContext.Node;
 
-          path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
+          path.Push(new PendingNode<TNode>(accumulations.Count, nodeContext));
           accumulations.Add(default);
         }
       }
@@ -161,7 +161,7 @@ namespace Copse.Linq
         Close();
 
       if (accumulations.Count > 0)
-        yield return new NodeAccumulation<TSource, TAccumulate>(currentRoot, accumulations[0]);
+        yield return new NodeAccumulation<TNode, TAccumulate>(currentRoot, accumulations[0]);
     }
 
     // The breadth-first core: the capture is the memo's chunked level-order buffer, completed
@@ -170,19 +170,19 @@ namespace Copse.Linq
     // fold is the depth-first core's (same Close, node-last), driven by index chasing over the
     // capture's contiguous child spans instead of a visit stream; contexts are reconstructed
     // from the spans (depth from the walk stack, sibling index from the span offset).
-    private static IEnumerable<NodeAccumulation<TSource, TAccumulate>> LeaffixAggregateBreadthFirstCore<TSource, TAccumulate>(
-      IBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TAccumulate> leafValue,
+    private static IEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregateBreadthFirstCore<TNode, TAccumulate>(
+      IBreadthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
-      var capture = new MemoizeLevelOrderStore<TSource>(source.GetBreadthFirstTreenumerator);
+      var capture = new MemoizeLevelOrderStore<TNode>(source.GetBreadthFirstTreenumerator);
       using (capture)
       {
         capture.Complete();
 
         var accumulations = new List<TAccumulate>();
-        var path = new Stack<PendingNode<TSource>>();
+        var path = new Stack<PendingNode<TNode>>();
 
         // Index arithmetic, as in the depth-first core: the walk schedules in preorder and
         // closes before scheduling the next sibling, so both branch facts derive from indices.
@@ -223,10 +223,10 @@ namespace Copse.Linq
             while (path.Count > frame.Depth)
               Close();
 
-            var nodeContext = new NodeContext<TSource>(
+            var nodeContext = new NodeContext<TNode>(
               capture.GetValue(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth));
 
-            path.Push(new PendingNode<TSource>(accumulations.Count, nodeContext));
+            path.Push(new PendingNode<TNode>(accumulations.Count, nodeContext));
             accumulations.Add(default);
 
             var firstChildIndex = capture.GetFirstChildIndex(frame.Index);
@@ -239,7 +239,7 @@ namespace Copse.Linq
           while (path.Count > 0)
             Close();
 
-          yield return new NodeAccumulation<TSource, TAccumulate>(capture.GetValue(root), accumulations[0]);
+          yield return new NodeAccumulation<TNode, TAccumulate>(capture.GetValue(root), accumulations[0]);
           accumulations.Clear();
         }
       }

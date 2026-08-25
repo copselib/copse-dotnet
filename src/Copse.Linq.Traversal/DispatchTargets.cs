@@ -15,10 +15,10 @@ namespace Copse.Linq
   /// <see cref="Count"/> and the indexer are O(1), and <c>foreach</c> over the view allocates
   /// nothing; <see cref="ToArray"/> is the bridge when an API needs an <c>IEnumerable</c>.
   /// </summary>
-  public readonly struct DispatchTargets<TSource, TDispatch>
+  public readonly struct DispatchTargets<TNode, TDispatch>
   {
     internal DispatchTargets(
-      TSource[] values,
+      TNode[] values,
       int[] childIndices,
       int[] childOffsets,
       TDispatch[] arrivals,
@@ -35,7 +35,7 @@ namespace Copse.Linq
       _ChildDepth = childDepth;
     }
 
-    private readonly TSource[] _Values;
+    private readonly TNode[] _Values;
     private readonly int[] _ChildIndices;
     private readonly int[] _ChildOffsets;
     private readonly TDispatch[] _Arrivals;
@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// The child's write-handle by sibling index. O(1). Handles fetched repeatedly share the
     /// build's backing state, so exactly-once dispatch holds across every copy.
     /// </summary>
-    public DispatchTarget<TSource, TDispatch> this[int index]
+    public DispatchTarget<TNode, TDispatch> this[int index]
     {
       get
       {
@@ -64,8 +64,8 @@ namespace Copse.Linq
         // child's sibling index IS its offset in the parent's span (the child-index preserves
         // sibling order by construction), and its depth is the pass's walk depth plus one --
         // so the build allocates no positions array.
-        return new DispatchTarget<TSource, TDispatch>(
-          new NodeContext<TSource>(_Values[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
+        return new DispatchTarget<TNode, TDispatch>(
+          new NodeContext<TNode>(_Values[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
       }
     }
 
@@ -75,9 +75,9 @@ namespace Copse.Linq
     /// site; the foreach and indexer paths stay allocation-free. The handles share the
     /// build's backing state, so exactly-once dispatch holds across the copies.
     /// </summary>
-    public DispatchTarget<TSource, TDispatch>[] ToArray()
+    public DispatchTarget<TNode, TDispatch>[] ToArray()
     {
-      var targets = new DispatchTarget<TSource, TDispatch>[Count];
+      var targets = new DispatchTarget<TNode, TDispatch>[Count];
 
       for (var index = 0; index < targets.Length; index++)
         targets[index] = this[index];
@@ -89,16 +89,16 @@ namespace Copse.Linq
 
     public struct Enumerator
     {
-      internal Enumerator(in DispatchTargets<TSource, TDispatch> targets)
+      internal Enumerator(in DispatchTargets<TNode, TDispatch> targets)
       {
         _Targets = targets;
         _Index = -1;
       }
 
-      private readonly DispatchTargets<TSource, TDispatch> _Targets;
+      private readonly DispatchTargets<TNode, TDispatch> _Targets;
       private int _Index;
 
-      public DispatchTarget<TSource, TDispatch> Current => _Targets[_Index];
+      public DispatchTarget<TNode, TDispatch> Current => _Targets[_Index];
 
       public bool MoveNext() => ++_Index < _Targets.Count;
     }

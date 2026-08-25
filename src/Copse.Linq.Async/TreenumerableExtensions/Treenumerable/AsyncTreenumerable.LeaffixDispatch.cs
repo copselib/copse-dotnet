@@ -14,7 +14,7 @@ namespace Copse.Linq
     /// <summary>
     /// The sibling-complete tier of the leaffix pair: every node's accumulation comes from
     /// <paramref name="survey"/>, which sees the node together with ALL of its children at
-    /// once through the no-copy <see cref="DispatchSources{TSource, TAccumulate}"/> view: one
+    /// once through the no-copy <see cref="DispatchSources{TNode, TAccumulate}"/> view: one
     /// READ-handle per child carrying its context and completed accumulation --
     /// <c>DispatchTargets</c>' dual (design-docs/SCANRESULT_DESIGN.md), with the same honestly-O(1)
     /// Count and indexer off the builds' shared child-index. Sibling-complete visibility is
@@ -47,7 +47,7 @@ namespace Copse.Linq
     ///
     /// <para>VALUE-flavored: the survey receives the node's VALUE; the leaf boundary is
     /// arity-split (value selector | positional selector). Returns the CANONICAL PAIRING: a
-    /// buffer of <see cref="NodeAccumulation{TSource, TAccumulate}"/>s in the source tree's
+    /// buffer of <see cref="NodeAccumulation{TNode, TAccumulate}"/>s in the source tree's
     /// shape -- it DECORATES rather than replaces; project <c>.Accumulate</c> for values. For
     /// mutable nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
     /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
@@ -69,18 +69,18 @@ namespace Copse.Linq
     /// <paramref name="leafNodeSelector"/>, the fringe answering for itself, mirroring rootfix's
     /// rootNodeSelector at the other end of the tree.</para>
     /// </summary>
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey);
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch(source, (TNode node, NodePosition _) => leafNodeSelector(node), survey);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TNode, TAccumulate>>(
         () => BuildLeaffixDispatchAsync(source, LeafBoundedSurvey(leafNodeSelector, survey))));
 
     /// <summary>
@@ -90,37 +90,37 @@ namespace Copse.Linq
     /// O(n) every LeaffixDispatch pays, disclosed by the buffer return type) and the pass runs
     /// over the capture's depth-first replay.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch(source, (TSource node, NodePosition _) => leafNodeSelector(node), survey);
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch(source, (TNode node, NodePosition _) => leafNodeSelector(node), survey);
 
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => PairBuffer(new AsyncLazyPreorderStore<NodeAccumulation<TNode, TAccumulate>>(
         () => BuildLeaffixDispatchFromBreadthFirstAsync(source, LeafBoundedSurvey(leafNodeSelector, survey))));
 
     /// <summary>Disambiguation overloads for full trees: a full tree is consumed depth-first.</summary>
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TNode>)source, leafNodeSelector, survey);
 
-    public static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixDispatch<TSource, TAccumulate>(
-      this IAsyncTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
-      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TSource>)source, leafNodeSelector, survey);
+    public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
+      => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TNode>)source, leafNodeSelector, survey);
 
     // The boundary flavors' adapter: the in-band leaf branch. sources.Count == 0 IS the leaf
     // test, stated in the view's own vocabulary.
-    private static Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> LeafBoundedSurvey<TSource, TAccumulate>(
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
-      Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> survey)
+    private static Func<TNode, NodePosition, DispatchSources<TNode, TAccumulate>, TAccumulate> LeafBoundedSurvey<TNode, TAccumulate>(
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
+      Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
       => (node, position, sources) =>
         sources.Count == 0
         ? leafNodeSelector(node, position)
@@ -138,16 +138,16 @@ namespace Copse.Linq
     // the store behind a composite would hide it, and every such consumer would pay a full
     // second capture. Deferral is the lazy store's own (build pinned to the first pull, run
     // once).
-    private static IAsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> PairBuffer<TSource, TAccumulate>(
-      AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>> surveyed)
-      => new AsyncTreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>>(
-        new AsyncPreorderTreenumerable<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed),
+    private static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> PairBuffer<TNode, TAccumulate>(
+      AsyncLazyPreorderStore<NodeAccumulation<TNode, TAccumulate>> surveyed)
+      => new AsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>>(
+        new AsyncPreorderTreenumerable<NodeAccumulation<TNode, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TNode, TAccumulate>>>(surveyed),
         BufferLayout.Preorder,
-        new AsyncPreorderAdjacencyIndex<NodeAccumulation<TSource, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>>(surveyed));
+        new AsyncPreorderAdjacencyIndex<NodeAccumulation<TNode, TAccumulate>, AsyncLazyPreorderStore<NodeAccumulation<TNode, TAccumulate>>>(surveyed));
 
-    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchFromBreadthFirstAsync<TSource, TAccumulate>(
-      IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TNode, TAccumulate>>> BuildLeaffixDispatchFromBreadthFirstAsync<TNode, TAccumulate>(
+      IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, DispatchSources<TNode, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var capture = source.Materialize();
 
@@ -156,18 +156,18 @@ namespace Copse.Linq
 
     // The finisher over the fold pass: zip (values, accumulations) into the canonical
     // pairing.
-    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>> BuildLeaffixDispatchAsync<TSource, TAccumulate>(
-      IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+    private static async ValueTask<AsyncPreorderArrayStore<NodeAccumulation<TNode, TAccumulate>>> BuildLeaffixDispatchAsync<TNode, TAccumulate>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, DispatchSources<TNode, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var (values, subtreeSizes, accumulations) =
         await RunLeaffixDispatchPassAsync(source, nodeSurvey).ConfigureAwait(false);
 
-      var results = new NodeAccumulation<TSource, TAccumulate>[values.Length];
+      var results = new NodeAccumulation<TNode, TAccumulate>[values.Length];
       for (var nodeIndex = 0; nodeIndex < results.Length; nodeIndex++)
-        results[nodeIndex] = new NodeAccumulation<TSource, TAccumulate>(values[nodeIndex], accumulations[nodeIndex]);
+        results[nodeIndex] = new NodeAccumulation<TNode, TAccumulate>(values[nodeIndex], accumulations[nodeIndex]);
 
-      return new AsyncPreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results, subtreeSizes);
+      return new AsyncPreorderArrayStore<NodeAccumulation<TNode, TAccumulate>>(results, subtreeSizes);
     }
 
     // The shared fold pass, both operators' engine: one raw capture into the flat pre-order
@@ -178,9 +178,9 @@ namespace Copse.Linq
     // survey runs, with zero walk state. The alternative, a forward close-stack walk deriving
     // positions, holds O(depth) entries, which is O(n) on chains. Full participation: the
     // survey fires on every node -- a leaf's sources view is empty, not skipped.
-    private static async ValueTask<(TSource[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations)> RunLeaffixDispatchPassAsync<TSource, TAccumulate>(
-      IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, DispatchSources<TSource, TAccumulate>, TAccumulate> nodeSurvey)
+    private static async ValueTask<(TNode[] Values, int[] SubtreeSizes, TAccumulate[] Accumulations)> RunLeaffixDispatchPassAsync<TNode, TAccumulate>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, DispatchSources<TNode, TAccumulate>, TAccumulate> nodeSurvey)
     {
       var (values, subtreeSizes) = await AsyncPreorderCapture
         .CaptureRawAsync(source)
@@ -199,7 +199,7 @@ namespace Copse.Linq
         accumulations[nodeIndex] = nodeSurvey(
           values[nodeIndex],
           positions[nodeIndex],
-          new DispatchSources<TSource, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
+          new DispatchSources<TNode, TAccumulate>(values, positions, childIndices, childOffsets, accumulations, nodeIndex));
 
       return (values, subtreeSizes, accumulations);
     }

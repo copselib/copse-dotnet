@@ -23,7 +23,7 @@ namespace Copse.Linq
     /// non-commutative reductions are well-defined and no identity element is demanded), and
     /// <paramref name="nodeAccumulator"/> then folds the node itself in ONCE:
     /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c>. The node accumulator is
-    /// LITERALLY RootfixScan's fold shape, <c>(TAccumulate, TSource)</c> -- the same fold,
+    /// LITERALLY RootfixScan's fold shape, <c>(TAccumulate, TNode)</c> -- the same fold,
     /// fed by the parent's accumulate going down and by the children's reduced accumulate
     /// going up. The decomposition is the point: a single map-then-combine callback would be
     /// "both an accumulator and a generator", folding the boundary into the map itself.
@@ -42,7 +42,7 @@ namespace Copse.Linq
     /// LeaffixDispatch (CrossTierCoherenceTests).</para>
     ///
     /// <para>Returns the CANONICAL PAIRING: a buffer of
-    /// <see cref="NodeAccumulation{TSource, TAccumulate}"/>s -- project <c>.Accumulate</c> for
+    /// <see cref="NodeAccumulation{TNode, TAccumulate}"/>s -- project <c>.Accumulate</c> for
     /// values; for mutable nodes, land with the composed effect idiom (see LeaffixDispatch's
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
@@ -53,11 +53,11 @@ namespace Copse.Linq
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
     /// The source is consumed depth-first only, so a streamed narrow source can leaffix.</para>
     /// </summary>
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
       // The receiver sniff (the Materialize / LINQ-Count idiom): ANY capture folds IN PLACE
       // over its own adjacency -- no second capture, and no layout condition, because the
@@ -67,7 +67,7 @@ namespace Copse.Linq
       // Only the VALUE-selector flavor folds in place (its leaf slot is position-free): the
       // positional flavor needs per-node positions, which the engine derives and the
       // in-place fold deliberately does not.
-      if (source is ITreenumerableBuffer<TSource> buffer)
+      if (source is ITreenumerableBuffer<TNode> buffer)
         return InPlaceLeaffixScan(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
       // COMPOSE-LEFT (the door, SELECT_INTO_CAPTURES_DESIGN.md): a pure-projection wrapper
@@ -75,57 +75,57 @@ namespace Copse.Linq
       // raw -- zero wrapper layers on the walk; the projection becomes one array map inside
       // the pass. The consumer's Consume<TInner> is where the wrapper's hidden inner type
       // gets its name back.
-      if (source is IProjectionSource<TSource> projectionSource)
+      if (source is IProjectionSource<TNode> projectionSource)
         return projectionSource.CaptureThrough(
-          new LeaffixFromProjectionConsumer<TSource, TAccumulate>(leafNodeSelector, edgeAccumulator, nodeAccumulator));
+          new LeaffixFromProjectionConsumer<TNode, TAccumulate>(leafNodeSelector, edgeAccumulator, nodeAccumulator));
 
       return LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
     }
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IDepthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>The breadth-first-only source overload; the disclosure-rule escalation is LeaffixDispatch's.</summary>
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
       // The same sniff on the breadth-first receiver: a capture is a full citizen whatever
       // static type it arrives through (the collapse covered every receiver shape).
-      if (source is ITreenumerableBuffer<TSource> buffer)
+      if (source is ITreenumerableBuffer<TNode> buffer)
         return InPlaceLeaffixScan(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
       return LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
     }
 
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this IBreadthFirstTreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
     /// <summary>Disambiguation overloads for full trees: a full tree is consumed depth-first.</summary>
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this ITreenumerable<TSource> source,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixScan((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
+      => LeaffixScan((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
-    public static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> LeaffixScan<TSource, TAccumulate>(
-      this ITreenumerable<TSource> source,
-      Func<TSource, NodePosition, TAccumulate> leafNodeSelector,
+    public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => LeaffixScan((IDepthFirstTreenumerable<TSource>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
+      => LeaffixScan((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
     // The in-place regime: the fold runs over the receiver's own adjacency at the result's
     // first pull -- the concrete buffer hands its raw store (span arithmetic; no probes, no
@@ -135,21 +135,21 @@ namespace Copse.Linq
     // (THE THIN SHAPE, SELECT_INTO_CAPTURES_DESIGN.md: the result is a PLAIN capture of the
     // canonical pairing -- a composed Select is the projected buffer's one array map over
     // this store, so the scan owns no product machinery.)
-    private static ITreenumerableBuffer<NodeAccumulation<TSource, TAccumulate>> InPlaceLeaffixScan<TSource, TAccumulate>(
-      ITreenumerableBuffer<TSource> buffer,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    private static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> InPlaceLeaffixScan<TNode, TAccumulate>(
+      ITreenumerableBuffer<TNode> buffer,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
-      => PairBuffer(new LazyPreorderStore<NodeAccumulation<TSource, TAccumulate>>(
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
+      => PairBuffer(new LazyPreorderStore<NodeAccumulation<TNode, TAccumulate>>(
         () => BuildInPlaceLeaffix(buffer, leafNodeSelector, edgeAccumulator, nodeAccumulator)));
 
-    private static PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>> BuildInPlaceLeaffix<TSource, TAccumulate>(
-      ITreenumerableBuffer<TSource> buffer,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    private static PreorderArrayStore<NodeAccumulation<TNode, TAccumulate>> BuildInPlaceLeaffix<TNode, TAccumulate>(
+      ITreenumerableBuffer<TNode> buffer,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
-      if (buffer is TreenumerableBuffer<TSource> concreteBuffer)
+      if (buffer is TreenumerableBuffer<TNode> concreteBuffer)
       {
         var storeResult = concreteBuffer.TryGetPreorderStore();
 
@@ -165,17 +165,17 @@ namespace Copse.Linq
     // a subtree-size hop, the node's span end fences the walk). Reads the skeleton the
     // receiver already owns; the store's own facts are the only inputs. The fringe is the
     // selector's, directly (the virtual-root rule: no seed at the leaffix boundary).
-    private static PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>> SpanLeaffix<TSource, TAccumulate>(
-      PreorderArrayStore<TSource> store,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    private static PreorderArrayStore<NodeAccumulation<TNode, TAccumulate>> SpanLeaffix<TNode, TAccumulate>(
+      PreorderArrayStore<TNode> store,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
       var nodeCount = store.Count;
 
       var accumulates = new TAccumulate[nodeCount];
       var subtreeSizes = new int[nodeCount];
-      var results = new NodeAccumulation<TSource, TAccumulate>[nodeCount];
+      var results = new NodeAccumulation<TNode, TAccumulate>[nodeCount];
 
       for (var handle = nodeCount - 1; handle >= 0; handle--)
       {
@@ -203,10 +203,10 @@ namespace Copse.Linq
 
         accumulates[handle] = accumulate;
         subtreeSizes[handle] = subtreeSize;
-        results[handle] = new NodeAccumulation<TSource, TAccumulate>(node, accumulate);
+        results[handle] = new NodeAccumulation<TNode, TAccumulate>(node, accumulate);
       }
 
-      return new PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results, subtreeSizes);
+      return new PreorderArrayStore<NodeAccumulation<TNode, TAccumulate>>(results, subtreeSizes);
     }
 
     // The same fold in PURE STANCE VOCABULARY (Stage B's first migration, the receipts
@@ -217,15 +217,15 @@ namespace Copse.Linq
     // -- any walkable capture folds in place, whatever its layout. Receipt for the ledger:
     // ZERO new walker features were needed; door + steps + extract are fold-complete, and
     // ordinal indexing was only ever speed, which the concrete span path already owns.
-    private static PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>> WalkerLeaffix<TSource, TAccumulate>(
-      ITreenumerableBuffer<TSource> buffer,
-      Func<TSource, TAccumulate> leafNodeSelector,
+    private static PreorderArrayStore<NodeAccumulation<TNode, TAccumulate>> WalkerLeaffix<TNode, TAccumulate>(
+      ITreenumerableBuffer<TNode> buffer,
+      Func<TNode, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
-      var results = new List<NodeAccumulation<TSource, TAccumulate>>();
+      var results = new List<NodeAccumulation<TNode, TAccumulate>>();
       var subtreeSizes = new List<int>();
-      var frames = new Stack<(TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
+      var frames = new Stack<(TreeWalker<TNode, int> Walker, TNode Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex)>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -255,7 +255,7 @@ namespace Copse.Linq
             ? nodeAccumulator(frame.Reduced, frame.Value)
             : leafNodeSelector(frame.Value);
 
-          results[frame.OutputIndex] = new NodeAccumulation<TSource, TAccumulate>(frame.Value, accumulate);
+          results[frame.OutputIndex] = new NodeAccumulation<TNode, TAccumulate>(frame.Value, accumulate);
           subtreeSizes[frame.OutputIndex] = results.Count - frame.OutputIndex;
 
           if (frames.Count > 0)
@@ -267,12 +267,12 @@ namespace Copse.Linq
         }
       }
 
-      return new PreorderArrayStore<NodeAccumulation<TSource, TAccumulate>>(results.ToArray(), subtreeSizes.ToArray());
+      return new PreorderArrayStore<NodeAccumulation<TNode, TAccumulate>>(results.ToArray(), subtreeSizes.ToArray());
     }
 
-    private static (TreeWalker<TSource, int> Walker, TSource Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex) OpenLeaffixFrame<TSource, TAccumulate>(
-      TreeWalker<TSource, int> walker,
-      List<NodeAccumulation<TSource, TAccumulate>> results,
+    private static (TreeWalker<TNode, int> Walker, TNode Value, int ChildIndex, bool Folded, TAccumulate Reduced, int OutputIndex) OpenLeaffixFrame<TNode, TAccumulate>(
+      TreeWalker<TNode, int> walker,
+      List<NodeAccumulation<TNode, TAccumulate>> results,
       List<int> subtreeSizes)
     {
       var outputIndex = results.Count;
@@ -355,15 +355,15 @@ namespace Copse.Linq
     // delegation -- the scan owns no build; LeaffixDispatch's is the one buffer-producing
     // leaffix build (and the in-place fold above is its receiver-smart twin, pinned
     // coherent by the conformance battery).
-    private static Func<TSource, DispatchSources<TSource, TAccumulate>, TAccumulate> DualFoldSurvey<TSource, TAccumulate>(
+    private static Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> DualFoldSurvey<TNode, TAccumulate>(
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
-      Func<TAccumulate, TSource, TAccumulate> nodeAccumulator)
+      Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => (node, children) => nodeAccumulator(EdgeReduce(children, edgeAccumulator), node);
 
     // Left-fold of the children's completed accumulations, first child as the start -- k-1
     // edge applications, no identity element demanded (internal families always have a child).
-    private static TAccumulate EdgeReduce<TSource, TAccumulate>(
-      DispatchSources<TSource, TAccumulate> children,
+    private static TAccumulate EdgeReduce<TNode, TAccumulate>(
+      DispatchSources<TNode, TAccumulate> children,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator)
     {
       var reduced = children[0].Accumulate;

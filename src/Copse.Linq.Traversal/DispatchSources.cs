@@ -9,22 +9,22 @@ namespace Copse.Linq
   /// The counterpart of <c>DispatchTarget</c> -- where a downward survey writes into its
   /// targets, an upward survey reads from its sources.
   /// </summary>
-  public readonly struct DispatchSource<TSource, TAccumulate>
+  public readonly struct DispatchSource<TNode, TAccumulate>
   {
-    internal DispatchSource(NodeContext<TSource> context, TAccumulate accumulate)
+    internal DispatchSource(NodeContext<TNode> context, TAccumulate accumulate)
     {
       Context = context;
       Accumulate = accumulate;
     }
 
     /// <summary>The child's source value and position.</summary>
-    public readonly NodeContext<TSource> Context;
+    public readonly NodeContext<TNode> Context;
 
     /// <summary>The child's completed accumulation.</summary>
     public readonly TAccumulate Accumulate;
 
     /// <summary>The child's source value (shorthand for <c>Context.Node</c>).</summary>
-    public TSource Node => Context.Node;
+    public TNode Node => Context.Node;
 
     public override string ToString() => $"{Context} <- {Accumulate}";
   }
@@ -39,10 +39,10 @@ namespace Copse.Linq
   /// and <c>foreach</c> over the view allocates nothing; <see cref="ToArray"/> is the bridge
   /// when an API needs an <c>IEnumerable</c>.
   /// </summary>
-  public readonly struct DispatchSources<TSource, TAccumulate>
+  public readonly struct DispatchSources<TNode, TAccumulate>
   {
     internal DispatchSources(
-      TSource[] values,
+      TNode[] values,
       NodePosition[] positions,
       int[] childIndices,
       int[] childOffsets,
@@ -57,7 +57,7 @@ namespace Copse.Linq
       _ParentIndex = parentIndex;
     }
 
-    private readonly TSource[] _Values;
+    private readonly TNode[] _Values;
     private readonly NodePosition[] _Positions;
     private readonly int[] _ChildIndices;
     private readonly int[] _ChildOffsets;
@@ -68,7 +68,7 @@ namespace Copse.Linq
     public int Count => _ChildOffsets[_ParentIndex + 1] - _ChildOffsets[_ParentIndex];
 
     /// <summary>The child's read-handle by sibling index. O(1).</summary>
-    public DispatchSource<TSource, TAccumulate> this[int index]
+    public DispatchSource<TNode, TAccumulate> this[int index]
     {
       get
       {
@@ -81,8 +81,8 @@ namespace Copse.Linq
         // Positions come from the child-index build's exact-size array (no capture side
         // channel) -- the reverse fold cannot derive them statelessly the way the rootfix
         // pass does, and a close-stack walk measured out (O(n) entries on chains).
-        return new DispatchSource<TSource, TAccumulate>(
-          new NodeContext<TSource>(_Values[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
+        return new DispatchSource<TNode, TAccumulate>(
+          new NodeContext<TNode>(_Values[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
       }
     }
 
@@ -91,9 +91,9 @@ namespace Copse.Linq
     /// ONE allocation, visible at the call site; the foreach and indexer paths stay
     /// allocation-free.
     /// </summary>
-    public DispatchSource<TSource, TAccumulate>[] ToArray()
+    public DispatchSource<TNode, TAccumulate>[] ToArray()
     {
-      var sources = new DispatchSource<TSource, TAccumulate>[Count];
+      var sources = new DispatchSource<TNode, TAccumulate>[Count];
 
       for (var index = 0; index < sources.Length; index++)
         sources[index] = this[index];
@@ -105,16 +105,16 @@ namespace Copse.Linq
 
     public struct Enumerator
     {
-      internal Enumerator(in DispatchSources<TSource, TAccumulate> sources)
+      internal Enumerator(in DispatchSources<TNode, TAccumulate> sources)
       {
         _Sources = sources;
         _Index = -1;
       }
 
-      private readonly DispatchSources<TSource, TAccumulate> _Sources;
+      private readonly DispatchSources<TNode, TAccumulate> _Sources;
       private int _Index;
 
-      public DispatchSource<TSource, TAccumulate> Current => _Sources[_Index];
+      public DispatchSource<TNode, TAccumulate> Current => _Sources[_Index];
 
       public bool MoveNext() => ++_Index < _Sources.Count;
     }

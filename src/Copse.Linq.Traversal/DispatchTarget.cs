@@ -12,9 +12,9 @@ namespace Copse.Linq
   /// shape plugs directly into setter-style allocators:
   /// <c>(child, amount) =&gt; child.Dispatch(amount)</c>.
   /// </summary>
-  public readonly struct DispatchTarget<TSource, TDispatch>
+  public readonly struct DispatchTarget<TNode, TDispatch>
   {
-    internal DispatchTarget(NodeContext<TSource> context, TDispatch[] arrivals, bool[] written, int index)
+    internal DispatchTarget(NodeContext<TNode> context, TDispatch[] arrivals, bool[] written, int index)
     {
       Context = context;
       _Arrivals = arrivals;
@@ -28,10 +28,10 @@ namespace Copse.Linq
     private readonly int _Index;
 
     /// <summary>The child's source value and position.</summary>
-    public readonly NodeContext<TSource> Context;
+    public readonly NodeContext<TNode> Context;
 
     /// <summary>The child's source value (shorthand for <c>Context.Node</c>).</summary>
-    public TSource Node => Context.Node;
+    public TNode Node => Context.Node;
 
     /// <summary>Delivers <paramref name="value"/> to this child. Must be called exactly once
     /// per survey: a second call throws <see cref="InvalidOperationException"/> immediately,

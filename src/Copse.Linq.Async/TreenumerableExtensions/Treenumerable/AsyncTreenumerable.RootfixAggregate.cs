@@ -9,7 +9,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The root-to-leaf accumulations (RootfixScan, then the leaves), as a lazy async sequence --
-    /// one <see cref="NodeAccumulation{TSource, TAccumulate}"/> per leaf: the leaf's value paired with
+    /// one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per leaf: the leaf's value paired with
     /// the fold of the accumulator down its root-to-leaf path (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md -- project <c>.Accumulate</c> when only values are wanted).
     /// </summary>

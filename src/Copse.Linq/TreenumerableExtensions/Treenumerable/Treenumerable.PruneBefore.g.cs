@@ -14,46 +14,46 @@ namespace Copse.Linq
     /// Async <c>PruneBefore</c> over node VALUES (prune polarity: true = prune): removes each
     /// matching node AND its whole subtree. Deferred.
     /// </summary>
-    public static ITreenumerable<T> PruneBefore<T>(
-      this ITreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static ITreenumerable<TNode> PruneBefore<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // is the plain path's struct: the operator's semantics, stated once.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
-          new PruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose<TNode, PruneBeforeResultSelector<TNode>>(
+          new PruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereTreenumerable<TNode, TNode, PruneBeforeResultSelector<TNode>>(
+        source, new PruneBeforeResultSelector<TNode>(predicate));
     }
 
     /// <summary>
     /// Async <c>PruneBefore</c> over (node, position) (prune polarity: true = prune). Deferred.
     /// Each positional predicate sees ITS input tree's labels.
     /// </summary>
-    public static ITreenumerable<T> PruneBefore<T>(
-      this ITreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static ITreenumerable<TNode> PruneBefore<TNode>(
+      this ITreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
-          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalPruneBeforeResultSelector<TNode>>(
+          new PositionalPruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereTreenumerable<TNode, TNode, PositionalPruneBeforeResultSelector<TNode>>(
+        source, new PositionalPruneBeforeResultSelector<TNode>(predicate));
     }
 
-    public static IDepthFirstTreenumerable<T> PruneBefore<T>(
-      this IDepthFirstTreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static IDepthFirstTreenumerable<TNode> PruneBefore<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -61,75 +61,75 @@ namespace Copse.Linq
       // The narrow probes mirror the composite overload's. A composite-width wrapper arriving
       // through a narrow-typed receiver composes on its own representation -- the successor
       // keeps both dimensions; a narrow chain composes to a narrow successor.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
-          new PruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose<TNode, PruneBeforeResultSelector<TNode>>(
+          new PruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
-          new PruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.Compose<TNode, PruneBeforeResultSelector<TNode>>(
+          new PruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereDepthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PruneBeforeResultSelector<TNode>>(
+        source, new PruneBeforeResultSelector<TNode>(predicate));
     }
 
-    public static IDepthFirstTreenumerable<T> PruneBefore<T>(
-      this IDepthFirstTreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static IDepthFirstTreenumerable<TNode> PruneBefore<TNode>(
+      this IDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       // The join rule, as in the composite positional overload: splice only while the chain
       // is label-preserving.
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
-          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalPruneBeforeResultSelector<TNode>>(
+          new PositionalPruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
-          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
+        return depthFirstSelectWhereSource.ComposePositional<TNode, PositionalPruneBeforeResultSelector<TNode>>(
+          new PositionalPruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereDepthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalPruneBeforeResultSelector<TNode>>(
+        source, new PositionalPruneBeforeResultSelector<TNode>(predicate));
     }
 
-    public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
-      this IBreadthFirstTreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static IBreadthFirstTreenumerable<TNode> PruneBefore<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
-          new PruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.Compose<TNode, PruneBeforeResultSelector<TNode>>(
+          new PruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose<T, PruneBeforeResultSelector<T>>(
-          new PruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.Compose<TNode, PruneBeforeResultSelector<TNode>>(
+          new PruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereBreadthFirstTreenumerable<T, T, PruneBeforeResultSelector<T>>(
-        source, new PruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PruneBeforeResultSelector<TNode>>(
+        source, new PruneBeforeResultSelector<TNode>(predicate));
     }
 
-    public static IBreadthFirstTreenumerable<T> PruneBefore<T>(
-      this IBreadthFirstTreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static IBreadthFirstTreenumerable<TNode> PruneBefore<TNode>(
+      this IBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      if (source is ISelectWhereTreenumerable<T> selectWhereSource)
-        return selectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
-          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereTreenumerable<TNode> selectWhereSource)
+        return selectWhereSource.ComposePositional<TNode, PositionalPruneBeforeResultSelector<TNode>>(
+          new PositionalPruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      if (source is ISelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.ComposePositional<T, PositionalPruneBeforeResultSelector<T>>(
-          new PositionalPruneBeforeResultSelector<T>(predicate), relabels: true);
+      if (source is ISelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
+        return breadthFirstSelectWhereSource.ComposePositional<TNode, PositionalPruneBeforeResultSelector<TNode>>(
+          new PositionalPruneBeforeResultSelector<TNode>(predicate), relabels: true);
 
-      return new SelectWhereBreadthFirstTreenumerable<T, T, PositionalPruneBeforeResultSelector<T>>(
-        source, new PositionalPruneBeforeResultSelector<T>(predicate));
+      return new SelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalPruneBeforeResultSelector<TNode>>(
+        source, new PositionalPruneBeforeResultSelector<TNode>(predicate));
     }
   }
 }

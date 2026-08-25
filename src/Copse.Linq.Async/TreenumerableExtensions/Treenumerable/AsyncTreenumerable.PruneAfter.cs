@@ -12,9 +12,9 @@ namespace Copse.Linq
     /// (the matched node is the deepest of its lineage kept). Deferred. PruneAfter is
     /// label-preserving: survivors keep their coordinates.
     /// </summary>
-    public static IAsyncTreenumerable<T> PruneAfter<T>(
-      this IAsyncTreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static IAsyncTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -25,19 +25,19 @@ namespace Copse.Linq
       // internal member STACKS the light wrapper over itself, since joining would demote its
       // representation for a layer that costs almost nothing; foreign citizens absorb into
       // their recipe.
-      if (source is IAsyncPruneAfterTreenumerable<T> pruneComposableSource)
+      if (source is IAsyncPruneAfterTreenumerable<TNode> pruneComposableSource)
         return pruneComposableSource.ComposePruneAfter(predicate);
 
-      return new AsyncPruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneAfterTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
     /// <summary>
     /// Async <c>PruneAfter</c> over (node, position). Deferred. The positional predicate sees
     /// ITS input tree's labels.
     /// </summary>
-    public static IAsyncTreenumerable<T> PruneAfter<T>(
-      this IAsyncTreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static IAsyncTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -47,15 +47,15 @@ namespace Copse.Linq
       // merges in-tier (it never relabels, so the positional flavor always qualifies),
       // everyone else stacks. Stacking preserves the join rule by construction: the
       // stacked predicate reads its input tree's emitted labels.
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      return new AsyncPruneAfterTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneAfterTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
-    public static IAsyncDepthFirstTreenumerable<T> PruneAfter<T>(
-      this IAsyncDepthFirstTreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static IAsyncDepthFirstTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
@@ -64,63 +64,63 @@ namespace Copse.Linq
       // dispatches per member). A composite-width wrapper arriving through a narrow-typed
       // receiver composes on its own representation -- the successor keeps both dimensions;
       // a narrow chain composes to a narrow successor.
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
+      if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
         return depthFirstSelectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      return new AsyncPruneAfterDepthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneAfterDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
-    public static IAsyncDepthFirstTreenumerable<T> PruneAfter<T>(
-      this IAsyncDepthFirstTreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static IAsyncDepthFirstTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
 
       // The light tier never relabels, so the positional flavor always qualifies for the
       // join rule; stacked members preserve it by construction.
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      if (source is IAsyncSelectWhereDepthFirstTreenumerable<T> depthFirstSelectWhereSource)
+      if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
         return depthFirstSelectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      return new AsyncPruneAfterDepthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneAfterDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
-    public static IAsyncBreadthFirstTreenumerable<T> PruneAfter<T>(
-      this IAsyncBreadthFirstTreenumerable<T> source,
-      Func<T, bool> predicate)
+    public static IAsyncBreadthFirstTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
+      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
         return breadthFirstSelectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node));
 
-      return new AsyncPruneAfterBreadthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneAfterBreadthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
-    public static IAsyncBreadthFirstTreenumerable<T> PruneAfter<T>(
-      this IAsyncBreadthFirstTreenumerable<T> source,
-      Func<T, NodePosition, bool> predicate)
+    public static IAsyncBreadthFirstTreenumerable<TNode> PruneAfter<TNode>(
+      this IAsyncBreadthFirstTreenumerable<TNode> source,
+      Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      if (source is IAsyncSelectWhereTreenumerable<T> selectWhereSource)
+      if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
         return selectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<T> breadthFirstSelectWhereSource)
+      if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
         return breadthFirstSelectWhereSource.ComposePruneAfter(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
-      return new AsyncPruneAfterBreadthFirstTreenumerable<T>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneAfterBreadthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
   }
 }
