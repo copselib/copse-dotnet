@@ -11,6 +11,9 @@ namespace Copse.Async.Stores
   // never share an assembly and the neutral layer stays store-free.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x completed x no feed.
+  /// <summary>A completed preorder store over plain arrays: <c>values[i]</c> in preorder,
+  /// node <c>i</c>'s subtree spanning <c>[i, i + subtreeSizes[i])</c>. Nothing grows, so the
+  /// grow operations answer immediately and the reads are array access.</summary>
   public readonly struct AsyncPreorderArrayStore<TValue> : IAsyncPreorderStore<TValue>
   {
     public AsyncPreorderArrayStore(TValue[] values, int[] subtreeSizes)

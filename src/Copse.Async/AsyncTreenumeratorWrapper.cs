@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 
 namespace Copse.Async
 {
-  // Hand-written twin of Copse.TreenumeratorWrapper (see TreenumeratorBase for the pair rationale):
-  // an async treenumerator that wraps a single inner async cursor, disposing it on teardown.
+  // Hand-written twin of Copse.TreenumeratorWrapper (see TreenumeratorBase for the pair rationale).
+  /// <summary>
+  /// A base class for treenumerators that transform one inner traversal: holds the inner
+  /// cursor as <see cref="InnerTreenumerator"/> and disposes it on teardown.
+  /// </summary>
   public abstract class AsyncTreenumeratorWrapper<TInner, TNode>
     : AsyncTreenumeratorBase<TNode>
   {
@@ -26,6 +29,9 @@ namespace Copse.Async
     }
   }
 
+  /// <summary>The value-preserving form of
+  /// <see cref="AsyncTreenumeratorWrapper{TInner, TNode}"/>: inner and outer share one node
+  /// type.</summary>
   public abstract class AsyncTreenumeratorWrapper<TNode> : AsyncTreenumeratorWrapper<TNode, TNode>
   {
     protected AsyncTreenumeratorWrapper(

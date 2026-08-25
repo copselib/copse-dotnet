@@ -3,18 +3,20 @@ using System.Threading.Tasks;
 
 namespace Copse.Async.Stores
 {
-  // Async, struct-return source of IPreorderStream (the generated sync twin): the forward-only preorder
-  // protocol, read asynchronously. Reads return ValueTask<Option<PreorderRead<TValue>>> -- the struct-return
-  // shape is mandatory (out params can't cross an await) and is the single codegen source the
-  // generator transcribes into the sync IPreorderStream twin. IAsyncDisposable: the treenumerator
-  // riding the stream owns it and disposes it (async).
+  // Codegen source of the sync twin, Copse.Stores.IPreorderStream.
+  /// <summary>
+  /// The forward-only preorder stream protocol: one pass over a tree encoded as (value, depth)
+  /// reads. The treenumerator riding the stream owns it and disposes it.
+  /// </summary>
   public interface IAsyncPreorderStream<TValue> : IAsyncDisposable
   {
-    // Read the next preorder node. HasValue == false when the stream is exhausted.
+    /// <summary>Reads the next preorder node, or absent when the stream is
+    /// exhausted.</summary>
     ValueTask<Option<PreorderRead<TValue>>> TryReadNextAsync();
 
-    // Discard nodes -- WITHOUT materializing their values -- until one arrives at depth <=
-    // maxDepth, and return it. HasValue == false when the stream exhausts first.
+    /// <summary>Discards nodes -- without materializing their values -- until one arrives at
+    /// depth at most <paramref name="maxDepth"/>, and returns it; absent when the stream
+    /// exhausts first.</summary>
     ValueTask<Option<PreorderRead<TValue>>> TrySkipToDepthAsync(int maxDepth);
   }
 }

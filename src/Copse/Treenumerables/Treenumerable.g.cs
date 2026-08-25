@@ -9,14 +9,15 @@ using Copse.Core;
 
 namespace Copse.Treenumerables
 {
+  // Codegen source of truth for the sync engine base Copse.Treenumerables.Treenumerable<,,>.
   /// <summary>
-  /// The async engine-backed treenumerable over a hierarchical source (a roots stream +
-  /// child-enumerator factory), and the codegen source of truth for the sync engine base
-  /// <c>Copse.Treenumerables.Treenumerable&lt;,,&gt;</c>. A composite
-  /// <see cref="IAsyncTreenumerable{TValue}"/> affording BOTH traversal dimensions; each acquisition
-  /// re-enumerates the roots source from the start (an <see cref="IAsyncEnumerable{TNode}"/> is cold
-  /// like its sync counterpart). A hot/single-pass source should be Memoized (or wrapped in
-  /// AsyncTree.Defer) for freshness -- the same contract as the sync base.
+  /// The engine-backed treenumerable over hierarchical data: give it a roots stream and a
+  /// child-enumerator factory, and it affords both traversal orders. Each traversal
+  /// re-enumerates the roots source from the start (an <see cref="IAsyncEnumerable{TNode}"/>
+  /// is cold, like its sync counterpart); a single-pass source should be memoized first.
+  /// <typeparamref name="TNode"/> is the traversed node type and
+  /// <typeparamref name="TValue"/> the surfaced value; <paramref name="nodeToValueMap"/> in
+  /// the constructor resolves one to the other per visit.
   /// </summary>
   public class Treenumerable<TValue, TNode, TChildEnumerator>
     : ITreenumerable<TValue>
@@ -55,9 +56,8 @@ namespace Copse.Treenumerables
     }
   }
 
-  // Convenience base for trees whose node IS its surfaced value (TValue == TNode): the value map is
-  // the identity, so callers don't supply one. Trees with a distinct internal handle (e.g.
-  // PreorderTree's int index) use the three-parameter base above with an explicit resolution map.
+  /// <summary>The two-parameter form for trees whose node is its own surfaced value: the value
+  /// map is the identity, so callers don't supply one.</summary>
   public class Treenumerable<TNode, TChildEnumerator>
     : Treenumerable<TNode, TNode, TChildEnumerator>
     where TChildEnumerator : IChildEnumerator<TNode>

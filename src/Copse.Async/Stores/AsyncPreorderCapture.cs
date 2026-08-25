@@ -17,6 +17,8 @@ namespace Copse.Async.Stores
   // Appending on the first VISITING visit instead is equivalent in a depth-first walk (a node's
   // first visit immediately follows its scheduling); the memo buffers use that form. Scheduling
   // is the operator convention, standardized here.
+  /// <summary>Captures any depth-first source into a completed preorder array store -- the
+  /// flat family's encode direction.</summary>
   public static class AsyncPreorderCapture
   {
     /// <summary>
@@ -34,7 +36,7 @@ namespace Copse.Async.Stores
     }
 
     /// <summary>
-    /// The COUNTED fast path (the presize rule, 2026-08-16): as <c>CaptureFromAsync(source)</c>,
+    /// The counted fast path: as <c>CaptureFromAsync(source)</c>,
     /// with the node count known in advance -- the final arrays are allocated exactly and the
     /// chunked build buffer is skipped, so the capture's transient allocation drops from ~2n to
     /// 1n. The count is a CONTRACT, not a hint: callers read it off a completed same-tree store

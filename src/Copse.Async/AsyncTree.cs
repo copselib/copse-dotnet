@@ -8,49 +8,43 @@ using System.Collections.Generic;
 
 namespace Copse.Async
 {
-  // Tree SOURCES (factories), parallel to Enumerable.Empty / Observable.Defer/Using: they MAKE
-  // trees rather than transform them, so they belong with the concrete treenumerables, not with
-  // the operators in Copse.Linq. Their entire dependency footprint is the treenumerable contract
-  // plus disposal -- nothing Linq-specific (see PACKAGE_ARCHITECTURE.md).
-  //
-  // Each factory comes in three dimension flavors, because the result's dimension follows the
-  // dimension of the tree you hand it -- a resource-owning or lazy source over a depth-first-only
-  // tree has no reason to pretend it can serve breadth-first. The composite form (Defer/Using) is
-  // for full trees; DeferDepthFirst/UsingDepthFirst and the breadth-first duals are for the
-  // narrow ones (a forward-only serialized stream is the motivating case).
-  //
-  // This is the codegen source of truth for the sync Tree (the checked-in .g.cs twin). The
-  // ASYNC-acquisition Using overloads (Func<ValueTask<TResource>>) are async-only: their
-  // transcription would collapse onto the sync-acquire overloads' twins, and a sync treenumerator
-  // has no awaitable frame to acquire in anyway.
+  // This is the codegen source of truth for the sync Tree (the checked-in .g.cs twin).
+  /// <summary>
+  /// The tree sources: factories that make trees, the way <c>Enumerable.Empty</c> and Ix's
+  /// <c>Defer</c>/<c>Using</c> make sequences. Each factory comes in three dimension flavors,
+  /// because the result's dimension follows the tree you hand it: the composite form for full
+  /// trees, and <c>…DepthFirst</c>/<c>…BreadthFirst</c> forms for sources that afford only one
+  /// traversal order (a forward-only serialized stream is the motivating case).
+  /// </summary>
   public static class AsyncTree
   {
-    // ----- Defer (lazy factory; Ix's Defer): the factory runs per treenumerator acquisition,
-    // so each traversal sees a freshly constructed tree. An impure factory can hand the
-    // dimensions different trees, the same contract as any impure source (Memoize pins a shape).
+    /// <summary>A tree built fresh for every traversal: <paramref name="treenumerableFactory"/>
+    /// runs per treenumerator acquisition, like Ix's <c>Defer</c>. An impure factory can hand
+    /// different traversals different trees; <c>Memoize</c> pins one.</summary>
     public static IAsyncTreenumerable<TNode> Defer<TNode>(Func<IAsyncTreenumerable<TNode>> treenumerableFactory)
       => new AsyncDelegatingTreenumerable<TNode>(
         () => treenumerableFactory().GetAsyncBreadthFirstTreenumerator(),
         () => treenumerableFactory().GetAsyncDepthFirstTreenumerator());
 
+    /// <summary>The depth-first-narrow form of <see cref="Defer{TNode}"/>.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> DeferDepthFirst<TNode>(Func<IAsyncDepthFirstTreenumerable<TNode>> treenumerableFactory)
       => new AsyncDelegatingDepthFirstTreenumerable<TNode>(
         () => treenumerableFactory().GetAsyncDepthFirstTreenumerator());
 
+    /// <summary>The breadth-first-narrow form of <see cref="Defer{TNode}"/>.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> DeferBreadthFirst<TNode>(Func<IAsyncBreadthFirstTreenumerable<TNode>> treenumerableFactory)
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(
         () => treenumerableFactory().GetAsyncBreadthFirstTreenumerator());
 
-    // ----- Lazy (pinned factory; call-by-need where Defer is call-by-name): the factory runs
-    // ONCE, at the first treenumerator acquisition, and the constructed tree is pinned -- every
-    // later acquisition, in either dimension, traverses the same tree object. This pins the
-    // tree's IDENTITY (an impure factory can no longer hand the dimensions different trees),
-    // not its data; Memoize is the next rung up, pinning the traversal data itself.
-    //
-    // Lazy is for expensive CONSTRUCTION, not resource acquisition: a pinned tree has no
-    // release point, so a factory that acquires belongs to Using (whose per-acquisition
-    // treenumerator is the release point). Construction is not synchronized -- the pin has the
-    // same single-consumer contract as the traversals it feeds.
+    /// <summary>A tree built once: <paramref name="treenumerableFactory"/> runs at the first
+    /// treenumerator acquisition, and every later traversal, in either dimension, walks the
+    /// same tree object. This pins the tree's identity, not its data -- <c>Memoize</c> is the
+    /// next rung up, pinning the traversal data itself.
+    ///
+    /// <para>For expensive construction, not resource acquisition: a pinned tree has no
+    /// release point, so a factory that acquires a resource belongs to
+    /// <see cref="Using{TResource, TNode}"/>. Construction is not synchronized --
+    /// single-consumer, like the traversals it feeds.</para></summary>
     public static IAsyncTreenumerable<TNode> Lazy<TNode>(Func<IAsyncTreenumerable<TNode>> treenumerableFactory)
     {
       var lazyTree = new Lazy<IAsyncTreenumerable<TNode>>(treenumerableFactory);
@@ -60,10 +54,11 @@ namespace Copse.Async
         () => lazyTree.Value.GetAsyncDepthFirstTreenumerator());
     }
 
-    // The dimension-observing form: the first demand carries information -- WHICH dimension was
-    // asked first -- and a one-time construction with a representation choice (a capture that
-    // could lay out preorder or level-order) can use it to favor its first consumer. The
-    // constructed tree is pinned for both dimensions regardless of which one it favors.
+    /// <summary>The dimension-observing form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>:
+    /// the factory is told which traversal order was demanded first, so a one-time construction
+    /// with a representation choice (a capture that could lay out preorder or level-order) can
+    /// favor its first consumer. The constructed tree is still pinned for both
+    /// dimensions.</summary>
     public static IAsyncTreenumerable<TNode> Lazy<TNode>(Func<TreeTraversalStrategy, IAsyncTreenumerable<TNode>> treenumerableFactory)
     {
       IAsyncTreenumerable<TNode> constructedTree = null;
@@ -78,6 +73,7 @@ namespace Copse.Async
 
     // The narrow duals need no dimension-observing form: with one dimension there is nothing
     // to observe.
+    /// <summary>The depth-first-narrow form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> LazyDepthFirst<TNode>(Func<IAsyncDepthFirstTreenumerable<TNode>> treenumerableFactory)
     {
       var lazyTree = new Lazy<IAsyncDepthFirstTreenumerable<TNode>>(treenumerableFactory);
@@ -86,6 +82,7 @@ namespace Copse.Async
         () => lazyTree.Value.GetAsyncDepthFirstTreenumerator());
     }
 
+    /// <summary>The breadth-first-narrow form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> LazyBreadthFirst<TNode>(Func<IAsyncBreadthFirstTreenumerable<TNode>> treenumerableFactory)
     {
       var lazyTree = new Lazy<IAsyncBreadthFirstTreenumerable<TNode>>(treenumerableFactory);
@@ -94,13 +91,11 @@ namespace Copse.Async
         () => lazyTree.Value.GetAsyncBreadthFirstTreenumerator());
     }
 
-    // ----- Using (resource-owning factory; Ix's Using). The ownership rule: each treenumerator
-    // acquisition acquires its OWN resource, disposed when that treenumerator is disposed (or if
-    // construction throws before a treenumerator exists). ITreenumerator.Dispose is the
-    // traversal's release point -- the idiom a stream-fed deserializer needs (see
-    // TRAVERSAL_DIMENSION_SPLIT.md). Memoizing a Using tree releases the resource the moment the
-    // capture completes (the memo disposes its exhausted feed, which is the treenumerator holding
-    // the resource).
+    /// <summary>A tree over an owned resource, like Ix's <c>Using</c>: each traversal acquires
+    /// its own resource from <paramref name="resourceFactory"/> and disposes it when the
+    /// traversal's treenumerator is disposed (or immediately, if construction throws before a
+    /// treenumerator exists). Memoizing a Using tree releases the resource as soon as the
+    /// capture completes.</summary>
     // codegen: begin async-only
     //
     // The constraint is IDisposable -- readers (the flagship Using resource) never grew
@@ -117,6 +112,7 @@ namespace Copse.Async
         () => AcquireTreenumerator(resourceFactory, treenumerableFactory, tree => tree.GetAsyncBreadthFirstTreenumerator()),
         () => AcquireTreenumerator(resourceFactory, treenumerableFactory, tree => tree.GetAsyncDepthFirstTreenumerator()));
 
+    /// <summary>The depth-first-narrow form of <see cref="Using{TResource, TNode}"/>.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> UsingDepthFirst<TResource, TNode>(
       Func<TResource> resourceFactory,
       Func<TResource, IAsyncDepthFirstTreenumerable<TNode>> treenumerableFactory)
@@ -124,6 +120,7 @@ namespace Copse.Async
       => new AsyncDelegatingDepthFirstTreenumerable<TNode>(
         () => AcquireTreenumerator(resourceFactory, treenumerableFactory, tree => tree.GetAsyncDepthFirstTreenumerator()));
 
+    /// <summary>The breadth-first-narrow form of <see cref="Using{TResource, TNode}"/>.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> UsingBreadthFirst<TResource, TNode>(
       Func<TResource> resourceFactory,
       Func<TResource, IAsyncBreadthFirstTreenumerable<TNode>> treenumerableFactory)
@@ -170,16 +167,13 @@ namespace Copse.Async
       }
     }
 
+    /// <summary>The empty forest: no roots, no visits.</summary>
     public static IAsyncTreenumerable<TNode> Empty<TNode>()
       => AsyncEmptyTreenumerable<TNode>.Instance;
 
-    // The carrier intro -- the monad's Return, made literal: a treenumerable IS (a pair of)
-    // treenumerator factories, and Create wraps them in the delegating carrier. Absorbed
-    // from TreenumerableFactory 2026-08-14 (the architecture sweep's one-word-one-meaning
-    // consolidation: Tree is the ONE creation surface -- sources for consumers, the carrier
-    // intro for operator internals). The single-dimension forms are the factories behind
-    // the narrow operator overloads (TRAVERSAL_DIMENSION_SPLIT.md): a chain over a narrow
-    // source stays narrow.
+    /// <summary>A treenumerable from its two treenumerator factories directly -- the lowest-
+    /// level way in: a treenumerable is nothing more than a pair of cursor factories, and
+    /// Create wraps yours. Each factory must produce a fresh cursor per call.</summary>
     public static IAsyncTreenumerable<TNode> Create<TNode>(
       Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory,
       Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)
@@ -187,24 +181,20 @@ namespace Copse.Async
         breadthFirstTreenumeratorFactory,
         depthFirstTreenumeratorFactory);
 
+    /// <summary>The depth-first-narrow form of <see cref="Create{TNode}"/>.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> CreateDepthFirst<TNode>(
       Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)
       => new AsyncDelegatingDepthFirstTreenumerable<TNode>(depthFirstTreenumeratorFactory);
 
+    /// <summary>The breadth-first-narrow form of <see cref="Create{TNode}"/>.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> CreateBreadthFirst<TNode>(
       Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
-    // The Walk adapter, public (2026-08-15; absorbed from the operator tier's WalkerWalk the
-    // day the ecosystem opened): a topology's indexed child probe IS a child pull, so the
-    // hierarchical engine can drive any ITreeTopology directly -- this frame-struct
-    // composition is the whole adapter, and it affords BOTH dimensions. The third-party
-    // story this completes: implement the SPI over your native structure and the streaming
-    // half of IWalkableTreenumerable is one delegation (the walker half is one construction
-    // -- the public TreeWalker mint). Labels resolve DURING the pull through GetValue, so
-    // a view whose GetValue is an observation (the Extend lens) streams its own labeling
-    // for free by walking itself. Conformance is the law suites' degenerate-tower pin:
-    // walking a store-backed topology reproduces the store's native visit streams.
+    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TValue, THandle}"/>
+    /// by probing it -- the bridge for third-party structures: implement the four-probe
+    /// topology interface over your native tree and this affords both traversal orders.
+    /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
     public static IAsyncTreenumerable<TValue> FromTopology<TValue, THandle>(
       IAsyncTreeTopology<TValue, THandle> topology)
       => new AsyncTreenumerable<TValue, HandleAndValue<THandle, TValue>, AsyncTopologyChildEnumerator<TValue, THandle>>(

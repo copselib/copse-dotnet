@@ -7,6 +7,8 @@ namespace Copse.Async.Treenumerables
   // sibling the narrow async operator overloads return, so a chain over an
   // IAsyncDepthFirstTreenumerable source stays honestly depth-first-only end to end. This is the
   // codegen source of truth for the sync twin.
+  /// <summary>The depth-first-narrow form of <c>AsyncDelegatingTreenumerable</c>: one injected
+  /// treenumerator factory.</summary>
   public sealed class AsyncDelegatingDepthFirstTreenumerable<TNode> : IAsyncDepthFirstTreenumerable<TNode>
   {
     public AsyncDelegatingDepthFirstTreenumerable(Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)

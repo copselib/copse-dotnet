@@ -10,6 +10,9 @@ namespace Copse.Async.Stores
   // the sync twin is generated from this file.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x completed x no feed.
+  /// <summary>A completed level-order store over plain arrays: values level by level, with
+  /// each node's first-child index and child count beside them. Nothing grows, so the grow
+  /// operations answer immediately and the reads are array access.</summary>
   public readonly struct AsyncLevelOrderArrayStore<TValue> : IAsyncLevelOrderStore<TValue>
   {
     public AsyncLevelOrderArrayStore(TValue[] values, int[] firstChildIndices, int[] childCounts, int rootCount)

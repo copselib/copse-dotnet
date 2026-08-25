@@ -17,6 +17,8 @@ namespace Copse.Stores
   //
   // No side-channel overload yet: the preorder side has a consumer (OrderChildrenBy's keys);
   // this side has none. Add the dual when one exists.
+  /// <summary>Captures any breadth-first source into a completed level-order array store --
+  /// the flat family's encode direction, level-order form.</summary>
   public static class LevelOrderCapture
   {
     /// <summary>
@@ -71,7 +73,7 @@ namespace Copse.Stores
     }
 
     /// <summary>
-    /// The COUNTED fast path (the presize rule, 2026-08-16): as <c>CaptureFromAsync(source)</c>,
+    /// The counted fast path: as <c>CaptureFromAsync(source)</c>,
     /// with the node count known in advance -- the three final arrays are allocated exactly and
     /// the chunked build buffers are skipped, so the capture's transient allocation drops from
     /// ~2n to 1n. The count is a CONTRACT, not a hint: callers read it off a completed

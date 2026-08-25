@@ -4,10 +4,10 @@ using Copse.Core.Async;
 
 namespace Copse.Async.Treenumerables
 {
+  // Codegen source of truth for the sync twin (Copse.Treenumerables.PreorderTreenumerable).
   /// <summary>
-  /// An async tree stored in flat preorder form, and the codegen source of truth for its sync twin
-  /// (Copse.Treenumerables.PreorderTreenumerable). Any <see cref="IAsyncPreorderStore{TValue}"/> --
-  /// a completed capture, or one still growing from an async feed -- becomes a full
+  /// An async tree stored in flat preorder form. Any <see cref="IAsyncPreorderStore{TValue}"/>
+  /// -- a completed capture, or one still growing from an async feed -- becomes a full
   /// <see cref="IAsyncTreenumerable{TValue}"/>: depth-first traversal is native playback,
   /// breadth-first rides the same store cross-order.
   /// </summary>

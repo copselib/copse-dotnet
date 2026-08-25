@@ -10,10 +10,8 @@ namespace Copse.Treenumerables
   // Async analog of Copse.Treenumerables.DelegatingTreenumerable: a composite async tree whose two
   // dimension cursors come from injected factories. This is what AsyncTree.Defer returns -- the
   // factory indirection is where "fresh tree per acquisition" lives.
-  //
-  // (The narrow single-dimension siblings -- AsyncDelegatingDepthFirst/BreadthFirstTreenumerable --
-  // and AsyncTree.Defer/UsingDepthFirst wait for the async flat-stream layer that motivates them: a
-  // forward-only async serialized stream is the only source that affords just one async dimension.)
+  /// <summary>A treenumerable that delegates each acquisition to an injected treenumerator
+  /// factory pair -- what <c>Tree.Create</c> and the deferral factories return.</summary>
   public sealed class DelegatingTreenumerable<TNode> : ITreenumerable<TNode>
   {
     public DelegatingTreenumerable(

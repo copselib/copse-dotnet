@@ -4,20 +4,24 @@
 // </auto-generated>
 namespace Copse.Stores
 {
-  // What one forward-only preorder read yields: the value and the depth it sits at. A payload,
-  // not an answer -- whether there WAS a read is the option that carries this, so a stream reads
-  // Option<PreorderRead<TValue>> and an exhausted stream is the miss. (The struct-return shape is
-  // mandatory on the async side: out params cannot cross an await.) Small and transient (returned
-  // and immediately consumed, never stored per-frame), so it carries no allocation cost.
+  /// <summary>
+  /// What one forward-only preorder read yields: a value and the depth it sits at. Whether
+  /// there was a read at all is carried by the <see cref="Option{TValue}"/> wrapping this --
+  /// an exhausted stream answers absent.
+  /// </summary>
   public readonly struct PreorderRead<TValue>
   {
+    /// <summary>Pairs <paramref name="value"/> with <paramref name="depth"/>.</summary>
     public PreorderRead(TValue value, int depth)
     {
       Value = value;
       Depth = depth;
     }
 
+    /// <summary>The node's value.</summary>
     public readonly TValue Value;
+
+    /// <summary>The node's depth (roots are depth 0).</summary>
     public readonly int Depth;
   }
 }

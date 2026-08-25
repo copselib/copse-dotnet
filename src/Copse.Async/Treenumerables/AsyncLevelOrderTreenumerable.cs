@@ -4,9 +4,9 @@ using Copse.Core.Async;
 
 namespace Copse.Async.Treenumerables
 {
+  // Codegen source of truth for the sync twin; AsyncPreorderTreenumerable's structural dual.
   /// <summary>
-  /// An async tree stored in flat level-order form, and the codegen source of truth for its sync
-  /// twin: AsyncPreorderTreenumerable's structural dual. Any
+  /// An async tree stored in flat level-order form. Any
   /// <see cref="IAsyncLevelOrderStore{TValue}"/> becomes a full
   /// <see cref="IAsyncTreenumerable{TValue}"/>: breadth-first traversal is native playback,
   /// depth-first rides the same store cross-order.

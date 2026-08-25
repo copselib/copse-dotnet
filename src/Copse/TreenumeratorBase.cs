@@ -12,6 +12,11 @@ namespace Copse
   // syntactic await-strip; buying ~40 lines of stable, rarely-touched base back at the cost of a
   // permanent special-case is the wrong trade. So the base stays a hand-written parallel pair; the
   // churn (the operators) is what the codegen earns its keep on.
+  /// <summary>
+  /// The base class for implementing a treenumerator: derive, implement <c>OnMoveNext</c> to
+  /// advance and set the four state properties, and the base handles exhaustion, disposal
+  /// idempotence, and teardown (override <c>OnDisposing</c>).
+  /// </summary>
   public abstract class TreenumeratorBase<TNode> : ITreenumerator<TNode>
   {
     public TNode Node { get; protected set; } = default;

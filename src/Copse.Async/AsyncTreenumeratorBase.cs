@@ -7,6 +7,13 @@ namespace Copse.Async
   // Hand-written twin of Copse.TreenumeratorBase (see its comment for why the base is a maintained
   // pair rather than codegen'd). Async disposal, no finalizer -- structurally parallel to the sync
   // base so the codegen'd operators that derive from either land identically after the await-strip.
+  /// <summary>
+  /// The base class for implementing an async treenumerator: derive, implement
+  /// <see cref="OnMoveNextAsync"/> to advance and set the four state properties, and the base
+  /// handles exhaustion (<see cref="EnumerationFinished"/>), disposal idempotence, and the
+  /// synchronous fast path (when a pull completes inline, no async state machine runs).
+  /// Override <see cref="OnDisposingAsync"/> for teardown.
+  /// </summary>
   public abstract class AsyncTreenumeratorBase<TNode> : IAsyncTreenumerator<TNode>
   {
     public TNode Node { get; protected set; } = default;

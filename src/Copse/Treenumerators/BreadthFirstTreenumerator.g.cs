@@ -9,21 +9,20 @@ using System.Collections.Generic;
 
 namespace Copse.Treenumerators
 {
+  // Direct style over the shared color-agnostic BreadthFirstPathState, with the child/root
+  // pulls PROBED so a pull that completes inline costs no state machine at all (the fast-path
+  // probe idiom -- see AsyncToSync).
+  //
+  // The BFS engine's async wrinkle: a ref parameter and a ref local are both illegal in the
+  // async continuations a pending pull resumes through, so the sync driver's single
+  // ref-parameter seam splits into two parameterless probed seams (one over the schedule-stack
+  // top, one over the queue front) and the ref-local front is inlined as repeated _Path.Front
+  // access (semantically identical -- Front returns a ref to the same slot). This is the one
+  // restructuring the async port imposes on the engines.
   /// <summary>
-  /// Breadth-first <b>async</b> treenumerator: the direct-style async port of the original
-  /// hand-written sync engine, over the shared
-  /// <see cref="BreadthFirstPathState{TNode, TEnumerator}"/>, with the child/root pulls PROBED
-  /// so a pull that completes inline costs no state machine at all (the fast-path probe idiom --
-  /// see AsyncToSync).
-  ///
-  /// <para><b>The BFS engine's async wrinkle.</b> The original sync driver's seam was
-  /// <c>TryScheduleNextChildOf(ref BreadthFirstFrame parent)</c> -- a <b>ref parameter</b> -- and it
-  /// bound <c>ref var front = ref _Path.Front</c> -- a <b>ref local</b>. Both are illegal in the async
-  /// continuations a pending pull resumes through. So the single ref-parameter seam splits into two
-  /// parameterless probed seams (one over the schedule-stack top, one over the queue front) and the
-  /// ref-local front is inlined as repeated <c>_Path.Front</c> access (semantically identical -- Front
-  /// returns a ref to the same slot). This is the one restructuring the async port imposes on the
-  /// engines; everything else mirrors the original sync driver.</para>
+  /// The breadth-first engine cursor over a hierarchical source: roots from an async stream,
+  /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
+  /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
   public sealed class BreadthFirstTreenumerator<TValue, TNode, TChildEnumerator>
     : ITreenumerator<TValue>

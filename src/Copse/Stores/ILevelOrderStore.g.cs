@@ -5,23 +5,30 @@
 
 namespace Copse.Stores
 {
-  // Async source of ILevelOrderStore (its sync twin is generated from this file): the flat family's level-order store protocol for a
-  // store that may still be GROWING from an ASYNC feed. The grow operations await; GetFirstChildIndex
-  // and GetValue are pure reads of already-buffered data and stay synchronous. See ILevelOrderStore
-  // for the full contract (the sync twin the codegen produces).
+  // Codegen source of the sync twin, Copse.Stores.ILevelOrderStore.
+  /// <summary>
+  /// The level-order store protocol: random access to a tree encoded as a level-order array,
+  /// for a store that may still be growing from an async feed. The grow operations await,
+  /// pulling the underlying feed just far enough to answer; the reads are synchronous over
+  /// already-buffered data -- callers ensure before they read.
+  /// </summary>
   public interface ILevelOrderStore<TValue>
   {
-    // Grow the store until root ordinal k exists. False iff the root frontier closed first.
+    /// <summary>Grows the store until root ordinal <paramref name="k"/> exists. Completes with
+    /// <c>false</c> when the root group closed first.</summary>
     bool EnsureRootAvailable(int k);
 
-    // Grow the store until child ordinal k of the (already-available) parent exists. False iff the
-    // parent's span closed first.
+    /// <summary>Grows the store until child ordinal <paramref name="k"/> of the
+    /// already-available parent at <paramref name="parentIndex"/> exists. Completes with
+    /// <c>false</c> when the parent's child group closed first.</summary>
     bool EnsureChildAvailable(int parentIndex, int k);
 
-    // The buffer index of the parent's first child. Only meaningful once the parent has at least
-    // one available child.
+    /// <summary>The buffer index of the parent's first child. Meaningful only once the parent
+    /// has at least one available child.</summary>
     int GetFirstChildIndex(int parentIndex);
 
+    /// <summary>The value at <paramref name="index"/>, which must already be
+    /// buffered.</summary>
     TValue GetValue(int index);
   }
 }

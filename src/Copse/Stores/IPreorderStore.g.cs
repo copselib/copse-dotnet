@@ -5,28 +5,31 @@
 
 namespace Copse.Stores
 {
-  // Async source of IPreorderStore (its sync twin is generated from this file): the flat family's preorder store protocol for a store
-  // that may still be GROWING from an ASYNC feed (a lazy async memo suspended mid-capture). The
-  // grow operations await -- they pull the underlying async stream just far enough to answer; a
-  // completed capture satisfies them with a completed void. GetValue/GetSubtreeSize are pure
-  // reads of already-buffered data and stay synchronous (the decoder always ensures before it
-  // reads, so a completed grow guarantees the read is in range).
-  //
-  // The sync twin (Copse.IPreorderStore) is what the codegen produces from any store decoder
-  // written against this; see IPreorderStore for the full contract.
+  // Codegen source of the sync twin, Copse.Stores.IPreorderStore.
+  /// <summary>
+  /// The preorder store protocol: random access to a tree encoded as a preorder array, for a
+  /// store that may still be growing from an async feed. The grow operations await, pulling
+  /// the underlying feed just far enough to answer (a completed capture satisfies them
+  /// immediately); the reads are synchronous over already-buffered data -- callers ensure
+  /// before they read.
+  /// </summary>
   public interface IPreorderStore<TValue>
   {
-    // Grow the store until the node at index exists. False iff the underlying stream exhausted
-    // first (no such node).
+    /// <summary>Grows the store until the node at <paramref name="index"/> exists. Completes
+    /// with <c>false</c> when the underlying feed exhausts first (no such node).</summary>
     bool EnsureBuffered(int index);
 
-    // Grow the store until node index's subtree closes, and return its size (>= 1). The node
-    // itself must already be buffered.
+    /// <summary>Grows the store until node <paramref name="index"/>'s subtree closes, and
+    /// completes with its size (at least 1). The node itself must already be
+    /// buffered.</summary>
     int EnsureSubtreeClosed(int index);
 
-    // 0 while node index's subtree is still open (a closed subtree's size is >= 1).
+    /// <summary>The size of node <paramref name="index"/>'s subtree, or 0 while that subtree
+    /// is still open (a closed subtree's size is at least 1).</summary>
     int GetSubtreeSize(int index);
 
+    /// <summary>The value at <paramref name="index"/>, which must already be
+    /// buffered.</summary>
     TValue GetValue(int index);
   }
 }

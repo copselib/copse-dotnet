@@ -7,17 +7,16 @@ using System.Threading.Tasks;
 
 namespace Copse.Async.Treenumerators
 {
+  // Direct style over the shared color-agnostic DepthFirstPathState, with the two I/O seams
+  // (child pull, root pull) PROBED so a pull that completes inline costs no state machine at
+  // all (the fast-path probe idiom -- see AsyncToSync). Codegen source of truth: the probe
+  // guards vanish in transcription and the two seams collapse to synchronous pulls, yielding
+  // exactly Copse.Treenumerators.DepthFirstTreenumerator -- which benchmarks at parity with
+  // the hand-tuned original engine (1.02x), where an inverted cadence cost 1.61x.
   /// <summary>
-  /// Depth-first <b>async</b> treenumerator in the <b>direct style</b>: the natural inlined control flow
-  /// (OnScheduling / OnVisiting / Backtrack / TryPushNextChild) over the shared color-agnostic
-  /// <see cref="DepthFirstPathState{TNode, TEnumerator}"/>, with the two I/O seams (child pull,
-  /// root pull) PROBED so a pull that completes inline costs no state machine at all (the
-  /// fast-path probe idiom -- see AsyncToSync). No inverted cadence.
-  ///
-  /// <para><b>This is the single source of truth.</b> The probe guards vanish in transcription and
-  /// the two seams collapse to synchronous pulls, yielding exactly
-  /// <c>Copse.Treenumerators.DepthFirstTreenumerator</c> -- which benchmarks at parity with the
-  /// hand-tuned original engine (1.02x), where an inverted cadence cost 1.61x.</para>
+  /// The depth-first engine cursor over a hierarchical source: roots from an async stream,
+  /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
+  /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
   public sealed class AsyncDepthFirstTreenumerator<TValue, TNode, TAsyncChildEnumerator>
     : IAsyncTreenumerator<TValue>

@@ -7,19 +7,16 @@ using Copse.Core;
 
 namespace Copse
 {
-  /// <summary>The topology tier's creation surface, beside <c>Tree</c>'s (the treenumerable
-  /// tier's) -- factories hand out the contract; the implementations stay sealed.</summary>
+  /// <summary>Factories for <see cref="IAsyncTreeTopology{TValue, THandle}"/> instances, the
+  /// topology counterpart of the <c>Tree</c> factories.</summary>
   public static class TreeTopology
   {
-    /// <summary>The walkable's topology, call-by-need: the door is knocked once, at the
-    /// first probe, and the bound topology is cached for every answer after --
-    /// <c>Tree.Lazy</c>'s semantics at the topology tier. This is the deferral any view
-    /// over an arbitrary walkable needs (a constructor may neither await a door nor force
-    /// the source it composes over; the operator tier's lens family builds on exactly
-    /// this): acquire lazily, knock once, and let the empty forest answer as itself --
-    /// probes miss honestly, and <c>GetValue</c> throws because on an empty forest every
-    /// handle is forged (the two-channel doctrine: typed results for misses, exceptions
-    /// for violations).</summary>
+    /// <summary>A topology over <paramref name="source"/>, acquired lazily: the source's
+    /// walker is obtained once, at the first probe, and the topology it carries answers every
+    /// probe after -- <c>Tree.Lazy</c>'s semantics at the topology level. Constructing this
+    /// forces nothing, which is what a view composed over an arbitrary walkable needs. Over an
+    /// empty forest, probes answer absent and <c>GetValueAsync</c> throws (no handle is valid
+    /// there).</summary>
     public static ITreeTopology<TValue, THandle> Lazy<TValue, THandle>(
       IWalkableTreenumerable<TValue, THandle> source)
       => new LazyTopology<TValue, THandle>(source);

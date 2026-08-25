@@ -14,6 +14,9 @@ namespace Copse.Treenumerators
   // (Cf. MemoizeTreenumerable.ReplayTreenumerator, the same shape with a different payload.)
   // Public for the same reason as AsyncDelegatingTreenumerable: operators outside this
   // assembly compose it.
+  /// <summary>A treenumerator that forwards every member to an inner cursor and runs one extra
+  /// action when disposed -- how <c>Tree.Using</c> ties a resource's release to its traversal's
+  /// end.</summary>
   public sealed class DisposeActionTreenumerator<TNode> : ITreenumerator<TNode>
   {
     public DisposeActionTreenumerator(ITreenumerator<TNode> inner, Action onDispose)
