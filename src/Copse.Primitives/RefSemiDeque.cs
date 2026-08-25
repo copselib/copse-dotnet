@@ -12,12 +12,29 @@ namespace Copse
   // a large live range wants a different shape: the level-order stream decoder's window did
   // exactly that and profiled at 87% of its whole drain here before moving to a masked ring
   // (see LevelOrderStreamBreadthFirstTreenumerator).
+  /// <summary>
+  /// A double-ended collection over chunked arrays whose accessors return <c>ref T</c>, so
+  /// elements are read and mutated in place rather than copied -- the state container the
+  /// traversal machinery builds its stacks and queues on. Add at the back with
+  /// <see cref="AddLast"/>; consume from either end (<see cref="RemoveLast"/> for stack use,
+  /// <see cref="RemoveFirst"/> for queue use). Growth allocates additional fixed-size chunks;
+  /// existing elements never move, so a returned ref stays valid until its element is removed
+  /// or overwritten by later operations. Single-threaded.
+  ///
+  /// <para>Costs: the end operations (<see cref="AddLast"/>, <see cref="RemoveLast"/>,
+  /// <see cref="RemoveFirst"/>, <see cref="GetFirst"/>, <see cref="GetLast"/>) and near-end
+  /// indexing are O(1); <see cref="GetFromBack"/> at an arbitrary index walks the chunk chain.
+  /// For workloads that random-index a large live range, prefer a flat structure.</para>
+  /// </summary>
   [DebuggerDisplay("Count = {Count}")]
   [DebuggerTypeProxy(typeof(RefSemiDeque<>.DebugView))]
   public class RefSemiDeque<T>
   {
+    /// <summary>Creates an empty deque with an initial chunk of 8 elements.</summary>
     public RefSemiDeque() : this(8) { }
 
+    /// <summary>Creates an empty deque whose initial chunk holds
+    /// <paramref name="capacity"/> elements.</summary>
     public RefSemiDeque(int capacity)
     {
       Capacity = capacity;
@@ -27,7 +44,10 @@ namespace Copse
       _CurrentPartition = _CurrentPartitionNode.Value;
     }
 
+    /// <summary>The total number of element slots currently allocated.</summary>
     public int Capacity { get; private set; }
+
+    /// <summary>The number of elements currently in the deque.</summary>
     public int Count { get; private set; }
 
     private LinkedList<T[]> _Partitions;
@@ -54,6 +74,8 @@ namespace Copse
     // types reach the LOH -- and then only as a bounded handful of blocks.
     private const int MaxPartitionSize = 4096;
 
+    /// <summary>A ref to the front element. O(1). Throws <see cref="InvalidOperationException"/>
+    /// when empty.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFirst()
     {
@@ -63,6 +85,9 @@ namespace Copse
       return ref _Partitions.First.Value[_TailPointerOffset];
     }
 
+    /// <summary>Removes the front element and returns a ref to the slot it occupied -- readable
+    /// until a later operation overwrites it. O(1). Throws
+    /// <see cref="InvalidOperationException"/> when empty.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T RemoveFirst()
     {
@@ -90,6 +115,8 @@ namespace Copse
       return ref result;
     }
 
+    /// <summary>Appends <paramref name="item"/> at the back. Amortized O(1); existing elements
+    /// never move.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddLast(T item)
     {
@@ -101,6 +128,9 @@ namespace Copse
       Count++;
     }
 
+    /// <summary>Removes the back element and returns a ref to the slot it occupied -- readable
+    /// until a later operation overwrites it. O(1). Throws
+    /// <see cref="InvalidOperationException"/> when empty.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T RemoveLast()
     {
@@ -129,6 +159,8 @@ namespace Copse
       return ref item;
     }
 
+    /// <summary>A ref to the back element. O(1). Throws <see cref="InvalidOperationException"/>
+    /// when empty.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetLast()
     {
@@ -138,6 +170,10 @@ namespace Copse
       return ref _CurrentPartition[_HeadPointerOffset - 1];
     }
 
+    /// <summary>A ref to the element <paramref name="index"/> positions from the back (0 is the
+    /// back element). O(1) near the back; walks the chunk chain for distant indices. Throws
+    /// <see cref="InvalidOperationException"/> when empty,
+    /// <see cref="IndexOutOfRangeException"/> for an index outside [0, <see cref="Count"/>).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFromBack(int index)
     {

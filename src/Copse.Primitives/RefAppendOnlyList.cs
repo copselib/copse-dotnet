@@ -23,13 +23,22 @@ namespace Copse
   // bound LOH exposure; this type's buffers grow monotonically and live as long as their owner,
   // so a few large long-lived blocks are the cheap outcome and O(1) index math is worth the
   // uncapped doubling.
+  /// <summary>
+  /// A chunked, append-only list whose indexer returns <c>ref T</c>, so already-appended
+  /// elements can be read and mutated in place. "Append-only" is structural: slots never move
+  /// (chunks are never resized, relocated, or copied, unlike <c>List&lt;T&gt;</c>'s doubling),
+  /// so a ref obtained from the indexer stays valid for the life of the list. Append with
+  /// <see cref="AddLast"/>; both append and indexed access are O(1). Single-threaded.
+  /// </summary>
   [DebuggerDisplay("Count = {Count}")]
   [DebuggerTypeProxy(typeof(RefAppendOnlyList<>.DebugView))]
   public class RefAppendOnlyList<T>
   {
+    /// <summary>Creates an empty list with an initial chunk of 16 elements.</summary>
     public RefAppendOnlyList() : this(4) { }
 
-    // Initial capacity is 2^bitness elements.
+    /// <summary>Creates an empty list whose initial chunk holds 2^<paramref name="bitness"/>
+    /// elements. Throws <see cref="ArgumentOutOfRangeException"/> outside [1, 30].</summary>
     public RefAppendOnlyList(int bitness)
     {
       if (bitness < 1 || bitness > 30)
@@ -65,8 +74,10 @@ namespace Copse
     private T[] _ReadPartition;
     private int _ReadStart;
 
+    /// <summary>The number of elements appended so far.</summary>
     public int Count { get; private set; }
 
+    /// <summary>Appends <paramref name="item"/>. O(1); existing elements never move.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddLast(T item)
     {
@@ -80,6 +91,9 @@ namespace Copse
       Count++;
     }
 
+    /// <summary>A ref to the element at <paramref name="index"/>, for in-place reads and
+    /// writes. O(1). Throws <see cref="IndexOutOfRangeException"/> for an index outside
+    /// [0, <see cref="Count"/>).</summary>
     public ref T this[int index]
     {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -166,9 +180,10 @@ namespace Copse
     }
 #endif
 
-    // Materialize the list into one flat array, a block copy per partition -- the hand-off from
-    // chunked growth to a completed array store's arrays (the capture factories' final step,
-    // where List<T>'s cumulative doubling churn is what this type exists to avoid).
+    // The hand-off from chunked growth to a completed array store's arrays (the capture
+    // factories' final step, where List<T>'s cumulative doubling churn is what this type
+    // exists to avoid).
+    /// <summary>Copies the contents into one new flat array, one block copy per chunk.</summary>
     public T[] ToArray()
     {
       var result = new T[Count];
