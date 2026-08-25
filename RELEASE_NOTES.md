@@ -65,3 +65,4 @@
 
 - **Tree tokenizers** (`To*TreeTokenizer`) left the packages: the sync operators moved to the
   unpackaged `Copse.Linq.Experimental` project; the async operators were removed.
+- **`NodePosition`'s `+` and `-` operators** — component-wise arithmetic no caller ever used.

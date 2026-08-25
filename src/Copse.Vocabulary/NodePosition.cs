@@ -10,8 +10,7 @@ namespace Copse.Core
   /// only relative to its own family, and nodes in different families can share the same
   /// (siblingIndex, depth) pair -- so it cannot serve as a lookup key. For durable node
   /// identity, use a walkable capture's handles. Positions order by depth first, then by
-  /// sibling index; addition and subtraction combine them component-wise, which is how
-  /// operators offset positions between a source tree and a derived one.
+  /// sibling index.
   /// </summary>
   public readonly struct NodePosition : IEqualityComparer<NodePosition>, IComparable<NodePosition>
   {
@@ -53,18 +52,6 @@ namespace Copse.Core
     /// <summary>Renders as "(siblingIndex, depth)".</summary>
     public override string ToString()
       => $"({SiblingIndex}, {Depth})";
-
-    #region Arithmetic
-
-    /// <summary>Component-wise sum: sibling indices add, depths add.</summary>
-    public static NodePosition operator +(NodePosition left, NodePosition right)
-      => new NodePosition(left.SiblingIndex + right.SiblingIndex, left.Depth + right.Depth);
-
-    /// <summary>Component-wise difference: sibling indices subtract, depths subtract.</summary>
-    public static NodePosition operator -(NodePosition left, NodePosition right)
-      => new NodePosition(left.SiblingIndex - right.SiblingIndex, left.Depth - right.Depth);
-
-    #endregion Arithmetic
 
     #region Equality Comparison
 
