@@ -31,32 +31,32 @@ namespace Copse.SimpleSerializer
     public static ITreenumerable<string> DeserializeDepthFirstTree(string tree)
       => DeserializeDepthFirstTree(tree, value => value);
 
-    public static ITreenumerable<TValue> DeserializeDepthFirstTree<TValue>(string tree, Func<string, TValue> map)
+    public static ITreenumerable<TNode> DeserializeDepthFirstTree<TNode>(string tree, Func<string, TNode> map)
     {
-      SpanMap<TValue> spanMap = chars => map(chars.ToString());
+      SpanMap<TNode> spanMap = chars => map(chars.ToString());
       return DeserializeDepthFirstTree(tree, spanMap);
     }
 
     // Span overload: the map receives each value as a slice of the source (no intermediate
     // string), so deserializing into non-string values allocates no value strings at all.
-    public static ITreenumerable<TValue> DeserializeDepthFirstTree<TValue>(string tree, SpanMap<TValue> map)
+    public static ITreenumerable<TNode> DeserializeDepthFirstTree<TNode>(string tree, SpanMap<TNode> map)
       => Tree.Defer(() =>
-        new PreorderTreenumerable<TValue, PreorderStringStore<TValue>.Handle>(
-          new PreorderStringStore<TValue>.Handle(new PreorderStringStore<TValue>(tree, map))));
+        new PreorderTreenumerable<TNode, PreorderStringStore<TNode>.Handle>(
+          new PreorderStringStore<TNode>.Handle(new PreorderStringStore<TNode>(tree, map))));
 
     public static ITreenumerable<string> DeserializeBreadthFirstTree(string tree)
       => DeserializeBreadthFirstTree(tree, value => value);
 
-    public static ITreenumerable<TValue> DeserializeBreadthFirstTree<TValue>(string tree, Func<string, TValue> map)
+    public static ITreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(string tree, Func<string, TNode> map)
     {
-      SpanMap<TValue> spanMap = chars => map(chars.ToString());
+      SpanMap<TNode> spanMap = chars => map(chars.ToString());
       return DeserializeBreadthFirstTree(tree, spanMap);
     }
 
-    public static ITreenumerable<TValue> DeserializeBreadthFirstTree<TValue>(string tree, SpanMap<TValue> map)
+    public static ITreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(string tree, SpanMap<TNode> map)
       => Tree.Defer(() =>
-        new LevelOrderTreenumerable<TValue, LevelOrderStringStore<TValue>.Handle>(
-          new LevelOrderStringStore<TValue>.Handle(new LevelOrderStringStore<TValue>(tree, map))));
+        new LevelOrderTreenumerable<TNode, LevelOrderStringStore<TNode>.Handle>(
+          new LevelOrderStringStore<TNode>.Handle(new LevelOrderStringStore<TNode>(tree, map))));
 
     // ----- Serialize (tree -> string) -----
     //

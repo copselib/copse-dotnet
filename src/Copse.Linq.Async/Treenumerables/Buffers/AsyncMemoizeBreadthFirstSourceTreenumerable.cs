@@ -11,17 +11,17 @@ namespace Copse.Linq.Async.Treenumerables
   // playback, depth-first replays ride the same capture cross-order. Notably this is the ONLY
   // road to the depth-first dimension of a breadth-first-only source (there is no bounded
   // re-scan strategy for that direction) -- the escalation the split makes explicit.
-  internal sealed class AsyncMemoizeBreadthFirstSourceTreenumerable<TValue> : IAsyncMemoizeTreenumerableBuffer<TValue>
+  internal sealed class AsyncMemoizeBreadthFirstSourceTreenumerable<TNode> : IAsyncMemoizeTreenumerableBuffer<TNode>
   {
     // The capture layout is fixed by the source's single dimension.
     public BufferLayout? NativeLayout => BufferLayout.LevelOrder;
 
-    public AsyncMemoizeBreadthFirstSourceTreenumerable(IAsyncBreadthFirstTreenumerable<TValue> source)
+    public AsyncMemoizeBreadthFirstSourceTreenumerable(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      _Buffer = new AsyncMemoizeLevelOrderStore<TValue>(source.GetAsyncBreadthFirstTreenumerator);
+      _Buffer = new AsyncMemoizeLevelOrderStore<TNode>(source.GetAsyncBreadthFirstTreenumerator);
     }
 
-    private readonly AsyncMemoizeLevelOrderStore<TValue> _Buffer;
+    private readonly AsyncMemoizeLevelOrderStore<TNode> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -29,30 +29,30 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderStore<TValue>.Handle(_Buffer));
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
+      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer));
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
-      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderStore<TValue>.Handle(_Buffer));
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
+      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
 
     // The adjacency half: probes ride the one level-order capture through the replay Handle --
     // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
-    private IAsyncTreeTopology<TValue, int> _Topology;
+    private IAsyncTreeTopology<TNode, int> _Topology;
 
-    private IAsyncTreeTopology<TValue, int> EnsureTopology()
+    private IAsyncTreeTopology<TNode, int> EnsureTopology()
       => _Topology ?? (_Topology
-        = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-          new AsyncMemoizeLevelOrderStore<TValue>.Handle(_Buffer)));
+        = new AsyncLevelOrderAdjacencyIndex<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+          new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer)));
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
-      => new ValueTask<AsyncTreeWalker<TValue, int>>(new AsyncTreeWalker<TValue, int>(EnsureTopology()));
+    public ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TNode, int>>(new AsyncTreeWalker<TNode, int>(EnsureTopology()));
   }
 }

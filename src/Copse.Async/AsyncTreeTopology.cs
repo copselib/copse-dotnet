@@ -3,7 +3,7 @@ using Copse.Core.Async;
 
 namespace Copse.Async
 {
-  /// <summary>Factories for <see cref="IAsyncTreeTopology{TValue, THandle}"/> instances, the
+  /// <summary>Factories for <see cref="IAsyncTreeTopology{TNode, THandle}"/> instances, the
   /// topology counterpart of the <c>Tree</c> factories.</summary>
   public static class AsyncTreeTopology
   {
@@ -13,8 +13,8 @@ namespace Copse.Async
     /// forces nothing, which is what a view composed over an arbitrary walkable needs. Over an
     /// empty forest, probes answer absent and <c>GetValueAsync</c> throws (no handle is valid
     /// there).</summary>
-    public static IAsyncTreeTopology<TValue, THandle> Lazy<TValue, THandle>(
-      IAsyncWalkableTreenumerable<TValue, THandle> source)
-      => new AsyncLazyTopology<TValue, THandle>(source);
+    public static IAsyncTreeTopology<TNode, THandle> Lazy<TNode, THandle>(
+      IAsyncWalkableTreenumerable<TNode, THandle> source)
+      => new AsyncLazyTopology<TNode, THandle>(source);
   }
 }

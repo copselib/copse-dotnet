@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerables
   // Because it IS a treenumerable buffer it composes anywhere a capture is expected; but the
   // fluent surface sees only the non-disposable base, so the caller keeps this reference to
   // dispose it (a chain typed as the base will not).
-  public interface IMemoizeTreenumerableBuffer<TValue> : ITreenumerableBuffer<TValue>, IDisposable
+  public interface IMemoizeTreenumerableBuffer<TNode> : ITreenumerableBuffer<TNode>, IDisposable
   {
     // True once the capture is complete: the whole tree is held and the source is permanently
     // retired -- no future enumeration, in either dimension, touches it again.

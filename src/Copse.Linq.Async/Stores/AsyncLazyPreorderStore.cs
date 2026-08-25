@@ -20,19 +20,19 @@ namespace Copse.Linq.Async.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x one-shot-build feed.
-  internal sealed class AsyncLazyPreorderStore<TValue> : IAsyncPreorderStore<TValue>
+  internal sealed class AsyncLazyPreorderStore<TNode> : IAsyncPreorderStore<TNode>
   {
-    public AsyncLazyPreorderStore(Func<ValueTask<AsyncPreorderArrayStore<TValue>>> build)
+    public AsyncLazyPreorderStore(Func<ValueTask<AsyncPreorderArrayStore<TNode>>> build)
     {
       _Build = build;
     }
 
-    private Func<ValueTask<AsyncPreorderArrayStore<TValue>>> _Build;
-    private AsyncPreorderArrayStore<TValue> _Store;
+    private Func<ValueTask<AsyncPreorderArrayStore<TNode>>> _Build;
+    private AsyncPreorderArrayStore<TNode> _Store;
 
     // The bulk-fold seam's forcing door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan): hand the built array
     // store over -- whole-tree algorithms read raw arithmetic, not per-probe dispatch.
-    internal async ValueTask<AsyncPreorderArrayStore<TValue>> EnsureBuiltStoreAsync()
+    internal async ValueTask<AsyncPreorderArrayStore<TNode>> EnsureBuiltStoreAsync()
     {
       await EnsureBuiltAsync().ConfigureAwait(false);
       return _Store;
@@ -42,7 +42,7 @@ namespace Copse.Linq.Async.Stores
     // re-seat a birth-bound index over the built array store once the one-shot build ran.
     internal bool IsBuilt => _Build == null;
 
-    internal AsyncPreorderArrayStore<TValue> BuiltStore => _Store;
+    internal AsyncPreorderArrayStore<TNode> BuiltStore => _Store;
 
     private async ValueTask EnsureBuiltAsync()
     {
@@ -86,6 +86,6 @@ namespace Copse.Linq.Async.Stores
 
     public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
 
-    public TValue GetValue(int index) => _Store.GetValue(index);
+    public TNode GetValue(int index) => _Store.GetValue(index);
   }
 }

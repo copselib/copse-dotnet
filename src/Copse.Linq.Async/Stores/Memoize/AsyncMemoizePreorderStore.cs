@@ -27,17 +27,17 @@ namespace Copse.Linq.Async.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x resumable visit-stream feed.
-  internal sealed class AsyncMemoizePreorderStore<TValue> : IAsyncDisposable
+  internal sealed class AsyncMemoizePreorderStore<TNode> : IAsyncDisposable
   {
-    public AsyncMemoizePreorderStore(Func<IAsyncTreenumerator<TValue>> feedFactory)
+    public AsyncMemoizePreorderStore(Func<IAsyncTreenumerator<TNode>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
 
-    private readonly Func<IAsyncTreenumerator<TValue>> _FeedFactory;
-    private IAsyncTreenumerator<TValue> _Feed;
+    private readonly Func<IAsyncTreenumerator<TNode>> _FeedFactory;
+    private IAsyncTreenumerator<TNode> _Feed;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _SubtreeSizes = new RefAppendOnlyList<int>();
 
     // Indices of nodes whose subtree is still open, root-to-current -- a churning stack, so it
@@ -53,7 +53,7 @@ namespace Copse.Linq.Async.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     // Callers must have closed the subtree first (EnsureSubtreeClosed); 0 means still open.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,14 +200,14 @@ namespace Copse.Linq.Async.Stores
     // nested readonly struct so the playback's store calls specialize and inline -- the same
     // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
     // the serializer's string stores: an adapter is meaningless without its owner.
-    public readonly struct Handle : IAsyncPreorderStore<TValue>
+    public readonly struct Handle : IAsyncPreorderStore<TNode>
     {
-      public Handle(AsyncMemoizePreorderStore<TValue> buffer)
+      public Handle(AsyncMemoizePreorderStore<TNode> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly AsyncMemoizePreorderStore<TValue> _Buffer;
+      private readonly AsyncMemoizePreorderStore<TNode> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public ValueTask<bool> EnsureBufferedAsync(int index) => _Buffer.EnsureBufferedAsync(index);
@@ -219,7 +219,7 @@ namespace Copse.Linq.Async.Stores
       public int GetSubtreeSize(int index) => _Buffer.GetSubtreeSize(index);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

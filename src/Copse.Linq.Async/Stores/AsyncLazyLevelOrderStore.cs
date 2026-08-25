@@ -16,21 +16,21 @@ namespace Copse.Linq.Async.Stores
   // run. Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x one-shot-build feed.
-  internal sealed class AsyncLazyLevelOrderStore<TValue> : IAsyncLevelOrderStore<TValue>
+  internal sealed class AsyncLazyLevelOrderStore<TNode> : IAsyncLevelOrderStore<TNode>
   {
-    public AsyncLazyLevelOrderStore(Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> build)
+    public AsyncLazyLevelOrderStore(Func<ValueTask<AsyncLevelOrderArrayStore<TNode>>> build)
     {
       _Build = build;
     }
 
-    private Func<ValueTask<AsyncLevelOrderArrayStore<TValue>>> _Build;
-    private AsyncLevelOrderArrayStore<TValue> _Store;
+    private Func<ValueTask<AsyncLevelOrderArrayStore<TNode>>> _Build;
+    private AsyncLevelOrderArrayStore<TNode> _Store;
 
     // The reclaim seam (2026-08-15): non-forcing build-state facts, so the buffer can
     // re-seat a birth-bound index over the built array store once the one-shot build ran.
     internal bool IsBuilt => _Build == null;
 
-    internal AsyncLevelOrderArrayStore<TValue> BuiltStore => _Store;
+    internal AsyncLevelOrderArrayStore<TNode> BuiltStore => _Store;
 
     private async ValueTask EnsureBuiltAsync()
     {
@@ -74,6 +74,6 @@ namespace Copse.Linq.Async.Stores
 
     public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);
 
-    public TValue GetValue(int index) => _Store.GetValue(index);
+    public TNode GetValue(int index) => _Store.GetValue(index);
   }
 }

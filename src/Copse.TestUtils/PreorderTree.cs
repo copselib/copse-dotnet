@@ -6,10 +6,10 @@ namespace Copse.Treenumerables
   // subtree occupies the contiguous span [i, i + subtreeSizes[i]). DFS is a linear scan and
   // SkipDescendants is an O(1) span hop. It rides the existing DFS/BFS engine via
   // PreorderChildEnumerator -- no bespoke traversal code, dynamic pruning preserved.
-  public sealed class PreorderTree<TValue>
-    : Treenumerable<TValue, int, PreorderChildEnumerator>
+  public sealed class PreorderTree<TNode>
+    : Treenumerable<TNode, int, PreorderChildEnumerator>
   {
-    public PreorderTree(TValue[] values, int[] subtreeSizes)
+    public PreorderTree(TNode[] values, int[] subtreeSizes)
       : base(
           nodeContext => new PreorderChildEnumerator(subtreeSizes, nodeContext.Node),
           index => values[index],

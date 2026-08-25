@@ -10,8 +10,8 @@ namespace Copse.Linq
     /// <summary>Duplicate: the tree of walkers, still standing at this focus -- extend of
     /// the identity, which is the definition. Duplicating and extracting recovers the
     /// walker: the counit, readable in the types.</summary>
-    public static TreeWalker<TreeWalker<TValue, THandle>, THandle> Duplicate<TValue, THandle>(
-      this TreeWalker<TValue, THandle> walker)
+    public static TreeWalker<TreeWalker<TNode, THandle>, THandle> Duplicate<TNode, THandle>(
+      this TreeWalker<TNode, THandle> walker)
       => walker.Extend(focus => focus);
   }
 }

@@ -9,22 +9,22 @@ namespace Copse.Linq.Async.Treenumerables
   // to sever, and it contributes no row of its own: it has no value, and the
   // treenumerable has no spelling for a valueless node). Streams via the Walk adapter over
   // the same topology the door binds, so the walkable and its walkers agree on every answer.
-  internal sealed class AsyncTopologyWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>
+  internal sealed class AsyncTopologyWalkable<TNode, THandle> : IAsyncWalkableTreenumerable<TNode, THandle>
   {
-    public AsyncTopologyWalkable(IAsyncTreeTopology<TValue, THandle> topology)
+    public AsyncTopologyWalkable(IAsyncTreeTopology<TNode, THandle> topology)
     {
       _Topology = topology;
       _Walk = AsyncTree.FromTopology(topology);
     }
 
-    private readonly IAsyncTreeTopology<TValue, THandle> _Topology;
-    private readonly IAsyncTreenumerable<TValue> _Walk;
+    private readonly IAsyncTreeTopology<TNode, THandle> _Topology;
+    private readonly IAsyncTreenumerable<TNode> _Walk;
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync()
-      => new ValueTask<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(_Topology));
+    public ValueTask<AsyncTreeWalker<TNode, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TNode, THandle>>(new AsyncTreeWalker<TNode, THandle>(_Topology));
   }
 }

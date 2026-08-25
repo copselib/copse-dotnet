@@ -10,7 +10,7 @@ namespace Copse.Async.Stores
   /// immediately); the reads are synchronous over already-buffered data -- callers ensure
   /// before they read.
   /// </summary>
-  public interface IAsyncPreorderStore<TValue>
+  public interface IAsyncPreorderStore<TNode>
   {
     /// <summary>Grows the store until the node at <paramref name="index"/> exists. Completes
     /// with <c>false</c> when the underlying feed exhausts first (no such node).</summary>
@@ -27,6 +27,6 @@ namespace Copse.Async.Stores
 
     /// <summary>The value at <paramref name="index"/>, which must already be
     /// buffered.</summary>
-    TValue GetValue(int index);
+    TNode GetValue(int index);
   }
 }

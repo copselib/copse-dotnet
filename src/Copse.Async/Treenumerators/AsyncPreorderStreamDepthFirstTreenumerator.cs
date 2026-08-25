@@ -11,7 +11,7 @@ namespace Copse.Async.Treenumerators
   /// style</b>: the natural inlined control flow (OnScheduling / OnVisiting / Backtrack /
   /// TryPushNextChild), with <c>await</c> at the one I/O seam -- the stream read in
   /// TryEnsureLookaheadAtOrAbove. O(depth) resident state (the root-to-current path plus the
-  /// lookahead slot); skips are lazy discards through <see cref="IAsyncPreorderStream{TValue}"/>'s
+  /// lookahead slot); skips are lazy discards through <see cref="IAsyncPreorderStream{TNode}"/>'s
   /// TrySkipToDepth, which reads I/O without materializing values.
   ///
   /// <para><b>This is the single source of truth.</b> Strip the <c>await</c>s and it collapses to
@@ -19,9 +19,9 @@ namespace Copse.Async.Treenumerators
   /// <c>.g.cs</c> twin); the struct-return read seam is what makes the async form legal (out params
   /// cannot cross an await) at proven perf parity with the retired out-style stream.</para>
   /// </summary>
-  public sealed class AsyncPreorderStreamDepthFirstTreenumerator<TValue, TStream>
-    : IAsyncTreenumerator<TValue>
-    where TStream : IAsyncPreorderStream<TValue>
+  public sealed class AsyncPreorderStreamDepthFirstTreenumerator<TNode, TStream>
+    : IAsyncTreenumerator<TNode>
+    where TStream : IAsyncPreorderStream<TNode>
   {
     public AsyncPreorderStreamDepthFirstTreenumerator(TStream stream)
     {
@@ -39,7 +39,7 @@ namespace Copse.Async.Treenumerators
 
     // One-token lookahead: the next streamed node, not yet claimed by any level.
     private bool _HasLookahead;
-    private TValue _LookaheadValue;
+    private TNode _LookaheadValue;
     private int _LookaheadDepth;
     private bool _StreamExhausted;
 
@@ -52,14 +52,14 @@ namespace Copse.Async.Treenumerators
 
     private bool _Finished;
 
-    public TValue Node { get; private set; } = default;
+    public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
     private struct Level
     {
-      public TValue Value;
+      public TNode Value;
       public NodePosition Position;
       public int VisitCount;
       public bool Skipped;           // SkipNode'd: no visits, resident only to promote children.
@@ -276,7 +276,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
-    private bool ConsumeRead(Option<PreorderRead<TValue>> read)
+    private bool ConsumeRead(Option<PreorderRead<TNode>> read)
     {
       if (!read.HasValue)
       {
@@ -291,7 +291,7 @@ namespace Copse.Async.Treenumerators
       return true;
     }
 
-    private bool ConsumeSkip(Option<PreorderRead<TValue>> read)
+    private bool ConsumeSkip(Option<PreorderRead<TNode>> read)
     {
       if (!read.HasValue)
       {
@@ -308,7 +308,7 @@ namespace Copse.Async.Treenumerators
 
     // Schedule a node as a new level and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void PushLevel(TValue value, NodePosition position)
+    private void PushLevel(TNode value, NodePosition position)
     {
       _Path.AddLast(new Level
       {
@@ -401,7 +401,7 @@ namespace Copse.Async.Treenumerators
       return await TryPushNextChildAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TValue>>> pendingRead, int maxDepth)
+    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TNode>>> pendingRead, int maxDepth)
     {
       if (!ConsumeRead(await pendingRead.ConfigureAwait(false)))
         return false;
@@ -409,7 +409,7 @@ namespace Copse.Async.Treenumerators
       return await TryEnsureLookaheadAtOrAboveAsync(maxDepth).ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TValue>>> pendingSkip, int maxDepth)
+    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TNode>>> pendingSkip, int maxDepth)
     {
       if (!ConsumeSkip(await pendingSkip.ConfigureAwait(false)))
         return false;

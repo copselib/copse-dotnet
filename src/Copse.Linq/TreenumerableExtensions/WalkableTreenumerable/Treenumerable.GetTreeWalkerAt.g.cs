@@ -12,14 +12,14 @@ namespace Copse.Linq
     /// acquisition named like treenumerator acquisition (the <c>GetEnumerator</c> sense of
     /// Get: this door MINTS its object) -- and bare Get by the Try law: choosing a focus is
     /// trust-based, so there is no typed miss here. Handles come from recording positions
-    /// while consuming (<see cref="GetHandles{TValue, THandle}"/>) or from the root door
-    /// (<see cref="TryGetTreeWalkerAtRootIndexAsync{TValue, THandle}"/>), never from value
+    /// while consuming (<see cref="GetHandles{TNode, THandle}"/>) or from the root door
+    /// (<see cref="TryGetTreeWalkerAtRootIndexAsync{TNode, THandle}"/>), never from value
     /// search. The handle is presumed to be one this walkable issued (the foreign-handle
     /// clause). Pure construction: no probe fires here; a forged handle stays loud on the
     /// exception channel at the first probe through the walker.
     /// </summary>
-    public static TreeWalker<TValue, THandle> GetTreeWalkerAt<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static TreeWalker<TNode, THandle> GetTreeWalkerAt<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
       // Re-entry goes door-then-jump -- one knock, then the trusted address.
       => (source.GetTreeWalker()).At(handle);

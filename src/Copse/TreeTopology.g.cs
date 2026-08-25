@@ -7,7 +7,7 @@ using Copse.Core;
 
 namespace Copse
 {
-  /// <summary>Factories for <see cref="IAsyncTreeTopology{TValue, THandle}"/> instances, the
+  /// <summary>Factories for <see cref="IAsyncTreeTopology{TNode, THandle}"/> instances, the
   /// topology counterpart of the <c>Tree</c> factories.</summary>
   public static class TreeTopology
   {
@@ -17,8 +17,8 @@ namespace Copse
     /// forces nothing, which is what a view composed over an arbitrary walkable needs. Over an
     /// empty forest, probes answer absent and <c>GetValueAsync</c> throws (no handle is valid
     /// there).</summary>
-    public static ITreeTopology<TValue, THandle> Lazy<TValue, THandle>(
-      IWalkableTreenumerable<TValue, THandle> source)
-      => new LazyTopology<TValue, THandle>(source);
+    public static ITreeTopology<TNode, THandle> Lazy<TNode, THandle>(
+      IWalkableTreenumerable<TNode, THandle> source)
+      => new LazyTopology<TNode, THandle>(source);
   }
 }

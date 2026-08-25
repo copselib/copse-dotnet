@@ -18,24 +18,24 @@ namespace Copse.Linq.Async.Treenumerables
   // provider's own terms (the contract's clause), the identity axiom untouched. Handles from
   // outside the subtree are not reachable from this view's root; probing with one is answered
   // by blind delegation, unspecified like any foreign-handle probe.
-  internal sealed class AsyncSubtreeWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>, IAsyncTreeTopology<TValue, THandle>
+  internal sealed class AsyncSubtreeWalkable<TNode, THandle> : IAsyncWalkableTreenumerable<TNode, THandle>, IAsyncTreeTopology<TNode, THandle>
   {
-    public AsyncSubtreeWalkable(IAsyncTreeTopology<TValue, THandle> source, THandle root)
+    public AsyncSubtreeWalkable(IAsyncTreeTopology<TNode, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = AsyncTree.FromTopology(this);
     }
 
-    private readonly IAsyncTreeTopology<TValue, THandle> _Source;
+    private readonly IAsyncTreeTopology<TNode, THandle> _Source;
     private readonly THandle _Root;
-    private readonly IAsyncTreenumerable<TValue> _Walk;
+    private readonly IAsyncTreenumerable<TNode> _Walk;
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<TValue> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
+    public ValueTask<TNode> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
 
     public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)
@@ -51,7 +51,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The door: this view's OWN unfocused stance -- above the severed root, where the severing
     // put the top of the world. The single root is its child group.
-    public ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync()
-      => new ValueTask<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this));
+    public ValueTask<AsyncTreeWalker<TNode, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TNode, THandle>>(new AsyncTreeWalker<TNode, THandle>(this));
   }
 }

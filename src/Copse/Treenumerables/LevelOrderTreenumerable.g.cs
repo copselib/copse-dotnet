@@ -11,12 +11,12 @@ namespace Copse.Treenumerables
   // Codegen source of truth for the sync twin; AsyncPreorderTreenumerable's structural dual.
   /// <summary>
   /// An async tree stored in flat level-order form. Any
-  /// <see cref="IAsyncLevelOrderStore{TValue}"/> becomes a full
-  /// <see cref="IAsyncTreenumerable{TValue}"/>: breadth-first traversal is native playback,
+  /// <see cref="IAsyncLevelOrderStore{TNode}"/> becomes a full
+  /// <see cref="IAsyncTreenumerable{TNode}"/>: breadth-first traversal is native playback,
   /// depth-first rides the same store cross-order.
   /// </summary>
-  public sealed class LevelOrderTreenumerable<TValue, TStore> : ITreenumerable<TValue>
-    where TStore : ILevelOrderStore<TValue>
+  public sealed class LevelOrderTreenumerable<TNode, TStore> : ITreenumerable<TNode>
+    where TStore : ILevelOrderStore<TNode>
   {
     public LevelOrderTreenumerable(TStore store)
     {
@@ -25,10 +25,10 @@ namespace Copse.Treenumerables
 
     private readonly TStore _Store;
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator()
-      => new LevelOrderStoreDepthFirstTreenumerator<TValue, TStore>(_Store);
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator()
+      => new LevelOrderStoreDepthFirstTreenumerator<TNode, TStore>(_Store);
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
-      => new LevelOrderStoreBreadthFirstTreenumerator<TValue, TStore>(_Store);
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
+      => new LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>(_Store);
   }
 }

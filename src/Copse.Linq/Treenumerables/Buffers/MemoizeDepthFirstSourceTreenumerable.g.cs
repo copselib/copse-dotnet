@@ -14,17 +14,17 @@ namespace Copse.Linq.Treenumerables
   // breadth-first replays ride the SAME capture cross-order (growing it as far as their
   // frontier demands) -- buying the other dimension is exactly what the memo's O(n) space
   // purchases. No completion race, no dropped buffers: the single capture is the memo.
-  internal sealed class MemoizeDepthFirstSourceTreenumerable<TValue> : IMemoizeTreenumerableBuffer<TValue>
+  internal sealed class MemoizeDepthFirstSourceTreenumerable<TNode> : IMemoizeTreenumerableBuffer<TNode>
   {
     // The capture layout is fixed by the source's single dimension.
     public BufferLayout? NativeLayout => BufferLayout.Preorder;
 
-    public MemoizeDepthFirstSourceTreenumerable(IDepthFirstTreenumerable<TValue> source)
+    public MemoizeDepthFirstSourceTreenumerable(IDepthFirstTreenumerable<TNode> source)
     {
-      _Buffer = new MemoizePreorderStore<TValue>(source.GetDepthFirstTreenumerator);
+      _Buffer = new MemoizePreorderStore<TNode>(source.GetDepthFirstTreenumerator);
     }
 
-    private readonly MemoizePreorderStore<TValue> _Buffer;
+    private readonly MemoizePreorderStore<TNode> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -34,30 +34,30 @@ namespace Copse.Linq.Treenumerables
     // dimension, and a completed capture serves both replays regardless.
     public void Complete() => _Buffer.Complete();
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator()
-      => new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>.Handle>(
-        new MemoizePreorderStore<TValue>.Handle(_Buffer));
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator()
+      => new PreorderStoreDepthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
+        new MemoizePreorderStore<TNode>.Handle(_Buffer));
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
-      => new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>.Handle>(
-        new MemoizePreorderStore<TValue>.Handle(_Buffer));
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
+      => new PreorderStoreBreadthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
+        new MemoizePreorderStore<TNode>.Handle(_Buffer));
 
     public void Dispose() => _Buffer.Dispose();
 
     // The adjacency half: probes ride the one preorder capture through the replay Handle --
     // demand on a growing feed, ObjectDisposedException past a retired one (the replay rule).
-    private ITreeTopology<TValue, int> _Topology;
+    private ITreeTopology<TNode, int> _Topology;
 
-    private ITreeTopology<TValue, int> EnsureTopology()
+    private ITreeTopology<TNode, int> EnsureTopology()
       => _Topology ?? (_Topology
-        = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
-          new MemoizePreorderStore<TValue>.Handle(_Buffer)));
+        = new PreorderAdjacencyIndex<TNode, MemoizePreorderStore<TNode>.Handle>(
+          new MemoizePreorderStore<TNode>.Handle(_Buffer)));
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public TreeWalker<TValue, int> GetTreeWalker()
-      => new TreeWalker<TValue, int>(EnsureTopology());
+    public TreeWalker<TNode, int> GetTreeWalker()
+      => new TreeWalker<TNode, int>(EnsureTopology());
   }
 }

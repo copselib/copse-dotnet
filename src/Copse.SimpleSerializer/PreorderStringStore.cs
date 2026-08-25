@@ -33,18 +33,18 @@ namespace Copse.SimpleSerializer
   // FormatException rather than a silently mis-parsed tree.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x text-parse feed.
-  internal sealed class PreorderStringStore<TValue> : IPreorderStore<TValue>
+  internal sealed class PreorderStringStore<TNode> : IPreorderStore<TNode>
   {
-    public PreorderStringStore(string tree, SpanMap<TValue> map)
+    public PreorderStringStore(string tree, SpanMap<TNode> map)
     {
       _Scanner = new ValueTokenStringScanner(tree);
       _Map = map;
     }
 
     private readonly ValueTokenStringScanner _Scanner;
-    private readonly SpanMap<TValue> _Map;
+    private readonly SpanMap<TNode> _Map;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _SubtreeSizes = new RefAppendOnlyList<int>();
     private readonly RefSemiDeque<int> _Open = new RefSemiDeque<int>(); // indices of parents whose ')' hasn't been parsed yet
 
@@ -70,7 +70,7 @@ namespace Copse.SimpleSerializer
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
     // a subtree closed, or the string exhausted (which closes everything still open).
@@ -147,14 +147,14 @@ namespace Copse.SimpleSerializer
     // The unboxed handle the playback treenumerators are instantiated over: a struct type
     // argument specializes the generic, so the store calls inline instead of interface-
     // dispatching (the same pattern as the memo's store adapters).
-    internal readonly struct Handle : IPreorderStore<TValue>
+    internal readonly struct Handle : IPreorderStore<TNode>
     {
-      public Handle(PreorderStringStore<TValue> store)
+      public Handle(PreorderStringStore<TNode> store)
       {
         _Store = store;
       }
 
-      private readonly PreorderStringStore<TValue> _Store;
+      private readonly PreorderStringStore<TNode> _Store;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureBuffered(int index) => _Store.EnsureBuffered(index);
@@ -166,7 +166,7 @@ namespace Copse.SimpleSerializer
       public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Store.GetValue(index);
+      public TNode GetValue(int index) => _Store.GetValue(index);
     }
   }
 }

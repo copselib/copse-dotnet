@@ -12,12 +12,12 @@ namespace Copse.Treenumerables
   /// <summary>
   /// An async tree streaming from a forward-only level-order source: the async analog of
   /// <c>Copse.Treenumerables.LevelOrderStreamTreenumerable</c>, and deliberately only an
-  /// <see cref="IAsyncBreadthFirstTreenumerable{TValue}"/> -- a one-pass source cannot affordably
+  /// <see cref="IAsyncBreadthFirstTreenumerable{TNode}"/> -- a one-pass source cannot affordably
   /// serve the depth-first dimension. Each acquisition invokes the factory for a fresh stream and
   /// OWNS it (async disposal closes it); re-enumeration re-reads the source.
   /// </summary>
-  public sealed class LevelOrderStreamTreenumerable<TValue, TStream> : IBreadthFirstTreenumerable<TValue>
-    where TStream : ILevelOrderStream<TValue>
+  public sealed class LevelOrderStreamTreenumerable<TNode, TStream> : IBreadthFirstTreenumerable<TNode>
+    where TStream : ILevelOrderStream<TNode>
   {
     public LevelOrderStreamTreenumerable(Func<TStream> streamFactory)
     {
@@ -26,7 +26,7 @@ namespace Copse.Treenumerables
 
     private readonly Func<TStream> _StreamFactory;
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
-      => new LevelOrderStreamBreadthFirstTreenumerator<TValue, TStream>(_StreamFactory());
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
+      => new LevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>(_StreamFactory());
   }
 }

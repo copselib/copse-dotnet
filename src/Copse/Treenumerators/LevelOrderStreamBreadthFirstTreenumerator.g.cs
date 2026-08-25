@@ -36,9 +36,9 @@ namespace Copse.Treenumerators
   /// linger for up to one capacity's worth of appends -- bounded, and the deque kept chunks
   /// resident the same way).</para>
   /// </summary>
-  public sealed class LevelOrderStreamBreadthFirstTreenumerator<TValue, TStream>
-    : ITreenumerator<TValue>
-    where TStream : ILevelOrderStream<TValue>
+  public sealed class LevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>
+    : ITreenumerator<TNode>
+    where TStream : ILevelOrderStream<TNode>
   {
     public LevelOrderStreamBreadthFirstTreenumerator(TStream stream)
     {
@@ -82,7 +82,7 @@ namespace Copse.Treenumerators
 
     private struct Entry
     {
-      public TValue Value;
+      public TNode Value;
       public int FirstChildIndex;   // absolute; -1 until the first child is appended
       public int ChildCount;
       public bool SuppressChildren; // pruned: when this entry's group arrives, discard-and-count
@@ -106,7 +106,7 @@ namespace Copse.Treenumerators
 
     private bool _Finished;
 
-    public TValue Node { get; private set; } = default;
+    public TNode Node { get; private set; } = default;
     public int VisitCount { get; private set; } = 0;
     public TreenumeratorMode Mode { get; private set; } = default;
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
@@ -114,7 +114,7 @@ namespace Copse.Treenumerators
     private struct Frame
     {
       public int NodeIndex;
-      public TValue Node; // carried from the window at schedule time: visits publish from the
+      public TNode Node; // carried from the window at schedule time: visits publish from the
                           // frame and never re-touch the window
       public NodePosition Position;
       public int VisitCount;
@@ -484,7 +484,7 @@ namespace Copse.Treenumerators
       return AdvanceGroup();
     }
 
-    private void AppendEntry(TValue value, bool suppressChildren)
+    private void AppendEntry(TNode value, bool suppressChildren)
     {
       EnsureWindowSlot();
 

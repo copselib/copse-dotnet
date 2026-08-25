@@ -29,18 +29,18 @@ namespace Copse.Linq.Async.Treenumerators
   // pure cursor arithmetic. The public methods split along that line -- serving inline, with
   // collection deferred to a Collect* helper -- so the async twin pays its seam once per TIER
   // (a state machine only when collecting), not once per node.
-  internal sealed class AsyncInvertedLevelOrderStream<TValue> : IAsyncLevelOrderStream<TValue>
+  internal sealed class AsyncInvertedLevelOrderStream<TNode> : IAsyncLevelOrderStream<TNode>
   {
-    public AsyncInvertedLevelOrderStream(IAsyncTreenumerator<TValue> inner)
+    public AsyncInvertedLevelOrderStream(IAsyncTreenumerator<TNode> inner)
     {
       _Inner = inner;
     }
 
-    private readonly IAsyncTreenumerator<TValue> _Inner;
+    private readonly IAsyncTreenumerator<TNode> _Inner;
 
     // The reused tier buffers: values of the tier's families in forward order, plus each
     // family's END offset into them (family f spans [ends[f-1], ends[f])).
-    private readonly List<TValue> _TierValues = new List<TValue>();
+    private readonly List<TNode> _TierValues = new List<TNode>();
     private readonly List<int> _TierFamilyEnds = new List<int>();
 
     // Serving cursors: family ordinal counted from the BACK (mirror order), items served from
@@ -54,15 +54,15 @@ namespace Copse.Linq.Async.Treenumerators
     private bool _InnerExhausted;
     private int _CollectorLevelDepth;
 
-    public ValueTask<Option<TValue>> TryReadNextInGroupAsync()
+    public ValueTask<Option<TNode>> TryReadNextInGroupAsync()
     {
       if (!_TierInstalled)
         return CollectThenReadNextInGroupAsync();
 
-      return new ValueTask<Option<TValue>>(ReadNextInGroupFromTier());
+      return new ValueTask<Option<TNode>>(ReadNextInGroupFromTier());
     }
 
-    private async ValueTask<Option<TValue>> CollectThenReadNextInGroupAsync()
+    private async ValueTask<Option<TNode>> CollectThenReadNextInGroupAsync()
     {
       if (!await TryCollectNextTierAsync().ConfigureAwait(false))
         return default;
@@ -70,7 +70,7 @@ namespace Copse.Linq.Async.Treenumerators
       return ReadNextInGroupFromTier();
     }
 
-    private Option<TValue> ReadNextInGroupFromTier()
+    private Option<TNode> ReadNextInGroupFromTier()
     {
       if (_Group >= _TierFamilyEnds.Count)
         return default;
@@ -85,7 +85,7 @@ namespace Copse.Linq.Async.Treenumerators
       var value = _TierValues[end - 1 - _Item];
       _Item++;
 
-      return new Option<TValue>(value);
+      return new Option<TNode>(value);
     }
 
     public ValueTask<int> SkipGroupRemainderAsync()

@@ -41,17 +41,17 @@ namespace Copse.Linq.Async.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
-  internal sealed class AsyncMemoizeLevelOrderStore<TValue> : IAsyncDisposable
+  internal sealed class AsyncMemoizeLevelOrderStore<TNode> : IAsyncDisposable
   {
-    public AsyncMemoizeLevelOrderStore(Func<IAsyncTreenumerator<TValue>> feedFactory)
+    public AsyncMemoizeLevelOrderStore(Func<IAsyncTreenumerator<TNode>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
 
-    private readonly Func<IAsyncTreenumerator<TValue>> _FeedFactory;
-    private IAsyncTreenumerator<TValue> _Feed;
+    private readonly Func<IAsyncTreenumerator<TNode>> _FeedFactory;
+    private IAsyncTreenumerator<TNode> _Feed;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _FirstChildIndices = new RefAppendOnlyList<int>();
     private readonly RefAppendOnlyList<int> _ChildCounts = new RefAppendOnlyList<int>();
 
@@ -77,7 +77,7 @@ namespace Copse.Linq.Async.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int index) => _FirstChildIndices[index];
@@ -240,14 +240,14 @@ namespace Copse.Linq.Async.Stores
     // A nested readonly struct so the playback's store calls specialize and inline -- the same
     // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
     // the serializer's string stores: an adapter is meaningless without its owner.
-    public readonly struct Handle : IAsyncLevelOrderStore<TValue>
+    public readonly struct Handle : IAsyncLevelOrderStore<TNode>
     {
-      public Handle(AsyncMemoizeLevelOrderStore<TValue> buffer)
+      public Handle(AsyncMemoizeLevelOrderStore<TNode> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly AsyncMemoizeLevelOrderStore<TValue> _Buffer;
+      private readonly AsyncMemoizeLevelOrderStore<TNode> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public ValueTask<bool> EnsureRootAvailableAsync(int k) => _Buffer.EnsureRootAvailableAsync(k);
@@ -259,7 +259,7 @@ namespace Copse.Linq.Async.Stores
       public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

@@ -17,11 +17,11 @@ namespace Copse.Linq.Async.Treenumerables
   // Handle stance (lens semantics): the lens restricts what it HANDS OUT, not what arithmetic
   // can name -- a guessed handle below a pruned boundary still answers with the source's
   // adjacency. Handles obtained from THIS walkable's probes never cross the boundary.
-  internal sealed class AsyncPruneAfterWalkable<TValue, THandle> : IAsyncWalkableTreenumerable<TValue, THandle>, IAsyncTreeTopology<TValue, THandle>
+  internal sealed class AsyncPruneAfterWalkable<TNode, THandle> : IAsyncWalkableTreenumerable<TNode, THandle>, IAsyncTreeTopology<TNode, THandle>
   {
     public AsyncPruneAfterWalkable(
-      IAsyncWalkableTreenumerable<TValue, THandle> source,
-      Func<TValue, bool> predicate)
+      IAsyncWalkableTreenumerable<TNode, THandle> source,
+      Func<TNode, bool> predicate)
     {
       // Stage C: the walkable no longer exposes its topology; the lens's adjacency half
       // reaches it through the deferred door (knocked once, at the first probe).
@@ -31,18 +31,18 @@ namespace Copse.Linq.Async.Treenumerables
       // composition lattice inside PruneAfter keeps collapsing what it always collapsed.
       // The upcast picks the streaming overload deliberately -- on the walkable receiver
       // this constructor's own caller would win betterness and recurse.
-      _PrunedStream = ((IAsyncTreenumerable<TValue>)source).PruneAfter(predicate);
+      _PrunedStream = ((IAsyncTreenumerable<TNode>)source).PruneAfter(predicate);
     }
 
-    private readonly IAsyncTreeTopology<TValue, THandle> _Source;
-    private readonly Func<TValue, bool> _Predicate;
-    private readonly IAsyncTreenumerable<TValue> _PrunedStream;
+    private readonly IAsyncTreeTopology<TNode, THandle> _Source;
+    private readonly Func<TNode, bool> _Predicate;
+    private readonly IAsyncTreenumerable<TNode> _PrunedStream;
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator() => _PrunedStream.GetAsyncDepthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator() => _PrunedStream.GetAsyncDepthFirstTreenumerator();
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _PrunedStream.GetAsyncBreadthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _PrunedStream.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<TValue> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
+    public ValueTask<TNode> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
 
     public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
@@ -55,7 +55,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.
-    public ValueTask<AsyncTreeWalker<TValue, THandle>> GetTreeWalkerAsync()
-      => new ValueTask<AsyncTreeWalker<TValue, THandle>>(new AsyncTreeWalker<TValue, THandle>(this));
+    public ValueTask<AsyncTreeWalker<TNode, THandle>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TNode, THandle>>(new AsyncTreeWalker<TNode, THandle>(this));
   }
 }

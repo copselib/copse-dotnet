@@ -55,7 +55,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because the pass
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition

@@ -9,7 +9,7 @@ namespace Copse.Async.Stores
   /// pulling the underlying feed just far enough to answer; the reads are synchronous over
   /// already-buffered data -- callers ensure before they read.
   /// </summary>
-  public interface IAsyncLevelOrderStore<TValue>
+  public interface IAsyncLevelOrderStore<TNode>
   {
     /// <summary>Grows the store until root ordinal <paramref name="k"/> exists. Completes with
     /// <c>false</c> when the root group closed first.</summary>
@@ -26,6 +26,6 @@ namespace Copse.Async.Stores
 
     /// <summary>The value at <paramref name="index"/>, which must already be
     /// buffered.</summary>
-    TValue GetValue(int index);
+    TNode GetValue(int index);
   }
 }

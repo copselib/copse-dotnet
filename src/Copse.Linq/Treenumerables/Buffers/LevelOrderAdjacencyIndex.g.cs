@@ -16,8 +16,8 @@ namespace Copse.Linq.Treenumerables
   // their answer needs -- and on level-order that is one level ahead at most, the layout's
   // cheap direction. The parent cursor can never overtake the growth it causes: it advances
   // past a parent only when that parent's child run has closed. Single-threaded by contract.
-  internal sealed class LevelOrderAdjacencyIndex<TValue, TStore> : ITreeTopology<TValue, int>
-    where TStore : ILevelOrderStore<TValue>
+  internal sealed class LevelOrderAdjacencyIndex<TNode, TStore> : ITreeTopology<TNode, int>
+    where TStore : ILevelOrderStore<TNode>
   {
     public LevelOrderAdjacencyIndex(TStore store)
     {
@@ -40,7 +40,7 @@ namespace Copse.Linq.Treenumerables
     private int _ChildOrdinal;
     private int _FirstChildIndex;
 
-    public TValue GetValue(int handle)
+    public TNode GetValue(int handle)
     {
       ExtendParentIndexes(handle);
       return _Store.GetValue(handle);

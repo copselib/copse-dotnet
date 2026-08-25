@@ -13,14 +13,14 @@ namespace Copse.Linq
     /// by value). A stance walk (Stage B): doors and steps only -- the walk stands at every
     /// node and records where it stood; on a growing source each step is demand.
     /// </summary>
-    public static async IAsyncEnumerable<THandle> GetHandles<TValue, THandle>(
-      this IAsyncWalkableTreenumerable<TValue, THandle> source,
+    public static async IAsyncEnumerable<THandle> GetHandles<TNode, THandle>(
+      this IAsyncWalkableTreenumerable<TNode, THandle> source,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       // One knock; the roots are the unfocused stance's child group. The unfocused stance itself gets no
       // row -- it has no handle to record, so the value-level scan excludes it by type.
       var door = await source.GetTreeWalkerAsync().ConfigureAwait(false);
-      var pending = new Stack<AsyncTreeWalker<TValue, THandle>>();
+      var pending = new Stack<AsyncTreeWalker<TNode, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {

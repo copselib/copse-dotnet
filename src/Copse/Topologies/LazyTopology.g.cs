@@ -16,17 +16,17 @@ namespace Copse.Topologies
   // probes itself -- no roots, no parents, no children, and GetValue's own violation
   // channel. Internal sealed like every topology implementation: the factory hands out
   // the contract, never the encoding (the store policy's rule).
-  internal sealed class LazyTopology<TValue, THandle> : ITreeTopology<TValue, THandle>
+  internal sealed class LazyTopology<TNode, THandle> : ITreeTopology<TNode, THandle>
   {
-    public LazyTopology(IWalkableTreenumerable<TValue, THandle> source)
+    public LazyTopology(IWalkableTreenumerable<TNode, THandle> source)
     {
       _Source = source;
     }
 
-    private readonly IWalkableTreenumerable<TValue, THandle> _Source;
-    private ITreeTopology<TValue, THandle> _Topology;
+    private readonly IWalkableTreenumerable<TNode, THandle> _Source;
+    private ITreeTopology<TNode, THandle> _Topology;
 
-    private ITreeTopology<TValue, THandle> Resolve()
+    private ITreeTopology<TNode, THandle> Resolve()
     {
       if (_Topology != null)
         return _Topology;
@@ -40,7 +40,7 @@ namespace Copse.Topologies
       return _Topology;
     }
 
-    public TValue GetValue(THandle handle)
+    public TNode GetValue(THandle handle)
       => (Resolve()).GetValue(handle);
 
     public Option<THandle> TryGetParent(THandle handle)

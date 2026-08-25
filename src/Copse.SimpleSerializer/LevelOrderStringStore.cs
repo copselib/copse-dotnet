@@ -25,18 +25,18 @@ namespace Copse.SimpleSerializer
   // by contract.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x text-parse feed.
-  internal sealed class LevelOrderStringStore<TValue> : ILevelOrderStore<TValue>
+  internal sealed class LevelOrderStringStore<TNode> : ILevelOrderStore<TNode>
   {
-    public LevelOrderStringStore(string tree, SpanMap<TValue> map)
+    public LevelOrderStringStore(string tree, SpanMap<TNode> map)
     {
       _Scanner = new ValueTokenStringScanner(tree);
       _Map = map;
     }
 
     private readonly ValueTokenStringScanner _Scanner;
-    private readonly SpanMap<TValue> _Map;
+    private readonly SpanMap<TNode> _Map;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _FirstChildIndices = new RefAppendOnlyList<int>();
     private readonly RefAppendOnlyList<int> _ChildCounts = new RefAppendOnlyList<int>();
 
@@ -64,7 +64,7 @@ namespace Copse.SimpleSerializer
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
     // a group closed, or the string exhausted (all remaining groups are empty).
@@ -133,14 +133,14 @@ namespace Copse.SimpleSerializer
     // The unboxed handle the playback treenumerators are instantiated over: a struct type
     // argument specializes the generic, so the store calls inline instead of interface-
     // dispatching (the same pattern as the memo's store adapters).
-    internal readonly struct Handle : ILevelOrderStore<TValue>
+    internal readonly struct Handle : ILevelOrderStore<TNode>
     {
-      public Handle(LevelOrderStringStore<TValue> store)
+      public Handle(LevelOrderStringStore<TNode> store)
       {
         _Store = store;
       }
 
-      private readonly LevelOrderStringStore<TValue> _Store;
+      private readonly LevelOrderStringStore<TNode> _Store;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureRootAvailable(int k) => _Store.EnsureRootAvailable(k);
@@ -152,7 +152,7 @@ namespace Copse.SimpleSerializer
       public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Store.GetValue(index);
+      public TNode GetValue(int index) => _Store.GetValue(index);
     }
   }
 }

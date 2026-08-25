@@ -129,7 +129,7 @@ namespace Copse.TestUtils
       return new string[] { prefix, modeDiff, nodeDiff, visitCountDiff, positionDiff };
     }
 
-    private static string WriteValueDiffs<TValue>(TValue expected, TValue actual)
+    private static string WriteValueDiffs<TNode>(TNode expected, TNode actual)
     {
       if (expected.Equals(actual))
         return PropertyToString(expected);
@@ -137,7 +137,7 @@ namespace Copse.TestUtils
       return $"{PropertyToString(expected)}|{PropertyToString(actual)}";
     }
 
-    private static string PropertyToString<TValue>(TValue value)
+    private static string PropertyToString<TNode>(TNode value)
     {
       if (value is TreenumeratorMode mode)
         return TreenumeratorModeMap.ToChar(mode).ToString();

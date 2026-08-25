@@ -47,7 +47,7 @@ namespace Copse.Linq
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TValue}"/> because a leaffix scan
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.

@@ -23,16 +23,16 @@ namespace Copse.Async.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
-    /// <see cref="AsyncPreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncPreorderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>
-    public static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
-      IAsyncDepthFirstTreenumerable<TValue> source)
+    public static async ValueTask<AsyncPreorderArrayStore<TNode>> CaptureFromAsync<TNode>(
+      IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var (values, subtreeSizes) = await CaptureCoreAsync<TValue, bool>(source, sideChannelSelector: null, sideChannel: null).ConfigureAwait(false);
+      var (values, subtreeSizes) = await CaptureCoreAsync<TNode, bool>(source, sideChannelSelector: null, sideChannel: null).ConfigureAwait(false);
 
-      return new AsyncPreorderArrayStore<TValue>(values, subtreeSizes);
+      return new AsyncPreorderArrayStore<TNode>(values, subtreeSizes);
     }
 
     /// <summary>
@@ -43,11 +43,11 @@ namespace Copse.Async.Stores
     /// (a transpose source, a completed memo), and a mismatch is a caller bug kept loud -- an
     /// undercount overruns the array, an overcount fails the closing check.
     /// </summary>
-    public static async ValueTask<AsyncPreorderArrayStore<TValue>> CaptureFromAsync<TValue>(
-      IAsyncDepthFirstTreenumerable<TValue> source,
+    public static async ValueTask<AsyncPreorderArrayStore<TNode>> CaptureFromAsync<TNode>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
       int nodeCount)
     {
-      var values = new TValue[nodeCount];
+      var values = new TNode[nodeCount];
       var subtreeSizes = new int[nodeCount];
       var openNodes = new Stack<int>();
       var nextIndex = 0;
@@ -82,7 +82,7 @@ namespace Copse.Async.Stores
         throw new InvalidOperationException(
           $"Counted capture walked {nextIndex} nodes; the caller promised {nodeCount}.");
 
-      return new AsyncPreorderArrayStore<TValue>(values, subtreeSizes);
+      return new AsyncPreorderArrayStore<TNode>(values, subtreeSizes);
     }
 
     /// <summary>
@@ -92,14 +92,14 @@ namespace Copse.Async.Stores
     /// node i). The hook for capture operators that need a per-node companion value
     /// (OrderChildrenBy's sort keys).
     /// </summary>
-    public static async ValueTask<(AsyncPreorderArrayStore<TValue> Store, TSide[] SideChannel)> CaptureFromAsync<TValue, TSide>(
-      IAsyncDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    public static async ValueTask<(AsyncPreorderArrayStore<TNode> Store, TSide[] SideChannel)> CaptureFromAsync<TNode, TSide>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
 
-      return (new AsyncPreorderArrayStore<TValue>(values, subtreeSizes), sideChannel.ToArray());
+      return (new AsyncPreorderArrayStore<TNode>(values, subtreeSizes), sideChannel.ToArray());
     }
 
     /// <summary>
@@ -110,9 +110,9 @@ namespace Copse.Async.Stores
     /// preorder; node i's subtree spans <c>[i, i + SubtreeSizes[i])</c>;
     /// <c>SideChannel[i]</c> evaluated once per node against the source context.
     /// </summary>
-    public static async ValueTask<(TValue[] Values, int[] SubtreeSizes, TSide[] SideChannel)> CaptureRawAsync<TValue, TSide>(
-      IAsyncDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    public static async ValueTask<(TNode[] Values, int[] SubtreeSizes, TSide[] SideChannel)> CaptureRawAsync<TNode, TSide>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
@@ -125,16 +125,16 @@ namespace Copse.Async.Stores
     /// coordinates from the encoding itself (a child's sibling index is its offset in the
     /// parent's span; depth threads through the walk) instead of storing them.
     /// </summary>
-    public static async ValueTask<(TValue[] Values, int[] SubtreeSizes)> CaptureRawAsync<TValue>(
-      IAsyncDepthFirstTreenumerable<TValue> source)
-      => await CaptureCoreAsync<TValue, int>(source, null, null).ConfigureAwait(false);
+    public static async ValueTask<(TNode[] Values, int[] SubtreeSizes)> CaptureRawAsync<TNode>(
+      IAsyncDepthFirstTreenumerable<TNode> source)
+      => await CaptureCoreAsync<TNode, int>(source, null, null).ConfigureAwait(false);
 
-    private static async ValueTask<(TValue[] Values, int[] SubtreeSizes)> CaptureCoreAsync<TValue, TSide>(
-      IAsyncDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector,
+    private static async ValueTask<(TNode[] Values, int[] SubtreeSizes)> CaptureCoreAsync<TNode, TSide>(
+      IAsyncDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
     {
-      var values = new RefAppendOnlyList<TValue>();
+      var values = new RefAppendOnlyList<TNode>();
       var subtreeSizes = new RefAppendOnlyList<int>();
       var openNodes = new Stack<int>();
 
@@ -155,7 +155,7 @@ namespace Copse.Async.Stores
           openNodes.Push(values.Count);
           values.AddLast(treenumerator.Node);
           subtreeSizes.AddLast(0);
-          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
+          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

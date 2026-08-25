@@ -171,19 +171,19 @@ namespace Copse
       Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new DelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
-    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TValue, THandle}"/>
+    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
     /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
-    public static ITreenumerable<TValue> FromTopology<TValue, THandle>(
-      ITreeTopology<TValue, THandle> topology)
-      => new Treenumerable<TValue, HandleAndValue<THandle, TValue>, TopologyChildEnumerator<TValue, THandle>>(
-        nodeContext => new TopologyChildEnumerator<TValue, THandle>(topology, nodeContext.Node.Handle),
+    public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
+      ITreeTopology<TNode, THandle> topology)
+      => new Treenumerable<TNode, HandleAndValue<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
+        nodeContext => new TopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Value,
         RootsFrom(topology));
 
-    private static IEnumerable<HandleAndValue<THandle, TValue>> RootsFrom<TValue, THandle>(
-      ITreeTopology<TValue, THandle> topology)
+    private static IEnumerable<HandleAndValue<THandle, TNode>> RootsFrom<TNode, THandle>(
+      ITreeTopology<TNode, THandle> topology)
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -194,7 +194,7 @@ namespace Copse
 
         var value = topology.GetValue(rootResult.Value.Node);
 
-        yield return new HandleAndValue<THandle, TValue>(rootResult.Value.Node, value);
+        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Node, value);
       }
     }
   }

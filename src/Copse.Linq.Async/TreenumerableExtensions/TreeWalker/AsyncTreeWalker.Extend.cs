@@ -19,13 +19,13 @@ namespace Copse.Linq
     /// and streaming needs the Walk adapter -- which lives here, not in Core (the same
     /// reason <c>ITreenumerable</c> carries no <c>Select</c>).
     /// </summary>
-    public static AsyncTreeWalker<TResult, THandle> Extend<TValue, THandle, TResult>(
-      this AsyncTreeWalker<TValue, THandle> walker,
-      Func<AsyncTreeWalker<TValue, THandle>, ValueTask<TResult>> observer)
+    public static AsyncTreeWalker<TResult, THandle> Extend<TNode, THandle, TResult>(
+      this AsyncTreeWalker<TNode, THandle> walker,
+      Func<AsyncTreeWalker<TNode, THandle>, ValueTask<TResult>> observer)
     {
-      var relabeled = new AsyncExtendWalkable<TValue, THandle, TResult>(
+      var relabeled = new AsyncExtendWalkable<TNode, THandle, TResult>(
         walker.Topology,
-        (topology, handle) => observer(new AsyncTreeWalker<TValue, THandle>(topology, handle)));
+        (topology, handle) => observer(new AsyncTreeWalker<TNode, THandle>(topology, handle)));
 
       return !walker.HasFocus
         ? new AsyncTreeWalker<TResult, THandle>(relabeled)

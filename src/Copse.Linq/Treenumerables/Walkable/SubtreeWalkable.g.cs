@@ -20,24 +20,24 @@ namespace Copse.Linq.Treenumerables
   // provider's own terms (the contract's clause), the identity axiom untouched. Handles from
   // outside the subtree are not reachable from this view's root; probing with one is answered
   // by blind delegation, unspecified like any foreign-handle probe.
-  internal sealed class SubtreeWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>, ITreeTopology<TValue, THandle>
+  internal sealed class SubtreeWalkable<TNode, THandle> : IWalkableTreenumerable<TNode, THandle>, ITreeTopology<TNode, THandle>
   {
-    public SubtreeWalkable(ITreeTopology<TValue, THandle> source, THandle root)
+    public SubtreeWalkable(ITreeTopology<TNode, THandle> source, THandle root)
     {
       _Source = source;
       _Root = root;
       _Walk = Tree.FromTopology(this);
     }
 
-    private readonly ITreeTopology<TValue, THandle> _Source;
+    private readonly ITreeTopology<TNode, THandle> _Source;
     private readonly THandle _Root;
-    private readonly ITreenumerable<TValue> _Walk;
+    private readonly ITreenumerable<TNode> _Walk;
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
 
-    public TValue GetValue(THandle handle) => _Source.GetValue(handle);
+    public TNode GetValue(THandle handle) => _Source.GetValue(handle);
 
     public Option<THandle> TryGetParent(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)
@@ -53,7 +53,7 @@ namespace Copse.Linq.Treenumerables
 
     // The door: this view's OWN unfocused stance -- above the severed root, where the severing
     // put the top of the world. The single root is its child group.
-    public TreeWalker<TValue, THandle> GetTreeWalker()
-      => new TreeWalker<TValue, THandle>(this);
+    public TreeWalker<TNode, THandle> GetTreeWalker()
+      => new TreeWalker<TNode, THandle>(this);
   }
 }

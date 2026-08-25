@@ -191,19 +191,19 @@ namespace Copse.Async
       Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
-    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TValue, THandle}"/>
+    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
     /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
-    public static IAsyncTreenumerable<TValue> FromTopology<TValue, THandle>(
-      IAsyncTreeTopology<TValue, THandle> topology)
-      => new AsyncTreenumerable<TValue, HandleAndValue<THandle, TValue>, AsyncTopologyChildEnumerator<TValue, THandle>>(
-        nodeContext => new AsyncTopologyChildEnumerator<TValue, THandle>(topology, nodeContext.Node.Handle),
+    public static IAsyncTreenumerable<TNode> FromTopology<TNode, THandle>(
+      IAsyncTreeTopology<TNode, THandle> topology)
+      => new AsyncTreenumerable<TNode, HandleAndValue<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
+        nodeContext => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Value,
         RootsFrom(topology));
 
-    private static async IAsyncEnumerable<HandleAndValue<THandle, TValue>> RootsFrom<TValue, THandle>(
-      IAsyncTreeTopology<TValue, THandle> topology)
+    private static async IAsyncEnumerable<HandleAndValue<THandle, TNode>> RootsFrom<TNode, THandle>(
+      IAsyncTreeTopology<TNode, THandle> topology)
     {
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -214,7 +214,7 @@ namespace Copse.Async
 
         var value = await topology.GetValueAsync(rootResult.Value.Node).ConfigureAwait(false);
 
-        yield return new HandleAndValue<THandle, TValue>(rootResult.Value.Node, value);
+        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Node, value);
       }
     }
   }

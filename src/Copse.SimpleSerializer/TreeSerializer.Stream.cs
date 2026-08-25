@@ -19,31 +19,31 @@ namespace Copse.SimpleSerializer
   {
     // ----- Deserialize (reader factory / file -> narrow) -----
 
-    public static IDepthFirstTreenumerable<TValue> DeserializeDepthFirstTree<TValue>(
+    public static IDepthFirstTreenumerable<TNode> DeserializeDepthFirstTree<TNode>(
       Func<TextReader> readerFactory,
-      Func<string, TValue> map)
-      => new PreorderStreamTreenumerable<TValue, PreorderTextStream<TValue>>(
-        () => new PreorderTextStream<TValue>(readerFactory(), map));
+      Func<string, TNode> map)
+      => new PreorderStreamTreenumerable<TNode, PreorderTextStream<TNode>>(
+        () => new PreorderTextStream<TNode>(readerFactory(), map));
 
     public static IDepthFirstTreenumerable<string> DeserializeDepthFirstTree(Func<TextReader> readerFactory)
       => DeserializeDepthFirstTree(readerFactory, value => value);
 
-    public static IDepthFirstTreenumerable<TValue> DeserializeDepthFirstTreeFromFile<TValue>(string path, Func<string, TValue> map)
+    public static IDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeFromFile<TNode>(string path, Func<string, TNode> map)
       => DeserializeDepthFirstTree(() => File.OpenText(path), map);
 
     public static IDepthFirstTreenumerable<string> DeserializeDepthFirstTreeFromFile(string path)
       => DeserializeDepthFirstTreeFromFile(path, value => value);
 
-    public static IBreadthFirstTreenumerable<TValue> DeserializeBreadthFirstTree<TValue>(
+    public static IBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(
       Func<TextReader> readerFactory,
-      Func<string, TValue> map)
-      => new LevelOrderStreamTreenumerable<TValue, LevelOrderTextStream<TValue>>(
-        () => new LevelOrderTextStream<TValue>(readerFactory(), map));
+      Func<string, TNode> map)
+      => new LevelOrderStreamTreenumerable<TNode, LevelOrderTextStream<TNode>>(
+        () => new LevelOrderTextStream<TNode>(readerFactory(), map));
 
     public static IBreadthFirstTreenumerable<string> DeserializeBreadthFirstTree(Func<TextReader> readerFactory)
       => DeserializeBreadthFirstTree(readerFactory, value => value);
 
-    public static IBreadthFirstTreenumerable<TValue> DeserializeBreadthFirstTreeFromFile<TValue>(string path, Func<string, TValue> map)
+    public static IBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeFromFile<TNode>(string path, Func<string, TNode> map)
       => DeserializeBreadthFirstTree(() => File.OpenText(path), map);
 
     public static IBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeFromFile(string path)

@@ -21,14 +21,14 @@ namespace Copse.Async.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited breadth-first walk, TraverseAll -- into a completed
-    /// <see cref="AsyncLevelOrderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncLevelOrderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
     /// to first use. Finite sources only, like every capture.
     /// </summary>
-    public static async ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
-      IAsyncBreadthFirstTreenumerable<TValue> source)
+    public static async ValueTask<AsyncLevelOrderArrayStore<TNode>> CaptureFromAsync<TNode>(
+      IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var values = new RefAppendOnlyList<TValue>();
+      var values = new RefAppendOnlyList<TNode>();
       var firstChildIndices = new RefAppendOnlyList<int>();
       var childCounts = new RefAppendOnlyList<int>();
       var rootCount = 0;
@@ -66,7 +66,7 @@ namespace Copse.Async.Stores
         }
       }
 
-      return new AsyncLevelOrderArrayStore<TValue>(
+      return new AsyncLevelOrderArrayStore<TNode>(
         values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
 
@@ -78,11 +78,11 @@ namespace Copse.Async.Stores
     /// same-tree store, and a mismatch is a caller bug kept loud -- an undercount overruns the
     /// arrays, an overcount fails the closing check.
     /// </summary>
-    public static async ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
-      IAsyncBreadthFirstTreenumerable<TValue> source,
+    public static async ValueTask<AsyncLevelOrderArrayStore<TNode>> CaptureFromAsync<TNode>(
+      IAsyncBreadthFirstTreenumerable<TNode> source,
       int nodeCount)
     {
-      var values = new TValue[nodeCount];
+      var values = new TNode[nodeCount];
       var firstChildIndices = new int[nodeCount];
       var childCounts = new int[nodeCount];
       var rootCount = 0;
@@ -124,21 +124,21 @@ namespace Copse.Async.Stores
         throw new InvalidOperationException(
           $"Counted capture walked {nextIndex} nodes; the caller promised {nodeCount}.");
 
-      return new AsyncLevelOrderArrayStore<TValue>(values, firstChildIndices, childCounts, rootCount);
+      return new AsyncLevelOrderArrayStore<TNode>(values, firstChildIndices, childCounts, rootCount);
     }
 
     /// <summary>
-    /// The stream-shaped overload: drains an <see cref="IAsyncLevelOrderStream{TValue}"/> --
+    /// The stream-shaped overload: drains an <see cref="IAsyncLevelOrderStream{TNode}"/> --
     /// which already speaks the store's positional contract (group 0 the roots, group j+1 node
     /// j's children, items in level order) -- straight into a completed store. No visit stream
     /// is ever synthesized between the encodings (the FlatDecode family prices that round trip;
     /// this is the one-shot form of the drain the stream-fed store used to do incrementally).
     /// Takes ownership: the stream (and whatever it owns) is disposed on return.
     /// </summary>
-    public static async ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureFromAsync<TValue>(
-      IAsyncLevelOrderStream<TValue> stream)
+    public static async ValueTask<AsyncLevelOrderArrayStore<TNode>> CaptureFromAsync<TNode>(
+      IAsyncLevelOrderStream<TNode> stream)
     {
-      var values = new RefAppendOnlyList<TValue>();
+      var values = new RefAppendOnlyList<TNode>();
       var firstChildIndices = new RefAppendOnlyList<int>();
       var childCounts = new RefAppendOnlyList<int>();
       var rootCount = 0;
@@ -185,7 +185,7 @@ namespace Copse.Async.Stores
         }
       }
 
-      return new AsyncLevelOrderArrayStore<TValue>(
+      return new AsyncLevelOrderArrayStore<TNode>(
         values.ToArray(), firstChildIndices.ToArray(), childCounts.ToArray(), rootCount);
     }
   }

@@ -31,15 +31,15 @@ namespace Copse.Linq
     /// node for nothing). Disposal of the result is nothing after the settle and vacuously
     /// nothing before it.</para>
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TNode> Materialize<TNode>(this IAsyncTreenumerable<TNode> source)
     {
-      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IAsyncMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new AsyncMaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
+      if (source is IAsyncTreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
-      return new AsyncTreenumerableBuffer<TValue>(
+      return new AsyncTreenumerableBuffer<TNode>(
         AsyncTree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? DeferredLevelOrderCapture(source)
@@ -68,12 +68,12 @@ namespace Copse.Linq
     /// vocabulary -- Consume walks; Materialize shapes, and returns the buffer, so the layout
     /// IS the deliverable.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncTreenumerable<TValue> source, BufferLayout layout)
+    public static IAsyncTreenumerableBuffer<TNode> Materialize<TNode>(this IAsyncTreenumerable<TNode> source, BufferLayout layout)
     {
-      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, layout);
+      if (source is IAsyncMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new AsyncMaterializeTreenumerable<TNode>(lazyBuffer, layout);
 
-      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
+      if (source is IAsyncTreenumerableBuffer<TNode> completedBuffer)
       {
         if (completedBuffer.NativeLayout == layout)
           return completedBuffer;
@@ -96,23 +96,23 @@ namespace Copse.Linq
     /// narrow source that is secretly a capture is wrapped (memo) or returned as-is (buffer),
     /// never re-captured.
     /// </summary>
-    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncDepthFirstTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TNode> Materialize<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IAsyncMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new AsyncMaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
+      if (source is IAsyncTreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
       return PreorderCaptureBuffer(source);
     }
 
-    public static IAsyncTreenumerableBuffer<TValue> Materialize<TValue>(this IAsyncBreadthFirstTreenumerable<TValue> source)
+    public static IAsyncTreenumerableBuffer<TNode> Materialize<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      if (source is IAsyncMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new AsyncMaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IAsyncMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new AsyncMaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is IAsyncTreenumerableBuffer<TValue> completedBuffer)
+      if (source is IAsyncTreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
       return LevelOrderCaptureBuffer(source);
@@ -131,9 +131,9 @@ namespace Copse.Linq
     // the capture allocates final arrays exactly and skips the chunked build buffer -- the
     // transpose path's ~2n transient drops to 1n. The door is a pure read; a source whose
     // count is not already known takes the uncounted path unchanged.
-    private static ValueTask<AsyncPreorderArrayStore<TValue>> CapturePreorderAsync<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
+    private static ValueTask<AsyncPreorderArrayStore<TNode>> CapturePreorderAsync<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      if (source is AsyncTreenumerableBuffer<TValue> buffer)
+      if (source is AsyncTreenumerableBuffer<TNode> buffer)
       {
         var countResult = buffer.TryGetNodeCount();
 
@@ -144,9 +144,9 @@ namespace Copse.Linq
       return AsyncPreorderCapture.CaptureFromAsync(source);
     }
 
-    private static ValueTask<AsyncLevelOrderArrayStore<TValue>> CaptureLevelOrderAsync<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
+    private static ValueTask<AsyncLevelOrderArrayStore<TNode>> CaptureLevelOrderAsync<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      if (source is AsyncTreenumerableBuffer<TValue> buffer)
+      if (source is AsyncTreenumerableBuffer<TNode> buffer)
       {
         var countResult = buffer.TryGetNodeCount();
 
@@ -157,32 +157,32 @@ namespace Copse.Linq
       return AsyncLevelOrderCapture.CaptureFromAsync(source);
     }
 
-    private static AsyncTreenumerableBuffer<TValue> PreorderCaptureBuffer<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
+    private static AsyncTreenumerableBuffer<TNode> PreorderCaptureBuffer<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      var lazyStore = new AsyncLazyPreorderStore<TValue>(() => CapturePreorderAsync(source));
+      var lazyStore = new AsyncLazyPreorderStore<TNode>(() => CapturePreorderAsync(source));
 
-      return new AsyncTreenumerableBuffer<TValue>(
-        new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(lazyStore),
+      return new AsyncTreenumerableBuffer<TNode>(
+        new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(lazyStore),
         BufferLayout.Preorder,
-        new AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>>(lazyStore));
+        new AsyncPreorderAdjacencyIndex<TNode, AsyncLazyPreorderStore<TNode>>(lazyStore));
     }
 
-    private static AsyncTreenumerableBuffer<TValue> LevelOrderCaptureBuffer<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
+    private static AsyncTreenumerableBuffer<TNode> LevelOrderCaptureBuffer<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      var lazyStore = new AsyncLazyLevelOrderStore<TValue>(() => CaptureLevelOrderAsync(source));
+      var lazyStore = new AsyncLazyLevelOrderStore<TNode>(() => CaptureLevelOrderAsync(source));
 
-      return new AsyncTreenumerableBuffer<TValue>(
-        new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(lazyStore),
+      return new AsyncTreenumerableBuffer<TNode>(
+        new AsyncLevelOrderTreenumerable<TNode, AsyncLazyLevelOrderStore<TNode>>(lazyStore),
         BufferLayout.LevelOrder,
-        new AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>>(lazyStore));
+        new AsyncLevelOrderAdjacencyIndex<TNode, AsyncLazyLevelOrderStore<TNode>>(lazyStore));
     }
 
-    private static IAsyncTreenumerable<TValue> DeferredPreorderCapture<TValue>(IAsyncDepthFirstTreenumerable<TValue> source)
-      => new AsyncPreorderTreenumerable<TValue, AsyncLazyPreorderStore<TValue>>(
-        new AsyncLazyPreorderStore<TValue>(() => CapturePreorderAsync(source)));
+    private static IAsyncTreenumerable<TNode> DeferredPreorderCapture<TNode>(IAsyncDepthFirstTreenumerable<TNode> source)
+      => new AsyncPreorderTreenumerable<TNode, AsyncLazyPreorderStore<TNode>>(
+        new AsyncLazyPreorderStore<TNode>(() => CapturePreorderAsync(source)));
 
-    private static IAsyncTreenumerable<TValue> DeferredLevelOrderCapture<TValue>(IAsyncBreadthFirstTreenumerable<TValue> source)
-      => new AsyncLevelOrderTreenumerable<TValue, AsyncLazyLevelOrderStore<TValue>>(
-        new AsyncLazyLevelOrderStore<TValue>(() => CaptureLevelOrderAsync(source)));
+    private static IAsyncTreenumerable<TNode> DeferredLevelOrderCapture<TNode>(IAsyncBreadthFirstTreenumerable<TNode> source)
+      => new AsyncLevelOrderTreenumerable<TNode, AsyncLazyLevelOrderStore<TNode>>(
+        new AsyncLazyLevelOrderStore<TNode>(() => CaptureLevelOrderAsync(source)));
   }
 }

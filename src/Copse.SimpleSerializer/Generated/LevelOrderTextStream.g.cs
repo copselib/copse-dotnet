@@ -14,9 +14,9 @@ namespace Copse.SimpleSerializer
   //
   // This is the single source of truth. Strip the awaits and it collapses to the synchronous
   // Copse.SimpleSerializer.LevelOrderTextStream (the checked-in .g.cs twin). Owns its reader.
-  internal sealed class LevelOrderTextStream<TValue> : ILevelOrderStream<TValue>
+  internal sealed class LevelOrderTextStream<TNode> : ILevelOrderStream<TNode>
   {
-    public LevelOrderTextStream(TextReader reader, Func<string, TValue> map)
+    public LevelOrderTextStream(TextReader reader, Func<string, TNode> map)
     {
       _Reader = reader;
       _Scanner = new ValueTokenStreamScanner(reader);
@@ -25,7 +25,7 @@ namespace Copse.SimpleSerializer
 
     private readonly TextReader _Reader;
     private readonly ValueTokenStreamScanner _Scanner;
-    private readonly Func<string, TValue> _Map;
+    private readonly Func<string, TNode> _Map;
 
     private bool _GroupEnded;
     private bool _Exhausted;
@@ -33,7 +33,7 @@ namespace Copse.SimpleSerializer
     // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
     // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
     // the scan answered inline or through the pending continuation.
-    public Option<TValue> TryReadNextInGroup()
+    public Option<TNode> TryReadNextInGroup()
     {
       if (_GroupEnded || _Exhausted)
         return default;
@@ -49,7 +49,7 @@ namespace Copse.SimpleSerializer
 
     // Land one scanned event: yield a value or the group/stream end (true, with the read), or
     // note an empty slot and keep scanning (false).
-    private bool TryCommitRead(ScanEvent ev, out Option<TValue> read)
+    private bool TryCommitRead(ScanEvent ev, out Option<TNode> read)
     {
       if (!ev.Ok)
       {
@@ -64,7 +64,7 @@ namespace Copse.SimpleSerializer
         case ',':
           if (ev.HasValue)
           {
-            read = new Option<TValue>(_Map(_Scanner.GetValue()));
+            read = new Option<TNode>(_Map(_Scanner.GetValue()));
             return true;
           }
 
@@ -74,7 +74,7 @@ namespace Copse.SimpleSerializer
         case ';':
           _GroupEnded = true;
 
-          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TNode>(_Map(_Scanner.GetValue())) : default;
           return true;
 
         case '(':
@@ -87,7 +87,7 @@ namespace Copse.SimpleSerializer
           _Exhausted = true;
           _GroupEnded = true;
 
-          read = ev.HasValue ? new Option<TValue>(_Map(_Scanner.GetValue())) : default;
+          read = ev.HasValue ? new Option<TNode>(_Map(_Scanner.GetValue())) : default;
           return true;
       }
 

@@ -16,11 +16,11 @@ namespace Copse.Linq.Treenumerables
   // only); the streaming half is the Walk adapter driving the source's adjacency under the
   // observer's labeling. Laws pinned by the walker comonad law suites: extend(extract) is the
   // identity, extract after extend recovers the observer, and extend co-associates.
-  internal sealed class ExtendWalkable<TValue, THandle, TResult> : IWalkableTreenumerable<TResult, THandle>, ITreeTopology<TResult, THandle>
+  internal sealed class ExtendWalkable<TNode, THandle, TResult> : IWalkableTreenumerable<TResult, THandle>, ITreeTopology<TResult, THandle>
   {
     public ExtendWalkable(
-      ITreeTopology<TValue, THandle> source,
-      Func<ITreeTopology<TValue, THandle>, THandle, TResult> observer)
+      ITreeTopology<TNode, THandle> source,
+      Func<ITreeTopology<TNode, THandle>, THandle, TResult> observer)
     {
       _Source = source;
       _Observer = observer;
@@ -30,8 +30,8 @@ namespace Copse.Linq.Treenumerables
       _Walk = Tree.FromTopology(this);
     }
 
-    private readonly ITreeTopology<TValue, THandle> _Source;
-    private readonly Func<ITreeTopology<TValue, THandle>, THandle, TResult> _Observer;
+    private readonly ITreeTopology<TNode, THandle> _Source;
+    private readonly Func<ITreeTopology<TNode, THandle>, THandle, TResult> _Observer;
     private readonly ITreenumerable<TResult> _Walk;
 
     public ITreenumerator<TResult> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();

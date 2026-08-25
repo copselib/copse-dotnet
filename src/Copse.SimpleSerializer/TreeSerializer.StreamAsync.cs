@@ -21,21 +21,21 @@ namespace Copse.SimpleSerializer
   // IAsyncEnumerator<T>); it enters here, at the I/O edge, where there is real latency to interrupt.
   public static partial class TreeSerializer
   {
-    public static IAsyncDepthFirstTreenumerable<TValue> DeserializeDepthFirstTreeAsync<TValue>(
+    public static IAsyncDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeAsync<TNode>(
       Func<TextReader> readerFactory,
-      Func<string, TValue> map,
+      Func<string, TNode> map,
       CancellationToken cancellationToken = default)
-      => new AsyncPreorderStreamTreenumerable<TValue, AsyncPreorderTextStream<TValue>>(
-        () => new AsyncPreorderTextStream<TValue>(readerFactory(), map, cancellationToken));
+      => new AsyncPreorderStreamTreenumerable<TNode, AsyncPreorderTextStream<TNode>>(
+        () => new AsyncPreorderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
     public static IAsyncDepthFirstTreenumerable<string> DeserializeDepthFirstTreeAsync(
       Func<TextReader> readerFactory,
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeAsync(readerFactory, value => value, cancellationToken);
 
-    public static IAsyncDepthFirstTreenumerable<TValue> DeserializeDepthFirstTreeFromFileAsync<TValue>(
+    public static IAsyncDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeFromFileAsync<TNode>(
       string path,
-      Func<string, TValue> map,
+      Func<string, TNode> map,
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeAsync(() => OpenAsyncText(path), map, cancellationToken);
 
@@ -44,21 +44,21 @@ namespace Copse.SimpleSerializer
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeFromFileAsync(path, value => value, cancellationToken);
 
-    public static IAsyncBreadthFirstTreenumerable<TValue> DeserializeBreadthFirstTreeAsync<TValue>(
+    public static IAsyncBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeAsync<TNode>(
       Func<TextReader> readerFactory,
-      Func<string, TValue> map,
+      Func<string, TNode> map,
       CancellationToken cancellationToken = default)
-      => new AsyncLevelOrderStreamTreenumerable<TValue, AsyncLevelOrderTextStream<TValue>>(
-        () => new AsyncLevelOrderTextStream<TValue>(readerFactory(), map, cancellationToken));
+      => new AsyncLevelOrderStreamTreenumerable<TNode, AsyncLevelOrderTextStream<TNode>>(
+        () => new AsyncLevelOrderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
     public static IAsyncBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeAsync(
       Func<TextReader> readerFactory,
       CancellationToken cancellationToken = default)
       => DeserializeBreadthFirstTreeAsync(readerFactory, value => value, cancellationToken);
 
-    public static IAsyncBreadthFirstTreenumerable<TValue> DeserializeBreadthFirstTreeFromFileAsync<TValue>(
+    public static IAsyncBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeFromFileAsync<TNode>(
       string path,
-      Func<string, TValue> map,
+      Func<string, TNode> map,
       CancellationToken cancellationToken = default)
       => DeserializeBreadthFirstTreeAsync(() => OpenAsyncText(path), map, cancellationToken);
 

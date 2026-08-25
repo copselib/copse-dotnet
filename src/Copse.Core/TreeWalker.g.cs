@@ -36,14 +36,14 @@ namespace Copse
   /// walker's focus keeps its ancestors, unlike the severed per-subtree view
   /// <c>Subtrees()</c> produces.</para>
   /// </summary>
-  public readonly struct TreeWalker<TValue, THandle>
+  public readonly struct TreeWalker<TNode, THandle>
   {
     /// <summary>Creates a walker standing on <paramref name="focus"/>. For providers
-    /// implementing <see cref="IAsyncWalkableTreenumerable{TValue, THandle}"/>; consumers get
+    /// implementing <see cref="IAsyncWalkableTreenumerable{TNode, THandle}"/>; consumers get
     /// walkers from the acquisition methods and from <see cref="At"/>. The handle is not
     /// validated: it is presumed to be a real node of <paramref name="topology"/>, and an
     /// invalid one fails at the first probe.</summary>
-    public TreeWalker(ITreeTopology<TValue, THandle> topology, THandle focus)
+    public TreeWalker(ITreeTopology<TNode, THandle> topology, THandle focus)
     {
       Topology = topology;
       _FocusHandle = focus;
@@ -53,7 +53,7 @@ namespace Copse
     /// <summary>Creates a walker at the unfocused stance above the roots of
     /// <paramref name="topology"/> -- what <c>GetTreeWalkerAsync</c> returns. Never fails:
     /// the empty forest is simply the unfocused stance with an empty child group.</summary>
-    public TreeWalker(ITreeTopology<TValue, THandle> topology)
+    public TreeWalker(ITreeTopology<TNode, THandle> topology)
     {
       Topology = topology;
       _FocusHandle = default;
@@ -64,7 +64,7 @@ namespace Copse
     /// questions in different frames: a topology's methods take a handle and navigate
     /// relative to it; a walker's methods take none and navigate relative to its own stance.
     /// Holding the topology grants no extra power -- every probe is read-only.</summary>
-    public readonly ITreeTopology<TValue, THandle> Topology;
+    public readonly ITreeTopology<TNode, THandle> Topology;
 
     // The focus, flattened rather than held as an Option<THandle>: the flat pair packs the
     // struct to 16 bytes for ordinal handles (ref + int + bool), where the nested option
@@ -88,15 +88,15 @@ namespace Copse
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
     /// <see cref="TryGetValueAsync"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
-    public TValue GetValue()
+    public TNode GetValue()
       => _HasFocus ? Topology.GetValue(_FocusHandle) : ThrowUnfocusedHasNoValue();
 
     /// <summary>The value of the node this walker stands on, or absent at the unfocused
     /// stance -- the one stance with no value to read. On focused stances it agrees with
     /// <see cref="GetValueAsync"/>.</summary>
-    public Option<TValue> TryGetValue()
+    public Option<TNode> TryGetValue()
       => _HasFocus
-        ? new Option<TValue>(Topology.GetValue(_FocusHandle))
+        ? new Option<TNode>(Topology.GetValue(_FocusHandle))
         : default;
 
     // The throw helpers keep `throw new` (allocation + message string) out of the readers'
@@ -108,7 +108,7 @@ namespace Copse
         "The walker is unfocused: it stands above the roots, on no node. Test HasFocus before reading Focus.");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static TValue ThrowUnfocusedHasNoValue()
+    private static TNode ThrowUnfocusedHasNoValue()
       => throw new InvalidOperationException(
         "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetValueAsync, whose miss is typed.");
 
@@ -117,14 +117,14 @@ namespace Copse
     /// handle is presumed to be this topology's own, and an invalid one fails at the first
     /// probe. Always lands on a node -- the unfocused stance has no handle, so
     /// <see cref="At"/> cannot reach it.</summary>
-    public TreeWalker<TValue, THandle> At(THandle handle)
-      => new TreeWalker<TValue, THandle>(Topology, handle);
+    public TreeWalker<TNode, THandle> At(THandle handle)
+      => new TreeWalker<TNode, THandle>(Topology, handle);
 
     /// <summary>Single upward step. From a node with a parent, the parent; from a root, the
     /// UNFOCUSED walker -- that is an answer, not a miss: the climb tops out standing above
     /// the roots; from the unfocused stance, the miss. See
-    /// <see cref="AsyncTreeWalkerResult{TValue, THandle}"/> for reading the answer.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToParent()
+    /// <see cref="AsyncTreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
+    public TreeWalkerResult<TNode, THandle> MoveToParent()
     {
       if (!_HasFocus)
         return default;
@@ -132,14 +132,14 @@ namespace Copse
       var parentResult = Topology.TryGetParent(_FocusHandle);
 
       return parentResult.HasValue
-        ? new TreeWalkerResult<TValue, THandle>(Topology, parentResult.Value)
-        : new TreeWalkerResult<TValue, THandle>(Topology);
+        ? new TreeWalkerResult<TNode, THandle>(Topology, parentResult.Value)
+        : new TreeWalkerResult<TNode, THandle>(Topology);
     }
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or the miss past the last child. From the unfocused stance the children are the
     /// roots, so walking down from where a walk begins needs no special case.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToChild(int childIndex)
+    public TreeWalkerResult<TNode, THandle> MoveToChild(int childIndex)
     {
       if (!_HasFocus)
         return MoveToRoot(childIndex);
@@ -147,18 +147,18 @@ namespace Copse
       var childResult = Topology.TryGetChildAt(_FocusHandle, childIndex);
 
       return childResult.HasValue
-        ? new TreeWalkerResult<TValue, THandle>(Topology, childResult.Value.Node)
+        ? new TreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Node)
         : default;
     }
 
     /// <summary>A stance at the root at <paramref name="rootIndex"/> in sibling order, from
     /// anywhere on the tree, or the miss past the last root.</summary>
-    public TreeWalkerResult<TValue, THandle> MoveToRoot(int rootIndex)
+    public TreeWalkerResult<TNode, THandle> MoveToRoot(int rootIndex)
     {
       var rootResult = Topology.TryGetRootAt(rootIndex);
 
       return rootResult.HasValue
-        ? new TreeWalkerResult<TValue, THandle>(Topology, rootResult.Value.Node)
+        ? new TreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Node)
         : default;
     }
 

@@ -24,8 +24,8 @@ namespace Copse.Linq.Async.Treenumerables
   // gates the pop) and is re-checked when the scan resumes -- the parent recorded for each
   // node is the stack top at its scan moment, which is correct whether or not the enclosing
   // spans have closed yet. Single-threaded by contract, like the memo feeds it may drive.
-  internal sealed class AsyncPreorderAdjacencyIndex<TValue, TStore> : IAsyncTreeTopology<TValue, int>
-    where TStore : IAsyncPreorderStore<TValue>
+  internal sealed class AsyncPreorderAdjacencyIndex<TNode, TStore> : IAsyncTreeTopology<TNode, int>
+    where TStore : IAsyncPreorderStore<TNode>
   {
     public AsyncPreorderAdjacencyIndex(TStore store)
     {
@@ -59,7 +59,7 @@ namespace Copse.Linq.Async.Treenumerables
     private int _CursorOrdinal;
     private int _CursorChild;
 
-    public async ValueTask<TValue> GetValueAsync(int handle)
+    public async ValueTask<TNode> GetValueAsync(int handle)
     {
       await _Store.EnsureBufferedAsync(handle).ConfigureAwait(false);
       return _Store.GetValue(handle);

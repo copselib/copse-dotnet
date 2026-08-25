@@ -22,21 +22,21 @@ namespace Copse.Linq.Treenumerables
   // AsyncPreorderAdjacencyIndex, the GROWING citizen, which keeps incremental scan state
   // (linked sibling chains) because its store may still be fed. Single-threaded by
   // contract, like every adjacency engine.
-  internal sealed class PreorderArrayTopology<TValue> : ITreeTopology<TValue, int>
+  internal sealed class PreorderArrayTopology<TNode> : ITreeTopology<TNode, int>
   {
-    public PreorderArrayTopology(PreorderArrayStore<TValue> store)
+    public PreorderArrayTopology(PreorderArrayStore<TNode> store)
     {
       _Store = store;
     }
 
     private const int NoParent = -1;
 
-    private readonly PreorderArrayStore<TValue> _Store;
+    private readonly PreorderArrayStore<TNode> _Store;
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
     // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
     // fast path's door.
-    internal PreorderArrayStore<TValue> Store => _Store;
+    internal PreorderArrayStore<TNode> Store => _Store;
 
     // Built at most once, exact sizes, no per-node machinery. The parent map stands alone;
     // the CSR trio (child slots, per-node offsets, roots) builds as one unit on top of it.
@@ -45,7 +45,7 @@ namespace Copse.Linq.Treenumerables
     private int[] _FirstChildOffsets;
     private int[] _RootIndexes;
 
-    public TValue GetValue(int handle)
+    public TNode GetValue(int handle)
       => _Store.GetValue(handle);
 
     public Option<int> TryGetParent(int handle)

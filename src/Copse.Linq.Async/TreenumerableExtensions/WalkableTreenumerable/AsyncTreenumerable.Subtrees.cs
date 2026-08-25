@@ -25,10 +25,10 @@ namespace Copse.Linq
     /// value, and a subtree of a subtree is the deeper subtree (the counits and
     /// co-associativity, in the cofree clothing).</para>
     /// </summary>
-    public static IAsyncWalkableTreenumerable<IAsyncWalkableTreenumerable<TValue, THandle>, THandle> Subtrees<TValue, THandle>(
-      this IAsyncWalkableTreenumerable<TValue, THandle> source)
-      => source.Extend<TValue, THandle, IAsyncWalkableTreenumerable<TValue, THandle>>(
-        (walkable, handle) => new ValueTask<IAsyncWalkableTreenumerable<TValue, THandle>>(
-          new AsyncSubtreeWalkable<TValue, THandle>(walkable, handle)));
+    public static IAsyncWalkableTreenumerable<IAsyncWalkableTreenumerable<TNode, THandle>, THandle> Subtrees<TNode, THandle>(
+      this IAsyncWalkableTreenumerable<TNode, THandle> source)
+      => source.Extend<TNode, THandle, IAsyncWalkableTreenumerable<TNode, THandle>>(
+        (walkable, handle) => new ValueTask<IAsyncWalkableTreenumerable<TNode, THandle>>(
+          new AsyncSubtreeWalkable<TNode, THandle>(walkable, handle)));
   }
 }

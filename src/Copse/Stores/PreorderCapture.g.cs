@@ -25,16 +25,16 @@ namespace Copse.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
-    /// <see cref="AsyncPreorderArrayStore{TValue}"/>. Eager: the walk runs now; wrap the call in a
+    /// <see cref="AsyncPreorderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>AsyncLazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>
-    public static PreorderArrayStore<TValue> CaptureFrom<TValue>(
-      IDepthFirstTreenumerable<TValue> source)
+    public static PreorderArrayStore<TNode> CaptureFrom<TNode>(
+      IDepthFirstTreenumerable<TNode> source)
     {
-      var (values, subtreeSizes) = CaptureCore<TValue, bool>(source, sideChannelSelector: null, sideChannel: null);
+      var (values, subtreeSizes) = CaptureCore<TNode, bool>(source, sideChannelSelector: null, sideChannel: null);
 
-      return new PreorderArrayStore<TValue>(values, subtreeSizes);
+      return new PreorderArrayStore<TNode>(values, subtreeSizes);
     }
 
     /// <summary>
@@ -45,11 +45,11 @@ namespace Copse.Stores
     /// (a transpose source, a completed memo), and a mismatch is a caller bug kept loud -- an
     /// undercount overruns the array, an overcount fails the closing check.
     /// </summary>
-    public static PreorderArrayStore<TValue> CaptureFrom<TValue>(
-      IDepthFirstTreenumerable<TValue> source,
+    public static PreorderArrayStore<TNode> CaptureFrom<TNode>(
+      IDepthFirstTreenumerable<TNode> source,
       int nodeCount)
     {
-      var values = new TValue[nodeCount];
+      var values = new TNode[nodeCount];
       var subtreeSizes = new int[nodeCount];
       var openNodes = new Stack<int>();
       var nextIndex = 0;
@@ -84,7 +84,7 @@ namespace Copse.Stores
         throw new InvalidOperationException(
           $"Counted capture walked {nextIndex} nodes; the caller promised {nodeCount}.");
 
-      return new PreorderArrayStore<TValue>(values, subtreeSizes);
+      return new PreorderArrayStore<TNode>(values, subtreeSizes);
     }
 
     /// <summary>
@@ -94,14 +94,14 @@ namespace Copse.Stores
     /// node i). The hook for capture operators that need a per-node companion value
     /// (OrderChildrenBy's sort keys).
     /// </summary>
-    public static (PreorderArrayStore<TValue> Store, TSide[] SideChannel) CaptureFrom<TValue, TSide>(
-      IDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    public static (PreorderArrayStore<TNode> Store, TSide[] SideChannel) CaptureFrom<TNode, TSide>(
+      IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
 
-      return (new PreorderArrayStore<TValue>(values, subtreeSizes), sideChannel.ToArray());
+      return (new PreorderArrayStore<TNode>(values, subtreeSizes), sideChannel.ToArray());
     }
 
     /// <summary>
@@ -112,9 +112,9 @@ namespace Copse.Stores
     /// preorder; node i's subtree spans <c>[i, i + SubtreeSizes[i])</c>;
     /// <c>SideChannel[i]</c> evaluated once per node against the source context.
     /// </summary>
-    public static (TValue[] Values, int[] SubtreeSizes, TSide[] SideChannel) CaptureRaw<TValue, TSide>(
-      IDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector)
+    public static (TNode[] Values, int[] SubtreeSizes, TSide[] SideChannel) CaptureRaw<TNode, TSide>(
+      IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
@@ -127,16 +127,16 @@ namespace Copse.Stores
     /// coordinates from the encoding itself (a child's sibling index is its offset in the
     /// parent's span; depth threads through the walk) instead of storing them.
     /// </summary>
-    public static (TValue[] Values, int[] SubtreeSizes) CaptureRaw<TValue>(
-      IDepthFirstTreenumerable<TValue> source)
-      => CaptureCore<TValue, int>(source, null, null);
+    public static (TNode[] Values, int[] SubtreeSizes) CaptureRaw<TNode>(
+      IDepthFirstTreenumerable<TNode> source)
+      => CaptureCore<TNode, int>(source, null, null);
 
-    private static (TValue[] Values, int[] SubtreeSizes) CaptureCore<TValue, TSide>(
-      IDepthFirstTreenumerable<TValue> source,
-      Func<NodeContext<TValue>, TSide> sideChannelSelector,
+    private static (TNode[] Values, int[] SubtreeSizes) CaptureCore<TNode, TSide>(
+      IDepthFirstTreenumerable<TNode> source,
+      Func<NodeContext<TNode>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
     {
-      var values = new RefAppendOnlyList<TValue>();
+      var values = new RefAppendOnlyList<TNode>();
       var subtreeSizes = new RefAppendOnlyList<int>();
       var openNodes = new Stack<int>();
 
@@ -157,7 +157,7 @@ namespace Copse.Stores
           openNodes.Push(values.Count);
           values.AddLast(treenumerator.Node);
           subtreeSizes.AddLast(0);
-          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TValue>(treenumerator.Node, treenumerator.Position)));
+          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

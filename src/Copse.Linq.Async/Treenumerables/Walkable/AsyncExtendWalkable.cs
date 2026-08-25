@@ -14,11 +14,11 @@ namespace Copse.Linq.Async.Treenumerables
   // only); the streaming half is the Walk adapter driving the source's adjacency under the
   // observer's labeling. Laws pinned by the walker comonad law suites: extend(extract) is the
   // identity, extract after extend recovers the observer, and extend co-associates.
-  internal sealed class AsyncExtendWalkable<TValue, THandle, TResult> : IAsyncWalkableTreenumerable<TResult, THandle>, IAsyncTreeTopology<TResult, THandle>
+  internal sealed class AsyncExtendWalkable<TNode, THandle, TResult> : IAsyncWalkableTreenumerable<TResult, THandle>, IAsyncTreeTopology<TResult, THandle>
   {
     public AsyncExtendWalkable(
-      IAsyncTreeTopology<TValue, THandle> source,
-      Func<IAsyncTreeTopology<TValue, THandle>, THandle, ValueTask<TResult>> observer)
+      IAsyncTreeTopology<TNode, THandle> source,
+      Func<IAsyncTreeTopology<TNode, THandle>, THandle, ValueTask<TResult>> observer)
     {
       _Source = source;
       _Observer = observer;
@@ -28,8 +28,8 @@ namespace Copse.Linq.Async.Treenumerables
       _Walk = AsyncTree.FromTopology(this);
     }
 
-    private readonly IAsyncTreeTopology<TValue, THandle> _Source;
-    private readonly Func<IAsyncTreeTopology<TValue, THandle>, THandle, ValueTask<TResult>> _Observer;
+    private readonly IAsyncTreeTopology<TNode, THandle> _Source;
+    private readonly Func<IAsyncTreeTopology<TNode, THandle>, THandle, ValueTask<TResult>> _Observer;
     private readonly IAsyncTreenumerable<TResult> _Walk;
 
     public IAsyncTreenumerator<TResult> GetAsyncDepthFirstTreenumerator() => _Walk.GetAsyncDepthFirstTreenumerator();

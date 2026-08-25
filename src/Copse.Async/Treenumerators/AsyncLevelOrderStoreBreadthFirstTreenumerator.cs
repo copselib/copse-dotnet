@@ -13,9 +13,9 @@ namespace Copse.Async.Treenumerators
   /// them, a strictly sequential read. Grow calls are awaited so a store still capturing from an
   /// async feed fills just in time; GetFirstChildIndex/GetValue stay sync.
   /// </summary>
-  public sealed class AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, TStore>
-    : AsyncTreenumeratorBase<TValue>
-    where TStore : IAsyncLevelOrderStore<TValue>
+  public sealed class AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>
+    : AsyncTreenumeratorBase<TNode>
+    where TStore : IAsyncLevelOrderStore<TNode>
   {
     public AsyncLevelOrderStoreBreadthFirstTreenumerator(TStore store)
     {

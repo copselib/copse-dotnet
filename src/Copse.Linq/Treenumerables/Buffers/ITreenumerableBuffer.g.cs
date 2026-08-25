@@ -32,7 +32,7 @@ namespace Copse.Linq.Treenumerables
   // force (parents precede children in both layouts). A step that must pull past a retired
   // feed gets ObjectDisposedException, the same rule replays already live by; the buffered
   // region stays fully walkable.
-  public interface ITreenumerableBuffer<TValue> : IWalkableTreenumerable<TValue, int>
+  public interface ITreenumerableBuffer<TNode> : IWalkableTreenumerable<TNode, int>
   {
     // The storage encoding this capture holds natively -- a capture knows its shape. Null
     // only while a deferred, dimension-dispatched build has not yet decided (the layout is

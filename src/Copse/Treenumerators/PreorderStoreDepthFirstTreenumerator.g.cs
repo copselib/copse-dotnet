@@ -19,9 +19,9 @@ namespace Copse.Treenumerators
   /// costs no state machine at all (the fast-path probe idiom -- see AsyncToSync).
   /// GetValue/GetSubtreeSize stay sync.
   /// </summary>
-  public sealed class PreorderStoreDepthFirstTreenumerator<TValue, TStore>
-    : TreenumeratorBase<TValue>
-    where TStore : IPreorderStore<TValue>
+  public sealed class PreorderStoreDepthFirstTreenumerator<TNode, TStore>
+    : TreenumeratorBase<TNode>
+    where TStore : IPreorderStore<TNode>
   {
     public PreorderStoreDepthFirstTreenumerator(TStore store)
     {

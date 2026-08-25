@@ -14,15 +14,15 @@ namespace Copse.Async.Stores
   /// <summary>A completed preorder store over plain arrays: <c>values[i]</c> in preorder,
   /// node <c>i</c>'s subtree spanning <c>[i, i + subtreeSizes[i])</c>. Nothing grows, so the
   /// grow operations answer immediately and the reads are array access.</summary>
-  public readonly struct AsyncPreorderArrayStore<TValue> : IAsyncPreorderStore<TValue>
+  public readonly struct AsyncPreorderArrayStore<TNode> : IAsyncPreorderStore<TNode>
   {
-    public AsyncPreorderArrayStore(TValue[] values, int[] subtreeSizes)
+    public AsyncPreorderArrayStore(TNode[] values, int[] subtreeSizes)
     {
       _Values = values;
       _SubtreeSizes = subtreeSizes;
     }
 
-    private readonly TValue[] _Values;
+    private readonly TNode[] _Values;
     private readonly int[] _SubtreeSizes;
 
     public int Count => _Values.Length;
@@ -37,6 +37,6 @@ namespace Copse.Async.Stores
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
   }
 }

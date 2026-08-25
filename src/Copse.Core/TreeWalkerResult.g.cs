@@ -17,7 +17,7 @@ namespace Copse
   /// <c>default</c> otherwise, which must not be read), and <see cref="TryGetValue"/> adapts
   /// to loop conditions.</para>
   /// </summary>
-  public readonly struct TreeWalkerResult<TValue, THandle>
+  public readonly struct TreeWalkerResult<TNode, THandle>
   {
     // The three outcomes, as values rather than bits: only legal states are spellable
     // (a bitfield here admits a focused-without-standing combination that nothing means).
@@ -30,7 +30,7 @@ namespace Copse
     }
 
     /// <summary>The answer standing on a node. The miss is <c>default</c>.</summary>
-    internal TreeWalkerResult(ITreeTopology<TValue, THandle> topology, THandle handle)
+    internal TreeWalkerResult(ITreeTopology<TNode, THandle> topology, THandle handle)
     {
       _Topology = topology;
       _Handle = handle;
@@ -39,14 +39,14 @@ namespace Copse
 
     /// <summary>The answer standing unfocused above the roots -- a climb that topped
     /// out.</summary>
-    internal TreeWalkerResult(ITreeTopology<TValue, THandle> topology)
+    internal TreeWalkerResult(ITreeTopology<TNode, THandle> topology)
     {
       _Topology = topology;
       _Handle = default;
       _Result = StepOutcome.Unfocused;
     }
 
-    private readonly ITreeTopology<TValue, THandle> _Topology;
+    private readonly ITreeTopology<TNode, THandle> _Topology;
     private readonly THandle _Handle;
     private readonly StepOutcome _Result;
 
@@ -58,16 +58,16 @@ namespace Copse
     /// <summary>The walker the step produced -- standing on a node or unfocused above the
     /// roots, whichever the answer was. Valid only when <see cref="HasValue"/> is
     /// <c>true</c>.</summary>
-    public TreeWalker<TValue, THandle> Value
+    public TreeWalker<TNode, THandle> Value
     {
       get
       {
         switch (_Result)
         {
           case StepOutcome.Focused:
-            return new TreeWalker<TValue, THandle>(_Topology, _Handle);
+            return new TreeWalker<TNode, THandle>(_Topology, _Handle);
           case StepOutcome.Unfocused:
-            return new TreeWalker<TValue, THandle>(_Topology);
+            return new TreeWalker<TNode, THandle>(_Topology);
           default:
             return default;
         }
@@ -78,7 +78,7 @@ namespace Copse
     /// conditions -- <see cref="Option{TValue}.TryGetValue"/>'s contract exactly: on a miss,
     /// <paramref name="walker"/> is assigned <c>default</c> and must not be read after a
     /// <c>false</c> return.</summary>
-    public bool TryGetValue(out TreeWalker<TValue, THandle> walker)
+    public bool TryGetValue(out TreeWalker<TNode, THandle> walker)
     {
       walker = Value;
 

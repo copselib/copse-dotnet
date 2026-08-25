@@ -33,14 +33,14 @@ namespace Copse.Async
   /// walker's focus keeps its ancestors, unlike the severed per-subtree view
   /// <c>Subtrees()</c> produces.</para>
   /// </summary>
-  public readonly struct AsyncTreeWalker<TValue, THandle>
+  public readonly struct AsyncTreeWalker<TNode, THandle>
   {
     /// <summary>Creates a walker standing on <paramref name="focus"/>. For providers
-    /// implementing <see cref="IAsyncWalkableTreenumerable{TValue, THandle}"/>; consumers get
+    /// implementing <see cref="IAsyncWalkableTreenumerable{TNode, THandle}"/>; consumers get
     /// walkers from the acquisition methods and from <see cref="At"/>. The handle is not
     /// validated: it is presumed to be a real node of <paramref name="topology"/>, and an
     /// invalid one fails at the first probe.</summary>
-    public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology, THandle focus)
+    public AsyncTreeWalker(IAsyncTreeTopology<TNode, THandle> topology, THandle focus)
     {
       Topology = topology;
       _FocusHandle = focus;
@@ -50,7 +50,7 @@ namespace Copse.Async
     /// <summary>Creates a walker at the unfocused stance above the roots of
     /// <paramref name="topology"/> -- what <c>GetTreeWalkerAsync</c> returns. Never fails:
     /// the empty forest is simply the unfocused stance with an empty child group.</summary>
-    public AsyncTreeWalker(IAsyncTreeTopology<TValue, THandle> topology)
+    public AsyncTreeWalker(IAsyncTreeTopology<TNode, THandle> topology)
     {
       Topology = topology;
       _FocusHandle = default;
@@ -61,7 +61,7 @@ namespace Copse.Async
     /// questions in different frames: a topology's methods take a handle and navigate
     /// relative to it; a walker's methods take none and navigate relative to its own stance.
     /// Holding the topology grants no extra power -- every probe is read-only.</summary>
-    public readonly IAsyncTreeTopology<TValue, THandle> Topology;
+    public readonly IAsyncTreeTopology<TNode, THandle> Topology;
 
     // The focus, flattened rather than held as an Option<THandle>: the flat pair packs the
     // struct to 16 bytes for ordinal handles (ref + int + bool), where the nested option
@@ -85,15 +85,15 @@ namespace Copse.Async
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
     /// <see cref="TryGetValueAsync"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
-    public ValueTask<TValue> GetValueAsync()
+    public ValueTask<TNode> GetValueAsync()
       => _HasFocus ? Topology.GetValueAsync(_FocusHandle) : ThrowUnfocusedHasNoValueAsync();
 
     /// <summary>The value of the node this walker stands on, or absent at the unfocused
     /// stance -- the one stance with no value to read. On focused stances it agrees with
     /// <see cref="GetValueAsync"/>.</summary>
-    public async ValueTask<Option<TValue>> TryGetValueAsync()
+    public async ValueTask<Option<TNode>> TryGetValueAsync()
       => _HasFocus
-        ? new Option<TValue>(await Topology.GetValueAsync(_FocusHandle).ConfigureAwait(false))
+        ? new Option<TNode>(await Topology.GetValueAsync(_FocusHandle).ConfigureAwait(false))
         : default;
 
     // The throw helpers keep `throw new` (allocation + message string) out of the readers'
@@ -105,7 +105,7 @@ namespace Copse.Async
         "The walker is unfocused: it stands above the roots, on no node. Test HasFocus before reading Focus.");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static ValueTask<TValue> ThrowUnfocusedHasNoValueAsync()
+    private static ValueTask<TNode> ThrowUnfocusedHasNoValueAsync()
       => throw new InvalidOperationException(
         "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetValueAsync, whose miss is typed.");
 
@@ -114,14 +114,14 @@ namespace Copse.Async
     /// handle is presumed to be this topology's own, and an invalid one fails at the first
     /// probe. Always lands on a node -- the unfocused stance has no handle, so
     /// <see cref="At"/> cannot reach it.</summary>
-    public AsyncTreeWalker<TValue, THandle> At(THandle handle)
-      => new AsyncTreeWalker<TValue, THandle>(Topology, handle);
+    public AsyncTreeWalker<TNode, THandle> At(THandle handle)
+      => new AsyncTreeWalker<TNode, THandle>(Topology, handle);
 
     /// <summary>Single upward step. From a node with a parent, the parent; from a root, the
     /// UNFOCUSED walker -- that is an answer, not a miss: the climb tops out standing above
     /// the roots; from the unfocused stance, the miss. See
-    /// <see cref="AsyncTreeWalkerResult{TValue, THandle}"/> for reading the answer.</summary>
-    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToParentAsync()
+    /// <see cref="AsyncTreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
+    public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToParentAsync()
     {
       if (!_HasFocus)
         return default;
@@ -129,14 +129,14 @@ namespace Copse.Async
       var parentResult = await Topology.TryGetParentAsync(_FocusHandle).ConfigureAwait(false);
 
       return parentResult.HasValue
-        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, parentResult.Value)
-        : new AsyncTreeWalkerResult<TValue, THandle>(Topology);
+        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, parentResult.Value)
+        : new AsyncTreeWalkerResult<TNode, THandle>(Topology);
     }
 
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or the miss past the last child. From the unfocused stance the children are the
     /// roots, so walking down from where a walk begins needs no special case.</summary>
-    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToChildAsync(int childIndex)
+    public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToChildAsync(int childIndex)
     {
       if (!_HasFocus)
         return await MoveToRootAsync(childIndex).ConfigureAwait(false);
@@ -144,18 +144,18 @@ namespace Copse.Async
       var childResult = await Topology.TryGetChildAtAsync(_FocusHandle, childIndex).ConfigureAwait(false);
 
       return childResult.HasValue
-        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, childResult.Value.Node)
+        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Node)
         : default;
     }
 
     /// <summary>A stance at the root at <paramref name="rootIndex"/> in sibling order, from
     /// anywhere on the tree, or the miss past the last root.</summary>
-    public async ValueTask<AsyncTreeWalkerResult<TValue, THandle>> MoveToRootAsync(int rootIndex)
+    public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToRootAsync(int rootIndex)
     {
       var rootResult = await Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
       return rootResult.HasValue
-        ? new AsyncTreeWalkerResult<TValue, THandle>(Topology, rootResult.Value.Node)
+        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Node)
         : default;
     }
 

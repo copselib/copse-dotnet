@@ -32,15 +32,15 @@ namespace Copse.Linq
     /// node for nothing). Disposal of the result is nothing after the settle and vacuously
     /// nothing before it.</para>
     /// </summary>
-    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this ITreenumerable<TValue> source)
+    public static ITreenumerableBuffer<TNode> Materialize<TNode>(this ITreenumerable<TNode> source)
     {
-      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new MaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new MaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is ITreenumerableBuffer<TValue> completedBuffer)
+      if (source is ITreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
-      return new TreenumerableBuffer<TValue>(
+      return new TreenumerableBuffer<TNode>(
         Tree.Lazy(firstDimension =>
           firstDimension == TreeTraversalStrategy.BreadthFirst
             ? DeferredLevelOrderCapture(source)
@@ -69,12 +69,12 @@ namespace Copse.Linq
     /// vocabulary -- Consume walks; Materialize shapes, and returns the buffer, so the layout
     /// IS the deliverable.
     /// </summary>
-    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this ITreenumerable<TValue> source, BufferLayout layout)
+    public static ITreenumerableBuffer<TNode> Materialize<TNode>(this ITreenumerable<TNode> source, BufferLayout layout)
     {
-      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new MaterializeTreenumerable<TValue>(lazyBuffer, layout);
+      if (source is IMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new MaterializeTreenumerable<TNode>(lazyBuffer, layout);
 
-      if (source is ITreenumerableBuffer<TValue> completedBuffer)
+      if (source is ITreenumerableBuffer<TNode> completedBuffer)
       {
         if (completedBuffer.NativeLayout == layout)
           return completedBuffer;
@@ -97,23 +97,23 @@ namespace Copse.Linq
     /// narrow source that is secretly a capture is wrapped (memo) or returned as-is (buffer),
     /// never re-captured.
     /// </summary>
-    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IDepthFirstTreenumerable<TValue> source)
+    public static ITreenumerableBuffer<TNode> Materialize<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
-      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new MaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new MaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is ITreenumerableBuffer<TValue> completedBuffer)
+      if (source is ITreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
       return PreorderCaptureBuffer(source);
     }
 
-    public static ITreenumerableBuffer<TValue> Materialize<TValue>(this IBreadthFirstTreenumerable<TValue> source)
+    public static ITreenumerableBuffer<TNode> Materialize<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
-      if (source is IMemoizeTreenumerableBuffer<TValue> lazyBuffer)
-        return new MaterializeTreenumerable<TValue>(lazyBuffer, requestedLayout: null);
+      if (source is IMemoizeTreenumerableBuffer<TNode> lazyBuffer)
+        return new MaterializeTreenumerable<TNode>(lazyBuffer, requestedLayout: null);
 
-      if (source is ITreenumerableBuffer<TValue> completedBuffer)
+      if (source is ITreenumerableBuffer<TNode> completedBuffer)
         return completedBuffer;
 
       return LevelOrderCaptureBuffer(source);
@@ -132,9 +132,9 @@ namespace Copse.Linq
     // the capture allocates final arrays exactly and skips the chunked build buffer -- the
     // transpose path's ~2n transient drops to 1n. The door is a pure read; a source whose
     // count is not already known takes the uncounted path unchanged.
-    private static PreorderArrayStore<TValue> CapturePreorder<TValue>(IDepthFirstTreenumerable<TValue> source)
+    private static PreorderArrayStore<TNode> CapturePreorder<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
-      if (source is TreenumerableBuffer<TValue> buffer)
+      if (source is TreenumerableBuffer<TNode> buffer)
       {
         var countResult = buffer.TryGetNodeCount();
 
@@ -145,9 +145,9 @@ namespace Copse.Linq
       return PreorderCapture.CaptureFrom(source);
     }
 
-    private static LevelOrderArrayStore<TValue> CaptureLevelOrder<TValue>(IBreadthFirstTreenumerable<TValue> source)
+    private static LevelOrderArrayStore<TNode> CaptureLevelOrder<TNode>(IBreadthFirstTreenumerable<TNode> source)
     {
-      if (source is TreenumerableBuffer<TValue> buffer)
+      if (source is TreenumerableBuffer<TNode> buffer)
       {
         var countResult = buffer.TryGetNodeCount();
 
@@ -158,32 +158,32 @@ namespace Copse.Linq
       return LevelOrderCapture.CaptureFrom(source);
     }
 
-    private static TreenumerableBuffer<TValue> PreorderCaptureBuffer<TValue>(IDepthFirstTreenumerable<TValue> source)
+    private static TreenumerableBuffer<TNode> PreorderCaptureBuffer<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
-      var lazyStore = new LazyPreorderStore<TValue>(() => CapturePreorder(source));
+      var lazyStore = new LazyPreorderStore<TNode>(() => CapturePreorder(source));
 
-      return new TreenumerableBuffer<TValue>(
-        new PreorderTreenumerable<TValue, LazyPreorderStore<TValue>>(lazyStore),
+      return new TreenumerableBuffer<TNode>(
+        new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(lazyStore),
         BufferLayout.Preorder,
-        new PreorderAdjacencyIndex<TValue, LazyPreorderStore<TValue>>(lazyStore));
+        new PreorderAdjacencyIndex<TNode, LazyPreorderStore<TNode>>(lazyStore));
     }
 
-    private static TreenumerableBuffer<TValue> LevelOrderCaptureBuffer<TValue>(IBreadthFirstTreenumerable<TValue> source)
+    private static TreenumerableBuffer<TNode> LevelOrderCaptureBuffer<TNode>(IBreadthFirstTreenumerable<TNode> source)
     {
-      var lazyStore = new LazyLevelOrderStore<TValue>(() => CaptureLevelOrder(source));
+      var lazyStore = new LazyLevelOrderStore<TNode>(() => CaptureLevelOrder(source));
 
-      return new TreenumerableBuffer<TValue>(
-        new LevelOrderTreenumerable<TValue, LazyLevelOrderStore<TValue>>(lazyStore),
+      return new TreenumerableBuffer<TNode>(
+        new LevelOrderTreenumerable<TNode, LazyLevelOrderStore<TNode>>(lazyStore),
         BufferLayout.LevelOrder,
-        new LevelOrderAdjacencyIndex<TValue, LazyLevelOrderStore<TValue>>(lazyStore));
+        new LevelOrderAdjacencyIndex<TNode, LazyLevelOrderStore<TNode>>(lazyStore));
     }
 
-    private static ITreenumerable<TValue> DeferredPreorderCapture<TValue>(IDepthFirstTreenumerable<TValue> source)
-      => new PreorderTreenumerable<TValue, LazyPreorderStore<TValue>>(
-        new LazyPreorderStore<TValue>(() => CapturePreorder(source)));
+    private static ITreenumerable<TNode> DeferredPreorderCapture<TNode>(IDepthFirstTreenumerable<TNode> source)
+      => new PreorderTreenumerable<TNode, LazyPreorderStore<TNode>>(
+        new LazyPreorderStore<TNode>(() => CapturePreorder(source)));
 
-    private static ITreenumerable<TValue> DeferredLevelOrderCapture<TValue>(IBreadthFirstTreenumerable<TValue> source)
-      => new LevelOrderTreenumerable<TValue, LazyLevelOrderStore<TValue>>(
-        new LazyLevelOrderStore<TValue>(() => CaptureLevelOrder(source)));
+    private static ITreenumerable<TNode> DeferredLevelOrderCapture<TNode>(IBreadthFirstTreenumerable<TNode> source)
+      => new LevelOrderTreenumerable<TNode, LazyLevelOrderStore<TNode>>(
+        new LazyLevelOrderStore<TNode>(() => CaptureLevelOrder(source)));
   }
 }

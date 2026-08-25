@@ -25,14 +25,14 @@ namespace Copse.Linq
     /// price an O(depth) climb per probe -- it arrives when a caller needs it, with that cost
     /// documented.)
     /// </summary>
-    public static IWalkableTreenumerable<TValue, THandle> PruneAfter<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
-      Func<TValue, bool> predicate)
+    public static IWalkableTreenumerable<TNode, THandle> PruneAfter<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
+      Func<TNode, bool> predicate)
     {
       if (predicate == null)
         return source;
 
-      return new PruneAfterWalkable<TValue, THandle>(source, predicate);
+      return new PruneAfterWalkable<TNode, THandle>(source, predicate);
     }
   }
 }

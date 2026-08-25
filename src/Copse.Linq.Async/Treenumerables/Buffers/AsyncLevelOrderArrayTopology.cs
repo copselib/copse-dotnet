@@ -13,24 +13,24 @@ namespace Copse.Linq.Async.Treenumerables
   // probe. Every probe after is an array read. Contrast AsyncLevelOrderAdjacencyIndex, the
   // GROWING citizen, which keeps the sweep suspendable because its store may still be fed.
   // Single-threaded by contract, like every adjacency engine.
-  internal sealed class AsyncLevelOrderArrayTopology<TValue> : IAsyncTreeTopology<TValue, int>
+  internal sealed class AsyncLevelOrderArrayTopology<TNode> : IAsyncTreeTopology<TNode, int>
   {
-    public AsyncLevelOrderArrayTopology(AsyncLevelOrderArrayStore<TValue> store)
+    public AsyncLevelOrderArrayTopology(AsyncLevelOrderArrayStore<TNode> store)
     {
       _Store = store;
     }
 
     private const int NoParent = -1;
 
-    private readonly AsyncLevelOrderArrayStore<TValue> _Store;
+    private readonly AsyncLevelOrderArrayStore<TNode> _Store;
 
-    internal AsyncLevelOrderArrayStore<TValue> Store => _Store;
+    internal AsyncLevelOrderArrayStore<TNode> Store => _Store;
 
     // Built on the first parent probe; exact size, no per-node machinery.
     private int[] _ParentIndexes;
 
-    public ValueTask<TValue> GetValueAsync(int handle)
-      => new ValueTask<TValue>(_Store.GetValue(handle));
+    public ValueTask<TNode> GetValueAsync(int handle)
+      => new ValueTask<TNode>(_Store.GetValue(handle));
 
     public async ValueTask<Option<int>> TryGetParentAsync(int handle)
     {

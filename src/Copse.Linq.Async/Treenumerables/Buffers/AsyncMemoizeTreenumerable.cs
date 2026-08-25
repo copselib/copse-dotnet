@@ -27,7 +27,7 @@ namespace Copse.Linq.Async.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class AsyncMemoizeTreenumerable<TValue> : IAsyncMemoizeTreenumerableBuffer<TValue>
+  internal sealed class AsyncMemoizeTreenumerable<TNode> : IAsyncMemoizeTreenumerableBuffer<TNode>
   {
     // The pinned layout, null while fresh (nothing has pulled or consumed yet).
     public BufferLayout? NativeLayout
@@ -35,17 +35,17 @@ namespace Copse.Linq.Async.Treenumerables
         : _BreadthFirstCapture != null ? BufferLayout.LevelOrder
         : (BufferLayout?)null;
 
-    public AsyncMemoizeTreenumerable(IAsyncTreenumerable<TValue> source)
+    public AsyncMemoizeTreenumerable(IAsyncTreenumerable<TNode> source)
     {
       _Source = source;
     }
 
-    private readonly IAsyncTreenumerable<TValue> _Source;
+    private readonly IAsyncTreenumerable<TNode> _Source;
 
     // Exactly ONE of these two is ever created -- whichever dimension pulls (or consumes)
     // first pins the capture's layout for the memo's whole life.
-    private AsyncMemoizePreorderStore<TValue> _DepthFirstCapture;
-    private AsyncMemoizeLevelOrderStore<TValue> _BreadthFirstCapture;
+    private AsyncMemoizePreorderStore<TNode> _DepthFirstCapture;
+    private AsyncMemoizeLevelOrderStore<TNode> _BreadthFirstCapture;
 
     private bool _Disposed;
 
@@ -67,30 +67,30 @@ namespace Copse.Linq.Async.Treenumerables
       await EnsureDepthFirstCapture().CompleteAsync().ConfigureAwait(false);
     }
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
     {
       if (_BreadthFirstCapture != null)
-        return new AsyncLevelOrderStoreDepthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-          new AsyncMemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
+        return new AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+          new AsyncMemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
 
-      return new AsyncPreorderStoreDepthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
-        new AsyncMemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
+      return new AsyncPreorderStoreDepthFirstTreenumerator<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
+        new AsyncMemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
     }
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
     {
       if (_DepthFirstCapture != null)
-        return new AsyncPreorderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
-          new AsyncMemoizePreorderStore<TValue>.Handle(_DepthFirstCapture));
+        return new AsyncPreorderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
+          new AsyncMemoizePreorderStore<TNode>.Handle(_DepthFirstCapture));
 
-      return new AsyncLevelOrderStoreBreadthFirstTreenumerator<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-        new AsyncMemoizeLevelOrderStore<TValue>.Handle(EnsureBreadthFirstCapture()));
+      return new AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+        new AsyncMemoizeLevelOrderStore<TNode>.Handle(EnsureBreadthFirstCapture()));
     }
 
-    private AsyncMemoizePreorderStore<TValue> EnsureDepthFirstCapture()
+    private AsyncMemoizePreorderStore<TNode> EnsureDepthFirstCapture()
     {
       if (_DepthFirstCapture == null)
-        _DepthFirstCapture = new AsyncMemoizePreorderStore<TValue>(_Source.GetAsyncDepthFirstTreenumerator);
+        _DepthFirstCapture = new AsyncMemoizePreorderStore<TNode>(_Source.GetAsyncDepthFirstTreenumerator);
 
       return _DepthFirstCapture;
     }
@@ -100,19 +100,19 @@ namespace Copse.Linq.Async.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private IAsyncTreeTopology<TValue, int> _Topology;
+    private IAsyncTreeTopology<TNode, int> _Topology;
 
-    private IAsyncTreeTopology<TValue, int> EnsureTopology()
+    private IAsyncTreeTopology<TNode, int> EnsureTopology()
     {
       if (_Topology != null)
         return _Topology;
 
       if (_BreadthFirstCapture != null)
-        _Topology = new AsyncLevelOrderAdjacencyIndex<TValue, AsyncMemoizeLevelOrderStore<TValue>.Handle>(
-          new AsyncMemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
+        _Topology = new AsyncLevelOrderAdjacencyIndex<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
+          new AsyncMemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
       else
-        _Topology = new AsyncPreorderAdjacencyIndex<TValue, AsyncMemoizePreorderStore<TValue>.Handle>(
-          new AsyncMemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
+        _Topology = new AsyncPreorderAdjacencyIndex<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
+          new AsyncMemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
 
       return _Topology;
     }
@@ -121,13 +121,13 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
-      => new ValueTask<AsyncTreeWalker<TValue, int>>(new AsyncTreeWalker<TValue, int>(EnsureTopology()));
+    public ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
+      => new ValueTask<AsyncTreeWalker<TNode, int>>(new AsyncTreeWalker<TNode, int>(EnsureTopology()));
 
-    private AsyncMemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
+    private AsyncMemoizeLevelOrderStore<TNode> EnsureBreadthFirstCapture()
     {
       if (_BreadthFirstCapture == null)
-        _BreadthFirstCapture = new AsyncMemoizeLevelOrderStore<TValue>(_Source.GetAsyncBreadthFirstTreenumerator);
+        _BreadthFirstCapture = new AsyncMemoizeLevelOrderStore<TNode>(_Source.GetAsyncBreadthFirstTreenumerator);
 
       return _BreadthFirstCapture;
     }

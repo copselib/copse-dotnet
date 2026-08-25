@@ -16,9 +16,9 @@ namespace Copse.Treenumerators
   /// descending is index chasing, O(depth). Grow calls are awaited so a store still capturing from
   /// an async feed fills just in time; GetFirstChildIndex/GetValue stay sync.
   /// </summary>
-  public sealed class LevelOrderStoreDepthFirstTreenumerator<TValue, TStore>
-    : TreenumeratorBase<TValue>
-    where TStore : ILevelOrderStore<TValue>
+  public sealed class LevelOrderStoreDepthFirstTreenumerator<TNode, TStore>
+    : TreenumeratorBase<TNode>
+    where TStore : ILevelOrderStore<TNode>
   {
     public LevelOrderStoreDepthFirstTreenumerator(TStore store)
     {

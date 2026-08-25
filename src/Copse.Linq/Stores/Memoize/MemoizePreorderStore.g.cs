@@ -29,17 +29,17 @@ namespace Copse.Linq.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x resumable visit-stream feed.
-  internal sealed class MemoizePreorderStore<TValue> : IDisposable
+  internal sealed class MemoizePreorderStore<TNode> : IDisposable
   {
-    public MemoizePreorderStore(Func<ITreenumerator<TValue>> feedFactory)
+    public MemoizePreorderStore(Func<ITreenumerator<TNode>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
 
-    private readonly Func<ITreenumerator<TValue>> _FeedFactory;
-    private ITreenumerator<TValue> _Feed;
+    private readonly Func<ITreenumerator<TNode>> _FeedFactory;
+    private ITreenumerator<TNode> _Feed;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _SubtreeSizes = new RefAppendOnlyList<int>();
 
     // Indices of nodes whose subtree is still open, root-to-current -- a churning stack, so it
@@ -55,7 +55,7 @@ namespace Copse.Linq.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     // Callers must have closed the subtree first (EnsureSubtreeClosed); 0 means still open.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -202,14 +202,14 @@ namespace Copse.Linq.Stores
     // nested readonly struct so the playback's store calls specialize and inline -- the same
     // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
     // the serializer's string stores: an adapter is meaningless without its owner.
-    public readonly struct Handle : IPreorderStore<TValue>
+    public readonly struct Handle : IPreorderStore<TNode>
     {
-      public Handle(MemoizePreorderStore<TValue> buffer)
+      public Handle(MemoizePreorderStore<TNode> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly MemoizePreorderStore<TValue> _Buffer;
+      private readonly MemoizePreorderStore<TNode> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureBuffered(int index) => _Buffer.EnsureBuffered(index);
@@ -221,7 +221,7 @@ namespace Copse.Linq.Stores
       public int GetSubtreeSize(int index) => _Buffer.GetSubtreeSize(index);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }

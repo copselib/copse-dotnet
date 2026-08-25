@@ -11,16 +11,16 @@ namespace Copse.Async
   ///
   /// <para>Contracts for implementers: <typeparamref name="THandle"/> is your node identity,
   /// on your own terms (store-backed topologies use ordinals) -- the library never compares
-  /// <typeparamref name="TValue"/> values. The child axis is indexed, never counted: a probe
+  /// <typeparamref name="TNode"/> values. The child axis is indexed, never counted: a probe
   /// past the last child answers an absent <see cref="Option{TValue}"/>, which keeps every
   /// probe finite work regardless of fan-out. The roots are addressed the same way, as their
   /// own indexed group. On a still-growing source, a probe forces the source exactly as far
   /// as its answer requires; upward probes never force.</para>
   /// </summary>
-  public interface IAsyncTreeTopology<TValue, THandle>
+  public interface IAsyncTreeTopology<TNode, THandle>
   {
     /// <summary>The value of the node <paramref name="handle"/> identifies.</summary>
-    ValueTask<TValue> GetValueAsync(THandle handle);
+    ValueTask<TNode> GetValueAsync(THandle handle);
 
     /// <summary>The node's parent, or absent when the node is a root.</summary>
     ValueTask<Option<THandle>> TryGetParentAsync(THandle handle);

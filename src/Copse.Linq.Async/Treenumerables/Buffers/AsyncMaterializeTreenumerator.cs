@@ -12,24 +12,24 @@ namespace Copse.Linq.Async.Treenumerables
   // inner is swapped for a replay over the transposed capture, so the first pull is also the
   // last moment the swap is legal. All property reads delegate: an unstarted inner already holds
   // the pre-enumeration convention (NodePosition.ForestRoot, VisitCount 0, SchedulingNode).
-  internal sealed class AsyncMaterializeTreenumerator<TValue> : IAsyncTreenumerator<TValue>
+  internal sealed class AsyncMaterializeTreenumerator<TNode> : IAsyncTreenumerator<TNode>
   {
     public AsyncMaterializeTreenumerator(
-      AsyncMaterializeTreenumerable<TValue> owner,
+      AsyncMaterializeTreenumerable<TNode> owner,
       TreeTraversalStrategy dimension,
-      IAsyncTreenumerator<TValue> inner)
+      IAsyncTreenumerator<TNode> inner)
     {
       _Owner = owner;
       _Dimension = dimension;
       _Inner = inner;
     }
 
-    private readonly AsyncMaterializeTreenumerable<TValue> _Owner;
+    private readonly AsyncMaterializeTreenumerable<TNode> _Owner;
     private readonly TreeTraversalStrategy _Dimension;
-    private IAsyncTreenumerator<TValue> _Inner;
+    private IAsyncTreenumerator<TNode> _Inner;
     private bool _SettledOnFirstPull;
 
-    public TValue Node => _Inner.Node;
+    public TNode Node => _Inner.Node;
     public int VisitCount => _Inner.VisitCount;
     public TreenumeratorMode Mode => _Inner.Mode;
     public NodePosition Position => _Inner.Position;

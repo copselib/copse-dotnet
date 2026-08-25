@@ -33,8 +33,8 @@ namespace Copse.Linq
     /// adjacency-side and this zero-copy; the semantics are fixed here. Target handles are
     /// presumed to be the source's own (the foreign-handle clause).</para>
     /// </summary>
-    public static Option<TreeWalker<TValue, int>> SpanningSubtree<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static Option<TreeWalker<TNode, int>> SpanningSubtree<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       IEnumerable<THandle> targets)
     {
       var targetList = targets.ToList();
@@ -83,19 +83,19 @@ namespace Copse.Linq
       // its root, ordinal zero of the capture (the per-capture clause, pinned; the kept
       // set is nonempty by construction, so the step's answer is present).
       if (!spanningRoot.HasFocus)
-        return new Option<TreeWalker<TValue, int>>(capture.GetTreeWalker());
+        return new Option<TreeWalker<TNode, int>>(capture.GetTreeWalker());
 
       var captureRoot = capture.TryGetTreeWalkerAtRootIndex();
 
-      return new Option<TreeWalker<TValue, int>>(captureRoot.Value);
+      return new Option<TreeWalker<TNode, int>>(captureRoot.Value);
     }
 
     // The handle-decorated stream's stamp, as a named observer so both colors read the same:
     // every node paired with its own handle, the membership clamp's coordinate system.
-    private static HandleAndValue<THandle, TValue> PairHandleWithValue<TValue, THandle>(
-      ITreeTopology<TValue, THandle> topology,
+    private static HandleAndValue<THandle, TNode> PairHandleWithValue<TNode, THandle>(
+      ITreeTopology<TNode, THandle> topology,
       THandle handle)
-      => new HandleAndValue<THandle, TValue>(handle, topology.GetValue(handle));
+      => new HandleAndValue<THandle, TNode>(handle, topology.GetValue(handle));
 
     // The binary LCA, walker-first and TOTAL (the axis wave will promote this to a public
     // extension; the spanning fold is its first consumer): collect one stance's root path
@@ -103,9 +103,9 @@ namespace Copse.Linq
     // nodes in different trees meet at the unfocused stance -- an answer, not a miss (the unfocused
     // stance is every node's ancestor). Same-topology is presumed. Unfocused in, unfocused
     // out: it is already every node's ancestor, so it is already the answer.
-    private static TreeWalker<TValue, THandle> LowestCommonAncestor<TValue, THandle>(
-      TreeWalker<TValue, THandle> first,
-      TreeWalker<TValue, THandle> second)
+    private static TreeWalker<TNode, THandle> LowestCommonAncestor<TNode, THandle>(
+      TreeWalker<TNode, THandle> first,
+      TreeWalker<TNode, THandle> second)
     {
       if (!first.HasFocus)
         return first;

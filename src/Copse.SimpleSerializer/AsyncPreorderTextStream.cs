@@ -13,9 +13,9 @@ namespace Copse.SimpleSerializer
   //
   // This is the single source of truth. Strip the awaits and it collapses to the synchronous
   // Copse.SimpleSerializer.PreorderTextStream (the checked-in .g.cs twin). Owns its reader.
-  internal sealed class AsyncPreorderTextStream<TValue> : IAsyncPreorderStream<TValue>
+  internal sealed class AsyncPreorderTextStream<TNode> : IAsyncPreorderStream<TNode>
   {
-    public AsyncPreorderTextStream(TextReader reader, Func<string, TValue> map, CancellationToken cancellationToken)
+    public AsyncPreorderTextStream(TextReader reader, Func<string, TNode> map, CancellationToken cancellationToken)
     {
       _Reader = reader;
       _Scanner = new AsyncValueTokenStreamScanner(reader, cancellationToken);
@@ -24,21 +24,21 @@ namespace Copse.SimpleSerializer
 
     private readonly TextReader _Reader;
     private readonly AsyncValueTokenStreamScanner _Scanner;
-    private readonly Func<string, TValue> _Map;
+    private readonly Func<string, TNode> _Map;
 
     private int _Depth;
     private bool _Exhausted;
 
-    public ValueTask<Option<PreorderRead<TValue>>> TryReadNextAsync() => TryScanAsync(int.MaxValue);
+    public ValueTask<Option<PreorderRead<TNode>>> TryReadNextAsync() => TryScanAsync(int.MaxValue);
 
-    public ValueTask<Option<PreorderRead<TValue>>> TrySkipToDepthAsync(int maxDepth) => TryScanAsync(maxDepth);
+    public ValueTask<Option<PreorderRead<TNode>>> TrySkipToDepthAsync(int maxDepth) => TryScanAsync(maxDepth);
 
     // Scan to the next value committing at depth <= maxDepth; deeper values are structural
     // noise for the caller and their characters are discarded unaccumulated. NOT async: every
     // scan is PROBED (the fast-path probe idiom -- see AsyncToSync), and each scanned event
     // lands through the same commit helper whether the scan answered inline or through the
     // pending continuation.
-    private ValueTask<Option<PreorderRead<TValue>>> TryScanAsync(int maxDepth)
+    private ValueTask<Option<PreorderRead<TNode>>> TryScanAsync(int maxDepth)
     {
       if (_Exhausted)
         return default;
@@ -53,13 +53,13 @@ namespace Copse.SimpleSerializer
           return AwaitThenFinishScanAsync(scanned, maxDepth, accumulate);
 
         if (TryCommitEvent(scanned.Result, accumulate, out var read))
-          return new ValueTask<Option<PreorderRead<TValue>>>(read);
+          return new ValueTask<Option<PreorderRead<TNode>>>(read);
       }
     }
 
     // Land one scanned event: commit a value (true, with the read), end the stream (true,
     // default read), or note the depth movement and keep scanning (false).
-    private bool TryCommitEvent(ScanEvent ev, bool accumulate, out Option<PreorderRead<TValue>> read)
+    private bool TryCommitEvent(ScanEvent ev, bool accumulate, out Option<PreorderRead<TNode>> read)
     {
       if (!ev.Ok)
       {
@@ -76,7 +76,7 @@ namespace Copse.SimpleSerializer
             var value = _Map(_Scanner.GetValue());
             var depth = _Depth;
             _Depth++;
-            read = new Option<PreorderRead<TValue>>(new PreorderRead<TValue>(value, depth));
+            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(value, depth));
             return true;
           }
 
@@ -86,7 +86,7 @@ namespace Copse.SimpleSerializer
         case ',':
           if (ev.HasValue && accumulate)
           {
-            read = new Option<PreorderRead<TValue>>(new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth));
+            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
             return true;
           }
 
@@ -98,7 +98,7 @@ namespace Copse.SimpleSerializer
             var value = _Map(_Scanner.GetValue());
             var depth = _Depth;
             _Depth--;
-            read = new Option<PreorderRead<TValue>>(new PreorderRead<TValue>(value, depth));
+            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(value, depth));
             return true;
           }
 
@@ -116,7 +116,7 @@ namespace Copse.SimpleSerializer
 
           if (ev.HasValue && accumulate)
           {
-            read = new Option<PreorderRead<TValue>>(new PreorderRead<TValue>(_Map(_Scanner.GetValue()), _Depth));
+            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
             return true;
           }
 
@@ -134,7 +134,7 @@ namespace Copse.SimpleSerializer
     // through the same commit helper as the fast path, then re-enters the probing loop (nothing
     // to carry -- accumulate is passed along because the commit decision must match the value
     // the scan was issued with).
-    private async ValueTask<Option<PreorderRead<TValue>>> AwaitThenFinishScanAsync(ValueTask<ScanEvent> pendingScan, int maxDepth, bool accumulate)
+    private async ValueTask<Option<PreorderRead<TNode>>> AwaitThenFinishScanAsync(ValueTask<ScanEvent> pendingScan, int maxDepth, bool accumulate)
     {
       if (TryCommitEvent(await pendingScan.ConfigureAwait(false), accumulate, out var read))
         return read;

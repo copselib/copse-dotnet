@@ -29,7 +29,7 @@ namespace Copse.Linq.Treenumerables
   //
   // Single-threaded by contract: the buffer is append-only, but the shared feed is a live
   // treenumerator and concurrent fills would corrupt it.
-  internal sealed class MemoizeTreenumerable<TValue> : IMemoizeTreenumerableBuffer<TValue>
+  internal sealed class MemoizeTreenumerable<TNode> : IMemoizeTreenumerableBuffer<TNode>
   {
     // The pinned layout, null while fresh (nothing has pulled or consumed yet).
     public BufferLayout? NativeLayout
@@ -37,17 +37,17 @@ namespace Copse.Linq.Treenumerables
         : _BreadthFirstCapture != null ? BufferLayout.LevelOrder
         : (BufferLayout?)null;
 
-    public MemoizeTreenumerable(ITreenumerable<TValue> source)
+    public MemoizeTreenumerable(ITreenumerable<TNode> source)
     {
       _Source = source;
     }
 
-    private readonly ITreenumerable<TValue> _Source;
+    private readonly ITreenumerable<TNode> _Source;
 
     // Exactly ONE of these two is ever created -- whichever dimension pulls (or consumes)
     // first pins the capture's layout for the memo's whole life.
-    private MemoizePreorderStore<TValue> _DepthFirstCapture;
-    private MemoizeLevelOrderStore<TValue> _BreadthFirstCapture;
+    private MemoizePreorderStore<TNode> _DepthFirstCapture;
+    private MemoizeLevelOrderStore<TNode> _BreadthFirstCapture;
 
     private bool _Disposed;
 
@@ -69,30 +69,30 @@ namespace Copse.Linq.Treenumerables
       EnsureDepthFirstCapture().Complete();
     }
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator()
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator()
     {
       if (_BreadthFirstCapture != null)
-        return new LevelOrderStoreDepthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
-          new MemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
+        return new LevelOrderStoreDepthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
+          new MemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
 
-      return new PreorderStoreDepthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>.Handle>(
-        new MemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
+      return new PreorderStoreDepthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
+        new MemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
     }
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator()
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
     {
       if (_DepthFirstCapture != null)
-        return new PreorderStoreBreadthFirstTreenumerator<TValue, MemoizePreorderStore<TValue>.Handle>(
-          new MemoizePreorderStore<TValue>.Handle(_DepthFirstCapture));
+        return new PreorderStoreBreadthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
+          new MemoizePreorderStore<TNode>.Handle(_DepthFirstCapture));
 
-      return new LevelOrderStoreBreadthFirstTreenumerator<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
-        new MemoizeLevelOrderStore<TValue>.Handle(EnsureBreadthFirstCapture()));
+      return new LevelOrderStoreBreadthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
+        new MemoizeLevelOrderStore<TNode>.Handle(EnsureBreadthFirstCapture()));
     }
 
-    private MemoizePreorderStore<TValue> EnsureDepthFirstCapture()
+    private MemoizePreorderStore<TNode> EnsureDepthFirstCapture()
     {
       if (_DepthFirstCapture == null)
-        _DepthFirstCapture = new MemoizePreorderStore<TValue>(_Source.GetDepthFirstTreenumerator);
+        _DepthFirstCapture = new MemoizePreorderStore<TNode>(_Source.GetDepthFirstTreenumerator);
 
       return _DepthFirstCapture;
     }
@@ -102,19 +102,19 @@ namespace Copse.Linq.Treenumerables
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
     // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
-    private ITreeTopology<TValue, int> _Topology;
+    private ITreeTopology<TNode, int> _Topology;
 
-    private ITreeTopology<TValue, int> EnsureTopology()
+    private ITreeTopology<TNode, int> EnsureTopology()
     {
       if (_Topology != null)
         return _Topology;
 
       if (_BreadthFirstCapture != null)
-        _Topology = new LevelOrderAdjacencyIndex<TValue, MemoizeLevelOrderStore<TValue>.Handle>(
-          new MemoizeLevelOrderStore<TValue>.Handle(_BreadthFirstCapture));
+        _Topology = new LevelOrderAdjacencyIndex<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
+          new MemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
       else
-        _Topology = new PreorderAdjacencyIndex<TValue, MemoizePreorderStore<TValue>.Handle>(
-          new MemoizePreorderStore<TValue>.Handle(EnsureDepthFirstCapture()));
+        _Topology = new PreorderAdjacencyIndex<TNode, MemoizePreorderStore<TNode>.Handle>(
+          new MemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
 
       return _Topology;
     }
@@ -123,13 +123,13 @@ namespace Copse.Linq.Treenumerables
 
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
-    public TreeWalker<TValue, int> GetTreeWalker()
-      => new TreeWalker<TValue, int>(EnsureTopology());
+    public TreeWalker<TNode, int> GetTreeWalker()
+      => new TreeWalker<TNode, int>(EnsureTopology());
 
-    private MemoizeLevelOrderStore<TValue> EnsureBreadthFirstCapture()
+    private MemoizeLevelOrderStore<TNode> EnsureBreadthFirstCapture()
     {
       if (_BreadthFirstCapture == null)
-        _BreadthFirstCapture = new MemoizeLevelOrderStore<TValue>(_Source.GetBreadthFirstTreenumerator);
+        _BreadthFirstCapture = new MemoizeLevelOrderStore<TNode>(_Source.GetBreadthFirstTreenumerator);
 
       return _BreadthFirstCapture;
     }

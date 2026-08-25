@@ -9,11 +9,11 @@ namespace Copse.Async.Stores
   /// groups, read group by group. The treenumerator riding the stream owns it and disposes
   /// it.
   /// </summary>
-  public interface IAsyncLevelOrderStream<TValue> : IAsyncDisposable
+  public interface IAsyncLevelOrderStream<TNode> : IAsyncDisposable
   {
     /// <summary>Reads the next value in the current group, or absent at the end of the
     /// group.</summary>
-    ValueTask<Option<TValue>> TryReadNextInGroupAsync();
+    ValueTask<Option<TNode>> TryReadNextInGroupAsync();
 
     /// <summary>Discards the remainder of the current group -- without materializing values --
     /// and completes with how many entries were discarded.</summary>

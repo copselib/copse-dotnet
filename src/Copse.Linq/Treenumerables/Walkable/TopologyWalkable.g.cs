@@ -11,22 +11,22 @@ namespace Copse.Linq.Treenumerables
   // to sever, and it contributes no row of its own: it has no value, and the
   // treenumerable has no spelling for a valueless node). Streams via the Walk adapter over
   // the same topology the door binds, so the walkable and its walkers agree on every answer.
-  internal sealed class TopologyWalkable<TValue, THandle> : IWalkableTreenumerable<TValue, THandle>
+  internal sealed class TopologyWalkable<TNode, THandle> : IWalkableTreenumerable<TNode, THandle>
   {
-    public TopologyWalkable(ITreeTopology<TValue, THandle> topology)
+    public TopologyWalkable(ITreeTopology<TNode, THandle> topology)
     {
       _Topology = topology;
       _Walk = Tree.FromTopology(topology);
     }
 
-    private readonly ITreeTopology<TValue, THandle> _Topology;
-    private readonly ITreenumerable<TValue> _Walk;
+    private readonly ITreeTopology<TNode, THandle> _Topology;
+    private readonly ITreenumerable<TNode> _Walk;
 
-    public ITreenumerator<TValue> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();
+    public ITreenumerator<TNode> GetDepthFirstTreenumerator() => _Walk.GetDepthFirstTreenumerator();
 
-    public ITreenumerator<TValue> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
+    public ITreenumerator<TNode> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
 
-    public TreeWalker<TValue, THandle> GetTreeWalker()
-      => new TreeWalker<TValue, THandle>(_Topology);
+    public TreeWalker<TNode, THandle> GetTreeWalker()
+      => new TreeWalker<TNode, THandle>(_Topology);
   }
 }

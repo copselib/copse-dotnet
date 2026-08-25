@@ -13,9 +13,9 @@ namespace Copse.Async.Stores
   /// <summary>A completed level-order store over plain arrays: values level by level, with
   /// each node's first-child index and child count beside them. Nothing grows, so the grow
   /// operations answer immediately and the reads are array access.</summary>
-  public readonly struct AsyncLevelOrderArrayStore<TValue> : IAsyncLevelOrderStore<TValue>
+  public readonly struct AsyncLevelOrderArrayStore<TNode> : IAsyncLevelOrderStore<TNode>
   {
-    public AsyncLevelOrderArrayStore(TValue[] values, int[] firstChildIndices, int[] childCounts, int rootCount)
+    public AsyncLevelOrderArrayStore(TNode[] values, int[] firstChildIndices, int[] childCounts, int rootCount)
     {
       _Values = values;
       _FirstChildIndices = firstChildIndices;
@@ -23,7 +23,7 @@ namespace Copse.Async.Stores
       _RootCount = rootCount;
     }
 
-    private readonly TValue[] _Values;
+    private readonly TNode[] _Values;
     private readonly int[] _FirstChildIndices;
     private readonly int[] _ChildCounts;
     private readonly int _RootCount;
@@ -40,6 +40,6 @@ namespace Copse.Async.Stores
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
   }
 }

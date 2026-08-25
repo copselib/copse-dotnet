@@ -18,13 +18,13 @@ namespace Copse.Linq
     /// the source (the identity, with no case analysis); the interior round trip lands at
     /// the same focus but FORGETS the upward context (severance is the cofree forgetting --
     /// deliberate, and the reason the two round trips are not symmetric).</summary>
-    public static IWalkableTreenumerable<TValue, THandle> Subtree<TValue, THandle>(
-      this TreeWalker<TValue, THandle> walker)
+    public static IWalkableTreenumerable<TNode, THandle> Subtree<TNode, THandle>(
+      this TreeWalker<TNode, THandle> walker)
     {
       if (!walker.HasFocus)
-        return new TopologyWalkable<TValue, THandle>(walker.Topology);
+        return new TopologyWalkable<TNode, THandle>(walker.Topology);
 
-      return new SubtreeWalkable<TValue, THandle>(walker.Topology, walker.Focus);
+      return new SubtreeWalkable<TNode, THandle>(walker.Topology, walker.Focus);
     }
   }
 }

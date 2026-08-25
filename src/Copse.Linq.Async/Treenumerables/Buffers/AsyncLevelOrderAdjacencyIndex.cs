@@ -14,8 +14,8 @@ namespace Copse.Linq.Async.Treenumerables
   // their answer needs -- and on level-order that is one level ahead at most, the layout's
   // cheap direction. The parent cursor can never overtake the growth it causes: it advances
   // past a parent only when that parent's child run has closed. Single-threaded by contract.
-  internal sealed class AsyncLevelOrderAdjacencyIndex<TValue, TStore> : IAsyncTreeTopology<TValue, int>
-    where TStore : IAsyncLevelOrderStore<TValue>
+  internal sealed class AsyncLevelOrderAdjacencyIndex<TNode, TStore> : IAsyncTreeTopology<TNode, int>
+    where TStore : IAsyncLevelOrderStore<TNode>
   {
     public AsyncLevelOrderAdjacencyIndex(TStore store)
     {
@@ -38,7 +38,7 @@ namespace Copse.Linq.Async.Treenumerables
     private int _ChildOrdinal;
     private int _FirstChildIndex;
 
-    public async ValueTask<TValue> GetValueAsync(int handle)
+    public async ValueTask<TNode> GetValueAsync(int handle)
     {
       await ExtendParentIndexesAsync(handle).ConfigureAwait(false);
       return _Store.GetValue(handle);

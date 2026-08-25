@@ -16,9 +16,9 @@ namespace Copse.Treenumerators
   /// cross-order locality tax but still O(width). Grow calls are awaited so a store still capturing
   /// from an async feed fills just in time.
   /// </summary>
-  public sealed class PreorderStoreBreadthFirstTreenumerator<TValue, TStore>
-    : TreenumeratorBase<TValue>
-    where TStore : IPreorderStore<TValue>
+  public sealed class PreorderStoreBreadthFirstTreenumerator<TNode, TStore>
+    : TreenumeratorBase<TNode>
+    where TStore : IPreorderStore<TNode>
   {
     public PreorderStoreBreadthFirstTreenumerator(TStore store)
     {

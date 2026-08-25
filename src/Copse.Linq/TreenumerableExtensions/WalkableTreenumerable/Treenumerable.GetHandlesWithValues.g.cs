@@ -10,20 +10,20 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The acquisition scan: every handle paired with the value it labels, in the same
-    /// deliberately unspecified order as <see cref="GetHandles{TValue, THandle}"/>. The rows
+    /// deliberately unspecified order as <see cref="GetHandles{TNode, THandle}"/>. The rows
     /// let value predicates pick out handles -- consumer-side, preserving the
     /// no-node-equality pledge (the library compares nothing; the consumer's predicate is the
     /// consumer's business). The search law's one earned exception: without the pairing, a
     /// value predicate mid-chain cannot reach the receiver's probe without naming it twice.
     /// A stance walk (Stage B): each row is where the walk stood and what it extracted there.
     /// </summary>
-    public static IEnumerable<HandleAndValue<THandle, TValue>> GetHandlesWithValues<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source)
+    public static IEnumerable<HandleAndValue<THandle, TNode>> GetHandlesWithValues<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source)
     {
       // One knock; the roots are the unfocused stance's child group. The unfocused stance itself gets no
       // row -- it has no handle and no value, so the scan excludes it by type.
       var door = source.GetTreeWalker();
-      var pending = new Stack<TreeWalker<TValue, THandle>>();
+      var pending = new Stack<TreeWalker<TNode, THandle>>();
 
       for (var rootIndex = 0; ; rootIndex++)
       {
@@ -40,7 +40,7 @@ namespace Copse.Linq
 
         var stance = pending.Pop();
 
-        yield return new HandleAndValue<THandle, TValue>(stance.Focus, stance.GetValue());
+        yield return new HandleAndValue<THandle, TNode>(stance.Focus, stance.GetValue());
 
         for (var childIndex = 0; ; childIndex++)
         {

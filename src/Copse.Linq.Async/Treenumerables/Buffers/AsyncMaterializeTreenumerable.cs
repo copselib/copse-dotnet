@@ -23,9 +23,9 @@ namespace Copse.Linq.Async.Treenumerables
   // capture (source untouched, a new instance), and replays serve from the transposed store.
   //
   // Single-threaded by contract, like the memo it wraps.
-  internal sealed class AsyncMaterializeTreenumerable<TValue> : IAsyncTreenumerableBuffer<TValue>
+  internal sealed class AsyncMaterializeTreenumerable<TNode> : IAsyncTreenumerableBuffer<TNode>
   {
-    public AsyncMaterializeTreenumerable(IAsyncMemoizeTreenumerableBuffer<TValue> memo, BufferLayout? requestedLayout)
+    public AsyncMaterializeTreenumerable(IAsyncMemoizeTreenumerableBuffer<TNode> memo, BufferLayout? requestedLayout)
     {
       _Memo = memo;
       _RequestedLayout = requestedLayout;
@@ -36,12 +36,12 @@ namespace Copse.Linq.Async.Treenumerables
         _LayoutPinHold = memo.GetAsyncBreadthFirstTreenumerator();
     }
 
-    private readonly IAsyncMemoizeTreenumerableBuffer<TValue> _Memo;
+    private readonly IAsyncMemoizeTreenumerableBuffer<TNode> _Memo;
     private readonly BufferLayout? _RequestedLayout;
-    private IAsyncTreenumerator<TValue> _LayoutPinHold;
-    private IAsyncTreenumerableBuffer<TValue> _Settled;
+    private IAsyncTreenumerator<TNode> _LayoutPinHold;
+    private IAsyncTreenumerableBuffer<TNode> _Settled;
 
-    internal IAsyncMemoizeTreenumerableBuffer<TValue> Memo => _Memo;
+    internal IAsyncMemoizeTreenumerableBuffer<TNode> Memo => _Memo;
 
     // With a requested layout this is the guarantee, reported from the call onward; otherwise a
     // live view of the memo's pin (null while nothing has pulled or consumed yet).
@@ -56,18 +56,18 @@ namespace Copse.Linq.Async.Treenumerables
       }
     }
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator()
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
       => _Settled != null
         ? _Settled.GetAsyncDepthFirstTreenumerator()
-        : new AsyncMaterializeTreenumerator<TValue>(
+        : new AsyncMaterializeTreenumerator<TNode>(
           this,
           TreeTraversalStrategy.DepthFirst,
           _Memo.GetAsyncDepthFirstTreenumerator());
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator()
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
       => _Settled != null
         ? _Settled.GetAsyncBreadthFirstTreenumerator()
-        : new AsyncMaterializeTreenumerator<TValue>(
+        : new AsyncMaterializeTreenumerator<TNode>(
           this,
           TreeTraversalStrategy.BreadthFirst,
           _Memo.GetAsyncBreadthFirstTreenumerator());
@@ -75,7 +75,7 @@ namespace Copse.Linq.Async.Treenumerables
     // The one deferred moment: retire the pin hold, complete the memo's capture in bulk, and --
     // only when a requested layout lost the pin race to the shared memo's own history --
     // transpose from the completed capture. Idempotent; every replay pulls through it.
-    internal async ValueTask<IAsyncTreenumerableBuffer<TValue>> SettleAsync()
+    internal async ValueTask<IAsyncTreenumerableBuffer<TNode>> SettleAsync()
     {
       if (_Settled != null)
         return _Settled;
@@ -100,20 +100,20 @@ namespace Copse.Linq.Async.Treenumerables
         // capture (the counted fast path -- final arrays exact, no chunked build buffer).
         var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Memo, _Memo.GetBufferedCount()).ConfigureAwait(false);
 
-        _Settled = new AsyncTreenumerableBuffer<TValue>(
-          new AsyncPreorderTreenumerable<TValue, AsyncPreorderArrayStore<TValue>>(preorderStore),
+        _Settled = new AsyncTreenumerableBuffer<TNode>(
+          new AsyncPreorderTreenumerable<TNode, AsyncPreorderArrayStore<TNode>>(preorderStore),
           BufferLayout.Preorder,
-          new AsyncPreorderArrayTopology<TValue>(preorderStore));
+          new AsyncPreorderArrayTopology<TNode>(preorderStore));
 
         return _Settled;
       }
 
       var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Memo, _Memo.GetBufferedCount()).ConfigureAwait(false);
 
-      _Settled = new AsyncTreenumerableBuffer<TValue>(
-        new AsyncLevelOrderTreenumerable<TValue, AsyncLevelOrderArrayStore<TValue>>(levelOrderStore),
+      _Settled = new AsyncTreenumerableBuffer<TNode>(
+        new AsyncLevelOrderTreenumerable<TNode, AsyncLevelOrderArrayStore<TNode>>(levelOrderStore),
         BufferLayout.LevelOrder,
-        new AsyncLevelOrderArrayTopology<TValue>(levelOrderStore));
+        new AsyncLevelOrderArrayTopology<TNode>(levelOrderStore));
 
       return _Settled;
     }
@@ -123,7 +123,7 @@ namespace Copse.Linq.Async.Treenumerables
     // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
     // The door (walker factory design, Stage A): the settled capture manufactures the walker,
     // so the stance rides the settled topology directly.
-    public async ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
+    public async ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
       => await (await SettleAsync().ConfigureAwait(false)).GetTreeWalkerAsync().ConfigureAwait(false);
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them.

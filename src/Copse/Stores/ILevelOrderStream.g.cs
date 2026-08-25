@@ -12,11 +12,11 @@ namespace Copse.Stores
   /// groups, read group by group. The treenumerator riding the stream owns it and disposes
   /// it.
   /// </summary>
-  public interface ILevelOrderStream<TValue> : IDisposable
+  public interface ILevelOrderStream<TNode> : IDisposable
   {
     /// <summary>Reads the next value in the current group, or absent at the end of the
     /// group.</summary>
-    Option<TValue> TryReadNextInGroup();
+    Option<TNode> TryReadNextInGroup();
 
     /// <summary>Discards the remainder of the current group -- without materializing values --
     /// and completes with how many entries were discarded.</summary>

@@ -23,33 +23,33 @@ namespace Copse.Linq.Async.Treenumerables
   // probing that -- one extra O(n) capture, paid once, only on the rare undecided path, and
   // only if anyone probes at all. The stream half is untouched by the settle (replays keep
   // riding the inner), and NativeLayout keeps reporting the stream side's truth.
-  internal sealed class AsyncTreenumerableBuffer<TValue> : IAsyncTreenumerableBuffer<TValue>
+  internal sealed class AsyncTreenumerableBuffer<TNode> : IAsyncTreenumerableBuffer<TNode>
   {
-    public AsyncTreenumerableBuffer(IAsyncTreenumerable<TValue> capture, BufferLayout? nativeLayout)
+    public AsyncTreenumerableBuffer(IAsyncTreenumerable<TNode> capture, BufferLayout? nativeLayout)
       : this(capture, nativeLayout, null)
     {
     }
 
     public AsyncTreenumerableBuffer(
-      IAsyncTreenumerable<TValue> capture,
+      IAsyncTreenumerable<TNode> capture,
       BufferLayout? nativeLayout,
-      IAsyncTreeTopology<TValue, int> adjacencyProbes)
+      IAsyncTreeTopology<TNode, int> adjacencyProbes)
     {
       _Capture = capture;
       NativeLayout = nativeLayout;
       _Topology = adjacencyProbes;
     }
 
-    private readonly IAsyncTreenumerable<TValue> _Capture;
-    private IAsyncTreeTopology<TValue, int> _Topology;
+    private readonly IAsyncTreenumerable<TNode> _Capture;
+    private IAsyncTreeTopology<TNode, int> _Topology;
 
     // Null when the layout is decided by the first pull (Invert-F's dimension dispatch) --
     // Materialize's layout guarantee then transposes conservatively rather than guessing.
     public BufferLayout? NativeLayout { get; }
 
-    public IAsyncTreenumerator<TValue> GetAsyncDepthFirstTreenumerator() => _Capture.GetAsyncDepthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator() => _Capture.GetAsyncDepthFirstTreenumerator();
 
-    public IAsyncTreenumerator<TValue> GetAsyncBreadthFirstTreenumerator() => _Capture.GetAsyncBreadthFirstTreenumerator();
+    public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _Capture.GetAsyncBreadthFirstTreenumerator();
 
     // Probe members removed (Stage C, the cut): the contract no longer carries them; the
     // door binds the topology (the index) directly, and nothing else asks this wrapper
@@ -58,8 +58,8 @@ namespace Copse.Linq.Async.Treenumerables
     // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
-    public async ValueTask<AsyncTreeWalker<TValue, int>> GetTreeWalkerAsync()
-      => new AsyncTreeWalker<TValue, int>(await EnsureTopologyAsync().ConfigureAwait(false));
+    public async ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
+      => new AsyncTreeWalker<TNode, int>(await EnsureTopologyAsync().ConfigureAwait(false));
 
     // The settle respects the declared layout: handles are ordinals in the CAPTURE'S OWN
     // encoding (the per-capture clause), so a level-order buffer's probes speak level-order
@@ -69,20 +69,20 @@ namespace Copse.Linq.Async.Treenumerables
     // a preorder-settled buffer hands whole-tree algorithms its raw store -- Materialize's
     // `is ITreenumerableBuffer` receiver-smart idiom, one level deeper. A level-order buffer
     // and an un-settled one decline, so the miss is an expected answer, not a violation.
-    internal async ValueTask<Option<AsyncPreorderArrayStore<TValue>>> TryGetPreorderStoreAsync()
+    internal async ValueTask<Option<AsyncPreorderArrayStore<TNode>>> TryGetPreorderStoreAsync()
     {
       if (NativeLayout == BufferLayout.LevelOrder)
         return default;
 
       var adjacencyProbes = await EnsureTopologyAsync().ConfigureAwait(false);
 
-      if (adjacencyProbes is AsyncPreorderArrayTopology<TValue> arrayTopology)
-        return new Option<AsyncPreorderArrayStore<TValue>>(arrayTopology.Store);
+      if (adjacencyProbes is AsyncPreorderArrayTopology<TNode> arrayTopology)
+        return new Option<AsyncPreorderArrayStore<TNode>>(arrayTopology.Store);
 
       // A Materialize-built buffer's probes ride its own lazy store (probes-at-birth);
       // forcing hands over the same arrays the stream half built or will build.
-      if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyIndex)
-        return new Option<AsyncPreorderArrayStore<TValue>>(
+      if (adjacencyProbes is AsyncPreorderAdjacencyIndex<TNode, AsyncLazyPreorderStore<TNode>> lazyIndex)
+        return new Option<AsyncPreorderArrayStore<TNode>>(
           await lazyIndex.Store.EnsureBuiltStoreAsync().ConfigureAwait(false));
 
       return default;
@@ -100,24 +100,24 @@ namespace Copse.Linq.Async.Treenumerables
 
       UpgradeTopology();
 
-      if (_Topology is AsyncPreorderArrayTopology<TValue> preorderTopology)
+      if (_Topology is AsyncPreorderArrayTopology<TNode> preorderTopology)
         return new Option<int>(preorderTopology.Store.Count);
 
-      if (_Topology is AsyncLevelOrderArrayTopology<TValue> levelOrderTopology)
+      if (_Topology is AsyncLevelOrderArrayTopology<TNode> levelOrderTopology)
         return new Option<int>(levelOrderTopology.Store.Count);
 
-      if (_Topology is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyPreorder
+      if (_Topology is AsyncPreorderAdjacencyIndex<TNode, AsyncLazyPreorderStore<TNode>> lazyPreorder
         && lazyPreorder.Store.IsBuilt)
         return new Option<int>(lazyPreorder.Store.BuiltStore.Count);
 
-      if (_Topology is AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>> lazyLevelOrder
+      if (_Topology is AsyncLevelOrderAdjacencyIndex<TNode, AsyncLazyLevelOrderStore<TNode>> lazyLevelOrder
         && lazyLevelOrder.Store.IsBuilt)
         return new Option<int>(lazyLevelOrder.Store.BuiltStore.Count);
 
       return default;
     }
 
-    private async ValueTask<IAsyncTreeTopology<TValue, int>> EnsureTopologyAsync()
+    private async ValueTask<IAsyncTreeTopology<TNode, int>> EnsureTopologyAsync()
     {
       if (_Topology != null)
       {
@@ -129,14 +129,14 @@ namespace Copse.Linq.Async.Treenumerables
       {
         var levelOrderStore = await AsyncLevelOrderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-        _Topology = new AsyncLevelOrderArrayTopology<TValue>(levelOrderStore);
+        _Topology = new AsyncLevelOrderArrayTopology<TNode>(levelOrderStore);
 
         return _Topology;
       }
 
       var preorderStore = await AsyncPreorderCapture.CaptureFromAsync(_Capture).ConfigureAwait(false);
 
-      _Topology = new AsyncPreorderArrayTopology<TValue>(preorderStore);
+      _Topology = new AsyncPreorderArrayTopology<TNode>(preorderStore);
 
       return _Topology;
     }
@@ -151,19 +151,19 @@ namespace Copse.Linq.Async.Treenumerables
     // upgrade carry the fast index for life (topology-at-birth binds at door time).
     private void UpgradeTopology()
     {
-      if (_Topology is AsyncPreorderAdjacencyIndex<TValue, AsyncLazyPreorderStore<TValue>> lazyPreorder
+      if (_Topology is AsyncPreorderAdjacencyIndex<TNode, AsyncLazyPreorderStore<TNode>> lazyPreorder
         && lazyPreorder.ScanUntouched
         && lazyPreorder.Store.IsBuilt)
       {
-        _Topology = new AsyncPreorderArrayTopology<TValue>(lazyPreorder.Store.BuiltStore);
+        _Topology = new AsyncPreorderArrayTopology<TNode>(lazyPreorder.Store.BuiltStore);
         return;
       }
 
-      if (_Topology is AsyncLevelOrderAdjacencyIndex<TValue, AsyncLazyLevelOrderStore<TValue>> lazyLevelOrder
+      if (_Topology is AsyncLevelOrderAdjacencyIndex<TNode, AsyncLazyLevelOrderStore<TNode>> lazyLevelOrder
         && lazyLevelOrder.ScanUntouched
         && lazyLevelOrder.Store.IsBuilt)
       {
-        _Topology = new AsyncLevelOrderArrayTopology<TValue>(lazyLevelOrder.Store.BuiltStore);
+        _Topology = new AsyncLevelOrderArrayTopology<TNode>(lazyLevelOrder.Store.BuiltStore);
       }
     }
   }

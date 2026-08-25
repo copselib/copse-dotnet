@@ -13,17 +13,17 @@ namespace Copse.Async.Topologies
   // probes itself -- no roots, no parents, no children, and GetValue's own violation
   // channel. Internal sealed like every topology implementation: the factory hands out
   // the contract, never the encoding (the store policy's rule).
-  internal sealed class AsyncLazyTopology<TValue, THandle> : IAsyncTreeTopology<TValue, THandle>
+  internal sealed class AsyncLazyTopology<TNode, THandle> : IAsyncTreeTopology<TNode, THandle>
   {
-    public AsyncLazyTopology(IAsyncWalkableTreenumerable<TValue, THandle> source)
+    public AsyncLazyTopology(IAsyncWalkableTreenumerable<TNode, THandle> source)
     {
       _Source = source;
     }
 
-    private readonly IAsyncWalkableTreenumerable<TValue, THandle> _Source;
-    private IAsyncTreeTopology<TValue, THandle> _Topology;
+    private readonly IAsyncWalkableTreenumerable<TNode, THandle> _Source;
+    private IAsyncTreeTopology<TNode, THandle> _Topology;
 
-    private async ValueTask<IAsyncTreeTopology<TValue, THandle>> ResolveAsync()
+    private async ValueTask<IAsyncTreeTopology<TNode, THandle>> ResolveAsync()
     {
       if (_Topology != null)
         return _Topology;
@@ -37,7 +37,7 @@ namespace Copse.Async.Topologies
       return _Topology;
     }
 
-    public async ValueTask<TValue> GetValueAsync(THandle handle)
+    public async ValueTask<TNode> GetValueAsync(THandle handle)
       => await (await ResolveAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
 
     public async ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)

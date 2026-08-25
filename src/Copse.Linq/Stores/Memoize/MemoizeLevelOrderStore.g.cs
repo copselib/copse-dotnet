@@ -43,17 +43,17 @@ namespace Copse.Linq.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x growing x resumable visit-stream feed.
-  internal sealed class MemoizeLevelOrderStore<TValue> : IDisposable
+  internal sealed class MemoizeLevelOrderStore<TNode> : IDisposable
   {
-    public MemoizeLevelOrderStore(Func<ITreenumerator<TValue>> feedFactory)
+    public MemoizeLevelOrderStore(Func<ITreenumerator<TNode>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
 
-    private readonly Func<ITreenumerator<TValue>> _FeedFactory;
-    private ITreenumerator<TValue> _Feed;
+    private readonly Func<ITreenumerator<TNode>> _FeedFactory;
+    private ITreenumerator<TNode> _Feed;
 
-    private readonly RefAppendOnlyList<TValue> _Values = new RefAppendOnlyList<TValue>();
+    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _FirstChildIndices = new RefAppendOnlyList<int>();
     private readonly RefAppendOnlyList<int> _ChildCounts = new RefAppendOnlyList<int>();
 
@@ -79,7 +79,7 @@ namespace Copse.Linq.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Values[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int index) => _FirstChildIndices[index];
@@ -242,14 +242,14 @@ namespace Copse.Linq.Stores
     // A nested readonly struct so the playback's store calls specialize and inline -- the same
     // unboxed pattern as the engine's TChildEnumerator, and the same nested-Handle idiom as
     // the serializer's string stores: an adapter is meaningless without its owner.
-    public readonly struct Handle : ILevelOrderStore<TValue>
+    public readonly struct Handle : ILevelOrderStore<TNode>
     {
-      public Handle(MemoizeLevelOrderStore<TValue> buffer)
+      public Handle(MemoizeLevelOrderStore<TNode> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly MemoizeLevelOrderStore<TValue> _Buffer;
+      private readonly MemoizeLevelOrderStore<TNode> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool EnsureRootAvailable(int k) => _Buffer.EnsureRootAvailable(k);
@@ -261,7 +261,7 @@ namespace Copse.Linq.Stores
       public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TValue GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetValue(int index) => _Buffer.GetValue(index);
     }
   }
 }
