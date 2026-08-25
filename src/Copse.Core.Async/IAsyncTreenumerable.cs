@@ -1,18 +1,18 @@
 namespace Copse.Core.Async
 {
   /// <summary>
-  /// Async analog of <c>ITreenumerable</c>: the pure composite of the two traversal-dimension
-  /// interfaces -- an async tree that affordably offers BOTH traversal streams. Sources that afford
-  /// only one dimension (e.g. a forward-only async serialized stream) implement the matching narrow
-  /// interface (<see cref="IAsyncDepthFirstTreenumerable{TNode}"/> or
-  /// <see cref="IAsyncBreadthFirstTreenumerable{TNode}"/>) instead.
+  /// An async tree that offers both traversal orders: the composite of
+  /// <see cref="IAsyncDepthFirstTreenumerable{TNode}"/> and
+  /// <see cref="IAsyncBreadthFirstTreenumerable{TNode}"/>, adding no members of its own.
+  /// Sources that can only afford one order (for example, a forward-only async serialized
+  /// stream) implement just the matching narrow interface, so asking them for the other order
+  /// is a compile error rather than a hidden cost; <c>Memoize</c> and <c>Materialize</c>
+  /// upgrade a narrow source back to this composite.
   ///
-  /// <para>Looking for ADJACENCY -- parents, children, durable node handles? Streams have no
-  /// addresses (a position exists only while its visit passes), so navigation lives on the
-  /// CAPTURE: <c>Materialize()</c> returns a buffer that is also an
-  /// <see cref="Copse.Async.IAsyncWalkableTreenumerable{TValue, THandle}"/>, and handles, walkers, and the
-  /// probe surface start there. The escalation is deliberate -- the O(n) is disclosed, never
-  /// hidden. See design-docs/WALKABLE_CONTRACT_DESIGN.md.</para>
+  /// <para>For navigation -- parents, children, durable node handles -- capture first: a
+  /// traversal stream has no addresses (a position exists only while its visit passes), so
+  /// <c>Materialize()</c> returns a buffer that is also walkable, and handles, walkers, and
+  /// the adjacency probes start there.</para>
   /// </summary>
   public interface IAsyncTreenumerable<TNode>
     : IAsyncDepthFirstTreenumerable<TNode>,

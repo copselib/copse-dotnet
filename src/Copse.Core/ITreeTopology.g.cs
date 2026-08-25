@@ -7,41 +7,33 @@ using Copse.Core;
 namespace Copse
 {
   /// <summary>
-  /// The topology SPI: the four adjacency questions a tree walker's steps are answered by.
-  /// PROVIDER-SIDE surface (design-docs/WALKER_FACTORY_DESIGN.md §2) -- implementations carry the
-  /// tricks (a preorder index answers children by span arithmetic, a level-order index by
-  /// group offsets, a memo by demand, a foreign adapter by its native pointers), consumers
-  /// never meet it: the consumer surface is <c>TreeWalker</c>, whose factory door binds a
-  /// topology at birth. This is the §1a topology split of WALKABLE_CONTRACT_DESIGN.md,
-  /// resurrected in its corrected role -- not a supertype consumers meet, but the SPI
-  /// standing behind the walker; §1a's own withdrawal clause predicted the re-insertion
-  /// "when the citizen arrives," and the citizens are every adjacency engine, lens view,
-  /// and pull-through in the tier.
+  /// The provider-side interface a tree structure implements so walkers can navigate it: four
+  /// probes -- value, parent, child-at-index, root-at-index -- that answer every step a
+  /// <c>AsyncTreeWalker</c> can take. Consumers rarely meet this interface directly; they
+  /// acquire walkers, and a walker carries its topology.
   ///
-  /// <para><typeparamref name="THandle"/> is the provider's handle type (ordinals for
-  /// store-backed topologies); handles are compared by the provider on its own terms, and the
-  /// no-node-equality pledge holds -- <typeparamref name="TValue"/> is never compared.
-  /// Probes on a growing topology are DEMAND (forced exactly as far as the answer needs);
-  /// upward probes never force; a probe past a retired feed surfaces the store's own
-  /// lifecycle behavior (ObjectDisposedException -- the memo replay rule, inherited). The
-  /// child axis is INDEXED, never counted: a count diverges on unbounded fan-out, a probe
-  /// is finite work whatever the fan-out. Roots are the virtual forest-root's child group,
-  /// which is why they are indexed like any other child group.</para>
+  /// <para>Contracts for implementers: <typeparamref name="THandle"/> is your node identity,
+  /// on your own terms (store-backed topologies use ordinals) -- the library never compares
+  /// <typeparamref name="TValue"/> values. The child axis is indexed, never counted: a probe
+  /// past the last child answers an absent <see cref="Option{TValue}"/>, which keeps every
+  /// probe finite work regardless of fan-out. The roots are addressed the same way, as their
+  /// own indexed group. On a still-growing source, a probe forces the source exactly as far
+  /// as its answer requires; upward probes never force.</para>
   /// </summary>
   public interface ITreeTopology<TValue, THandle>
   {
-    /// <summary>Resolves a handle to its surfaced value (extract's raw material).</summary>
+    /// <summary>The value of the node <paramref name="handle"/> identifies.</summary>
     TValue GetValue(THandle handle);
 
-    /// <summary>Single upward step. <c>HasParent</c> is false iff the node is a root.</summary>
+    /// <summary>The node's parent, or absent when the node is a root.</summary>
     Option<THandle> TryGetParent(THandle handle);
 
-    /// <summary>Indexed downward probe: the child at <paramref name="childIndex"/> in
-    /// sibling order, or <c>HasChild</c> false past the last child.</summary>
+    /// <summary>The node's child at <paramref name="childIndex"/> in sibling order, or absent
+    /// past the last child.</summary>
     Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex);
 
-    /// <summary>The virtual forest-root's child group: root <paramref name="rootIndex"/> in
-    /// sibling order, or <c>HasChild</c> false past the last root.</summary>
+    /// <summary>The root at <paramref name="rootIndex"/> in sibling order, or absent past the
+    /// last root.</summary>
     Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex);
   }
 }

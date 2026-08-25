@@ -1,21 +1,18 @@
 namespace Copse.Async
 {
+  // Deliberately flat rather than an Option over a walker: the nested aggregate falls off the
+  // JIT's struct promotion and every step in a walk pays memory traffic (measured 2x on the
+  // BufferProbes sweeps; design-docs/WALKER_FACTORY_DESIGN.md §11).
   /// <summary>
-  /// A step's answer: the walker the step produced, or the typed miss. A step has exactly
-  /// three outcomes -- missed (past the last child, stepping up from above the roots),
-  /// standing on a node, standing unfocused above the roots -- and this struct spells all
-  /// three in one outcome byte packed into the walker's own padding, so the answer is 16
-  /// bytes and three fields flat. That flat shape is load-bearing, not cosmetic: nesting the
-  /// same information as an <see cref="Option{TValue}"/> over a walker makes a four-field
-  /// aggregate that falls off the JIT's struct promotion, and every step in a walk then pays
-  /// memory traffic (measured 2x on the BufferProbes sweeps; the record is
-  /// design-docs/WALKER_FACTORY_DESIGN.md §11).
+  /// A step's answer: the walker the step produced, or the miss. A step has exactly three
+  /// outcomes -- missed (past the last child; stepping up from above the roots), standing on a
+  /// node, or standing unfocused above the roots -- and this struct carries all three.
   ///
-  /// <para>Reads like the option it replaces: <see cref="HasValue"/> says whether the step
-  /// answered, <see cref="Value"/> is the walker it produced (valid only on an answer;
-  /// <c>default</c> otherwise, and reading it on a miss is a bug -- the option's own
-  /// contract), and <see cref="TryGetValue"/> adapts to loop conditions. Deliberately NOT
-  /// equatable, for the same reason the option is not.</para>
+  /// <para>Reads like an <see cref="Option{TValue}"/>: <see cref="HasValue"/> says whether the
+  /// step answered, <see cref="Value"/> is the walker it produced (valid only on an answer;
+  /// <c>default</c> otherwise, which must not be read), and <see cref="TryGetValue"/> adapts
+  /// to loop conditions. Deliberately not equatable, for the same reason the option is
+  /// not.</para>
   /// </summary>
   public readonly struct AsyncTreeWalkerResult<TValue, THandle>
   {
@@ -52,7 +49,7 @@ namespace Copse.Async
 
     /// <summary>Whether the step answered. An unfocused answer IS an answer -- a climb that
     /// tops out still stands; only the miss reads <c>false</c>. When <c>false</c>,
-    /// <see cref="Value"/> is <c>default</c> and reading it is a bug.</summary>
+    /// <see cref="Value"/> is <c>default</c> and must not be read.</summary>
     public bool HasValue => _Result != StepOutcome.None;
 
     /// <summary>The walker the step produced -- standing on a node or unfocused above the
@@ -74,10 +71,10 @@ namespace Copse.Async
       }
     }
 
-    /// <summary>Test and bind in one expression, for the loop-condition grammar --
-    /// <see cref="Option{TValue}.TryGetValue"/>'s contract exactly: assigns on the miss too
-    /// (<c>default</c>), so a climb that reuses its stance variable ends holding a default
-    /// only if it ignores the <c>false</c>.</summary>
+    /// <summary>Tests for an answer and assigns its walker in one expression, for loop
+    /// conditions -- <see cref="Option{TValue}.TryGetValue"/>'s contract exactly: on a miss,
+    /// <paramref name="walker"/> is assigned <c>default</c> and must not be read after a
+    /// <c>false</c> return.</summary>
     public bool TryGetValue(out AsyncTreeWalker<TValue, THandle> walker)
     {
       walker = Value;
@@ -85,7 +82,7 @@ namespace Copse.Async
       return HasValue;
     }
 
-    /// <summary>An answer reads as its walker; the miss reads as a word, never as a blank.</summary>
+    /// <summary>An answer renders as its walker; the miss renders as "none".</summary>
     public override string ToString()
     {
       switch (_Result)
