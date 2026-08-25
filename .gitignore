@@ -399,9 +399,8 @@ FodyWeavers.xsd
 
 # Temporary working directory
 local-temp/
-# Claude (session-local settings stay out; committed skills travel with the repo)
-.claude/*
-!.claude/skills/
+# Claude: the folder is shared (skills, project settings) except personal *.local.json files
+.claude/**/*.local.json
 
 # LINQPad scratch scripts (personal tooling, often with machine-absolute paths).
 # On case-insensitive checkouts (core.ignorecase=true) the bare pattern also matches
