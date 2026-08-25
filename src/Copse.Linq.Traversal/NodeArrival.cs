@@ -1,28 +1,28 @@
 namespace Copse.Linq
 {
-  // The INPUT pairing (design-docs/SCANRESULT_DESIGN.md, the recording rule made type-level
-  // 2026-08-06): a source node with the value the pass delivered TO it. RootfixDispatch's
-  // return, and only its -- the family's one 1-in-n-out shape: a downward survey has no
-  // node-grained output (its n outputs land as its children's arrivals), so the only
-  // per-node record is what arrived. Until 2026-08-06 this rode ScanResult's Accumulate
-  // field, one name for two tier-shaped meanings -- the split follows the dag family
-  // (DagDispatchResult), where the principle was ratified from birth: the two tiers never
-  // overload one field with two meanings. The arrival is SINGULAR because a tree node has
-  // one parent; the dag twin's is a group (DagArrivals) because a dag node has n -- the
-  // field shape itself records the structural difference between the families.
-  //
-  // Named by PAYLOAD per the house pairing grammar (NodeContext, NodeVisit,
-  // NodeAccumulation). Deliberately carries NO position (see NodeAccumulation). Shared by
-  // the sync operators and their async analogs.
+  // The INPUT pairing (design-docs/SCANRESULT_DESIGN.md): a downward survey has no
+  // node-grained output -- its n outputs land as its children's arrivals -- so the only
+  // per-node record is what arrived. Named by payload per the house pairing grammar;
+  // deliberately carries no position (see NodeAccumulation).
+  /// <summary>
+  /// A source node paired with the value a dispatch pass delivered to it -- what
+  /// <c>RootfixDispatch</c> returns for every node: the node, and what its family's survey
+  /// dispatched to it. Carries no position; positional context is available inside the
+  /// survey's own callback types.
+  /// </summary>
   public readonly struct NodeArrival<TSource, TDispatch>
   {
+    /// <summary>Pairs <paramref name="node"/> with <paramref name="arrival"/>.</summary>
     public NodeArrival(TSource node, TDispatch arrival)
     {
       Node = node;
       Arrival = arrival;
     }
 
+    /// <summary>The source node.</summary>
     public readonly TSource Node;
+
+    /// <summary>The value dispatched to this node by its family's survey.</summary>
     public readonly TDispatch Arrival;
 
     public override string ToString() => $"{Node} <- {Arrival}";

@@ -1,5 +1,3 @@
-using System;
-
 namespace Copse
 {
   /// <summary>
@@ -40,14 +38,6 @@ namespace Copse
 
       return HasValue;
     }
-
-    /// <summary>Transforms a present value with <paramref name="selector"/>; an absent option
-    /// stays absent. <paramref name="state"/> is passed through to the selector so the lambda
-    /// can be written capture-free (<c>static (s, v) => ...</c>) and its delegate cached instead
-    /// of allocated per call. Intended for once-per-acquisition code; in per-node hot paths a
-    /// plain conditional on <see cref="HasValue"/> is cheaper than any delegate call.</summary>
-    public Option<TResult> Map<TState, TResult>(TState state, Func<TState, TValue, TResult> selector)
-      => HasValue ? new Option<TResult>(selector(state, Value)) : default;
 
     /// <summary>A present option renders as its value; an absent one renders as "none".</summary>
     public override string ToString() => HasValue ? $"{Value}" : "none";

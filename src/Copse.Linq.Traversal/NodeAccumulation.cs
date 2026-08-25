@@ -1,30 +1,31 @@
 namespace Copse.Linq
 {
-  // The OUTPUT pairing (design-docs/SCANRESULT_DESIGN.md, the recording rule made type-level
-  // 2026-08-06): a source node with the accumulation the pass computed FOR it. Returned by
-  // every operator whose per-node record is an output -- the scans, the aggregates, and
-  // LeaffixDispatch (n-in-1-out: its survey has a node-grained output). RootfixDispatch is
-  // the family's one input-recorder and returns NodeArrival instead -- one field, one
-  // meaning, per tier. Named by PAYLOAD, not operator (the house pairing grammar:
-  // NodeContext, NodeVisit, NodePosition), because the operator axis lies here: a dispatch
-  // (leaffix) records accumulations. Was ScanResult until 2026-08-06.
-  //
-  // The pairing comes from the API so callers never smuggle identity through their payloads
-  // (the dag family's dispatch-provenance principle, tree-side). Deliberately carries NO
+  // The OUTPUT pairing (design-docs/SCANRESULT_DESIGN.md): every operator whose per-node
+  // record is an output returns this; RootfixDispatch is the family's one input-recorder and
+  // returns NodeArrival instead -- one field, one meaning, per tier. Deliberately carries NO
   // position: positions are stream facts, not value properties -- Where renumbers siblings
   // and promotion compresses depths, so an in-band position would go stale under
   // composition. Callback-context types (DispatchTarget, DispatchSource) carry NodeContext
-  // instead: immediate, consumed in place, never stale. Shared by the sync operators and
-  // their async analogs.
+  // instead: immediate, consumed in place, never stale.
+  /// <summary>
+  /// A source node paired with the accumulation a pass computed for it -- what the scans,
+  /// the aggregates, and <c>LeaffixDispatch</c> return for every node. Carries no position:
+  /// a stored position would go stale as soon as a later operator reshaped the tree, so
+  /// positional context is only ever handed to callbacks, never recorded in results.
+  /// </summary>
   public readonly struct NodeAccumulation<TSource, TAccumulate>
   {
+    /// <summary>Pairs <paramref name="node"/> with <paramref name="accumulate"/>.</summary>
     public NodeAccumulation(TSource node, TAccumulate accumulate)
     {
       Node = node;
       Accumulate = accumulate;
     }
 
+    /// <summary>The source node.</summary>
     public readonly TSource Node;
+
+    /// <summary>The accumulation the pass computed for this node.</summary>
     public readonly TAccumulate Accumulate;
 
     public override string ToString() => $"{Node} <- {Accumulate}";

@@ -3,16 +3,15 @@ using System;
 
 namespace Copse.Linq
 {
-  // The write-side handle RootfixDispatch hands its survey: one per child of the surveyed node,
-  // carrying the child's source context and accepting EXACTLY ONE Dispatch -- the shape a
-  // setter-callback allocator plugs into verbatim ((child, amount) => child.Dispatch(amount) is
-  // its assignment callback). A second Dispatch throws immediately; a target left unset throws
-  // when the survey returns -- the operator-level analogue of a strict allocator's no-value-lost
-  // validation.
-  //
-  // A struct over the build's shared arrival/written arrays: copies share that backing state, so
-  // exactly-once holds across copies and a survey allocates nothing per child. Shared by the
-  // sync RootfixDispatch and its async analog.
+  // A struct over the build's shared arrival/written arrays: copies share that backing state,
+  // so exactly-once holds across copies and a survey allocates nothing per child.
+  /// <summary>
+  /// One child of a surveyed node, write-side: its source context, and a
+  /// <see cref="Dispatch"/> member that must be called exactly once per survey -- a second
+  /// call throws immediately, and a target left unset throws when the survey returns. The
+  /// shape plugs directly into setter-style allocators:
+  /// <c>(child, amount) =&gt; child.Dispatch(amount)</c>.
+  /// </summary>
   public readonly struct DispatchTarget<TSource, TDispatch>
   {
     internal DispatchTarget(NodeContext<TSource> context, TDispatch[] arrivals, bool[] written, int index)
@@ -34,6 +33,9 @@ namespace Copse.Linq
     /// <summary>The child's source value (shorthand for <c>Context.Node</c>).</summary>
     public TSource Node => Context.Node;
 
+    /// <summary>Delivers <paramref name="value"/> to this child. Must be called exactly once
+    /// per survey: a second call throws <see cref="InvalidOperationException"/> immediately,
+    /// and never calling it throws when the survey returns.</summary>
     public void Dispatch(TDispatch value)
     {
       if (_Written[_Index])

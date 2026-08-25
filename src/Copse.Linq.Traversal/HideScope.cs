@@ -12,6 +12,11 @@ namespace Copse.Linq
   // ONE neutral enum, not a codegen pair: pure vocabulary values have no color, and both colors'
   // Hide overloads surface the same type. Lives in Copse.Linq.Traversal, the Linq-level neutral
   // project, like BufferLayout.
+  /// <summary>
+  /// How far <c>Hide</c>'s concealment reaches. Ordered, not flags: each value names the
+  /// deepest layer hidden, and hiding the treenumerator necessarily hides the treenumerable
+  /// above it. The two scopes cost differently -- see each value.
+  /// </summary>
   public enum HideScope
   {
     /// <summary>

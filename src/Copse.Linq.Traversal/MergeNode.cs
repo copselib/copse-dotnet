@@ -1,14 +1,17 @@
 ﻿namespace Copse.Linq.Treenumerators
 {
-  // One node of a merged tree, with the provenance the merge assigned it: which side or sides
-  // contributed it. A VARIANT, not a pair of options -- the node always exists, so the flags do
-  // not say "this value is absent", they say which of the three states holds (left only, right
-  // only, both). Options over the sides would admit a fourth, (none, none): a node from neither
-  // tree, which no merge produces, and would lose HasLeftAndRight, the state the domain has a
-  // word for. A discriminated union is what this wants to be; C# has none, so the flags carry
-  // the invariant.
+  // A variant, not a pair of options: options over the sides would admit (none, none) -- a
+  // node from neither tree, which no merge produces -- and would lose HasLeftAndRight, the
+  // state the domain has a word for.
+  /// <summary>
+  /// One node of a merged tree, with its provenance: exactly one of three states holds --
+  /// contributed by the left tree only, the right tree only, or both. Read
+  /// <see cref="HasLeft"/>/<see cref="HasRight"/> before the matching side's value; the
+  /// absent side's value is <c>default</c> and must not be read.
+  /// </summary>
   public readonly struct MergeNode<TLeft, TRight>
   {
+    /// <summary>Creates a merge node from its sides and their presence flags.</summary>
     public MergeNode(
       TLeft left,
       TRight right,
@@ -21,10 +24,19 @@
       HasRight = hasRight;
     }
 
+    /// <summary>The left tree's value; valid only when <see cref="HasLeft"/>.</summary>
     public TLeft Left { get; }
+
+    /// <summary>The right tree's value; valid only when <see cref="HasRight"/>.</summary>
     public TRight Right { get; }
+
+    /// <summary>Whether the left tree contributed this node.</summary>
     public bool HasLeft { get; }
+
+    /// <summary>Whether the right tree contributed this node.</summary>
     public bool HasRight { get; }
+
+    /// <summary>Whether both trees contributed this node -- the merged case.</summary>
     public bool HasLeftAndRight => HasLeft && HasRight;
 
     public override string ToString() => $"({Left}, {Right})";

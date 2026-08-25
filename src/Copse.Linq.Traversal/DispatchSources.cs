@@ -5,11 +5,9 @@ using System;
 namespace Copse.Linq
 {
   /// <summary>
-  /// One child of a surveyed node, read-side: its context and its completed accumulation --
-  /// DispatchTarget's dual (design-docs/SCANRESULT_DESIGN.md): where the rootfix survey WRITES what
-  /// flows down through a target, the leaffix survey READS what flowed up through a source.
-  /// Carries the full <see cref="Context"/> per the position ruling: callback-context types
-  /// carry coordinates (immediate, consumed in place, never stale); traveling values do not.
+  /// One child of a surveyed node, read-side: its context and its completed accumulation.
+  /// The counterpart of <c>DispatchTarget</c> -- where a downward survey writes into its
+  /// targets, an upward survey reads from its sources.
   /// </summary>
   public readonly struct DispatchSource<TSource, TAccumulate>
   {
@@ -31,14 +29,16 @@ namespace Copse.Linq
     public override string ToString() => $"{Context} <- {Accumulate}";
   }
 
-  // A no-copy, no-allocation view over a surveyed node's children as read-handles, handed to a
-  // LeaffixDispatch survey -- DispatchTargets' dual (the duality audit's write/read pair).
   // Backed by the builds' shared child-index (DispatchChildIndex -- CSR over the preorder
-  // encoding), so Count and the indexer are honestly O(1) and enumeration is a flat slice walk.
-  //
-  // Deliberately NOT IEnumerable<T> / IReadOnlyList<T>: foreach binds to the public struct
-  // Enumerator by pattern (zero allocation), while every interface path would box the view AND
-  // its enumerator on every survey. ToArray() is the explicit bridge to interface-shaped APIs.
+  // encoding). Deliberately NOT IEnumerable<T> / IReadOnlyList<T>: foreach binds to the public
+  // struct Enumerator by pattern (zero allocation), while every interface path would box the
+  // view AND its enumerator on every survey.
+  /// <summary>
+  /// The view a <c>LeaffixDispatch</c> survey receives: all of the surveyed node's children at
+  /// once, each with its completed accumulation. <see cref="Count"/> and the indexer are O(1),
+  /// and <c>foreach</c> over the view allocates nothing; <see cref="ToArray"/> is the bridge
+  /// when an API needs an <c>IEnumerable</c>.
+  /// </summary>
   public readonly struct DispatchSources<TSource, TAccumulate>
   {
     internal DispatchSources(

@@ -225,7 +225,7 @@ namespace Copse.Linq.Treenumerators
       _PrefixStoredCount++;
     }
 
-    // The subtree-mode gate (TakeSubtreesWhere as a driver stage, 2026-08-17): is the node
+    // The subtree-mode gate (TakeSubtreesWhere as a driver stage): is the node
     // being scheduled at innerDepth inside a KEPT region -- its immediate inner parent
     // accepted? Read BEFORE PrefixWriteForScheduledNode writes the node's own slot. Roots
     // have no parent and are never inside a kept region.
@@ -259,8 +259,8 @@ namespace Copse.Linq.Treenumerators
     // make frontSkipPrefix the tail and drop stored entries at/above frontDepth-1: deeper slots
     // are re-materialized live (PrefixWriteScheduled) as the inner schedules the front's
     // descendants contiguously downward. Ancestor entries above the front (depths <
-    // frontDepth-1, whose counts may be smaller) stay stored. This is what reclaims the memory
-    // the old absolute-depth List<int> never released. Called ONLY by RetireFrontAndReanchor.
+    // frontDepth-1, whose counts may be smaller) stay stored. This re-anchoring is what keeps
+    // the prefix bounded by the live path instead of the tree depth. Called ONLY by RetireFrontAndReanchor.
     private void PrefixAnchor(int frontInnerDepth, int frontSkipPrefix)
     {
       var keep = frontInnerDepth > 0 ? frontInnerDepth - 1 : 0;

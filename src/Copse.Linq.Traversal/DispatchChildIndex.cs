@@ -36,7 +36,7 @@ namespace Copse.Linq
       return (offsets, indices);
     }
 
-    // The positions-producing variant (2026-08-05, the perf re-baseline): the second hop pass
+    // The positions-producing variant: the second hop pass
     // visits parents in ascending preorder, so every parent's position is already written when
     // its children fill in -- sibling index is the slice offset, depth is the parent's plus
     // one, roots seed at the whole-subtree hops. One exact-size array, no capture side channel,

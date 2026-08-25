@@ -4,18 +4,17 @@ using System;
 
 namespace Copse.Linq
 {
-  // A no-copy, no-allocation view over a surveyed node's children as write-handles, handed to a
-  // RootfixDispatch survey. Backed by the build's child-index (pass 1½ gathers each parent's
-  // children's preorder indices into one contiguous slice -- CSR over the preorder encoding),
-  // so Count and the indexer are honestly O(1) and enumeration is a flat slice walk. [2026-08-02:
-  // the index replaced subtree-span hopping, under which an indexer could only be O(k) -- the
-  // dishonest-complexity shape -- and indexing scenarios paid a ToArray per survey.]
-  //
-  // Deliberately NOT IEnumerable<T> / IReadOnlyList<T>: foreach binds to the public struct
-  // Enumerator by pattern (zero allocation), while every interface path would box the view AND
-  // its enumerator on every survey -- the silent per-survey allocation this library exists to
-  // avoid. ToArray() is the explicit bridge to interface-shaped APIs (LINQ, IEnumerable
-  // parameters): the same order of cost any interface path pays, made visible at the call site.
+  // Backed by the build's child-index (pass 1½ gathers each parent's children's preorder
+  // indices into one contiguous slice -- CSR over the preorder encoding). Deliberately NOT
+  // IEnumerable<T> / IReadOnlyList<T>: foreach binds to the public struct Enumerator by
+  // pattern (zero allocation), while every interface path would box the view AND its
+  // enumerator on every survey.
+  /// <summary>
+  /// The view a <c>RootfixDispatch</c> survey receives: all of the surveyed node's children at
+  /// once, each as a write-handle that must be dispatched to exactly once.
+  /// <see cref="Count"/> and the indexer are O(1), and <c>foreach</c> over the view allocates
+  /// nothing; <see cref="ToArray"/> is the bridge when an API needs an <c>IEnumerable</c>.
+  /// </summary>
   public readonly struct DispatchTargets<TSource, TDispatch>
   {
     internal DispatchTargets(
