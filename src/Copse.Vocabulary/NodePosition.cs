@@ -4,15 +4,26 @@ using System.Runtime.CompilerServices;
 
 namespace Copse.Core
 {
+  /// <summary>
+  /// A node's location in its tree: its zero-based index among its siblings, and its depth
+  /// (roots are depth 0). Positions order depth-first-major: compared first by depth, then by
+  /// sibling index. Addition and subtraction combine positions component-wise, which is how
+  /// operators offset positions between a source tree and a derived one.
+  /// </summary>
   public readonly struct NodePosition : IEqualityComparer<NodePosition>, IComparable<NodePosition>
   {
+    /// <summary>Creates the position (<paramref name="siblingIndex"/>, <paramref name="depth"/>).</summary>
     public NodePosition(int siblingIndex, int depth)
     {
       SiblingIndex = siblingIndex;
       Depth = depth;
     }
 
+    /// <summary>The node's zero-based index among its siblings. Roots are siblings of each
+    /// other: a forest's roots have sibling indices 0, 1, 2, …</summary>
     public int SiblingIndex { get; }
+
+    /// <summary>The node's depth: 0 for roots, one more for each level below.</summary>
     public int Depth { get; }
 
     /// <summary>
@@ -36,14 +47,17 @@ namespace Copse.Core
       get => Depth < 0;
     }
 
+    /// <summary>Renders as "(siblingIndex, depth)".</summary>
     public override string ToString()
       => $"({SiblingIndex}, {Depth})";
 
     #region Arithmetic
 
+    /// <summary>Component-wise sum: sibling indices add, depths add.</summary>
     public static NodePosition operator +(NodePosition left, NodePosition right)
       => new NodePosition(left.SiblingIndex + right.SiblingIndex, left.Depth + right.Depth);
 
+    /// <summary>Component-wise difference: sibling indices subtract, depths subtract.</summary>
     public static NodePosition operator -(NodePosition left, NodePosition right)
       => new NodePosition(left.SiblingIndex - right.SiblingIndex, left.Depth - right.Depth);
 
@@ -78,6 +92,7 @@ namespace Copse.Core
 
     #region Order Comparison
 
+    /// <summary>Orders by depth first, then by sibling index within a depth.</summary>
     public int CompareTo(NodePosition other)
     {
       if (other.Depth < Depth)
