@@ -23,23 +23,72 @@ namespace Copse.Benchmarks
   //                       reconstructing it through the StepOutcome switch at every consume.
   //  - OptionOfWalker   : the pre-arc shape (Option over the walker), the historical control
   //                       that ran 10.2 ms on the same EPYC model.
+  // ROUND 2 (after the first EPYC draw exonerated the step shapes): the same sweep reads
+  // 42.3 ms inside BufferProbes and 7.9 ms here, on the same 9V74 -- so the cost is an
+  // interaction with that class's PROCESS ENVIRONMENT. This round replicates it exactly:
+  // BOTH captures materialized, BOTH warm-swept (so both ITreeTopology implementations are
+  // live and exercised -- every probe call site polymorphic, the devirt roulette), plus a
+  // row mirroring BufferProbes' precise static-method-through-interface sweep shape.
   [MemoryDiagnoser]
   [BenchmarkCategory("Buffer")]
   public class WalkerStepShape
   {
     private ITreenumerableBuffer<int> _Capture;
+    private ITreenumerableBuffer<int> _LevelOrderCapture;
     private ITreeTopology<int, int> _Topology;
 
     [GlobalSetup]
     public void Setup()
     {
       _Capture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.Preorder);
+      _LevelOrderCapture = CanonicalTrees.MegaTriangleTree().Materialize(BufferLayout.LevelOrder);
       _Capture.Consume(TreeTraversalStrategy.DepthFirst);
+      _LevelOrderCapture.Consume(TreeTraversalStrategy.BreadthFirst);
       _Topology = _Capture.GetTreeWalker().Topology;
 
-      // Warm every axis so all rows measure steady-state probe reads.
+      // Replicate BufferProbes' warm state exactly: both captures' adjacency fully scanned,
+      // both topology implementations exercised through the walker.
       Walker();
+      WalkerViaInterfaceStatic();
+      StaticWalkSweep(_LevelOrderCapture);
       TopologyDirect();
+    }
+
+    // ----- Row 0: BufferProbes' exact sweep shape (static method over the interface) -----
+
+    [Benchmark]
+    public long WalkerViaInterfaceStatic()
+      => StaticWalkSweep(_Capture);
+
+    private static long StaticWalkSweep(IWalkableTreenumerable<int, int> walkable)
+    {
+      var door = walkable.GetTreeWalker();
+      var checksum = 0L;
+
+      for (var rootIndex = 0; ; rootIndex++)
+      {
+        var root = door.MoveToRoot(rootIndex);
+        if (!root.HasValue)
+          break;
+        checksum += StaticWalkSubtree(root.Value);
+      }
+
+      return checksum;
+    }
+
+    private static long StaticWalkSubtree(TreeWalker<int, int> walker)
+    {
+      var checksum = (long)walker.GetValue();
+
+      for (var childIndex = 0; ; childIndex++)
+      {
+        var child = walker.MoveToChild(childIndex);
+        if (!child.HasValue)
+          break;
+        checksum += StaticWalkSubtree(child.Value);
+      }
+
+      return checksum;
     }
 
     // ----- Row 1: the shipping shape -----
