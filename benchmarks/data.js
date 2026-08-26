@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787778297225,
+  "lastUpdate": 1787778298017,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -152530,6 +152530,102 @@ window.BENCHMARK_DATA = {
             "value": 62003150.440789476,
             "unit": "ns",
             "range": "± 1363691.3383622589"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44138d800e7184424ffe99b4e6cdaae398fa9a05",
+          "message": "NodeVisit derives its Mode; the law gets one spelling\n\nA node is scheduled exactly once, at visit count 0, and visited at\nevery count after -- so NodeVisit's Mode field recorded information\nthat could not legally disagree with VisitCount. It is now a derived\nproperty, the constructor drops its mode parameter (an inconsistent\nvisit record becomes unspellable), and the S/V rendering collapses to\na ternary. The derivation itself is written once,\nTreenumeratorModes.FromVisitCount, and the engines' Publish and the\nWhere machinery route through it. The fixture builder keeps its\nreadable four-tuples but now CHECKS the declared mode against the\nderivation -- a fixture row that lies fails loudly.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T20:14:42Z",
+          "tree_id": "08befc4cdd2d93cf81e3259b8f3c570e0494149d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/44138d800e7184424ffe99b4e6cdaae398fa9a05"
+        },
+        "date": 1787778297860,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 110221948.09333333,
+            "unit": "ns",
+            "range": "± 746485.6081564521"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 87953988.20238094,
+            "unit": "ns",
+            "range": "± 524863.3017640946"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 246291276.15384614,
+            "unit": "ns",
+            "range": "± 947408.6509116599"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 267330781.07142857,
+            "unit": "ns",
+            "range": "± 411454.2629724315"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 162641954.86666664,
+            "unit": "ns",
+            "range": "± 1067284.9781437046"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 200347738.64444447,
+            "unit": "ns",
+            "range": "± 2389555.241944315"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 93826444.27777778,
+            "unit": "ns",
+            "range": "± 361574.218463791"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 85629926.46428572,
+            "unit": "ns",
+            "range": "± 909861.4452713701"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 445609514.3333333,
+            "unit": "ns",
+            "range": "± 1827011.1946422483"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 493594876.85714287,
+            "unit": "ns",
+            "range": "± 1090746.8766197886"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 85138462.1547619,
+            "unit": "ns",
+            "range": "± 160415.27737775195"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79151086.20408164,
+            "unit": "ns",
+            "range": "± 557639.5405223052"
           }
         ]
       }
