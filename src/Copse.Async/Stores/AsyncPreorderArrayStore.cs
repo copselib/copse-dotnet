@@ -11,24 +11,24 @@ namespace Copse.Async.Stores
   // never share an assembly and the neutral layer stays store-free.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x completed x no feed.
-  /// <summary>A completed preorder store over plain arrays: <c>values[i]</c> in preorder,
+  /// <summary>A completed preorder store over plain arrays: <c>nodes[i]</c> in preorder,
   /// node <c>i</c>'s subtree spanning <c>[i, i + subtreeSizes[i])</c>. Nothing grows, so the
   /// grow operations answer immediately and the reads are array access.</summary>
   public readonly struct AsyncPreorderArrayStore<TNode> : IAsyncPreorderStore<TNode>
   {
-    public AsyncPreorderArrayStore(TNode[] values, int[] subtreeSizes)
+    public AsyncPreorderArrayStore(TNode[] nodes, int[] subtreeSizes)
     {
-      _Values = values;
+      _Nodes = nodes;
       _SubtreeSizes = subtreeSizes;
     }
 
-    private readonly TNode[] _Values;
+    private readonly TNode[] _Nodes;
     private readonly int[] _SubtreeSizes;
 
-    public int Count => _Values.Length;
+    public int Count => _Nodes.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ValueTask<bool> EnsureBufferedAsync(int index) => new ValueTask<bool>(index < _Values.Length);
+    public ValueTask<bool> EnsureBufferedAsync(int index) => new ValueTask<bool>(index < _Nodes.Length);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask<int> EnsureSubtreeClosedAsync(int index) => new ValueTask<int>(_SubtreeSizes[index]);
@@ -37,6 +37,6 @@ namespace Copse.Async.Stores
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Nodes[index];
   }
 }

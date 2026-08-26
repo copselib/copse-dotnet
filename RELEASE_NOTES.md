@@ -43,6 +43,10 @@
 - **`NodeVisit<TNode>.Mode` is now derived** from `VisitCount` (scheduling at 0, visiting
   from 1), and the constructor drops its mode parameter. *Migration: remove the first
   argument at construction sites; reads of `.Mode` are unchanged.*
+- **`SelectWhereResult<TNode>.Value` → `Node`** and **`PreorderRead<TNode>.Value` → `Node`**
+  (constructor parameters likewise) — tree-domain types name the element for what it is;
+  generic containers (`Option`, the walker step result) keep their own `Value` idiom. The
+  completed array stores' constructors rename their `values` parameter to `nodes`.
 
 ### Moved types
 

@@ -145,7 +145,7 @@ namespace Copse.Linq.Treenumerators
 
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(result.Value, InnerTreenumerator.Position);
+      _Path.PushAcceptedChild(result.Node, InnerTreenumerator.Position);
 
       if (cacheChild)
       {

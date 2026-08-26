@@ -27,10 +27,10 @@ namespace Copse.Linq
     private readonly bool[] _Written;
     private readonly int _Index;
 
-    /// <summary>The child's source value and position.</summary>
+    /// <summary>The child's node and position.</summary>
     public readonly NodeContext<TNode> Context;
 
-    /// <summary>The child's source value (shorthand for <c>Context.Node</c>).</summary>
+    /// <summary>The child's node (shorthand for <c>Context.Node</c>).</summary>
     public TNode Node => Context.Node;
 
     /// <summary>Delivers <paramref name="value"/> to this child. Must be called exactly once

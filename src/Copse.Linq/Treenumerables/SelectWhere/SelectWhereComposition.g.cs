@@ -85,7 +85,7 @@ namespace Copse.Linq.Treenumerables
         var innerResult = innerResultSelector(nodeContext);
 
         return new SelectWhereResult<TOuterResult>(
-          selector(new NodeContext<TResult>(innerResult.Value, nodeContext.Position)),
+          selector(new NodeContext<TResult>(innerResult.Node, nodeContext.Position)),
           innerResult.Strategies);
       };
     }
@@ -101,9 +101,9 @@ namespace Copse.Linq.Treenumerables
         var innerResult = innerResultSelector(nodeContext);
 
         return new SelectWhereResult<TResult>(
-          innerResult.Value,
+          innerResult.Node,
           innerResult.Strategies
-            | (predicate(new NodeContext<TResult>(innerResult.Value, nodeContext.Position))
+            | (predicate(new NodeContext<TResult>(innerResult.Node, nodeContext.Position))
               ? NodeTraversalStrategies.SkipDescendants
               : NodeTraversalStrategies.TraverseAll));
       };

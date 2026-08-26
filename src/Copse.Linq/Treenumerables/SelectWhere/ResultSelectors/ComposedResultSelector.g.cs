@@ -38,9 +38,9 @@ namespace Copse.Linq.Treenumerables
       if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
         return new SelectWhereResult<TResult>(default, innerResult.Strategies);
 
-      var outerResult = _OuterSelector.GetResult(new NodeContext<TMid>(innerResult.Value, nodeContext.Position));
+      var outerResult = _OuterSelector.GetResult(new NodeContext<TMid>(innerResult.Node, nodeContext.Position));
 
-      return new SelectWhereResult<TResult>(outerResult.Value, outerResult.Strategies | innerResult.Strategies);
+      return new SelectWhereResult<TResult>(outerResult.Node, outerResult.Strategies | innerResult.Strategies);
     }
   }
 }

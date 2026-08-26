@@ -18,7 +18,7 @@ namespace Copse.Linq
   public readonly struct DispatchTargets<TNode, TDispatch>
   {
     internal DispatchTargets(
-      TNode[] values,
+      TNode[] nodes,
       int[] childIndices,
       int[] childOffsets,
       TDispatch[] arrivals,
@@ -26,7 +26,7 @@ namespace Copse.Linq
       int parentIndex,
       int childDepth)
     {
-      _Values = values;
+      _Nodes = nodes;
       _ChildIndices = childIndices;
       _ChildOffsets = childOffsets;
       _Arrivals = arrivals;
@@ -35,7 +35,7 @@ namespace Copse.Linq
       _ChildDepth = childDepth;
     }
 
-    private readonly TNode[] _Values;
+    private readonly TNode[] _Nodes;
     private readonly int[] _ChildIndices;
     private readonly int[] _ChildOffsets;
     private readonly TDispatch[] _Arrivals;
@@ -65,7 +65,7 @@ namespace Copse.Linq
         // sibling order by construction), and its depth is the pass's walk depth plus one --
         // so the build allocates no positions array.
         return new DispatchTarget<TNode, TDispatch>(
-          new NodeContext<TNode>(_Values[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
+          new NodeContext<TNode>(_Nodes[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
       }
     }
 

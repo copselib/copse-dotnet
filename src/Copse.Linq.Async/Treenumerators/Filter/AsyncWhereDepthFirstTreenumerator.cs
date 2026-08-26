@@ -118,7 +118,7 @@ namespace Copse.Linq.Async
       // ShouldCacheChild reads the accepted top as the PARENT, so it must run BEFORE the push.
       var cacheChild = _Path.ShouldCacheChild();
 
-      _Path.PushAcceptedChild(result.Value, InnerTreenumerator.Position);
+      _Path.PushAcceptedChild(result.Node, InnerTreenumerator.Position);
 
       if (cacheChild)
       {

@@ -6,32 +6,32 @@ using System.Runtime.CompilerServices;
 
 namespace Copse.Stores
 {
-  // A COMPLETED level-order store over plain arrays: values in level order, each node's child
+  // A COMPLETED level-order store over plain arrays: nodes in level order, each node's child
   // span described by firstChildIndices[i] + childCounts[i], the roots the leading rootCount
   // entries. The structural dual of AsyncPreorderArrayStore -- nothing grows, the Ensure* hooks
   // answer with completed results, the reads are plain array access. Each color owns its own:
   // the sync twin is generated from this file.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): level-order x completed x no feed.
-  /// <summary>A completed level-order store over plain arrays: values level by level, with
+  /// <summary>A completed level-order store over plain arrays: nodes level by level, with
   /// each node's first-child index and child count beside them. Nothing grows, so the grow
   /// operations answer immediately and the reads are array access.</summary>
   public readonly struct LevelOrderArrayStore<TNode> : ILevelOrderStore<TNode>
   {
-    public LevelOrderArrayStore(TNode[] values, int[] firstChildIndices, int[] childCounts, int rootCount)
+    public LevelOrderArrayStore(TNode[] nodes, int[] firstChildIndices, int[] childCounts, int rootCount)
     {
-      _Values = values;
+      _Nodes = nodes;
       _FirstChildIndices = firstChildIndices;
       _ChildCounts = childCounts;
       _RootCount = rootCount;
     }
 
-    private readonly TNode[] _Values;
+    private readonly TNode[] _Nodes;
     private readonly int[] _FirstChildIndices;
     private readonly int[] _ChildCounts;
     private readonly int _RootCount;
 
-    public int Count => _Values.Length;
+    public int Count => _Nodes.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureRootAvailable(int k) => k < _RootCount;
@@ -43,6 +43,6 @@ namespace Copse.Stores
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetValue(int index) => _Nodes[index];
   }
 }

@@ -51,7 +51,7 @@ namespace Copse.Linq.Treenumerators
       // strategies count -- subtrees are shed at scheduling, the PruneAfter contract).
       var result = _ResultSelector(InnerTreenumerator.ToNodeContext());
 
-      Node = result.Value;
+      Node = result.Node;
 
       if (Mode == TreenumeratorMode.SchedulingNode)
         _PendingResultStrategies = result.Strategies;

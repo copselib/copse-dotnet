@@ -278,7 +278,7 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(result.Node, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               _DeferredResultStrategies = result.Strategies;
               _Path.Front.VisitCount++;
@@ -290,7 +290,7 @@ namespace Copse.Linq.Async
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(result.Node, effectivePosition, innerDepth);
           _PendingResultStrategies = result.Strategies;
         }
         else // VisitingNode

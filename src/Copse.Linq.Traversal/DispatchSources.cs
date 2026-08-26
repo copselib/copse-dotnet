@@ -17,13 +17,13 @@ namespace Copse.Linq
       Accumulate = accumulate;
     }
 
-    /// <summary>The child's source value and position.</summary>
+    /// <summary>The child's node and position.</summary>
     public readonly NodeContext<TNode> Context;
 
     /// <summary>The child's completed accumulation.</summary>
     public readonly TAccumulate Accumulate;
 
-    /// <summary>The child's source value (shorthand for <c>Context.Node</c>).</summary>
+    /// <summary>The child's node (shorthand for <c>Context.Node</c>).</summary>
     public TNode Node => Context.Node;
 
     public override string ToString() => $"{Context} <- {Accumulate}";
@@ -42,14 +42,14 @@ namespace Copse.Linq
   public readonly struct DispatchSources<TNode, TAccumulate>
   {
     internal DispatchSources(
-      TNode[] values,
+      TNode[] nodes,
       NodePosition[] positions,
       int[] childIndices,
       int[] childOffsets,
       TAccumulate[] accumulations,
       int parentIndex)
     {
-      _Values = values;
+      _Nodes = nodes;
       _Positions = positions;
       _ChildIndices = childIndices;
       _ChildOffsets = childOffsets;
@@ -57,7 +57,7 @@ namespace Copse.Linq
       _ParentIndex = parentIndex;
     }
 
-    private readonly TNode[] _Values;
+    private readonly TNode[] _Nodes;
     private readonly NodePosition[] _Positions;
     private readonly int[] _ChildIndices;
     private readonly int[] _ChildOffsets;
@@ -82,7 +82,7 @@ namespace Copse.Linq
         // channel) -- the reverse fold cannot derive them statelessly the way the rootfix
         // pass does, and a close-stack walk measured out (O(n) entries on chains).
         return new DispatchSource<TNode, TAccumulate>(
-          new NodeContext<TNode>(_Values[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
+          new NodeContext<TNode>(_Nodes[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
       }
     }
 

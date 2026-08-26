@@ -80,7 +80,7 @@ namespace Copse.Async.Treenumerators
 
     private struct Entry
     {
-      public TNode Value;
+      public TNode Node;
       public int FirstChildIndex;   // absolute; -1 until the first child is appended
       public int ChildCount;
       public bool SuppressChildren; // pruned: when this entry's group arrives, discard-and-count
@@ -358,7 +358,7 @@ namespace Copse.Async.Treenumerators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void PushScheduled(int nodeIndex, NodePosition position)
     {
-      var node = GetEntry(nodeIndex).Value;
+      var node = GetEntry(nodeIndex).Node;
 
       _ScheduleStack.AddLast(new Frame
       {
@@ -512,7 +512,7 @@ namespace Copse.Async.Treenumerators
       return AdvanceGroupAsync();
     }
 
-    private void AppendEntry(TNode value, bool suppressChildren)
+    private void AppendEntry(TNode node, bool suppressChildren)
     {
       EnsureWindowSlot();
 
@@ -520,7 +520,7 @@ namespace Copse.Async.Treenumerators
 
       _Window[index & _WindowMask] = new Entry
       {
-        Value = value,
+        Node = node,
         FirstChildIndex = -1,
         SuppressChildren = suppressChildren,
       };

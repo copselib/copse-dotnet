@@ -18,15 +18,15 @@ namespace Copse.Linq.Async.Treenumerables
   // happens to the node.
   internal readonly struct SelectWhereResult<TNode>
   {
-    public SelectWhereResult(TNode value, NodeTraversalStrategies strategies)
+    public SelectWhereResult(TNode node, NodeTraversalStrategies strategies)
     {
-      Value = value;
+      Node = node;
       Strategies = strategies;
     }
 
     // Unobserved when the strategies carry SkipNode (the fold stops and the driver never
     // publishes the node).
-    public readonly TNode Value;
+    public readonly TNode Node;
     public readonly NodeTraversalStrategies Strategies;
   }
 }

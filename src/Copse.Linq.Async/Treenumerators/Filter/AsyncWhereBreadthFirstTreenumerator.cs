@@ -235,7 +235,7 @@ namespace Copse.Linq.Async
             if (!_Path.ConsumerSkippedChildAfterLastAccepted)
             {
               _Path.ClearConsumerSkippedChildAfterLastAccepted();
-              _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
+              _Path.EnqueueAccepted(result.Node, effectivePosition, innerDepth);
               _Path.MarkDeferredSchedulePending();
               // The schedule publishes on a later entry; its accept-side strategies wait with it.
               _DeferredResultStrategies = resultStrategies;
@@ -249,7 +249,7 @@ namespace Copse.Linq.Async
             _Path.ClearConsumerSkippedChildAfterLastAccepted();
           }
 
-          _Path.EnqueueAccepted(result.Value, effectivePosition, innerDepth);
+          _Path.EnqueueAccepted(result.Node, effectivePosition, innerDepth);
           // The scheduling publish below is this node's; its accept-side strategies apply on
           // the pull that follows it.
           _PendingResultStrategies = resultStrategies;

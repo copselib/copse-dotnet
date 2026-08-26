@@ -41,7 +41,7 @@ namespace Copse.Treenumerators
 
     // One-token lookahead: the next streamed node, not yet claimed by any level.
     private bool _HasLookahead;
-    private TNode _LookaheadValue;
+    private TNode _LookaheadNode;
     private int _LookaheadDepth;
     private bool _StreamExhausted;
 
@@ -61,7 +61,7 @@ namespace Copse.Treenumerators
 
     private struct Level
     {
-      public TNode Value;
+      public TNode Node;
       public NodePosition Position;
       public int VisitCount;
       public bool Skipped;           // SkipNode'd: no visits, resident only to promote children.
@@ -109,7 +109,7 @@ namespace Copse.Treenumerators
       if (!ensured)
         return false;
 
-      var value = _LookaheadValue;
+      var value = _LookaheadNode;
       _HasLookahead = false;
 
       PushLevel(value, new NodePosition(_RootsSeen++, 0));
@@ -211,7 +211,7 @@ namespace Copse.Treenumerators
       if (_LookaheadDepth != childDepth)
         return false;
 
-      var value = _LookaheadValue;
+      var value = _LookaheadNode;
       _HasLookahead = false;
 
       // Re-acquire the ref AFTER the probe to bump NextSiblingIndex in place. The path is
@@ -262,7 +262,7 @@ namespace Copse.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value.Value;
+      _LookaheadNode = read.Value.Node;
       _LookaheadDepth = read.Value.Depth;
       _HasLookahead = true;
 
@@ -278,7 +278,7 @@ namespace Copse.Treenumerators
         return false;
       }
 
-      _LookaheadValue = read.Value.Value;
+      _LookaheadNode = read.Value.Node;
       _LookaheadDepth = read.Value.Depth;
 
       return true;
@@ -286,16 +286,16 @@ namespace Copse.Treenumerators
 
     // Schedule a node as a new level and publish its scheduling visit.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void PushLevel(TNode value, NodePosition position)
+    private void PushLevel(TNode node, NodePosition position)
     {
       _Path.AddLast(new Level
       {
-        Value = value,
+        Node = node,
         Position = position,
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = value;
+      Node = node;
       VisitCount = 0;
       Position = position;
     }
@@ -311,7 +311,7 @@ namespace Copse.Treenumerators
       _DepthOfLastVisitedNode = top.Position.Depth;
 
       Mode = TreenumeratorMode.VisitingNode;
-      Node = top.Value;
+      Node = top.Node;
       VisitCount = top.VisitCount;
       Position = top.Position;
     }
