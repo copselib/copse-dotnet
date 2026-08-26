@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787774068152,
+  "lastUpdate": 1787774068849,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -74012,6 +74012,66 @@ window.BENCHMARK_DATA = {
             "value": 153630655.68055555,
             "unit": "ns",
             "range": "± 3082792.0915996702"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4",
+          "message": "The handle wears its name: HandleAndSiblingIndex, and the machinery follows\n\nJason's catch: the type-parameter sweep left member and parameter names\nbehind, so a THandle sat in fields named Node. Fixed at every altitude:\nthe path states' node-state field and frame field are Handle, their push\nparameters are handles, the engines' Publish locals say what they hold,\nthe engine constructors take roots (matching the treenumerable's own\nparameter), and the public pair renames -- NodeAndSiblingIndex<TNode>\nbecomes HandleAndSiblingIndex<THandle> with field Handle, honest at both\nof its call sites (the child pull's yield and the topology probes'\nanswer). Release-noted; twins regenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T05:56:53Z",
+          "tree_id": "ca1a35bd5196acc4362f4d44c0bc07dfabc68a87",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4"
+        },
+        "date": 1787774068701,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Forest",
+            "value": 66829275.52678572,
+            "unit": "ns",
+            "range": "± 187046.57159643102"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Serialize_Chain_100K",
+            "value": 9595553.515024038,
+            "unit": "ns",
+            "range": "± 45770.81839503656"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest",
+            "value": 136316538.28846154,
+            "unit": "ns",
+            "range": "± 710549.6527641605"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Chain_100K",
+            "value": 17667597.463541668,
+            "unit": "ns",
+            "range": "± 171608.5313350973"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_StringMap",
+            "value": 173033672.017094,
+            "unit": "ns",
+            "range": "± 3703178.704562446"
+          },
+          {
+            "name": "Copse.Benchmarks.Serialization.Deserialize_Forest_ToInt_SpanMap",
+            "value": 165843615.5736434,
+            "unit": "ns",
+            "range": "± 6077468.860812364"
           }
         ]
       }
