@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787625519725,
+  "lastUpdate": 1787774063961,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -18268,6 +18268,150 @@ window.BENCHMARK_DATA = {
             "value": 102944743.21153846,
             "unit": "ns",
             "range": "± 900284.0574899984"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4",
+          "message": "The handle wears its name: HandleAndSiblingIndex, and the machinery follows\n\nJason's catch: the type-parameter sweep left member and parameter names\nbehind, so a THandle sat in fields named Node. Fixed at every altitude:\nthe path states' node-state field and frame field are Handle, their push\nparameters are handles, the engines' Publish locals say what they hold,\nthe engine constructors take roots (matching the treenumerable's own\nparameter), and the public pair renames -- NodeAndSiblingIndex<TNode>\nbecomes HandleAndSiblingIndex<THandle> with field Handle, honest at both\nof its call sites (the child pull's yield and the topology probes'\nanswer). Release-noted; twins regenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T05:56:53Z",
+          "tree_id": "ca1a35bd5196acc4362f4d44c0bc07dfabc68a87",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4"
+        },
+        "date": 1787774031639,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14040620.542067308,
+            "unit": "ns",
+            "range": "± 188693.0020083755"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21329647.4,
+            "unit": "ns",
+            "range": "± 121755.0312599481"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3933101.2790178573,
+            "unit": "ns",
+            "range": "± 11598.221152692386"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3932808.49609375,
+            "unit": "ns",
+            "range": "± 12787.31555806882"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 116677829.72857143,
+            "unit": "ns",
+            "range": "± 507270.1429231114"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 138282542.75,
+            "unit": "ns",
+            "range": "± 577820.3190230367"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 52604552.141666666,
+            "unit": "ns",
+            "range": "± 165324.18959582882"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50699893.90714286,
+            "unit": "ns",
+            "range": "± 651952.1406728725"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 43264491.19642856,
+            "unit": "ns",
+            "range": "± 193157.8850140257"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35273397.60952382,
+            "unit": "ns",
+            "range": "± 33743.76778929675"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26667287.363839287,
+            "unit": "ns",
+            "range": "± 62621.93962685121"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18908954.11397059,
+            "unit": "ns",
+            "range": "± 380041.7406297922"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 59514530.71428572,
+            "unit": "ns",
+            "range": "± 430548.19990423543"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88986513.63333334,
+            "unit": "ns",
+            "range": "± 492502.85192167753"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14384675.158653846,
+            "unit": "ns",
+            "range": "± 26272.83755713228"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14411882.625,
+            "unit": "ns",
+            "range": "± 46922.76489438132"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 460958810.9285714,
+            "unit": "ns",
+            "range": "± 1305150.3065963448"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 562478784.7857143,
+            "unit": "ns",
+            "range": "± 1849623.7046251069"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 210125872.66666666,
+            "unit": "ns",
+            "range": "± 1302257.5561390687"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 203412424.31578946,
+            "unit": "ns",
+            "range": "± 1494353.48132499"
           }
         ]
       }
