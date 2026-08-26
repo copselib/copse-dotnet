@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787778299703,
+  "lastUpdate": 1787778300257,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -35818,6 +35818,54 @@ window.BENCHMARK_DATA = {
             "value": 14136350.406919643,
             "unit": "ns",
             "range": "± 464461.12150395435"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44138d800e7184424ffe99b4e6cdaae398fa9a05",
+          "message": "NodeVisit derives its Mode; the law gets one spelling\n\nA node is scheduled exactly once, at visit count 0, and visited at\nevery count after -- so NodeVisit's Mode field recorded information\nthat could not legally disagree with VisitCount. It is now a derived\nproperty, the constructor drops its mode parameter (an inconsistent\nvisit record becomes unspellable), and the S/V rendering collapses to\na ternary. The derivation itself is written once,\nTreenumeratorModes.FromVisitCount, and the engines' Publish and the\nWhere machinery route through it. The fixture builder keeps its\nreadable four-tuples but now CHECKS the declared mode against the\nderivation -- a fixture row that lies fails loudly.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T20:14:42Z",
+          "tree_id": "08befc4cdd2d93cf81e3259b8f3c570e0494149d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/44138d800e7184424ffe99b4e6cdaae398fa9a05"
+        },
+        "date": 1787778300137,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14070813.640625,
+            "unit": "ns",
+            "range": "± 148230.10090572652"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26730217.61875,
+            "unit": "ns",
+            "range": "± 98202.82239116576"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 24933046.877083335,
+            "unit": "ns",
+            "range": "± 214764.30553119967"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15347883.034620099,
+            "unit": "ns",
+            "range": "± 616888.0533319894"
           }
         ]
       }
