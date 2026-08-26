@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787778306400,
+  "lastUpdate": 1787780417981,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -18556,6 +18556,150 @@ window.BENCHMARK_DATA = {
             "value": 178103813.39473686,
             "unit": "ns",
             "range": "± 6057726.960286786"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "867866d5514e2557653c9ed8834cfd05a9d02c1c",
+          "message": "Map at push: the path states store nodes; handles are push-transient\n\nJason's observation carried to its end: the engine retained each\nhandle only to re-run the map at every publish -- a delegate call per\nvisit event for a value that never changes. The map now fires once,\nat push, inside the path states (which hold both of the pull-shaped\ntopology's arrows: children and resolve), the node states and frames\nstore the resolved element -- DepthFirstNodeState<TNode>.Node and\nBreadthFirstFrame<TNode,_>.Node are honest again -- and Publish is a\ncopy. A pushed handle makes its child enumerator, resolves to its\nnode, and is not retained.\n\nBehavior note (release-noted): the map runs once per node rather than\nonce per visit event -- observable only for impure maps, and the\nonce-per-node contract is the house rule everywhere else.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T21:01:08Z",
+          "tree_id": "2d942fd125f039a285f709a95d447350035b01f8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/867866d5514e2557653c9ed8834cfd05a9d02c1c"
+        },
+        "date": 1787780384289,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13423386.30357143,
+            "unit": "ns",
+            "range": "± 98950.94135110766"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 21863864.237980768,
+            "unit": "ns",
+            "range": "± 61241.00308478639"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 4067486.9700520835,
+            "unit": "ns",
+            "range": "± 4993.99708385977"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 4070725.5094866073,
+            "unit": "ns",
+            "range": "± 9475.957162443778"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 125565886.61428572,
+            "unit": "ns",
+            "range": "± 980940.7897557102"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 147690489.88333333,
+            "unit": "ns",
+            "range": "± 1691203.6408762934"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 53760636.740384616,
+            "unit": "ns",
+            "range": "± 109148.80800863988"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50488704.449999996,
+            "unit": "ns",
+            "range": "± 197208.15152452743"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 66765254.26153845,
+            "unit": "ns",
+            "range": "± 127964.43263166556"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35885484.276923075,
+            "unit": "ns",
+            "range": "± 140597.60574793624"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 29093014.286057692,
+            "unit": "ns",
+            "range": "± 40948.255667275014"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 20134822.21875,
+            "unit": "ns",
+            "range": "± 34983.07030791565"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 54457709.1,
+            "unit": "ns",
+            "range": "± 203324.42797593036"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 89847098.3095238,
+            "unit": "ns",
+            "range": "± 361182.66872506175"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14755084.143554688,
+            "unit": "ns",
+            "range": "± 281978.5932391573"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 16246563.229166666,
+            "unit": "ns",
+            "range": "± 13727.934017871348"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 468470170.4285714,
+            "unit": "ns",
+            "range": "± 1353730.2885635172"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 617253069.8,
+            "unit": "ns",
+            "range": "± 5435627.131098913"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 215830563.11827958,
+            "unit": "ns",
+            "range": "± 3953870.215318727"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 205898192.6818182,
+            "unit": "ns",
+            "range": "± 6469557.403808426"
           }
         ]
       }
