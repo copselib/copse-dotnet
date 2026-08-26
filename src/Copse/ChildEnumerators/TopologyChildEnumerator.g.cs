@@ -13,7 +13,7 @@ namespace Copse.ChildEnumerators
   // async, so the index mutation lands on the real struct
   // (the engine's path state holds frames by ref); the awaited tail reads only readonly
   // fields from its state-machine copy.
-  internal struct TopologyChildEnumerator<TNode, THandle> : IChildEnumerator<HandleAndValue<THandle, TNode>>
+  internal struct TopologyChildEnumerator<TNode, THandle> : IChildEnumerator<HandleAndNode<THandle, TNode>>
   {
     public TopologyChildEnumerator(
       ITreeTopology<TNode, THandle> topology,
@@ -28,14 +28,14 @@ namespace Copse.ChildEnumerators
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 
-    public Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>> MoveNext()
+    public Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>> MoveNext()
     {
       var childIndex = _NextChildIndex;
       _NextChildIndex++;
       return Pull(childIndex);
     }
 
-    private Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>> Pull(int childIndex)
+    private Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>> Pull(int childIndex)
     {
       var childResult = _Topology.TryGetChildAt(_ParentHandle, childIndex);
 
@@ -44,9 +44,9 @@ namespace Copse.ChildEnumerators
 
       var value = _Topology.GetValue(childResult.Value.Handle);
 
-      return new Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>>(
-        new HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>(
-          new HandleAndValue<THandle, TNode>(childResult.Value.Handle, value),
+      return new Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>(
+        new HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>(
+          new HandleAndNode<THandle, TNode>(childResult.Value.Handle, value),
           childResult.Value.SiblingIndex));
     }
 

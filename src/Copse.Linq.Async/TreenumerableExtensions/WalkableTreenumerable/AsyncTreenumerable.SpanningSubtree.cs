@@ -72,7 +72,7 @@ namespace Copse.Linq
       var clamped = spanningRoot.Subtree()
         .Extend((topology, handle) => PairHandleWithValueAsync(topology, handle))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
-        .Select(pair => pair.Value);
+        .Select(pair => pair.Node);
 
       var capture = clamped.Materialize(BufferLayout.Preorder);
 
@@ -90,10 +90,10 @@ namespace Copse.Linq
 
     // The handle-decorated stream's stamp, as a named observer so both colors read the same:
     // every node paired with its own handle, the membership clamp's coordinate system.
-    private static async ValueTask<HandleAndValue<THandle, TNode>> PairHandleWithValueAsync<TNode, THandle>(
+    private static async ValueTask<HandleAndNode<THandle, TNode>> PairHandleWithValueAsync<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology,
       THandle handle)
-      => new HandleAndValue<THandle, TNode>(handle, await topology.GetValueAsync(handle).ConfigureAwait(false));
+      => new HandleAndNode<THandle, TNode>(handle, await topology.GetValueAsync(handle).ConfigureAwait(false));
 
     // The binary LCA, walker-first and TOTAL (the axis wave will promote this to a public
     // extension; the spanning fold is its first consumer): collect one stance's root path

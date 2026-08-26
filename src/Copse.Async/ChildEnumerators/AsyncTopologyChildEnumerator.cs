@@ -10,7 +10,7 @@ namespace Copse.Async.ChildEnumerators
   // async, so the index mutation lands on the real struct
   // (the engine's path state holds frames by ref); the awaited tail reads only readonly
   // fields from its state-machine copy.
-  internal struct AsyncTopologyChildEnumerator<TNode, THandle> : IAsyncChildEnumerator<HandleAndValue<THandle, TNode>>
+  internal struct AsyncTopologyChildEnumerator<TNode, THandle> : IAsyncChildEnumerator<HandleAndNode<THandle, TNode>>
   {
     public AsyncTopologyChildEnumerator(
       IAsyncTreeTopology<TNode, THandle> topology,
@@ -25,14 +25,14 @@ namespace Copse.Async.ChildEnumerators
     private readonly THandle _ParentHandle;
     private int _NextChildIndex;
 
-    public ValueTask<Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>>> MoveNextAsync()
+    public ValueTask<Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>> MoveNextAsync()
     {
       var childIndex = _NextChildIndex;
       _NextChildIndex++;
       return PullAsync(childIndex);
     }
 
-    private async ValueTask<Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>>> PullAsync(int childIndex)
+    private async ValueTask<Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>> PullAsync(int childIndex)
     {
       var childResult = await _Topology.TryGetChildAtAsync(_ParentHandle, childIndex).ConfigureAwait(false);
 
@@ -41,9 +41,9 @@ namespace Copse.Async.ChildEnumerators
 
       var value = await _Topology.GetValueAsync(childResult.Value.Handle).ConfigureAwait(false);
 
-      return new Option<HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>>(
-        new HandleAndSiblingIndex<HandleAndValue<THandle, TNode>>(
-          new HandleAndValue<THandle, TNode>(childResult.Value.Handle, value),
+      return new Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>(
+        new HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>(
+          new HandleAndNode<THandle, TNode>(childResult.Value.Handle, value),
           childResult.Value.SiblingIndex));
     }
 

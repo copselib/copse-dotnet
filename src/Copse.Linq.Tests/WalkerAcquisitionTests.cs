@@ -31,7 +31,7 @@ namespace Copse.Linq.Tests
     {
       var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder);
 
-      var rows = walkable.GetHandlesWithValues().ToDictionary(pair => pair.Handle, pair => pair.Value);
+      var rows = walkable.GetHandlesWithValues().ToDictionary(pair => pair.Handle, pair => pair.Node);
 
       Assert.AreEqual(7, rows.Count);
       Assert.AreEqual("a", rows[0]);
@@ -49,7 +49,7 @@ namespace Copse.Linq.Tests
       // and the handles come back ready to jump in with.
       var targets = walkable
         .GetHandlesWithValues()
-        .Where(pair => pair.Value == "d" || pair.Value == "g")
+        .Where(pair => pair.Node == "d" || pair.Node == "g")
         .Select(pair => pair.Handle)
         .OrderBy(handle => handle)
         .ToList();
@@ -78,7 +78,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEquivalent(
         new[] { "a", "b", "c", "d", "e" },
-        levelOrder.GetHandlesWithValues().Select(pair => pair.Value).ToList());
+        levelOrder.GetHandlesWithValues().Select(pair => pair.Node).ToList());
     }
 
     // The contract's door, total (walker factory design §11, the sentinel completion):
@@ -116,7 +116,7 @@ namespace Copse.Linq.Tests
 
       // The rowid idiom, spelled honestly: rows in, value predicate, handles out.
       var hits = walkable.GetHandlesWithValues()
-        .Where(row => row.Value == "d" || row.Value == "c")
+        .Where(row => row.Node == "d" || row.Node == "c")
         .Select(row => row.Handle)
         .ToList();
 
@@ -125,14 +125,14 @@ namespace Copse.Linq.Tests
         hits.Select(handle => WalkerLawProviders.TopologyOf(walkable).GetValue(handle)).ToList());
 
       // A missed search is an empty sequence -- the miss, spoken natively.
-      Assert.AreEqual(0, walkable.GetHandlesWithValues().Count(row => row.Value == "zzz"));
+      Assert.AreEqual(0, walkable.GetHandlesWithValues().Count(row => row.Node == "zzz"));
 
       // THE SENTINEL TRAP, pinned as a warning: FirstOrDefault on a missed search returns
       // default(int) = 0 -- a REAL handle (the first preorder node). Never FirstOrDefault
       // over ordinal handles; test emptiness, or flow the plural into a result-typed
       // consumer and let the miss stay typed.
       var trap = walkable.GetHandlesWithValues()
-        .Where(row => row.Value == "zzz")
+        .Where(row => row.Node == "zzz")
         .Select(row => row.Handle)
         .FirstOrDefault();
       Assert.AreEqual(0, trap);

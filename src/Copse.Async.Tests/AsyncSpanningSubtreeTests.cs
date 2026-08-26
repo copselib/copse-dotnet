@@ -43,7 +43,7 @@ namespace Copse.Async.Tests
       var handles = new List<int>();
 
       await foreach (var row in walkable.GetHandlesWithValues())
-        if (predicate(row.Value))
+        if (predicate(row.Node))
           handles.Add(row.Handle);
 
       return handles;

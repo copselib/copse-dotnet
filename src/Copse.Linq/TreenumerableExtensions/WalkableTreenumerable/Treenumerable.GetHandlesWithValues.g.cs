@@ -17,7 +17,7 @@ namespace Copse.Linq
     /// value predicate mid-chain cannot reach the receiver's probe without naming it twice.
     /// A stance walk (Stage B): each row is where the walk stood and what it extracted there.
     /// </summary>
-    public static IEnumerable<HandleAndValue<THandle, TNode>> GetHandlesWithValues<TNode, THandle>(
+    public static IEnumerable<HandleAndNode<THandle, TNode>> GetHandlesWithValues<TNode, THandle>(
       this IWalkableTreenumerable<TNode, THandle> source)
     {
       // One knock; the roots are the unfocused stance's child group. The unfocused stance itself gets no
@@ -40,7 +40,7 @@ namespace Copse.Linq
 
         var stance = pending.Pop();
 
-        yield return new HandleAndValue<THandle, TNode>(stance.Focus, stance.GetValue());
+        yield return new HandleAndNode<THandle, TNode>(stance.Focus, stance.GetValue());
 
         for (var childIndex = 0; ; childIndex++)
         {

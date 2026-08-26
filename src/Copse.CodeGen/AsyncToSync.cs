@@ -29,7 +29,7 @@ namespace Copse.CodeGen
 
       // Return-type fixups that aren't identifier renames (they change to keywords). Unwrap
       // ValueTask<X> -> X at any nesting depth (the angle brackets are matched as balanced
-      // pairs, so ValueTask<Option<HandleAndSiblingIndex<HandleAndValue<THandle, TValue>>>>
+      // pairs, so ValueTask<Option<HandleAndSiblingIndex<HandleAndNode<THandle, TValue>>>>
       // unwraps like ValueTask<int>), then the bare ValueTask -> void. Async seams only surface
       // as awaited expressions, so a literal ValueTask<X> here is always a method return type
       // that collapses to its synchronous result.

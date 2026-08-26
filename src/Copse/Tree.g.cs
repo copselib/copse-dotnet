@@ -177,12 +177,12 @@ namespace Copse
     /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
     public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
-      => new Treenumerable<TNode, HandleAndValue<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
+      => new Treenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
         nodeContext => new TopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
-        labeledNode => labeledNode.Value,
+        labeledNode => labeledNode.Node,
         RootsFrom(topology));
 
-    private static IEnumerable<HandleAndValue<THandle, TNode>> RootsFrom<TNode, THandle>(
+    private static IEnumerable<HandleAndNode<THandle, TNode>> RootsFrom<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
     {
       for (var rootIndex = 0; ; rootIndex++)
@@ -194,7 +194,7 @@ namespace Copse
 
         var value = topology.GetValue(rootResult.Value.Handle);
 
-        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Handle, value);
+        yield return new HandleAndNode<THandle, TNode>(rootResult.Value.Handle, value);
       }
     }
   }

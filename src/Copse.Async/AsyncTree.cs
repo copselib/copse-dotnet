@@ -197,12 +197,12 @@ namespace Copse.Async
     /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
     public static IAsyncTreenumerable<TNode> FromTopology<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)
-      => new AsyncTreenumerable<TNode, HandleAndValue<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
+      => new AsyncTreenumerable<TNode, HandleAndNode<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
         nodeContext => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
-        labeledNode => labeledNode.Value,
+        labeledNode => labeledNode.Node,
         RootsFrom(topology));
 
-    private static async IAsyncEnumerable<HandleAndValue<THandle, TNode>> RootsFrom<TNode, THandle>(
+    private static async IAsyncEnumerable<HandleAndNode<THandle, TNode>> RootsFrom<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)
     {
       for (var rootIndex = 0; ; rootIndex++)
@@ -214,7 +214,7 @@ namespace Copse.Async
 
         var value = await topology.GetValueAsync(rootResult.Value.Handle).ConfigureAwait(false);
 
-        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Handle, value);
+        yield return new HandleAndNode<THandle, TNode>(rootResult.Value.Handle, value);
       }
     }
   }

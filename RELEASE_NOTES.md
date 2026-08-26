@@ -37,6 +37,9 @@
   `Handle`. The type always carried the navigable identity — the child pull's yield and the
   topology probes' answer — and now says so. *Migration: rename the type at implementer sites
   and read `.Handle` instead of `.Node`.*
+- **`HandleAndValue<THandle, TValue>` → `HandleAndNode<THandle, TNode>`**, its field `Value` →
+  `Node`. *Migration: rename the type and read `.Node`; `GetHandlesWithValues` keeps its
+  name.*
 
 ### Moved types
 

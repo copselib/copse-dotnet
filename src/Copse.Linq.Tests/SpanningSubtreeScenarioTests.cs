@@ -27,7 +27,7 @@ namespace Copse.Linq.Tests
         .Materialize();
 
       var interesting = new HashSet<string> { "h", "i", "g" };
-      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Value)).Select(row => row.Handle));
+      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
 
       Assert.IsTrue(spanning.HasValue);
       Assert.AreEqual("a", spanning.Value.GetValue(), "the walker stands at the spanning root");
@@ -47,7 +47,7 @@ namespace Copse.Linq.Tests
         .Materialize(BufferLayout.Preorder);
 
       var interesting = new HashSet<string> { "h", "e" };
-      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Value)).Select(row => row.Handle));
+      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
 
       Assert.IsTrue(spanning.HasValue);
       Assert.AreEqual("b", spanning.Value.GetValue(), "the spanning root is mid-tree");
@@ -69,7 +69,7 @@ namespace Copse.Linq.Tests
       Assert.IsFalse(walkable.SpanningSubtree(Enumerable.Empty<int>()).HasValue, "k = 0 is an honest miss");
 
       // One target: the node alone -- the fold is a no-op and the clamp keeps exactly it.
-      var single = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => row.Value == "d").Select(row => row.Handle));
+      var single = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => row.Node == "d").Select(row => row.Handle));
       Assert.IsTrue(single.HasValue);
       Assert.AreEqual("d", single.Value.GetValue());
       CollectionAssert.AreEqual(
@@ -81,7 +81,7 @@ namespace Copse.Linq.Tests
       // is the spanning forest under an unfocused walker -- one spanning subtree per touched tree, the
       // off-path subtree (e) clamped away like any other.
       var forest = TreeSerializer.DeserializeDepthFirstTree("a(b,e),c(d)").Materialize(BufferLayout.Preorder);
-      var disjoint = forest.SpanningSubtree(forest.GetHandlesWithValues().Where(row => row.Value == "b" || row.Value == "d").Select(row => row.Handle));
+      var disjoint = forest.SpanningSubtree(forest.GetHandlesWithValues().Where(row => row.Node == "b" || row.Node == "d").Select(row => row.Handle));
 
       Assert.IsTrue(disjoint.HasValue, "disjoint targets answer");
       Assert.IsFalse(disjoint.Value.HasFocus, "the spanning of disjoint targets stands at the unfocused stance");
@@ -99,7 +99,7 @@ namespace Copse.Linq.Tests
     {
       var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
-      var targets = walkable.GetHandlesWithValues().Where(row => row.Value == "d" || row.Value == "e").Select(row => row.Handle).ToList();
+      var targets = walkable.GetHandlesWithValues().Where(row => row.Node == "d" || row.Node == "e").Select(row => row.Handle).ToList();
       Assert.IsTrue(targets.All(handle => handle >= 2), "the targets sit deep in the SOURCE handle space");
 
       var spanning = walkable.SpanningSubtree(targets);
@@ -121,7 +121,7 @@ namespace Copse.Linq.Tests
       var walkable = relevant.Materialize();
 
       var interesting = new HashSet<string> { "h", "i", "g" };
-      var targets = walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Value)).Select(row => row.Handle).ToList();
+      var targets = walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle).ToList();
       Assert.AreEqual(3, targets.Count, "acquisition found the targets");
 
       var lca = targets
@@ -138,9 +138,9 @@ namespace Copse.Linq.Tests
       var spanning = lca.Subtree();
 
       var clamped = spanning
-        .Extend((topology, handle) => new HandleAndValue<int, string>(handle, topology.GetValue(handle)))
+        .Extend((topology, handle) => new HandleAndNode<int, string>(handle, topology.GetValue(handle)))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
-        .Select(pair => pair.Value);
+        .Select(pair => pair.Node);
 
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("a(b(d(h,i)),c(g))")),

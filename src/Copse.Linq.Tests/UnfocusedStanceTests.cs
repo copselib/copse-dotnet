@@ -111,7 +111,7 @@ namespace Copse.Linq.Tests
     public void TheClimb_FromD_AnswersToTheVoidThenMisses()
     {
       var walkable = W("a(b(d,e),c)");
-      var handleOfD = walkable.GetHandlesWithValues().Single(row => row.Value == "d").Handle;
+      var handleOfD = walkable.GetHandlesWithValues().Single(row => row.Node == "d").Handle;
 
       var stance = walkable.GetTreeWalkerAt(handleOfD);
       var ancestors = new List<string>();
@@ -151,7 +151,7 @@ namespace Copse.Linq.Tests
       Assert.IsFalse(extended.HasFocus, "extend keeps the stance -- the unfocused stance included");
       Assert.AreEqual(5, countBelow(door), "the unfocused row: the observer applied directly, the whole-forest answer");
 
-      var handleOfB = walkable.GetHandlesWithValues().Single(row => row.Value == "b").Handle;
+      var handleOfB = walkable.GetHandlesWithValues().Single(row => row.Node == "b").Handle;
       Assert.AreEqual(3, extended.At(handleOfB).GetValue(), "extract after extend recovers the observer at interiors");
 
       Assert.IsFalse(door.Duplicate().HasFocus, "duplicate commutes with the unfocused stance");
