@@ -66,6 +66,8 @@
   overloads; through 2026-08-17 they returned `ITreenumerableBuffer` /
   `IAsyncTreenumerableBuffer`). The predicate now re-fires per drain under the re-enumeration
   contract. *Migration: consumers who relied on the capture add `.Materialize()`.*
+- **The engine's handle-to-node map runs once per node** (at scheduling) instead of once per
+  visit event. Observable only for impure maps.
 - **`buffer.Select(...)` returns a buffer** — on an `ITreenumerableBuffer` receiver, `Select`
   now returns `ITreenumerableBuffer` (a deferred capture of projected values) instead of a lazy
   `ITreenumerable` stream. The buffer-receiver overload wins overload resolution for existing

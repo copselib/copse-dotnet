@@ -2,17 +2,19 @@ using Copse.Core;
 
 namespace Copse.Traversal
 {
-  /// <summary>The visit-state of one accepted node on the depth-first path.</summary>
-  internal struct DepthFirstNodeState<THandle>
+  /// <summary>The visit-state of one accepted node on the depth-first path: the node (already
+  /// resolved from its handle at push), its position, and its live visit count -- a mutable
+  /// visit record, ticked in place through the path's refs.</summary>
+  internal struct DepthFirstNodeState<TNode>
   {
-    public DepthFirstNodeState(THandle handle, NodePosition position)
+    public DepthFirstNodeState(TNode node, NodePosition position)
     {
-      Handle = handle;
+      Node = node;
       Position = position;
       VisitCount = 0;
     }
 
-    public THandle Handle;
+    public TNode Node;
     public NodePosition Position;
     public int VisitCount;
   }

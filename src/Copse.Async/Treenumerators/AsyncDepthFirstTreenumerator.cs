@@ -28,13 +28,13 @@ namespace Copse.Async.Treenumerators
       Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = roots.GetAsyncEnumerator();
-      _Path = new DepthFirstPathState<THandle, TAsyncChildEnumerator>(childEnumeratorFactory);
-      _Map = handleToNodeMap;
+      _Path = new DepthFirstPathState<TNode, THandle, TAsyncChildEnumerator>(childEnumeratorFactory, handleToNodeMap);
+
     }
 
     private readonly IAsyncEnumerator<THandle> _RootsEnumerator;
-    private DepthFirstPathState<THandle, TAsyncChildEnumerator> _Path;
-    private readonly Func<THandle, TNode> _Map;
+    private DepthFirstPathState<TNode, THandle, TAsyncChildEnumerator> _Path;
+
 
     private bool _Finished;
     private bool _RootsEnumeratorFinished;
@@ -226,10 +226,10 @@ namespace Copse.Async.Treenumerators
     }
     // codegen: end async-only
 
-    private void Publish(ref DepthFirstNodeState<THandle> nodeState)
+    private void Publish(ref DepthFirstNodeState<TNode> nodeState)
     {
       Mode = TreenumeratorModes.FromVisitCount(nodeState.VisitCount);
-      Node = _Map(nodeState.Handle);
+      Node = nodeState.Node;
       VisitCount = nodeState.VisitCount;
       Position = nodeState.Position;
     }

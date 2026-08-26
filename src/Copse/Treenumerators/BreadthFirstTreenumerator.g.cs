@@ -34,13 +34,13 @@ namespace Copse.Treenumerators
       Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = roots.GetEnumerator();
-      _Path = new BreadthFirstPathState<THandle, TChildEnumerator>(childEnumeratorFactory);
-      _Map = handleToNodeMap;
+      _Path = new BreadthFirstPathState<TNode, THandle, TChildEnumerator>(childEnumeratorFactory, handleToNodeMap);
+
     }
 
     private readonly IEnumerator<THandle> _RootsEnumerator;
-    private BreadthFirstPathState<THandle, TChildEnumerator> _Path;
-    private readonly Func<THandle, TNode> _Map;
+    private BreadthFirstPathState<TNode, THandle, TChildEnumerator> _Path;
+
 
     private bool _Finished;
     private bool _RootsEnumeratorFinished = false;
@@ -204,10 +204,10 @@ namespace Copse.Treenumerators
     }
 
 
-    private void Publish(ref BreadthFirstFrame<THandle, TChildEnumerator> frame)
+    private void Publish(ref BreadthFirstFrame<TNode, TChildEnumerator> frame)
     {
       Mode = TreenumeratorModes.FromVisitCount(frame.VisitCount);
-      Node = _Map(frame.Handle);
+      Node = frame.Node;
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }
