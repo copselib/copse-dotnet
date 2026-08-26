@@ -43,10 +43,10 @@ namespace Copse.Async.Topologies
     public async ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)
       => await (await ResolveAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);
 
-    public async ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex)
+    public async ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex)
       => await (await ResolveAsync().ConfigureAwait(false)).TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 
-    public async ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex)
+    public async ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex)
       => await (await ResolveAsync().ConfigureAwait(false)).TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
   }
 }

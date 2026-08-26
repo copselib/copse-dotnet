@@ -58,23 +58,23 @@ namespace Copse.Linq.Treenumerables
         : new Option<int>(parentIndex);
     }
 
-    public Option<NodeAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
+    public Option<HandleAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
     {
       if (childIndex < 0 || !_Store.EnsureChildAvailable(handle, childIndex))
         return default;
 
       // GetFirstChildIndex is meaningful once the parent has an available child, which the
       // successful probe above just established.
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
     }
 
-    public Option<NodeAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
+    public Option<HandleAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
     {
       if (rootIndex < 0 || !_Store.EnsureRootAvailable(rootIndex))
         return default;
 
       // Root ordinal k is buffer index k: the roots are the store's leading entries.
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(rootIndex, rootIndex));
     }
 
     // Sweep the parent index forward until it covers targetIndex (false iff the tree ends

@@ -192,9 +192,9 @@ namespace Copse
         if (!rootResult.HasValue)
           yield break;
 
-        var value = topology.GetValue(rootResult.Value.Node);
+        var value = topology.GetValue(rootResult.Value.Handle);
 
-        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Node, value);
+        yield return new HandleAndValue<THandle, TNode>(rootResult.Value.Handle, value);
       }
     }
   }

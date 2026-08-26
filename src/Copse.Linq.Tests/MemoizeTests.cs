@@ -472,14 +472,14 @@ namespace Copse.Linq.Tests
       private int _SiblingIndex;
       private bool _Disposed;
 
-      public Option<NodeAndSiblingIndex<int>> MoveNext()
+      public Option<HandleAndSiblingIndex<int>> MoveNext()
       {
         if (_Disposed || _SiblingIndex >= 2)
           return default;
 
-        var child = new NodeAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
+        var child = new HandleAndSiblingIndex<int>(2 * _Parent + 1 + _SiblingIndex, _SiblingIndex);
         _SiblingIndex++;
-        return new Option<NodeAndSiblingIndex<int>>(child);
+        return new Option<HandleAndSiblingIndex<int>>(child);
       }
 
       public void Dispose() => _Disposed = true;

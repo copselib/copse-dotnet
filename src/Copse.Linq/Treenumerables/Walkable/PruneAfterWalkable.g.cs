@@ -48,12 +48,12 @@ namespace Copse.Linq.Treenumerables
 
     public Option<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
+    public Option<HandleAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
       => _Predicate(_Source.GetValue(handle))
         ? default
         : _Source.TryGetChildAt(handle, childIndex);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
+    public Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
     // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
     // navigates the pruned view.

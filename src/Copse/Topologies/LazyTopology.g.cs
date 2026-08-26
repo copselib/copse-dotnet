@@ -46,10 +46,10 @@ namespace Copse.Topologies
     public Option<THandle> TryGetParent(THandle handle)
       => (Resolve()).TryGetParent(handle);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
+    public Option<HandleAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
       => (Resolve()).TryGetChildAt(handle, childIndex);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
+    public Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
       => (Resolve()).TryGetRootAt(rootIndex);
   }
 }

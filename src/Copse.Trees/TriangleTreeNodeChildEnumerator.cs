@@ -13,16 +13,16 @@ namespace Copse.Trees
     private readonly int _ChildCount;
     private int _ChildIndex;
 
-    public Option<NodeAndSiblingIndex<int>> MoveNext()
+    public Option<HandleAndSiblingIndex<int>> MoveNext()
     {
       if (_Disposed || _ChildIndex == _ChildCount)
       {
         return default;
       }
 
-      var child = new NodeAndSiblingIndex<int>(_ChildIndex, _ChildIndex);
+      var child = new HandleAndSiblingIndex<int>(_ChildIndex, _ChildIndex);
       _ChildIndex++;
-      return new Option<NodeAndSiblingIndex<int>>(child);
+      return new Option<HandleAndSiblingIndex<int>>(child);
     }
 
     private bool _Disposed;

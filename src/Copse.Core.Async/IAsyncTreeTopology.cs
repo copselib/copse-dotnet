@@ -27,10 +27,10 @@ namespace Copse.Async
 
     /// <summary>The node's child at <paramref name="childIndex"/> in sibling order, or absent
     /// past the last child.</summary>
-    ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex);
+    ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex);
 
     /// <summary>The root at <paramref name="rootIndex"/> in sibling order, or absent past the
     /// last root.</summary>
-    ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex);
+    ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex);
   }
 }

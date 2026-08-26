@@ -147,7 +147,7 @@ namespace Copse
       var childResult = Topology.TryGetChildAt(_FocusHandle, childIndex);
 
       return childResult.HasValue
-        ? new TreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Node)
+        ? new TreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Handle)
         : default;
     }
 
@@ -158,7 +158,7 @@ namespace Copse
       var rootResult = Topology.TryGetRootAt(rootIndex);
 
       return rootResult.HasValue
-        ? new TreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Node)
+        ? new TreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Handle)
         : default;
     }
 

@@ -33,6 +33,10 @@
   `ISelectComposableTreenumerableBuffer` → `ISelectTreenumerableBuffer` (async twin likewise).
 - **`ToFormattedLines`**: sync now returns `IReadOnlyList<string>` (was deferred); async renamed
   `ToFormattedLinesAsync` returning `ValueTask<IReadOnlyList<string>>`.
+- **`NodeAndSiblingIndex<TNode>` → `HandleAndSiblingIndex<THandle>`**, its field `Node` →
+  `Handle`. The type always carried the navigable identity — the child pull's yield and the
+  topology probes' answer — and now says so. *Migration: rename the type at implementer sites
+  and read `.Handle` instead of `.Node`.*
 
 ### Moved types
 

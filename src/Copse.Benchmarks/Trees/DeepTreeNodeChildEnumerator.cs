@@ -11,14 +11,14 @@ namespace Copse.Benchmarks.Trees
 
     private int _AncestorCount;
 
-    public Option<NodeAndSiblingIndex<int>> MoveNext()
+    public Option<HandleAndSiblingIndex<int>> MoveNext()
     {
       if (_AncestorCount == 0)
         return default;
 
-      var child = new NodeAndSiblingIndex<int>(_AncestorCount, 0);
+      var child = new HandleAndSiblingIndex<int>(_AncestorCount, 0);
       _AncestorCount = 0;
-      return new Option<NodeAndSiblingIndex<int>>(child);
+      return new Option<HandleAndSiblingIndex<int>>(child);
     }
 
     public void Dispose()

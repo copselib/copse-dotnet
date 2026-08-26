@@ -58,7 +58,7 @@ namespace Copse.Linq.Async.Treenumerables
         : new ValueTask<Option<int>>(new Option<int>(parentIndex));
     }
 
-    public ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
+    public ValueTask<Option<HandleAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -68,11 +68,11 @@ namespace Copse.Linq.Async.Treenumerables
       if (childIndex < 0 || childIndex >= _FirstChildOffsets[handle + 1] - firstSlot)
         return default;
 
-      return new ValueTask<Option<NodeAndSiblingIndex<int>>>(
-        new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex)));
+      return new ValueTask<Option<HandleAndSiblingIndex<int>>>(
+        new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex)));
     }
 
-    public ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
+    public ValueTask<Option<HandleAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -80,8 +80,8 @@ namespace Copse.Linq.Async.Treenumerables
       if (rootIndex < 0 || rootIndex >= _RootIndexes.Length)
         return default;
 
-      return new ValueTask<Option<NodeAndSiblingIndex<int>>>(
-        new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex)));
+      return new ValueTask<Option<HandleAndSiblingIndex<int>>>(
+        new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex)));
     }
 
     // One open-span sweep over the whole store: each node's parent is the innermost span

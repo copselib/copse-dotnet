@@ -42,11 +42,11 @@ namespace Copse.Linq.Async.Treenumerables
         ? default
         : _Source.TryGetParentAsync(handle);
 
-    public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
+    public ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex) => _Source.TryGetChildAtAsync(handle, childIndex);
 
-    public ValueTask<Option<NodeAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex)
+    public ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex)
       => rootIndex == 0
-        ? new ValueTask<Option<NodeAndSiblingIndex<THandle>>>(new Option<NodeAndSiblingIndex<THandle>>(new NodeAndSiblingIndex<THandle>(_Root, 0)))
+        ? new ValueTask<Option<HandleAndSiblingIndex<THandle>>>(new Option<HandleAndSiblingIndex<THandle>>(new HandleAndSiblingIndex<THandle>(_Root, 0)))
         : default;
 
     // The door: this view's OWN unfocused stance -- above the severed root, where the severing

@@ -42,7 +42,7 @@ namespace Copse.Benchmarks
         _Index = new int[1];
       }
 
-      public ValueTask<Option<NodeAndSiblingIndex<int>>> MoveNextAsync()
+      public ValueTask<Option<HandleAndSiblingIndex<int>>> MoveNextAsync()
       {
         var index = _Index[0];
 
@@ -50,8 +50,8 @@ namespace Copse.Benchmarks
           return default;
 
         _Index[0] = index + 1;
-        return new ValueTask<Option<NodeAndSiblingIndex<int>>>(
-          new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(2 * _Node + 1 + index, index)));
+        return new ValueTask<Option<HandleAndSiblingIndex<int>>>(
+          new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(2 * _Node + 1 + index, index)));
       }
 
       public void Dispose() { }

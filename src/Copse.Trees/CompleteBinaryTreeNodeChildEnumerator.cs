@@ -39,18 +39,18 @@ namespace Copse.Trees
 
     private int _ChildValue;
 
-    public Option<NodeAndSiblingIndex<int>> MoveNext()
+    public Option<HandleAndSiblingIndex<int>> MoveNext()
     {
       if (_Disposed || _ChildValue == int.MaxValue)
       {
         return default;
       }
 
-      var child = new NodeAndSiblingIndex<int>(_ChildValue, (int)(_ChildValue % 2));
+      var child = new HandleAndSiblingIndex<int>(_ChildValue, (int)(_ChildValue % 2));
 
       TryIncrementChildValue();
 
-      return new Option<NodeAndSiblingIndex<int>>(child);
+      return new Option<HandleAndSiblingIndex<int>>(child);
     }
 
     private bool _Disposed;

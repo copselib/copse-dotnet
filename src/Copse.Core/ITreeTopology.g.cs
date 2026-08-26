@@ -30,10 +30,10 @@ namespace Copse
 
     /// <summary>The node's child at <paramref name="childIndex"/> in sibling order, or absent
     /// past the last child.</summary>
-    Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex);
+    Option<HandleAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex);
 
     /// <summary>The root at <paramref name="rootIndex"/> in sibling order, or absent past the
     /// last root.</summary>
-    Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex);
+    Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex);
   }
 }

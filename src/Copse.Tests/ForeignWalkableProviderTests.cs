@@ -62,17 +62,17 @@ namespace Copse.Tests
       public Option<string> TryGetParent(string handle)
         => Parents.TryGetValue(handle, out var parent) ? new Option<string>(parent) : default;
 
-      public Option<NodeAndSiblingIndex<string>> TryGetChildAt(string handle, int childIndex)
+      public Option<HandleAndSiblingIndex<string>> TryGetChildAt(string handle, int childIndex)
       {
         var children = Children[handle];
 
         return childIndex < children.Length
-          ? new Option<NodeAndSiblingIndex<string>>(new NodeAndSiblingIndex<string>(children[childIndex], childIndex))
+          ? new Option<HandleAndSiblingIndex<string>>(new HandleAndSiblingIndex<string>(children[childIndex], childIndex))
           : default;
       }
 
-      public Option<NodeAndSiblingIndex<string>> TryGetRootAt(int rootIndex)
-        => rootIndex == 0 ? new Option<NodeAndSiblingIndex<string>>(new NodeAndSiblingIndex<string>("a", 0)) : default;
+      public Option<HandleAndSiblingIndex<string>> TryGetRootAt(int rootIndex)
+        => rootIndex == 0 ? new Option<HandleAndSiblingIndex<string>>(new HandleAndSiblingIndex<string>("a", 0)) : default;
     }
 
     [TestMethod]

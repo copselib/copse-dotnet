@@ -61,21 +61,21 @@ namespace Copse.Linq.Experimental
       return depth;
     }
 
-    public static IEnumerable<NodeAndSiblingIndex<THandle>> GetChildren<TValue, THandle>(
+    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetChildren<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source,
       THandle handle)
     {
       var walker = source.GetTreeWalkerAt(handle);
 
       for (var childIndex = 0; walker.MoveToChild(childIndex).TryGetValue(out var child); childIndex++)
-        yield return new NodeAndSiblingIndex<THandle>(child.Focus, childIndex);
+        yield return new HandleAndSiblingIndex<THandle>(child.Focus, childIndex);
     }
 
-    public static IEnumerable<NodeAndSiblingIndex<THandle>> GetRootNodes<TValue, THandle>(
+    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetRootNodes<TValue, THandle>(
       this IWalkableTreenumerable<TValue, THandle> source)
     {
       for (var rootIndex = 0; source.TryGetTreeWalkerAtRootIndex(rootIndex).TryGetValue(out var root); rootIndex++)
-        yield return new NodeAndSiblingIndex<THandle>(root.Focus, rootIndex);
+        yield return new HandleAndSiblingIndex<THandle>(root.Focus, rootIndex);
     }
 
     // The derived count -- deliberately NOT on the contract: the step is finite work per call

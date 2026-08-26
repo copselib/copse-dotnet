@@ -25,11 +25,11 @@ namespace Copse.Treenumerators
     where TChildEnumerator : IChildEnumerator<THandle>
   {
     public DepthFirstTreenumerator(
-      IEnumerable<THandle> rootNodes,
+      IEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
-      _RootsEnumerator = rootNodes.GetEnumerator();
+      _RootsEnumerator = roots.GetEnumerator();
       _Path = new DepthFirstPathState<THandle, TChildEnumerator>(childEnumeratorFactory);
       _Map = handleToNodeMap;
     }
@@ -161,22 +161,22 @@ namespace Copse.Treenumerators
     }
 
     // Land a pulled child on the path; false when the enumerator was exhausted.
-    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<THandle>> result)
+    private bool TryPushPulledChild(Option<HandleAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushChild(result.Value.Node, result.Value.SiblingIndex));
+      Publish(ref _Path.PushChild(result.Value.Handle, result.Value.SiblingIndex));
       return true;
     }
 
 
-    private void Publish(ref DepthFirstNodeState<THandle> node)
+    private void Publish(ref DepthFirstNodeState<THandle> nodeState)
     {
-      Mode = node.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
-      Node = _Map(node.Node);
-      VisitCount = node.VisitCount;
-      Position = node.Position;
+      Mode = nodeState.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
+      Node = _Map(nodeState.Handle);
+      VisitCount = nodeState.VisitCount;
+      Position = nodeState.Position;
     }
 
     public void Dispose()

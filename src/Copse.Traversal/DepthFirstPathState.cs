@@ -42,17 +42,17 @@ namespace Copse.Traversal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref DepthFirstNodeState<THandle> PushChild(THandle node, int siblingIndex)
-      => ref PushLevel(node, new NodePosition(siblingIndex, Depth + 1));
+    public ref DepthFirstNodeState<THandle> PushChild(THandle handle, int siblingIndex)
+      => ref PushLevel(handle, new NodePosition(siblingIndex, Depth + 1));
 
-    public ref DepthFirstNodeState<THandle> PushRoot(THandle node)
-      => ref PushLevel(node, new NodePosition(_RootNodesSeen++, 0));
+    public ref DepthFirstNodeState<THandle> PushRoot(THandle handle)
+      => ref PushLevel(handle, new NodePosition(_RootNodesSeen++, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref DepthFirstNodeState<THandle> PushLevel(THandle node, NodePosition position)
+    private ref DepthFirstNodeState<THandle> PushLevel(THandle handle, NodePosition position)
     {
-      _AcceptedNodes.AddLast(new DepthFirstNodeState<THandle>(node, position));
-      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeContext<THandle>(node, position)));
+      _AcceptedNodes.AddLast(new DepthFirstNodeState<THandle>(handle, position));
+      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeContext<THandle>(handle, position)));
       return ref _AcceptedNodes.GetLast();
     }
 
@@ -63,10 +63,10 @@ namespace Copse.Traversal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref DepthFirstNodeState<THandle> TakeNextVisit()
     {
-      ref var node = ref _AcceptedNodes.GetLast();
-      node.VisitCount++;
-      _DepthOfLastVisitedNode = node.Position.Depth;
-      return ref node;
+      ref var nodeState = ref _AcceptedNodes.GetLast();
+      nodeState.VisitCount++;
+      _DepthOfLastVisitedNode = nodeState.Position.Depth;
+      return ref nodeState;
     }
 
     public DepthFirstBacktrackStep PopFinishedLevelAndClassify()

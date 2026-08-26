@@ -46,7 +46,7 @@ namespace Copse.Linq.Tests
 
         for (var rootIndex = 0; rootIndex < rootTrees.Length; rootIndex++)
         {
-          var rootHandle = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex).Value.Node;
+          var rootHandle = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex).Value.Handle;
 
           AssertEquivalent(
             TreeSerializer.DeserializeDepthFirstTree(rootTrees[rootIndex]),
@@ -71,7 +71,7 @@ namespace Copse.Linq.Tests
 
           var labelRoot = WalkerLawProviders.TopologyOf(label).TryGetRootAt(0);
           Assert.IsTrue(labelRoot.HasValue, $"label has a root [{tree}]");
-          Assert.AreEqual(handle, labelRoot.Value.Node, $"the label's root is its node [{tree}]");
+          Assert.AreEqual(handle, labelRoot.Value.Handle, $"the label's root is its node [{tree}]");
           Assert.AreEqual(0, labelRoot.Value.SiblingIndex, $"the label's root re-roots to sibling 0 [{tree}]");
           Assert.IsFalse(WalkerLawProviders.TopologyOf(label).TryGetRootAt(1).HasValue, $"a subtree is single-rooted [{tree}]");
         }
@@ -210,7 +210,7 @@ namespace Copse.Linq.Tests
           if (!childResult.HasValue)
             break;
 
-          pending.Push(childResult.Value.Node);
+          pending.Push(childResult.Value.Handle);
         }
       }
     }
@@ -231,7 +231,7 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(source.Position, outer.Position, $"position {context}");
 
           var label = outer.Node;
-          Assert.AreEqual(source.Node, WalkerLawProviders.TopologyOf(label).GetValue(WalkerLawProviders.TopologyOf(label).TryGetRootAt(0).Value.Node), $"label root value {context}");
+          Assert.AreEqual(source.Node, WalkerLawProviders.TopologyOf(label).GetValue(WalkerLawProviders.TopologyOf(label).TryGetRootAt(0).Value.Handle), $"label root value {context}");
         }
 
         Assert.IsFalse(outer.MoveNext(NodeTraversalStrategies.TraverseAll), $"outer ran long {context}");

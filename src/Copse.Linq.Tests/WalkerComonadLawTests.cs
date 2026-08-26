@@ -176,7 +176,7 @@ namespace Copse.Linq.Tests
         if (!childResult.HasValue)
           break;
 
-        childAccumulations.Add(SubtreeFold(source, childResult.Value.Node, seed, edgeAccumulator, nodeAccumulator));
+        childAccumulations.Add(SubtreeFold(source, childResult.Value.Handle, seed, edgeAccumulator, nodeAccumulator));
       }
 
       if (childAccumulations.Count == 0)

@@ -23,11 +23,11 @@ namespace Copse.Async.Treenumerators
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
     public AsyncDepthFirstTreenumerator(
-      IAsyncEnumerable<THandle> rootNodes,
+      IAsyncEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
-      _RootsEnumerator = rootNodes.GetAsyncEnumerator();
+      _RootsEnumerator = roots.GetAsyncEnumerator();
       _Path = new DepthFirstPathState<THandle, TAsyncChildEnumerator>(childEnumeratorFactory);
       _Map = handleToNodeMap;
     }
@@ -177,12 +177,12 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a pulled child on the path; false when the enumerator was exhausted.
-    private bool TryPushPulledChild(Option<NodeAndSiblingIndex<THandle>> result)
+    private bool TryPushPulledChild(Option<HandleAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushChild(result.Value.Node, result.Value.SiblingIndex));
+      Publish(ref _Path.PushChild(result.Value.Handle, result.Value.SiblingIndex));
       return true;
     }
 
@@ -212,7 +212,7 @@ namespace Copse.Async.Treenumerators
       return true;
     }
 
-    private async ValueTask<bool> AwaitThenPushPulledChildAsync(ValueTask<Option<NodeAndSiblingIndex<THandle>>> pendingPull)
+    private async ValueTask<bool> AwaitThenPushPulledChildAsync(ValueTask<Option<HandleAndSiblingIndex<THandle>>> pendingPull)
     {
       return TryPushPulledChild(await pendingPull.ConfigureAwait(false));
     }
@@ -226,12 +226,12 @@ namespace Copse.Async.Treenumerators
     }
     // codegen: end async-only
 
-    private void Publish(ref DepthFirstNodeState<THandle> node)
+    private void Publish(ref DepthFirstNodeState<THandle> nodeState)
     {
-      Mode = node.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
-      Node = _Map(node.Node);
-      VisitCount = node.VisitCount;
-      Position = node.Position;
+      Mode = nodeState.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
+      Node = _Map(nodeState.Handle);
+      VisitCount = nodeState.VisitCount;
+      Position = nodeState.Position;
     }
 
     public async ValueTask DisposeAsync()

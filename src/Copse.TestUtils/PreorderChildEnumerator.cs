@@ -21,17 +21,17 @@ namespace Copse
     private int _SiblingIndex;
     private bool _Disposed;
 
-    public Option<NodeAndSiblingIndex<int>> MoveNext()
+    public Option<HandleAndSiblingIndex<int>> MoveNext()
     {
       // Dispose() is how the engine signals SkipDescendants/SkipSiblings: once disposed we must
       // yield no further children (see TriangleTreeNodeChildEnumerator for the same contract).
       if (_Disposed || _Cursor >= _End)
         return default;
 
-      var child = new NodeAndSiblingIndex<int>(_Cursor, _SiblingIndex);
+      var child = new HandleAndSiblingIndex<int>(_Cursor, _SiblingIndex);
       _SiblingIndex++;
       _Cursor += _SubtreeSizes[_Cursor]; // skip the child's whole subtree
-      return new Option<NodeAndSiblingIndex<int>>(child);
+      return new Option<HandleAndSiblingIndex<int>>(child);
     }
 
     public void Dispose() => _Disposed = true;

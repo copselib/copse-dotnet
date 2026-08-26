@@ -44,23 +44,23 @@ namespace Copse.Linq.Async.Treenumerables
         : new Option<int>(parentIndex);
     }
 
-    public async ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
+    public async ValueTask<Option<HandleAndSiblingIndex<int>>> TryGetChildAtAsync(int handle, int childIndex)
     {
       if (childIndex < 0 || !await _Store.EnsureChildAvailableAsync(handle, childIndex).ConfigureAwait(false))
         return default;
 
       // GetFirstChildIndex is meaningful once the parent has an available child, which the
       // successful probe above just established.
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_Store.GetFirstChildIndex(handle) + childIndex, childIndex));
     }
 
-    public async ValueTask<Option<NodeAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
+    public async ValueTask<Option<HandleAndSiblingIndex<int>>> TryGetRootAtAsync(int rootIndex)
     {
       if (rootIndex < 0 || !await _Store.EnsureRootAvailableAsync(rootIndex).ConfigureAwait(false))
         return default;
 
       // Root ordinal k is buffer index k: the roots are the store's leading entries.
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(rootIndex, rootIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(rootIndex, rootIndex));
     }
 
     // The stackless two-cursor merge, run to completion: seed the roots (the leading

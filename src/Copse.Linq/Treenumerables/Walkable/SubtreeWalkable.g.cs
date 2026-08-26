@@ -44,11 +44,11 @@ namespace Copse.Linq.Treenumerables
         ? default
         : _Source.TryGetParent(handle);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
+    public Option<HandleAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex) => _Source.TryGetChildAt(handle, childIndex);
 
-    public Option<NodeAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
+    public Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex)
       => rootIndex == 0
-        ? new Option<NodeAndSiblingIndex<THandle>>(new NodeAndSiblingIndex<THandle>(_Root, 0))
+        ? new Option<HandleAndSiblingIndex<THandle>>(new HandleAndSiblingIndex<THandle>(_Root, 0))
         : default;
 
     // The door: this view's OWN unfocused stance -- above the severed root, where the severing

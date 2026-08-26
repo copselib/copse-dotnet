@@ -6,7 +6,7 @@ namespace Copse.Async
   /// <summary>
   /// Async analog of <c>Copse.IChildEnumerator&lt;THandle&gt;</c>: the pull yields the next
   /// child's HANDLE -- the navigable identity the engine walks -- by value, as an
-  /// <see cref="Option{TValue}"/> over <see cref="NodeAndSiblingIndex{THandle}"/> (an
+  /// <see cref="Option{TValue}"/> over <see cref="HandleAndSiblingIndex{THandle}"/> (an
   /// <c>out</c> param cannot cross an <c>await</c>, and a by-value result stores nothing
   /// between pulls). Its sync twin is <c>Copse.IChildEnumerator</c> over the same option, so
   /// the async-&gt;sync transcription is a pure <c>await</c>-strip.
@@ -19,6 +19,6 @@ namespace Copse.Async
   {
     /// <summary>The next child's handle with its sibling index, or absent past the last
     /// child.</summary>
-    ValueTask<Option<NodeAndSiblingIndex<THandle>>> MoveNextAsync();
+    ValueTask<Option<HandleAndSiblingIndex<THandle>>> MoveNextAsync();
   }
 }

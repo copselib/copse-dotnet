@@ -25,11 +25,11 @@ namespace Copse.Linq.Tests
 
       // b survives with its ancestry and hands out no children; the rest is untouched.
       Assert.IsFalse(WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(1, 0).HasValue, "b sheds d and e");
-      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 0).Value.Node, "a's child 0 is still b");
-      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 1).Value.Node, "a's child 1 is still c");
-      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(4, 0).Value.Node, "c keeps f");
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 0).Value.Handle, "a's child 0 is still b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(0, 1).Value.Handle, "a's child 1 is still c");
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(lensed).TryGetChildAt(4, 0).Value.Handle, "c keeps f");
       Assert.AreEqual(0, WalkerLawProviders.TopologyOf(lensed).TryGetParent(1).Value, "ancestry untouched");
-      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(lensed).TryGetRootAt(0).Value.Node, "roots always survive a prune-after");
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(lensed).TryGetRootAt(0).Value.Handle, "roots always survive a prune-after");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ namespace Copse.Linq.Tests
 
       Assert.IsFalse(WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(1, 0).HasValue, "b still sheds");
       Assert.IsFalse(WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(4, 0).HasValue, "c now sheds too");
-      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(0, 1).Value.Node, "both survive as leaves");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(stacked).TryGetChildAt(0, 1).Value.Handle, "both survive as leaves");
 
       var oracle = TreeSerializer.DeserializeDepthFirstTree(ToyTree)
         .PruneAfter(value => value == "b")

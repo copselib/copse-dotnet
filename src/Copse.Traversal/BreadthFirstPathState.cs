@@ -48,17 +48,17 @@ namespace Copse.Traversal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledChild(int parentDepth, THandle node, int siblingIndex)
-      => ref PushScheduled(node, new NodePosition(siblingIndex, parentDepth + 1));
+    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledChild(int parentDepth, THandle handle, int siblingIndex)
+      => ref PushScheduled(handle, new NodePosition(siblingIndex, parentDepth + 1));
 
-    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledRoot(THandle node)
-      => ref PushScheduled(node, new NodePosition(_RootNodesSeen++, 0));
+    public ref BreadthFirstFrame<THandle, TEnumerator> PushScheduledRoot(THandle handle)
+      => ref PushScheduled(handle, new NodePosition(_RootNodesSeen++, 0));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref BreadthFirstFrame<THandle, TEnumerator> PushScheduled(THandle node, NodePosition position)
+    private ref BreadthFirstFrame<THandle, TEnumerator> PushScheduled(THandle handle, NodePosition position)
     {
       _ScheduleStack.AddLast(
-        new BreadthFirstFrame<THandle, TEnumerator>(node, position, _ChildEnumeratorFactory(new NodeContext<THandle>(node, position))));
+        new BreadthFirstFrame<THandle, TEnumerator>(handle, position, _ChildEnumeratorFactory(new NodeContext<THandle>(handle, position))));
       return ref _ScheduleStack.GetLast();
     }
 

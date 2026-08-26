@@ -36,12 +36,12 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Value, "d's parent is b");
       Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetParent(6).Value, "g's parent is c");
 
-      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 0).Value.Node, "a's child 0 is b");
-      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 1).Value.Node, "a's child 1 is c");
-      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(4, 0).Value.Node, "c's child 0 is f");
+      Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 0).Value.Handle, "a's child 0 is b");
+      Assert.AreEqual(4, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 1).Value.Handle, "a's child 1 is c");
+      Assert.AreEqual(5, WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(4, 0).Value.Handle, "c's child 0 is f");
       Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(0, 2).HasValue);
 
-      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(0).Value.Node);
+      Assert.AreEqual(0, WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(0).Value.Handle);
       Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(1).HasValue);
     }
 

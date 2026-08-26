@@ -60,7 +60,7 @@ namespace Copse.Linq.Treenumerables
         : new Option<int>(parentIndex);
     }
 
-    public Option<NodeAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
+    public Option<HandleAndSiblingIndex<int>> TryGetChildAt(int handle, int childIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -70,10 +70,10 @@ namespace Copse.Linq.Treenumerables
       if (childIndex < 0 || childIndex >= _FirstChildOffsets[handle + 1] - firstSlot)
         return default;
 
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_ChildIndexes[firstSlot + childIndex], childIndex));
     }
 
-    public Option<NodeAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
+    public Option<HandleAndSiblingIndex<int>> TryGetRootAt(int rootIndex)
     {
       if (_ChildIndexes == null)
         BuildChildIndexes();
@@ -81,7 +81,7 @@ namespace Copse.Linq.Treenumerables
       if (rootIndex < 0 || rootIndex >= _RootIndexes.Length)
         return default;
 
-      return new Option<NodeAndSiblingIndex<int>>(new NodeAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
+      return new Option<HandleAndSiblingIndex<int>>(new HandleAndSiblingIndex<int>(_RootIndexes[rootIndex], rootIndex));
     }
 
     // One open-span sweep over the whole store: each node's parent is the innermost span

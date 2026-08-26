@@ -29,11 +29,11 @@ namespace Copse.Treenumerators
     where TChildEnumerator : IChildEnumerator<THandle>
   {
     public BreadthFirstTreenumerator(
-      IEnumerable<THandle> rootNodes,
+      IEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
-      _RootsEnumerator = rootNodes.GetEnumerator();
+      _RootsEnumerator = roots.GetEnumerator();
       _Path = new BreadthFirstPathState<THandle, TChildEnumerator>(childEnumeratorFactory);
       _Map = handleToNodeMap;
     }
@@ -184,22 +184,22 @@ namespace Copse.Treenumerators
     }
 
     // Land a pulled child under the schedule-stack top; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfScheduleTop(Option<NodeAndSiblingIndex<THandle>> result)
+    private bool TrySchedulePulledChildOfScheduleTop(Option<HandleAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Value.Node, result.Value.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.ScheduleTop.Position.Depth, result.Value.Handle, result.Value.SiblingIndex));
       return true;
     }
 
     // Land a pulled child under the queue front; false when the enumerator was exhausted.
-    private bool TrySchedulePulledChildOfFront(Option<NodeAndSiblingIndex<THandle>> result)
+    private bool TrySchedulePulledChildOfFront(Option<HandleAndSiblingIndex<THandle>> result)
     {
       if (!result.HasValue)
         return false;
 
-      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Value.Node, result.Value.SiblingIndex));
+      Publish(ref _Path.PushScheduledChild(_Path.Front.Position.Depth, result.Value.Handle, result.Value.SiblingIndex));
       return true;
     }
 
@@ -207,7 +207,7 @@ namespace Copse.Treenumerators
     private void Publish(ref BreadthFirstFrame<THandle, TChildEnumerator> frame)
     {
       Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
-      Node = _Map(frame.Node);
+      Node = _Map(frame.Handle);
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }

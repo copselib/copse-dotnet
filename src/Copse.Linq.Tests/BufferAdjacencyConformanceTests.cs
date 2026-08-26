@@ -89,7 +89,7 @@ namespace Copse.Linq.Tests
           {
             var rootResult = WalkerLawProviders.TopologyOf(walkable).TryGetRootAt(rootIndex);
             Assert.IsTrue(rootResult.HasValue, $"root {rootIndex} exists — {context}");
-            Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Value.Node, $"root {rootIndex} — {context}");
+            Assert.AreEqual(ordinals[model.Roots[rootIndex]], rootResult.Value.Handle, $"root {rootIndex} — {context}");
             Assert.AreEqual(rootIndex, rootResult.Value.SiblingIndex, $"root {rootIndex} sibling — {context}");
           }
 
@@ -116,7 +116,7 @@ namespace Copse.Linq.Tests
             {
               var childResult = WalkerLawProviders.TopologyOf(walkable).TryGetChildAt(handle, childIndex);
               Assert.IsTrue(childResult.HasValue, $"child {childIndex} exists @{handle} — {context}");
-              Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Value.Node, $"child {childIndex} @{handle} — {context}");
+              Assert.AreEqual(ordinals[node.Children[childIndex]], childResult.Value.Handle, $"child {childIndex} @{handle} — {context}");
               Assert.AreEqual(childIndex, childResult.Value.SiblingIndex, $"child {childIndex} sibling @{handle} — {context}");
             }
 

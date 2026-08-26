@@ -7,15 +7,15 @@ namespace Copse.Traversal
   internal struct BreadthFirstFrame<THandle, TEnumerator>
     where TEnumerator : IDisposable
   {
-    public BreadthFirstFrame(THandle node, NodePosition position, TEnumerator childEnumerator)
+    public BreadthFirstFrame(THandle handle, NodePosition position, TEnumerator childEnumerator)
     {
-      Node = node;
+      Handle = handle;
       Position = position;
       VisitCount = 0;
       ChildEnumerator = childEnumerator;
     }
 
-    public THandle Node;
+    public THandle Handle;
     public NodePosition Position;
     public int VisitCount;
     public TEnumerator ChildEnumerator;

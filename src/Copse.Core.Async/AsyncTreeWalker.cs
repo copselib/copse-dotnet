@@ -144,7 +144,7 @@ namespace Copse.Async
       var childResult = await Topology.TryGetChildAtAsync(_FocusHandle, childIndex).ConfigureAwait(false);
 
       return childResult.HasValue
-        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Node)
+        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, childResult.Value.Handle)
         : default;
     }
 
@@ -155,7 +155,7 @@ namespace Copse.Async
       var rootResult = await Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
 
       return rootResult.HasValue
-        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Node)
+        ? new AsyncTreeWalkerResult<TNode, THandle>(Topology, rootResult.Value.Handle)
         : default;
     }
 
