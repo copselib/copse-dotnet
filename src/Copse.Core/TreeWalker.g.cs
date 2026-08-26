@@ -88,6 +88,7 @@ namespace Copse
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
     /// <see cref="TryGetValueAsync"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TNode GetValue()
       => _HasFocus ? Topology.GetValue(_FocusHandle) : ThrowUnfocusedHasNoValue();
 
@@ -117,6 +118,7 @@ namespace Copse
     /// handle is presumed to be this topology's own, and an invalid one fails at the first
     /// probe. Always lands on a node -- the unfocused stance has no handle, so
     /// <see cref="At"/> cannot reach it.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TreeWalker<TNode, THandle> At(THandle handle)
       => new TreeWalker<TNode, THandle>(Topology, handle);
 
@@ -124,6 +126,7 @@ namespace Copse
     /// UNFOCUSED walker -- that is an answer, not a miss: the climb tops out standing above
     /// the roots; from the unfocused stance, the miss. See
     /// <see cref="AsyncTreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TreeWalkerResult<TNode, THandle> MoveToParent()
     {
       if (!_HasFocus)
@@ -139,6 +142,7 @@ namespace Copse
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or the miss past the last child. From the unfocused stance the children are the
     /// roots, so walking down from where a walk begins needs no special case.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TreeWalkerResult<TNode, THandle> MoveToChild(int childIndex)
     {
       if (!_HasFocus)
@@ -153,6 +157,7 @@ namespace Copse
 
     /// <summary>A stance at the root at <paramref name="rootIndex"/> in sibling order, from
     /// anywhere on the tree, or the miss past the last root.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TreeWalkerResult<TNode, THandle> MoveToRoot(int rootIndex)
     {
       var rootResult = Topology.TryGetRootAt(rootIndex);

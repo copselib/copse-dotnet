@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 namespace Copse.Async
 {
   // Deliberately flat rather than an Option over a walker: the nested aggregate falls off the
@@ -49,13 +50,18 @@ namespace Copse.Async
     /// <summary>Whether the step answered. An unfocused answer IS an answer -- a climb that
     /// tops out still stands; only the miss reads <c>false</c>. When <c>false</c>,
     /// <see cref="Value"/> is <c>default</c> and must not be read.</summary>
-    public bool HasValue => _Result != StepOutcome.None;
+    public bool HasValue
+    {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      get => _Result != StepOutcome.None;
+    }
 
     /// <summary>The walker the step produced -- standing on a node or unfocused above the
     /// roots, whichever the answer was. Valid only when <see cref="HasValue"/> is
     /// <c>true</c>.</summary>
     public AsyncTreeWalker<TNode, THandle> Value
     {
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
       get
       {
         switch (_Result)

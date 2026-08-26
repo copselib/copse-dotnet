@@ -85,6 +85,7 @@ namespace Copse.Async
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
     /// <see cref="TryGetValueAsync"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask<TNode> GetValueAsync()
       => _HasFocus ? Topology.GetValueAsync(_FocusHandle) : ThrowUnfocusedHasNoValueAsync();
 
@@ -114,6 +115,7 @@ namespace Copse.Async
     /// handle is presumed to be this topology's own, and an invalid one fails at the first
     /// probe. Always lands on a node -- the unfocused stance has no handle, so
     /// <see cref="At"/> cannot reach it.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public AsyncTreeWalker<TNode, THandle> At(THandle handle)
       => new AsyncTreeWalker<TNode, THandle>(Topology, handle);
 
@@ -121,6 +123,7 @@ namespace Copse.Async
     /// UNFOCUSED walker -- that is an answer, not a miss: the climb tops out standing above
     /// the roots; from the unfocused stance, the miss. See
     /// <see cref="AsyncTreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToParentAsync()
     {
       if (!_HasFocus)
@@ -136,6 +139,7 @@ namespace Copse.Async
     /// <summary>Single downward step to the child at <paramref name="childIndex"/> in sibling
     /// order, or the miss past the last child. From the unfocused stance the children are the
     /// roots, so walking down from where a walk begins needs no special case.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToChildAsync(int childIndex)
     {
       if (!_HasFocus)
@@ -150,6 +154,7 @@ namespace Copse.Async
 
     /// <summary>A stance at the root at <paramref name="rootIndex"/> in sibling order, from
     /// anywhere on the tree, or the miss past the last root.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask<AsyncTreeWalkerResult<TNode, THandle>> MoveToRootAsync(int rootIndex)
     {
       var rootResult = await Topology.TryGetRootAtAsync(rootIndex).ConfigureAwait(false);
