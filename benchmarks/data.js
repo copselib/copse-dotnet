@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787780418674,
+  "lastUpdate": 1787780419383,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -124522,6 +124522,150 @@ window.BENCHMARK_DATA = {
             "value": 49858308.587412596,
             "unit": "ns",
             "range": "± 235130.6698587674"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "867866d5514e2557653c9ed8834cfd05a9d02c1c",
+          "message": "Map at push: the path states store nodes; handles are push-transient\n\nJason's observation carried to its end: the engine retained each\nhandle only to re-run the map at every publish -- a delegate call per\nvisit event for a value that never changes. The map now fires once,\nat push, inside the path states (which hold both of the pull-shaped\ntopology's arrows: children and resolve), the node states and frames\nstore the resolved element -- DepthFirstNodeState<TNode>.Node and\nBreadthFirstFrame<TNode,_>.Node are honest again -- and Publish is a\ncopy. A pushed handle makes its child enumerator, resolves to its\nnode, and is not retained.\n\nBehavior note (release-noted): the map runs once per node rather than\nonce per visit event -- observable only for impure maps, and the\nonce-per-node contract is the house rule everywhere else.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T21:01:08Z",
+          "tree_id": "2d942fd125f039a285f709a95d447350035b01f8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/867866d5514e2557653c9ed8834cfd05a9d02c1c"
+        },
+        "date": 1787780419229,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12942021.046875,
+            "unit": "ns",
+            "range": "± 36229.88392917488"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22683172.160416666,
+            "unit": "ns",
+            "range": "± 78898.73856392267"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 4056892.7130408655,
+            "unit": "ns",
+            "range": "± 1517.5969499219657"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6629665.616319444,
+            "unit": "ns",
+            "range": "± 134827.80375822494"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 95029457.04761903,
+            "unit": "ns",
+            "range": "± 276734.3047861066"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 154186338.2,
+            "unit": "ns",
+            "range": "± 1226186.5688848388"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 34052365.951111116,
+            "unit": "ns",
+            "range": "± 413477.02540272626"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54897155.4489796,
+            "unit": "ns",
+            "range": "± 204390.4901827203"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12167512.203125,
+            "unit": "ns",
+            "range": "± 13529.367881606346"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11798021.692708334,
+            "unit": "ns",
+            "range": "± 54499.21023899777"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3239087.2989783655,
+            "unit": "ns",
+            "range": "± 4444.3787202703525"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3237183.0625,
+            "unit": "ns",
+            "range": "± 2971.434976201898"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 90519430.25641027,
+            "unit": "ns",
+            "range": "± 169748.90054570374"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 83251430.1904762,
+            "unit": "ns",
+            "range": "± 524805.2554403708"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 32408783.375,
+            "unit": "ns",
+            "range": "± 227707.32086056785"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20740947.375,
+            "unit": "ns",
+            "range": "± 47426.12184806307"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 95250239.73809525,
+            "unit": "ns",
+            "range": "± 261147.65362212143"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 155515253.8125,
+            "unit": "ns",
+            "range": "± 572416.1074178263"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19667359.375,
+            "unit": "ns",
+            "range": "± 42042.31432603494"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42698970.19047619,
+            "unit": "ns",
+            "range": "± 106181.90853370189"
           }
         ]
       }
