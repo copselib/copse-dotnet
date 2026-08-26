@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787778300257,
+  "lastUpdate": 1787778300806,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -91790,6 +91790,114 @@ window.BENCHMARK_DATA = {
             "value": 812209.0306919643,
             "unit": "ns",
             "range": "± 959.6410126821065"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44138d800e7184424ffe99b4e6cdaae398fa9a05",
+          "message": "NodeVisit derives its Mode; the law gets one spelling\n\nA node is scheduled exactly once, at visit count 0, and visited at\nevery count after -- so NodeVisit's Mode field recorded information\nthat could not legally disagree with VisitCount. It is now a derived\nproperty, the constructor drops its mode parameter (an inconsistent\nvisit record becomes unspellable), and the S/V rendering collapses to\na ternary. The derivation itself is written once,\nTreenumeratorModes.FromVisitCount, and the engines' Publish and the\nWhere machinery route through it. The fixture builder keeps its\nreadable four-tuples but now CHECKS the declared mode against the\nderivation -- a fixture row that lies fails loudly.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T20:14:42Z",
+          "tree_id": "08befc4cdd2d93cf81e3259b8f3c570e0494149d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/44138d800e7184424ffe99b4e6cdaae398fa9a05"
+        },
+        "date": 1787778300689,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2134112.044363839,
+            "unit": "ns",
+            "range": "± 10202.031919698524"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1789155.35546875,
+            "unit": "ns",
+            "range": "± 3530.1354858652253"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4135403.0792410714,
+            "unit": "ns",
+            "range": "± 7430.9270001893165"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3814141.4809895833,
+            "unit": "ns",
+            "range": "± 25882.403302662846"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 634706.375375601,
+            "unit": "ns",
+            "range": "± 686.4613955937627"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 718739.4318847656,
+            "unit": "ns",
+            "range": "± 715.3362765456759"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 429934.61467633926,
+            "unit": "ns",
+            "range": "± 725.1070890242082"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4305037.056361607,
+            "unit": "ns",
+            "range": "± 23545.15406301962"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3573598.6940104165,
+            "unit": "ns",
+            "range": "± 16443.91096682208"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13682487.639583332,
+            "unit": "ns",
+            "range": "± 110847.18170466079"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 8166769.227083334,
+            "unit": "ns",
+            "range": "± 40423.27819783141"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1628483.3231770834,
+            "unit": "ns",
+            "range": "± 3697.0682104483717"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1212613.5065354567,
+            "unit": "ns",
+            "range": "± 2257.6870799010567"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1072648.8934895834,
+            "unit": "ns",
+            "range": "± 2029.8615082491094"
           }
         ]
       }
