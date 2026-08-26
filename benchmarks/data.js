@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787774063961,
+  "lastUpdate": 1787774064659,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -109074,6 +109074,102 @@ window.BENCHMARK_DATA = {
             "value": 26467499.06875,
             "unit": "ns",
             "range": "± 197750.8853299253"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4",
+          "message": "The handle wears its name: HandleAndSiblingIndex, and the machinery follows\n\nJason's catch: the type-parameter sweep left member and parameter names\nbehind, so a THandle sat in fields named Node. Fixed at every altitude:\nthe path states' node-state field and frame field are Handle, their push\nparameters are handles, the engines' Publish locals say what they hold,\nthe engine constructors take roots (matching the treenumerable's own\nparameter), and the public pair renames -- NodeAndSiblingIndex<TNode>\nbecomes HandleAndSiblingIndex<THandle> with field Handle, honest at both\nof its call sites (the child pull's yield and the topology probes'\nanswer). Release-noted; twins regenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T05:56:53Z",
+          "tree_id": "ca1a35bd5196acc4362f4d44c0bc07dfabc68a87",
+          "url": "https://github.com/copselib/copse-dotnet/commit/1cafa87c9ed9cc26ef9de115fa0188cba1ada8e4"
+        },
+        "date": 1787774064503,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 28170228.916666668,
+            "unit": "ns",
+            "range": "± 160311.8204332243"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8385004.409855769,
+            "unit": "ns",
+            "range": "± 36213.34241049675"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 153809427.9375,
+            "unit": "ns",
+            "range": "± 237609.4698419199"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 60979197.62698413,
+            "unit": "ns",
+            "range": "± 291595.6858605679"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 22881925.71205357,
+            "unit": "ns",
+            "range": "± 28530.107900966163"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 13066331.5,
+            "unit": "ns",
+            "range": "± 33850.56568912413"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 102657749.38666667,
+            "unit": "ns",
+            "range": "± 606695.2497257728"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 32949599.1875,
+            "unit": "ns",
+            "range": "± 312130.4749438959"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 12546674.960416667,
+            "unit": "ns",
+            "range": "± 96763.48343821707"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6678905.26171875,
+            "unit": "ns",
+            "range": "± 11604.81311882258"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 93518932.64285715,
+            "unit": "ns",
+            "range": "± 241188.10444815503"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 28470373.161057692,
+            "unit": "ns",
+            "range": "± 147444.07062462703"
           }
         ]
       }
