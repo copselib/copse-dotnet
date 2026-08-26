@@ -206,7 +206,7 @@ namespace Copse.Treenumerators
 
     private void Publish(ref BreadthFirstFrame<THandle, TChildEnumerator> frame)
     {
-      Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
+      Mode = TreenumeratorModes.FromVisitCount(frame.VisitCount);
       Node = _Map(frame.Handle);
       VisitCount = frame.VisitCount;
       Position = frame.Position;

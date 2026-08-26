@@ -40,6 +40,9 @@
 - **`HandleAndValue<THandle, TValue>` → `HandleAndNode<THandle, TNode>`**, its field `Value` →
   `Node`. *Migration: rename the type and read `.Node`; `GetHandlesWithValues` keeps its
   name.*
+- **`NodeVisit<TNode>.Mode` is now derived** from `VisitCount` (scheduling at 0, visiting
+  from 1), and the constructor drops its mode parameter. *Migration: remove the first
+  argument at construction sites; reads of `.Mode` are unchanged.*
 
 ### Moved types
 

@@ -13,7 +13,6 @@ namespace Copse.Linq.Extensions
     {
       return
         new NodeVisit<TResult>(
-          visit.Mode,
           node,
           visit.VisitCount,
           visit.Position);

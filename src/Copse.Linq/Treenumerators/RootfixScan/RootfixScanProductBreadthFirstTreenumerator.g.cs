@@ -31,7 +31,6 @@ namespace Copse.Linq.Treenumerators
 
       var seedVisit =
         new NodeVisit<TAccumulate>(
-          TreenumeratorMode.VisitingNode,
           seed,
           1,
           NodePosition.ForestRoot);
@@ -123,7 +122,6 @@ namespace Copse.Linq.Treenumerators
 
       var visit =
         new NodeVisit<TAccumulate>(
-          InnerTreenumerator.Mode,
           accumulate,
           InnerTreenumerator.VisitCount,
           InnerTreenumerator.Position);
@@ -158,7 +156,6 @@ namespace Copse.Linq.Treenumerators
 
       var newVisit =
         new NodeVisit<TAccumulate>(
-          InnerTreenumerator.Mode,
           visit.Node,
           InnerTreenumerator.VisitCount,
           InnerTreenumerator.Position);

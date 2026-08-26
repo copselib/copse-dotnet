@@ -10,7 +10,6 @@ namespace Copse.Linq.Extensions
     {
       return
         new NodeVisit<TNode>(
-          treenumerator.Mode,
           treenumerator.Node,
           treenumerator.VisitCount,
           treenumerator.Position);

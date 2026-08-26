@@ -246,7 +246,6 @@ namespace Copse.Linq.Async
 
       var nodeVisit =
         new NodeVisit<MergeNode<TLeft, TRight>>(
-          TreenumeratorMode.SchedulingNode,
           node,
           includeLeft ? _LeftTreenumerator.VisitCount : _RightTreenumerator.VisitCount,
           includeLeft ? _LeftTreenumerator.Position : _RightTreenumerator.Position);
@@ -260,7 +259,6 @@ namespace Copse.Linq.Async
 
       nodeVisit =
         new NodeVisit<MergeNode<TLeft, TRight>>(
-          TreenumeratorMode.VisitingNode,
           nodeVisit.Node,
           nodeVisit.VisitCount + 1,
           nodeVisit.Position);

@@ -228,7 +228,7 @@ namespace Copse.Async.Treenumerators
 
     private void Publish(ref DepthFirstNodeState<THandle> nodeState)
     {
-      Mode = nodeState.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
+      Mode = TreenumeratorModes.FromVisitCount(nodeState.VisitCount);
       Node = _Map(nodeState.Handle);
       VisitCount = nodeState.VisitCount;
       Position = nodeState.Position;

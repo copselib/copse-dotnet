@@ -150,7 +150,7 @@ namespace Copse.Linq.Async
 
     private void Publish(ref WhereDepthFirstPath<TResult>.InternalNodeVisit frame)
     {
-      Mode = frame.VisitCount == 0 ? TreenumeratorMode.SchedulingNode : TreenumeratorMode.VisitingNode;
+      Mode = TreenumeratorModes.FromVisitCount(frame.VisitCount);
 
       _Path.RecordPublished(frame.OriginalPosition.Depth, Mode == TreenumeratorMode.VisitingNode);
 
