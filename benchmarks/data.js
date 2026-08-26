@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787780422817,
+  "lastUpdate": 1787780423446,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -36010,6 +36010,54 @@ window.BENCHMARK_DATA = {
             "value": 15347883.034620099,
             "unit": "ns",
             "range": "± 616888.0533319894"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "867866d5514e2557653c9ed8834cfd05a9d02c1c",
+          "message": "Map at push: the path states store nodes; handles are push-transient\n\nJason's observation carried to its end: the engine retained each\nhandle only to re-run the map at every publish -- a delegate call per\nvisit event for a value that never changes. The map now fires once,\nat push, inside the path states (which hold both of the pull-shaped\ntopology's arrows: children and resolve), the node states and frames\nstore the resolved element -- DepthFirstNodeState<TNode>.Node and\nBreadthFirstFrame<TNode,_>.Node are honest again -- and Publish is a\ncopy. A pushed handle makes its child enumerator, resolves to its\nnode, and is not retained.\n\nBehavior note (release-noted): the map runs once per node rather than\nonce per visit event -- observable only for impure maps, and the\nonce-per-node contract is the house rule everywhere else.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T21:01:08Z",
+          "tree_id": "2d942fd125f039a285f709a95d447350035b01f8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/867866d5514e2557653c9ed8834cfd05a9d02c1c"
+        },
+        "date": 1787780423298,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14229792.884046054,
+            "unit": "ns",
+            "range": "± 308424.79660303344"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26706827.283333335,
+            "unit": "ns",
+            "range": "± 184672.11563463847"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 24843167.291666668,
+            "unit": "ns",
+            "range": "± 231352.48502047162"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 15152785.461410984,
+            "unit": "ns",
+            "range": "± 472868.82881008263"
           }
         ]
       }
