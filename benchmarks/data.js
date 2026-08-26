@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787774077010,
+  "lastUpdate": 1787778295551,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -18412,6 +18412,150 @@ window.BENCHMARK_DATA = {
             "value": 203412424.31578946,
             "unit": "ns",
             "range": "± 1494353.48132499"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44138d800e7184424ffe99b4e6cdaae398fa9a05",
+          "message": "NodeVisit derives its Mode; the law gets one spelling\n\nA node is scheduled exactly once, at visit count 0, and visited at\nevery count after -- so NodeVisit's Mode field recorded information\nthat could not legally disagree with VisitCount. It is now a derived\nproperty, the constructor drops its mode parameter (an inconsistent\nvisit record becomes unspellable), and the S/V rendering collapses to\na ternary. The derivation itself is written once,\nTreenumeratorModes.FromVisitCount, and the engines' Publish and the\nWhere machinery route through it. The fixture builder keeps its\nreadable four-tuples but now CHECKS the declared mode against the\nderivation -- a fixture row that lies fails loudly.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T20:14:42Z",
+          "tree_id": "08befc4cdd2d93cf81e3259b8f3c570e0494149d",
+          "url": "https://github.com/copselib/copse-dotnet/commit/44138d800e7184424ffe99b4e6cdaae398fa9a05"
+        },
+        "date": 1787778266105,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 10649627.719791668,
+            "unit": "ns",
+            "range": "± 26898.559767344872"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 16987452.877403848,
+            "unit": "ns",
+            "range": "± 30283.306804044176"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 2861087.6713541667,
+            "unit": "ns",
+            "range": "± 49817.085113018264"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 2870712.7828125,
+            "unit": "ns",
+            "range": "± 40394.63347066523"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 96260779.31111111,
+            "unit": "ns",
+            "range": "± 1172740.037539366"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 117948651.97333333,
+            "unit": "ns",
+            "range": "± 872718.7485849147"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 48874788.277777776,
+            "unit": "ns",
+            "range": "± 103612.01565289848"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 43910110.48214286,
+            "unit": "ns",
+            "range": "± 119423.72018897103"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 32718095.423076924,
+            "unit": "ns",
+            "range": "± 59687.95840805728"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 31460169.293269232,
+            "unit": "ns",
+            "range": "± 49361.499024102784"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 22017502.91294643,
+            "unit": "ns",
+            "range": "± 25148.13217830937"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 15089733.486607144,
+            "unit": "ns",
+            "range": "± 17502.489984874443"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 44687959.301724136,
+            "unit": "ns",
+            "range": "± 1301464.6077808023"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 69061405.23809524,
+            "unit": "ns",
+            "range": "± 313688.44587030215"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 11117042.928710938,
+            "unit": "ns",
+            "range": "± 208190.03278379727"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 11284966.720170455,
+            "unit": "ns",
+            "range": "± 269141.93973119435"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 366044805.14285713,
+            "unit": "ns",
+            "range": "± 1242426.8925625337"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 466997294.64285713,
+            "unit": "ns",
+            "range": "± 1340157.0478303945"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 171446589.516129,
+            "unit": "ns",
+            "range": "± 3688141.2889329833"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 178103813.39473686,
+            "unit": "ns",
+            "range": "± 6057726.960286786"
           }
         ]
       }
