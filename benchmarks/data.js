@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787780417981,
+  "lastUpdate": 1787780418674,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -110618,6 +110618,102 @@ window.BENCHMARK_DATA = {
             "value": 28392172.085416667,
             "unit": "ns",
             "range": "± 155862.29571646673"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "867866d5514e2557653c9ed8834cfd05a9d02c1c",
+          "message": "Map at push: the path states store nodes; handles are push-transient\n\nJason's observation carried to its end: the engine retained each\nhandle only to re-run the map at every publish -- a delegate call per\nvisit event for a value that never changes. The map now fires once,\nat push, inside the path states (which hold both of the pull-shaped\ntopology's arrows: children and resolve), the node states and frames\nstore the resolved element -- DepthFirstNodeState<TNode>.Node and\nBreadthFirstFrame<TNode,_>.Node are honest again -- and Publish is a\ncopy. A pushed handle makes its child enumerator, resolves to its\nnode, and is not retained.\n\nBehavior note (release-noted): the map runs once per node rather than\nonce per visit event -- observable only for impure maps, and the\nonce-per-node contract is the house rule everywhere else.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T21:01:08Z",
+          "tree_id": "2d942fd125f039a285f709a95d447350035b01f8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/867866d5514e2557653c9ed8834cfd05a9d02c1c"
+        },
+        "date": 1787780418522,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26419321.622596152,
+            "unit": "ns",
+            "range": "± 102130.90108091918"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 8247197.306919643,
+            "unit": "ns",
+            "range": "± 26214.239464022576"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 153368610.55357143,
+            "unit": "ns",
+            "range": "± 737277.1438929815"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 57738879.62393162,
+            "unit": "ns",
+            "range": "± 76716.74433035705"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 22016299.026785713,
+            "unit": "ns",
+            "range": "± 169249.99867748242"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 12315419.053125,
+            "unit": "ns",
+            "range": "± 156265.16213748077"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 97086832.4642857,
+            "unit": "ns",
+            "range": "± 286018.5941088465"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29954498.92857143,
+            "unit": "ns",
+            "range": "± 54357.81324097862"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11346100.528645834,
+            "unit": "ns",
+            "range": "± 7340.344449132977"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 6245771.887019231,
+            "unit": "ns",
+            "range": "± 19006.105031778872"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 89208077.78571428,
+            "unit": "ns",
+            "range": "± 609413.08909553"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26868814.64285714,
+            "unit": "ns",
+            "range": "± 51091.524652612716"
           }
         ]
       }
