@@ -10,7 +10,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
     /// </summary>
     public static ITreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this ITreenumerable<TLeft> leftTreenumerable,
@@ -23,7 +23,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
     /// </summary>
     public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
@@ -33,7 +33,7 @@ namespace Copse.Linq
         .Where(mergeNode => !mergeNode.HasLeftAndRight);
 
     /// <summary>
-    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
     /// </summary>
     public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,

@@ -12,7 +12,7 @@ namespace Copse.Linq.Treenumerables
   // Only the parent axis needs an index, and on a finished store the incremental
   // suspendable sweep collapses to one two-cursor merge -- child runs tile the buffer in
   // parent order, so a single pass writes the exact int[] parent map on the first parent
-  // probe. Every probe after is an array read. Contrast AsyncLevelOrderAdjacencyIndex, the
+  // probe. Every probe after is an array read. Contrast LevelOrderAdjacencyIndex, the
   // GROWING citizen, which keeps the sweep suspendable because its store may still be fed.
   // Single-threaded by contract, like every adjacency engine.
   internal sealed class LevelOrderArrayTopology<TNode> : ITreeTopology<TNode, int>

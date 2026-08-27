@@ -13,7 +13,7 @@ namespace Copse.Treenumerables
   //
   // The engine is a pull-shaped topology: resolve (handleToNodeMap, the GetNode arrow),
   // children (the child-enumerator factory), roots (the roots stream). The walkable tier's
-  // IAsyncTreeTopology is the same three ingredients with the child axis indexed instead of
+  // ITreeTopology is the same three ingredients with the child axis indexed instead of
   // pulled, plus the parent probe that indexing makes affordable.
   /// <summary>
   /// The engine-backed treenumerable over hierarchical data. The engine walks HANDLES -- each
@@ -21,7 +21,7 @@ namespace Copse.Treenumerables
   /// store, an object reference, a handle-and-payload pair) -- and surfaces NODES, resolving
   /// each handle through <c>handleToNodeMap</c> as it publishes. Where the node is its own
   /// handle, use the two-parameter form. Each traversal re-enumerates the roots source from
-  /// the start (an <see cref="IAsyncEnumerable{THandle}"/> is cold, like its sync
+  /// the start (an <see cref="IEnumerable{THandle}"/> is cold, like its sync
   /// counterpart); a single-pass source should be memoized first.
   /// </summary>
   public class Treenumerable<TNode, THandle, TChildEnumerator>

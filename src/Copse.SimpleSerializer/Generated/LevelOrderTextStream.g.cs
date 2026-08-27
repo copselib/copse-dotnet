@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Copse.SimpleSerializer
 {
-  // ASYNC forward-only IAsyncLevelOrderStream over the bft payload grammar ("a;b,c;d,e"), reading
+  // ASYNC forward-only ILevelOrderStream over the bft payload grammar ("a;b,c;d,e"), reading
   // through the async scanner (await at the char seam). Byte-for-byte the same scan logic as the sync
   // twin; the difference is the awaits and the struct-return read.
   //
@@ -31,7 +31,7 @@ namespace Copse.SimpleSerializer
     private bool _Exhausted;
 
     // NOT async, and neither is the skip below: every scan is PROBED (the fast-path probe idiom
-    // -- see AsyncToSync), and each scanned event lands through the same commit helper whether
+    // -- see ToSync), and each scanned event lands through the same commit helper whether
     // the scan answered inline or through the pending continuation.
     public Option<TNode> TryReadNextInGroup()
     {
@@ -175,7 +175,7 @@ namespace Copse.SimpleSerializer
     }
 
 
-    // The reader closes synchronously; async only to satisfy the IAsyncDisposable seam (the twin
+    // The reader closes synchronously; async only to satisfy the IDisposable seam (the twin
     // becomes a plain void Dispose).
     public void Dispose()
     {

@@ -12,7 +12,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
     /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
@@ -31,7 +31,7 @@ namespace Copse.Linq
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
     /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
@@ -43,7 +43,7 @@ namespace Copse.Linq
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
     /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
@@ -55,7 +55,7 @@ namespace Copse.Linq
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
     /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
@@ -67,7 +67,7 @@ namespace Copse.Linq
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
     /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).

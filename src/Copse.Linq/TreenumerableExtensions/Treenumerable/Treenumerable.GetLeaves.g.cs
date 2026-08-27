@@ -69,7 +69,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// With both narrow overloads present, a full <see cref="IAsyncTreenumerable{TNode}"/> needs its own
+    /// With both narrow overloads present, a full <see cref="ITreenumerable{TNode}"/> needs its own
     /// overload to resolve (neither narrow one is better); it keeps the depth-first behavior.
     /// </summary>
     public static IEnumerable<TNode> GetLeaves<TNode>(this ITreenumerable<TNode> source)

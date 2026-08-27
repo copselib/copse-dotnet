@@ -17,9 +17,9 @@ namespace Copse.Linq.Treenumerables
   // stacked layer.
   //
   // Both dimensions are staged machines: DFT rides the accumulate trail
-  // (AsyncScanWhereDepthFirstTreenumerator), BFT rides the accumulate tracker -- the
+  // (ScanWhereDepthFirstTreenumerator), BFT rides the accumulate tracker -- the
   // rootfix BFT engine's state machinery embedded beside the filter path
-  // (AsyncScanWhereBreadthFirstTreenumerator). ONE machine per acquisition, both dims.
+  // (ScanWhereBreadthFirstTreenumerator). ONE machine per acquisition, both dims.
   internal sealed class ScanWhereTreenumerable<TSource, TAccumulate, TResult, TResultSelector>
     : ISelectWhereTreenumerable<TResult>
     where TResultSelector : struct, IResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>

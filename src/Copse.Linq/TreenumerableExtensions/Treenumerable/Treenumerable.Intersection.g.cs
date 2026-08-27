@@ -10,7 +10,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
     /// </summary>
     public static ITreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this ITreenumerable<TLeft> leftTreenumerable,
@@ -23,7 +23,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
     /// </summary>
     public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
@@ -33,7 +33,7 @@ namespace Copse.Linq
         .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
 
     /// <summary>
-    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
     /// </summary>
     public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,

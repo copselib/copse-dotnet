@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // the BufferProbes walker sweep read +69% on warm preorder walks (2026-08-16, local A/B)
   // -- the per-probe size reads and cursor bookkeeping cost more than the O(1) reads they
   // avoided building. The CSR shape is the walker branch's validated design. Contrast
-  // AsyncPreorderAdjacencyIndex, the GROWING citizen, which keeps incremental scan state
+  // PreorderAdjacencyIndex, the GROWING citizen, which keeps incremental scan state
   // (linked sibling chains) because its store may still be fed. Single-threaded by
   // contract, like every adjacency engine.
   internal sealed class PreorderArrayTopology<TNode> : ITreeTopology<TNode, int>

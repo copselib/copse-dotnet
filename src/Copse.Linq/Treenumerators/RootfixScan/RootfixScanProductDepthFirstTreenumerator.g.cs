@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// The COMPOSED-PROJECTION twin of <see cref="AsyncRootfixScanDepthFirstTreenumerator{TNode, TAccumulate}"/>
+  /// The COMPOSED-PROJECTION twin of <see cref="RootfixScanDepthFirstTreenumerator{TNode, TAccumulate}"/>
   /// (the streaming projection citizenship, design-docs/SELECT_INTO_CAPTURES_DESIGN.md): the
   /// scan state threads exactly as the plain engine's -- BARE accumulates on the stacks (the
   /// emission mint, see the plain twin's doc) -- and the PRODUCT is

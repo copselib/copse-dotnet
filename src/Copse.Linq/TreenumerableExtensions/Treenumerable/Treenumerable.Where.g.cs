@@ -11,7 +11,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
     /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
     /// recomputed accordingly.
     /// </summary>
@@ -33,7 +33,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
     /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
     /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
     /// </summary>
@@ -56,7 +56,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
     /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
     /// recomputed accordingly.
     /// </summary>
@@ -83,7 +83,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
     /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
     /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
     /// </summary>
@@ -109,7 +109,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
     /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
     /// recomputed accordingly.
     /// </summary>
@@ -133,7 +133,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
     /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
     /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
     /// </summary>

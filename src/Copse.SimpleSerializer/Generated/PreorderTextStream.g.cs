@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Copse.SimpleSerializer
 {
-  // ASYNC forward-only IAsyncPreorderStream over the terse dft payload grammar ("a(b(d,e),c)"),
+  // ASYNC forward-only IPreorderStream over the terse dft payload grammar ("a(b(d,e),c)"),
   // reading through the async scanner (await at the char seam). Byte-for-byte the same scan logic as
   // the sync twin; the difference is the awaits and the struct-return ScanEvent.
   //
@@ -36,7 +36,7 @@ namespace Copse.SimpleSerializer
 
     // Scan to the next value committing at depth <= maxDepth; deeper values are structural
     // noise for the caller and their characters are discarded unaccumulated. NOT async: every
-    // scan is PROBED (the fast-path probe idiom -- see AsyncToSync), and each scanned event
+    // scan is PROBED (the fast-path probe idiom -- see ToSync), and each scanned event
     // lands through the same commit helper whether the scan answered inline or through the
     // pending continuation.
     private Option<PreorderRead<TNode>> TryScan(int maxDepth)
@@ -127,7 +127,7 @@ namespace Copse.SimpleSerializer
     }
 
 
-    // The reader closes synchronously; async only to satisfy the IAsyncDisposable seam (the twin
+    // The reader closes synchronously; async only to satisfy the IDisposable seam (the twin
     // becomes a plain void Dispose).
     public void Dispose()
     {

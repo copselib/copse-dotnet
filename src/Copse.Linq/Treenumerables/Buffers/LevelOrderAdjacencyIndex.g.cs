@@ -6,7 +6,7 @@ using Copse.Stores;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The GROWING level-order citizen (completed stores ride AsyncLevelOrderArrayTopology,
+  // The GROWING level-order citizen (completed stores ride LevelOrderArrayTopology,
   // the 2026-08-16 adjacency split): the layout's native affordances need almost no index --
   // children are a bounds probe plus an offset (contiguous runs), roots are the leading
   // entries -- so only the parent axis carries state: the walker PoC's stackless two-cursor

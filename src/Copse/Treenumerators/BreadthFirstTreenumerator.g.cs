@@ -11,7 +11,7 @@ namespace Copse.Treenumerators
 {
   // Direct style over the shared color-agnostic BreadthFirstPathState, with the child/root
   // pulls PROBED so a pull that completes inline costs no state machine at all (the fast-path
-  // probe idiom -- see AsyncToSync).
+  // probe idiom -- see ToSync).
   //
   // The BFS engine's async wrinkle: a ref parameter and a ref local are both illegal in the
   // async continuations a pending pull resumes through, so the sync driver's single
@@ -21,8 +21,8 @@ namespace Copse.Treenumerators
   // restructuring the async port imposes on the engines.
   /// <summary>
   /// The breadth-first engine cursor over a hierarchical source: roots from an async stream,
-  /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
-  /// constructed by <c>AsyncTreenumerable</c> rather than directly.
+  /// children pulled per node through <typeparamref name="TChildEnumerator"/>. Normally
+  /// constructed by <c>Treenumerable</c> rather than directly.
   /// </summary>
   public sealed class BreadthFirstTreenumerator<TNode, THandle, TChildEnumerator>
     : ITreenumerator<TNode>
@@ -59,7 +59,7 @@ namespace Copse.Treenumerators
 
     // NOT async, and neither are the helpers below: every pull is PROBED, and a pull that
     // completes inline stays ordinary method calls with no state machine -- the fast-path probe
-    // idiom (see AsyncToSync). A pull ADVANCES its cursor, so a pending pull resumes through a
+    // idiom (see ToSync). A pull ADVANCES its cursor, so a pending pull resumes through a
     // continuation that CONSUMES the pulled result; Advance's loop state lives entirely in
     // fields, so the schedule continuations then perform the loop's between-iteration mutation
     // and re-enter Advance -- exactly its `continue`.

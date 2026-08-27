@@ -8,7 +8,7 @@ namespace Copse.Async.Topologies
   // once, at the first probe (Tree.Lazy's semantics at the topology tier: cached, never
   // re-knocked -- the contract does not promise cheap or idempotent doors, so the cache
   // is what keeps a view honest against the weakest citizen), and every answer after
-  // flows through the topology the knock bound. The door is total (the void stance), so
+  // flows through the topology the knock bound. The door is total (the unfocused stance), so
   // the empty forest needs no special citizen here either: its bound topology answers the
   // probes itself -- no roots, no parents, no children, and GetNode's own violation
   // channel. Internal sealed like every topology implementation: the factory hands out

@@ -7,7 +7,7 @@ using System;
 
 namespace Copse.Linq.Stores
 {
-  // An IAsyncPreorderStore over a preorder capture that does not exist yet: the first grow call
+  // An IPreorderStore over a preorder capture that does not exist yet: the first grow call
   // awaits the one-shot build (an awaited walk of an async source into flat preorder arrays)
   // and every call after that answers from the completed PreorderArrayStore.
   //

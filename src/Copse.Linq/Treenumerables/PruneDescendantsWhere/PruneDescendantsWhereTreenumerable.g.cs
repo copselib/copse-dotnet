@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerables
   /// <c>PruneDescendantsWhere</c> operator builds, made PUBLIC
   /// (design-docs/PUBLIC_COMPOSITION_SURFACE_DESIGN.md) as the prune citizenship's
   /// canonical vehicle: a citizen whose own walk cannot absorb the predicate returns
-  /// <c>new AsyncPruneDescendantsWhereTreenumerable(sourceOrSelf, predicate)</c>, and further
+  /// <c>new PruneDescendantsWhereTreenumerable(sourceOrSelf, predicate)</c>, and further
   /// prune-afters merge into this ONE wrapper by predicate union.
   /// </summary>
   public sealed partial class PruneDescendantsWhereTreenumerable<TNode> : ISelectWhereTreenumerable<TNode>

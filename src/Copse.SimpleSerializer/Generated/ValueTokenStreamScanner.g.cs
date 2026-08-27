@@ -14,14 +14,14 @@ namespace Copse.SimpleSerializer
   // honors the skip contract: the token is consumed and reported but its characters are never
   // buffered, so a skip costs I/O only.
   //
-  // I/O happens at BLOCK granularity: one awaited ReadAsync refills the block buffer, and every
+  // I/O happens at BLOCK granularity: one awaited Read refills the block buffer, and every
   // character between refills is served synchronously from it -- never an await per character.
   // The one-character pushback (needed to tell '""' from a closing quote) is a position
   // decrement into the block; it never crosses a refill because the pushed-back character was
   // just read from the current block.
   //
   // Cancellation is cooperative at the same block granularity: the token is checked before each
-  // refill (once per 4096 characters of I/O), not per character. The in-flight ReadAsync itself
+  // refill (once per 4096 characters of I/O), not per character. The in-flight Read itself
   // is not cancellable -- the Memory<char>/CancellationToken reader overloads do not exist on
   // net48/netstandard2.0, and a block completes quickly anyway.
   //
@@ -54,7 +54,7 @@ namespace Copse.SimpleSerializer
 
     // NOT async, and neither are the scan loops below: every character read is PROBED, and a
     // character already in the block stays ordinary method calls with no state machine -- the
-    // fast-path probe idiom (see AsyncToSync). A pending read is always a REFILL, so its
+    // fast-path probe idiom (see ToSync). A pending read is always a REFILL, so its
     // continuation pushes the refilled character back into the block (the scanner's own
     // one-character pushback) and re-enters the probing loop, which re-serves it synchronously
     // -- re-entry needs no resume state beyond the loop's carried flags, which ride as
@@ -189,7 +189,7 @@ namespace Copse.SimpleSerializer
     }
 
 
-    // Serve from the block; refill with ONE awaited ReadAsync only when it drains. -1 at end of
+    // Serve from the block; refill with ONE awaited Read only when it drains. -1 at end of
     // text (a drained reader keeps answering 0, so post-end calls stay correct). Split along
     // the block boundary: a character already in the block is served with no state machine --
     // the refill (one await per 4096 characters) is the only async path.

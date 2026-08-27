@@ -69,7 +69,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
@@ -178,7 +178,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
@@ -245,7 +245,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
@@ -319,7 +319,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
@@ -385,7 +385,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for LeaffixDispatch's
     /// reason, mirrored: the survey needs its FULL member list before the first member's value
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be

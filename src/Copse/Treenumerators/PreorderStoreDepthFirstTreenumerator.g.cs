@@ -14,9 +14,9 @@ namespace Copse.Treenumerators
   /// <c>await</c> on the store's grow calls and it becomes the synchronous driver. Native playback
   /// for the flat family from span arithmetic -- a node's first child is the next store index, a
   /// child's next sibling is the child's index plus its (ensured-closed) subtree size -- with the
-  /// grow calls (<c>EnsureBufferedAsync</c>/<c>EnsureSubtreeClosedAsync</c>) PROBED so a store
+  /// grow calls (<c>EnsureBuffered</c>/<c>EnsureSubtreeClosed</c>) PROBED so a store
   /// still capturing from an async feed fills just in time while an already-buffered answer
-  /// costs no state machine at all (the fast-path probe idiom -- see AsyncToSync).
+  /// costs no state machine at all (the fast-path probe idiom -- see ToSync).
   /// GetNode/GetSubtreeSize stay sync.
   /// </summary>
   public sealed class PreorderStoreDepthFirstTreenumerator<TNode, TStore>
@@ -61,7 +61,7 @@ namespace Copse.Treenumerators
     // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
     // stays ordinary method calls whenever the store answers inline (a completed capture always
     // does; a growing one does whenever the answer is already buffered). Only a genuinely
-    // pending grow enters an async continuation -- see the fast-path idiom note in AsyncToSync.
+    // pending grow enters an async continuation -- see the fast-path idiom note in ToSync.
     /// <inheritdoc/>
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {

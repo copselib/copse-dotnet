@@ -47,7 +47,7 @@ namespace Copse.Linq
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because a leaffix scan
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
@@ -138,7 +138,7 @@ namespace Copse.Linq
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because a leaffix scan
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
@@ -192,7 +192,7 @@ namespace Copse.Linq
     /// doc). Callbacks run during the deferred build; only the sibling reduction order is
     /// specified, so callbacks should be pure.</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because a leaffix scan
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition.
@@ -411,7 +411,7 @@ namespace Copse.Linq
         (TProjected leafValue, NodePosition _) => leafNodeSelector(leafValue),
         DualFoldSurvey(edgeAccumulator, nodeAccumulator));
 
-      // The pristine-loop rule (see RunLeaffixDispatchPassAsync): the pair zip runs as its
+      // The pristine-loop rule (see RunLeaffixDispatchPass): the pair zip runs as its
       // own direct-array pass after the fold, never a rider on it.
       var accumulations = new TAccumulate[values.Length];
       for (var nodeIndex = values.Length - 1; nodeIndex >= 0; nodeIndex--)

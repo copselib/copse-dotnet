@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// The COMPOSED-PROJECTION twin of <see cref="AsyncRootfixScanBreadthFirstTreenumerator{TNode, TAccumulate}"/>
+  /// The COMPOSED-PROJECTION twin of <see cref="RootfixScanBreadthFirstTreenumerator{TNode, TAccumulate}"/>
   /// (the streaming projection citizenship, design-docs/SELECT_INTO_CAPTURES_DESIGN.md): BARE
   /// accumulates in the level buffers (the emission mint) and the same accumulator shape as
   /// the plain engine, with the product applied at emission over a transient pairing -- see

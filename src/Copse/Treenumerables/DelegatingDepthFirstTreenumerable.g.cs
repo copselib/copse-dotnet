@@ -9,9 +9,9 @@ namespace Copse.Treenumerables
 {
   // Async analog of Copse.Treenumerables.DelegatingDepthFirstTreenumerable: the single-dimension
   // sibling the narrow async operator overloads return, so a chain over an
-  // IAsyncDepthFirstTreenumerable source stays honestly depth-first-only end to end. This is the
+  // IDepthFirstTreenumerable source stays honestly depth-first-only end to end. This is the
   // codegen source of truth for the sync twin.
-  /// <summary>The depth-first-narrow form of <c>AsyncDelegatingTreenumerable</c>: one injected
+  /// <summary>The depth-first-narrow form of <c>DelegatingTreenumerable</c>: one injected
   /// treenumerator factory.</summary>
   public sealed class DelegatingDepthFirstTreenumerable<TNode> : IDepthFirstTreenumerable<TNode>
   {

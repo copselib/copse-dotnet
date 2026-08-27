@@ -27,7 +27,7 @@ namespace Copse.Linq
         }
     }
 
-    /// <summary>As <c>ConsumeAsync(source)</c>, walking the named dimension.</summary>
+    /// <summary>As <c>Consume(source)</c>, walking the named dimension.</summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source,
       TreeTraversalStrategy treeTraversalStrategy)

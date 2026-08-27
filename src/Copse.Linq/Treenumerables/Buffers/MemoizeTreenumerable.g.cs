@@ -101,7 +101,7 @@ namespace Copse.Linq.Treenumerables
     // Handle the replays use, so a probe on a growing memo is demand (grow-precedes-read pulls
     // the feed exactly as far as the answer needs) and a probe that must pull past a retired
     // feed gets the stores' own ObjectDisposedException -- the replay rule, inherited. Probing
-    // a fresh memo is consumption and pins the depth-first layout, the CompleteAsync rule.
+    // a fresh memo is consumption and pins the depth-first layout, the Complete rule.
     private ITreeTopology<TNode, int> _Topology;
 
     private ITreeTopology<TNode, int> EnsureTopology()
@@ -136,7 +136,7 @@ namespace Copse.Linq.Treenumerables
 
     // Stops all future source consumption (retires the one feed). Existing and even new replays
     // keep working over the already-captured region; any replay that needs to pull past the
-    // frontier gets ObjectDisposedException (see IAsyncTreenumerableBuffer).
+    // frontier gets ObjectDisposedException (see ITreenumerableBuffer).
     public void Dispose()
     {
       if (_Disposed)

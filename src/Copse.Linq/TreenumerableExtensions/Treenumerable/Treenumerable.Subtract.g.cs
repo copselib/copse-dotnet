@@ -9,7 +9,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
     /// to the left values. Deferred.
     /// </summary>
     public static ITreenumerable<TLeft> Subtract<TLeft, TRight>(
@@ -24,7 +24,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
     /// to the left values. Deferred.
     /// </summary>
     public static IDepthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(
@@ -36,7 +36,7 @@ namespace Copse.Linq
         .Select(mergeNode => mergeNode.Left);
 
     /// <summary>
-    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
     /// to the left values. Deferred.
     /// </summary>
     public static IBreadthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(

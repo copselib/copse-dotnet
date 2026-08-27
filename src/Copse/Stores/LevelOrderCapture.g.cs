@@ -8,9 +8,9 @@ using System.Collections.Generic;
 
 namespace Copse.Stores
 {
-  // The level-order dual of AsyncPreorderCapture: one awaited breadth-first walk of any source,
+  // The level-order dual of PreorderCapture: one awaited breadth-first walk of any source,
   // captured into a completed level-order store. The parse state is the memo buffer's single
-  // monotonic front cursor (see AsyncMemoizeLevelOrderStore for the full derivation): BFT
+  // monotonic front cursor (see MemoizeLevelOrderStore for the full derivation): BFT
   // visits nodes in the order they were scheduled, so the front -- advanced on each node's
   // first visiting visit -- is always the node whose children are currently being scheduled,
   // and every scheduled non-root wires into the front's child span. No stack, no search.
@@ -23,8 +23,8 @@ namespace Copse.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited breadth-first walk, TraverseAll -- into a completed
-    /// <see cref="AsyncLevelOrderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
-    /// deferral seam (<c>AsyncLazyLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
+    /// <see cref="LevelOrderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
+    /// deferral seam (<c>LazyLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
     /// to first use. Finite sources only, like every capture.
     /// </summary>
     public static LevelOrderArrayStore<TNode> CaptureFrom<TNode>(
@@ -73,7 +73,7 @@ namespace Copse.Stores
     }
 
     /// <summary>
-    /// The counted fast path: as <c>CaptureFromAsync(source)</c>,
+    /// The counted fast path: as <c>CaptureFrom(source)</c>,
     /// with the node count known in advance -- the three final arrays are allocated exactly and
     /// the chunked build buffers are skipped, so the capture's transient allocation drops from
     /// ~2n to 1n. The count is a CONTRACT, not a hint: callers read it off a completed
@@ -130,7 +130,7 @@ namespace Copse.Stores
     }
 
     /// <summary>
-    /// The stream-shaped overload: drains an <see cref="IAsyncLevelOrderStream{TNode}"/> --
+    /// The stream-shaped overload: drains an <see cref="ILevelOrderStream{TNode}"/> --
     /// which already speaks the store's positional contract (group 0 the roots, group j+1 node
     /// j's children, items in level order) -- straight into a completed store. No visit stream
     /// is ever synthesized between the encodings (the FlatDecode family prices that round trip;

@@ -47,7 +47,7 @@ namespace Copse.Linq
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
     /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
+    /// returned an <see cref="ITreenumerableBuffer{TNode}"/> through 2026-08-17 --
     /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
     /// </summary>
     public static ITreenumerable<TNode> TakeSubtreesWhere<TNode>(
@@ -112,7 +112,7 @@ namespace Copse.Linq
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
     /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
+    /// returned an <see cref="ITreenumerableBuffer{TNode}"/> through 2026-08-17 --
     /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
@@ -175,7 +175,7 @@ namespace Copse.Linq
     ///
     /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
     /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
+    /// returned an <see cref="ITreenumerableBuffer{TNode}"/> through 2026-08-17 --
     /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(

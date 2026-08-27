@@ -11,6 +11,12 @@
     <!-- Nothing ships unless a project explicitly opts in. -->
     <IsPackable>false</IsPackable>
 
+    <!-- Docs generate for EVERY project (the SDK derives DocumentationFile at props time, so
+         this cannot be conditioned on IsPackable, which projects set later). The CS1591
+         policy lives in Directory.Build.targets, where IsPackable IS visible: error on
+         shippable projects, suppressed elsewhere. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
     <!-- LangVersion is DELIBERATELY not set here (2026-08-15). The async projects pin 13
          (single-target sources, modern C#); the multi-target sync projects stay unpinned so
          each TFM gets its default, which makes the net48/netstandard2.0 legs compile as

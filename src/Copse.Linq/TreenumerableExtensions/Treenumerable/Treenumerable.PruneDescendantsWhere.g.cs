@@ -11,7 +11,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
     /// (the matched node is the deepest of its lineage kept). Deferred. PruneDescendantsWhere is
     /// label-preserving: survivors keep their coordinates.
     /// </summary>
@@ -35,7 +35,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
+    /// <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
     /// ITS input tree's labels.
     /// </summary>
     public static ITreenumerable<TNode> PruneDescendantsWhere<TNode>(
@@ -57,7 +57,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
     /// (the matched node is the deepest of its lineage kept). Deferred. PruneDescendantsWhere is
     /// label-preserving: survivors keep their coordinates.
     /// </summary>
@@ -82,7 +82,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
+    /// <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
     /// ITS input tree's labels.
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(
@@ -104,7 +104,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
     /// (the matched node is the deepest of its lineage kept). Deferred. PruneDescendantsWhere is
     /// label-preserving: survivors keep their coordinates.
     /// </summary>
@@ -125,7 +125,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
+    /// <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
     /// ITS input tree's labels.
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(

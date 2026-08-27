@@ -57,7 +57,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
@@ -142,7 +142,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
@@ -214,7 +214,7 @@ namespace Copse.Linq
     /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
     /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> because the pass
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
@@ -252,7 +252,7 @@ namespace Copse.Linq
     //
     // PROBES AT BIRTH: the result buffer's adjacency rides the SAME lazy store its visit
     // stream builds, so a downstream receiver-smart consumer (a second scan, a projected
-    // buffer's counted map) reaches the raw store through TryGetPreorderStoreAsync. Wrapping
+    // buffer's counted map) reaches the raw store through TryGetPreorderStore. Wrapping
     // the store behind a composite would hide it, and every such consumer would pay a full
     // second capture. Deferral is the lazy store's own (build pinned to the first pull, run
     // once).

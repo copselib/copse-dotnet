@@ -11,7 +11,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
+    /// <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
     /// matching node stays -- visits, descendants, and position untouched -- and its later
     /// siblings are removed. Deferred.
     /// </summary>
@@ -33,7 +33,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
+    /// <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
     /// Deferred. Each positional predicate sees ITS input tree's labels.
     /// </summary>
     public static ITreenumerable<TNode> PruneSiblingsWhere<TNode>(
@@ -53,7 +53,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
+    /// <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
     /// matching node stays -- visits, descendants, and position untouched -- and its later
     /// siblings are removed. Deferred.
     /// </summary>
@@ -80,7 +80,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
+    /// <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
     /// Deferred. Each positional predicate sees ITS input tree's labels.
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(
@@ -105,7 +105,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
+    /// <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
     /// matching node stays -- visits, descendants, and position untouched -- and its later
     /// siblings are removed. Deferred.
     /// </summary>
@@ -129,7 +129,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
+    /// <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
     /// Deferred. Each positional predicate sees ITS input tree's labels.
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(

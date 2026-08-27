@@ -6,7 +6,7 @@ using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The settle seam of AsyncMaterializeTreenumerable: a replay treenumerator acquired before the
+  // The settle seam of MaterializeTreenumerable: a replay treenumerator acquired before the
   // buffer settled. Acquisition already did its organic work (acquiring the inner memo replay is
   // the pin, when nothing else pinned first); the first pull runs the owner's settle -- bulk
   // completion, and the layout-guarantee transpose if the shared memo's history won the pin --

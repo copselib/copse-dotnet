@@ -12,7 +12,7 @@ namespace Copse.Treenumerables
   /// <summary>
   /// An async tree streaming from a forward-only level-order source: the async analog of
   /// <c>Copse.Treenumerables.LevelOrderStreamTreenumerable</c>, and deliberately only an
-  /// <see cref="IAsyncBreadthFirstTreenumerable{TNode}"/> -- a one-pass source cannot affordably
+  /// <see cref="IBreadthFirstTreenumerable{TNode}"/> -- a one-pass source cannot affordably
   /// serve the depth-first dimension. Each acquisition invokes the factory for a fresh stream and
   /// OWNS it (async disposal closes it); re-enumeration re-reads the source.
   /// </summary>

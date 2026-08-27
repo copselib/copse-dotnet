@@ -57,7 +57,7 @@ namespace Copse.Treenumerators
 
     // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
     // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
-    // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
+    // grow enters an async continuation -- see the fast-path probe idiom note in ToSync.
     /// <inheritdoc/>
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {

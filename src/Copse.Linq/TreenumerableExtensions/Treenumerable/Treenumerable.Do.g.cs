@@ -12,8 +12,8 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
-    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNext</c>).
     /// </summary>
     public static ITreenumerable<TNode> Do<TNode>(
       this ITreenumerable<TNode> source,
@@ -30,8 +30,8 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
-    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNext</c>).
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> Do<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -46,8 +46,8 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
-    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNext</c>).
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> Do<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,

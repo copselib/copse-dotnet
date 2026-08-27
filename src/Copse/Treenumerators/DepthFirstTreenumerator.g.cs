@@ -11,14 +11,14 @@ namespace Copse.Treenumerators
 {
   // Direct style over the shared color-agnostic DepthFirstPathState, with the two I/O seams
   // (child pull, root pull) PROBED so a pull that completes inline costs no state machine at
-  // all (the fast-path probe idiom -- see AsyncToSync). Codegen source of truth: the probe
+  // all (the fast-path probe idiom -- see ToSync). Codegen source of truth: the probe
   // guards vanish in transcription and the two seams collapse to synchronous pulls, yielding
   // exactly Copse.Treenumerators.DepthFirstTreenumerator -- which benchmarks at parity with
   // the hand-tuned original engine (1.02x), where an inverted cadence cost 1.61x.
   /// <summary>
   /// The depth-first engine cursor over a hierarchical source: roots from an async stream,
-  /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
-  /// constructed by <c>AsyncTreenumerable</c> rather than directly.
+  /// children pulled per node through <typeparamref name="TChildEnumerator"/>. Normally
+  /// constructed by <c>Treenumerable</c> rather than directly.
   /// </summary>
   public sealed class DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>
     : ITreenumerator<TNode>
@@ -54,7 +54,7 @@ namespace Copse.Treenumerators
 
     // NOT async, and neither are the helpers below: both pulls are PROBED, and a pull that
     // completes inline stays ordinary method calls with no state machine -- the fast-path probe
-    // idiom (see AsyncToSync). Unlike a store grow ("grow until", idempotent), a pull ADVANCES
+    // idiom (see ToSync). Unlike a store grow ("grow until", idempotent), a pull ADVANCES
     // its cursor, so a pending pull resumes through a continuation that CONSUMES the pulled
     // result and runs its caller's tail -- never by re-entering the probing method.
     /// <inheritdoc/>

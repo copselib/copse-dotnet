@@ -25,8 +25,8 @@ namespace Copse.Stores
   {
     /// <summary>
     /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
-    /// <see cref="AsyncPreorderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
-    /// deferral seam (<c>AsyncLazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
+    /// <see cref="PreorderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
+    /// deferral seam (<c>LazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.
     /// </summary>
     public static PreorderArrayStore<TNode> CaptureFrom<TNode>(
@@ -38,7 +38,7 @@ namespace Copse.Stores
     }
 
     /// <summary>
-    /// The counted fast path: as <c>CaptureFromAsync(source)</c>,
+    /// The counted fast path: as <c>CaptureFrom(source)</c>,
     /// with the node count known in advance -- the final arrays are allocated exactly and the
     /// chunked build buffer is skipped, so the capture's transient allocation drops from ~2n to
     /// 1n. The count is a CONTRACT, not a hint: callers read it off a completed same-tree store
@@ -88,7 +88,7 @@ namespace Copse.Stores
     }
 
     /// <summary>
-    /// As <c>CaptureFromAsync(source)</c>, additionally evaluating
+    /// As <c>CaptureFrom(source)</c>, additionally evaluating
     /// <paramref name="sideChannelSelector"/> exactly once per node -- during the capture,
     /// against the SOURCE context -- into a preorder-parallel array (element i belongs to store
     /// node i). The hook for capture operators that need a per-node companion value

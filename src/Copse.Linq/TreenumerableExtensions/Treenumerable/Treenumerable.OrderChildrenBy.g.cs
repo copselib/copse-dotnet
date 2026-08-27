@@ -27,7 +27,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -65,7 +65,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -141,7 +141,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -173,7 +173,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -239,7 +239,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -263,7 +263,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
@@ -288,7 +288,7 @@ namespace Copse.Linq
     /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
     /// 2026-08-05).
     ///
-    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// <para>Returns an <see cref="ITreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand

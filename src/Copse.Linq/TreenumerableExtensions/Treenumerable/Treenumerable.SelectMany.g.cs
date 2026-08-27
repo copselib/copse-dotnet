@@ -14,7 +14,7 @@ namespace Copse.Linq
     /// <summary>
     /// The tree monad's bind: every node is replaced in place by its expansion's forest, and
     /// the node's own children -- each replaced the same way -- re-hang at the expansion's
-    /// slot (see <see cref="AsyncExpansion{TResult}"/> for the placements and the four
+    /// slot (see <see cref="Expansion{TResult}"/> for the placements and the four
     /// special values: <c>Return</c> is Select's unit, <c>Promote</c> is Where's drop arm,
     /// <c>Drop</c> is PruneSubtreesWhere's, <c>Leaf</c> is PruneDescendantsWhere's). Streams depth-first:
     /// nothing is pulled ahead of its emission, and a dropped subtree is never pulled.

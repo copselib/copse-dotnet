@@ -153,7 +153,7 @@ design-docs/TRAVERSAL_DIMENSION_SPLIT.md and design-docs/OPERATOR_DIMENSION_AUDI
 
 Classified by the data's shape:
 - **Hierarchical** (the engine): child-shaped data adapted via the `IChildEnumerator` protocol.
-  `DepthFirstTreenumerator<TValue, TNode, TChildEnumerator>` (stack-based) and
+  `DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>` (stack-based) and
   `BreadthFirstTreenumerator<…>` (queue+stack). This is the family for arbitrary live trees.
 - **Flat** (linear encodings decoded back into visit streams): preorder arrays / level-order
   arrays / serialized text, behind the store SPIs `IPreorderStore`/`ILevelOrderStore`
@@ -477,7 +477,7 @@ When implementing a new filtering operation similar to Where, consider:
 
 - Heavy use of `ref` for performance optimization
 - All treenumerators implement `IDisposable`
-- Generic type parameters follow pattern: `TValue` (node value), `TNode` (node type), `TChildEnumerator` (child enumeration)
+- Generic type parameters follow the nomenclature ruling: `TNode` (the element), `THandle` (the navigable identity), `TSource`/`TResult` (only on genuine two-space operators), `TChildEnumerator` (the child pull)
 
 ### Comments: current truth only — history lives in git
 

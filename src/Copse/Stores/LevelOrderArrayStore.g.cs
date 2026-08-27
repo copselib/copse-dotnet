@@ -8,7 +8,7 @@ namespace Copse.Stores
 {
   // A COMPLETED level-order store over plain arrays: nodes in level order, each node's child
   // span described by firstChildIndices[i] + childCounts[i], the roots the leading rootCount
-  // entries. The structural dual of AsyncPreorderArrayStore -- nothing grows, the Ensure* hooks
+  // entries. The structural dual of PreorderArrayStore -- nothing grows, the Ensure* hooks
   // answer with completed results, the reads are plain array access. Each color owns its own:
   // the sync twin is generated from this file.
   //

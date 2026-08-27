@@ -8,6 +8,12 @@
 
 ### Parameter order and names
 
+- **Operator lambdas take the node, not a `NodeContext`** (the composition-era arity split).
+  Every public operator that took `Func<NodeContext<TNode>, …>` now takes the value form
+  `Func<TNode, …>` and, where the position matters, a positional overload
+  `Func<TNode, NodePosition, …>`; `NodeContext` no longer appears in public operator
+  signatures. *Migration: change `ctx => f(ctx.Node)` to `node => f(node)`, and
+  `ctx => f(ctx.Node, ctx.Position)` to `(node, position) => f(node, position)`.*
 - **Fold-family parameter convention: accumulator first, boundary selector last** (`f23e89e`).
   `LeaffixScan` / `LeaffixAggregate` overloads changed from `(leafNodeSelector, accumulator)` to
   `(accumulator, leafNodeSelector)`; `LeaffixAggregate`'s parameter renamed

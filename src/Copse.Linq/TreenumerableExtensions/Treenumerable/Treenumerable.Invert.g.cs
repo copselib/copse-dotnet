@@ -19,7 +19,7 @@ namespace Copse.Linq
     /// Mirror: reverse the order of every node's children (and the roots). Two regimes, by what
     /// the source can afford (see TRAVERSAL_DIMENSION_SPLIT.md), mirroring the sync operator:
     /// a breadth-first-ONLY source streams its mirror in O(width) and stays narrow; anything
-    /// else captures and returns a completed <see cref="IAsyncTreenumerableBuffer{TNode}"/>.
+    /// else captures and returns a completed <see cref="ITreenumerableBuffer{TNode}"/>.
     ///
     /// <para>This overload is the streaming regime: reversing every sibling group reverses each
     /// level end-to-end, so no capture is needed and the result stays a narrow breadth-first

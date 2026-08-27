@@ -13,7 +13,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -40,7 +40,7 @@ namespace Copse.Linq
       => RootfixScanCitizen(source, ContextAccumulator(accumulator), seed);
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -68,7 +68,7 @@ namespace Copse.Linq
           seed));
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -118,7 +118,7 @@ namespace Copse.Linq
       => RootfixScan(source, (node, _) => rootNodeSelector(node), accumulator);
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -142,7 +142,7 @@ namespace Copse.Linq
       => RootfixScan(source, (node, _) => rootNodeSelector(node), accumulator);
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -236,7 +236,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
@@ -264,7 +264,7 @@ namespace Copse.Linq
           default));
 
     /// <summary>
-    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
     /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
     /// down each root-to-node path). Returns the CANONICAL
     /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value

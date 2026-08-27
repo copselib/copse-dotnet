@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerables
   /// projection). This is the type the <c>Select</c> operator builds, made PUBLIC
   /// (design-docs/PUBLIC_COMPOSITION_SURFACE_DESIGN.md) as the citizenship's canonical
   /// vehicle: a citizen whose own type cannot vary its output parameter absorbs a
-  /// projection by returning <c>new AsyncSelectTreenumerable(sourceOrSelf,
+  /// projection by returning <c>new SelectTreenumerable(sourceOrSelf,
   /// composedSelector)</c> -- and chains over the result still collapse to this ONE
   /// wrapper, because its own doors compose selectors instead of stacking.
   /// </summary>

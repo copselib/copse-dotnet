@@ -19,7 +19,7 @@ namespace Copse.SimpleSerializer
   // other.
   //
   // I/O happens at BLOCK granularity: structure and values append synchronously into the shared
-  // TextBlockBuffer, and one awaited WriteAsync drains it whenever it reaches the threshold
+  // TextBlockBuffer, and one awaited Write drains it whenever it reaches the threshold
   // (plus a final drain) -- never a writer call per character or per token. This is the single
   // source of truth: strip the awaits and it collapses to the synchronous LevelOrderTextWriter
   // (the checked-in .g.cs twin), block-buffered the same way.

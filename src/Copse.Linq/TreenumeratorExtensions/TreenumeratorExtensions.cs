@@ -3,8 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Extensions
 {
+  /// <summary>Reads of a treenumerator's current visit as the record types.</summary>
   public static class TreenumeratorExtensions
   {
+    /// <summary>The current visit as a <see cref="NodeVisit{TNode}"/> record.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static NodeVisit<TNode> ToNodeVisit<TNode>(this ITreenumerator<TNode> treenumerator)
     {
@@ -15,6 +17,7 @@ namespace Copse.Linq.Extensions
           treenumerator.Position);
     }
 
+    /// <summary>The current node with its position, as a <see cref="NodeContext{TNode}"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static NodeContext<TNode> ToNodeContext<TNode>(this ITreenumerator<TNode> treenumerator)
     {

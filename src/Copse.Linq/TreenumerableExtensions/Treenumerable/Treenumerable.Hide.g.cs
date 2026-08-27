@@ -11,8 +11,8 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
-    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="ITreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>
@@ -26,15 +26,15 @@ namespace Copse.Linq
       this ITreenumerable<TNode> source)
       => Hide(source, HideScope.Treenumerator);
 
-    /// <summary>Async <c>Hide</c> to an explicit <see cref="HideScope"/>.</summary>
+    /// <summary><c>Hide</c> to an explicit <see cref="HideScope"/>.</summary>
     public static ITreenumerable<TNode> Hide<TNode>(
       this ITreenumerable<TNode> source,
       HideScope scope)
       => new HideTreenumerable<TNode>(source, scope);
 
     /// <summary>
-    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
-    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="ITreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>
@@ -49,8 +49,8 @@ namespace Copse.Linq
       => Hide(source, HideScope.Treenumerator);
 
     /// <summary>
-    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
-    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="ITreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>
@@ -64,7 +64,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       HideScope scope)
     {
-      // The narrow barrier needs no bespoke type: AsyncTree.CreateDepthFirst returns a
+      // The narrow barrier needs no bespoke type: Tree.CreateDepthFirst returns a
       // delegating treenumerable that claims nothing beyond its one dimension.
       if (scope == HideScope.Treenumerable)
         return Tree.CreateDepthFirst(source.GetDepthFirstTreenumerator);
@@ -74,8 +74,8 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
-    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="ITreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>
@@ -90,8 +90,8 @@ namespace Copse.Linq
       => Hide(source, HideScope.Treenumerator);
 
     /// <summary>
-    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
-    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="ITreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
     /// for) the concrete source type -- which also makes it a composition barrier, since operators
     /// compose by probing the treenumerable. Deferred.
     /// <para>

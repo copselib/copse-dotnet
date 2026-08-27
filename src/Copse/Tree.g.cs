@@ -57,7 +57,7 @@ namespace Copse
         () => lazyTree.Value.GetDepthFirstTreenumerator());
     }
 
-    /// <summary>The dimension-observing form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>:
+    /// <summary>The dimension-observing form of <see cref="Lazy{TNode}(Func{ITreenumerable{TNode}})"/>:
     /// the factory is told which traversal order was demanded first, so a one-time construction
     /// with a representation choice (a capture that could lay out preorder or level-order) can
     /// favor its first consumer. The constructed tree is still pinned for both
@@ -76,7 +76,7 @@ namespace Copse
 
     // The narrow duals need no dimension-observing form: with one dimension there is nothing
     // to observe.
-    /// <summary>The depth-first-narrow form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>.</summary>
+    /// <summary>The depth-first-narrow form of <see cref="Lazy{TNode}(Func{ITreenumerable{TNode}})"/>.</summary>
     public static IDepthFirstTreenumerable<TNode> LazyDepthFirst<TNode>(Func<IDepthFirstTreenumerable<TNode>> treenumerableFactory)
     {
       var lazyTree = new Lazy<IDepthFirstTreenumerable<TNode>>(treenumerableFactory);
@@ -85,7 +85,7 @@ namespace Copse
         () => lazyTree.Value.GetDepthFirstTreenumerator());
     }
 
-    /// <summary>The breadth-first-narrow form of <see cref="Lazy{TNode}(Func{IAsyncTreenumerable{TNode}})"/>.</summary>
+    /// <summary>The breadth-first-narrow form of <see cref="Lazy{TNode}(Func{ITreenumerable{TNode}})"/>.</summary>
     public static IBreadthFirstTreenumerable<TNode> LazyBreadthFirst<TNode>(Func<IBreadthFirstTreenumerable<TNode>> treenumerableFactory)
     {
       var lazyTree = new Lazy<IBreadthFirstTreenumerable<TNode>>(treenumerableFactory);
@@ -171,10 +171,10 @@ namespace Copse
       Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new DelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
-    /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
+    /// <summary>A treenumerable that traverses any <see cref="ITreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
-    /// Nodes are read through <c>GetNodeAsync</c> during the walk.</summary>
+    /// Nodes are read through <c>GetNode</c> during the walk.</summary>
     public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
       => new Treenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(

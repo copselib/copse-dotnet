@@ -13,7 +13,7 @@ namespace Copse.Treenumerators
   /// style</b>: the natural inlined control flow (OnScheduling / OnVisiting / Backtrack /
   /// TryPushNextChild), with <c>await</c> at the one I/O seam -- the stream read in
   /// TryEnsureLookaheadAtOrAbove. O(depth) resident state (the root-to-current path plus the
-  /// lookahead slot); skips are lazy discards through <see cref="IAsyncPreorderStream{TNode}"/>'s
+  /// lookahead slot); skips are lazy discards through <see cref="IPreorderStream{TNode}"/>'s
   /// TrySkipToDepth, which reads I/O without materializing values.
   ///
   /// <para><b>This is the single source of truth.</b> Strip the <c>await</c>s and it collapses to
@@ -77,7 +77,7 @@ namespace Copse.Treenumerators
 
     // NOT async, and neither are the pull helpers below: every stream seam is PROBED, and a
     // pull the stream answers inline is ordinary method calls with no state machine -- the
-    // fast-path probe idiom (see AsyncToSync).
+    // fast-path probe idiom (see ToSync).
     /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {

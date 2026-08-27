@@ -11,7 +11,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
     /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     /// </summary>
@@ -29,7 +29,7 @@ namespace Copse.Linq
       => source.TakeNodesUntil((node, position) => !predicate(node, position), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
     /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     /// </summary>
@@ -40,7 +40,7 @@ namespace Copse.Linq
       => source.TakeNodesUntil(node => !predicate(node), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
     /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     /// </summary>
@@ -51,7 +51,7 @@ namespace Copse.Linq
       => source.TakeNodesUntil((node, position) => !predicate(node, position), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
     /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     /// </summary>
@@ -62,7 +62,7 @@ namespace Copse.Linq
       => source.TakeNodesUntil(node => !predicate(node), keepFinalNode);
 
     /// <summary>
-    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
     /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
     /// </summary>

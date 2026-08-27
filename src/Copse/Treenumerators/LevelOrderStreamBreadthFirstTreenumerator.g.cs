@@ -131,7 +131,7 @@ namespace Copse.Treenumerators
     // NOT async, and neither are the pull helpers below: every seam is PROBED, and a pull whose
     // stream answers inline is ordinary method calls with no state machine. Only a genuinely
     // pending stream call enters an async continuation -- the fast-path probe idiom (see
-    // AsyncToSync).
+    // ToSync).
     /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {

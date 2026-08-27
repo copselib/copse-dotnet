@@ -9,7 +9,7 @@ namespace Copse
   /// <summary>
   /// The provider-side interface a tree structure implements so walkers can navigate it: four
   /// probes -- value, parent, child-at-index, root-at-index -- that answer every step a
-  /// <c>AsyncTreeWalker</c> can take. Consumers rarely meet this interface directly; they
+  /// <c>TreeWalker</c> can take. Consumers rarely meet this interface directly; they
   /// acquire walkers, and a walker carries its topology.
   ///
   /// <para>Contracts for implementers: <typeparamref name="THandle"/> is your node identity,

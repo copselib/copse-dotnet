@@ -32,7 +32,7 @@ namespace Copse
   // THE CHARTER (design-docs/WALKER_FACTORY_DESIGN.md, Stage C + §11): ITreenumerable is
   // an enumerator factory; IWalkableTreenumerable is a TREE WALKER factory. One member,
   // and it cannot miss -- both factories are total. The probes live on
-  // IAsyncTreeTopology -- the provider SPI, which this contract does not expose to
+  // ITreeTopology -- the provider SPI, which this contract does not expose to
   // consumers: the walker is the entire public navigation surface, the topology is bound
   // at the door, and the walkable appears in no navigation call path.
   public interface IWalkableTreenumerable<TNode, THandle> : ITreenumerable<TNode>
@@ -41,7 +41,7 @@ namespace Copse
     /// A walker at the unfocused stance -- above the roots, before the first downward step --
     /// exactly as <c>GetEnumerator</c> hands back a cursor at the before-first position.
     /// Never fails: the empty forest is the unfocused stance with an empty child group. Walk
-    /// down with <c>MoveToChildAsync</c> (from there, the children are the roots).
+    /// down with <c>MoveToChild</c> (from there, the children are the roots).
     /// </summary>
     TreeWalker<TNode, THandle> GetTreeWalker();
   }

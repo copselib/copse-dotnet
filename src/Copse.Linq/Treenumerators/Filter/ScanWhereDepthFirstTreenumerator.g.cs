@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// The FOURTH CELL's depth-first machine (the ancestor composer, SCAN_TIER_DESIGN.md) and
   /// the codegen source of truth for its sync twin: the filter driver with an inherited-fold
-  /// stage. Identical to <see cref="AsyncWhereDepthFirstTreenumerator{TSource, TResult, TResultSelector}"/>
+  /// stage. Identical to <see cref="WhereDepthFirstTreenumerator{TSource, TResult, TResultSelector}"/>
   /// except that scheduling runs the rootfix fold FIRST -- once per scheduled node, accepted
   /// or rejected (composition is data flow: a rejected node's descendants still fold through
   /// its accumulate) -- and the composed selector chain sees the PAIR <c>(node, accumulate)</c>,

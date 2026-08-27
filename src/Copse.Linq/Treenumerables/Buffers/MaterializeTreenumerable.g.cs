@@ -97,7 +97,7 @@ namespace Copse.Linq.Treenumerables
 
       if (_RequestedLayout == BufferLayout.Preorder)
       {
-        // The memo is complete (the CompleteAsync above), so its count presizes the transpose
+        // The memo is complete (the Complete above), so its count presizes the transpose
         // capture (the counted fast path -- final arrays exact, no chunked build buffer).
         var preorderStore = PreorderCapture.CaptureFrom(_Memo, _Memo.GetBufferedCount());
 

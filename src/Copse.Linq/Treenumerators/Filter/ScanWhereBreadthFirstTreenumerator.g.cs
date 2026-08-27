@@ -15,7 +15,7 @@ namespace Copse.Linq.Treenumerators
   /// The FOURTH CELL's breadth-first machine (the ancestor composer, SCAN_TIER_DESIGN.md) and
   /// the codegen source of truth for its sync twin: the BFT filter driver with an
   /// inherited-fold stage. The filter half is
-  /// <see cref="AsyncWhereBreadthFirstTreenumerator{TSource, TResult, TResultSelector}"/> verbatim;
+  /// <see cref="WhereBreadthFirstTreenumerator{TSource, TResult, TResultSelector}"/> verbatim;
   /// the fold half is THE ACCUMULATE TRACKER -- the rootfix BFT engine's state machinery
   /// (level deques, skipped stack, the four-way parent lookup) carrying bare accumulates,
   /// minus that engine's emission. Both halves read the same inner pulls; the composed
@@ -128,7 +128,7 @@ namespace Copse.Linq.Treenumerators
       }
     }
 
-    // ---- The filter half: AsyncWhereBreadthFirstTreenumerator, verbatim ----
+    // ---- The filter half: WhereBreadthFirstTreenumerator, verbatim ----
 
     private WhereBreadthFirstPath<TResult> _Path;
 

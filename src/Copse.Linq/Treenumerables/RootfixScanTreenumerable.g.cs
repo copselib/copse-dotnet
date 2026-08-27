@@ -19,7 +19,7 @@ namespace Copse.Linq.Treenumerables
   // THE FOURTH-CELL DOOR (the ancestor composer, SCAN_TIER_DESIGN.md): the citizen also
   // joins the general-splice surface, so a rejecting operator landing on a scan does NOT
   // stack a driver over the engine -- its Compose constructs the fold-carrying driver
-  // (AsyncScanWhereTreenumerable) from this recipe, and the whole chain is ONE machine.
+  // (ScanWhereTreenumerable) from this recipe, and the whole chain is ONE machine.
   // Probe order matters at the Select seam: bare Selects must keep taking ComposeSelect
   // (the product ENGINE -- zero extra machinery), so Select probes the citizenship BEFORE
   // this surface.

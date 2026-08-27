@@ -6,7 +6,7 @@ using Copse.Stores;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The GROWING preorder citizen (completed stores ride AsyncPreorderArrayTopology, the
+  // The GROWING preorder citizen (completed stores ride PreorderArrayTopology, the
   // 2026-08-16 adjacency split): the walker PoC's one-pass index build (open-span stack ->
   // parents; discovery order -> child links; stack-empty points -> roots), restructured as
   // an INCREMENTAL SCAN for stores still being fed. The scan cursor advances one node at a

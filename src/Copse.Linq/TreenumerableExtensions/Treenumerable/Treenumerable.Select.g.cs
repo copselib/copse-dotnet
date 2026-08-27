@@ -11,7 +11,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
+    /// <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
@@ -52,7 +52,7 @@ namespace Copse.Linq
     /// Deferred like every capture: nothing builds until the first pull.
     ///
     /// <para>The probe order (SELECT_INTO_CAPTURES_DESIGN.md): a PROJECTION CITIZEN
-    /// (<see cref="IAsyncSelectTreenumerableBuffer{TNode}"/>) composes the
+    /// (<see cref="ISelectTreenumerableBuffer{TNode}"/>) composes the
     /// selector into its own machinery -- for a deferred scan product, into the pending
     /// build, so the un-projected intermediate never exists. Any other buffer takes the
     /// projected re-capture: one walk of the completed capture into a fresh buffer of
@@ -84,7 +84,7 @@ namespace Copse.Linq
       => SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position)).Materialize(BufferLayout.Preorder);
 
     /// <summary>
-    /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
+    /// <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
     /// Select. Positions never move under a projection, so this flavor composes exactly like
     /// the value-only one.
     /// </summary>
@@ -111,7 +111,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
+    /// <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
@@ -149,7 +149,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
+    /// <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
@@ -185,7 +185,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
+    /// <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).
@@ -221,7 +221,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// Async <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
+    /// <c>Select</c> over node VALUES: maps each node, forwarding the visit stream
     /// unchanged (positions never move under a projection). Deferred. Consecutive selects
     /// collapse by selector composition, and a following Where (either flavor) composes into
     /// the projection-carrying filter driver (design-docs/OPERATOR_COMPOSITION_DESIGN.md).

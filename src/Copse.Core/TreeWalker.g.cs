@@ -16,30 +16,30 @@ namespace Copse
   ///
   /// <para>The unfocused stance is a real stance, not an error state: it is where a walker
   /// stands before its first downward step. The roots are its children
-  /// (<see cref="MoveToChildAsync"/> walks them from there), climbing up from a root lands on
+  /// (<see cref="MoveToChild"/> walks them from there), climbing up from a root lands on
   /// it, and the only upward miss in the algebra is stepping up from it. It stands on no node,
-  /// so it has no handle and no node to read: <see cref="Focus"/> and <see cref="GetNodeAsync"/>
+  /// so it has no handle and no node to read: <see cref="Focus"/> and <see cref="GetNode"/>
   /// throw there (as <c>IEnumerator.Current</c> throws before the first <c>MoveNext</c>), and
-  /// <see cref="TryGetNodeAsync"/> is the read that cannot throw -- absent exactly there.
+  /// <see cref="TryGetNode"/> is the read that cannot throw -- absent exactly there.
   /// Test <see cref="HasFocus"/> when a climb may have topped out.</para>
   ///
   /// <para>A <c>default</c> instance has no topology and is invalid; the unfocused stance is
   /// not <c>default</c> -- it carries a topology like any other stance.</para>
   ///
-  /// <para>This type carries navigation only: <see cref="GetNodeAsync"/> reads the focused
+  /// <para>This type carries navigation only: <see cref="GetNode"/> reads the focused
   /// value, and the step members move the stance. The operator surface over walkers --
   /// <c>Extend</c>, <c>Subtrees</c>, the acquisition methods -- lives in the Linq packages as
   /// extension methods, the same way <c>ITreenumerable</c> lives here while <c>Select</c> and
   /// <c>Where</c> live there.</para>
   ///
-  /// <para>Navigation is bidirectional: <see cref="MoveToParentAsync"/> works because a
+  /// <para>Navigation is bidirectional: <see cref="MoveToParent"/> works because a
   /// walker's focus keeps its ancestors, unlike the severed per-subtree view
   /// <c>Subtrees()</c> produces.</para>
   /// </summary>
   public readonly struct TreeWalker<TNode, THandle>
   {
     /// <summary>Creates a walker standing on <paramref name="focus"/>. For providers
-    /// implementing <see cref="IAsyncWalkableTreenumerable{TNode, THandle}"/>; consumers get
+    /// implementing <see cref="IWalkableTreenumerable{TNode, THandle}"/>; consumers get
     /// walkers from the acquisition methods and from <see cref="At"/>. The handle is not
     /// validated: it is presumed to be a real node of <paramref name="topology"/>, and an
     /// invalid one fails at the first probe.</summary>
@@ -51,7 +51,7 @@ namespace Copse
     }
 
     /// <summary>Creates a walker at the unfocused stance above the roots of
-    /// <paramref name="topology"/> -- what <c>GetTreeWalkerAsync</c> returns. Never fails:
+    /// <paramref name="topology"/> -- what <c>GetTreeWalker</c> returns. Never fails:
     /// the empty forest is simply the unfocused stance with an empty child group.</summary>
     public TreeWalker(ITreeTopology<TNode, THandle> topology)
     {
@@ -86,14 +86,14 @@ namespace Copse
 
     /// <summary>The value of the node this walker stands on. Throws
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
-    /// <see cref="TryGetNodeAsync"/> is the read that cannot throw. A method rather than a
+    /// <see cref="TryGetNode"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
     public TNode GetNode()
       => _HasFocus ? Topology.GetNode(_FocusHandle) : ThrowUnfocusedHasNoNode();
 
     /// <summary>The value of the node this walker stands on, or absent at the unfocused
     /// stance -- the one stance with no node to read. On focused stances it agrees with
-    /// <see cref="GetNodeAsync"/>.</summary>
+    /// <see cref="GetNode"/>.</summary>
     public Option<TNode> TryGetNode()
       => _HasFocus
         ? new Option<TNode>(Topology.GetNode(_FocusHandle))
@@ -110,7 +110,7 @@ namespace Copse
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static TNode ThrowUnfocusedHasNoNode()
       => throw new InvalidOperationException(
-        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetNodeAsync, whose miss is typed.");
+        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetNode, whose miss is typed.");
 
     /// <summary>A walker on the same topology standing at <paramref name="handle"/> -- how a
     /// stored handle becomes a stance again. No probe fires and nothing is validated: the
@@ -123,7 +123,7 @@ namespace Copse
     /// <summary>Single upward step. From a node with a parent, the parent; from a root, the
     /// UNFOCUSED walker -- that is an answer, not a miss: the climb tops out standing above
     /// the roots; from the unfocused stance, the miss. See
-    /// <see cref="AsyncTreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
+    /// <see cref="TreeWalkerResult{TNode, THandle}"/> for reading the answer.</summary>
     public TreeWalkerResult<TNode, THandle> MoveToParent()
     {
       if (!_HasFocus)

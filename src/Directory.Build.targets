@@ -10,8 +10,14 @@
     way. Tests, benchmarks, and the experimental parking lot are exempt by never opting in.
   -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Docs generate everywhere (Directory.Build.props; the SDK derives DocumentationFile at
+       props time). Non-shippable projects are not consumer surface: silence the missing-doc
+       warning instead of documenting test plumbing. -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'true'">
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
 </Project>
