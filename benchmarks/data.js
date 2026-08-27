@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787780430898,
+  "lastUpdate": 1787789928679,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -18700,6 +18700,150 @@ window.BENCHMARK_DATA = {
             "value": 205898192.6818182,
             "unit": "ns",
             "range": "± 6469557.403808426"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f73353127808a3b341aaea3598ae8678f2bcb99a",
+          "message": "Node/value audit: tree-domain members say Node; containers keep Value\n\nJason's policy line, applied: when a type is tree-domain -- its\nparameter IS the element -- members name what they hold, so\nSelectWhereResult.Value and PreorderRead.Value become Node (with their\nconstructor parameters), the completed array stores and dispatch views\nstore _Nodes, the stream treenumerators' frames and lookahead carry\nNode, and the leaffix frame tuple follows. Genuine containers keep\ntheir own idiom: Option and the walker step result hold anything, so\ntheir Value/HasValue stand, as do the accessor-word members (GetValue,\nTryGetValueAsync, GetHandlesWithValues). Doc phrases saying \"source\nvalue\" for members named Node reworded. Release-noted; twins\nregenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T23:49:54Z",
+          "tree_id": "b5e387738fe1b654146e30e4fa9a2dc75bc279ef",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f73353127808a3b341aaea3598ae8678f2bcb99a"
+        },
+        "date": 1787789894765,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 14149453.84375,
+            "unit": "ns",
+            "range": "± 22251.681770048166"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22307430.875,
+            "unit": "ns",
+            "range": "± 198872.15414948005"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3923452.679129464,
+            "unit": "ns",
+            "range": "± 9245.622247817993"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3271255.105769231,
+            "unit": "ns",
+            "range": "± 4399.587729200777"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 116494144.33333333,
+            "unit": "ns",
+            "range": "± 619514.9091909055"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 139037034.03333333,
+            "unit": "ns",
+            "range": "± 1609168.5026458954"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 52793664.208333336,
+            "unit": "ns",
+            "range": "± 504871.3171994735"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50351364.73333334,
+            "unit": "ns",
+            "range": "± 183899.80126145476"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 43066138.98214285,
+            "unit": "ns",
+            "range": "± 117214.64020739464"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 34337533.14358974,
+            "unit": "ns",
+            "range": "± 103024.03216730336"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_SkipAll",
+            "value": 26463310.9375,
+            "unit": "ns",
+            "range": "± 68803.1390312291"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_SkipAll",
+            "value": 18352635.55625,
+            "unit": "ns",
+            "range": "± 148093.60267872008"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 55100029.946428575,
+            "unit": "ns",
+            "range": "± 385454.06872603646"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 91546201.52222224,
+            "unit": "ns",
+            "range": "± 266334.0088836771"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14394670.471153846,
+            "unit": "ns",
+            "range": "± 16533.643920659466"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14392874.367788462,
+            "unit": "ns",
+            "range": "± 29214.100161270966"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 452842969.73333335,
+            "unit": "ns",
+            "range": "± 1111064.1778310987"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 569550162.6666666,
+            "unit": "ns",
+            "range": "± 3022904.890165387"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 210656833.4946236,
+            "unit": "ns",
+            "range": "± 3887938.9139108136"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 200786281.18,
+            "unit": "ns",
+            "range": "± 4046334.9756653397"
           }
         ]
       }
