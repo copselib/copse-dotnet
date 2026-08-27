@@ -1,4 +1,6 @@
 
+using Copse.Core;
+
 namespace Copse
 {
   // Enumerates the children of a node in a flat pre-order tree (see PreorderTree). A node's

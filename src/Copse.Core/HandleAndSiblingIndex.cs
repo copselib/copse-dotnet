@@ -1,4 +1,4 @@
-namespace Copse
+namespace Copse.Core
 {
   /// <summary>
   /// A node's handle paired with the node's zero-based index among its siblings -- the shape

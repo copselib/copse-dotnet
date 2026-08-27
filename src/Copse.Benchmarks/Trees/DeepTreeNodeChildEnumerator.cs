@@ -1,4 +1,6 @@
 
+using Copse.Core;
+
 namespace Copse.Benchmarks.Trees
 {
   public struct DeepTreeNodeChildEnumerator

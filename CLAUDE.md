@@ -66,33 +66,25 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 ### Project Structure
 
-> **The color rule (stated 2026-07-13; sharpened by the de-share 2026-07-14):** the sync and
-> async families ("colors") share no contracts — `Copse.Core.Async` does not reference
-> `Copse.Core`, and nothing above them crosses colors (the sole deliberate exception is
-> `Copse.SimpleSerializer`, the one both-colors package). Vocabulary, Primitives, and
-> Traversal are the **color-neutral substrate** underneath both stacks, and each holds
-> exactly what its name promises: Vocabulary holds *what the Core contracts speak*,
-> Primitives holds *tree-free mechanics*, Traversal holds *the shared sans-I/O machinery and
-> the value types it consumes*. Everything color-flavored — including the flat store SPIs,
-> read structs, and completed array stores — lives per-color, single-sourced through codegen
-> (async sources → generated sync twins), which also keeps async polyfills out of the
-> neutral layer and the sync family's dependency list empty.
+> **The color rule (one-directional since the 2026-08-27 restructure):** async depends on
+> sync, never the reverse — exactly as async LINQ sits atop the BCL's sync LINQ. Each async
+> project references its sync counterpart (`Copse.Core.Async` → `Copse.Core`,
+> `Copse.Linq.Async` → `Copse.Linq`), so the shared vocabulary and machinery live once, in
+> the sync stack; the sync family's dependency list stays empty of async and of polyfills
+> (Microsoft.Bcl.AsyncInterfaces is confined to the async projects). Async namespaces carry
+> no `Async` segment — types share their sync twins' namespaces, distinguished by the
+> `Async` name prefix. Color-flavored machinery (store SPIs, read structs, treenumerators)
+> exists per-color, single-sourced through codegen (async sources → generated sync twins).
 
-- **Copse.Vocabulary** - The dependency root: the value types and enums the Core contracts
-  speak (`NodePosition`, `NodeVisit`, `TreenumeratorMode`, `NodeTraversalStrategies`,
-  `TreeTraversalStrategy`). References nothing. Color-neutral.
-- **Copse.Core** - The sync traversal contracts: `ITreenumerable<T>` and its two
-  single-dimension parents, `ITreenumerator<T>`. References Vocabulary. (`Copse.Core.Async`
-  is its async twin, also over Vocabulary; the async stack mirrors the sync one from there —
-  see design-docs/ASYNC_CODEGEN.md.)
-- **Copse.Primitives** - Tree-free, color-neutral mechanics both families build on: the
-  chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted
-  `Copse.Disposables` algebra. References nothing.
-- **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
-  engines (`DepthFirstPathState`, `BreadthFirstPathState`, …) plus `NodeContext`, its one
-  public value type (`HandleAndSiblingIndex` ships from Vocabulary). References
-  Vocabulary + Primitives.
-  (`Copse.Linq.Traversal` is its Linq-level analog, referencing it.)
+- **Copse.Core** - The dependency root: the sync traversal contracts (`ITreenumerable<T>`
+  and its two single-dimension parents, `ITreenumerator<T>`), the walker tier, and the
+  vocabulary both families speak (`NodePosition`, `NodeVisit`, `TreenumeratorMode`,
+  `NodeTraversalStrategies`, `TreeTraversalStrategy`, `Option`, `HandleAndSiblingIndex`).
+  References nothing. (`Copse.Core.Async` is its async twin and references it; the async
+  stack mirrors the sync one from there — see design-docs/ASYNC_CODEGEN.md.)
+- **Copse.Primitives** - Tree-free mechanics both families build on: the chunked ref-access
+  collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted `Copse.Disposables`
+  algebra. References nothing.
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
@@ -100,9 +92,15 @@ The library **never performs node equality comparisons**. This is a deliberate d
   completed array stores, and capture factories live in `Copse/Stores`, generated from their
   `Copse.Async/Stores` sources). Also the tree-source factories
   (`Tree.Defer`/`Lazy`/`Using`/`Empty` — Defer builds fresh per acquisition, Lazy pins the first
-  construction) and the wrapper bases (`TreenumeratorBase`/`Wrapper`).
-- **Copse.Linq** - LINQ-style tree operators only (extensions over the abstract contract; the
-  memoize machinery rides the flat family, not a private engine).
+  construction), the wrapper bases (`TreenumeratorBase`/`Wrapper`), the sans-I/O path-state
+  machinery both engines drive (`Copse/Traversal`: `DepthFirstPathState`,
+  `BreadthFirstPathState`, … — internal, IVT'd to the async engine), `NodeContext`, and
+  `HandleAndNode`.
+- **Copse.Linq** - LINQ-style tree operators (extensions over the abstract contract; the
+  memoize machinery rides the flat family, not a private engine), plus the operator-tier
+  value types and shared filter path-state (`Copse.Linq/Traversal`: `BufferLayout`,
+  `HideScope`, the dispatch views, the Where paths — the paths internal, IVT'd to
+  `Copse.Linq.Async`).
 - **Copse.Linq.Experimental** - Unpackaged, untested parking lot for half-baked ideas and
   possible future surface (`ExpandNodes`, `Graft`, the tree tokenizers — demoted 2026-07-15,
   sync-only, so the token shape isn't locked in by shipping).

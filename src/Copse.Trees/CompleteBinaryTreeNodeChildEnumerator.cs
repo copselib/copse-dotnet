@@ -1,3 +1,5 @@
+using Copse.Core;
+
 namespace Copse.Trees
 {
   public struct CompleteBinaryTreeNodeChildEnumerator

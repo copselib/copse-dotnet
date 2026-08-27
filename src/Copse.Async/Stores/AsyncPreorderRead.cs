@@ -1,3 +1,5 @@
+using Copse.Core;
+
 namespace Copse.Stores
 {
   /// <summary>

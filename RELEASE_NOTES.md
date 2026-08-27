@@ -109,6 +109,14 @@
 
 ### Moved types
 
+- **Three packages dissolve into the stack** (the one-directional color rule: async now
+  depends on sync, never the reverse). `Copse.Vocabulary` merges into `Copse.Core` (the
+  vocabulary, `Option`, and `HandleAndSiblingIndex` — namespace `Copse.Core`;
+  `HandleAndNode` moves to the `Copse` package, namespace `Copse`); `Copse.Traversal`
+  merges into `Copse`; `Copse.Linq.Traversal` merges into `Copse.Linq`. The retired NuGet
+  ids will be deprecated. *Migration: remove any direct references to the three retired
+  packages — their types arrive through `Copse.Core`/`Copse`/`Copse.Linq`; `Option` and
+  `HandleAndSiblingIndex` move from namespace `Copse` to `Copse.Core`.*
 - **The async namespaces drop their `Async` segment** — async types now live in the same
   namespaces as their sync twins, exactly as `IAsyncEnumerable<T>` sits in
   `System.Collections.Generic` and `AsyncEnumerable` in `System.Linq`: `Copse.Core.Async` →

@@ -16,8 +16,8 @@ No equality contract required: node types need not implement `IEquatable<T>` or 
 dotnet add package Copse.Linq --prerelease
 ```
 
-`Copse.Linq` transitively brings in the rest of the sync family (`Copse`, `Copse.Core`, and the
-shared substrate packages). Targets **net48**, **netstandard2.0**, **netstandard2.1**, and
+`Copse.Linq` transitively brings in the rest of the sync family (`Copse`, `Copse.Core`,
+`Copse.Primitives`). Targets **net48**, **netstandard2.0**, **netstandard2.1**, and
 **net8.0**.
 
 ## Examples
@@ -151,9 +151,9 @@ string roundTrip = parsed.SerializeDepthFirstTree();          // "a(b(d,e),c)"
 | `Copse.Linq` | LINQ-style tree operations (`Where`, `Select`, `GetLeaves`, `PruneSubtreesWhere`, `LeaffixAggregate`, `Union`, tree-walker navigation, …) — the package to install |
 | `Copse` | The traversal engines: the depth-first/breadth-first engine over the child-pull protocol, plus the flat preorder/level-order decoders |
 | `Copse.Core` | The contracts: `ITreenumerable<T>`, `ITreenumerator<T>`, the walker tier (`TreeWalker`, `ITreeTopology`, `IWalkableTreenumerable`) |
-| `Copse.Vocabulary` / `Copse.Primitives` / `Copse.Traversal` / `Copse.Linq.Traversal` | The shared substrate (value types like `NodePosition`, the chunked collections, the path-state machinery) — installed transitively, not directly |
+| `Copse.Primitives` | The chunked ref-access collections (`RefSemiDeque`, `RefAppendOnlyList`) and the disposables — installed transitively, not directly |
 | `Copse.SimpleSerializer` | Header-free text serialization, both layouts, sync and async |
-| `Copse.Core.Async` / `Copse.Async` / `Copse.Linq.Async` | The async family — the same surface over awaited pulls (these are the codegen sources the sync packages are generated from) |
+| `Copse.Core.Async` / `Copse.Async` / `Copse.Linq.Async` | The async family — the same surface over awaited pulls, built atop the sync packages (async depends on sync, exactly as async LINQ sits atop the BCL; these are also the codegen sources the sync operators are generated from) |
 
 ## Documentation
 

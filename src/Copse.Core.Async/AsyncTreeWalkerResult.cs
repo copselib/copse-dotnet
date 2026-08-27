@@ -1,3 +1,5 @@
+using Copse.Core;
+
 namespace Copse
 {
   // Deliberately flat rather than an Option over a walker: the nested aggregate falls off the

@@ -3,13 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>The synchronous traversal contracts for Copse (ITreenumerator, ITreenumerable and its dimension-split parents) plus the walker tier (TreeWalker, TreeWalkerResult, ITreeTopology, IWalkableTreenumerable), over the shared Copse.Vocabulary.</Description>
+    <Description>The synchronous traversal contracts for Copse (ITreenumerator, ITreenumerable and its dimension-split parents) plus the walker tier (TreeWalker, TreeWalkerResult, ITreeTopology, IWalkableTreenumerable) and the traversal vocabulary both families speak (NodePosition, NodeVisit, NodeTraversalStrategies, Option, ...). The dependency root: references nothing.</Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- The color-agnostic vocabulary (NodePosition, the enums, NodeVisit); shared with the async core. -->
-    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
-  </ItemGroup>
 
   <!-- No InternalsVisibleTo (2026-08-15): the seal lives at the SUBSTRATE boundary, not
        here: TreeWalker.Topology is public (the vantage's bound-physics half; a topology

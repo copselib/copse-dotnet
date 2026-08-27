@@ -1,4 +1,4 @@
-namespace Copse
+namespace Copse.Core
 {
   /// <summary>
   /// A value that may be absent: <see cref="HasValue"/> says whether <see cref="Value"/> was

@@ -1,3 +1,4 @@
+using Copse.Core;
 using System.Threading.Tasks;
 
 namespace Copse.Topologies

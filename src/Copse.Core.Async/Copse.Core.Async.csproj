@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Peers with Copse.Core over the shared vocabulary; it does NOT depend on the sync contracts. -->
-    <ProjectReference Include="..\Copse.Vocabulary\Copse.Vocabulary.csproj" />
+    <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
   </ItemGroup>
 
   <!-- No InternalsVisibleTo (2026-08-15): the seal lives at the SUBSTRATE boundary, not

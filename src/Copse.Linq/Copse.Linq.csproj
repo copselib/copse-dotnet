@@ -10,13 +10,14 @@
     <ProjectReference Include="..\Copse.Core\Copse.Core.csproj" />
     <ProjectReference Include="..\Copse.Primitives\Copse.Primitives.csproj" />
     <ProjectReference Include="..\Copse\Copse.csproj" />
-    <ProjectReference Include="..\Copse.Linq.Traversal\Copse.Linq.Traversal.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>
     <!-- StructuralMerge has no public operator (it is the internal engine for the set ops), so the
          generated-twin conformance test builds the internal sync StructuralMerge as its oracle. -->
     <InternalsVisibleTo Include="Copse.Linq.Tests" />
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
     <!-- The async mechanics tests lockstep each async operator treenumerator against its adopted
          (internal) sync twin. -->
     <InternalsVisibleTo Include="Copse.Async.Tests" />
