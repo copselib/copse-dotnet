@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787863562890,
+  "lastUpdate": 1787863563520,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -273075,6 +273075,152 @@ window.BENCHMARK_DATA = {
             "name": "Copse.Benchmarks.RootfixScan.FromSelect_Bft_Chain",
             "value": 2169,
             "unit": "bytes"
+          }
+        ]
+      }
+    ],
+    "FlatDecode Benchmarks": [
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50dac5a910fc6237278d85e614aca372b142dad5",
+          "message": "Promote the public operator tier to namespace Copse.Linq\n\nThe ruling: public surface lives in Copse.Linq; the machinery namespaces\n(Treenumerables, Treenumerators, Stores, Topologies) hold internals only. One\n'using Copse.Linq;' now surfaces the entire operator tier.\n\nPromoted out of Copse.Linq.Treenumerables: the buffer contracts\n(ITreenumerableBuffer, IMemoizeTreenumerableBuffer, ISelectTreenumerableBuffer)\nand the composition citizenship (ISelectTreenumerable,\nIPruneDescendantsWhereTreenumerable, and the public citizen classes\nSelectTreenumerable / PruneDescendantsWhereTreenumerable -- accessibility\nuntouched, the shipped composition surface). Promoted out of\nCopse.Linq.Treenumerators: MergeNode, the element type every Union/Intersection\nconsumer names. The Copse.Linq.Extensions namespace is retired --\nTreenumeratorExtensions, NodeVisitExtensions, and the async twin fold into\nCopse.Linq, so the treenumerator-level extension methods no longer demand a\nusing nobody would guess.\n\nAsync twins mirror throughout; manifest namespaces updated, twins regenerated.\nThe promoted citizen files import the machinery namespace they ride\n(ISelectWhereTreenumerable, the projection seams stay internal machinery).\nSuite green: 26,542 (463 + 69 + 26,010).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T20:26:28Z",
+          "tree_id": "afa282a0a7f37d2fd590769f18127ab0a0b52bb8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/50dac5a910fc6237278d85e614aca372b142dad5"
+        },
+        "date": 1787863563373,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Bft_Binary",
+            "value": 43029720.61666667,
+            "unit": "ns",
+            "range": "± 295080.63177140424"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Bft_Binary",
+            "value": 36382754.92380952,
+            "unit": "ns",
+            "range": "± 650153.8175993296"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStreamDecode.Binary",
+            "value": 61555682.94166667,
+            "unit": "ns",
+            "range": "± 680843.5633090329"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Dft_Binary",
+            "value": 27958157.289583333,
+            "unit": "ns",
+            "range": "± 453973.13096888846"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Dft_Binary",
+            "value": 25257920.297916666,
+            "unit": "ns",
+            "range": "± 311669.36794542073"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStreamDecode.Binary",
+            "value": 26795361.99776786,
+            "unit": "ns",
+            "range": "± 141323.89776178868"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Dft_Binary",
+            "value": 43961167.60188088,
+            "unit": "ns",
+            "range": "± 1284774.8373008668"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Dft_Binary",
+            "value": 24300903.89732143,
+            "unit": "ns",
+            "range": "± 278307.9279405339"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStreamDecode.Triangle",
+            "value": 52530639.18,
+            "unit": "ns",
+            "range": "± 333640.01491162815"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Bft_Binary",
+            "value": 50166220.34761905,
+            "unit": "ns",
+            "range": "± 1167863.30517807"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Bft_Binary",
+            "value": 43692250.72463769,
+            "unit": "ns",
+            "range": "± 1084763.2496252658"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStreamDecode.Triangle",
+            "value": 22925090.620535713,
+            "unit": "ns",
+            "range": "± 155225.39688235518"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Bft_Triangle",
+            "value": 35899868.25714286,
+            "unit": "ns",
+            "range": "± 486221.7802541161"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Bft_Triangle",
+            "value": 33967432.291666664,
+            "unit": "ns",
+            "range": "± 381986.7538999749"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Dft_Triangle",
+            "value": 37835004.821428575,
+            "unit": "ns",
+            "range": "± 187223.0503947045"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Dft_Triangle",
+            "value": 23527103.939583335,
+            "unit": "ns",
+            "range": "± 310926.604022447"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Dft_Triangle",
+            "value": 26071647.954166666,
+            "unit": "ns",
+            "range": "± 289202.8844271935"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Dft_Triangle",
+            "value": 22896267.046875,
+            "unit": "ns",
+            "range": "± 431073.6095409899"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Bft_Triangle",
+            "value": 51902030.22142857,
+            "unit": "ns",
+            "range": "± 545071.0699949056"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Bft_Triangle",
+            "value": 43426689.77230767,
+            "unit": "ns",
+            "range": "± 4487728.449557525"
           }
         ]
       }
