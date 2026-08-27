@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787812721073,
+  "lastUpdate": 1787863556810,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -19276,6 +19276,150 @@ window.BENCHMARK_DATA = {
             "value": 159945377.63963965,
             "unit": "ns",
             "range": "± 5316327.608169992"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50dac5a910fc6237278d85e614aca372b142dad5",
+          "message": "Promote the public operator tier to namespace Copse.Linq\n\nThe ruling: public surface lives in Copse.Linq; the machinery namespaces\n(Treenumerables, Treenumerators, Stores, Topologies) hold internals only. One\n'using Copse.Linq;' now surfaces the entire operator tier.\n\nPromoted out of Copse.Linq.Treenumerables: the buffer contracts\n(ITreenumerableBuffer, IMemoizeTreenumerableBuffer, ISelectTreenumerableBuffer)\nand the composition citizenship (ISelectTreenumerable,\nIPruneDescendantsWhereTreenumerable, and the public citizen classes\nSelectTreenumerable / PruneDescendantsWhereTreenumerable -- accessibility\nuntouched, the shipped composition surface). Promoted out of\nCopse.Linq.Treenumerators: MergeNode, the element type every Union/Intersection\nconsumer names. The Copse.Linq.Extensions namespace is retired --\nTreenumeratorExtensions, NodeVisitExtensions, and the async twin fold into\nCopse.Linq, so the treenumerator-level extension methods no longer demand a\nusing nobody would guess.\n\nAsync twins mirror throughout; manifest namespaces updated, twins regenerated.\nThe promoted citizen files import the machinery namespace they ride\n(ISelectWhereTreenumerable, the projection seams stay internal machinery).\nSuite green: 26,542 (463 + 69 + 26,010).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T20:26:28Z",
+          "tree_id": "afa282a0a7f37d2fd590769f18127ab0a0b52bb8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/50dac5a910fc6237278d85e614aca372b142dad5"
+        },
+        "date": 1787863521946,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13562393.245535715,
+            "unit": "ns",
+            "range": "± 23309.69168795608"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22383566.45982143,
+            "unit": "ns",
+            "range": "± 45121.27128112976"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3727541.0597098214,
+            "unit": "ns",
+            "range": "± 26393.90929687833"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3351419.279296875,
+            "unit": "ns",
+            "range": "± 2866.3580955513926"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 121122606.18461537,
+            "unit": "ns",
+            "range": "± 439073.2347013387"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 147407971.66666666,
+            "unit": "ns",
+            "range": "± 750194.5807539197"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 53766983.675,
+            "unit": "ns",
+            "range": "± 287671.10596320854"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50730228.96666668,
+            "unit": "ns",
+            "range": "± 425336.2899144509"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 62393804.29523811,
+            "unit": "ns",
+            "range": "± 243048.317521623"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35340557.18095238,
+            "unit": "ns",
+            "range": "± 153116.63449518464"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_PruneSubtreeAndSiblings",
+            "value": 29217758.870535713,
+            "unit": "ns",
+            "range": "± 71149.66003152046"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_PruneSubtreeAndSiblings",
+            "value": 19422251.798076924,
+            "unit": "ns",
+            "range": "± 36373.72594333376"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 53879260,
+            "unit": "ns",
+            "range": "± 205980.0838476512"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 88020910.61538461,
+            "unit": "ns",
+            "range": "± 132363.64549237007"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14432195.274147727,
+            "unit": "ns",
+            "range": "± 349783.66768063133"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14351211.458705356,
+            "unit": "ns",
+            "range": "± 133551.62104048"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 479203974.85714287,
+            "unit": "ns",
+            "range": "± 1707131.1487051942"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 612783226.1538461,
+            "unit": "ns",
+            "range": "± 4967127.271796057"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 214426160.94623658,
+            "unit": "ns",
+            "range": "± 5000098.041616005"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 204061442.58333334,
+            "unit": "ns",
+            "range": "± 6052561.299819316"
           }
         ]
       }
