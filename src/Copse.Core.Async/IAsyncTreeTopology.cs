@@ -20,7 +20,7 @@ namespace Copse.Async
   public interface IAsyncTreeTopology<TNode, THandle>
   {
     /// <summary>The value of the node <paramref name="handle"/> identifies.</summary>
-    ValueTask<TNode> GetValueAsync(THandle handle);
+    ValueTask<TNode> GetNodeAsync(THandle handle);
 
     /// <summary>The node's parent, or absent when the node is a root.</summary>
     ValueTask<Option<THandle>> TryGetParentAsync(THandle handle);

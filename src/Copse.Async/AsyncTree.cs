@@ -194,7 +194,7 @@ namespace Copse.Async
     /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
-    /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
+    /// Nodes are read through <c>GetNodeAsync</c> during the walk.</summary>
     public static IAsyncTreenumerable<TNode> FromTopology<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)
       => new AsyncTreenumerable<TNode, HandleAndNode<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
@@ -212,7 +212,7 @@ namespace Copse.Async
         if (!rootResult.HasValue)
           yield break;
 
-        var value = await topology.GetValueAsync(rootResult.Value.Handle).ConfigureAwait(false);
+        var value = await topology.GetNodeAsync(rootResult.Value.Handle).ConfigureAwait(false);
 
         yield return new HandleAndNode<THandle, TNode>(rootResult.Value.Handle, value);
       }

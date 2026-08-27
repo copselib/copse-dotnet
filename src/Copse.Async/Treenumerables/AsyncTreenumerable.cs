@@ -7,7 +7,7 @@ namespace Copse.Async.Treenumerables
 {
   // Codegen source of truth for the sync engine base Copse.Treenumerables.Treenumerable<,,>.
   //
-  // The engine is a pull-shaped topology: resolve (handleToNodeMap, the GetValue arrow),
+  // The engine is a pull-shaped topology: resolve (handleToNodeMap, the GetNode arrow),
   // children (the child-enumerator factory), roots (the roots stream). The walkable tier's
   // IAsyncTreeTopology is the same three ingredients with the child axis indexed instead of
   // pulled, plus the parent probe that indexing makes affordable.

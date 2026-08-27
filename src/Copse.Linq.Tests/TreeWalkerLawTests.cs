@@ -11,7 +11,7 @@ namespace Copse.Linq.Tests
 {
   // The comonad on its reified carrier: TreeWalker is the focused pair as one type, so the
   // laws that WalkerComonadLawTests pins against (walkable, handle) conventions become TYPED
-  // IDENTITIES here -- walker.Duplicate().GetValue() is the walker itself, struct-equal, no
+  // IDENTITIES here -- walker.Duplicate().GetNode() is the walker itself, struct-equal, no
   // stream-draining needed. (Extend's deep laws -- co-associativity over neighborhood
   // observers -- are inherited: walker.Extend delegates to the walkable Extend those tests
   // pin; this suite pins what the CARRIER adds: the counit as an equality, steps commuting
@@ -40,7 +40,7 @@ namespace Copse.Linq.Tests
       {
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), walkable.GetTreeWalkerAt(handle).GetValue(), $"extract [{tree}]");
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetNode(handle), walkable.GetTreeWalkerAt(handle).GetNode(), $"extract [{tree}]");
       }
     }
 
@@ -56,7 +56,7 @@ namespace Copse.Linq.Tests
         {
           var walker = walkable.GetTreeWalkerAt(handle);
 
-          Assert.AreEqual(walker, walker.Duplicate().GetValue(), $"extract∘duplicate ≡ id [{tree}]");
+          Assert.AreEqual(walker, walker.Duplicate().GetNode(), $"extract∘duplicate ≡ id [{tree}]");
         }
       }
     }
@@ -80,7 +80,7 @@ namespace Copse.Linq.Tests
 
           Assert.AreEqual(stepped.HasValue, steppedDuplicated.HasValue, $"child step parity [{tree}]");
           if (stepped.HasValue)
-            Assert.AreEqual(stepped.Value, steppedDuplicated.Value.GetValue(), $"duplicate commutes with child step [{tree}]");
+            Assert.AreEqual(stepped.Value, steppedDuplicated.Value.GetNode(), $"duplicate commutes with child step [{tree}]");
 
           var upStepped = walker.MoveToParent();
           var upSteppedDuplicated = duplicated.MoveToParent();
@@ -88,7 +88,7 @@ namespace Copse.Linq.Tests
           Assert.AreEqual(upStepped.HasValue, upSteppedDuplicated.HasValue, $"parent step parity [{tree}]");
           Assert.AreEqual(upStepped.Value.HasFocus, upSteppedDuplicated.Value.HasFocus, $"duplicate commutes with topping out [{tree}]");
           if (upStepped.Value.HasFocus)
-            Assert.AreEqual(upStepped.Value, upSteppedDuplicated.Value.GetValue(), $"duplicate commutes with parent step [{tree}]");
+            Assert.AreEqual(upStepped.Value, upSteppedDuplicated.Value.GetNode(), $"duplicate commutes with parent step [{tree}]");
         }
       }
     }
@@ -102,9 +102,9 @@ namespace Copse.Linq.Tests
         foreach (var handle in walkable.GetHandles())
         {
           var walker = walkable.GetTreeWalkerAt(handle);
-          var extended = walker.Extend(focus => focus.GetValue() + "@" + Depth(focus));
+          var extended = walker.Extend(focus => focus.GetNode() + "@" + Depth(focus));
 
-          Assert.AreEqual(walker.GetValue() + "@" + Depth(walker), extended.GetValue(), $"extract∘extend [{tree}]");
+          Assert.AreEqual(walker.GetNode() + "@" + Depth(walker), extended.GetNode(), $"extract∘extend [{tree}]");
         }
       }
     }
@@ -128,7 +128,7 @@ namespace Copse.Linq.Tests
           Assert.IsTrue(stepped.HasValue, $"up-step answers from every node [{tree}]");
           Assert.AreEqual(parentResult.HasValue, stepped.Value.HasFocus, $"probe miss <=> unfocused stance [{tree}]");
           if (parentResult.HasValue)
-            Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(parentResult.Value), stepped.Value.GetValue(), $"up-step value [{tree}]");
+            Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetNode(parentResult.Value), stepped.Value.GetNode(), $"up-step value [{tree}]");
         }
       }
     }
@@ -140,11 +140,11 @@ namespace Copse.Linq.Tests
       {
         var firstRoot = walkable.TryGetTreeWalkerAtRootIndex();
         Assert.IsTrue(firstRoot.HasValue);
-        Assert.AreEqual("a", firstRoot.Value.GetValue());
+        Assert.AreEqual("a", firstRoot.Value.GetNode());
 
         var thirdRoot = walkable.TryGetTreeWalkerAtRootIndex(2);
         Assert.IsTrue(thirdRoot.HasValue);
-        Assert.AreEqual("c", thirdRoot.Value.GetValue());
+        Assert.AreEqual("c", thirdRoot.Value.GetNode());
 
         Assert.IsFalse(walkable.TryGetTreeWalkerAtRootIndex(3).HasValue, "past the last root: the unfocused stance's child group is exhausted");
       }

@@ -32,7 +32,7 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly AsyncPreorderArrayStore<TNode> _Store;
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
-    // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
+    // (Count/GetNode/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
     // fast path's door.
     internal AsyncPreorderArrayStore<TNode> Store => _Store;
 
@@ -43,8 +43,8 @@ namespace Copse.Linq.Async.Treenumerables
     private int[] _FirstChildOffsets;
     private int[] _RootIndexes;
 
-    public ValueTask<TNode> GetValueAsync(int handle)
-      => new ValueTask<TNode>(_Store.GetValue(handle));
+    public ValueTask<TNode> GetNodeAsync(int handle)
+      => new ValueTask<TNode>(_Store.GetNode(handle));
 
     public ValueTask<Option<int>> TryGetParentAsync(int handle)
     {

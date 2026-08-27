@@ -40,10 +40,10 @@ namespace Copse.Linq.Treenumerables
     private int _ChildOrdinal;
     private int _FirstChildIndex;
 
-    public TNode GetValue(int handle)
+    public TNode GetNode(int handle)
     {
       ExtendParentIndexes(handle);
-      return _Store.GetValue(handle);
+      return _Store.GetNode(handle);
     }
 
     public Option<int> TryGetParent(int handle)

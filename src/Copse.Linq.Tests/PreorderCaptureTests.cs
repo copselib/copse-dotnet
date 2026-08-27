@@ -50,7 +50,7 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "b@1", "d@2", "c@1" }, sideChannel);
       CollectionAssert.AreEqual(
         new[] { "a", "b", "d", "c" },
-        Enumerable.Range(0, store.Count).Select(store.GetValue).ToArray());
+        Enumerable.Range(0, store.Count).Select(store.GetNode).ToArray());
     }
 
     // The raw form is the store form unwrapped: same walk, same arrays -- for consumers that
@@ -66,7 +66,7 @@ namespace Copse.Linq.Tests
         var (values, subtreeSizes, rawSide) = PreorderCapture.CaptureRaw(source(), nodeContext => nodeContext.Position);
 
         CollectionAssert.AreEqual(
-          Enumerable.Range(0, store.Count).Select(store.GetValue).ToArray(), values, $"values mismatch for '{tree}'");
+          Enumerable.Range(0, store.Count).Select(store.GetNode).ToArray(), values, $"values mismatch for '{tree}'");
         CollectionAssert.AreEqual(
           Enumerable.Range(0, store.Count).Select(store.GetSubtreeSize).ToArray(), subtreeSizes, $"subtree sizes mismatch for '{tree}'");
         CollectionAssert.AreEqual(storeSide, rawSide, $"side channel mismatch for '{tree}'");

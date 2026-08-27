@@ -40,6 +40,6 @@ namespace Copse.Async.Stores
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Nodes[index];
+    public TNode GetNode(int index) => _Nodes[index];
   }
 }

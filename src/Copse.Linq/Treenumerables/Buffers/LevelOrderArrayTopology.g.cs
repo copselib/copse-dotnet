@@ -31,8 +31,8 @@ namespace Copse.Linq.Treenumerables
     // Built on the first parent probe; exact size, no per-node machinery.
     private int[] _ParentIndexes;
 
-    public TNode GetValue(int handle)
-      => _Store.GetValue(handle);
+    public TNode GetNode(int handle)
+      => _Store.GetNode(handle);
 
     public Option<int> TryGetParent(int handle)
     {

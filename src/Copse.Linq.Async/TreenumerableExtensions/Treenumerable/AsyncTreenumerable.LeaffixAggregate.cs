@@ -233,7 +233,7 @@ namespace Copse.Linq
               Close();
 
             var nodeContext = new NodeContext<TNode>(
-              capture.GetValue(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth));
+              capture.GetNode(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth));
 
             path.Push(new PendingNode<TNode>(accumulations.Count, nodeContext));
             accumulations.Add(default);
@@ -248,7 +248,7 @@ namespace Copse.Linq
           while (path.Count > 0)
             Close();
 
-          yield return new NodeAccumulation<TNode, TAccumulate>(capture.GetValue(root), accumulations[0]);
+          yield return new NodeAccumulation<TNode, TAccumulate>(capture.GetNode(root), accumulations[0]);
           accumulations.Clear();
         }
       }

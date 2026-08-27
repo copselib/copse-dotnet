@@ -150,7 +150,7 @@ namespace Copse.Linq
       {
         var index = stack.Pop();
 
-        mirroredValues[output] = capture.GetValue(index);
+        mirroredValues[output] = capture.GetNode(index);
         mirroredSubtreeSizes[output] = capture.GetSubtreeSize(index);
         output++;
 
@@ -206,7 +206,7 @@ namespace Copse.Linq
 
         var outputIndex = mirroredValues.Count;
 
-        mirroredValues.Add(await stance.GetValueAsync().ConfigureAwait(false));
+        mirroredValues.Add(await stance.GetNodeAsync().ConfigureAwait(false));
         mirroredSubtreeSizes.Add(0);
 
         stack.Push((default, outputIndex));

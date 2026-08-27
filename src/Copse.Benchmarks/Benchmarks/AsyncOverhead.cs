@@ -86,7 +86,7 @@ namespace Copse.Benchmarks
       public ValueTask<bool> EnsureBufferedAsync(int index) => new ValueTask<bool>(_Store.EnsureBuffered(index));
       public ValueTask<int> EnsureSubtreeClosedAsync(int index) => new ValueTask<int>(_Store.EnsureSubtreeClosed(index));
       public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
-      public int GetValue(int index) => _Store.GetValue(index);
+      public int GetNode(int index) => _Store.GetNode(index);
     }
 
     // Flat preorder arrays of a complete binary tree of the given height (node count 2^(h+1)-1):

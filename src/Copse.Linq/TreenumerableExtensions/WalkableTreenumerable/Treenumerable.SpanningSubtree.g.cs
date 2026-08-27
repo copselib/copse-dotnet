@@ -95,7 +95,7 @@ namespace Copse.Linq
     private static HandleAndNode<THandle, TNode> PairHandleWithValue<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology,
       THandle handle)
-      => new HandleAndNode<THandle, TNode>(handle, topology.GetValue(handle));
+      => new HandleAndNode<THandle, TNode>(handle, topology.GetNode(handle));
 
     // The binary LCA, walker-first and TOTAL (the axis wave will promote this to a public
     // extension; the spanning fold is its first consumer): collect one stance's root path

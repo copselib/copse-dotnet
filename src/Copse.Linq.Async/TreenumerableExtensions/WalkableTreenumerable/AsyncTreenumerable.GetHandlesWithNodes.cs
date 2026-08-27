@@ -15,7 +15,7 @@ namespace Copse.Linq
     /// value predicate mid-chain cannot reach the receiver's probe without naming it twice.
     /// A stance walk (Stage B): each row is where the walk stood and what it extracted there.
     /// </summary>
-    public static async IAsyncEnumerable<HandleAndNode<THandle, TNode>> GetHandlesWithValues<TNode, THandle>(
+    public static async IAsyncEnumerable<HandleAndNode<THandle, TNode>> GetHandlesWithNodes<TNode, THandle>(
       this IAsyncWalkableTreenumerable<TNode, THandle> source,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -40,7 +40,7 @@ namespace Copse.Linq
 
         var stance = pending.Pop();
 
-        yield return new HandleAndNode<THandle, TNode>(stance.Focus, await stance.GetValueAsync().ConfigureAwait(false));
+        yield return new HandleAndNode<THandle, TNode>(stance.Focus, await stance.GetNodeAsync().ConfigureAwait(false));
 
         for (var childIndex = 0; ; childIndex++)
         {

@@ -159,7 +159,7 @@ namespace Copse.Benchmarks
 
       public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
-      public int GetValue(int index) => _Values[index];
+      public int GetNode(int index) => _Values[index];
     }
 
     public readonly struct LevelOrderChunkedStore : ILevelOrderStore<int>
@@ -187,7 +187,7 @@ namespace Copse.Benchmarks
 
       public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
-      public int GetValue(int index) => _Values[index];
+      public int GetNode(int index) => _Values[index];
     }
 
     // The cheapest possible IPreorderStream: a cursor over prebuilt (value, depth) arrays, so

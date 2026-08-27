@@ -36,7 +36,7 @@ namespace Copse.SimpleSerializer
     private readonly ValueTokenStringScanner _Scanner;
     private readonly SpanMap<TNode> _Map;
 
-    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
+    private readonly RefAppendOnlyList<TNode> _Nodes = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _FirstChildIndices = new RefAppendOnlyList<int>();
     private readonly RefAppendOnlyList<int> _ChildCounts = new RefAppendOnlyList<int>();
 
@@ -64,7 +64,7 @@ namespace Copse.SimpleSerializer
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetNode(int index) => _Nodes[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
     // a group closed, or the string exhausted (all remaining groups are empty).
@@ -111,9 +111,9 @@ namespace Copse.SimpleSerializer
 
     private void Commit()
     {
-      var index = _Values.Count;
+      var index = _Nodes.Count;
 
-      _Values.AddLast(_Map(_Scanner.ValueChars));
+      _Nodes.AddLast(_Map(_Scanner.ValueChars));
       _FirstChildIndices.AddLast(-1);
       _ChildCounts.AddLast(0);
 
@@ -152,7 +152,7 @@ namespace Copse.SimpleSerializer
       public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TNode GetValue(int index) => _Store.GetValue(index);
+      public TNode GetNode(int index) => _Store.GetNode(index);
     }
   }
 }

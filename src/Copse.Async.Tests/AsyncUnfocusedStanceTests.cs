@@ -36,18 +36,18 @@ namespace Copse.Async.Tests
       var door = await walkable.GetTreeWalkerAsync();
 
       Assert.IsFalse(door.HasFocus, "the door lands on the unfocused stance");
-      Assert.IsFalse((await door.TryGetValueAsync()).HasValue, "the unfocused walker's value read is the typed miss");
+      Assert.IsFalse((await door.TryGetNodeAsync()).HasValue, "the unfocused walker's value read is the typed miss");
 
       // Down to d through the unfocused stance's child group, then the climb back past the top.
       var nodeD = (await (await (await door.MoveToChildAsync(0)).Value.MoveToChildAsync(0)).Value.MoveToChildAsync(0)).Value;
-      Assert.AreEqual("d", await nodeD.GetValueAsync());
+      Assert.AreEqual("d", await nodeD.GetNodeAsync());
 
       var nodeB = (await nodeD.MoveToParentAsync()).Value;
       var nodeA = (await nodeB.MoveToParentAsync()).Value;
       var top = (await nodeA.MoveToParentAsync()).Value;
 
-      Assert.AreEqual("b", await nodeB.GetValueAsync());
-      Assert.AreEqual("a", await nodeA.GetValueAsync());
+      Assert.AreEqual("b", await nodeB.GetNodeAsync());
+      Assert.AreEqual("a", await nodeA.GetNodeAsync());
       Assert.IsFalse(top.HasFocus, "a root's parent is the unfocused stance");
       Assert.IsFalse((await top.MoveToParentAsync()).HasValue, "stepping up from the unfocused stance is the one upward miss");
 

@@ -43,8 +43,8 @@ namespace Copse.Async.Tests
 
         await foreach (var handle in walkable.GetHandles())
           Assert.AreEqual(
-            await (await TopologyOf(walkable)).GetValueAsync(handle),
-            await (await walkable.GetTreeWalkerAtAsync(handle)).GetValueAsync(),
+            await (await TopologyOf(walkable)).GetNodeAsync(handle),
+            await (await walkable.GetTreeWalkerAtAsync(handle)).GetNodeAsync(),
             $"extract [{tree}]");
       }
     }
@@ -60,7 +60,7 @@ namespace Copse.Async.Tests
         {
           var walker = (await walkable.GetTreeWalkerAtAsync(handle));
 
-          Assert.AreEqual(walker, await walker.Duplicate().GetValueAsync(), $"extract∘duplicate ≡ id [{tree}]");
+          Assert.AreEqual(walker, await walker.Duplicate().GetNodeAsync(), $"extract∘duplicate ≡ id [{tree}]");
         }
       }
     }
@@ -83,8 +83,8 @@ namespace Copse.Async.Tests
           Assert.AreEqual(parentResult.HasValue, stepped.Value.HasFocus, $"probe miss <=> unfocused stance [{tree}]");
           if (parentResult.HasValue)
             Assert.AreEqual(
-              await (await TopologyOf(walkable)).GetValueAsync(parentResult.Value),
-              await stepped.Value.GetValueAsync(),
+              await (await TopologyOf(walkable)).GetNodeAsync(parentResult.Value),
+              await stepped.Value.GetNodeAsync(),
               $"up-step value [{tree}]");
         }
       }
@@ -102,11 +102,11 @@ namespace Copse.Async.Tests
         await foreach (var handle in walkable.GetHandles())
         {
           var walker = (await walkable.GetTreeWalkerAtAsync(handle));
-          var extended = walker.Extend(async focus => await focus.GetValueAsync().ConfigureAwait(false) + "@" + focus.Focus);
+          var extended = walker.Extend(async focus => await focus.GetNodeAsync().ConfigureAwait(false) + "@" + focus.Focus);
 
           Assert.AreEqual(
-            await walker.GetValueAsync() + "@" + handle,
-            await extended.GetValueAsync(),
+            await walker.GetNodeAsync() + "@" + handle,
+            await extended.GetNodeAsync(),
             $"extract∘extend [{tree}]");
         }
       }
@@ -119,7 +119,7 @@ namespace Copse.Async.Tests
 
       var firstRoot = await forest.TryGetTreeWalkerAtRootIndexAsync();
       Assert.IsTrue(firstRoot.HasValue);
-      Assert.AreEqual("a", await firstRoot.Value.GetValueAsync());
+      Assert.AreEqual("a", await firstRoot.Value.GetNodeAsync());
 
       Assert.IsFalse((await forest.TryGetTreeWalkerAtRootIndexAsync(3)).HasValue, "past the last root: no walker");
 

@@ -38,10 +38,10 @@ namespace Copse.Linq.Async.Treenumerables
     private int _ChildOrdinal;
     private int _FirstChildIndex;
 
-    public async ValueTask<TNode> GetValueAsync(int handle)
+    public async ValueTask<TNode> GetNodeAsync(int handle)
     {
       await ExtendParentIndexesAsync(handle).ConfigureAwait(false);
-      return _Store.GetValue(handle);
+      return _Store.GetNode(handle);
     }
 
     public async ValueTask<Option<int>> TryGetParentAsync(int handle)

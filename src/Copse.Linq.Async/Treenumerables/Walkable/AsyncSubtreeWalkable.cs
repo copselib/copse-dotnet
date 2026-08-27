@@ -35,7 +35,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<TNode> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
+    public ValueTask<TNode> GetNodeAsync(THandle handle) => _Source.GetNodeAsync(handle);
 
     public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)

@@ -55,7 +55,7 @@ namespace Copse.Linq.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetNode(int index) => _Values[index];
 
     // Callers must have closed the subtree first (EnsureSubtreeClosed); 0 means still open.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -221,7 +221,7 @@ namespace Copse.Linq.Stores
       public int GetSubtreeSize(int index) => _Buffer.GetSubtreeSize(index);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TNode GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetNode(int index) => _Buffer.GetNode(index);
     }
   }
 }

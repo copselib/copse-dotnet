@@ -28,9 +28,9 @@ namespace Copse.Linq.Tests
       Assert.AreEqual(BufferLayout.Preorder, walkable.NativeLayout, "the walker default: the ancestry-cheap capture");
 
       // Handles minted in preorder: a=0 b=1 d=2 e=3 c=4 f=5 g=6.
-      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetValue(0));
-      Assert.AreEqual("d", WalkerLawProviders.TopologyOf(walkable).GetValue(2));
-      Assert.AreEqual("c", WalkerLawProviders.TopologyOf(walkable).GetValue(4));
+      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetNode(0));
+      Assert.AreEqual("d", WalkerLawProviders.TopologyOf(walkable).GetNode(2));
+      Assert.AreEqual("c", WalkerLawProviders.TopologyOf(walkable).GetNode(4));
 
       Assert.IsFalse(WalkerLawProviders.TopologyOf(walkable).TryGetParent(0).HasValue);
       Assert.AreEqual(1, WalkerLawProviders.TopologyOf(walkable).TryGetParent(2).Value, "d's parent is b");
@@ -100,7 +100,7 @@ namespace Copse.Linq.Tests
       var walkableOnly = WalkerLawProviders.TopologyOf(TreeSerializer.DeserializeDepthFirstTree(ToyTree)
         .Materialize(BufferLayout.Preorder)
         .Subtrees())
-        .GetValue(0);
+        .GetNode(0);
 
       Assert.IsFalse(walkableOnly is ITreenumerableBuffer<string>);
       Assert.IsTrue(

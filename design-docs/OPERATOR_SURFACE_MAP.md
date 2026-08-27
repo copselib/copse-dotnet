@@ -22,7 +22,7 @@ and the rulings below — new surface must name itself by these:
 | Prefix | Meaning | The test |
 |---|---|---|
 | *(none)* | **The algebra** — transformations and operators, LINQ's verb/noun tradition (`Select`…`Extend`, `Subtrees`, `SpanningSubtree`, `Materialize`) | returns an algebra citizen; partiality is typed in the result (`Try` never joins an algebra name — the BCL has no `TrySelect`) |
-| `Get` | **Acquisition or read** — the `GetEnumerator` sense: reads (`GetValue`, `GetLeaves`, `GetHandles`) AND minting doors (`GetDepthFirstTreenumerator`, `GetTreeWalker`, `GetTreeWalkerAt`) | bare `Get` is total or THROWING — if it can fail, failure is a violation (malformed question, exception channel), never a typed miss. The contract's door joined this family when the sentinel completion made it total (2026-08-20: the unfocused stance answers, so the door's Try exited per this very grammar) |
+| `Get` | **Acquisition or read** — the `GetEnumerator` sense: reads (`GetNode`, `GetLeaves`, `GetHandles`) AND minting doors (`GetDepthFirstTreenumerator`, `GetTreeWalker`, `GetTreeWalkerAt`) | bare `Get` is total or THROWING — if it can fail, failure is a violation (malformed question, exception channel), never a typed miss. The contract's door joined this family when the sentinel completion made it total (2026-08-20: the unfocused stance answers, so the door's Try exited per this very grammar) |
 | `TryGet` | **Acquisition whose miss is typed** (`TryGetParent`, `TryGetChildAt`, `TryGetRootAt`, `TryGetTreeWalkerAtRootIndex`, the walker's `TryGetValue`) | the miss is an expected "no" carried in an `Option` — the async spelling of the BCL try-pattern (`out` cannot cross an `await`); `TryGet` ⇔ result-typed miss is the TWO-CHANNEL DOCTRINE in the name |
 | `Take`/`Skip` | **Selection reshapings** — LINQ heritage (`TakeTrees`, `TakeNodesUntil`) | positional/conditional selection; same kind in and out |
 | `To` | **Representation conversion, eager** (`ToFormattedLines`, `ToDegenerateTree`) | name, return shape, and cost agree — the honest-eager rule |
@@ -35,7 +35,7 @@ index). Machinery/type naming is the [Mechanism]+[Axis]+[Tier] grammar
 **The search law** (`Find` deliberately absent — retired 2026-08-14 the day it was
 introduced): *searches are not surface.* An extension earns a place only if it needs
 information per-element LINQ cannot reach (child-lookahead, depth, traversal semantics,
-receiver-recovery); a predicate search is consumer LINQ over `GetHandlesWithValues` (the
+receiver-recovery); a predicate search is consumer LINQ over `GetHandlesWithNodes` (the
 one receiver-recovery exception), and its honest miss is the **empty sequence** — flow it
 into a result-typed consumer to keep the miss typed. Never `FirstOrDefault` over ordinal
 handles: handle 0 is the root, and the miss masquerades as it.
@@ -130,8 +130,8 @@ miss — `GetEnumerator` symmetry at last) — is the seam everything below ride
 adjacency probes are provider SPI (`ITreeTopology`), the walker is the entire public
 navigation surface. The walker's climb answers to the top (`MoveToParent` from a root =
 the unfocused stance; stepping up from it = the one upward miss), `MoveToChild` from the
-unfocused stance walks the roots, `GetValue`/`Focus` throw at the unfocused stance (violation channel;
-`TryGetValue` is the typed read), and `HasFocus` is `Focus`'s guard (false = the climb topped out). The steps answer
+unfocused stance walks the roots, `GetNode`/`Focus` throw at the unfocused stance (violation channel;
+`TryGetNode` is the typed read), and `HasFocus` is `Focus`'s guard (false = the climb topped out). The steps answer
 in **`TreeWalkerResult`** — the step family's flat three-state result (missed /
 focused / unfocused in one outcome byte, 16 bytes, three fields) rather than a nested
 `Option<TreeWalker>`: the nesting makes a four-field aggregate that falls off JIT struct
@@ -148,7 +148,7 @@ WALKER_FACTORY_DESIGN.md §11's perf addendum). Reads like the option it replace
 | Duplicate() | TreeWalker | TreeWalker\<TreeWalker, THandle\> | lazy | `Extend(focus => focus)` — extend of the identity, the definition; one line |
 | GetTreeWalkerAt(handle) | IWalkableTreenumerable | **TreeWalker** (bare) | O(1) | the TRUST door: door-then-jump (`walker.At(handle)`); pure construction, cannot fail — a forged handle detonates at the first probe (per-capture clause); stored handles re-enter here |
 | TryGetTreeWalkerAtRootIndex(k) | IWalkableTreenumerable | TreeWalkerResult | O(1), honest miss | door + one downward step (the roots are the unfocused stance's child group — `TryGetRootAt` was always the sentinel's `MoveToChild`, now literally); answers in the step family's own result shape; RootIndex spelled out so ordinal-vs-handle stays visible when THandle = int |
-| GetHandles / GetHandlesWithValues | IWalkableTreenumerable | IEnumerable\<THandle\> / \<HandleAndValue\> | streams (pure stance walk) | acquisition scans: ONE knock, then steps — roots seeded from the unfocused stance's child group; the unfocused stance gets no row (no handle, no value — excluded by type); the walk assigns its own preorder numbering (any-layout receivers fold in place); WithValues = the search law's ONE earned exception (receiver-recovery: a value predicate mid-chain can't reach the walker without naming the receiver twice) |
+| GetHandles / GetHandlesWithNodes | IWalkableTreenumerable | IEnumerable\<THandle\> / \<HandleAndNode\> | streams (pure stance walk) | acquisition scans: ONE knock, then steps — roots seeded from the unfocused stance's child group; the unfocused stance gets no row (no handle, no value — excluded by type); the walk assigns its own preorder numbering (any-layout receivers fold in place); WithValues = the search law's ONE earned exception (receiver-recovery: a value predicate mid-chain can't reach the walker without naming the receiver twice) |
 | PruneAfter lens | IWalkableTreenumerable | pair-citizen view | lazy | stream half delegates to the streaming operator; adjacency half is its own topology (the lens family; crossed colors 2026-08-14 — async source, generated sync twin) |
 | SpanningSubtree(targets) | IWalkableTreenumerable | **Option\<TreeWalker\<TValue, int\>\>** | **capture (O(kept), at the call's end)** | **NEW 2026-08-14 (UC-32 distilled — the capstone as an operation)**: minimum spanning subtree of the targets, returned as a walker at the spanning root over a FRESH preorder capture (handles are the new capture's ordinals — the per-capture clause, pinned by test). Result-typed ONCE since the sentinel completion (2026-08-20): k = 0 (spanning of ∅ is ∅) is the honest miss; DISJOINT trees ANSWER — their common ancestor is the unfocused stance, and the result is the spanning forest under an unfocused walker (one spanning subtree per touched tree, unfocused above its own capture's roots); k = 1 = the node alone. Composition of shipped pieces: walker-first LCA fold (TOTAL — climbs meet at the unfocused stance) + path-recording climbs (the kept-set), the hoist (`Subtree()` — severed at a node, the whole forest when unfocused), the handle-decorated-stream clamp (Extend → PruneBefore in handle-space → Select), one Materialize. Future membership LENS makes it zero-copy; semantics fixed here. The private walker-first LCA is the axis wave's first promotion candidate. Crossed colors 2026-08-14 (async SpanningSubtreeAsync = the source; the sync twin generated) |
 
@@ -337,7 +337,7 @@ ADDED 2026-08-14/15, the walker workstream)
 │    at first probe (Tree.Lazy semantics — the contract promises neither cheap nor
 │    idempotent doors, so the cache is what keeps a view honest); the total door always
 │    yields a bound topology, so the empty forest answers as itself — probes miss,
-│    GetValue throws (the two-channel doctrine); resolves to the door walker's
+│    GetNode throws (the two-channel doctrine); resolves to the door walker's
 │    public Topology (WalkerTopology, its short-lived eager sibling, RETIRED same day by
 │    the frame-of-reference ruling — an eager bridge from a vantage in hand is just the
 │    property read)

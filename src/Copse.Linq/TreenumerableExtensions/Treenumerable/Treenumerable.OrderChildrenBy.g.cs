@@ -452,7 +452,7 @@ namespace Copse.Linq
       {
         var index = stack.Pop();
 
-        orderedValues[output] = capture.GetValue(index);
+        orderedValues[output] = capture.GetNode(index);
         orderedSubtreeSizes[output] = capture.GetSubtreeSize(index);
         output++;
 

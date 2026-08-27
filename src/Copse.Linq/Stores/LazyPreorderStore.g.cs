@@ -17,7 +17,7 @@ namespace Copse.Linq.Stores
   // which the store decoders already own. The sync twin (LazyPreorderStore) is generated
   // from this and is what the generated sync LeaffixDispatch/Invert defer through.
   //
-  // GetValue/GetSubtreeSize are pure reads and stay synchronous: the decoder contract guarantees
+  // GetNode/GetSubtreeSize are pure reads and stay synchronous: the decoder contract guarantees
   // a grow call precedes every read, so the store is always built by the time they run.
   // Single-threaded by contract, like every treenumerator in the library.
   //
@@ -88,6 +88,6 @@ namespace Copse.Linq.Stores
 
     public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
 
-    public TNode GetValue(int index) => _Store.GetValue(index);
+    public TNode GetNode(int index) => _Store.GetNode(index);
   }
 }

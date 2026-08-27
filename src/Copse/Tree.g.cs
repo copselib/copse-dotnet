@@ -174,7 +174,7 @@ namespace Copse
     /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
-    /// Values are read through <c>GetValueAsync</c> during the walk.</summary>
+    /// Nodes are read through <c>GetNodeAsync</c> during the walk.</summary>
     public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
       => new Treenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
@@ -192,7 +192,7 @@ namespace Copse
         if (!rootResult.HasValue)
           yield break;
 
-        var value = topology.GetValue(rootResult.Value.Handle);
+        var value = topology.GetNode(rootResult.Value.Handle);
 
         yield return new HandleAndNode<THandle, TNode>(rootResult.Value.Handle, value);
       }

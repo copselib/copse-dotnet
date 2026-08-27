@@ -40,7 +40,7 @@ namespace Copse.Linq.Treenumerables
     private readonly TStore _Store;
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
-    // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
+    // (Count/GetNode/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
     // fast path's door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan).
     internal TStore Store => _Store;
 
@@ -61,10 +61,10 @@ namespace Copse.Linq.Treenumerables
     private int _CursorOrdinal;
     private int _CursorChild;
 
-    public TNode GetValue(int handle)
+    public TNode GetNode(int handle)
     {
       _Store.EnsureBuffered(handle);
-      return _Store.GetValue(handle);
+      return _Store.GetNode(handle);
     }
 
     public Option<int> TryGetParent(int handle)

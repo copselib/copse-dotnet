@@ -93,7 +93,7 @@ namespace Copse.Linq
     private static async ValueTask<HandleAndNode<THandle, TNode>> PairHandleWithValueAsync<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology,
       THandle handle)
-      => new HandleAndNode<THandle, TNode>(handle, await topology.GetValueAsync(handle).ConfigureAwait(false));
+      => new HandleAndNode<THandle, TNode>(handle, await topology.GetNodeAsync(handle).ConfigureAwait(false));
 
     // The binary LCA, walker-first and TOTAL (the axis wave will promote this to a public
     // extension; the spanning fold is its first consumer): collect one stance's root path

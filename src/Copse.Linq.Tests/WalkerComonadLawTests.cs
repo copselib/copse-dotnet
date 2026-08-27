@@ -10,7 +10,7 @@ namespace Copse.Linq.Tests
 {
   // Phase 3, part B of the categorical audit: the Store comonad's laws, pinned against the
   // real Extend (design-docs/CATEGORY_THEORY_SURVEY.md §4/§6). The focused pair (walkable, handle)
-  // is the comonad; extract = GetValue; Extend = the neighborhood-aware relabel. The first
+  // is the comonad; extract = GetNode; Extend = the neighborhood-aware relabel. The first
   // law doubles as the Walk adapter's conformance pin: Extend(extract) streams the source's
   // own visit streams through the engine-driven adapter, so equality certifies the adapter
   // against the store treenumerators (the degenerate-tower pin). The suite closes with the
@@ -37,7 +37,7 @@ namespace Copse.Linq.Tests
     {
       foreach (var (tree, walkable) in AllWalkables())
       {
-        var extended = walkable.Extend((source, handle) => WalkerLawProviders.TopologyOf(source).GetValue(handle));
+        var extended = walkable.Extend((source, handle) => WalkerLawProviders.TopologyOf(source).GetNode(handle));
 
         // Streams: the extended citizen's walk-adapter streams must equal the source's
         // native store-treenumerator streams -- the law and the adapter conformance in one.
@@ -46,7 +46,7 @@ namespace Copse.Linq.Tests
         // Adjacency: handles and shape untouched.
         foreach (var handle in walkable.GetHandles())
         {
-          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetValue(handle), WalkerLawProviders.TopologyOf(extended).GetValue(handle));
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).GetNode(handle), WalkerLawProviders.TopologyOf(extended).GetNode(handle));
           Assert.AreEqual(WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle).HasValue, WalkerLawProviders.TopologyOf(extended).TryGetParent(handle).HasValue);
         }
       }
@@ -56,14 +56,14 @@ namespace Copse.Linq.Tests
     public void ComonadLaw_ExtractAfterExtend_RecoversTheObserver()
     {
       Func<ITreeTopology<string, int>, int, string> observer =
-        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}@{Depth(source, handle)}";
+        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetNode(handle)}@{Depth(source, handle)}";
 
       foreach (var (tree, walkable) in AllWalkables())
       {
         var extended = walkable.Extend(observer);
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(observer(WalkerLawProviders.TopologyOf(walkable), handle), WalkerLawProviders.TopologyOf(extended).GetValue(handle), $"extract∘extend [{tree}]");
+          Assert.AreEqual(observer(WalkerLawProviders.TopologyOf(walkable), handle), WalkerLawProviders.TopologyOf(extended).GetNode(handle), $"extract∘extend [{tree}]");
       }
     }
 
@@ -74,14 +74,14 @@ namespace Copse.Linq.Tests
       // g-extended tree (consults the parent's g-value -- a genuinely neighborhood-dependent
       // second observation, so the law is exercised on real co-Kleisli composition).
       Func<ITreeTopology<string, int>, int, string> g =
-        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}@{Depth(source, handle)}";
+        (source, handle) => $"{WalkerLawProviders.TopologyOf(source).GetNode(handle)}@{Depth(source, handle)}";
 
       Func<ITreeTopology<string, int>, int, string> f =
         (source, handle) =>
         {
           var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
-          var parentLabel = parentResult.HasValue ? WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Value) : "⊤";
-          return $"{WalkerLawProviders.TopologyOf(source).GetValue(handle)}<{parentLabel}";
+          var parentLabel = parentResult.HasValue ? WalkerLawProviders.TopologyOf(source).GetNode(parentResult.Value) : "⊤";
+          return $"{WalkerLawProviders.TopologyOf(source).GetNode(handle)}<{parentLabel}";
         };
 
       foreach (var (tree, walkable) in AllWalkables())
@@ -93,7 +93,7 @@ namespace Copse.Linq.Tests
         AssertEquivalent(composed, stepwise, $"co-associativity streams [{tree}]");
 
         foreach (var handle in walkable.GetHandles())
-          Assert.AreEqual(WalkerLawProviders.TopologyOf(composed).GetValue(handle), WalkerLawProviders.TopologyOf(stepwise).GetValue(handle), $"co-associativity values [{tree}]");
+          Assert.AreEqual(WalkerLawProviders.TopologyOf(composed).GetNode(handle), WalkerLawProviders.TopologyOf(stepwise).GetNode(handle), $"co-associativity values [{tree}]");
       }
     }
 
@@ -115,12 +115,12 @@ namespace Copse.Linq.Tests
 
         var viaExtend = walkable.Extend((source, handle) =>
         {
-          var path = new List<string> { WalkerLawProviders.TopologyOf(source).GetValue(handle) };
+          var path = new List<string> { WalkerLawProviders.TopologyOf(source).GetNode(handle) };
           var parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(handle);
 
           while (parentResult.HasValue)
           {
-            path.Add(WalkerLawProviders.TopologyOf(source).GetValue(parentResult.Value));
+            path.Add(WalkerLawProviders.TopologyOf(source).GetNode(parentResult.Value));
             parentResult = WalkerLawProviders.TopologyOf(source).TryGetParent(parentResult.Value);
           }
 
@@ -180,13 +180,13 @@ namespace Copse.Linq.Tests
       }
 
       if (childAccumulations.Count == 0)
-        return nodeAccumulator(seed, WalkerLawProviders.TopologyOf(source).GetValue(handle));
+        return nodeAccumulator(seed, WalkerLawProviders.TopologyOf(source).GetNode(handle));
 
       var reduced = childAccumulations[0];
       for (var siblingIndex = 1; siblingIndex < childAccumulations.Count; siblingIndex++)
         reduced = edgeAccumulator(reduced, childAccumulations[siblingIndex]);
 
-      return nodeAccumulator(reduced, WalkerLawProviders.TopologyOf(source).GetValue(handle));
+      return nodeAccumulator(reduced, WalkerLawProviders.TopologyOf(source).GetNode(handle));
     }
 
     // ---------------------------------------------------------------------- helpers

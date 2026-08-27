@@ -11,7 +11,7 @@ namespace Copse.Linq.Treenumerables
   // The restriction LENS's first citizen: PruneAfter over a walkable, as a PAIR -- the ORDER
   // half is the shipped streaming operator, delegated wholesale (the composition lattice inside
   // it keeps collapsing what it always collapsed, unaware walkables exist), and the ADJACENCY
-  // half is one wrapped probe: a pruned-after node hands out no children. TryGetParent, GetValue,
+  // half is one wrapped probe: a pruned-after node hands out no children. TryGetParent, GetNode,
   // and TryGetRootAt delegate untouched -- prune-after keeps the matched handle and its ancestry,
   // and roots always survive. Lenses compose by stacking (no pairwise lens types, no lattice:
   // adjacency probes are neighborhood-priced, so there is nothing to collapse).
@@ -44,12 +44,12 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() => _PrunedStream.GetBreadthFirstTreenumerator();
 
-    public TNode GetValue(THandle handle) => _Source.GetValue(handle);
+    public TNode GetNode(THandle handle) => _Source.GetNode(handle);
 
     public Option<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 
     public Option<HandleAndSiblingIndex<THandle>> TryGetChildAt(THandle handle, int childIndex)
-      => _Predicate(_Source.GetValue(handle))
+      => _Predicate(_Source.GetNode(handle))
         ? default
         : _Source.TryGetChildAt(handle, childIndex);
 

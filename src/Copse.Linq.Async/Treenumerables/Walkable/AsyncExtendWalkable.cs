@@ -22,7 +22,7 @@ namespace Copse.Linq.Async.Treenumerables
     {
       _Source = source;
       _Observer = observer;
-      // Self-feed: this view IS a topology whose GetValue is the observation, so walking
+      // Self-feed: this view IS a topology whose GetNode is the observation, so walking
       // itself streams the relabeling -- the labeling arrow Tree.FromTopology resolves
       // during each pull is exactly the observer (the reason no labeled overload exists).
       _Walk = AsyncTree.FromTopology(this);
@@ -36,7 +36,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public IAsyncTreenumerator<TResult> GetAsyncBreadthFirstTreenumerator() => _Walk.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<TResult> GetValueAsync(THandle handle) => _Observer(_Source, handle);
+    public ValueTask<TResult> GetNodeAsync(THandle handle) => _Observer(_Source, handle);
 
     public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 

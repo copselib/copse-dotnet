@@ -13,7 +13,7 @@ namespace Copse.Linq.Stores
   // why the deferral rides the grow seam rather than the treenumerator factory. The sync twin
   // (LazyLevelOrderStore) is generated from this.
   //
-  // GetFirstChildIndex/GetValue are pure reads and stay synchronous: the decoder contract
+  // GetFirstChildIndex/GetNode are pure reads and stay synchronous: the decoder contract
   // guarantees a grow call precedes every read, so the store is always built by the time they
   // run. Single-threaded by contract, like every treenumerator in the library.
   //
@@ -76,6 +76,6 @@ namespace Copse.Linq.Stores
 
     public int GetFirstChildIndex(int parentIndex) => _Store.GetFirstChildIndex(parentIndex);
 
-    public TNode GetValue(int index) => _Store.GetValue(index);
+    public TNode GetNode(int index) => _Store.GetNode(index);
   }
 }

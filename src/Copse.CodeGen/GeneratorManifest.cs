@@ -167,8 +167,8 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetHandles.cs",
         "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetHandles.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
-      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetHandlesWithValues.cs",
-        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetHandlesWithValues.g.cs",
+      new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetHandlesWithNodes.cs",
+        "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetHandlesWithNodes.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
       new("Copse.Linq.Async/TreenumerableExtensions/WalkableTreenumerable/AsyncTreenumerable.GetTreeWalkerAt.cs",
         "Copse.Linq/TreenumerableExtensions/WalkableTreenumerable/Treenumerable.GetTreeWalkerAt.g.cs",
@@ -188,7 +188,7 @@ namespace Copse.CodeGen
         "Copse.Linq/TreenumerableExtensions/TreeWalker/TreeWalker.Subtree.g.cs",
         "AsyncTreeWalker", "TreeWalker", "Copse.Linq"),
       // FindHandles/FindHandle and HandleResult retired 2026-08-14 under the search law
-      // (naming grammar): searches are not surface -- GetHandles/GetHandlesWithValues plus
+      // (naming grammar): searches are not surface -- GetHandles/GetHandlesWithNodes plus
       // consumer LINQ express them, and a search's honest miss is the empty sequence.
 
       // The walkable contract family (design-docs/WALKABLE_CONTRACT_DESIGN.md step 1): the adjacency

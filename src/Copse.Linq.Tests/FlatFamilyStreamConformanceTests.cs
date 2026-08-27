@@ -145,7 +145,7 @@ namespace Copse.Linq.Tests
       var values = new string[count];
 
       for (var offset = 0; offset < count; offset++)
-        values[offset] = store.GetValue(startIndex + offset);
+        values[offset] = store.GetNode(startIndex + offset);
 
       return values;
     }

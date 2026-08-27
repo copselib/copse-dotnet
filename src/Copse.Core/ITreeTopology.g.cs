@@ -23,7 +23,7 @@ namespace Copse
   public interface ITreeTopology<TNode, THandle>
   {
     /// <summary>The value of the node <paramref name="handle"/> identifies.</summary>
-    TNode GetValue(THandle handle);
+    TNode GetNode(THandle handle);
 
     /// <summary>The node's parent, or absent when the node is a root.</summary>
     Option<THandle> TryGetParent(THandle handle);

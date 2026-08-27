@@ -37,7 +37,7 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
 
-    public TNode GetValue(THandle handle) => _Source.GetValue(handle);
+    public TNode GetNode(THandle handle) => _Source.GetNode(handle);
 
     public Option<THandle> TryGetParent(THandle handle)
       => EqualityComparer<THandle>.Default.Equals(handle, _Root)

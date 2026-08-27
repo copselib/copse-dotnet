@@ -14,7 +14,7 @@ namespace Copse.Treenumerators
   /// synchronous driver. The CROSS-ORDER member of the flat family's DFT pair -- children come from
   /// the store's contiguous child spans (child ordinal k is store index firstChildIndex + k) -- so
   /// descending is index chasing, O(depth). Grow calls are awaited so a store still capturing from
-  /// an async feed fills just in time; GetFirstChildIndex/GetValue stay sync.
+  /// an async feed fills just in time; GetFirstChildIndex/GetNode stay sync.
   /// </summary>
   public sealed class LevelOrderStoreDepthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
@@ -206,7 +206,7 @@ namespace Copse.Treenumerators
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = _Store.GetValue(nodeIndex);
+      Node = _Store.GetNode(nodeIndex);
       VisitCount = 0;
       Position = position;
     }
@@ -222,7 +222,7 @@ namespace Copse.Treenumerators
       _DepthOfLastVisitedNode = top.Position.Depth;
 
       Mode = TreenumeratorMode.VisitingNode;
-      Node = _Store.GetValue(top.NodeIndex);
+      Node = _Store.GetNode(top.NodeIndex);
       VisitCount = top.VisitCount;
       Position = top.Position;
     }

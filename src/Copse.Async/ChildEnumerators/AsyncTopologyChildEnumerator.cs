@@ -39,7 +39,7 @@ namespace Copse.Async.ChildEnumerators
       if (!childResult.HasValue)
         return default;
 
-      var value = await _Topology.GetValueAsync(childResult.Value.Handle).ConfigureAwait(false);
+      var value = await _Topology.GetNodeAsync(childResult.Value.Handle).ConfigureAwait(false);
 
       return new Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>(
         new HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>(

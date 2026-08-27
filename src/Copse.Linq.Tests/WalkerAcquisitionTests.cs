@@ -27,11 +27,11 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void GetHandlesWithValues_YieldsTheRowsOfTheLabeling()
+    public void GetHandlesWithNodes_YieldsTheRowsOfTheLabeling()
     {
       var walkable = TreeSerializer.DeserializeDepthFirstTree(ToyTree).Materialize(BufferLayout.Preorder);
 
-      var rows = walkable.GetHandlesWithValues().ToDictionary(pair => pair.Handle, pair => pair.Node);
+      var rows = walkable.GetHandlesWithNodes().ToDictionary(pair => pair.Handle, pair => pair.Node);
 
       Assert.AreEqual(7, rows.Count);
       Assert.AreEqual("a", rows[0]);
@@ -48,7 +48,7 @@ namespace Copse.Linq.Tests
       // UC-32's line verbatim: the predicate is consumer code -- here "flagged" means d or g --
       // and the handles come back ready to jump in with.
       var targets = walkable
-        .GetHandlesWithValues()
+        .GetHandlesWithNodes()
         .Where(pair => pair.Node == "d" || pair.Node == "g")
         .Select(pair => pair.Handle)
         .OrderBy(handle => handle)
@@ -61,8 +61,8 @@ namespace Copse.Linq.Tests
       // and navigation speaks steps, never probes. d's parent is b; g's parent is c.
       var stance = walkable.GetTreeWalker();
 
-      Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Value.GetValue());
-      Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Value.GetValue());
+      Assert.AreEqual("b", stance.At(targets[0]).MoveToParent().Value.GetNode());
+      Assert.AreEqual("c", stance.At(targets[1]).MoveToParent().Value.GetNode());
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ namespace Copse.Linq.Tests
 
       CollectionAssert.AreEquivalent(
         new[] { "a", "b", "c", "d", "e" },
-        levelOrder.GetHandlesWithValues().Select(pair => pair.Node).ToList());
+        levelOrder.GetHandlesWithNodes().Select(pair => pair.Node).ToList());
     }
 
     // The contract's door, total (walker factory design §11, the sentinel completion):
@@ -93,8 +93,8 @@ namespace Copse.Linq.Tests
         var door = walkable.GetTreeWalker();
 
         Assert.IsFalse(door.HasFocus, "the door stands at the unfocused stance, above the roots");
-        Assert.AreEqual("a", door.MoveToChild(0).Value.GetValue(), "the first root is the unfocused stance's first child");
-        Assert.AreEqual("b", door.MoveToChild(0).Value.MoveToChild(0).Value.GetValue(), "and the stance navigates");
+        Assert.AreEqual("a", door.MoveToChild(0).Value.GetNode(), "the first root is the unfocused stance's first child");
+        Assert.AreEqual("b", door.MoveToChild(0).Value.MoveToChild(0).Value.GetNode(), "and the stance navigates");
       }
 
       var empty = TreeSerializer.DeserializeDepthFirstTree("a").Where(context => false).Materialize(BufferLayout.Preorder);
@@ -106,7 +106,7 @@ namespace Copse.Linq.Tests
 
     // The search law (naming grammar, 2026-08-14): searches are not surface. FindHandles and
     // the result-typed FindHandle were retired the day they were reviewed -- both were
-    // GetHandlesWithValues plus consumer LINQ, the "do our thing, then call LINQ" shape the
+    // GetHandlesWithNodes plus consumer LINQ, the "do our thing, then call LINQ" shape the
     // surface refuses. A search's honest miss is the EMPTY SEQUENCE; downstream result-typed
     // consumers (SpanningSubtree of an empty search) carry the miss without a singular wrapper.
     [TestMethod]
@@ -115,28 +115,28 @@ namespace Copse.Linq.Tests
       var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
       // The rowid idiom, spelled honestly: rows in, value predicate, handles out.
-      var hits = walkable.GetHandlesWithValues()
+      var hits = walkable.GetHandlesWithNodes()
         .Where(row => row.Node == "d" || row.Node == "c")
         .Select(row => row.Handle)
         .ToList();
 
       CollectionAssert.AreEquivalent(
         new[] { "d", "c" },
-        hits.Select(handle => WalkerLawProviders.TopologyOf(walkable).GetValue(handle)).ToList());
+        hits.Select(handle => WalkerLawProviders.TopologyOf(walkable).GetNode(handle)).ToList());
 
       // A missed search is an empty sequence -- the miss, spoken natively.
-      Assert.AreEqual(0, walkable.GetHandlesWithValues().Count(row => row.Node == "zzz"));
+      Assert.AreEqual(0, walkable.GetHandlesWithNodes().Count(row => row.Node == "zzz"));
 
       // THE SENTINEL TRAP, pinned as a warning: FirstOrDefault on a missed search returns
       // default(int) = 0 -- a REAL handle (the first preorder node). Never FirstOrDefault
       // over ordinal handles; test emptiness, or flow the plural into a result-typed
       // consumer and let the miss stay typed.
-      var trap = walkable.GetHandlesWithValues()
+      var trap = walkable.GetHandlesWithNodes()
         .Where(row => row.Node == "zzz")
         .Select(row => row.Handle)
         .FirstOrDefault();
       Assert.AreEqual(0, trap);
-      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetValue(trap), "the miss masquerades as the root");
+      Assert.AreEqual("a", WalkerLawProviders.TopologyOf(walkable).GetNode(trap), "the miss masquerades as the root");
     }
   }
 }

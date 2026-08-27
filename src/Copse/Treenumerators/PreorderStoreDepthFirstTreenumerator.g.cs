@@ -17,7 +17,7 @@ namespace Copse.Treenumerators
   /// grow calls (<c>EnsureBufferedAsync</c>/<c>EnsureSubtreeClosedAsync</c>) PROBED so a store
   /// still capturing from an async feed fills just in time while an already-buffered answer
   /// costs no state machine at all (the fast-path probe idiom -- see AsyncToSync).
-  /// GetValue/GetSubtreeSize stay sync.
+  /// GetNode/GetSubtreeSize stay sync.
   /// </summary>
   public sealed class PreorderStoreDepthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
@@ -251,7 +251,7 @@ namespace Copse.Treenumerators
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = _Store.GetValue(nodeIndex);
+      Node = _Store.GetNode(nodeIndex);
       VisitCount = 0;
       Position = position;
     }
@@ -267,7 +267,7 @@ namespace Copse.Treenumerators
       _DepthOfLastVisitedNode = top.Position.Depth;
 
       Mode = TreenumeratorMode.VisitingNode;
-      Node = _Store.GetValue(top.NodeIndex);
+      Node = _Store.GetNode(top.NodeIndex);
       VisitCount = top.VisitCount;
       Position = top.Position;
     }

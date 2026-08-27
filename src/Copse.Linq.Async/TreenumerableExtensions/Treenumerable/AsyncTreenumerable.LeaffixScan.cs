@@ -179,7 +179,7 @@ namespace Copse.Linq
       for (var handle = nodeCount - 1; handle >= 0; handle--)
       {
         var subtreeSize = store.GetSubtreeSize(handle);
-        var node = store.GetValue(handle);
+        var node = store.GetNode(handle);
 
         TAccumulate accumulate;
 
@@ -279,7 +279,7 @@ namespace Copse.Linq
       results.Add(default);
       subtreeSizes.Add(0);
 
-      return (walker, await walker.GetValueAsync().ConfigureAwait(false), 0, false, default, outputIndex);
+      return (walker, await walker.GetNodeAsync().ConfigureAwait(false), 0, false, default, outputIndex);
     }
 
     // The consumer half of the compose-left door: builds the SAME plain pair buffer the

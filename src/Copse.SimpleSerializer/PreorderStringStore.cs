@@ -44,7 +44,7 @@ namespace Copse.SimpleSerializer
     private readonly ValueTokenStringScanner _Scanner;
     private readonly SpanMap<TNode> _Map;
 
-    private readonly RefAppendOnlyList<TNode> _Values = new RefAppendOnlyList<TNode>();
+    private readonly RefAppendOnlyList<TNode> _Nodes = new RefAppendOnlyList<TNode>();
     private readonly RefAppendOnlyList<int> _SubtreeSizes = new RefAppendOnlyList<int>();
     private readonly RefSemiDeque<int> _Open = new RefSemiDeque<int>(); // indices of parents whose ')' hasn't been parsed yet
 
@@ -52,10 +52,10 @@ namespace Copse.SimpleSerializer
 
     public bool EnsureBuffered(int index)
     {
-      while (!_Exhausted && _Values.Count <= index)
+      while (!_Exhausted && _Nodes.Count <= index)
         ParseStep();
 
-      return index < _Values.Count;
+      return index < _Nodes.Count;
     }
 
     public int EnsureSubtreeClosed(int index)
@@ -70,7 +70,7 @@ namespace Copse.SimpleSerializer
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetNode(int index) => _Nodes[index];
 
     // Advance the parse until it makes progress an Ensure loop can observe: a value committed,
     // a subtree closed, or the string exhausted (which closes everything still open).
@@ -104,7 +104,7 @@ namespace Copse.SimpleSerializer
               Commit(asParent: false);
 
             var closed = _Open.RemoveLast();
-            _SubtreeSizes[closed] = _Values.Count - closed;
+            _SubtreeSizes[closed] = _Nodes.Count - closed;
 
             return;
           }
@@ -122,7 +122,7 @@ namespace Copse.SimpleSerializer
             while (_Open.Count > 0)
             {
               var closed = _Open.RemoveLast();
-              _SubtreeSizes[closed] = _Values.Count - closed;
+              _SubtreeSizes[closed] = _Nodes.Count - closed;
             }
 
             _Exhausted = true;
@@ -135,9 +135,9 @@ namespace Copse.SimpleSerializer
 
     private void Commit(bool asParent)
     {
-      var index = _Values.Count;
+      var index = _Nodes.Count;
 
-      _Values.AddLast(_Map(_Scanner.ValueChars));
+      _Nodes.AddLast(_Map(_Scanner.ValueChars));
       _SubtreeSizes.AddLast(asParent ? 0 : 1); // a parent's size is backfilled when it closes
 
       if (asParent)
@@ -166,7 +166,7 @@ namespace Copse.SimpleSerializer
       public int GetSubtreeSize(int index) => _Store.GetSubtreeSize(index);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TNode GetValue(int index) => _Store.GetValue(index);
+      public TNode GetNode(int index) => _Store.GetNode(index);
     }
   }
 }

@@ -9,7 +9,7 @@ namespace Copse.Linq.Async.Treenumerables
   // The restriction LENS's first citizen: PruneAfter over a walkable, as a PAIR -- the ORDER
   // half is the shipped streaming operator, delegated wholesale (the composition lattice inside
   // it keeps collapsing what it always collapsed, unaware walkables exist), and the ADJACENCY
-  // half is one wrapped probe: a pruned-after node hands out no children. TryGetParent, GetValue,
+  // half is one wrapped probe: a pruned-after node hands out no children. TryGetParent, GetNode,
   // and TryGetRootAt delegate untouched -- prune-after keeps the matched handle and its ancestry,
   // and roots always survive. Lenses compose by stacking (no pairwise lens types, no lattice:
   // adjacency probes are neighborhood-priced, so there is nothing to collapse).
@@ -42,12 +42,12 @@ namespace Copse.Linq.Async.Treenumerables
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _PrunedStream.GetAsyncBreadthFirstTreenumerator();
 
-    public ValueTask<TNode> GetValueAsync(THandle handle) => _Source.GetValueAsync(handle);
+    public ValueTask<TNode> GetNodeAsync(THandle handle) => _Source.GetNodeAsync(handle);
 
     public ValueTask<Option<THandle>> TryGetParentAsync(THandle handle) => _Source.TryGetParentAsync(handle);
 
     public async ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetChildAtAsync(THandle handle, int childIndex)
-      => _Predicate(await _Source.GetValueAsync(handle).ConfigureAwait(false))
+      => _Predicate(await _Source.GetNodeAsync(handle).ConfigureAwait(false))
         ? default
         : await _Source.TryGetChildAtAsync(handle, childIndex).ConfigureAwait(false);
 

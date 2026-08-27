@@ -40,6 +40,6 @@ namespace Copse.Stores
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Nodes[index];
+    public TNode GetNode(int index) => _Nodes[index];
   }
 }

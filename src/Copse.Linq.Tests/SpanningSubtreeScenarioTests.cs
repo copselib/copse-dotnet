@@ -27,10 +27,10 @@ namespace Copse.Linq.Tests
         .Materialize();
 
       var interesting = new HashSet<string> { "h", "i", "g" };
-      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
+      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithNodes().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
 
       Assert.IsTrue(spanning.HasValue);
-      Assert.AreEqual("a", spanning.Value.GetValue(), "the walker stands at the spanning root");
+      Assert.AreEqual("a", spanning.Value.GetNode(), "the walker stands at the spanning root");
 
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("a(b(d(h,i)),c(g))")),
@@ -47,10 +47,10 @@ namespace Copse.Linq.Tests
         .Materialize(BufferLayout.Preorder);
 
       var interesting = new HashSet<string> { "h", "e" };
-      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
+      var spanning = walkable.SpanningSubtree(walkable.GetHandlesWithNodes().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle));
 
       Assert.IsTrue(spanning.HasValue);
-      Assert.AreEqual("b", spanning.Value.GetValue(), "the spanning root is mid-tree");
+      Assert.AreEqual("b", spanning.Value.GetNode(), "the spanning root is mid-tree");
 
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("b(d(h),e)")),
@@ -69,9 +69,9 @@ namespace Copse.Linq.Tests
       Assert.IsFalse(walkable.SpanningSubtree(Enumerable.Empty<int>()).HasValue, "k = 0 is an honest miss");
 
       // One target: the node alone -- the fold is a no-op and the clamp keeps exactly it.
-      var single = walkable.SpanningSubtree(walkable.GetHandlesWithValues().Where(row => row.Node == "d").Select(row => row.Handle));
+      var single = walkable.SpanningSubtree(walkable.GetHandlesWithNodes().Where(row => row.Node == "d").Select(row => row.Handle));
       Assert.IsTrue(single.HasValue);
-      Assert.AreEqual("d", single.Value.GetValue());
+      Assert.AreEqual("d", single.Value.GetNode());
       CollectionAssert.AreEqual(
         DrainScheduleOrder(TreeSerializer.DeserializeDepthFirstTree("d")),
         DrainScheduleOrder(single.Value.Subtree()),
@@ -81,7 +81,7 @@ namespace Copse.Linq.Tests
       // is the spanning forest under an unfocused walker -- one spanning subtree per touched tree, the
       // off-path subtree (e) clamped away like any other.
       var forest = TreeSerializer.DeserializeDepthFirstTree("a(b,e),c(d)").Materialize(BufferLayout.Preorder);
-      var disjoint = forest.SpanningSubtree(forest.GetHandlesWithValues().Where(row => row.Node == "b" || row.Node == "d").Select(row => row.Handle));
+      var disjoint = forest.SpanningSubtree(forest.GetHandlesWithNodes().Where(row => row.Node == "b" || row.Node == "d").Select(row => row.Handle));
 
       Assert.IsTrue(disjoint.HasValue, "disjoint targets answer");
       Assert.IsFalse(disjoint.Value.HasFocus, "the spanning of disjoint targets stands at the unfocused stance");
@@ -99,18 +99,18 @@ namespace Copse.Linq.Tests
     {
       var walkable = TreeSerializer.DeserializeDepthFirstTree("a(b(d,e),c)").Materialize(BufferLayout.Preorder);
 
-      var targets = walkable.GetHandlesWithValues().Where(row => row.Node == "d" || row.Node == "e").Select(row => row.Handle).ToList();
+      var targets = walkable.GetHandlesWithNodes().Where(row => row.Node == "d" || row.Node == "e").Select(row => row.Handle).ToList();
       Assert.IsTrue(targets.All(handle => handle >= 2), "the targets sit deep in the SOURCE handle space");
 
       var spanning = walkable.SpanningSubtree(targets);
 
       Assert.AreEqual(0, spanning.Value.Focus, "the spanning root is ordinal zero of ITS OWN capture");
-      Assert.AreEqual("b", spanning.Value.GetValue());
+      Assert.AreEqual("b", spanning.Value.GetNode());
     }
 
     // The DECOMPOSED arc -- the floor-by-floor walkthrough the operation distills, kept
     // running so the composition claim stays executable: streaming algebra, organic
-    // Materialize, rowid-idiom acquisition (the search law: consumer LINQ over GetHandlesWithValues), walker-first LCA fold, the severed re-root,
+    // Materialize, rowid-idiom acquisition (the search law: consumer LINQ over GetHandlesWithNodes), walker-first LCA fold, the severed re-root,
     // and the handle-decorated stream clamp (the climbs recorded ARE the membership memo).
     [TestMethod]
     public void TheCapstoneDecomposed_EveryFloorInOneArc()
@@ -121,14 +121,14 @@ namespace Copse.Linq.Tests
       var walkable = relevant.Materialize();
 
       var interesting = new HashSet<string> { "h", "i", "g" };
-      var targets = walkable.GetHandlesWithValues().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle).ToList();
+      var targets = walkable.GetHandlesWithNodes().Where(row => interesting.Contains(row.Node)).Select(row => row.Handle).ToList();
       Assert.AreEqual(3, targets.Count, "acquisition found the targets");
 
       var lca = targets
         .Select(handle => walkable.GetTreeWalkerAt(handle))
         .Aggregate((left, right) => LowestCommonAncestor(left, right));
 
-      Assert.AreEqual("a", lca.GetValue(), "the three targets' LCA");
+      Assert.AreEqual("a", lca.GetNode(), "the three targets' LCA");
 
       var keptHandles = new HashSet<int> { lca.Focus };
       foreach (var target in targets)
@@ -138,7 +138,7 @@ namespace Copse.Linq.Tests
       var spanning = lca.Subtree();
 
       var clamped = spanning
-        .Extend((topology, handle) => new HandleAndNode<int, string>(handle, topology.GetValue(handle)))
+        .Extend((topology, handle) => new HandleAndNode<int, string>(handle, topology.GetNode(handle)))
         .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Node);
 

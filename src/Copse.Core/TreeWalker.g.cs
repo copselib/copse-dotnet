@@ -18,15 +18,15 @@ namespace Copse
   /// stands before its first downward step. The roots are its children
   /// (<see cref="MoveToChildAsync"/> walks them from there), climbing up from a root lands on
   /// it, and the only upward miss in the algebra is stepping up from it. It stands on no node,
-  /// so it has no handle and no value: <see cref="Focus"/> and <see cref="GetValueAsync"/>
+  /// so it has no handle and no node to read: <see cref="Focus"/> and <see cref="GetNodeAsync"/>
   /// throw there (as <c>IEnumerator.Current</c> throws before the first <c>MoveNext</c>), and
-  /// <see cref="TryGetValueAsync"/> is the read that cannot throw -- absent exactly there.
+  /// <see cref="TryGetNodeAsync"/> is the read that cannot throw -- absent exactly there.
   /// Test <see cref="HasFocus"/> when a climb may have topped out.</para>
   ///
   /// <para>A <c>default</c> instance has no topology and is invalid; the unfocused stance is
   /// not <c>default</c> -- it carries a topology like any other stance.</para>
   ///
-  /// <para>This type carries navigation only: <see cref="GetValueAsync"/> reads the focused
+  /// <para>This type carries navigation only: <see cref="GetNodeAsync"/> reads the focused
   /// value, and the step members move the stance. The operator surface over walkers --
   /// <c>Extend</c>, <c>Subtrees</c>, the acquisition methods -- lives in the Linq packages as
   /// extension methods, the same way <c>ITreenumerable</c> lives here while <c>Select</c> and
@@ -74,7 +74,7 @@ namespace Copse
     private readonly bool _HasFocus;
 
     /// <summary>Whether this walker stands on a node. <c>false</c> exactly at the unfocused
-    /// stance -- above the roots, no node, no handle, no value. Check it before
+    /// stance -- above the roots, no node, no handle. Check it before
     /// <see cref="Focus"/>, and after a climb that may have topped out.</summary>
     public bool HasFocus => _HasFocus;
 
@@ -86,17 +86,17 @@ namespace Copse
 
     /// <summary>The value of the node this walker stands on. Throws
     /// <see cref="InvalidOperationException"/> at the unfocused stance;
-    /// <see cref="TryGetValueAsync"/> is the read that cannot throw. A method rather than a
+    /// <see cref="TryGetNodeAsync"/> is the read that cannot throw. A method rather than a
     /// property because on a still-growing source the read may pull the source.</summary>
-    public TNode GetValue()
-      => _HasFocus ? Topology.GetValue(_FocusHandle) : ThrowUnfocusedHasNoValue();
+    public TNode GetNode()
+      => _HasFocus ? Topology.GetNode(_FocusHandle) : ThrowUnfocusedHasNoNode();
 
     /// <summary>The value of the node this walker stands on, or absent at the unfocused
-    /// stance -- the one stance with no value to read. On focused stances it agrees with
-    /// <see cref="GetValueAsync"/>.</summary>
-    public Option<TNode> TryGetValue()
+    /// stance -- the one stance with no node to read. On focused stances it agrees with
+    /// <see cref="GetNodeAsync"/>.</summary>
+    public Option<TNode> TryGetNode()
       => _HasFocus
-        ? new Option<TNode>(Topology.GetValue(_FocusHandle))
+        ? new Option<TNode>(Topology.GetNode(_FocusHandle))
         : default;
 
     // The throw helpers keep `throw new` (allocation + message string) out of the readers'
@@ -108,9 +108,9 @@ namespace Copse
         "The walker is unfocused: it stands above the roots, on no node. Test HasFocus before reading Focus.");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static TNode ThrowUnfocusedHasNoValue()
+    private static TNode ThrowUnfocusedHasNoNode()
       => throw new InvalidOperationException(
-        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetValueAsync, whose miss is typed.");
+        "The walker is unfocused: it stands above the roots, on no node. Test HasFocus, or read TryGetNodeAsync, whose miss is typed.");
 
     /// <summary>A walker on the same topology standing at <paramref name="handle"/> -- how a
     /// stored handle becomes a stance again. No probe fires and nothing is validated: the

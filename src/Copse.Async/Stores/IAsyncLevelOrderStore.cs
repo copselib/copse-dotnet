@@ -26,6 +26,6 @@ namespace Copse.Async.Stores
 
     /// <summary>The value at <paramref name="index"/>, which must already be
     /// buffered.</summary>
-    TNode GetValue(int index);
+    TNode GetNode(int index);
   }
 }

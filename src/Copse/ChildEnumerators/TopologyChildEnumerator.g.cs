@@ -42,7 +42,7 @@ namespace Copse.ChildEnumerators
       if (!childResult.HasValue)
         return default;
 
-      var value = _Topology.GetValue(childResult.Value.Handle);
+      var value = _Topology.GetNode(childResult.Value.Handle);
 
       return new Option<HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>>(
         new HandleAndSiblingIndex<HandleAndNode<THandle, TNode>>(

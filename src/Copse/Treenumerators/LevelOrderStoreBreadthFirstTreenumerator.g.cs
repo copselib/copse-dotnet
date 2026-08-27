@@ -14,7 +14,7 @@ namespace Copse.Treenumerators
   /// synchronous driver. Native playback for the flat family -- the visit queue's contents are
   /// consecutive store indices and children become available in the order the growing store appends
   /// them, a strictly sequential read. Grow calls are awaited so a store still capturing from an
-  /// async feed fills just in time; GetFirstChildIndex/GetValue stay sync.
+  /// async feed fills just in time; GetFirstChildIndex/GetNode stay sync.
   /// </summary>
   public sealed class LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
@@ -229,7 +229,7 @@ namespace Copse.Treenumerators
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = _Store.GetValue(nodeIndex);
+      Node = _Store.GetNode(nodeIndex);
       VisitCount = 0;
       Position = position;
     }
@@ -238,7 +238,7 @@ namespace Copse.Treenumerators
     private void PublishVisit(ref Frame frame)
     {
       Mode = TreenumeratorMode.VisitingNode;
-      Node = _Store.GetValue(frame.NodeIndex);
+      Node = _Store.GetNode(frame.NodeIndex);
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }

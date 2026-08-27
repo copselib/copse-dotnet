@@ -103,7 +103,7 @@ namespace Copse.Benchmarks
 
     private static long WalkSubtree(TreeWalker<int, int> walker)
     {
-      var checksum = (long)walker.GetValue();
+      var checksum = (long)walker.GetNode();
 
       for (var childIndex = 0; ; childIndex++)
       {
@@ -113,7 +113,7 @@ namespace Copse.Benchmarks
           break;
 
         checksum += WalkSubtree(child.Value);
-        checksum += child.Value.MoveToParent().Value.GetValue();
+        checksum += child.Value.MoveToParent().Value.GetNode();
       }
 
       return checksum;

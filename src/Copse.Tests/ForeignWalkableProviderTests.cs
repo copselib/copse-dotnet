@@ -57,7 +57,7 @@ namespace Copse.Tests
       public TreeWalker<string, string> GetTreeWalker()
         => new TreeWalker<string, string>(this);
 
-      public string GetValue(string handle) => handle;
+      public string GetNode(string handle) => handle;
 
       public Option<string> TryGetParent(string handle)
         => Parents.TryGetValue(handle, out var parent) ? new Option<string>(parent) : default;
@@ -82,7 +82,7 @@ namespace Copse.Tests
 
       Assert.IsFalse(door.HasFocus, "the door stands at the unfocused stance, above the roots");
       Assert.AreEqual("a", door.MoveToChild(0).Value.Focus, "the root is the unfocused stance's first child");
-      Assert.AreEqual("a", door.MoveToChild(0).Value.GetValue());
+      Assert.AreEqual("a", door.MoveToChild(0).Value.GetNode());
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ namespace Copse.Tests
     {
       var walker = new FamilyFreeTree().GetTreeWalker();
 
-      Assert.AreEqual("d", walker.At("d").GetValue());
+      Assert.AreEqual("d", walker.At("d").GetNode());
       Assert.AreEqual("b", walker.At("d").MoveToParent().Value.Focus);
     }
 

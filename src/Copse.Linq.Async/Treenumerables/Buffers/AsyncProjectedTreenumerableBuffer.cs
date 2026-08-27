@@ -83,7 +83,7 @@ namespace Copse.Linq.Async.Treenumerables
 
           for (var nodeIndex = 0; nodeIndex < count; nodeIndex++)
           {
-            values[nodeIndex] = selector(sourceStore.GetValue(nodeIndex));
+            values[nodeIndex] = selector(sourceStore.GetNode(nodeIndex));
             subtreeSizes[nodeIndex] = sourceStore.GetSubtreeSize(nodeIndex);
           }
 

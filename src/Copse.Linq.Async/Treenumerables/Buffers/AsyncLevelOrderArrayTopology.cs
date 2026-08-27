@@ -29,8 +29,8 @@ namespace Copse.Linq.Async.Treenumerables
     // Built on the first parent probe; exact size, no per-node machinery.
     private int[] _ParentIndexes;
 
-    public ValueTask<TNode> GetValueAsync(int handle)
-      => new ValueTask<TNode>(_Store.GetValue(handle));
+    public ValueTask<TNode> GetNodeAsync(int handle)
+      => new ValueTask<TNode>(_Store.GetNode(handle));
 
     public async ValueTask<Option<int>> TryGetParentAsync(int handle)
     {

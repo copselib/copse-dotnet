@@ -42,7 +42,7 @@ namespace Copse.Async.Tests
       // The rowid idiom, async spelling: rows in, value predicate, handles out.
       var handles = new List<int>();
 
-      await foreach (var row in walkable.GetHandlesWithValues())
+      await foreach (var row in walkable.GetHandlesWithNodes())
         if (predicate(row.Node))
           handles.Add(row.Handle);
 
@@ -58,7 +58,7 @@ namespace Copse.Async.Tests
       var spanning = await walkable.SpanningSubtreeAsync(targets);
 
       Assert.IsTrue(spanning.HasValue);
-      Assert.AreEqual("a", await spanning.Value.GetValueAsync(), "the walker stands at the spanning root");
+      Assert.AreEqual("a", await spanning.Value.GetNodeAsync(), "the walker stands at the spanning root");
       CollectionAssert.AreEqual(
         new[] { "a", "b", "d", "h", "i", "c", "g" },
         await PreorderValuesAsync(spanning.Value.Subtree()),

@@ -99,7 +99,7 @@ namespace Copse.Linq.Tests
           {
             var handle = ordinals[node];
 
-            Assert.AreEqual(node.Value, WalkerLawProviders.TopologyOf(walkable).GetValue(handle), $"value @{handle} — {context}");
+            Assert.AreEqual(node.Value, WalkerLawProviders.TopologyOf(walkable).GetNode(handle), $"value @{handle} — {context}");
 
             var parentResult = WalkerLawProviders.TopologyOf(walkable).TryGetParent(handle);
             if (node.Parent == null)

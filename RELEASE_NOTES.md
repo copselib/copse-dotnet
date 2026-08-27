@@ -47,6 +47,15 @@
   (constructor parameters likewise) — tree-domain types name the element for what it is;
   generic containers (`Option`, the walker step result) keep their own `Value` idiom. The
   completed array stores' constructors rename their `values` parameter to `nodes`.
+- **The node accessors say node**: `ITreeTopology.GetValue` → `GetNode` (async
+  `GetValueAsync` → `GetNodeAsync`), the walker's `GetValue`/`TryGetValue` →
+  `GetNode`/`TryGetNode` (async likewise), the store SPIs' `GetValue(index)` →
+  `GetNode(index)`, and `GetHandlesWithValues` → `GetHandlesWithNodes` (aligning with its
+  `HandleAndNode` element type). Every layer of the tree surface speaks tree — the store
+  SPIs already said subtree/root/child everywhere else. `Option<TValue>.Value`/`TryGetValue`
+  and the walker step result's `Value`/`TryGetValue` are unchanged: those are containers
+  (the result holds a walker, not a node). *Migration: rename at call sites; signatures are
+  otherwise identical.*
 
 ### Moved types
 

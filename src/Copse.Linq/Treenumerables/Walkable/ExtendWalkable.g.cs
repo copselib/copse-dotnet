@@ -24,7 +24,7 @@ namespace Copse.Linq.Treenumerables
     {
       _Source = source;
       _Observer = observer;
-      // Self-feed: this view IS a topology whose GetValue is the observation, so walking
+      // Self-feed: this view IS a topology whose GetNode is the observation, so walking
       // itself streams the relabeling -- the labeling arrow Tree.FromTopology resolves
       // during each pull is exactly the observer (the reason no labeled overload exists).
       _Walk = Tree.FromTopology(this);
@@ -38,7 +38,7 @@ namespace Copse.Linq.Treenumerables
 
     public ITreenumerator<TResult> GetBreadthFirstTreenumerator() => _Walk.GetBreadthFirstTreenumerator();
 
-    public TResult GetValue(THandle handle) => _Observer(_Source, handle);
+    public TResult GetNode(THandle handle) => _Observer(_Source, handle);
 
     public Option<THandle> TryGetParent(THandle handle) => _Source.TryGetParent(handle);
 

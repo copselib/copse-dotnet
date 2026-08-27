@@ -79,7 +79,7 @@ namespace Copse.Linq.Stores
     public bool IsComplete { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TNode GetValue(int index) => _Values[index];
+    public TNode GetNode(int index) => _Values[index];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int index) => _FirstChildIndices[index];
@@ -261,7 +261,7 @@ namespace Copse.Linq.Stores
       public int GetFirstChildIndex(int parentIndex) => _Buffer.GetFirstChildIndex(parentIndex);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public TNode GetValue(int index) => _Buffer.GetValue(index);
+      public TNode GetNode(int index) => _Buffer.GetNode(index);
     }
   }
 }

@@ -341,7 +341,7 @@ namespace Copse.Async.Treenumerators
       });
 
       Mode = TreenumeratorMode.SchedulingNode;
-      Node = _Store.GetValue(nodeIndex);
+      Node = _Store.GetNode(nodeIndex);
       VisitCount = 0;
       Position = position;
     }
@@ -350,7 +350,7 @@ namespace Copse.Async.Treenumerators
     private void PublishVisit(ref Frame frame)
     {
       Mode = TreenumeratorMode.VisitingNode;
-      Node = _Store.GetValue(frame.NodeIndex);
+      Node = _Store.GetNode(frame.NodeIndex);
       VisitCount = frame.VisitCount;
       Position = frame.Position;
     }

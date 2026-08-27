@@ -10,7 +10,7 @@ namespace Copse.Async.Topologies
   // is what keeps a view honest against the weakest citizen), and every answer after
   // flows through the topology the knock bound. The door is total (the void stance), so
   // the empty forest needs no special citizen here either: its bound topology answers the
-  // probes itself -- no roots, no parents, no children, and GetValue's own violation
+  // probes itself -- no roots, no parents, no children, and GetNode's own violation
   // channel. Internal sealed like every topology implementation: the factory hands out
   // the contract, never the encoding (the store policy's rule).
   internal sealed class AsyncLazyTopology<TNode, THandle> : IAsyncTreeTopology<TNode, THandle>
@@ -37,8 +37,8 @@ namespace Copse.Async.Topologies
       return _Topology;
     }
 
-    public async ValueTask<TNode> GetValueAsync(THandle handle)
-      => await (await ResolveAsync().ConfigureAwait(false)).GetValueAsync(handle).ConfigureAwait(false);
+    public async ValueTask<TNode> GetNodeAsync(THandle handle)
+      => await (await ResolveAsync().ConfigureAwait(false)).GetNodeAsync(handle).ConfigureAwait(false);
 
     public async ValueTask<Option<THandle>> TryGetParentAsync(THandle handle)
       => await (await ResolveAsync().ConfigureAwait(false)).TryGetParentAsync(handle).ConfigureAwait(false);

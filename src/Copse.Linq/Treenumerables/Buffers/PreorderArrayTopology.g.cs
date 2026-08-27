@@ -34,7 +34,7 @@ namespace Copse.Linq.Treenumerables
     private readonly PreorderArrayStore<TNode> _Store;
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
-    // (Count/GetValue/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
+    // (Count/GetNode/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
     // fast path's door.
     internal PreorderArrayStore<TNode> Store => _Store;
 
@@ -45,8 +45,8 @@ namespace Copse.Linq.Treenumerables
     private int[] _FirstChildOffsets;
     private int[] _RootIndexes;
 
-    public TNode GetValue(int handle)
-      => _Store.GetValue(handle);
+    public TNode GetNode(int handle)
+      => _Store.GetNode(handle);
 
     public Option<int> TryGetParent(int handle)
     {
