@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787863571107,
+  "lastUpdate": 1787870519110,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -19420,6 +19420,150 @@ window.BENCHMARK_DATA = {
             "value": 204061442.58333334,
             "unit": "ns",
             "range": "± 6052561.299819316"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98a3f1ffd6344e1295a4517b8af1228e49a7d382",
+          "message": "Add the SelectMany projection form (the lawful join's LINQ spelling)\n\nJason, using the surface as a consumer: there was no SelectMany for\nITreenumerable<ITreenumerable<T>> the way IEnumerable has -- 'we need to have a\nway to project a node to a tree, not just graft copies of identical trees.'\n\nFor sequences the flatten has one possible answer, so LINQ's identity-lambda\nidiom needs no policy. For trees the join is parameterized by the graft point\n(the pointed-expansion result) -- but the choice is not free if the laws are to\nhold: UnderLastRoot is Return's own placement, the one under which Return is\nthe monad's unit. Flatten there is THE lawful join (the Data.Tree order).\n\nNew overloads, both colors, DFT + composite:\n\n  SelectMany(source, Func<TSource, IDepthFirstTreenumerable<TResult>> selector)\n    == SelectMany(source, n => Expansion.Of(selector(n), UnderLastRoot))\n\nDelegation-only -- no new machinery; streaming, the BFT documented capture, and\ncomposition inherited from the expansion form. nested.SelectMany(t => t) is now\nthe monad's flatten and node->tree projection reads as LINQ; the expansion form\nstays the door to the other placements and the slotless arms.\n\nPinned by 4 new SelectManyOperatorTests (corpus equivalence both dimensions,\nthe flatten identity, the worked a(b) example). Record: SELECTMANY_DESIGN.md\nAddendum V. Suite green: 26,546 (463 + 69 + 26,014).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T22:14:45Z",
+          "tree_id": "f01dfb76a6c9cd7f40da4a71c658e82a782d5282",
+          "url": "https://github.com/copselib/copse-dotnet/commit/98a3f1ffd6344e1295a4517b8af1228e49a7d382"
+        },
+        "date": 1787870481527,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Chain",
+            "value": 13984604.86607143,
+            "unit": "ns",
+            "range": "± 74089.61506255914"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Chain",
+            "value": 22224038.804166667,
+            "unit": "ns",
+            "range": "± 111688.43897134044"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Forest",
+            "value": 3929197.524639423,
+            "unit": "ns",
+            "range": "± 11678.602941481622"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Forest",
+            "value": 3922955.778846154,
+            "unit": "ns",
+            "range": "± 3575.1905778065825"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Binary",
+            "value": 119011702.90769227,
+            "unit": "ns",
+            "range": "± 843350.795849567"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Binary",
+            "value": 142501826.21666667,
+            "unit": "ns",
+            "range": "± 363595.0341851085"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle",
+            "value": 52418286.19166667,
+            "unit": "ns",
+            "range": "± 235852.4223845978"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle",
+            "value": 50322157.19285714,
+            "unit": "ns",
+            "range": "± 150206.69673714708"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_DeepChains",
+            "value": 39656065.84615384,
+            "unit": "ns",
+            "range": "± 690800.6549456262"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_DeepChains",
+            "value": 35007741.82380953,
+            "unit": "ns",
+            "range": "± 73993.27568487979"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Dft_Triangle_PruneSubtreeAndSiblings",
+            "value": 26402622.896634616,
+            "unit": "ns",
+            "range": "± 46141.333357797346"
+          },
+          {
+            "name": "Copse.Benchmarks.Traversal.Bft_Triangle_PruneSubtreeAndSiblings",
+            "value": 18157033.425,
+            "unit": "ns",
+            "range": "± 124173.75793004727"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Chain",
+            "value": 57997261.741071425,
+            "unit": "ns",
+            "range": "± 427522.7622831278"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Chain",
+            "value": 86791052.48571429,
+            "unit": "ns",
+            "range": "± 1823556.446765243"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Forest",
+            "value": 14398915.48325893,
+            "unit": "ns",
+            "range": "± 28257.699696481814"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Forest",
+            "value": 14383003.05357143,
+            "unit": "ns",
+            "range": "± 24407.156377675896"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Binary",
+            "value": 480099427,
+            "unit": "ns",
+            "range": "± 865943.8598468313"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Binary",
+            "value": 572717151.3333334,
+            "unit": "ns",
+            "range": "± 2150207.7529559014"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Dft_Triangle",
+            "value": 208806706.05376342,
+            "unit": "ns",
+            "range": "± 3708639.700720405"
+          },
+          {
+            "name": "Copse.Benchmarks.TraversalScaling.Bft_Triangle",
+            "value": 206617921.69230768,
+            "unit": "ns",
+            "range": "± 5631608.982624115"
           }
         ]
       }
