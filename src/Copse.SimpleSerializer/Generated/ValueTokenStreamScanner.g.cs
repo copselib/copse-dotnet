@@ -14,7 +14,7 @@ namespace Copse.SimpleSerializer
   // honors the skip contract: the token is consumed and reported but its characters are never
   // buffered, so a skip costs I/O only.
   //
-  // I/O happens at BLOCK granularity: one awaited Read refills the block buffer, and every
+  // I/O happens at BLOCK granularity: one Read refills the block buffer, and every
   // character between refills is served synchronously from it -- never an await per character.
   // The one-character pushback (needed to tell '""' from a closing quote) is a position
   // decrement into the block; it never crosses a refill because the pushed-back character was

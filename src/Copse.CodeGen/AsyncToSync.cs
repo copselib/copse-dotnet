@@ -62,6 +62,31 @@ namespace Copse.CodeGen
     // an adjacent identifier character).
     private static string RewriteCommentLines(string text, string asyncClass, string syncClass)
     {
+      // Async-only prose that has no sync transcription: naming-convention sentinels,
+      // cancellation promises (the token is elided from sync signatures), and awaited-ness
+      // adjectives. Phrases may wrap across /// lines, so these run over the whole text;
+      // each phrase is comment-only vocabulary, so the global replace cannot touch code.
+      string Unwrap(string phrase) => string.Join(
+        @"\s*(?:\r?\n\s*///)?\s*",
+        System.Linq.Enumerable.Select(phrase.Split(' '), System.Text.RegularExpressions.Regex.Escape));
+      text = System.Text.RegularExpressions.Regex.Replace(text, @"\s*" + Unwrap("Awaitable -&gt; carries the <c>Async</c> suffix."), "");
+      text = System.Text.RegularExpressions.Regex.Replace(text, @"\s*" + Unwrap("No longer awaitable, so the Async suffix is gone."), "");
+      text = System.Text.RegularExpressions.Regex.Replace(text, @"\s*" + Unwrap("Cancellation is observed once per emitted visit."), "");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("lazy async sequence"), "lazy sequence");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("the awaited build"), "the build");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("the awaited construction"), "the construction");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("One awaited"), "One");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("one awaited"), "one");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("grow operations await, pulling"), "grow operations pull");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("Completes with <c>false</c>"), "Answers <c>false</c>");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("<b>async</b> "), "");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("An async tree"), "A tree");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("an async feed"), "a feed");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("an async stream"), "a stream");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("async disposal"), "disposal");
+      text = System.Text.RegularExpressions.Regex.Replace(text, @"\s*" + Unwrap("No longer awaitable, so the <c>Async</c> suffix is gone."), "");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("the async spelling of the try-pattern (<c>out</c> cannot cross an <c>await</c>)"), "the try-pattern as a result struct");
+      text = System.Text.RegularExpressions.Regex.Replace(text, Unwrap("the async analog of"), "the twin of");
       var lines = text.Split('\n');
 
       for (var index = 0; index < lines.Length; index++)

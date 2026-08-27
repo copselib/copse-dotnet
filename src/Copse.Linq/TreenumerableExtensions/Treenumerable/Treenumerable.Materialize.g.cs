@@ -18,8 +18,7 @@ namespace Copse.Linq
     /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
     /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
     /// construction is uniformly lazy; the pin is a commitment made at the earliest moment it
-    /// is free, which for this overload is the first pull). No longer awaitable, so the Async
-    /// suffix is gone. The source is enumerated AT MOST ONCE; both dimensions replay from the
+    /// is free, which for this overload is the first pull). The source is enumerated AT MOST ONCE; both dimensions replay from the
     /// one capture; an unconsumed result holds exactly what the unconsumed pipeline already
     /// held, since nothing opens before the first pull.
     ///
@@ -112,8 +111,7 @@ namespace Copse.Linq
     /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
     /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
     /// construction is uniformly lazy; the pin is a commitment made at the earliest moment it
-    /// is free, which for this overload is the first pull). No longer awaitable, so the Async
-    /// suffix is gone. The source is enumerated AT MOST ONCE; both dimensions replay from the
+    /// is free, which for this overload is the first pull). The source is enumerated AT MOST ONCE; both dimensions replay from the
     /// one capture; an unconsumed result holds exactly what the unconsumed pipeline already
     /// held, since nothing opens before the first pull.
     ///

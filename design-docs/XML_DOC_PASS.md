@@ -16,7 +16,7 @@ for the author, and not a changelog.
 
 ## Why it times to the beta exit
 
-No project sets `GenerateDocumentationFile`, so these docs do not ship to IntelliSense today.
+`GenerateDocumentationFile` is now ON for every project (src/Directory.Build.props) with CS1591 an ERROR on packable projects (src/Directory.Build.targets) -- these docs SHIP as IntelliSense.
 The moment that property goes on — a one-line change any pre-1.0 library eventually makes —
 every public doc comment becomes hover text for package consumers. **Turning it on is the
 forcing function**: run the pass first, or in the same push.

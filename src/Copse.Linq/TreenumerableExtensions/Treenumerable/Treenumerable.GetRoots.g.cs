@@ -10,9 +10,9 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// The forest's root nodes, as a lazy async sequence. Drives with PruneSubtree so each
+    /// The forest's root nodes, as a lazy sequence. Drives with PruneSubtree so each
     /// root is scheduled once and its subtree skipped. Deferred sequence -&gt; keeps the sync name (returns
-    /// <see cref="IEnumerable{TNode}"/>, the async analog of the sync <c>IEnumerable</c> result).
+    /// <see cref="IEnumerable{TNode}"/>).
     /// </summary>
     public static IEnumerable<TNode> GetRoots<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {

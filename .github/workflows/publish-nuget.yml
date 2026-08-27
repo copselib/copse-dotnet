@@ -13,8 +13,10 @@
 #     Publishing policy (the "policy creator"), NOT the org / "Package Owner" (copselib) and NOT an
 #     email. The org still owns the packages via the policy's Package Owner; NuGet/login only uses
 #     this to find the creator's policy during the OIDC token exchange.
-#   - The NuGet IDs (Copse, Copse.Core, Copse.Linq, Copse.SimpleSerializer) must be free / owned by
-#     the org, or the push fails with HTTP 409 (id/version conflict).
+#   - ALL ELEVEN NuGet IDs (Copse, Copse.Core, Copse.Core.Async, Copse.Async, Copse.Linq,
+#     Copse.Linq.Async, Copse.Linq.Traversal, Copse.Traversal, Copse.Vocabulary, Copse.Primitives,
+#     Copse.SimpleSerializer) must be free / owned by the org, or the push 409s -- and
+#     --skip-duplicate makes a partial failure look green.
 #
 # The package version is derived from the git tag by MinVer (tag "v0.1.0-alpha.1" => "0.1.0-alpha.1").
 name: Publish NuGet
@@ -22,7 +24,7 @@ name: Publish NuGet
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]*'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -61,8 +63,20 @@ jobs:
       - name: Build
         run: dotnet build src/Copse.sln -c Release --no-restore
 
+      # The publish gate: nothing ships unless the whole suite passes on this runner.
+      - name: Test
+        run: dotnet test src/Copse.sln -c Release --no-build --verbosity minimal
+
       - name: Pack
         run: dotnet pack src/Copse.sln -c Release --no-build -o ${{ github.workspace }}/artifacts
+
+      # A tag must produce packages of exactly its own version -- if MinVer silently fell back
+      # (tags not fetched, prefix mismatch), fail here rather than push a wrong version forever.
+      - name: Assert tag == package version
+        if: github.event_name == 'push'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          ls "${{ github.workspace }}/artifacts"/Copse.Linq."$TAG".nupkg
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7

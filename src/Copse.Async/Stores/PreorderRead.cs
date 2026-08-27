@@ -14,7 +14,7 @@ namespace Copse.Async.Stores
       Depth = depth;
     }
 
-    /// <summary>The node.</summary>
+    /// <summary>The read's node -- meaningful only when the wrapping option is present.</summary>
     public readonly TNode Node;
 
     /// <summary>The node's depth (roots are depth 0).</summary>

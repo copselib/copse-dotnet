@@ -6,7 +6,7 @@ namespace Copse.Linq.Treenumerators
   /// <summary>
   /// The root-to-current-node path of a depth-first <c>Where</c> traversal and all of its structural
   /// bookkeeping, isolated behind intention-revealing operations so the treenumerator that drives it
-  /// stays a thin shell. Mirrors <see cref="Copse.Treenumerators.DepthFirstPath{TNode, TChildEnumerator}"/>
+  /// stays a thin shell. Mirrors <c>DepthFirstPathState</c>
   /// for the base engine.
   ///
   /// <para><b>Sans-I/O.</b> The path NEVER touches the inner treenumerator. The two I/O concerns --

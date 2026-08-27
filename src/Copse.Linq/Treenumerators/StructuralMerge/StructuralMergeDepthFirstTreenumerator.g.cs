@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>StructuralMerge</c>: the direct-style async port of
+  /// Depth-first <c>StructuralMerge</c>: the direct-style async port of
   /// <c>Copse.Linq.Treenumerators.StructuralMergeDepthFirstTreenumerator</c>. Merges two operand
   /// trees by structural position into a <see cref="MergeNode{TLeft, TRight}"/> stream (the engine
   /// behind Union/Intersection/Subtract/SymmetricDifference). The ONLY seams are the (up to four)

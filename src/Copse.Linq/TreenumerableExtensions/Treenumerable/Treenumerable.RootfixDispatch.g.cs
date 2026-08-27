@@ -74,7 +74,7 @@ namespace Copse.Linq
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// (Tree.Lazy), and the build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
@@ -183,7 +183,7 @@ namespace Copse.Linq
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// (Tree.Lazy), and the build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
@@ -250,7 +250,7 @@ namespace Copse.Linq
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// (Tree.Lazy), and the build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
@@ -324,7 +324,7 @@ namespace Copse.Linq
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// (Tree.Lazy), and the build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
@@ -390,7 +390,7 @@ namespace Copse.Linq
     /// exists, and in a depth-first stream a parent's children are separated by entire sibling
     /// subtrees -- so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// (Tree.Lazy), and the build runs ONCE, on the first replay pull. The source is
     /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
     /// </summary>
     public static ITreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(

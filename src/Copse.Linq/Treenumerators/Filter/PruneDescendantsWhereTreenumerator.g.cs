@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>PruneDescendantsWhere</c> and the codegen source of truth for its sync twin: strip the
+  /// <c>PruneDescendantsWhere</c> and the codegen source of truth for its sync twin: strip the
   /// <c>await</c> and it becomes the synchronous driver. Forwards the inner visit stream unchanged
   /// except that a scheduled node matching the predicate keeps its own visit but sheds its subtree
   /// (<see cref="NodeTraversalStrategies.PruneDescendants"/> is added to the pull). Dimension-agnostic.

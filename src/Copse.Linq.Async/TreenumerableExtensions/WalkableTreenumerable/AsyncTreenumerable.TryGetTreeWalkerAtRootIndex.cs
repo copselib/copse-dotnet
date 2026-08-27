@@ -11,7 +11,7 @@ namespace Copse.Linq
     /// forest may have fewer roots, or none) -- the result struct is the async spelling of
     /// the try-pattern (<c>out</c> cannot cross an <c>await</c>). The name spells RootIndex
     /// because the int here is a root ordinal, not a handle -- the door that takes a handle
-    /// is <see cref="GetTreeWalkerAt{TNode, THandle}"/>, and when <c>THandle</c> is
+    /// is <see cref="GetTreeWalkerAtAsync{TNode, THandle}"/>, and when <c>THandle</c> is
     /// <c>int</c> only the names keep the two questions apart. Sugar over the door: the
     /// roots are the unfocused stance's child group, so this is one knock and one downward step,
     /// and the answer is the step family's own result shape.

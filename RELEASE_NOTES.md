@@ -14,6 +14,23 @@
   `Func<TNode, NodePosition, …>`; `NodeContext` no longer appears in public operator
   signatures. *Migration: change `ctx => f(ctx.Node)` to `node => f(node)`, and
   `ctx => f(ctx.Node, ctx.Position)` to `(node, position) => f(node, position)`.*
+- **The child-pull protocol speaks Option**: `IChildEnumerator<THandle>.MoveNext()` returns
+  `Option<HandleAndSiblingIndex<THandle>>`; the `ChildResult<T>` carrier is gone, and the
+  protocol's type parameter is the HANDLE (the navigable identity), not the surfaced node.
+  *Migration: return `new Option<HandleAndSiblingIndex<THandle>>(child)` for a child and
+  `default` past the last.*
+- **The leaffix fold family reduces pairwise**: `LeaffixAggregate`/`LeaffixScan` no longer
+  hand the node a completed `ChildAccumulations<T>` collection — the `ChildAccumulations<T>`
+  type is gone. The edge accumulator reduces child accumulations pairwise
+  (`(accumulate, childAccumulate) => …`) and the node accumulator folds the node in once.
+  *Migration: split the old collection-consuming accumulator into the pairwise edge
+  accumulator plus the node accumulator.*
+- **Async `MaterializeAsync` → `Materialize`, and it no longer awaits** — capture
+  construction is deferred to the first pull, so the async surface drops the suffix (nothing
+  is awaited at the call). The declared-layout overload's parameter retyped
+  `TreeTraversalStrategy` → `BufferLayout` (the layout is the deliverable, so the parameter
+  speaks storage vocabulary). *Migration: drop the `await` and the `Async` suffix; pass
+  `BufferLayout.Preorder`/`LevelOrder` where a strategy was passed.*
 - **Fold-family parameter convention: accumulator first, boundary selector last** (`f23e89e`).
   `LeaffixScan` / `LeaffixAggregate` overloads changed from `(leafNodeSelector, accumulator)` to
   `(accumulator, leafNodeSelector)`; `LeaffixAggregate`'s parameter renamed

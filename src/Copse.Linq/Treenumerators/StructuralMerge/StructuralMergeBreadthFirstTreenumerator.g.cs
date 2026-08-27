@@ -10,7 +10,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> <c>StructuralMerge</c>: the direct-style async port of
+  /// Breadth-first <c>StructuralMerge</c>: the direct-style async port of
   /// <c>Copse.Linq.Treenumerators.StructuralMergeBreadthFirstTreenumerator</c>. Zips the two operands'
   /// BFT visit streams into the BFT traversal of their sibling-index overlay tree (the internal engine
   /// behind Union/Intersection/Subtract/SymmetricDifference). The seams are the awaited operand pulls;

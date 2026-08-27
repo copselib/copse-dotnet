@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Copse.Stores
 {
-  // The level-order dual of PreorderCapture: one awaited breadth-first walk of any source,
+  // The level-order dual of PreorderCapture: one breadth-first walk of any source,
   // captured into a completed level-order store. The parse state is the memo buffer's single
   // monotonic front cursor (see MemoizeLevelOrderStore for the full derivation): BFT
   // visits nodes in the order they were scheduled, so the front -- advanced on each node's
@@ -22,7 +22,7 @@ namespace Copse.Stores
   public static class LevelOrderCapture
   {
     /// <summary>
-    /// Captures the source -- one awaited breadth-first walk, TraverseAll -- into a completed
+    /// Captures the source -- one breadth-first walk, TraverseAll -- into a completed
     /// <see cref="LevelOrderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>LazyLevelOrderStore</c> behind <c>Tree.Lazy</c>) to pin it
     /// to first use. Finite sources only, like every capture.

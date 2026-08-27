@@ -8,15 +8,14 @@ namespace Copse.Stores
   // Codegen source of the sync twin, Copse.Stores.IPreorderStore.
   /// <summary>
   /// The preorder store protocol: random access to a tree encoded as a preorder array, for a
-  /// store that may still be growing from an async feed. The grow operations await, pulling
+  /// store that may still be growing from a feed. The grow operations pull
   /// the underlying feed just far enough to answer (a completed capture satisfies them
   /// immediately); the reads are synchronous over already-buffered data -- callers ensure
   /// before they read.
   /// </summary>
   public interface IPreorderStore<TNode>
   {
-    /// <summary>Grows the store until the node at <paramref name="index"/> exists. Completes
-    /// with <c>false</c> when the underlying feed exhausts first (no such node).</summary>
+    /// <summary>Grows the store until the node at <paramref name="index"/> exists. Answers <c>false</c> when the underlying feed exhausts first (no such node).</summary>
     bool EnsureBuffered(int index);
 
     /// <summary>Grows the store until node <paramref name="index"/>'s subtree closes, and

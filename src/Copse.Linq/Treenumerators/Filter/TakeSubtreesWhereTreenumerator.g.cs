@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>TakeSubtreesWhere</c>'s depth-first streamer and the codegen source of truth for
+  /// <c>TakeSubtreesWhere</c>'s depth-first streamer and the codegen source of truth for
   /// its sync twin: strip the <c>await</c>s and it becomes the synchronous driver. DEPTH-FIRST
   /// ONLY, by theorem not choice: a matched subtree is one contiguous segment of the depth-first
   /// visit stream, so this wrapper is a pass-through with an in-subtree flag and O(1) state --

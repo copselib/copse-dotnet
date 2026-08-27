@@ -8,7 +8,7 @@ namespace Copse.Linq.Treenumerators
   /// The accepted-node queue of a breadth-first <c>Where</c> traversal and all of its structural
   /// bookkeeping, isolated behind intention-revealing operations so the treenumerator that drives it
   /// stays a thin shell. Mirrors <see cref="WhereDepthFirstPath{TNode}"/> for the depth-first engine
-  /// and <see cref="Copse.Treenumerators.BreadthFirstPath{TNode, TChildEnumerator}"/> for the base
+  /// and <c>BreadthFirstPathState</c> for the base
   /// engine.
   ///
   /// <para><b>Sans-I/O.</b> The path NEVER touches the inner treenumerator. The two I/O concerns --

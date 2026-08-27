@@ -10,7 +10,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> driver for the light SelectPruneDescendantsWhere tier and the codegen source of truth for
+  /// driver for the light SelectPruneDescendantsWhere tier and the codegen source of truth for
   /// its sync twin: strip the <c>await</c> and it becomes the synchronous driver. Forwards the
   /// inner visit stream with positions unchanged (the tier never relabels), publishing the
   /// composed selector's value per visit; a scheduling visit's result strategies (PruneDescendants

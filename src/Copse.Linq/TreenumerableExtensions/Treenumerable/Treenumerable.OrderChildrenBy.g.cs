@@ -30,10 +30,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -67,10 +66,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -142,10 +140,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -173,10 +170,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -238,10 +234,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -261,10 +256,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
@@ -285,10 +279,9 @@ namespace Copse.Linq
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
     /// sibling group" (Invert IS this operator, descending by source sibling index): the first
     /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
-    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// before the first result visit can be published. One depth-first walk captures flat
     /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
-    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
-    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the build runs once, on the first replay pull. The source is consumed depth-first only, so a
     /// streamed narrow source can order.</para>
     /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(

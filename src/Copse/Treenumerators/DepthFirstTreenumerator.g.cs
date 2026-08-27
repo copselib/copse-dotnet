@@ -16,7 +16,7 @@ namespace Copse.Treenumerators
   // exactly Copse.Treenumerators.DepthFirstTreenumerator -- which benchmarks at parity with
   // the hand-tuned original engine (1.02x), where an inverted cadence cost 1.61x.
   /// <summary>
-  /// The depth-first engine cursor over a hierarchical source: roots from an async stream,
+  /// The depth-first engine cursor over a hierarchical source: roots from a stream,
   /// children pulled per node through <typeparamref name="TChildEnumerator"/>. Normally
   /// constructed by <c>Treenumerable</c> rather than directly.
   /// </summary>

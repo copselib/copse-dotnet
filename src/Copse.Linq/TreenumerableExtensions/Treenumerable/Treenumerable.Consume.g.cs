@@ -14,8 +14,7 @@ namespace Copse.Linq
     /// benchmarks rely on: a buffer is walked like anything else (its inert replay touches no
     /// source), a deferred capture is forced by the walk, and a lazy buffer's capture completes
     /// as a side effect of being walked. For settling a capture with the MINIMUM work instead,
-    /// use the lazy buffer's <c>Complete()</c> or <c>Materialize</c>. Awaitable -&gt; carries
-    /// the <c>Async</c> suffix.
+    /// use the lazy buffer's <c>Complete()</c> or <c>Materialize</c>.
     /// </summary>
     public static void Consume<TNode>(
       this ITreenumerable<TNode> source)

@@ -10,8 +10,9 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// Keeps only the last <paramref name="count"/> root trees. Awaits a root count first (the source
-    /// is enumerated once to count, then again to skip), so it is a void-returning terminal-builder.
+    /// Keeps only the last <paramref name="count"/> root trees. The root count is resolved first
+    /// (the source is enumerated once to count, then again to skip), so nothing streams until
+    /// the count is known.
     /// </summary>
     public static ITreenumerable<TNode> TakeLastTrees<TNode>(
       this ITreenumerable<TNode> source,

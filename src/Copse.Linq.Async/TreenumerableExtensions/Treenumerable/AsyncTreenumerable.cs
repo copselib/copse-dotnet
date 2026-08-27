@@ -4,7 +4,7 @@ namespace Copse.Linq
 {
   /// <summary>
   /// Async LINQ-style tree operators over <see cref="IAsyncTreenumerable{TNode}"/>. Sits in the
-  /// <c>Copse.Linq</c> namespace alongside the synchronous <see cref="Treenumerable"/>, exactly as
+  /// <c>Copse.Linq</c> namespace alongside the synchronous <c>Treenumerable</c>, exactly as
   /// <c>System.Linq.AsyncEnumerable</c> sits alongside <c>Enumerable</c>: deferred operators keep their
   /// sync names (no <c>Async</c> suffix) and are overload-resolved by the async receiver type; terminal
   /// operators carry the <c>Async</c> suffix (they return an awaitable).

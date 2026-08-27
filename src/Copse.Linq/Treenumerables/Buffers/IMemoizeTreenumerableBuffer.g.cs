@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerables
     /// again.</summary>
     bool IsComplete { get; }
 
-    /// <summary>The number of nodes captured so far. Not a progress fraction: the tree.s
+    /// <summary>The number of nodes captured so far. Not a progress fraction: the tree's
     /// size is unknown until the capture completes.</summary>
     int GetBufferedCount();
 

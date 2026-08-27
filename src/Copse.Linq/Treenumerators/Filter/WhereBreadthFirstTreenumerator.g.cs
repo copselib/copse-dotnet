@@ -11,7 +11,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> <c>Where</c> and the codegen source of truth for its sync twin: strip
+  /// Breadth-first <c>Where</c> and the codegen source of truth for its sync twin: strip
   /// the single <c>await</c> on the inner pull and it becomes the sync BFT Where driver -- the library's
   /// most intricate operator (deferred parent visits, manufactured/suppressed visits, the O(1)
   /// skipped-ancestor prefix carry). All structural state lives in the shared, color-agnostic

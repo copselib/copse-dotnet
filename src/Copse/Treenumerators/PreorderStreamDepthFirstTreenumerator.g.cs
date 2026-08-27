@@ -9,18 +9,17 @@ using System.Runtime.CompilerServices;
 namespace Copse.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> treenumerator over a forward-only preorder stream, in the <b>direct
+  /// Depth-first treenumerator over a forward-only preorder stream, in the <b>direct
   /// style</b>: the natural inlined control flow (OnScheduling / OnVisiting / Backtrack /
   /// TryPushNextChild), with <c>await</c> at the one I/O seam -- the stream read in
   /// TryEnsureLookaheadAtOrAbove. O(depth) resident state (the root-to-current path plus the
   /// lookahead slot); skips are lazy discards through <see cref="IPreorderStream{TNode}"/>'s
   /// TrySkipToDepth, which reads I/O without materializing values.
-  ///
-  /// <para><b>This is the single source of truth.</b> Strip the <c>await</c>s and it collapses to
-  /// the synchronous <c>Copse.Treenumerators.PreorderStreamDepthFirstTreenumerator</c> (the checked-in
-  /// <c>.g.cs</c> twin); the struct-return read seam is what makes the async form legal (out params
-  /// cannot cross an await) at proven perf parity with the retired out-style stream.</para>
   /// </summary>
+  // The single source of truth: strip the awaits and it collapses to the synchronous
+  // Copse.Treenumerators.PreorderStreamDepthFirstTreenumerator (the checked-in .g.cs twin);
+  // the struct-return read seam is what makes the async form legal (out params cannot cross
+  // an await) at proven perf parity with the retired out-style stream.
   public sealed class PreorderStreamDepthFirstTreenumerator<TNode, TStream>
     : ITreenumerator<TNode>
     where TStream : IPreorderStream<TNode>

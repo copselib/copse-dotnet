@@ -17,7 +17,7 @@ namespace Copse
       Position = position;
     }
 
-    /// <summary>The node.</summary>
+    /// <summary>The node at this position in the tree.</summary>
     public readonly TNode Node;
 
     /// <summary>The node's position (sibling index and depth).</summary>

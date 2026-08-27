@@ -9,19 +9,19 @@ using System.Runtime.CompilerServices;
 namespace Copse.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> treenumerator over a preorder store, and the codegen source of truth
-  /// for its sync twin: strip the <c>await</c> on the store's grow calls and it becomes the
-  /// synchronous driver. The CROSS-ORDER member of the flat family's BFT pair -- a completed
+  /// Breadth-first treenumerator over a preorder store. The CROSS-ORDER member of the flat family's BFT pair -- a completed
   /// preorder capture serving the other dimension (the memo's four-case rule, case 2) -- paying the
   /// cross-order locality tax but still O(width). Grow calls are awaited so a store still capturing
-  /// from an async feed fills just in time.
+  /// from a feed fills just in time.
   /// </summary>
+  // The codegen source of truth for its sync twin: strip the await on the store's grow
+  // calls and it becomes the synchronous driver.
   public sealed class PreorderStoreBreadthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
     where TStore : IPreorderStore<TNode>
   {
     /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
-    /// the traversal'''s frontier reaches.</summary>
+    /// the traversal's frontier reaches.</summary>
     public PreorderStoreBreadthFirstTreenumerator(TStore store)
     {
       _Store = store;

@@ -17,25 +17,25 @@ namespace Copse.SimpleSerializer
     // the CancellationToken (checked once per emitted visit in the writers) is elided from it.
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), mapping each node through <paramref name="map"/> to its
-    /// serialized value. Cancellation is observed once per emitted visit.</summary>
+    /// serialized value.</summary>
     public static void SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
       => PreorderTextWriter.WritePayload(treenumerable, writer, map);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), taking each node's string as its serialized value.
-    /// Cancellation is observed once per emitted visit.</summary>
+    ///</summary>
     public static void SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> treenumerable, TextWriter writer)
       => treenumerable.SerializeDepthFirstTree(writer, node => node);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), mapping each node through <paramref name="map"/> to its
-    /// serialized value. Cancellation is observed once per emitted visit.</summary>
+    /// serialized value.</summary>
     public static void SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
       => LevelOrderTextWriter.WritePayload(treenumerable, writer, map);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), taking each node's string as its serialized value.
-    /// Cancellation is observed once per emitted visit.</summary>
+    ///</summary>
     public static void SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> treenumerable, TextWriter writer)
       => treenumerable.SerializeBreadthFirstTree(writer, node => node);
   }

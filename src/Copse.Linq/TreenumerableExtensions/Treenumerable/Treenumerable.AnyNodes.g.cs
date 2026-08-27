@@ -15,7 +15,7 @@ namespace Copse.Linq
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
     /// Value flavor primary; the positional flavor is the arity split (the Select/Where
-    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// grammar).
     /// </summary>
     public static bool AnyNodes<TNode>(
       this ITreenumerable<TNode> source,
@@ -35,7 +35,7 @@ namespace Copse.Linq
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
     /// Value flavor primary; the positional flavor is the arity split (the Select/Where
-    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// grammar).
     /// </summary>
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -47,7 +47,7 @@ namespace Copse.Linq
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
     /// Value flavor primary; the positional flavor is the arity split (the Select/Where
-    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// grammar).
     /// </summary>
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -59,7 +59,7 @@ namespace Copse.Linq
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
     /// Value flavor primary; the positional flavor is the arity split (the Select/Where
-    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// grammar).
     /// </summary>
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
@@ -71,7 +71,7 @@ namespace Copse.Linq
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
     /// Value flavor primary; the positional flavor is the arity split (the Select/Where
-    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// grammar).
     /// </summary>
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,

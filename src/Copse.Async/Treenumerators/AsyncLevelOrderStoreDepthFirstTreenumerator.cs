@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 namespace Copse.Async.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> treenumerator over a level-order store, and the codegen source of truth
-  /// for its sync twin: strip the <c>await</c> on the store's grow calls and it becomes the
-  /// synchronous driver. The CROSS-ORDER member of the flat family's DFT pair -- children come from
+  /// Depth-first treenumerator over a level-order store. The CROSS-ORDER member of the flat family's DFT pair -- children come from
   /// the store's contiguous child spans (child ordinal k is store index firstChildIndex + k) -- so
   /// descending is index chasing, O(depth). Grow calls are awaited so a store still capturing from
   /// an async feed fills just in time; GetFirstChildIndex/GetNode stay sync.
   /// </summary>
+  // The codegen source of truth for its sync twin: strip the await on the store's grow
+  // calls and it becomes the synchronous driver.
   public sealed class AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, TStore>
     : AsyncTreenumeratorBase<TNode>
     where TStore : IAsyncLevelOrderStore<TNode>
   {
     /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
-    /// the traversal'''s frontier reaches.</summary>
+    /// the traversal's frontier reaches.</summary>
     public AsyncLevelOrderStoreDepthFirstTreenumerator(TStore store)
     {
       _Store = store;

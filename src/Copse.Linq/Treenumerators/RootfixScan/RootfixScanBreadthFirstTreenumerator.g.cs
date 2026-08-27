@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
+  /// Breadth-first <c>RootfixScan</c> and the codegen source of truth for its sync twin:
   /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. The BFT cumulative
   /// scan, tracking the parent's accumulated value across the level buffers as scheduling and visiting
   /// are decoupled; all level/skip state is synchronous.

@@ -11,7 +11,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
+  /// Depth-first filter driver and the codegen source of truth for its sync twin:
   /// strip the <c>await</c>s and it becomes the sync driver. Evaluates the COMPOSED selector
   /// chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md) once per scheduled node, against the
   /// SOURCE context: an accepted result's value is published (the path stores projected

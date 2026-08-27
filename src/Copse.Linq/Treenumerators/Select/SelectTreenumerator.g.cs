@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>Select</c> and the codegen source of truth for its sync twin: maps each node's
+  /// <c>Select</c> and the codegen source of truth for its sync twin: maps each node's
   /// context with the selector, forwarding the inner (async) visit stream (mode / visit count /
   /// position) unchanged. Dimension-agnostic.
   /// </summary>

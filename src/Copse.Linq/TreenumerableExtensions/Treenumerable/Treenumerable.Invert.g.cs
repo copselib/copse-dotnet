@@ -31,9 +31,9 @@ namespace Copse.Linq
 
     /// <summary>
     /// The depth-first-only mirror cannot stream (the mirror owes the original's LAST child right
-    /// after the root), so it captures: one awaited depth-first walk into mirrored preorder
+    /// after the root), so it captures: one depth-first walk into mirrored preorder
     /// arrays. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs once, on the first replay pull, through the
+    /// (Tree.Lazy), and the build runs once, on the first replay pull, through the
     /// lazy-built store's grow seam. The O(n) is disclosed by the buffer return type.
     /// </summary>
     public static ITreenumerableBuffer<TNode> Invert<TNode>(this IDepthFirstTreenumerable<TNode> source)

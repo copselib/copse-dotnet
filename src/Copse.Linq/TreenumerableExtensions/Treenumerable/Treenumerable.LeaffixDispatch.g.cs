@@ -61,7 +61,7 @@ namespace Copse.Linq
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
+    /// (Tree.Lazy), and the build runs ONCE. The source is consumed depth-first only,
     /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
     /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
     /// build, genuinely shared.</para>
@@ -146,7 +146,7 @@ namespace Copse.Linq
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
+    /// (Tree.Lazy), and the build runs ONCE. The source is consumed depth-first only,
     /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
     /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
     /// build, genuinely shared.</para>
@@ -218,7 +218,7 @@ namespace Copse.Linq
     /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
     /// aggregate, so the source is fully consumed before the first result visit can be
     /// published. Deferred: construction is pinned to the first treenumerator acquisition
-    /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
+    /// (Tree.Lazy), and the build runs ONCE. The source is consumed depth-first only,
     /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
     /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
     /// build, genuinely shared.</para>

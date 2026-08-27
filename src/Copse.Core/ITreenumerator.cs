@@ -17,7 +17,7 @@ namespace Copse.Core
     /// <c>false</c> when the traversal is exhausted.</summary>
     bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies);
 
-    /// <summary>The current node.</summary>
+    /// <summary>The node the traversal is currently visiting (or scheduling -- see <see cref="Mode"/>).</summary>
     TNode Node { get; }
 
     /// <summary>How many times the current node has been visited so far: 0 while being

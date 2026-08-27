@@ -9,7 +9,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The tree's node values in level order (breadth-first), as a lazy async sequence.</summary>
+    /// <summary>The tree's node values in level order (breadth-first), as a lazy sequence.</summary>
     public static IEnumerable<TNode> GetLevelOrderTraversal<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       if (source == null)

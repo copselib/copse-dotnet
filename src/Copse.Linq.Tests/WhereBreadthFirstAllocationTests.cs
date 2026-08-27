@@ -7,7 +7,7 @@ namespace Copse.Linq.Tests
 {
   /// <summary>
   /// Allocation regression tests for the breadth-first <c>Where</c> operator
-  /// (<see cref="Copse.Linq.Treenumerators.WhereBreadthFirstTreenumerator{TNode}"/>).
+  /// (<c>WhereBreadthFirstTreenumerator</c>).
   ///
   /// History / what this guards: the BFT Where implementation once kept a depth-indexed
   /// <c>List&lt;int&gt;</c> (the predicate-skipped-ancestor prefix, <c>_PredSkipPrefix</c>) that

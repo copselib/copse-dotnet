@@ -9,19 +9,18 @@ using System.Runtime.CompilerServices;
 namespace Copse.Treenumerators
 {
   /// <summary>
-  /// Breadth-first <b>async</b> treenumerator over a level-order store, and the codegen source of
-  /// truth for its sync twin: strip the <c>await</c> on the store's grow calls and it becomes the
-  /// synchronous driver. Native playback for the flat family -- the visit queue's contents are
+  /// Breadth-first treenumerator over a level-order store. Native playback for the flat family -- the visit queue's contents are
   /// consecutive store indices and children become available in the order the growing store appends
-  /// them, a strictly sequential read. Grow calls are awaited so a store still capturing from an
-  /// async feed fills just in time; GetFirstChildIndex/GetNode stay sync.
+  /// them, a strictly sequential read. Grow calls are awaited so a store still capturing from a feed fills just in time; GetFirstChildIndex/GetNode stay sync.
   /// </summary>
+  // The codegen source of truth for its sync twin: strip the await on the store's grow
+  // calls and it becomes the synchronous driver.
   public sealed class LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
     where TStore : ILevelOrderStore<TNode>
   {
     /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
-    /// the traversal'''s frontier reaches.</summary>
+    /// the traversal's frontier reaches.</summary>
     public LevelOrderStoreBreadthFirstTreenumerator(TStore store)
     {
       _Store = store;

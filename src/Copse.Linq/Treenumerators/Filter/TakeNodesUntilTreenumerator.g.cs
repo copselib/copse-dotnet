@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>TakeNodesUntil</c> and the codegen source of truth for its sync twin: strip the
+  /// <c>TakeNodesUntil</c> and the codegen source of truth for its sync twin: strip the
   /// <c>await</c>s and it becomes the synchronous driver. Forwards the inner visit stream until a
   /// scheduled node matches the predicate; from there scheduling stops (the matched node's subtree
   /// and later siblings are pruned), optionally keeping the matched node itself

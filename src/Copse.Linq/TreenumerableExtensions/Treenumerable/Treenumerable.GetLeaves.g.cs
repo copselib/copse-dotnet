@@ -9,7 +9,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The tree's leaf nodes in preorder, as a lazy async sequence (depth-first dimension).</summary>
+    /// <summary>The tree's leaf nodes in preorder, as a lazy sequence (depth-first dimension).</summary>
     public static IEnumerable<TNode> GetLeaves<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       var treenumerator = source.GetDepthFirstTreenumerator();

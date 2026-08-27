@@ -9,7 +9,7 @@ namespace Copse.Linq.Extensions
   // InnerTreenumerator.ToNodeContext()/.ToNodeVisit(). The codegen renames
   // IAsyncTreenumerator -> ITreenumerator, so the generated twin's call resolves to the SYNC
   // TreenumeratorExtensions (same namespace) -- there is no generated copy of this class.
-  /// <summary>Reads of a treenumerator.s current visit as the record types.</summary>
+  /// <summary>Reads of a treenumerator's current visit as the record types.</summary>
   public static class AsyncTreenumeratorExtensions
   {
     /// <summary>The current visit as a <see cref="NodeVisit{TNode}"/> record.</summary>

@@ -354,3 +354,11 @@ paths — the archived-row mechanism handles series continuity, no epoch:
   `Dft_Triangle_AsPruneBefore` → `Dft_Triangle_AsPruneSubtreesWhere`.
 - `Traversal.Dft_Triangle_SkipAll` / `Bft_Triangle_SkipAll` →
   `…_PruneSubtreeAndSiblings` (the strategy the rows drive).
+
+### 2026-08-27 — FlatDecode reaches the dashboard and Bencher (pipeline fix, no epoch)
+
+The FlatDecode leg ran on every CI pass but its results never left the artifacts: the
+category was in the run matrix yet missing from the find-results loop, both Store steps, and
+the Bencher upload loop. Fixed — "FlatDecode Benchmarks" and "FlatDecode Memory" series
+START at this commit (there is no history to break, so no epoch; the family had no trend
+line at all). The auto-push seat moves to the FlatDecode memory store, now the last step.

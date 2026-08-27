@@ -9,8 +9,9 @@ namespace Copse.Linq
   public static partial class AsyncTreenumerable
   {
     /// <summary>
-    /// Keeps only the last <paramref name="count"/> root trees. Awaits a root count first (the source
-    /// is enumerated once to count, then again to skip), so it is a ValueTask-returning terminal-builder.
+    /// Keeps only the last <paramref name="count"/> root trees. The root count is resolved first
+    /// (the source is enumerated once to count, then again to skip), so nothing streams until
+    /// the count is known.
     /// </summary>
     public static async ValueTask<IAsyncTreenumerable<TNode>> TakeLastTreesAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,

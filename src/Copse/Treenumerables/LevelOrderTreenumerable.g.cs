@@ -10,7 +10,7 @@ namespace Copse.Treenumerables
 {
   // Codegen source of truth for the sync twin; PreorderTreenumerable's structural dual.
   /// <summary>
-  /// An async tree stored in flat level-order form. Any
+  /// A tree stored in flat level-order form. Any
   /// <see cref="ILevelOrderStore{TNode}"/> becomes a full
   /// <see cref="ITreenumerable{TNode}"/>: breadth-first traversal is native playback,
   /// depth-first rides the same store cross-order.

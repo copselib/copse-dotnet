@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Copse.Stores
 {
-  // The flat family's ENCODE direction, written once: one awaited depth-first walk of any
+  // The flat family's ENCODE direction, written once: one depth-first walk of any
   // source, captured into a completed preorder store. (The store treenumerators are the DECODE
   // direction; together they make the flat family self-contained in this layer.) This is the
   // capture loop that Invert, OrderChildrenBy, benchmarks, and tests each re-derived -- see
@@ -24,7 +24,7 @@ namespace Copse.Stores
   public static class PreorderCapture
   {
     /// <summary>
-    /// Captures the source -- one awaited depth-first walk, TraverseAll -- into a completed
+    /// Captures the source -- one depth-first walk, TraverseAll -- into a completed
     /// <see cref="PreorderArrayStore{TNode}"/>. Eager: the walk runs now; wrap the call in a
     /// deferral seam (<c>LazyPreorderStore</c> behind <c>Tree.Lazy</c>) to pin it to
     /// first use, the way the capture operators do. Finite sources only, like every capture.

@@ -8,7 +8,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>Hide</c> and the codegen source of truth for its sync twin: forwards the inner
+  /// <c>Hide</c> and the codegen source of truth for its sync twin: forwards the inner
   /// (async) visit stream unchanged. Behind the plain <see cref="ITreenumerable{TNode}"/>
   /// contract this hides the concrete source type from callers. Dimension-agnostic.
   /// </summary>

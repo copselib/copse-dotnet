@@ -10,8 +10,8 @@ namespace Copse.Treenumerables
 {
   // Codegen source of truth for the sync twin (Copse.Treenumerables.PreorderTreenumerable).
   /// <summary>
-  /// An async tree stored in flat preorder form. Any <see cref="IPreorderStore{TNode}"/>
-  /// -- a completed capture, or one still growing from an async feed -- becomes a full
+  /// A tree stored in flat preorder form. Any <see cref="IPreorderStore{TNode}"/>
+  /// -- a completed capture, or one still growing from a feed -- becomes a full
   /// <see cref="ITreenumerable{TNode}"/>: depth-first traversal is native playback,
   /// breadth-first rides the same store cross-order.
   /// </summary>

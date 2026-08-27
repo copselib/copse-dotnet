@@ -12,12 +12,6 @@ namespace Copse.Async.Treenumerators
   /// WINDOW of parsed entries, with <c>await</c> at the parse seam (ParseOneStep / AdvanceGroup).
   /// O(width) resident state.
   ///
-  /// <para><b>This is the single source of truth.</b> Strip the <c>await</c>s and it collapses to the
-  /// synchronous <c>Copse.Treenumerators.LevelOrderStreamBreadthFirstTreenumerator</c> (the checked-in
-  /// <c>.g.cs</c> twin). Two async-legality restructurings vs a naive port: the ref-typed
-  /// TryScheduleNextChildOf parameter became a bool discriminator (a ref param can't be in an async
-  /// method) and phase 3's visit-front ref is scoped before the await (a ref local can't cross it).</para>
-  ///
   /// <para><b>Locality:</b> visits publish from the FRAME (the value is carried out of the window
   /// once, at schedule time) and the current group's owner span accumulates in mirror fields
   /// flushed once per group boundary -- the per-visit and per-item paths touch no window entry.
@@ -34,6 +28,12 @@ namespace Copse.Async.Treenumerators
   /// linger for up to one capacity's worth of appends -- bounded, and the deque kept chunks
   /// resident the same way).</para>
   /// </summary>
+  // The single source of truth: strip the awaits and it collapses to the synchronous
+  // Copse.Treenumerators.LevelOrderStreamBreadthFirstTreenumerator (the checked-in .g.cs
+  // twin). Two async-legality restructurings vs a naive port: the ref-typed
+  // TryScheduleNextChildOf parameter became a bool discriminator (a ref param cannot be in
+  // an async method) and phase 3's visit-front ref is scoped before the await (a ref local
+  // cannot cross it).
   public sealed class AsyncLevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>
     : IAsyncTreenumerator<TNode>
     where TStream : IAsyncLevelOrderStream<TNode>

@@ -17,7 +17,7 @@ namespace Copse
     /// <summary>The node's handle, valid in the source that produced it.</summary>
     public readonly THandle Handle;
 
-    /// <summary>The node.</summary>
+    /// <summary>The node the handle resolves to.</summary>
     public readonly TNode Node;
 
     /// <inheritdoc/>

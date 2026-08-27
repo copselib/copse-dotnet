@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// <b>async</b> <c>Do</c> and the codegen source of truth for its sync twin: runs a side effect on
+  /// <c>Do</c> and the codegen source of truth for its sync twin: runs a side effect on
   /// every emitted visit, forwarding the inner (async) visit stream unchanged. Dimension-agnostic.
   /// </summary>
   internal sealed class DoTreenumerator<TNode> : ITreenumerator<TNode>

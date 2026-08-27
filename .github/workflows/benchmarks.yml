@@ -122,7 +122,7 @@ jobs:
       - name: Find results and create memory benchmarks
         id: find-results
         run: |
-          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures AsyncOverhead; do
+          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures FlatDecode AsyncOverhead; do
             # Find the runtime benchmark JSON file
             RESULTS_FILE=$(find src/Copse.Benchmarks/artifacts/$category/results -name "*-report-full-compressed.json" -type f | head -n 1)
             echo "${category,,}_file=$RESULTS_FILE" >> $GITHUB_OUTPUT
@@ -306,6 +306,22 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: benchmarks
 
+      - name: Store FlatDecode benchmark results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: FlatDecode Benchmarks
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ steps.find-results.outputs.flatdecode_file }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
       # Store memory benchmark results for each family
       - name: Store Traversal memory results
         if: github.ref == 'refs/heads/main'
@@ -460,6 +476,22 @@ jobs:
           tool: 'customSmallerIsBetter'
           output-file-path: src/Copse.Benchmarks/artifacts/AsyncOverhead/results/memory-benchmarks.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: false
+          skip-fetch-gh-pages: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: benchmarks
+
+      - name: Store FlatDecode memory results
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: FlatDecode Memory
+          tool: 'customSmallerIsBetter'
+          output-file-path: src/Copse.Benchmarks/artifacts/FlatDecode/results/memory-benchmarks.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           skip-fetch-gh-pages: true
           alert-threshold: '150%'
@@ -506,7 +538,7 @@ jobs:
           # never meaningful on shared runners anyway (every leg is a different machine);
           # within-family ratios (the AsyncOverhead pairs) are the trustworthy numbers, and
           # those always share a leg.
-          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures AsyncOverhead; do
+          for category in Traversal VisitStream Query Streaming Merge Buffer Aggregate Serialization DataStructures FlatDecode AsyncOverhead; do
             FILE=$(find "src/Copse.Benchmarks/artifacts/$category/results" -name "*-report-full-compressed.json" -type f | head -n 1)
             if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
               echo "::warning::No Bencher results file for $category; skipping."

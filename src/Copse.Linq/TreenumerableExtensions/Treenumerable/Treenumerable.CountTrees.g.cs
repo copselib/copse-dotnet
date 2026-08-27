@@ -10,7 +10,7 @@ namespace Copse.Linq
   {
     /// <summary>
     /// Terminal: the number of trees in the forest (root nodes) -- the count of <c>GetRoots</c>.
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountTrees<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {

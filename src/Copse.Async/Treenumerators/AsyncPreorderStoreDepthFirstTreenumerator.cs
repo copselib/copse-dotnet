@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 namespace Copse.Async.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> treenumerator over a preorder store, and the codegen source of truth
-  /// for its sync twin (Copse.Treenumerators.PreorderStoreDepthFirstTreenumerator): strip the
-  /// <c>await</c> on the store's grow calls and it becomes the synchronous driver. Native playback
+  /// Depth-first treenumerator over a preorder store. Native playback
   /// for the flat family from span arithmetic -- a node's first child is the next store index, a
   /// child's next sibling is the child's index plus its (ensured-closed) subtree size -- with the
   /// grow calls (<c>EnsureBufferedAsync</c>/<c>EnsureSubtreeClosedAsync</c>) PROBED so a store
@@ -16,12 +14,14 @@ namespace Copse.Async.Treenumerators
   /// costs no state machine at all (the fast-path probe idiom -- see AsyncToSync).
   /// GetNode/GetSubtreeSize stay sync.
   /// </summary>
+  // The codegen source of truth for its sync twin: strip the await on the store's grow
+  // calls and it becomes the synchronous driver.
   public sealed class AsyncPreorderStoreDepthFirstTreenumerator<TNode, TStore>
     : AsyncTreenumeratorBase<TNode>
     where TStore : IAsyncPreorderStore<TNode>
   {
     /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
-    /// the traversal'''s frontier reaches.</summary>
+    /// the traversal's frontier reaches.</summary>
     public AsyncPreorderStoreDepthFirstTreenumerator(TStore store)
     {
       _Store = store;

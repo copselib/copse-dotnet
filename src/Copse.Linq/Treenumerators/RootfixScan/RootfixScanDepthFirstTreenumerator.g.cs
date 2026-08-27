@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace Copse.Linq.Treenumerators
 {
   /// <summary>
-  /// Depth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:
+  /// Depth-first <c>RootfixScan</c> and the codegen source of truth for its sync twin:
   /// strip the <c>await</c> on the inner pull and it becomes the synchronous driver. A cumulative
   /// scan from the root -- each scheduled node's accumulation is the accumulator applied to its
   /// parent's accumulation -- emitting the canonical pairing; all accumulation state is

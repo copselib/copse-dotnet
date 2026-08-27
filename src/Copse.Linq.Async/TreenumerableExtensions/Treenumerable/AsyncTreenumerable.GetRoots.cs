@@ -11,7 +11,7 @@ namespace Copse.Linq
     /// <summary>
     /// The forest's root nodes, as a lazy async sequence. Drives with PruneSubtree so each
     /// root is scheduled once and its subtree skipped. Deferred sequence -&gt; keeps the sync name (returns
-    /// <see cref="IAsyncEnumerable{TNode}"/>, the async analog of the sync <c>IEnumerable</c> result).
+    /// <see cref="IAsyncEnumerable{TNode}"/>).
     /// </summary>
     public static async IAsyncEnumerable<TNode> GetRoots<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

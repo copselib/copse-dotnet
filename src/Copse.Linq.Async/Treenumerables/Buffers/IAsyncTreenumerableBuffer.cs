@@ -30,7 +30,7 @@ namespace Copse.Linq.Async.Treenumerables
   // region stays fully walkable.
   /// <summary>
   /// An owned, in-memory, re-traversable capture of a tree: the typed upgrade from a narrow
-  /// source back to the full composite, and a walkable whose handles are the capture.s flat
+  /// source back to the full composite, and a walkable whose handles are the capture's flat
   /// ordinals (handle spaces are per-capture). Deliberately not disposable -- a completed
   /// capture holds only managed arrays, so it chains freely through the fluent surface.
   /// </summary>

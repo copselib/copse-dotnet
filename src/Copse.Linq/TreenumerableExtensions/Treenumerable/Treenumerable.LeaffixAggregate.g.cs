@@ -13,8 +13,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
+    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
@@ -65,8 +64,7 @@ namespace Copse.Linq
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator);
 
     /// <summary>
-    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
+    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
@@ -98,8 +96,7 @@ namespace Copse.Linq
       => LeaffixAggregate((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
     /// <summary>
-    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
-    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
+    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
     /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
     /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
     /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed

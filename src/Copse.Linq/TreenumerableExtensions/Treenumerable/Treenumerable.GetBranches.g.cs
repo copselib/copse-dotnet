@@ -11,7 +11,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The tree's root-to-leaf paths (each as a node array), as a lazy async sequence.</summary>
+    /// <summary>The tree's root-to-leaf paths (each as a node array), as a lazy sequence.</summary>
     public static IEnumerable<TNode[]> GetBranches<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       var branch = new List<NodeContext<TNode>>();

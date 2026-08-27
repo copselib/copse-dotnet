@@ -46,7 +46,7 @@ namespace Copse.Disposables
   }
 
   /// <summary>
-  /// Represents a Action-based disposable that can hold onto some state.
+  /// Represents an Action-based disposable that can hold onto some state.
   /// </summary>
   internal sealed class AnonymousDisposable<TState> : ICancelable
   {

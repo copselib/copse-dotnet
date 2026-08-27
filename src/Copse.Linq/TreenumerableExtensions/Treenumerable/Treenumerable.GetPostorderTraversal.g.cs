@@ -9,7 +9,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The tree's node values in postorder (children before their parent), as a lazy async sequence.</summary>
+    /// <summary>The tree's node values in postorder (children before their parent), as a lazy sequence.</summary>
     public static IEnumerable<TNode> GetPostorderTraversal<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
       if (source == null)

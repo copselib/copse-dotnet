@@ -9,7 +9,7 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    /// <summary>The tree's nodes grouped by depth (one array per level), as a lazy async sequence.</summary>
+    /// <summary>The tree's nodes grouped by depth (one array per level), as a lazy sequence.</summary>
     public static IEnumerable<TNode[]> GetLevels<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       var depth = 0;

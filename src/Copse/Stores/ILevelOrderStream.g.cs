@@ -23,7 +23,7 @@ namespace Copse.Stores
     int SkipGroupRemainder();
 
     /// <summary>Advances to the start of the next group; the current group must already be
-    /// finished. Completes with <c>false</c> when the stream is exhausted.</summary>
+    /// finished. Answers <c>false</c> when the stream is exhausted.</summary>
     bool TryMoveToNextGroup();
   }
 }

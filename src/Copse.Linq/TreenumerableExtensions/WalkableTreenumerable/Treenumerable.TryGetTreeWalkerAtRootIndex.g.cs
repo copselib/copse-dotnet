@@ -10,8 +10,7 @@ namespace Copse.Linq
     /// <summary>
     /// The root door: a walker standing at root <paramref name="rootIndex"/>, or an empty
     /// result past the last root. TryGet by the Try law: the miss is expected and TYPED (a
-    /// forest may have fewer roots, or none) -- the result struct is the async spelling of
-    /// the try-pattern (<c>out</c> cannot cross an <c>await</c>). The name spells RootIndex
+    /// forest may have fewer roots, or none) -- the result struct is the try-pattern as a result struct. The name spells RootIndex
     /// because the int here is a root ordinal, not a handle -- the door that takes a handle
     /// is <see cref="GetTreeWalkerAt{TNode, THandle}"/>, and when <c>THandle</c> is
     /// <c>int</c> only the names keep the two questions apart. Sugar over the door: the

@@ -13,7 +13,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(this ITreenumerable<TNode> source)
       => CountNodesCore(source, _ => true, default);
@@ -22,7 +22,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(
       this ITreenumerable<TNode> source,
@@ -41,7 +41,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(this IDepthFirstTreenumerable<TNode> source)
       => CountNodesCore(source, _ => true);
@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -61,7 +61,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -72,7 +72,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(this IBreadthFirstTreenumerable<TNode> source)
       => CountNodesCore(source, _ => true);
@@ -81,7 +81,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
@@ -92,7 +92,7 @@ namespace Copse.Linq
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
     /// arity split (the Select/Where grammar).
-    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    ///
     /// </summary>
     public static int CountNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,

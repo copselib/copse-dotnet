@@ -20,7 +20,7 @@ namespace Copse.Treenumerators
   // access (semantically identical -- Front returns a ref to the same slot). This is the one
   // restructuring the async port imposes on the engines.
   /// <summary>
-  /// The breadth-first engine cursor over a hierarchical source: roots from an async stream,
+  /// The breadth-first engine cursor over a hierarchical source: roots from a stream,
   /// children pulled per node through <typeparamref name="TChildEnumerator"/>. Normally
   /// constructed by <c>Treenumerable</c> rather than directly.
   /// </summary>
