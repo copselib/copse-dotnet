@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787795457416,
+  "lastUpdate": 1787795458098,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -239377,6 +239377,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
             "value": 1705,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ced8bc5b83dfdff213e8202c638a64f8aec9a306",
+          "message": "The node accessors say node: GetValue -> GetNode across topology, walker, and store SPIs\n\nThe accessor tier was the last value-speak in the tree surface -- a fossil of the\nTValue era surviving the TNode ruling by a role-word carve-out drawn to bound the\nsweep, not on merits. The store SPIs settled it: they already speak fluent tree\neverywhere else (EnsureSubtreeClosed, GetSubtreeSize, EnsureRootAvailable,\nGetFirstChildIndex); there is no value-speaking tier in this library.\n\nRenames (async sources + codegen'd sync twins; BREAKING, release-noted):\n- ITreeTopology.GetValue -> GetNode / IAsyncTreeTopology.GetValueAsync -> GetNodeAsync\n- TreeWalker.GetValue/TryGetValue -> GetNode/TryGetNode (async twins likewise;\n  unfocused-throw helper and message follow)\n- IPreorderStore/ILevelOrderStore.GetValue(index) -> GetNode(index) (all\n  implementations: array, lazy, memoize, serializer string stores -- whose\n  _Values fields follow to _Nodes)\n- GetHandlesWithValues -> GetHandlesWithNodes (file + generator manifest renamed;\n  now agrees with its HandleAndNode element type)\n\nKept, per the container line: Option.Value/TryGetValue, TreeWalkerResult.Value/\nHasValue/TryGetValue (it holds a walker), AsyncValueTokenStreamScanner.GetValue\n(returns the token's text). OPERATOR_SURFACE_MAP rows updated in this commit.\nSuite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T01:30:53Z",
+          "tree_id": "5649108018eb23087934d5f3b67d736b7e6517bc",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ced8bc5b83dfdff213e8202c638a64f8aec9a306"
+        },
+        "date": 1787795457951,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 53908,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 136345,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 217656,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 889765,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 67151736,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 3168,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 1242,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 1682,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 58745296,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 54994608,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 1242,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 1682,
             "unit": "bytes"
           }
         ]
