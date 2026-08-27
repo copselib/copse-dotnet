@@ -1,6 +1,7 @@
+using Copse.Linq.Treenumerables;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   /// <summary>
   /// The PUBLIC projection citizenship, capture tier

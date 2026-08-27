@@ -1,7 +1,8 @@
+using Copse.Linq.Treenumerables;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   // A buffer still backed by a LIVE source feed: the lazily-growing capture Memoize returns.
   // It holds inner treenumerators paused mid-traversal over the source (the captured data

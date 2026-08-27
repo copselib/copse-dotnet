@@ -371,28 +371,28 @@ namespace Copse.CodeGen
       // public contracts; closure is enforced by the ComposeSelect return types.
       new("Copse.Linq.Async/Treenumerables/IAsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/ISelectTreenumerable.g.cs",
-        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq.Treenumerables"),
+        "IAsyncSelectTreenumerable", "ISelectTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/IAsyncPruneDescendantsWhereTreenumerable.cs",
         "Copse.Linq/Treenumerables/IPruneDescendantsWhereTreenumerable.g.cs",
-        "IAsyncPruneDescendantsWhereTreenumerable", "IPruneDescendantsWhereTreenumerable", "Copse.Linq.Treenumerables"),
+        "IAsyncPruneDescendantsWhereTreenumerable", "IPruneDescendantsWhereTreenumerable", "Copse.Linq"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncSelectTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ISelectTreenumerableBuffer.g.cs",
-        "IAsyncSelectTreenumerableBuffer", "ISelectTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+        "IAsyncSelectTreenumerableBuffer", "ISelectTreenumerableBuffer", "Copse.Linq"),
       new("Copse.Linq.Async/Treenumerables/Select/IAsyncProjectionSource.cs",
         "Copse.Linq/Treenumerables/Select/IProjectionSource.g.cs",
         "IAsyncProjectionSource", "IProjectionSource", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Select/AsyncSelectTreenumerable.CaptureThrough.cs",
         "Copse.Linq/Treenumerables/Select/SelectTreenumerable.CaptureThrough.g.cs",
-        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/Select/AsyncSelectTreenumerable.Citizenship.cs",
         "Copse.Linq/Treenumerables/Select/SelectTreenumerable.Citizenship.g.cs",
-        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/PruneDescendantsWhere/AsyncPruneDescendantsWhereTreenumerable.Citizenship.cs",
         "Copse.Linq/Treenumerables/PruneDescendantsWhere/PruneDescendantsWhereTreenumerable.Citizenship.g.cs",
-        "AsyncPruneDescendantsWhereTreenumerable", "PruneDescendantsWhereTreenumerable", "Copse.Linq.Treenumerables"),
+        "AsyncPruneDescendantsWhereTreenumerable", "PruneDescendantsWhereTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/SelectPruneDescendantsWhere/AsyncSelectPruneDescendantsWhereTreenumerable.Citizenship.cs",
         "Copse.Linq/Treenumerables/SelectPruneDescendantsWhere/SelectPruneDescendantsWhereTreenumerable.Citizenship.g.cs",
@@ -412,10 +412,10 @@ namespace Copse.CodeGen
         "AsyncTakeSubtreesWhereProductTreenumerable", "TakeSubtreesWhereProductTreenumerable", "Copse.Linq.Treenumerables"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/ITreenumerableBuffer.g.cs",
-        "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq.Treenumerables"),
+        "IAsyncTreenumerableBuffer", "ITreenumerableBuffer", "Copse.Linq"),
       new("Copse.Linq.Async/Treenumerables/Buffers/IAsyncMemoizeTreenumerableBuffer.cs",
         "Copse.Linq/Treenumerables/Buffers/IMemoizeTreenumerableBuffer.g.cs",
-        "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq.Treenumerables"),
+        "IAsyncMemoizeTreenumerableBuffer", "IMemoizeTreenumerableBuffer", "Copse.Linq"),
       // The adjacency engines (the buffer re-parent, WALKABLE_CONTRACT_DESIGN.md step 2),
       // two citizens per layout since the 2026-08-16 split: the *AdjacencyIndex scans serve
       // GROWING stores incrementally; the *ArrayTopology engines serve COMPLETED array
@@ -543,7 +543,7 @@ namespace Copse.CodeGen
 
       new("Copse.Linq.Async/Treenumerables/PruneDescendantsWhere/AsyncPruneDescendantsWhereTreenumerable.cs",
         "Copse.Linq/Treenumerables/PruneDescendantsWhere/PruneDescendantsWhereTreenumerable.g.cs",
-        "AsyncPruneDescendantsWhereTreenumerable", "PruneDescendantsWhereTreenumerable", "Copse.Linq.Treenumerables"),
+        "AsyncPruneDescendantsWhereTreenumerable", "PruneDescendantsWhereTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/ResultSelectors/AsyncPositionalPruneSubtreesWhereResultSelector.cs",
         "Copse.Linq/Treenumerables/SelectWhere/ResultSelectors/PositionalPruneSubtreesWhereResultSelector.g.cs",
@@ -567,7 +567,7 @@ namespace Copse.CodeGen
 
       new("Copse.Linq.Async/Treenumerables/Select/AsyncSelectTreenumerable.cs",
         "Copse.Linq/Treenumerables/Select/SelectTreenumerable.g.cs",
-        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq.Treenumerables"),
+        "AsyncSelectTreenumerable", "SelectTreenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/Treenumerables/SelectWhere/AsyncSelectWhereComposition.cs",
         "Copse.Linq/Treenumerables/SelectWhere/SelectWhereComposition.g.cs",

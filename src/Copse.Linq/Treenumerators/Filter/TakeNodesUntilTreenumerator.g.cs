@@ -4,7 +4,6 @@
 // </auto-generated>
 using Copse;
 using Copse.Core;
-using Copse.Linq.Extensions;
 using System;
 
 namespace Copse.Linq.Treenumerators

@@ -1,4 +1,4 @@
-﻿namespace Copse.Linq.Treenumerators
+﻿namespace Copse.Linq
 {
   // A variant, not a pair of options: options over the sides would admit (none, none) -- a
   // node from neither tree, which no merge produces -- and would lose HasLeftAndRight, the

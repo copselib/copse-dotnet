@@ -1,7 +1,7 @@
 ﻿using Copse.Core;
 using System.Runtime.CompilerServices;
 
-namespace Copse.Linq.Extensions
+namespace Copse.Linq
 {
   /// <summary>Reads of a treenumerator's current visit as the record types.</summary>
   public static class TreenumeratorExtensions

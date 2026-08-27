@@ -2,9 +2,10 @@
 //   Generated from IAsyncMemoizeTreenumerableBuffer.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   // A buffer still backed by a LIVE source feed: the lazily-growing capture Memoize returns.
   // It holds inner treenumerators paused mid-traversal over the source (the captured data

@@ -1,9 +1,10 @@
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Treenumerators;
 using Copse.Core;
 using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   /// <summary>
   /// The canonical prune-after treenumerable: a source and a predicate; each matching node

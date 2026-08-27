@@ -1,7 +1,7 @@
 using Copse.Core;
 using System.Runtime.CompilerServices;
 
-namespace Copse.Linq.Extensions
+namespace Copse.Linq
 {
   // Async twin of TreenumeratorExtensions (a hand-written support pair, like the base/wrapper):
   // it exists so async operator sources can mirror the sync ones by calling

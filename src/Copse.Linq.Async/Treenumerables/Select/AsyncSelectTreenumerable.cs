@@ -1,9 +1,10 @@
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Treenumerators;
 using Copse.Core;
 using Copse.Linq;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   /// <summary>
   /// The canonical projection treenumerable: a source and a value selector, applied per

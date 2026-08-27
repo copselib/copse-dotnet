@@ -1,4 +1,5 @@
-namespace Copse.Linq.Treenumerables
+using Copse.Linq.Treenumerables;
+namespace Copse.Linq
 {
   // The projection wrapper's half of the compose-left door -- a PARTIAL part, deliberately
   // outside the CompositeToNarrow fan-out (the narrow twins do not claim the door: their

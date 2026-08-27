@@ -147,6 +147,17 @@
   `Copse` namespace: they are core contracts, and their namespace now agrees with the
   package that ships them. *Migration: add `using Copse.Core;` where these types are
   named.*
+- **All public operator-tier types now live in namespace `Copse.Linq`** — one
+  `using Copse.Linq;` surfaces the entire operator tier. The buffer contracts
+  (`ITreenumerableBuffer`, `IMemoizeTreenumerableBuffer`, `ISelectTreenumerableBuffer`),
+  the composition citizenship (`ISelectTreenumerable`, `IPruneDescendantsWhereTreenumerable`
+  and the citizen classes), the set-operation element `MergeNode`, and the extension classes
+  formerly in `Copse.Linq.Extensions` (`TreenumeratorExtensions`, `NodeVisitExtensions`)
+  all promote out of the machinery namespaces; `Copse.Linq.Extensions` is retired, and the
+  machinery namespaces (`Copse.Linq.Treenumerables`/`Treenumerators`/`Stores`/`Topologies`)
+  now hold internals only. Async twins mirror throughout. *Migration: replace
+  `using Copse.Linq.Treenumerables;` / `using Copse.Linq.Extensions;` with
+  `using Copse.Linq;` where these types and extensions are named.*
 - **`NodeVisit<TNode>` moves to the `Copse.Linq` package, namespace `Copse.Linq`** — no
   core contract names it; it is the traversal-projection row the operator tier deals in
   (`GetTraversal`/`Do` and the scan machinery), so it lives beside that algebra.

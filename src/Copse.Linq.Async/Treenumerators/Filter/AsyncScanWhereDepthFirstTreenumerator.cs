@@ -1,7 +1,6 @@
 using Copse;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
-using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
 using System.Collections.Generic;

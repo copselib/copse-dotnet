@@ -2,10 +2,11 @@
 //   Generated from IAsyncTreenumerableBuffer.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 using Copse.Core;
 using Copse;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   // An owned, in-memory, re-traversable capture of a tree: a full treenumerable (both
   // dimensions available, random access) whose backing storage it owns. This is the

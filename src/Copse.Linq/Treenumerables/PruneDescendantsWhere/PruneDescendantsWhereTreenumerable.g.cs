@@ -2,12 +2,13 @@
 //   Generated from AsyncPruneDescendantsWhereTreenumerable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Treenumerators;
 using Copse.Core;
 using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   /// <summary>
   /// The canonical prune-after treenumerable: a source and a predicate; each matching node

@@ -1,6 +1,5 @@
 using Copse.Linq.Stores;
 using Copse.Core;
-using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading;

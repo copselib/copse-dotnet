@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Copse.Linq.Extensions
+namespace Copse.Linq
 {
   internal static class ListExtensions
   {

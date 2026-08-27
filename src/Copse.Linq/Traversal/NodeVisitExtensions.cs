@@ -1,6 +1,6 @@
 ﻿using Copse.Core;
 
-namespace Copse.Linq.Extensions
+namespace Copse.Linq
 {
   /// <summary>Helpers for reshaping <see cref="NodeVisit{TNode}"/> values.</summary>
   public static class NodeVisitExtensions

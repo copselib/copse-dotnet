@@ -2,9 +2,10 @@
 //   Generated from AsyncSelectTreenumerable.Citizenship.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 using System;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq
 {
   // The public doors (PUBLIC_COMPOSITION_SURFACE_DESIGN.md), in their own partial part
   // because the CompositeToNarrow fan-out is file-granular and the narrow twins must not
