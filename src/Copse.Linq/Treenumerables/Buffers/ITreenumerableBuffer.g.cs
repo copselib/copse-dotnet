@@ -32,12 +32,17 @@ namespace Copse.Linq.Treenumerables
   // force (parents precede children in both layouts). A step that must pull past a retired
   // feed gets ObjectDisposedException, the same rule replays already live by; the buffered
   // region stays fully walkable.
+  /// <summary>
+  /// An owned, in-memory, re-traversable capture of a tree: the typed upgrade from a narrow
+  /// source back to the full composite, and a walkable whose handles are the capture.s flat
+  /// ordinals (handle spaces are per-capture). Deliberately not disposable -- a completed
+  /// capture holds only managed arrays, so it chains freely through the fluent surface.
+  /// </summary>
   public interface ITreenumerableBuffer<TNode> : IWalkableTreenumerable<TNode, int>
   {
-    // The storage encoding this capture holds natively -- a capture knows its shape. Null
-    // only while a deferred, dimension-dispatched build has not yet decided (the layout is
-    // then pinned by the first pull). Materialize's layout guarantee reuses a compliant
-    // buffer and transposes a mismatched (or undecided) one.
+    /// <summary>The storage encoding this capture holds natively. Null only while a
+    /// deferred, dimension-dispatched build has not yet decided -- the layout is then pinned
+    /// by the first pull.</summary>
     BufferLayout? NativeLayout { get; }
   }
 }

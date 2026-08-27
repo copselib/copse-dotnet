@@ -96,6 +96,64 @@ namespace Copse.Linq
       Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch(source, (TNode node, NodePosition _) => leafNodeSelector(node), survey);
 
+    /// <summary>
+    /// The sibling-complete tier of the leaffix pair: every node's accumulation comes from
+    /// <paramref name="survey"/>, which sees the node together with ALL of its children at
+    /// once through the no-copy <see cref="DispatchSources{TNode, TAccumulate}"/> view: one
+    /// READ-handle per child carrying its context and completed accumulation --
+    /// <c>DispatchTargets</c>' dual (design-docs/SCANRESULT_DESIGN.md), with the same honestly-O(1)
+    /// Count and indexer off the builds' shared child-index. Sibling-complete visibility is
+    /// the point -- median of children, top-k, anything that must compare children to each
+    /// other; a fold that only needs one child at a time belongs to LeaffixScan (sugar over
+    /// this operator).
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here, after its
+    /// children complete -- so every child's survey precedes its parent's, and each view's
+    /// sibling order is guaranteed. The TOTAL cross-node sequence is deliberately UNSPECIFIED
+    /// (a pure callback cannot observe it, and pinning it would foreclose parallel builds):
+    /// do not depend on the current reverse-preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (boundary-shape-follows-tier-shape): leaves are not a special
+    /// case -- the internal pass surveys EVERY node, a leaf's sources view simply EMPTY. The
+    /// public surface leads with the leafNodeSelector flavors, whose selector wraps the survey
+    /// with a leaf branch (<c>sources.Count == 0 ? boundary : survey</c>); there is no
+    /// survey-only flavor, because TAccumulate would appear only inside the lambda and
+    /// inference would always fail -- the type-fixer-first grammar, enforced by the compiler
+    /// itself. Formula-shaped fringes belong to LeaffixScan's dual fold.</para>
+    ///
+    /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR): a seed is the value that
+    /// PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
+    /// surveyed -- and upward flow has no pre-fringe channel for one to enter through; the
+    /// leaffix survey has no arrival seat. A seed exists only where the flow has an entry
+    /// channel for it; where values are set directly, the instrument is a SELECTOR. So the
+    /// leaffix boundary is selector-only on BOTH tiers (THE VIRTUAL-ROOT RULE,
+    /// design-docs/SCANRESULT_DESIGN.md: seeds belong to the virtual forest root, the family's
+    /// one tree-lawful virtual node).</para>
+    ///
+    /// <para>VALUE-flavored: the survey receives the node's VALUE; the leaf boundary is
+    /// arity-split (value selector | positional selector). Returns the CANONICAL PAIRING: a
+    /// buffer of <see cref="NodeAccumulation{TNode, TAccumulate}"/>s in the source tree's
+    /// shape -- it DECORATES rather than replaces; project <c>.Accumulate</c> for values. For
+    /// mutable nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
+    /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
+    /// visit.Node.Accumulate; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
+    /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
+    /// aggregate, so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
+    /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
+    /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
+    /// build, genuinely shared.</para>
+    ///
+    /// <para>This overload is the per-leaf seeding form: sugar wrapping <paramref name="survey"/>
+    /// with a leaf branch -- every leaf's accumulation comes from
+    /// <paramref name="leafNodeSelector"/>, the fringe answering for itself, mirroring rootfix's
+    /// rootNodeSelector at the other end of the tree.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
@@ -110,6 +168,64 @@ namespace Copse.Linq
       Func<TNode, DispatchSources<TNode, TAccumulate>, TAccumulate> survey)
       => LeaffixDispatch((IAsyncDepthFirstTreenumerable<TNode>)source, leafNodeSelector, survey);
 
+    /// <summary>
+    /// The sibling-complete tier of the leaffix pair: every node's accumulation comes from
+    /// <paramref name="survey"/>, which sees the node together with ALL of its children at
+    /// once through the no-copy <see cref="DispatchSources{TNode, TAccumulate}"/> view: one
+    /// READ-handle per child carrying its context and completed accumulation --
+    /// <c>DispatchTargets</c>' dual (design-docs/SCANRESULT_DESIGN.md), with the same honestly-O(1)
+    /// Count and indexer off the builds' shared child-index. Sibling-complete visibility is
+    /// the point -- median of children, top-k, anything that must compare children to each
+    /// other; a fold that only needs one child at a time belongs to LeaffixScan (sugar over
+    /// this operator).
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here, after its
+    /// children complete -- so every child's survey precedes its parent's, and each view's
+    /// sibling order is guaranteed. The TOTAL cross-node sequence is deliberately UNSPECIFIED
+    /// (a pure callback cannot observe it, and pinning it would foreclose parallel builds):
+    /// do not depend on the current reverse-preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (boundary-shape-follows-tier-shape): leaves are not a special
+    /// case -- the internal pass surveys EVERY node, a leaf's sources view simply EMPTY. The
+    /// public surface leads with the leafNodeSelector flavors, whose selector wraps the survey
+    /// with a leaf branch (<c>sources.Count == 0 ? boundary : survey</c>); there is no
+    /// survey-only flavor, because TAccumulate would appear only inside the lambda and
+    /// inference would always fail -- the type-fixer-first grammar, enforced by the compiler
+    /// itself. Formula-shaped fringes belong to LeaffixScan's dual fold.</para>
+    ///
+    /// <para>THERE IS NO SEED FLAVOR HERE (THE NORTH STAR): a seed is the value that
+    /// PARTICIPATES through the tier's callback -- the virtual root's arrival, folded or
+    /// surveyed -- and upward flow has no pre-fringe channel for one to enter through; the
+    /// leaffix survey has no arrival seat. A seed exists only where the flow has an entry
+    /// channel for it; where values are set directly, the instrument is a SELECTOR. So the
+    /// leaffix boundary is selector-only on BOTH tiers (THE VIRTUAL-ROOT RULE,
+    /// design-docs/SCANRESULT_DESIGN.md: seeds belong to the virtual forest root, the family's
+    /// one tree-lawful virtual node).</para>
+    ///
+    /// <para>VALUE-flavored: the survey receives the node's VALUE; the leaf boundary is
+    /// arity-split (value selector | positional selector). Returns the CANONICAL PAIRING: a
+    /// buffer of <see cref="NodeAccumulation{TNode, TAccumulate}"/>s in the source tree's
+    /// shape -- it DECORATES rather than replaces; project <c>.Accumulate</c> for values. For
+    /// mutable nodes, LAND the accumulations with the composed effect idiom -- <c>.Do(visit =&gt; {
+    /// if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Total =
+    /// visit.Node.Accumulate; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because the pass
+    /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
+    /// aggregate, so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE. The source is consumed depth-first only,
+    /// so a streamed narrow source can leaffix. Build shape: one raw capture, the shared
+    /// child-index, then a reverse-preorder fold -- the same passes as the rootfix dispatch
+    /// build, genuinely shared.</para>
+    ///
+    /// <para>This overload is the per-leaf seeding form: sugar wrapping <paramref name="survey"/>
+    /// with a leaf branch -- every leaf's accumulation comes from
+    /// <paramref name="leafNodeSelector"/>, the fringe answering for itself, mirroring rootfix's
+    /// rootNodeSelector at the other end of the tree.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixDispatch<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,

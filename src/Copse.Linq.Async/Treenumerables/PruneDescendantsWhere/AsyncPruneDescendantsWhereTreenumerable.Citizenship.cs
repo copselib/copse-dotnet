@@ -8,12 +8,14 @@ namespace Copse.Linq.Async.Treenumerables
   // flavors of this wrapper's in-tier arrows.
   partial class AsyncPruneDescendantsWhereTreenumerable<TNode>
   {
+    /// <inheritdoc/>
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TNode, TOuterResult> selector)
     {
       return new AsyncSelectPruneDescendantsWhereTreenumerable<TNode, TOuterResult>(
         _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, nodeContext => selector(nodeContext.Node)));
     }
 
+    /// <inheritdoc/>
     public IAsyncPruneDescendantsWhereTreenumerable<TNode> ComposePruneDescendantsWhere(Func<TNode, bool> predicate)
     {
       return new AsyncPruneDescendantsWhereTreenumerable<TNode>(

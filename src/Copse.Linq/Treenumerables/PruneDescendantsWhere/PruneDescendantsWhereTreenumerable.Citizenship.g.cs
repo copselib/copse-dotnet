@@ -12,12 +12,14 @@ namespace Copse.Linq.Treenumerables
   // flavors of this wrapper's in-tier arrows.
   partial class PruneDescendantsWhereTreenumerable<TNode>
   {
+    /// <inheritdoc/>
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TNode, TOuterResult> selector)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TNode, TOuterResult>(
         _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, nodeContext => selector(nodeContext.Node)));
     }
 
+    /// <inheritdoc/>
     public IPruneDescendantsWhereTreenumerable<TNode> ComposePruneDescendantsWhere(Func<TNode, bool> predicate)
     {
       return new PruneDescendantsWhereTreenumerable<TNode>(

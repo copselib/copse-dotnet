@@ -30,24 +30,48 @@ namespace Copse.Linq
       bool keepFinalNode)
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
+    /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
+    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
+    /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
+    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       bool keepFinalNode)
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
+    /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
+    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
       => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
+    /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
+    /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
+    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,

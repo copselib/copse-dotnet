@@ -18,6 +18,9 @@ namespace Copse.Linq
         .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
     }
 
+    /// <summary>
+    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this IAsyncDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncDepthFirstTreenumerable<TRight> rightTreenumerable)
@@ -25,6 +28,9 @@ namespace Copse.Linq
         .Union(rightTreenumerable)
         .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
 
+    /// <summary>
+    /// Async <c>Intersection</c>: the merge pruned to the subtrees present on BOTH sides. Deferred.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this IAsyncBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncBreadthFirstTreenumerable<TRight> rightTreenumerable)

@@ -51,6 +51,10 @@ namespace Copse.Linq
         source, new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSubtreesWhere</c> over node VALUES (prune polarity: true = prune): removes each
+    /// matching node AND its whole subtree. Deferred.
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> PruneSubtreesWhere<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -73,6 +77,10 @@ namespace Copse.Linq
         source, new PruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSubtreesWhere</c> over (node, position) (prune polarity: true = prune). Deferred.
+    /// Each positional predicate sees ITS input tree's labels.
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> PruneSubtreesWhere<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
@@ -94,6 +102,10 @@ namespace Copse.Linq
         source, new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSubtreesWhere</c> over node VALUES (prune polarity: true = prune): removes each
+    /// matching node AND its whole subtree. Deferred.
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> PruneSubtreesWhere<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -113,6 +125,10 @@ namespace Copse.Linq
         source, new PruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSubtreesWhere</c> over (node, position) (prune polarity: true = prune). Deferred.
+    /// Each positional predicate sees ITS input tree's labels.
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> PruneSubtreesWhere<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

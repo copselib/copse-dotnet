@@ -11,11 +11,13 @@ namespace Copse.Linq
       int count)
       => source.PruneSubtreesWhere((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
+    /// <summary>Drops the first <paramref name="count"/> root trees (prunes them before their first visit). Deferred.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> SkipTrees<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       int count)
       => source.PruneSubtreesWhere((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
+    /// <summary>Drops the first <paramref name="count"/> root trees (prunes them before their first visit). Deferred.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> SkipTrees<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       int count)

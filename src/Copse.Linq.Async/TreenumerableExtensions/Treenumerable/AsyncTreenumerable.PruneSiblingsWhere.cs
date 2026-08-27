@@ -49,6 +49,11 @@ namespace Copse.Linq
         source, new PositionalPruneSiblingsWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
+    /// matching node stays -- visits, descendants, and position untouched -- and its later
+    /// siblings are removed. Deferred.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -71,6 +76,10 @@ namespace Copse.Linq
         source, new PruneSiblingsWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
+    /// Deferred. Each positional predicate sees ITS input tree's labels.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
@@ -92,6 +101,11 @@ namespace Copse.Linq
         source, new PositionalPruneSiblingsWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSiblingsWhere</c> over node VALUES (prune polarity: true = prune): each
+    /// matching node stays -- visits, descendants, and position untouched -- and its later
+    /// siblings are removed. Deferred.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -111,6 +125,10 @@ namespace Copse.Linq
         source, new PruneSiblingsWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>PruneSiblingsWhere</c> over (node, position) (prune polarity: true = prune).
+    /// Deferred. Each positional predicate sees ITS input tree's labels.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> PruneSiblingsWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

@@ -56,6 +56,25 @@ namespace Copse.Linq
       => new TreenumerableBuffer<TNode>(
         Tree.Lazy(() => PreorderOrderChildren(source, nodeContext => keySelector(nodeContext.Node), comparer, descending: false)), BufferLayout.Preorder);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,
@@ -72,6 +91,10 @@ namespace Copse.Linq
       Func<TNode, TKey> keySelector)
       => source.OrderChildrenByDescending(keySelector, Comparer<TKey>.Default);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector)
@@ -85,6 +108,10 @@ namespace Copse.Linq
       => new TreenumerableBuffer<TNode>(
         Tree.Lazy(() => PreorderOrderChildren(source, nodeContext => keySelector(nodeContext.Node), comparer, descending: true)), BufferLayout.Preorder);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,
@@ -105,6 +132,25 @@ namespace Copse.Linq
       Func<TNode, TKey> keySelector)
       => source.OrderChildrenBy(keySelector, Comparer<TKey>.Default);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector)
@@ -118,6 +164,25 @@ namespace Copse.Linq
       => new TreenumerableBuffer<TNode>(
         Tree.Lazy(() => LevelOrderOrderChildrenBreadthFirstSource(source, nodeContext => keySelector(nodeContext.Node), comparer, descending: false)), BufferLayout.LevelOrder);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,
@@ -131,6 +196,10 @@ namespace Copse.Linq
       Func<TNode, TKey> keySelector)
       => source.OrderChildrenByDescending(keySelector, Comparer<TKey>.Default);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector)
@@ -144,6 +213,10 @@ namespace Copse.Linq
       => new TreenumerableBuffer<TNode>(
         Tree.Lazy(() => LevelOrderOrderChildrenBreadthFirstSource(source, nodeContext => keySelector(nodeContext.Node), comparer, descending: true)), BufferLayout.LevelOrder);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,
@@ -157,39 +230,112 @@ namespace Copse.Linq
       Func<TNode, TKey> keySelector)
       => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector)
       => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, TKey> keySelector,
       IComparer<TKey> comparer)
       => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
 
+    /// <summary>
+    /// Reorders every sibling group -- each node's children, and the roots -- ascending by key,
+    /// STABLY (equal keys keep their original sibling order, so ordering refines the source order
+    /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
+    /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
+    /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
+    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
+    /// 2026-08-05).
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
+    /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
+    /// sibling group" (Invert IS this operator, descending by source sibling index): the first
+    /// child in the new order may be the source's last, so whole sibling subtrees must be in hand
+    /// before the first result visit can be published. One awaited depth-first walk captures flat
+    /// preorder arrays; the ordered layout is then emitted by subtree-span hops. Deferred:
+    /// construction is pinned to the first treenumerator acquisition (Tree.Lazy), and the awaited
+    /// build runs once, on the first replay pull. The source is consumed depth-first only, so a
+    /// streamed narrow source can order.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenBy<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,
       IComparer<TKey> comparer)
       => OrderChildrenBy((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, TKey> keySelector)
       => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector)
       => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, TKey> keySelector,
       IComparer<TKey> comparer)
       => OrderChildrenByDescending((IDepthFirstTreenumerable<TNode>)source, keySelector, comparer);
 
+    /// <summary>
+    /// The descending twin of <c>OrderChildrenBy(keySelector)</c>: every sibling group descending
+    /// by key, still STABLE (equal keys keep their original sibling order -- not reversed).
+    /// </summary>
     public static ITreenumerableBuffer<TNode> OrderChildrenByDescending<TNode, TKey>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TKey> keySelector,

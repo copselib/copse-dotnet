@@ -52,6 +52,11 @@ namespace Copse.Linq
         source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
+    /// recomputed accordingly.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -74,6 +79,11 @@ namespace Copse.Linq
         source, new WhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
+    /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> Where<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
@@ -95,6 +105,11 @@ namespace Copse.Linq
         source, new PositionalWhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>Where</c> over node VALUES (LINQ polarity: true = keep). Deferred. Filtered
+    /// nodes' children are promoted into their parent's slot; the emitted tree's positions are
+    /// recomputed accordingly.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -114,6 +129,11 @@ namespace Copse.Linq
         source, new WhereResultSelector<TNode>(predicate));
     }
 
+    /// <summary>
+    /// Async <c>Where</c> over (node, position) (LINQ polarity: true = keep; the positional
+    /// analog of LINQ's indexed overload). Deferred. Each positional predicate sees ITS input
+    /// tree's labels, exactly like LINQ's indexed Where re-counts per layer.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> Where<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

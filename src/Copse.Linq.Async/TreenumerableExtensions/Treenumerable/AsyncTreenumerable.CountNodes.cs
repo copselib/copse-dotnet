@@ -17,6 +17,12 @@ namespace Copse.Linq
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncTreenumerable<TNode> source, CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, _ => true, default, cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
@@ -32,30 +38,66 @@ namespace Copse.Linq
       CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy, cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, _ => true, cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node), cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, _ => true, cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       CancellationToken cancellationToken = default)
       => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node), cancellationToken);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,

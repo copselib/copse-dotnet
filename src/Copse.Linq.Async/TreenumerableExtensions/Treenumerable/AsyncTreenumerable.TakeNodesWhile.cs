@@ -25,24 +25,44 @@ namespace Copse.Linq
       bool keepFinalNode)
       => source.TakeNodesUntil((node, position) => !predicate(node, position), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
       => source.TakeNodesUntil(node => !predicate(node), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       bool keepFinalNode)
       => source.TakeNodesUntil((node, position) => !predicate(node, position), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
       => source.TakeNodesUntil(node => !predicate(node), keepFinalNode);
 
+    /// <summary>
+    /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
+    /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,

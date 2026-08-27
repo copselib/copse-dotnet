@@ -66,6 +66,24 @@ namespace Copse.Linq
       CancellationToken cancellationToken = default)
       => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
 
+    /// <summary>
+    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
+    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
+    /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
+    /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
+    /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
+    /// accumulations in sibling order (first child as the start),
+    /// <paramref name="nodeAccumulator"/> folds the node in once --
+    /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c> -- and at the fringe
+    /// <paramref name="leafNodeSelector"/> sets each leaf's accumulation directly, the node
+    /// accumulator bypassed (selector flavors only -- THE VIRTUAL-ROOT RULE, see
+    /// LeaffixScan's doc; a formula-shaped fringe is
+    /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>). Lazy per root -- a root is emitted the
+    /// moment its subtree closes, and the flat buffers are then reused for the next root, so
+    /// peak memory is the largest root subtree (not the whole forest) and a consumer that
+    /// stops early traverses fewer roots. Zero per-node alloc: the fold writes straight into
+    /// the flat slots.
+    /// </summary>
     public static IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
@@ -83,6 +101,24 @@ namespace Copse.Linq
       CancellationToken cancellationToken = default)
       => LeaffixAggregate((IAsyncDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator, cancellationToken);
 
+    /// <summary>
+    /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
+    /// sequence -- one <see cref="NodeAccumulation{TNode, TAccumulate}"/> per root tree: the root's
+    /// value paired with the dual fold up from that tree's fringe (the canonical pairing,
+    /// design-docs/SCANRESULT_DESIGN.md; value-flavored on the dual shape). The mechanism is
+    /// LeaffixScan's: <paramref name="edgeAccumulator"/> reduces each family's completed
+    /// accumulations in sibling order (first child as the start),
+    /// <paramref name="nodeAccumulator"/> folds the node in once --
+    /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c> -- and at the fringe
+    /// <paramref name="leafNodeSelector"/> sets each leaf's accumulation directly, the node
+    /// accumulator bypassed (selector flavors only -- THE VIRTUAL-ROOT RULE, see
+    /// LeaffixScan's doc; a formula-shaped fringe is
+    /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>). Lazy per root -- a root is emitted the
+    /// moment its subtree closes, and the flat buffers are then reused for the next root, so
+    /// peak memory is the largest root subtree (not the whole forest) and a consumer that
+    /// stops early traverses fewer roots. Zero per-node alloc: the fold writes straight into
+    /// the flat slots.
+    /// </summary>
     public static IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,

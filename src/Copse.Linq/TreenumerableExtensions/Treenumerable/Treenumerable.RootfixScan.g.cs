@@ -39,6 +39,24 @@ namespace Copse.Linq
       // a composed Select re-plants the projection inside the product engine twins.
       => RootfixScanCitizen(source, ContextAccumulator(accumulator), seed);
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       TAccumulate seed,
@@ -49,6 +67,24 @@ namespace Copse.Linq
           ContextAccumulator(accumulator),
           seed));
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       TAccumulate seed,
@@ -81,12 +117,48 @@ namespace Copse.Linq
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixScan(source, (node, _) => rootNodeSelector(node), accumulator);
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
       => RootfixScan(source, (node, _) => rootNodeSelector(node), accumulator);
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, TAccumulate> rootNodeSelector,
@@ -163,6 +235,24 @@ namespace Copse.Linq
       }
     }
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
@@ -173,6 +263,24 @@ namespace Copse.Linq
           ContextAccumulatorWithRootSelector(rootNodeSelector, accumulator),
           default));
 
+    /// <summary>
+    /// Async <c>RootfixScan</c>: a cumulative scan from the root -- each node's accumulation is
+    /// the accumulator applied to its parent's accumulation and the node's value (a prefix-fold
+    /// down each root-to-node path). Returns the CANONICAL
+    /// PAIRING (design-docs/SCANRESULT_DESIGN.md): a tree of <c>NodeAccumulation</c>s, each node's value
+    /// with its accumulation -- project <c>.Accumulate</c> away when only values are wanted.
+    /// Deferred; streams with O(depth)/O(width) state.
+    ///
+    /// <para>The accumulator is <c>(accumulate, node)</c> -- LINQ Aggregate's shape, and the
+    /// SEAT RULE's minimal basis (design-docs/SCANRESULT_DESIGN.md): a callback
+    /// receives its subject and its flow state, nothing derivable. <typeparamref name="TAccumulate"/>
+    /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
+    /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
+    /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
+    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
+    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
+    /// overloads.</para>
+    /// </summary>
     public static IBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,

@@ -1,0 +1,17 @@
+<Project>
+
+  <!--
+    Evaluated after each project file, so $(IsPackable) reflects the project's own opt-in
+    (Directory.Build.props defaults it false; shippable projects set true).
+
+    Every shippable project generates its XML documentation file: the /// docs are the
+    IntelliSense surface consumers see. CS1591 (missing doc on a public member) is an ERROR
+    on shippable projects: the public surface is fully documented, and this keeps it that
+    way. Tests, benchmarks, and the experimental parking lot are exempt by never opting in.
+  -->
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

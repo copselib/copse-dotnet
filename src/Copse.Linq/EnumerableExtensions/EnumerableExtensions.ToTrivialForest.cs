@@ -7,6 +7,7 @@ namespace Copse.Linq
 {
   public static partial class EnumerableExtensions
   {
+    /// <summary>The sequence as a forest of childless roots, one per element. Deferred.</summary>
     public static ITreenumerable<TNode> ToTrivialForest<TNode>(this IEnumerable<TNode> source)
     {
       return

@@ -23,6 +23,10 @@ namespace Copse.Linq
         .Select(mergeNode => mergeNode.Left);
     }
 
+    /// <summary>
+    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// to the left values. Deferred.
+    /// </summary>
     public static IDepthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(
       this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IDepthFirstTreenumerable<TRight> rightTreenumerable)
@@ -31,6 +35,10 @@ namespace Copse.Linq
         .Where(mergeNode => !mergeNode.HasRight)
         .Select(mergeNode => mergeNode.Left);
 
+    /// <summary>
+    /// Async <c>Subtract</c>: the left tree minus the nodes also present on the right, projected back
+    /// to the left values. Deferred.
+    /// </summary>
     public static IBreadthFirstTreenumerable<TLeft> Subtract<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IBreadthFirstTreenumerable<TRight> rightTreenumerable)

@@ -8,6 +8,8 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
+    /// <summary>Acquires a traversal in the named dimension. The caller owns the
+    /// treenumerator and disposes it.</summary>
     public static ITreenumerator<TNode> GetTreenumerator<TNode>(
       this ITreenumerable<TNode> source,
       TreeTraversalStrategy treeTraversalStrategy)

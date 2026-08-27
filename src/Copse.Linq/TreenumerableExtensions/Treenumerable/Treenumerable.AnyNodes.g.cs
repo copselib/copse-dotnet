@@ -30,21 +30,49 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy = default)
       => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy);
 
+    /// <summary>
+    /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
+    /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
+    /// the breadth-first dimension traverses all (its schedules front-run the skips).
+    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
+    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
 
+    /// <summary>
+    /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
+    /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
+    /// the breadth-first dimension traverses all (its schedules front-run the skips).
+    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
+    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
       => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
+    /// <summary>
+    /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
+    /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
+    /// the breadth-first dimension traverses all (its schedules front-run the skips).
+    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
+    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
 
+    /// <summary>
+    /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
+    /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
+    /// the breadth-first dimension traverses all (its schedules front-run the skips).
+    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
+    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

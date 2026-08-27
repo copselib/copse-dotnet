@@ -108,6 +108,26 @@ namespace Copse.Linq
       return PreorderCaptureBuffer(source);
     }
 
+    /// <summary>
+    /// The re-traversable capture of the source's shape, DEFERRED (2026-08-10; eager until
+    /// then): nothing is enumerated at the call. Construction is pinned to the first pull and
+    /// runs through the lazy store's grow seam -- the LeaffixScan/Invert cost shape,
+    /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
+    /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
+    /// construction is uniformly lazy; the pin is a commitment made at the earliest moment it
+    /// is free, which for this overload is the first pull). No longer awaitable, so the Async
+    /// suffix is gone. The source is enumerated AT MOST ONCE; both dimensions replay from the
+    /// one capture; an unconsumed result holds exactly what the unconsumed pipeline already
+    /// held, since nothing opens before the first pull.
+    ///
+    /// <para>Idempotent on a capture (probe order matters: the lazy interface derives from the
+    /// completed one, so it is tested first): a live memo is wrapped so its one capture
+    /// COMPLETES IN BULK at the first pull -- inheriting whatever layout the memo's own history
+    /// pinned, and retiring the feed at the settle, which is what distinguishes the result from
+    /// the memo itself; a completed buffer is returned as-is (re-capturing would copy every
+    /// node for nothing). Disposal of the result is nothing after the settle and vacuously
+    /// nothing before it.</para>
+    /// </summary>
     public static ITreenumerableBuffer<TNode> Materialize<TNode>(this IBreadthFirstTreenumerable<TNode> source)
     {
       if (source is IMemoizeTreenumerableBuffer<TNode> lazyBuffer)

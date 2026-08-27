@@ -27,6 +27,10 @@ namespace Copse.Linq
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
     }
 
+    /// <summary>
+    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> Do<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Action<NodeVisit<TNode>> onNext)
@@ -39,6 +43,10 @@ namespace Copse.Linq
           () => new AsyncDoTreenumerator<TNode>(source.GetAsyncDepthFirstTreenumerator, onNext));
     }
 
+    /// <summary>
+    /// Async <c>Do</c>: runs a side effect on every emitted visit, forwarding the visit stream
+    /// unchanged. Deferred (the effect runs during enumeration, once per <c>MoveNextAsync</c>).
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> Do<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Action<NodeVisit<TNode>> onNext)

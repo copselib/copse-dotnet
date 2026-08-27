@@ -18,6 +18,9 @@ namespace Copse.Linq
         .Where(mergeNode => !mergeNode.HasLeftAndRight);
     }
 
+    /// <summary>
+    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this IAsyncDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncDepthFirstTreenumerable<TRight> rightTreenumerable)
@@ -25,6 +28,9 @@ namespace Copse.Linq
         .Union(rightTreenumerable)
         .Where(mergeNode => !mergeNode.HasLeftAndRight);
 
+    /// <summary>
+    /// Async <c>SymmetricDifference</c>: the merged nodes present on exactly one side. Deferred.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> SymmetricDifference<TLeft, TRight>(
       this IAsyncBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IAsyncBreadthFirstTreenumerable<TRight> rightTreenumerable)

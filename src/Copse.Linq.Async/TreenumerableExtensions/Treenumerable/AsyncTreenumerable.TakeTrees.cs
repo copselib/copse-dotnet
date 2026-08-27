@@ -13,6 +13,7 @@ namespace Copse.Linq
         (_, position) => position.Depth == 0 && position.SiblingIndex == count,
         false);
 
+    /// <summary>Keeps only the first <paramref name="count"/> root trees (stops at the root whose sibling index reaches count). Deferred.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeTrees<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       int count)
@@ -20,6 +21,7 @@ namespace Copse.Linq
         (_, position) => position.Depth == 0 && position.SiblingIndex == count,
         false);
 
+    /// <summary>Keeps only the first <paramref name="count"/> root trees (stops at the root whose sibling index reaches count). Deferred.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeTrees<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       int count)

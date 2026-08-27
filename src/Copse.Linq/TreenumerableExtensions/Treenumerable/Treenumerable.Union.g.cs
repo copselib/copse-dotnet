@@ -25,6 +25,10 @@ namespace Copse.Linq
           leftTreenumerable.GetDepthFirstTreenumerator,
           rightTreenumerable.GetDepthFirstTreenumerator));
 
+    /// <summary>
+    /// Async <c>Union</c>: the structural merge of two trees by position -- each merged node carries
+    /// whichever side(s) have a node at that position. The engine behind the other set ops. Deferred.
+    /// </summary>
     public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IDepthFirstTreenumerable<TLeft> leftTreenumerable,
       IDepthFirstTreenumerable<TRight> rightTreenumerable)
@@ -33,6 +37,10 @@ namespace Copse.Linq
           leftTreenumerable.GetDepthFirstTreenumerator,
           rightTreenumerable.GetDepthFirstTreenumerator));
 
+    /// <summary>
+    /// Async <c>Union</c>: the structural merge of two trees by position -- each merged node carries
+    /// whichever side(s) have a node at that position. The engine behind the other set ops. Deferred.
+    /// </summary>
     public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Union<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IBreadthFirstTreenumerable<TRight> rightTreenumerable)

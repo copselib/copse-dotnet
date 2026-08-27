@@ -13,6 +13,7 @@ namespace Copse.Linq
     // returned the complement of its name -- "at least one node fails" -- with no test coverage
     // to catch it. Regression-pinned in AllNodesTests.) Value flavor primary; positional is
     // the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this ITreenumerable<TNode> source,
       Func<TNode, bool> predicate,
@@ -26,21 +27,25 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy = default)
       => !source.AnyNodes((node, position) => !predicate(node, position), treeTraversalStrategy);
 
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => !source.AnyNodes(node => !predicate(node));
 
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
       => !source.AnyNodes((node, position) => !predicate(node, position));
 
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => !source.AnyNodes(node => !predicate(node));
 
+    /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

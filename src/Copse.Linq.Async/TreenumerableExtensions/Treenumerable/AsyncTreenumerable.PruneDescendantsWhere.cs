@@ -53,6 +53,11 @@ namespace Copse.Linq
       return new AsyncPruneDescendantsWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
+    /// <summary>
+    /// Async <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// (the matched node is the deepest of its lineage kept). Deferred. PruneDescendantsWhere is
+    /// label-preserving: survivors keep their coordinates.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -73,6 +78,10 @@ namespace Copse.Linq
       return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
+    /// <summary>
+    /// Async <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
+    /// ITS input tree's labels.
+    /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
@@ -91,6 +100,11 @@ namespace Copse.Linq
       return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
     }
 
+    /// <summary>
+    /// Async <c>PruneDescendantsWhere</c> over node VALUES: keeps each matching node but sheds its subtree
+    /// (the matched node is the deepest of its lineage kept). Deferred. PruneDescendantsWhere is
+    /// label-preserving: survivors keep their coordinates.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -107,6 +121,10 @@ namespace Copse.Linq
       return new AsyncPruneDescendantsWhereBreadthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
     }
 
+    /// <summary>
+    /// Async <c>PruneDescendantsWhere</c> over (node, position). Deferred. The positional predicate sees
+    /// ITS input tree's labels.
+    /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> PruneDescendantsWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

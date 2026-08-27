@@ -9,12 +9,14 @@ namespace Copse.Linq.Async.Treenumerables
   // machinery.
   partial class AsyncSelectTreenumerable<TSource, TResult>
   {
+    /// <inheritdoc/>
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
     {
       return new AsyncSelectTreenumerable<TSource, TOuterResult>(
         _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeContext => selector(nodeContext.Node)));
     }
 
+    /// <inheritdoc/>
     public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
     {
       return new AsyncSelectPruneDescendantsWhereTreenumerable<TSource, TResult>(

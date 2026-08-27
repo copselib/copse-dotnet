@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq
 {
+  /// <summary>The operator algebra over tree walkers -- Extend, Duplicate, Subtree, and the
+  /// doors -- as extension methods.</summary>
   public static partial class AsyncTreeWalker
   {
     /// <summary>Duplicate: the tree of walkers, still standing at this focus -- extend of

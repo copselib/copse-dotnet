@@ -13,12 +13,14 @@ namespace Copse.Linq.Treenumerables
   // machinery.
   partial class SelectTreenumerable<TSource, TResult>
   {
+    /// <inheritdoc/>
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
     {
       return new SelectTreenumerable<TSource, TOuterResult>(
         _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeContext => selector(nodeContext.Node)));
     }
 
+    /// <inheritdoc/>
     public IPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TSource, TResult>(

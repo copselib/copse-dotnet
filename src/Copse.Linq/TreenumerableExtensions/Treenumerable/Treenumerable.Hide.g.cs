@@ -32,10 +32,34 @@ namespace Copse.Linq
       HideScope scope)
       => new HideTreenumerable<TNode>(source, scope);
 
+    /// <summary>
+    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>) -- the safe default
+    /// for a defensive operator, so callers opt OUT rather than in. <c>Hide(HideScope.Treenumerable)</c>
+    /// is the same composition barrier at no per-pull cost, for callers who accept that the concrete
+    /// machine type stays visible; see <see cref="HideScope"/> for why that is not the default.
+    /// </para>
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> Hide<TNode>(
       this IDepthFirstTreenumerable<TNode> source)
       => Hide(source, HideScope.Treenumerator);
 
+    /// <summary>
+    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>) -- the safe default
+    /// for a defensive operator, so callers opt OUT rather than in. <c>Hide(HideScope.Treenumerable)</c>
+    /// is the same composition barrier at no per-pull cost, for callers who accept that the concrete
+    /// machine type stays visible; see <see cref="HideScope"/> for why that is not the default.
+    /// </para>
+    /// </summary>
     public static IDepthFirstTreenumerable<TNode> Hide<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       HideScope scope)
@@ -49,10 +73,34 @@ namespace Copse.Linq
         () => new HideTreenumerator<TNode>(source.GetDepthFirstTreenumerator));
     }
 
+    /// <summary>
+    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>) -- the safe default
+    /// for a defensive operator, so callers opt OUT rather than in. <c>Hide(HideScope.Treenumerable)</c>
+    /// is the same composition barrier at no per-pull cost, for callers who accept that the concrete
+    /// machine type stays visible; see <see cref="HideScope"/> for why that is not the default.
+    /// </para>
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> Hide<TNode>(
       this IBreadthFirstTreenumerable<TNode> source)
       => Hide(source, HideScope.Treenumerator);
 
+    /// <summary>
+    /// Async <c>Hide</c>: forwards the visit stream unchanged behind the plain
+    /// <see cref="IAsyncTreenumerable{TNode}"/> contract, so callers can't downcast to (or feature-test
+    /// for) the concrete source type -- which also makes it a composition barrier, since operators
+    /// compose by probing the treenumerable. Deferred.
+    /// <para>
+    /// This overload hides both layers (<see cref="HideScope.Treenumerator"/>) -- the safe default
+    /// for a defensive operator, so callers opt OUT rather than in. <c>Hide(HideScope.Treenumerable)</c>
+    /// is the same composition barrier at no per-pull cost, for callers who accept that the concrete
+    /// machine type stays visible; see <see cref="HideScope"/> for why that is not the default.
+    /// </para>
+    /// </summary>
     public static IBreadthFirstTreenumerable<TNode> Hide<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       HideScope scope)

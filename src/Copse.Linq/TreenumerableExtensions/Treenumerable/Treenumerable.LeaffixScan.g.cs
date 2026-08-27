@@ -105,6 +105,45 @@ namespace Copse.Linq
       return LeaffixDispatch(source, leafNodeSelector, DualFoldSurvey(edgeAccumulator, nodeAccumulator));
     }
 
+    /// <summary>
+    /// The fold tier of the leaffix pair -- RootfixScan's TRUE DUAL
+    /// (design-docs/SCANRESULT_DESIGN.md, THE NORTH STAR): flow reversal flips the upstream
+    /// multiplicity (one parent down, n children up), so the upward fold decomposes into two
+    /// callbacks -- <paramref name="edgeAccumulator"/> reduces the children's COMPLETED
+    /// accumulations in sibling order (left-fold from the first child, firing k-1 times, so
+    /// non-commutative reductions are well-defined and no identity element is demanded), and
+    /// <paramref name="nodeAccumulator"/> then folds the node itself in ONCE:
+    /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c>. The node accumulator is
+    /// LITERALLY RootfixScan's fold shape, <c>(TAccumulate, TNode)</c> -- the same fold,
+    /// fed by the parent's accumulate going down and by the children's reduced accumulate
+    /// going up. The decomposition is the point: a single map-then-combine callback would be
+    /// "both an accumulator and a generator", folding the boundary into the map itself.
+    ///
+    /// <para>THE BOUNDARY: selector flavors only -- <paramref name="leafNodeSelector"/> sets
+    /// each leaf's accumulation directly, the node accumulator bypassed at the fringe. There
+    /// is NO seed flavor at the leaffix boundary, either tier (THE VIRTUAL-ROOT RULE,
+    /// design-docs/SCANRESULT_DESIGN.md): a seed is the arrival from a boundary's
+    /// virtual node, and only the rootfix boundary has one -- the virtual forest root is a
+    /// single tree-lawful node, while a singular virtual node below all leaves would need n
+    /// parents, which is no tree. The fringe's honest instrument is the per-leaf rule; a
+    /// formula-shaped fringe ("every leaf starts from x, folded") is written
+    /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>. Anything needing all children at once
+    /// (median, top-k) is a survey: LeaffixDispatch, the sibling-complete tier this operator
+    /// is sugar over -- <c>LeaffixScan(boundary, edge, node)</c> IS the fold-encoded
+    /// LeaffixDispatch (CrossTierCoherenceTests).</para>
+    ///
+    /// <para>Returns the CANONICAL PAIRING: a buffer of
+    /// <see cref="NodeAccumulation{TNode, TAccumulate}"/>s -- project <c>.Accumulate</c> for
+    /// values; for mutable nodes, land with the composed effect idiom (see LeaffixDispatch's
+    /// doc). Callbacks run during the deferred build; only the sibling reduction order is
+    /// specified, so callbacks should be pure.</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
+    /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
+    /// aggregate, so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition.
+    /// The source is consumed depth-first only, so a streamed narrow source can leaffix.</para>
+    /// </summary>
     public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,
@@ -120,6 +159,45 @@ namespace Copse.Linq
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
       => LeaffixScan((IDepthFirstTreenumerable<TNode>)source, leafNodeSelector, edgeAccumulator, nodeAccumulator);
 
+    /// <summary>
+    /// The fold tier of the leaffix pair -- RootfixScan's TRUE DUAL
+    /// (design-docs/SCANRESULT_DESIGN.md, THE NORTH STAR): flow reversal flips the upstream
+    /// multiplicity (one parent down, n children up), so the upward fold decomposes into two
+    /// callbacks -- <paramref name="edgeAccumulator"/> reduces the children's COMPLETED
+    /// accumulations in sibling order (left-fold from the first child, firing k-1 times, so
+    /// non-commutative reductions are well-defined and no identity element is demanded), and
+    /// <paramref name="nodeAccumulator"/> then folds the node itself in ONCE:
+    /// <c>value(n) = nodeAccumulator(edgeReduce(children), n)</c>. The node accumulator is
+    /// LITERALLY RootfixScan's fold shape, <c>(TAccumulate, TNode)</c> -- the same fold,
+    /// fed by the parent's accumulate going down and by the children's reduced accumulate
+    /// going up. The decomposition is the point: a single map-then-combine callback would be
+    /// "both an accumulator and a generator", folding the boundary into the map itself.
+    ///
+    /// <para>THE BOUNDARY: selector flavors only -- <paramref name="leafNodeSelector"/> sets
+    /// each leaf's accumulation directly, the node accumulator bypassed at the fringe. There
+    /// is NO seed flavor at the leaffix boundary, either tier (THE VIRTUAL-ROOT RULE,
+    /// design-docs/SCANRESULT_DESIGN.md): a seed is the arrival from a boundary's
+    /// virtual node, and only the rootfix boundary has one -- the virtual forest root is a
+    /// single tree-lawful node, while a singular virtual node below all leaves would need n
+    /// parents, which is no tree. The fringe's honest instrument is the per-leaf rule; a
+    /// formula-shaped fringe ("every leaf starts from x, folded") is written
+    /// <c>leaf =&gt; nodeAccumulator(x, leaf)</c>. Anything needing all children at once
+    /// (median, top-k) is a survey: LeaffixDispatch, the sibling-complete tier this operator
+    /// is sugar over -- <c>LeaffixScan(boundary, edge, node)</c> IS the fold-encoded
+    /// LeaffixDispatch (CrossTierCoherenceTests).</para>
+    ///
+    /// <para>Returns the CANONICAL PAIRING: a buffer of
+    /// <see cref="NodeAccumulation{TNode, TAccumulate}"/>s -- project <c>.Accumulate</c> for
+    /// values; for mutable nodes, land with the composed effect idiom (see LeaffixDispatch's
+    /// doc). Callbacks run during the deferred build; only the sibling reduction order is
+    /// specified, so callbacks should be pure.</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> because a leaffix scan
+    /// MANUFACTURES owned O(n) storage: a root's accumulation IS its whole subtree's
+    /// aggregate, so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition.
+    /// The source is consumed depth-first only, so a streamed narrow source can leaffix.</para>
+    /// </summary>
     public static ITreenumerableBuffer<NodeAccumulation<TNode, TAccumulate>> LeaffixScan<TNode, TAccumulate>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, TAccumulate> leafNodeSelector,

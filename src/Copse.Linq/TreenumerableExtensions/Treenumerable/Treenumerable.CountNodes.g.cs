@@ -18,6 +18,12 @@ namespace Copse.Linq
     public static int CountNodes<TNode>(this ITreenumerable<TNode> source)
       => CountNodesCore(source, _ => true, default);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(
       this ITreenumerable<TNode> source,
       Func<TNode, bool> predicate,
@@ -31,27 +37,63 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy = default)
       => CountNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(this IDepthFirstTreenumerable<TNode> source)
       => CountNodesCore(source, _ => true);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => CountNodesCore(source, nodeContext => predicate(nodeContext.Node));
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
       => CountNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(this IBreadthFirstTreenumerable<TNode> source)
       => CountNodesCore(source, _ => true);
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
       => CountNodesCore(source, nodeContext => predicate(nodeContext.Node));
 
+    /// <summary>
+    /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
+    /// this counts scheduling visits. Value flavor primary; the positional flavor is the
+    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// </summary>
     public static int CountNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

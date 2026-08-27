@@ -125,6 +125,66 @@ namespace Copse.Linq
       => new AsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, targets => survey(seed, targets), survey)), BufferLayout.Preorder);
 
+    /// <summary>
+    /// The survey-shaped downward pass -- the sibling-complete tier of the rootfix pair (the
+    /// fold-shaped tier is RootfixScan): ONE dispatcher for every family in the forest.
+    /// <paramref name="survey"/> receives a family's arrival together with ALL of that
+    /// family's members at once through the no-copy
+    /// <see cref="DispatchTargets{TNode, TDispatch}"/> view -- one write-handle per member,
+    /// each of which must receive exactly one
+    /// <see cref="DispatchTarget{TNode, TDispatch}.Dispatch"/> (a second throws immediately;
+    /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
+    /// a fairness split cannot allocate its edges independently, and a setter-callback
+    /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
+    /// its assignment callback.
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here,
+    /// after the family's arrival lands -- so every parent's survey precedes its children's,
+    /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
+    /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
+    /// foreclose parallel builds). Do not depend on the current preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (the boundary is an
+    /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
+    /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
+    /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
+    /// <c>(arrival, children)</c> at every internal node. No node class sits outside the
+    /// dispatcher, no root-specific callback exists, and a budget allocates ACROSS the roots
+    /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
+    /// the boundary's sugar for roots that follow a different, per-root rule.</para>
+    ///
+    /// <para>THERE IS NO SUBJECT SEAT (the seat rule, aimed at the survey): the
+    /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
+    /// authored at its parent's dispatch site, where that node is in hand as the target's
+    /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
+    /// <typeparamref name="TDispatch"/> at the moment of dispatch. (Contrast LeaffixDispatch,
+    /// whose survey keeps its subject: upward flow means the node's own value passes through
+    /// nobody else's hands -- each survey keeps exactly the seats its flow direction cannot
+    /// derive.)</para>
+    ///
+    /// <para>The result pairs every source value with what ARRIVED at it
+    /// (<see cref="NodeArrival{TNode, TDispatch}"/>, the family's INPUT pairing -- the
+    /// recording rule, type-level; design-docs/SCANRESULT_DESIGN.md) in the source
+    /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
+    /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
+    /// what its family's survey dispatched to it -- because the survey's outputs are
+    /// edge-grained and land as the MEMBERS' arrivals; a survey has no node-grained output
+    /// to record. This operator is the family's ONE input-recorder, so it is the one
+    /// NodeArrival producer. Project <c>.Arrival</c> away with Select for immutable values.
+    /// For mutable nodes, LAND the arrivals with the composed effect idiom -- <c>.Do(visit
+    /// =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Amount =
+    /// visit.Node.Arrival; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// reason, mirrored: the survey needs its FULL member list before the first member's value
+    /// exists, and in a depth-first stream a parent's children are separated by entire sibling
+    /// subtrees -- so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, TDispatch> rootNodeSelector,
@@ -132,6 +192,66 @@ namespace Copse.Linq
       => new AsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>>(
         AsyncTree.Lazy(() => PreorderRootfixDispatchBreadthFirstSource(source, PerRootSurvey<TNode, TDispatch>((node, _) => rootNodeSelector(node)), survey)), BufferLayout.Preorder);
 
+    /// <summary>
+    /// The survey-shaped downward pass -- the sibling-complete tier of the rootfix pair (the
+    /// fold-shaped tier is RootfixScan): ONE dispatcher for every family in the forest.
+    /// <paramref name="survey"/> receives a family's arrival together with ALL of that
+    /// family's members at once through the no-copy
+    /// <see cref="DispatchTargets{TNode, TDispatch}"/> view -- one write-handle per member,
+    /// each of which must receive exactly one
+    /// <see cref="DispatchTarget{TNode, TDispatch}.Dispatch"/> (a second throws immediately;
+    /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
+    /// a fairness split cannot allocate its edges independently, and a setter-callback
+    /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
+    /// its assignment callback.
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here,
+    /// after the family's arrival lands -- so every parent's survey precedes its children's,
+    /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
+    /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
+    /// foreclose parallel builds). Do not depend on the current preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (the boundary is an
+    /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
+    /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
+    /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
+    /// <c>(arrival, children)</c> at every internal node. No node class sits outside the
+    /// dispatcher, no root-specific callback exists, and a budget allocates ACROSS the roots
+    /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
+    /// the boundary's sugar for roots that follow a different, per-root rule.</para>
+    ///
+    /// <para>THERE IS NO SUBJECT SEAT (the seat rule, aimed at the survey): the
+    /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
+    /// authored at its parent's dispatch site, where that node is in hand as the target's
+    /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
+    /// <typeparamref name="TDispatch"/> at the moment of dispatch. (Contrast LeaffixDispatch,
+    /// whose survey keeps its subject: upward flow means the node's own value passes through
+    /// nobody else's hands -- each survey keeps exactly the seats its flow direction cannot
+    /// derive.)</para>
+    ///
+    /// <para>The result pairs every source value with what ARRIVED at it
+    /// (<see cref="NodeArrival{TNode, TDispatch}"/>, the family's INPUT pairing -- the
+    /// recording rule, type-level; design-docs/SCANRESULT_DESIGN.md) in the source
+    /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
+    /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
+    /// what its family's survey dispatched to it -- because the survey's outputs are
+    /// edge-grained and land as the MEMBERS' arrivals; a survey has no node-grained output
+    /// to record. This operator is the family's ONE input-recorder, so it is the one
+    /// NodeArrival producer. Project <c>.Arrival</c> away with Select for immutable values.
+    /// For mutable nodes, LAND the arrivals with the composed effect idiom -- <c>.Do(visit
+    /// =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Amount =
+    /// visit.Node.Arrival; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// reason, mirrored: the survey needs its FULL member list before the first member's value
+    /// exists, and in a depth-first stream a parent's children are separated by entire sibling
+    /// subtrees -- so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, TDispatch> rootNodeSelector,
@@ -146,12 +266,132 @@ namespace Copse.Linq
       Action<TDispatch, DispatchTargets<TNode, TDispatch>> survey)
       => RootfixDispatch((IAsyncDepthFirstTreenumerable<TNode>)source, seed, survey);
 
+    /// <summary>
+    /// The survey-shaped downward pass -- the sibling-complete tier of the rootfix pair (the
+    /// fold-shaped tier is RootfixScan): ONE dispatcher for every family in the forest.
+    /// <paramref name="survey"/> receives a family's arrival together with ALL of that
+    /// family's members at once through the no-copy
+    /// <see cref="DispatchTargets{TNode, TDispatch}"/> view -- one write-handle per member,
+    /// each of which must receive exactly one
+    /// <see cref="DispatchTarget{TNode, TDispatch}.Dispatch"/> (a second throws immediately;
+    /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
+    /// a fairness split cannot allocate its edges independently, and a setter-callback
+    /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
+    /// its assignment callback.
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here,
+    /// after the family's arrival lands -- so every parent's survey precedes its children's,
+    /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
+    /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
+    /// foreclose parallel builds). Do not depend on the current preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (the boundary is an
+    /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
+    /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
+    /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
+    /// <c>(arrival, children)</c> at every internal node. No node class sits outside the
+    /// dispatcher, no root-specific callback exists, and a budget allocates ACROSS the roots
+    /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
+    /// the boundary's sugar for roots that follow a different, per-root rule.</para>
+    ///
+    /// <para>THERE IS NO SUBJECT SEAT (the seat rule, aimed at the survey): the
+    /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
+    /// authored at its parent's dispatch site, where that node is in hand as the target's
+    /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
+    /// <typeparamref name="TDispatch"/> at the moment of dispatch. (Contrast LeaffixDispatch,
+    /// whose survey keeps its subject: upward flow means the node's own value passes through
+    /// nobody else's hands -- each survey keeps exactly the seats its flow direction cannot
+    /// derive.)</para>
+    ///
+    /// <para>The result pairs every source value with what ARRIVED at it
+    /// (<see cref="NodeArrival{TNode, TDispatch}"/>, the family's INPUT pairing -- the
+    /// recording rule, type-level; design-docs/SCANRESULT_DESIGN.md) in the source
+    /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
+    /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
+    /// what its family's survey dispatched to it -- because the survey's outputs are
+    /// edge-grained and land as the MEMBERS' arrivals; a survey has no node-grained output
+    /// to record. This operator is the family's ONE input-recorder, so it is the one
+    /// NodeArrival producer. Project <c>.Arrival</c> away with Select for immutable values.
+    /// For mutable nodes, LAND the arrivals with the composed effect idiom -- <c>.Do(visit
+    /// =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Amount =
+    /// visit.Node.Arrival; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// reason, mirrored: the survey needs its FULL member list before the first member's value
+    /// exists, and in a depth-first stream a parent's children are separated by entire sibling
+    /// subtrees -- so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, TDispatch> rootNodeSelector,
       Action<TDispatch, DispatchTargets<TNode, TDispatch>> survey)
       => RootfixDispatch((IAsyncDepthFirstTreenumerable<TNode>)source, rootNodeSelector, survey);
 
+    /// <summary>
+    /// The survey-shaped downward pass -- the sibling-complete tier of the rootfix pair (the
+    /// fold-shaped tier is RootfixScan): ONE dispatcher for every family in the forest.
+    /// <paramref name="survey"/> receives a family's arrival together with ALL of that
+    /// family's members at once through the no-copy
+    /// <see cref="DispatchTargets{TNode, TDispatch}"/> view -- one write-handle per member,
+    /// each of which must receive exactly one
+    /// <see cref="DispatchTarget{TNode, TDispatch}.Dispatch"/> (a second throws immediately;
+    /// a missed one throws when the survey returns). Sibling-complete visibility is the point:
+    /// a fairness split cannot allocate its edges independently, and a setter-callback
+    /// allocator plugs in verbatim -- <c>(child, amount) =&gt; child.Dispatch(amount)</c> IS
+    /// its assignment callback.
+    ///
+    /// <para>THE READINESS CLAUSE: a survey fires when its data is ready -- here,
+    /// after the family's arrival lands -- so every parent's survey precedes its children's,
+    /// and each view's sibling order is guaranteed; the TOTAL cross-node sequence is
+    /// deliberately UNSPECIFIED (a pure callback cannot observe it, and pinning it would
+    /// foreclose parallel builds). Do not depend on the current preorder.</para>
+    ///
+    /// <para>FULL PARTICIPATION (the boundary is an
+    /// INVOCATION, not a callback): the forest's roots are the children of the VIRTUAL FOREST
+    /// ROOT (<see cref="NodePosition.ForestRoot"/>, the machinery's standing convention), and
+    /// that family goes first through the SAME survey: <c>(seed, roots)</c>, then
+    /// <c>(arrival, children)</c> at every internal node. No node class sits outside the
+    /// dispatcher, no root-specific callback exists, and a budget allocates ACROSS the roots
+    /// exactly the way it allocates across any other family. The rootNodeSelector flavors are
+    /// the boundary's sugar for roots that follow a different, per-root rule.</para>
+    ///
+    /// <para>THERE IS NO SUBJECT SEAT (the seat rule, aimed at the survey): the
+    /// surveyed family's parent VALUE is derivable, so it holds no seat. A node's arrival is
+    /// authored at its parent's dispatch site, where that node is in hand as the target's
+    /// <c>.Node</c> -- any subject-shaped fact a survey needs, the caller flows INSIDE
+    /// <typeparamref name="TDispatch"/> at the moment of dispatch. (Contrast LeaffixDispatch,
+    /// whose survey keeps its subject: upward flow means the node's own value passes through
+    /// nobody else's hands -- each survey keeps exactly the seats its flow direction cannot
+    /// derive.)</para>
+    ///
+    /// <para>The result pairs every source value with what ARRIVED at it
+    /// (<see cref="NodeArrival{TNode, TDispatch}"/>, the family's INPUT pairing -- the
+    /// recording rule, type-level; design-docs/SCANRESULT_DESIGN.md) in the source
+    /// tree's shape. NOTE the deliberate contrast with the fold tiers: a fold records its
+    /// OUTPUT (NodeAccumulation), while this survey records its INPUT -- a node's pairing is
+    /// what its family's survey dispatched to it -- because the survey's outputs are
+    /// edge-grained and land as the MEMBERS' arrivals; a survey has no node-grained output
+    /// to record. This operator is the family's ONE input-recorder, so it is the one
+    /// NodeArrival producer. Project <c>.Arrival</c> away with Select for immutable values.
+    /// For mutable nodes, LAND the arrivals with the composed effect idiom -- <c>.Do(visit
+    /// =&gt; { if (visit.Mode == TreenumeratorMode.SchedulingNode) visit.Node.Node.Amount =
+    /// visit.Node.Arrival; }).Select(pairing =&gt; pairing.Node)</c> -- effects fire per
+    /// drain (the re-enumeration contract); Materialize/Memoize is the consumer's pin
+    /// (design-docs/SCANRESULT_DESIGN.md, the demotion record).</para>
+    ///
+    /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for LeaffixDispatch's
+    /// reason, mirrored: the survey needs its FULL member list before the first member's value
+    /// exists, and in a depth-first stream a parent's children are separated by entire sibling
+    /// subtrees -- so the source is fully consumed before the first result visit can be
+    /// published. Deferred: construction is pinned to the first treenumerator acquisition
+    /// (Tree.Lazy), and the awaited build runs ONCE, on the first replay pull. The source is
+    /// consumed depth-first only, so a streamed narrow source can dispatch.</para>
+    /// </summary>
     public static IAsyncTreenumerableBuffer<NodeArrival<TNode, TDispatch>> RootfixDispatch<TNode, TDispatch>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, TDispatch> rootNodeSelector,

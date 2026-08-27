@@ -15,23 +15,29 @@ namespace Copse.Linq.Treenumerables
   // Because it IS a treenumerable buffer it composes anywhere a capture is expected; but the
   // fluent surface sees only the non-disposable base, so the caller keeps this reference to
   // dispose it (a chain typed as the base will not).
+  /// <summary>
+  /// A buffer still backed by a live source feed: the lazily-growing capture <c>Memoize</c>
+  /// returns. Because it IS a treenumerable buffer it composes anywhere a capture is
+  /// expected, but the fluent surface sees only the non-disposable base -- keep this
+  /// reference to dispose it. Disposing retires the feed: enumerators already replaying keep
+  /// working over the captured region, and one that needs data beyond it throws
+  /// <see cref="ObjectDisposedException"/>.
+  /// </summary>
   public interface IMemoizeTreenumerableBuffer<TNode> : ITreenumerableBuffer<TNode>, IDisposable
   {
-    // True once the capture is complete: the whole tree is held and the source is permanently
-    // retired -- no future enumeration, in either dimension, touches it again.
+    /// <summary>True once the capture is complete: the whole tree is held and the source is
+    /// permanently retired -- no future enumeration, in either dimension, touches it
+    /// again.</summary>
     bool IsComplete { get; }
 
-    // Nodes captured so far -- there is only ever ONE capture, whose layout the first
-    // acquisition (or consume) pinned. Not a progress fraction: the tree's size is unknown
-    // until the capture completes.
+    /// <summary>The number of nodes captured so far. Not a progress fraction: the tree.s
+    /// size is unknown until the capture completes.</summary>
     int GetBufferedCount();
 
-    // Drive the capture to COMPLETION -- the transition IsComplete reports; a no-op iff already
-    // complete. Takes no strategy: there is only ever ONE capture (a fresh
-    // buffer pins the depth-first layout). Pinning a specific layout is expressed the organic
-    // way -- acquire a treenumerator in that dimension before consuming (acquisition is the
-    // pin) -- or, for a guaranteed layout with the buffer as the deliverable,
-    // Materialize(strategy).
+    /// <summary>Drives the capture to completion -- the transition <see cref="IsComplete"/>
+    /// reports; a no-op if already complete. A fresh buffer pins the depth-first layout; to
+    /// pin a specific layout, acquire a treenumerator in that dimension first (acquisition
+    /// is the pin).</summary>
     void Complete();
   }
 }
