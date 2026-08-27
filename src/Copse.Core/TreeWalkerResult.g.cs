@@ -2,8 +2,6 @@
 //   Generated from AsyncTreeWalkerResult.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
-
 namespace Copse.Core
 {
   // Deliberately flat rather than an Option over a walker: the nested aggregate falls off the

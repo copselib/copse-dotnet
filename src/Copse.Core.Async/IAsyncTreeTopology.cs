@@ -1,4 +1,3 @@
-using Copse.Core;
 using System.Threading.Tasks;
 
 namespace Copse.Core
