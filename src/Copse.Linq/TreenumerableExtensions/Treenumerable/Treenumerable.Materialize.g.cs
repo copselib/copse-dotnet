@@ -8,6 +8,7 @@ using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Stores;
 using Copse.Linq.Treenumerables;
+using Copse.Linq.Topologies;
 
 namespace Copse.Linq
 {

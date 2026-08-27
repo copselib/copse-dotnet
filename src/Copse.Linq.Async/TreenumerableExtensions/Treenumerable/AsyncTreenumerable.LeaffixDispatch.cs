@@ -3,6 +3,7 @@ using Copse.Treenumerables;
 using Copse.Core;
 using Copse.Linq.Treenumerables;
 using Copse.Linq.Stores;
+using Copse.Linq.Topologies;
 using System;
 using System.Threading.Tasks;
 

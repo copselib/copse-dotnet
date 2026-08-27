@@ -3,7 +3,7 @@ using Copse;
 using Copse.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Topologies
 {
   // The COMPLETED level-order citizen (the adjacency split): the layout's native
   // affordances answer children (a bounds probe plus an offset -- contiguous runs) and roots

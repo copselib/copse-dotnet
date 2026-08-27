@@ -1,5 +1,5 @@
 using Copse.Core;
-using Copse.Linq.Treenumerables;
+using Copse.Linq.Topologies;
 
 namespace Copse.Linq
 {

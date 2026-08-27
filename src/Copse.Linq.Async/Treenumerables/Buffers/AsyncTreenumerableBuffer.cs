@@ -2,6 +2,7 @@ using Copse;
 using Copse.Stores;
 using Copse.Linq.Stores;
 using Copse.Core;
+using Copse.Linq.Topologies;
 using System.Threading.Tasks;
 
 namespace Copse.Linq.Treenumerables

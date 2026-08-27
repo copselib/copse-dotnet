@@ -7,7 +7,7 @@ using Copse.Core;
 using Copse;
 using Copse.Stores;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Topologies
 {
   // The GROWING level-order citizen (completed stores ride LevelOrderArrayTopology,
   // the adjacency split): the layout's native affordances need almost no index --

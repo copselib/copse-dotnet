@@ -4,7 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Topologies
 {
   // TreeTopology.Lazy's engine: a walkable's topology, call-by-need. Anything that must
   // build lazily over "whatever topology this walkable's door will bind" -- a view whose

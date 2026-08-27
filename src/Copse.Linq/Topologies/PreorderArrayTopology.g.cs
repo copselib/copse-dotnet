@@ -6,7 +6,7 @@ using Copse.Core;
 using Copse;
 using Copse.Stores;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Topologies
 {
   // The COMPLETED preorder citizen (the adjacency split): a topology over a
   // finished array store answers every probe from exact arrays built at most once. The

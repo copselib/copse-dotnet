@@ -330,12 +330,16 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)LevelOrderArrayTopology          the COMPLETED level-order citizen: children/
 │    roots are store arithmetic, parents one exact two-cursor merge on first probe
 ├─ (Async)LazyTopology (né DoorTopology, then WalkableTopology — settled 2026-08-15 on the
-│    MECHANISM name once nothing else was left to distinguish it from; internal sealed
-│    beside the lens family in Copse.Linq/Treenumerables/Walkable, PUBLIC via
-│    TreeTopology.Lazy, ns Copse.Linq — MOVED from the engine assembly 2026-08-27: its only
-│    consumers are the lens views and its own doc speaks view-composition, so it files by
-│    citizen; the engine assembly holds zero topology machinery, and Copse.Topologies — a
-│    one-class namespace implying a catalog that never materialized — retired with the move)
+│    MECHANISM name once nothing else was left to distinguish it from; internal sealed in
+│    Copse.Linq/Topologies, ns Copse.Linq.Topologies, PUBLIC via TreeTopology.Lazy, ns
+│    Copse.Linq — MOVED from the engine assembly 2026-08-27: its only consumers are the
+│    lens views and its own doc speaks view-composition, so the operator package owns it;
+│    the engine assembly holds zero topology machinery, and the engine-side Copse.Topologies
+│    namespace — one class implying a catalog that never materialized — retired with the
+│    move. Copse.Linq/Topologies (same day, findability): the pure-topology machinery — the
+│    two adjacency indexes, the two array topologies, LazyTopology, the TreeTopology
+│    factory — gathered in one folder + internal ns; the lens family stays in Walkable/
+│    because each lens IS its own topology)
 │    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
 │    at first probe (Tree.Lazy semantics — the contract promises neither cheap nor
 │    idempotent doors, so the cache is what keeps a view honest); the total door always

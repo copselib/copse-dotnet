@@ -1,4 +1,5 @@
 using Copse.Core;
+using Copse.Linq.Topologies;
 using Copse.Linq.Treenumerables;
 using Copse.SimpleSerializer;
 using Copse.Stores;
