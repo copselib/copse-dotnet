@@ -29,8 +29,11 @@
 > (`Preorder`/`LevelOrder`).* Hence `MemoizeDepthFirstSourceTreenumerable` (about the
 > source's traversal affordance) kept its name, while the memo's storage types were renamed:
 > `MemoizeDepthFirstBuffer` → `MemoizePreorderBuffer` (2026-07-13; the Buffer suffix itself
-> fell 2026-07-15 — they are stores: now `MemoizePreorderStore`/`MemoizeLevelOrderStore`,
-> their SPI adapters nested as `.Handle`). Every store now carries a one-line taxonomy header stating its
+> fell 2026-07-15 — they are stores: `MemoizePreorderStore`/`MemoizeLevelOrderStore`,
+> their SPI adapters nested as `.Handle`; the Store suffix fell in turn 2026-08-27 — the
+> outer machine never implemented the SPI, only its `.Handle` does, while every other
+> `XStore` IS the SPI — now `MemoizePreorderCapture`/`MemoizeLevelOrderCapture`, the memo's
+> growing captures). Every store now carries a one-line taxonomy header stating its
 > grid position.
 
 ## The question that prompted this: why is there no async `LevelOrderArrayStore`?
@@ -93,8 +96,9 @@ preference, orphans are acceptable — but each should be a *decision*, and the
 **F5 — Naming crosses its axes.** The family's own convention is encoding names
 (`Preorder`/`LevelOrder`) for layout and dimension names (`DepthFirst`/`BreadthFirst`) for
 traversal — held everywhere except the memo cluster, which named its *preorder* capture
-`MemoizeDepthFirstBuffer` (by feed dimension). *(RESOLVED 2026-07-13: renamed to encoding names; the Buffer suffix itself fell 2026-07-15
-— today they are `MemoizePreorderStore`/`MemoizeLevelOrderStore` with nested `.Handle`
+`MemoizeDepthFirstBuffer` (by feed dimension). *(RESOLVED 2026-07-13: renamed to encoding names; the Buffer suffix itself fell 2026-07-15,
+and the Store suffix followed 2026-08-27 — today they are
+`MemoizePreorderCapture`/`MemoizeLevelOrderCapture` with nested `.Handle` store
 adapters.)* Second seam: the
 unboxing-adapter idiom has two conventions — standalone `Memoize*Store` structs vs the
 serializer's nested `*StringStore<T>.Handle` structs *(RESOLVED by the de-share 2026-07-14:

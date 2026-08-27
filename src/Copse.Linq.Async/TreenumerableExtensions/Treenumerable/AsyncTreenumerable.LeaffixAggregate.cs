@@ -219,7 +219,7 @@ namespace Copse.Linq
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      var capture = new AsyncMemoizeLevelOrderStore<TNode>(source.GetAsyncBreadthFirstTreenumerator);
+      var capture = new AsyncMemoizeLevelOrderCapture<TNode>(source.GetAsyncBreadthFirstTreenumerator);
       await using (capture.ConfigureAwait(false))
       {
         await capture.CompleteAsync().ConfigureAwait(false);

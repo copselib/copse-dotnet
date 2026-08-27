@@ -405,11 +405,14 @@ Each product site (1–6) exists twice on disk, once in source — the async fil
    `Copse`/`Copse.Async` codegen pair (the layer that already owns the decoders). Not yet
    built — sequenced after the OrderChildrenBy-B streaming spike (flag #4).
 3. **Naming seams**: (a) *(RESOLVED 2026-07-13)* the memo cluster's storage types were
-   renamed to encoding names (`MemoizePreorderStore`/`MemoizeLevelOrderStore` +
-   `MemoizePreorderStore`/`MemoizeLevelOrderStore`) under the adopted rule — traversal
-   things carry dimension names, storage things carry encoding names; every store now has a
-   one-line taxonomy header; (b) *(RESOLVED by the de-share 2026-07-14)* the nested
-   `.Handle` adapter convention is now universal (memoize stores and serializer alike);
+   renamed to encoding names under the adopted rule — traversal things carry dimension
+   names, storage things carry encoding names; every store now has a one-line taxonomy
+   header. *(2026-08-27: the `Store` suffix fell too — the outer machine never implemented
+   the store SPI, only its nested `Handle` does, and everywhere else an `XStore` IS the
+   SPI (string stores, lazy stores): now `MemoizePreorderCapture`/`MemoizeLevelOrderCapture`
+   + async twins — the memo's growing captures, whose `.Handle` is the store.)*;
+   (b) *(RESOLVED by the de-share 2026-07-14)* the nested
+   `.Handle` adapter convention is now universal (memoize captures and serializer alike);
    (c) *(RESOLVED 2026-07-15)* the test-side store re-implementations are gone —
    `FlatFamilyConformanceTests` rides the public stores and the public capture factories.
 4. **Missing duals** (cross-check [dual-symmetry backlog]): ~~`LazyLevelOrderStore`

@@ -20,10 +20,10 @@ namespace Copse.Linq.Treenumerables
 
     public AsyncMemoizeDepthFirstSourceTreenumerable(IAsyncDepthFirstTreenumerable<TNode> source)
     {
-      _Buffer = new AsyncMemoizePreorderStore<TNode>(source.GetAsyncDepthFirstTreenumerator);
+      _Buffer = new AsyncMemoizePreorderCapture<TNode>(source.GetAsyncDepthFirstTreenumerator);
     }
 
-    private readonly AsyncMemoizePreorderStore<TNode> _Buffer;
+    private readonly AsyncMemoizePreorderCapture<TNode> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -34,12 +34,12 @@ namespace Copse.Linq.Treenumerables
     public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
-      => new AsyncPreorderStoreDepthFirstTreenumerator<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
-        new AsyncMemoizePreorderStore<TNode>.Handle(_Buffer));
+      => new AsyncPreorderStoreDepthFirstTreenumerator<TNode, AsyncMemoizePreorderCapture<TNode>.Handle>(
+        new AsyncMemoizePreorderCapture<TNode>.Handle(_Buffer));
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncPreorderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
-        new AsyncMemoizePreorderStore<TNode>.Handle(_Buffer));
+      => new AsyncPreorderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizePreorderCapture<TNode>.Handle>(
+        new AsyncMemoizePreorderCapture<TNode>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
 
@@ -49,8 +49,8 @@ namespace Copse.Linq.Treenumerables
 
     private IAsyncTreeTopology<TNode, int> EnsureTopology()
       => _Topology ?? (_Topology
-        = new AsyncPreorderAdjacencyIndex<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
-          new AsyncMemoizePreorderStore<TNode>.Handle(_Buffer)));
+        = new AsyncPreorderAdjacencyIndex<TNode, AsyncMemoizePreorderCapture<TNode>.Handle>(
+          new AsyncMemoizePreorderCapture<TNode>.Handle(_Buffer)));
 
 
     // The door: topology-at-birth -- the walker holds the

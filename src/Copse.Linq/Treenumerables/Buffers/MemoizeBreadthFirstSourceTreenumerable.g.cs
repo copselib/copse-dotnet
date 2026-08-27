@@ -22,10 +22,10 @@ namespace Copse.Linq.Treenumerables
 
     public MemoizeBreadthFirstSourceTreenumerable(IBreadthFirstTreenumerable<TNode> source)
     {
-      _Buffer = new MemoizeLevelOrderStore<TNode>(source.GetBreadthFirstTreenumerator);
+      _Buffer = new MemoizeLevelOrderCapture<TNode>(source.GetBreadthFirstTreenumerator);
     }
 
-    private readonly MemoizeLevelOrderStore<TNode> _Buffer;
+    private readonly MemoizeLevelOrderCapture<TNode> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -34,12 +34,12 @@ namespace Copse.Linq.Treenumerables
     public void Complete() => _Buffer.Complete();
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
-      => new LevelOrderStoreBreadthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-        new MemoizeLevelOrderStore<TNode>.Handle(_Buffer));
+      => new LevelOrderStoreBreadthFirstTreenumerator<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+        new MemoizeLevelOrderCapture<TNode>.Handle(_Buffer));
 
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
-      => new LevelOrderStoreDepthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-        new MemoizeLevelOrderStore<TNode>.Handle(_Buffer));
+      => new LevelOrderStoreDepthFirstTreenumerator<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+        new MemoizeLevelOrderCapture<TNode>.Handle(_Buffer));
 
     public void Dispose() => _Buffer.Dispose();
 
@@ -49,8 +49,8 @@ namespace Copse.Linq.Treenumerables
 
     private ITreeTopology<TNode, int> EnsureTopology()
       => _Topology ?? (_Topology
-        = new LevelOrderAdjacencyIndex<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-          new MemoizeLevelOrderStore<TNode>.Handle(_Buffer)));
+        = new LevelOrderAdjacencyIndex<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+          new MemoizeLevelOrderCapture<TNode>.Handle(_Buffer)));
 
 
     // The door: topology-at-birth -- the walker holds the

@@ -48,8 +48,8 @@ namespace Copse.Linq.Treenumerables
 
     // Exactly ONE of these two is ever created -- whichever dimension pulls (or consumes)
     // first pins the capture's layout for the memo's whole life.
-    private MemoizePreorderStore<TNode> _DepthFirstCapture;
-    private MemoizeLevelOrderStore<TNode> _BreadthFirstCapture;
+    private MemoizePreorderCapture<TNode> _DepthFirstCapture;
+    private MemoizeLevelOrderCapture<TNode> _BreadthFirstCapture;
 
     private bool _Disposed;
 
@@ -74,27 +74,27 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
     {
       if (_BreadthFirstCapture != null)
-        return new LevelOrderStoreDepthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-          new MemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
+        return new LevelOrderStoreDepthFirstTreenumerator<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+          new MemoizeLevelOrderCapture<TNode>.Handle(_BreadthFirstCapture));
 
-      return new PreorderStoreDepthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
-        new MemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
+      return new PreorderStoreDepthFirstTreenumerator<TNode, MemoizePreorderCapture<TNode>.Handle>(
+        new MemoizePreorderCapture<TNode>.Handle(EnsureDepthFirstCapture()));
     }
 
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
     {
       if (_DepthFirstCapture != null)
-        return new PreorderStoreBreadthFirstTreenumerator<TNode, MemoizePreorderStore<TNode>.Handle>(
-          new MemoizePreorderStore<TNode>.Handle(_DepthFirstCapture));
+        return new PreorderStoreBreadthFirstTreenumerator<TNode, MemoizePreorderCapture<TNode>.Handle>(
+          new MemoizePreorderCapture<TNode>.Handle(_DepthFirstCapture));
 
-      return new LevelOrderStoreBreadthFirstTreenumerator<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-        new MemoizeLevelOrderStore<TNode>.Handle(EnsureBreadthFirstCapture()));
+      return new LevelOrderStoreBreadthFirstTreenumerator<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+        new MemoizeLevelOrderCapture<TNode>.Handle(EnsureBreadthFirstCapture()));
     }
 
-    private MemoizePreorderStore<TNode> EnsureDepthFirstCapture()
+    private MemoizePreorderCapture<TNode> EnsureDepthFirstCapture()
     {
       if (_DepthFirstCapture == null)
-        _DepthFirstCapture = new MemoizePreorderStore<TNode>(_Source.GetDepthFirstTreenumerator);
+        _DepthFirstCapture = new MemoizePreorderCapture<TNode>(_Source.GetDepthFirstTreenumerator);
 
       return _DepthFirstCapture;
     }
@@ -112,11 +112,11 @@ namespace Copse.Linq.Treenumerables
         return _Topology;
 
       if (_BreadthFirstCapture != null)
-        _Topology = new LevelOrderAdjacencyIndex<TNode, MemoizeLevelOrderStore<TNode>.Handle>(
-          new MemoizeLevelOrderStore<TNode>.Handle(_BreadthFirstCapture));
+        _Topology = new LevelOrderAdjacencyIndex<TNode, MemoizeLevelOrderCapture<TNode>.Handle>(
+          new MemoizeLevelOrderCapture<TNode>.Handle(_BreadthFirstCapture));
       else
-        _Topology = new PreorderAdjacencyIndex<TNode, MemoizePreorderStore<TNode>.Handle>(
-          new MemoizePreorderStore<TNode>.Handle(EnsureDepthFirstCapture()));
+        _Topology = new PreorderAdjacencyIndex<TNode, MemoizePreorderCapture<TNode>.Handle>(
+          new MemoizePreorderCapture<TNode>.Handle(EnsureDepthFirstCapture()));
 
       return _Topology;
     }
@@ -127,10 +127,10 @@ namespace Copse.Linq.Treenumerables
     public TreeWalker<TNode, int> GetTreeWalker()
       => new TreeWalker<TNode, int>(EnsureTopology());
 
-    private MemoizeLevelOrderStore<TNode> EnsureBreadthFirstCapture()
+    private MemoizeLevelOrderCapture<TNode> EnsureBreadthFirstCapture()
     {
       if (_BreadthFirstCapture == null)
-        _BreadthFirstCapture = new MemoizeLevelOrderStore<TNode>(_Source.GetBreadthFirstTreenumerator);
+        _BreadthFirstCapture = new MemoizeLevelOrderCapture<TNode>(_Source.GetBreadthFirstTreenumerator);
 
       return _BreadthFirstCapture;
     }

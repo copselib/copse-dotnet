@@ -19,10 +19,10 @@ namespace Copse.Linq.Treenumerables
 
     public AsyncMemoizeBreadthFirstSourceTreenumerable(IAsyncBreadthFirstTreenumerable<TNode> source)
     {
-      _Buffer = new AsyncMemoizeLevelOrderStore<TNode>(source.GetAsyncBreadthFirstTreenumerator);
+      _Buffer = new AsyncMemoizeLevelOrderCapture<TNode>(source.GetAsyncBreadthFirstTreenumerator);
     }
 
-    private readonly AsyncMemoizeLevelOrderStore<TNode> _Buffer;
+    private readonly AsyncMemoizeLevelOrderCapture<TNode> _Buffer;
 
     public bool IsComplete => _Buffer.IsComplete;
 
@@ -31,12 +31,12 @@ namespace Copse.Linq.Treenumerables
     public ValueTask CompleteAsync() => _Buffer.CompleteAsync();
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
-      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
-        new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer));
+      => new AsyncLevelOrderStoreBreadthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderCapture<TNode>.Handle>(
+        new AsyncMemoizeLevelOrderCapture<TNode>.Handle(_Buffer));
 
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
-      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
-        new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer));
+      => new AsyncLevelOrderStoreDepthFirstTreenumerator<TNode, AsyncMemoizeLevelOrderCapture<TNode>.Handle>(
+        new AsyncMemoizeLevelOrderCapture<TNode>.Handle(_Buffer));
 
     public ValueTask DisposeAsync() => _Buffer.DisposeAsync();
 
@@ -46,8 +46,8 @@ namespace Copse.Linq.Treenumerables
 
     private IAsyncTreeTopology<TNode, int> EnsureTopology()
       => _Topology ?? (_Topology
-        = new AsyncLevelOrderAdjacencyIndex<TNode, AsyncMemoizeLevelOrderStore<TNode>.Handle>(
-          new AsyncMemoizeLevelOrderStore<TNode>.Handle(_Buffer)));
+        = new AsyncLevelOrderAdjacencyIndex<TNode, AsyncMemoizeLevelOrderCapture<TNode>.Handle>(
+          new AsyncMemoizeLevelOrderCapture<TNode>.Handle(_Buffer)));
 
 
     // The door: topology-at-birth -- the walker holds the

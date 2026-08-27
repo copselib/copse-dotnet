@@ -436,13 +436,13 @@ namespace Copse.CodeGen
         "Copse.Linq/Topologies/LevelOrderArrayTopology.g.cs",
         "AsyncLevelOrderArrayTopology", "LevelOrderArrayTopology", "Copse.Linq.Topologies"),
 
-      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderStore.cs",
-        "Copse.Linq/Stores/Memoize/MemoizePreorderStore.g.cs",
-        "AsyncMemoizePreorderStore", "MemoizePreorderStore", "Copse.Linq.Stores"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizePreorderCapture.cs",
+        "Copse.Linq/Stores/Memoize/MemoizePreorderCapture.g.cs",
+        "AsyncMemoizePreorderCapture", "MemoizePreorderCapture", "Copse.Linq.Stores"),
 
-      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderStore.cs",
-        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderStore.g.cs",
-        "AsyncMemoizeLevelOrderStore", "MemoizeLevelOrderStore", "Copse.Linq.Stores"),
+      new("Copse.Linq.Async/Stores/Memoize/AsyncMemoizeLevelOrderCapture.cs",
+        "Copse.Linq/Stores/Memoize/MemoizeLevelOrderCapture.g.cs",
+        "AsyncMemoizeLevelOrderCapture", "MemoizeLevelOrderCapture", "Copse.Linq.Stores"),
 
       new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMemoizeTreenumerable.cs",
         "Copse.Linq/Treenumerables/Buffers/MemoizeTreenumerable.g.cs",

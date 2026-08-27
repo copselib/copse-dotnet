@@ -27,9 +27,9 @@ namespace Copse.Linq.Stores
   // Single-threaded by contract, like every treenumerator in the library.
   //
   // Taxonomy (design-docs/STORE_FAMILY_REVIEW.md): preorder x growing x resumable visit-stream feed.
-  internal sealed class AsyncMemoizePreorderStore<TNode> : IAsyncDisposable
+  internal sealed class AsyncMemoizePreorderCapture<TNode> : IAsyncDisposable
   {
-    public AsyncMemoizePreorderStore(Func<IAsyncTreenumerator<TNode>> feedFactory)
+    public AsyncMemoizePreorderCapture(Func<IAsyncTreenumerator<TNode>> feedFactory)
     {
       _FeedFactory = feedFactory;
     }
@@ -202,12 +202,12 @@ namespace Copse.Linq.Stores
     // the serializer's string stores: an adapter is meaningless without its owner.
     public readonly struct Handle : IAsyncPreorderStore<TNode>
     {
-      public Handle(AsyncMemoizePreorderStore<TNode> buffer)
+      public Handle(AsyncMemoizePreorderCapture<TNode> buffer)
       {
         _Buffer = buffer;
       }
 
-      private readonly AsyncMemoizePreorderStore<TNode> _Buffer;
+      private readonly AsyncMemoizePreorderCapture<TNode> _Buffer;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public ValueTask<bool> EnsureBufferedAsync(int index) => _Buffer.EnsureBufferedAsync(index);

@@ -11,7 +11,7 @@ namespace Copse.Stores
 {
   // The level-order dual of PreorderCapture: one breadth-first walk of any source,
   // captured into a completed level-order store. The parse state is the memo buffer's single
-  // monotonic front cursor (see MemoizeLevelOrderStore for the full derivation): BFT
+  // monotonic front cursor (see MemoizeLevelOrderCapture for the full derivation): BFT
   // visits nodes in the order they were scheduled, so the front -- advanced on each node's
   // first visiting visit -- is always the node whose children are currently being scheduled,
   // and every scheduled non-root wires into the front's child span. No stack, no search.

@@ -209,7 +209,7 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator)
     {
-      var capture = new MemoizeLevelOrderStore<TNode>(source.GetBreadthFirstTreenumerator);
+      var capture = new MemoizeLevelOrderCapture<TNode>(source.GetBreadthFirstTreenumerator);
       using (capture)
       {
         capture.Complete();
