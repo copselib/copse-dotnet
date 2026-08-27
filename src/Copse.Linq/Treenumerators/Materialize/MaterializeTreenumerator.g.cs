@@ -2,9 +2,10 @@
 //   Generated from AsyncMaterializeTreenumerator.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerables;
 using Copse.Core;
 
-namespace Copse.Linq.Treenumerables
+namespace Copse.Linq.Treenumerators
 {
   // The settle seam of MaterializeTreenumerable: a replay treenumerator acquired before the
   // buffer settled. Acquisition already did its organic work (acquiring the inner memo replay is

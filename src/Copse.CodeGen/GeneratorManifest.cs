@@ -462,9 +462,9 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/Buffers/MaterializeTreenumerable.g.cs",
         "AsyncMaterializeTreenumerable", "MaterializeTreenumerable", "Copse.Linq.Treenumerables"),
 
-      new("Copse.Linq.Async/Treenumerables/Buffers/AsyncMaterializeTreenumerator.cs",
-        "Copse.Linq/Treenumerables/Buffers/MaterializeTreenumerator.g.cs",
-        "AsyncMaterializeTreenumerator", "MaterializeTreenumerator", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/Treenumerators/Materialize/AsyncMaterializeTreenumerator.cs",
+        "Copse.Linq/Treenumerators/Materialize/MaterializeTreenumerator.g.cs",
+        "AsyncMaterializeTreenumerator", "MaterializeTreenumerator", "Copse.Linq.Treenumerators"),
 
       // The capture-op plumbing (LeaffixScan/Invert): canonical-name adoption, same as the
       // memoize cluster.
