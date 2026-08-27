@@ -26,6 +26,7 @@ namespace Copse.Linq
     /// <summary>The child's node (shorthand for <c>Context.Node</c>).</summary>
     public TNode Node => Context.Node;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{Context} <- {Accumulate}";
   }
 
@@ -101,8 +102,10 @@ namespace Copse.Linq
       return sources;
     }
 
+    /// <summary>The allocation-free enumerator <c>foreach</c> binds to.</summary>
     public Enumerator GetEnumerator() => new Enumerator(this);
 
+    /// <summary>Enumerates the sources in sibling order without allocating.</summary>
     public struct Enumerator
     {
       internal Enumerator(in DispatchSources<TNode, TAccumulate> sources)
@@ -114,8 +117,10 @@ namespace Copse.Linq
       private readonly DispatchSources<TNode, TAccumulate> _Sources;
       private int _Index;
 
+      /// <summary>The source at the current sibling index.</summary>
       public DispatchSource<TNode, TAccumulate> Current => _Sources[_Index];
 
+      /// <summary>Advances to the next child; false past the last.</summary>
       public bool MoveNext() => ++_Index < _Sources.Count;
     }
   }

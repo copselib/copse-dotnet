@@ -25,6 +25,7 @@ namespace Copse.Linq
     /// <summary>The value dispatched to this node by its family's survey.</summary>
     public readonly TDispatch Arrival;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{Node} <- {Arrival}";
   }
 }

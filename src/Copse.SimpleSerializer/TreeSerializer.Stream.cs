@@ -19,33 +19,65 @@ namespace Copse.SimpleSerializer
   {
     // ----- Deserialize (reader factory / file -> narrow) -----
 
+    /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only reader
+    /// as a depth-first-only tree, mapping each serialized value through
+    /// <paramref name="map"/>. Bounded memory; the breadth-first dimension is not on the
+    /// returned type — call <c>Memoize()</c> or <c>Materialize()</c> to buy it. Each
+    /// enumeration opens a fresh reader from the factory and disposes it when the traversal
+    /// is disposed.</summary>
     public static IDepthFirstTreenumerable<TNode> DeserializeDepthFirstTree<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map)
       => new PreorderStreamTreenumerable<TNode, PreorderTextStream<TNode>>(
         () => new PreorderTextStream<TNode>(readerFactory(), map));
 
+    /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only reader
+    /// as a depth-first-only tree of its raw string values. Bounded memory; each enumeration
+    /// opens a fresh reader from the factory and disposes it when the traversal is
+    /// disposed.</summary>
     public static IDepthFirstTreenumerable<string> DeserializeDepthFirstTree(Func<TextReader> readerFactory)
       => DeserializeDepthFirstTree(readerFactory, value => value);
 
+    /// <summary>Reads a preorder-grammar file (<c>"a(b(d,e),c)"</c>) as a depth-first-only
+    /// tree, mapping each serialized value through <paramref name="map"/>. Bounded memory;
+    /// each enumeration reopens the file.</summary>
     public static IDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeFromFile<TNode>(string path, Func<string, TNode> map)
       => DeserializeDepthFirstTree(() => File.OpenText(path), map);
 
+    /// <summary>Reads a preorder-grammar file (<c>"a(b(d,e),c)"</c>) as a depth-first-only
+    /// tree of its raw string values. Bounded memory; each enumeration reopens the
+    /// file.</summary>
     public static IDepthFirstTreenumerable<string> DeserializeDepthFirstTreeFromFile(string path)
       => DeserializeDepthFirstTreeFromFile(path, value => value);
 
+    /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only
+    /// reader as a breadth-first-only tree, mapping each serialized value through
+    /// <paramref name="map"/>. Bounded memory; the depth-first dimension is not on the
+    /// returned type — call <c>Memoize()</c> or <c>Materialize()</c> to buy it. Each
+    /// enumeration opens a fresh reader from the factory and disposes it when the traversal
+    /// is disposed.</summary>
     public static IBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map)
       => new LevelOrderStreamTreenumerable<TNode, LevelOrderTextStream<TNode>>(
         () => new LevelOrderTextStream<TNode>(readerFactory(), map));
 
+    /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only
+    /// reader as a breadth-first-only tree of its raw string values. Bounded memory; each
+    /// enumeration opens a fresh reader from the factory and disposes it when the traversal
+    /// is disposed.</summary>
     public static IBreadthFirstTreenumerable<string> DeserializeBreadthFirstTree(Func<TextReader> readerFactory)
       => DeserializeBreadthFirstTree(readerFactory, value => value);
 
+    /// <summary>Reads a level-order-grammar file (<c>"a;b,c;d,e"</c>) as a breadth-first-only
+    /// tree, mapping each serialized value through <paramref name="map"/>. Bounded memory;
+    /// each enumeration reopens the file.</summary>
     public static IBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeFromFile<TNode>(string path, Func<string, TNode> map)
       => DeserializeBreadthFirstTree(() => File.OpenText(path), map);
 
+    /// <summary>Reads a level-order-grammar file (<c>"a;b,c;d,e"</c>) as a breadth-first-only
+    /// tree of its raw string values. Bounded memory; each enumeration reopens the
+    /// file.</summary>
     public static IBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeFromFile(string path)
       => DeserializeBreadthFirstTreeFromFile(path, value => value);
 

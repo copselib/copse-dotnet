@@ -46,6 +46,7 @@ namespace Copse.Linq
       _Written[_Index] = true;
     }
 
+    /// <inheritdoc/>
     public override string ToString() => Context.ToString();
   }
 }

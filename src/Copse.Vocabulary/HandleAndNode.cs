@@ -20,6 +20,7 @@ namespace Copse
     /// <summary>The node.</summary>
     public readonly TNode Node;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{Handle}  {Node}";
   }
 }

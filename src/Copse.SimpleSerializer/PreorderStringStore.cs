@@ -5,10 +5,10 @@ using System.Runtime.CompilerServices;
 namespace Copse.SimpleSerializer
 {
   // A depth-first-serialized tree ("a(b(d,e),c)") as a LAZILY-PARSED preorder store: the
-  // incremental version of the old eager parse (a value followed by '(' is a parent, backfilled
+  // incremental parse (a value followed by '(' is a parent, backfilled
   // at its matching ')'; ',' separates siblings), pulled one committed value or one subtree
-  // close at a time, exactly as far as some traversal's frontier demands. Retiring the eager
-  // parse was the point of the whole serialization redesign: composing costs nothing, early-out
+  // close at a time, exactly as far as some traversal's frontier demands. The incrementality is
+  // the point: composing costs nothing, early-out
   // never touches the rest of the string, and the value map runs only for nodes the traversal
   // actually reaches.
   //
@@ -21,8 +21,8 @@ namespace Copse.SimpleSerializer
   // (full ITreenumerable citizenship via PreorderTreenumerable); parsed values and spans are
   // retained as they materialize -- the same growing-capture shape as the memo's DFT buffer,
   // with subtreeSizes[i] == 0 meaning node i's subtree is still OPEN. Retention is scoped to
-  // ONE treenumerator: the surface wraps construction in Tree.Defer (Defer schedule, unified
-  // 2026-08-03), so each acquisition parses afresh and the store is collected with its
+  // ONE treenumerator: the surface wraps construction in Tree.Defer (the Defer schedule
+  // every Deserialize shares), so each acquisition parses afresh and the store is collected with its
   // treenumerator -- re-enumeration yields fresh instances; parse-once replay is the caller's
   // explicit Materialize/Memoize escalation. Single-threaded by contract, like every
   // treenumerator in the library.

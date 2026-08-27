@@ -19,8 +19,8 @@ namespace Copse.SimpleSerializer
   // The string is its own random-access character buffer, so the store affords BOTH dimensions
   // (full ITreenumerable citizenship via LevelOrderTreenumerable: breadth-first is native
   // playback, depth-first rides the child spans cross-order). Retention is scoped to ONE
-  // treenumerator: the surface wraps construction in Tree.Defer (Defer schedule, unified
-  // 2026-08-03), so each acquisition parses afresh -- re-enumeration yields fresh instances;
+  // treenumerator: the surface wraps construction in Tree.Defer (the Defer schedule
+  // every Deserialize shares), so each acquisition parses afresh -- re-enumeration yields fresh instances;
   // parse-once replay is the caller's explicit Materialize/Memoize escalation. Single-threaded
   // by contract.
   //

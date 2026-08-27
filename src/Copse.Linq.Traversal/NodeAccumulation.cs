@@ -28,6 +28,7 @@ namespace Copse.Linq
     /// <summary>The accumulation the pass computed for this node.</summary>
     public readonly TAccumulate Accumulate;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{Node} <- {Accumulate}";
   }
 }

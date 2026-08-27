@@ -60,7 +60,7 @@ namespace Copse.Linq
 
         var childIndex = _ChildIndices[_ChildOffsets[_ParentIndex] + index];
 
-        // POSITIONS ARE DERIVED, NOT STORED (2026-08-05, the perf re-baseline's verdict): a
+        // Positions are derived, not stored: a
         // child's sibling index IS its offset in the parent's span (the child-index preserves
         // sibling order by construction), and its depth is the pass's walk depth plus one --
         // so the build allocates no positions array.
@@ -85,8 +85,10 @@ namespace Copse.Linq
       return targets;
     }
 
+    /// <summary>The allocation-free enumerator <c>foreach</c> binds to.</summary>
     public Enumerator GetEnumerator() => new Enumerator(this);
 
+    /// <summary>Enumerates the write-handles in sibling order without allocating.</summary>
     public struct Enumerator
     {
       internal Enumerator(in DispatchTargets<TNode, TDispatch> targets)
@@ -98,8 +100,10 @@ namespace Copse.Linq
       private readonly DispatchTargets<TNode, TDispatch> _Targets;
       private int _Index;
 
+      /// <summary>The write-handle at the current sibling index.</summary>
       public DispatchTarget<TNode, TDispatch> Current => _Targets[_Index];
 
+      /// <summary>Advances to the next child; false past the last.</summary>
       public bool MoveNext() => ++_Index < _Targets.Count;
     }
   }

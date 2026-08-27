@@ -21,6 +21,12 @@ namespace Copse.SimpleSerializer
   // IAsyncEnumerator<T>); it enters here, at the I/O edge, where there is real latency to interrupt.
   public static partial class TreeSerializer
   {
+    /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only
+    /// reader as a depth-first-only async tree, mapping each serialized value through
+    /// <paramref name="map"/>. Bounded memory; I/O happens during enumeration. The token
+    /// binds per deserialize call and is observed at the reader-refill seam. Each
+    /// enumeration opens a fresh reader from the factory and disposes it with the
+    /// traversal.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeAsync<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map,
@@ -28,22 +34,38 @@ namespace Copse.SimpleSerializer
       => new AsyncPreorderStreamTreenumerable<TNode, AsyncPreorderTextStream<TNode>>(
         () => new AsyncPreorderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
+    /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only
+    /// reader as a depth-first-only async tree of its raw string values. Bounded memory;
+    /// each enumeration opens a fresh reader from the factory and disposes it with the
+    /// traversal.</summary>
     public static IAsyncDepthFirstTreenumerable<string> DeserializeDepthFirstTreeAsync(
       Func<TextReader> readerFactory,
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeAsync(readerFactory, value => value, cancellationToken);
 
+    /// <summary>Reads a preorder-grammar file (<c>"a(b(d,e),c)"</c>) as a depth-first-only
+    /// async tree, mapping each serialized value through <paramref name="map"/>. The file is
+    /// opened for true asynchronous I/O; each enumeration reopens it.</summary>
     public static IAsyncDepthFirstTreenumerable<TNode> DeserializeDepthFirstTreeFromFileAsync<TNode>(
       string path,
       Func<string, TNode> map,
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeAsync(() => OpenAsyncText(path), map, cancellationToken);
 
+    /// <summary>Reads a preorder-grammar file (<c>"a(b(d,e),c)"</c>) as a depth-first-only
+    /// async tree of its raw string values. The file is opened for true asynchronous I/O;
+    /// each enumeration reopens it.</summary>
     public static IAsyncDepthFirstTreenumerable<string> DeserializeDepthFirstTreeFromFileAsync(
       string path,
       CancellationToken cancellationToken = default)
       => DeserializeDepthFirstTreeFromFileAsync(path, value => value, cancellationToken);
 
+    /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only
+    /// reader as a breadth-first-only async tree, mapping each serialized value through
+    /// <paramref name="map"/>. Bounded memory; I/O happens during enumeration. The token
+    /// binds per deserialize call and is observed at the reader-refill seam. Each
+    /// enumeration opens a fresh reader from the factory and disposes it with the
+    /// traversal.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeAsync<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map,
@@ -51,17 +73,27 @@ namespace Copse.SimpleSerializer
       => new AsyncLevelOrderStreamTreenumerable<TNode, AsyncLevelOrderTextStream<TNode>>(
         () => new AsyncLevelOrderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
+    /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only
+    /// reader as a breadth-first-only async tree of its raw string values. Bounded memory;
+    /// each enumeration opens a fresh reader from the factory and disposes it with the
+    /// traversal.</summary>
     public static IAsyncBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeAsync(
       Func<TextReader> readerFactory,
       CancellationToken cancellationToken = default)
       => DeserializeBreadthFirstTreeAsync(readerFactory, value => value, cancellationToken);
 
+    /// <summary>Reads a level-order-grammar file (<c>"a;b,c;d,e"</c>) as a breadth-first-only
+    /// async tree, mapping each serialized value through <paramref name="map"/>. The file is
+    /// opened for true asynchronous I/O; each enumeration reopens it.</summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTreeFromFileAsync<TNode>(
       string path,
       Func<string, TNode> map,
       CancellationToken cancellationToken = default)
       => DeserializeBreadthFirstTreeAsync(() => OpenAsyncText(path), map, cancellationToken);
 
+    /// <summary>Reads a level-order-grammar file (<c>"a;b,c;d,e"</c>) as a breadth-first-only
+    /// async tree of its raw string values. The file is opened for true asynchronous I/O;
+    /// each enumeration reopens it.</summary>
     public static IAsyncBreadthFirstTreenumerable<string> DeserializeBreadthFirstTreeFromFileAsync(
       string path,
       CancellationToken cancellationToken = default)

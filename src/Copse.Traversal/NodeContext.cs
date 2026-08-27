@@ -23,6 +23,7 @@ namespace Copse
     /// <summary>The node's position (sibling index and depth).</summary>
     public readonly NodePosition Position;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{Position}  {Node}";
   }
 }

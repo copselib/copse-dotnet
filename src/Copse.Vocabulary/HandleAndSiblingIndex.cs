@@ -22,6 +22,7 @@ namespace Copse
     /// <summary>The node's zero-based index among its siblings.</summary>
     public readonly int SiblingIndex;
 
+    /// <inheritdoc/>
     public override string ToString() => $"{SiblingIndex}  {Handle}";
   }
 }

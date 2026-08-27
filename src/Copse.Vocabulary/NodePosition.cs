@@ -55,6 +55,7 @@ namespace Copse.Core
 
     #region Equality Comparison
 
+    /// <inheritdoc/>
     public override bool Equals(object obj)
     {
       if (!(obj is NodePosition nodePosition))
@@ -63,18 +64,23 @@ namespace Copse.Core
       return Equals(this, nodePosition);
     }
 
+    /// <inheritdoc/>
     public override int GetHashCode()
       => GetHashCode(this);
 
+    /// <summary>Two positions are equal when both the sibling index and the depth match.</summary>
     public bool Equals(NodePosition left, NodePosition right)
       => left.SiblingIndex == right.SiblingIndex && left.Depth == right.Depth;
 
+    /// <summary>Two positions are equal when both the sibling index and the depth match.</summary>
     public static bool operator ==(NodePosition left, NodePosition right)
       => left.Equals(left, right);
 
+    /// <summary>Two positions differ when the sibling index or the depth differs.</summary>
     public static bool operator !=(NodePosition left, NodePosition right)
       => !left.Equals(left, right);
 
+    /// <summary>Hashes the (sibling index, depth) pair.</summary>
     public int GetHashCode(NodePosition nodePosition)
       => (nodePosition.SiblingIndex, nodePosition.Depth).GetHashCode();
 
@@ -100,15 +106,19 @@ namespace Copse.Core
       return 0;
     }
 
+    /// <summary>Orders by depth first, then by sibling index within a depth.</summary>
     public static bool operator <(NodePosition left, NodePosition right)
       => left.CompareTo(right) < 0;
 
+    /// <summary>Orders by depth first, then by sibling index within a depth.</summary>
     public static bool operator >(NodePosition left, NodePosition right)
       => left.CompareTo(right) > 0;
 
+    /// <summary>Orders by depth first, then by sibling index within a depth.</summary>
     public static bool operator <=(NodePosition left, NodePosition right)
       => left.CompareTo(right) <= 0;
 
+    /// <summary>Orders by depth first, then by sibling index within a depth.</summary>
     public static bool operator >=(NodePosition left, NodePosition right)
       => left.CompareTo(right) >= 0;
 

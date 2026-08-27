@@ -39,6 +39,7 @@
     /// <summary>Whether both trees contributed this node -- the merged case.</summary>
     public bool HasLeftAndRight => HasLeft && HasRight;
 
+    /// <inheritdoc/>
     public override string ToString() => $"({Left}, {Right})";
   }
 }
