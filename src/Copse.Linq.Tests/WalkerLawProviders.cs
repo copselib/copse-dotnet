@@ -24,10 +24,10 @@ namespace Copse.Linq.Tests
     // family seam the extensions use. Total like the door itself. The identity overload
     // lets sweeps wrap every probe receiver uniformly: already-topology-typed receivers
     // pass through.
-    public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(IWalkableTreenumerable<TValue, THandle> walkable)
+    public static ITreeTopology<TNode, THandle> TopologyOf<TNode, THandle>(IWalkableTreenumerable<TNode, THandle> walkable)
       => walkable.GetTreeWalker().Topology;
 
-    public static ITreeTopology<TValue, THandle> TopologyOf<TValue, THandle>(ITreeTopology<TValue, THandle> topology)
+    public static ITreeTopology<TNode, THandle> TopologyOf<TNode, THandle>(ITreeTopology<TNode, THandle> topology)
       => topology;
 
     public static IEnumerable<IWalkableTreenumerable<string, int>> Walkables(string tree)

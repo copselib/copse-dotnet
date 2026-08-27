@@ -205,9 +205,9 @@ namespace Copse.Linq.Tests
       return depth;
     }
 
-    private static void AssertEquivalent<TValue>(
-      ITreenumerable<TValue> expected,
-      ITreenumerable<TValue> actual,
+    private static void AssertEquivalent<TNode>(
+      ITreenumerable<TNode> expected,
+      ITreenumerable<TNode> actual,
       string law)
     {
       CollectionAssert.AreEqual(
@@ -221,10 +221,10 @@ namespace Copse.Linq.Tests
         $"{law} (breadth-first)");
     }
 
-    private static List<(TreenumeratorMode Mode, TValue Node, int VisitCount, NodePosition Position)> DrainVisits<TValue>(
-      ITreenumerator<TValue> treenumerator)
+    private static List<(TreenumeratorMode Mode, TNode Node, int VisitCount, NodePosition Position)> DrainVisits<TNode>(
+      ITreenumerator<TNode> treenumerator)
     {
-      var visits = new List<(TreenumeratorMode, TValue, int, NodePosition)>();
+      var visits = new List<(TreenumeratorMode, TNode, int, NodePosition)>();
 
       using (treenumerator)
       {

@@ -13,20 +13,20 @@ namespace Copse.Linq.Experimental
     // Parked here so the axis spelling isn't locked in by shipping; the region and walk floors are
     // not scaffolded yet.
 
-    public static IEnumerable<THandle> GetAncestors<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static IEnumerable<THandle> GetAncestors<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       var stance = source.GetTreeWalkerAt(handle);
 
-      // Value axes exclude the unfocused stance: it has no handle to yield (climbs top out
+      // The handle axes exclude the unfocused stance: it has no handle to yield (climbs top out
       // there; the axis stops one step earlier).
       while (stance.MoveToParent().TryGetValue(out stance) && stance.HasFocus)
         yield return stance.Focus;
     }
 
-    public static IEnumerable<THandle> GetAncestorsAndSelf<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static IEnumerable<THandle> GetAncestorsAndSelf<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       yield return handle;
@@ -35,8 +35,8 @@ namespace Copse.Linq.Experimental
         yield return ancestor;
     }
 
-    public static THandle GetRoot<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static THandle GetRoot<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       var walker = source.GetTreeWalkerAt(handle);
@@ -48,8 +48,8 @@ namespace Copse.Linq.Experimental
     }
 
     // The number of proper ancestors. O(depth) -- contrast a height, which is a subtree sweep.
-    public static int GetDepth<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static int GetDepth<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       var depth = 0;
@@ -61,8 +61,8 @@ namespace Copse.Linq.Experimental
       return depth;
     }
 
-    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetChildren<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetChildren<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       var walker = source.GetTreeWalkerAt(handle);
@@ -71,8 +71,8 @@ namespace Copse.Linq.Experimental
         yield return new HandleAndSiblingIndex<THandle>(child.Focus, childIndex);
     }
 
-    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetRootNodes<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source)
+    public static IEnumerable<HandleAndSiblingIndex<THandle>> GetRootNodes<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source)
     {
       for (var rootIndex = 0; source.TryGetTreeWalkerAtRootIndex(rootIndex).TryGetValue(out var root); rootIndex++)
         yield return new HandleAndSiblingIndex<THandle>(root.Focus, rootIndex);
@@ -83,8 +83,8 @@ namespace Copse.Linq.Experimental
     // unbounded child group. This walks the child axis to the first miss -- the LINQ Count()
     // contract, divergent on infinite sequences by the caller's choice. Finite providers offer
     // cheap counts as members of their concrete types.
-    public static int GetChildCount<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source,
+    public static int GetChildCount<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source,
       THandle handle)
     {
       var walker = source.GetTreeWalkerAt(handle);
@@ -100,8 +100,8 @@ namespace Copse.Linq.Experimental
     // nothing, exists purely to steer the static type back to the streaming surface mid-chain.
     // The swap UP is Materialize -- the capture's door binds the index, free where the
     // capability survives, a documented capture where it does not.
-    public static ITreenumerable<TValue> AsTreenumerable<TValue, THandle>(
-      this IWalkableTreenumerable<TValue, THandle> source)
+    public static ITreenumerable<TNode> AsTreenumerable<TNode, THandle>(
+      this IWalkableTreenumerable<TNode, THandle> source)
       => source;
   }
 }
