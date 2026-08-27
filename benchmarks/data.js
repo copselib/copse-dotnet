@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787794391554,
+  "lastUpdate": 1787794392039,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -126354,6 +126354,150 @@ window.BENCHMARK_DATA = {
             "value": 43404605.63888889,
             "unit": "ns",
             "range": "± 244759.50037459136"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "42eff61eff902301ad988e07b27826fe48b010ae",
+          "message": "TValue residue sweep: walker-law tests, Experimental walker axes, CodeGen comment say TNode\n\nThe ratified rule (TNode = element everywhere; TValue only as Option's own type\nparameter and role words) had not reached the walker law tests, the Experimental\nwalker-axis extensions, or a stale HandleAndNode comment in the codegen. Also a\nstray 'Value axes' comment -> 'handle axes' (the axes yield handles). The\nremaining TValue sites are Option<TValue> itself and doc crefs to it -- correct\nby the container line.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T01:12:43Z",
+          "tree_id": "31279283a3eb0171c59de21f5833e068f545e672",
+          "url": "https://github.com/copselib/copse-dotnet/commit/42eff61eff902301ad988e07b27826fe48b010ae"
+        },
+        "date": 1787794391937,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12958128.314903846,
+            "unit": "ns",
+            "range": "± 23103.481760697283"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 22592980.8828125,
+            "unit": "ns",
+            "range": "± 19981.360696134307"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 4061046.1028645835,
+            "unit": "ns",
+            "range": "± 2986.5595130789525"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 6544276.801215278,
+            "unit": "ns",
+            "range": "± 137875.37691913007"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 92759619.96666667,
+            "unit": "ns",
+            "range": "± 388177.3657004489"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 155949082.96153846,
+            "unit": "ns",
+            "range": "± 537436.1464873141"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33436021.016666666,
+            "unit": "ns",
+            "range": "± 22261.631874170893"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54506544.428571425,
+            "unit": "ns",
+            "range": "± 128545.77616729453"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12407804.44375,
+            "unit": "ns",
+            "range": "± 139471.04024848962"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11812691.479567308,
+            "unit": "ns",
+            "range": "± 30204.22399350226"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3236310.609933036,
+            "unit": "ns",
+            "range": "± 1427.5897319436829"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3236063.8541666665,
+            "unit": "ns",
+            "range": "± 1254.288379424729"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 90660447.54444443,
+            "unit": "ns",
+            "range": "± 501773.62735458807"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 83009829.47222222,
+            "unit": "ns",
+            "range": "± 92781.16317230018"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 32337403.691666666,
+            "unit": "ns",
+            "range": "± 60293.73950068799"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20918722.176339287,
+            "unit": "ns",
+            "range": "± 98915.38607304709"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 95982977.35714284,
+            "unit": "ns",
+            "range": "± 468406.30938989297"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 156455840.92857143,
+            "unit": "ns",
+            "range": "± 322038.657516147"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19678733.55625,
+            "unit": "ns",
+            "range": "± 62713.52794341983"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 42831887.50641025,
+            "unit": "ns",
+            "range": "± 191778.28656287244"
           }
         ]
       }
