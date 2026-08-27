@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787789934081,
+  "lastUpdate": 1787789934741,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -92954,6 +92954,114 @@ window.BENCHMARK_DATA = {
             "value": 815461.1798377404,
             "unit": "ns",
             "range": "± 1605.9200903818814"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f73353127808a3b341aaea3598ae8678f2bcb99a",
+          "message": "Node/value audit: tree-domain members say Node; containers keep Value\n\nJason's policy line, applied: when a type is tree-domain -- its\nparameter IS the element -- members name what they hold, so\nSelectWhereResult.Value and PreorderRead.Value become Node (with their\nconstructor parameters), the completed array stores and dispatch views\nstore _Nodes, the stream treenumerators' frames and lookahead carry\nNode, and the leaffix frame tuple follows. Genuine containers keep\ntheir own idiom: Option and the walker step result hold anything, so\ntheir Value/HasValue stand, as do the accessor-word members (GetValue,\nTryGetValueAsync, GetHandlesWithValues). Doc phrases saying \"source\nvalue\" for members named Node reworded. Release-noted; twins\nregenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T23:49:54Z",
+          "tree_id": "b5e387738fe1b654146e30e4fa9a2dc75bc279ef",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f73353127808a3b341aaea3598ae8678f2bcb99a"
+        },
+        "date": 1787789934601,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2323519.8364583333,
+            "unit": "ns",
+            "range": "± 4260.154353251194"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1868216.4574819712,
+            "unit": "ns",
+            "range": "± 2484.304298229778"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4651692.524038462,
+            "unit": "ns",
+            "range": "± 1841.4996960048518"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3840384.482552083,
+            "unit": "ns",
+            "range": "± 9284.857831200683"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 652893.9748883928,
+            "unit": "ns",
+            "range": "± 768.3072243681587"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 672121.650015024,
+            "unit": "ns",
+            "range": "± 504.12318155546353"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 443864.12764798675,
+            "unit": "ns",
+            "range": "± 1078.3289920502107"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4253781.338020833,
+            "unit": "ns",
+            "range": "± 8859.259605625382"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3242202.85,
+            "unit": "ns",
+            "range": "± 42994.30985355192"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 14420971.646875,
+            "unit": "ns",
+            "range": "± 105186.21285235966"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7627920.640625,
+            "unit": "ns",
+            "range": "± 26836.569437188828"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1357153.5028545673,
+            "unit": "ns",
+            "range": "± 2453.484582735643"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1138274.103794643,
+            "unit": "ns",
+            "range": "± 1106.943600988569"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1051993.3763521635,
+            "unit": "ns",
+            "range": "± 1429.0528423923415"
           }
         ]
       }
