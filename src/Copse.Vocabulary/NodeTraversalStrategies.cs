@@ -12,29 +12,29 @@ namespace Copse.Core
   public enum NodeTraversalStrategies
   {
     /// <summary>Prune nothing; continue the full traversal.</summary>
-    TraverseAll                = 0,                                         // 0
+    TraverseAll                 = 0,
 
     /// <summary>Emit no further visits for the current node. Its descendants are still
     /// traversed, and their positions are unchanged.</summary>
-    SkipNode                   = 1,                                         // 1
+    SkipNode                    = 1,
 
     /// <summary>Do not traverse the current node's descendants.</summary>
-    PruneDescendants            = 2,                                         // 2
+    PruneDescendants            = 2,
 
     /// <summary>Skip the current node's remaining visits and its descendants.</summary>
-    PruneSubtree     = SkipNode | PruneDescendants,                // 3
+    PruneSubtree                = SkipNode | PruneDescendants,
 
     /// <summary>Do not schedule the current node's later siblings.</summary>
-    PruneSiblings               = 4,                                         // 4
+    PruneSiblings               = 4,
 
     /// <summary>Skip the current node's remaining visits and its later siblings.</summary>
-    SkipNodeAndPruneSiblings        = SkipNode |                   PruneSiblings, // 5
+    SkipNodeAndPruneSiblings    = SkipNode | PruneSiblings,
 
     /// <summary>Skip the current node's descendants and its later siblings.</summary>
-    PruneDescendantsAndSiblings =            PruneDescendants | PruneSiblings, // 6
+    PruneDescendantsAndSiblings = PruneDescendants | PruneSiblings,
 
     /// <summary>Skip everything reachable from the current node: its remaining visits, its
     /// descendants, and its later siblings.</summary>
-    PruneSubtreeAndSiblings                    = SkipNode | PruneDescendants | PruneSiblings, // 7
+    PruneSubtreeAndSiblings     = SkipNode | PruneDescendants | PruneSiblings,
   }
 }
