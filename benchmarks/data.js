@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787863570417,
+  "lastUpdate": 1787863571107,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -274481,6 +274481,132 @@ window.BENCHMARK_DATA = {
             "value": 43426689.77230767,
             "unit": "ns",
             "range": "± 4487728.449557525"
+          }
+        ]
+      }
+    ],
+    "FlatDecode Memory": [
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50dac5a910fc6237278d85e614aca372b142dad5",
+          "message": "Promote the public operator tier to namespace Copse.Linq\n\nThe ruling: public surface lives in Copse.Linq; the machinery namespaces\n(Treenumerables, Treenumerators, Stores, Topologies) hold internals only. One\n'using Copse.Linq;' now surfaces the entire operator tier.\n\nPromoted out of Copse.Linq.Treenumerables: the buffer contracts\n(ITreenumerableBuffer, IMemoizeTreenumerableBuffer, ISelectTreenumerableBuffer)\nand the composition citizenship (ISelectTreenumerable,\nIPruneDescendantsWhereTreenumerable, and the public citizen classes\nSelectTreenumerable / PruneDescendantsWhereTreenumerable -- accessibility\nuntouched, the shipped composition surface). Promoted out of\nCopse.Linq.Treenumerators: MergeNode, the element type every Union/Intersection\nconsumer names. The Copse.Linq.Extensions namespace is retired --\nTreenumeratorExtensions, NodeVisitExtensions, and the async twin fold into\nCopse.Linq, so the treenumerator-level extension methods no longer demand a\nusing nobody would guess.\n\nAsync twins mirror throughout; manifest namespaces updated, twins regenerated.\nThe promoted citizen files import the machinery namespace they ride\n(ISelectWhereTreenumerable, the projection seams stay internal machinery).\nSuite green: 26,542 (463 + 69 + 26,010).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T20:26:28Z",
+          "tree_id": "afa282a0a7f37d2fd590769f18127ab0a0b52bb8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/50dac5a910fc6237278d85e614aca372b142dad5"
+        },
+        "date": 1787863570961,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Bft_Binary",
+            "value": 12693232,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Bft_Binary",
+            "value": 12692433,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStreamDecode.Binary",
+            "value": 50486918,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Dft_Binary",
+            "value": 1311,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Dft_Binary",
+            "value": 1311,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStreamDecode.Binary",
+            "value": 1215,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Dft_Binary",
+            "value": 1243,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Dft_Binary",
+            "value": 1199,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStreamDecode.Triangle",
+            "value": 394754,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Bft_Binary",
+            "value": 14807978,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Bft_Binary",
+            "value": 14807581,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStreamDecode.Triangle",
+            "value": 50031,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Bft_Triangle",
+            "value": 198005,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Bft_Triangle",
+            "value": 197998,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Dft_Triangle",
+            "value": 58221,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Dft_Triangle",
+            "value": 58191,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderChunkedStoreDecode.Dft_Triangle",
+            "value": 50015,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderStoreDecode.Dft_Triangle",
+            "value": 50015,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderChunkedStoreDecode.Bft_Triangle",
+            "value": 230818,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderStoreDecode.Bft_Triangle",
+            "value": 230801,
+            "unit": "bytes"
           }
         ]
       }
