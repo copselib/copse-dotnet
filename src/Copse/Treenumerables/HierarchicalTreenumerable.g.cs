@@ -24,7 +24,7 @@ namespace Copse.Treenumerables
   /// the start (an <see cref="IEnumerable{THandle}"/> is cold, like its sync
   /// counterpart); a single-pass source should be memoized first.
   /// </summary>
-  public class HierarchicalTreenumerable<TNode, THandle, TChildEnumerator>
+  internal class HierarchicalTreenumerable<TNode, THandle, TChildEnumerator>
     : ITreenumerable<TNode>
     where TChildEnumerator : IChildEnumerator<THandle>
   {
@@ -68,7 +68,7 @@ namespace Copse.Treenumerables
 
   /// <summary>The two-parameter form for trees whose node is its own handle: the map is the
   /// identity, so callers don't supply one.</summary>
-  public class HierarchicalTreenumerable<TNode, TChildEnumerator>
+  internal class HierarchicalTreenumerable<TNode, TChildEnumerator>
     : HierarchicalTreenumerable<TNode, TNode, TChildEnumerator>
     where TChildEnumerator : IChildEnumerator<TNode>
   {

@@ -30,7 +30,7 @@ namespace Copse.SimpleSerializer
       Func<TextReader> readerFactory,
       Func<string, TNode> map,
       CancellationToken cancellationToken = default)
-      => new AsyncPreorderStreamTreenumerable<TNode, AsyncPreorderTextStream<TNode>>(
+      => AsyncTree.FromPreorderStream<TNode, AsyncPreorderTextStream<TNode>>(
         () => new AsyncPreorderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
     /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only
@@ -69,7 +69,7 @@ namespace Copse.SimpleSerializer
       Func<TextReader> readerFactory,
       Func<string, TNode> map,
       CancellationToken cancellationToken = default)
-      => new AsyncLevelOrderStreamTreenumerable<TNode, AsyncLevelOrderTextStream<TNode>>(
+      => AsyncTree.FromLevelOrderStream<TNode, AsyncLevelOrderTextStream<TNode>>(
         () => new AsyncLevelOrderTextStream<TNode>(readerFactory(), map, cancellationToken));
 
     /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only

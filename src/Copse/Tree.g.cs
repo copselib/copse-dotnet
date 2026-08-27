@@ -6,6 +6,7 @@ using Copse.ChildEnumerators;
 using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
+using Copse.Stores;
 using System;
 using System.Collections.Generic;
 
@@ -171,6 +172,26 @@ namespace Copse
       Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new DelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
+    /// <summary>A treenumerable over child-shaped data -- the hierarchical family's door:
+    /// the roots, a factory producing each handle's child enumerator, and the map resolving
+    /// a handle to its node. Deferred: nothing is pulled until a traversal runs; each
+    /// traversal re-enumerates the roots.</summary>
+    public static ITreenumerable<TNode> Create<TNode, THandle, TChildEnumerator>(
+      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap,
+      IEnumerable<THandle> roots)
+      where TChildEnumerator : IChildEnumerator<THandle>
+      => new HierarchicalTreenumerable<TNode, THandle, TChildEnumerator>(
+        childEnumeratorFactory, handleToNodeMap, roots);
+
+    /// <summary>The node-is-its-own-handle form of the hierarchical door: the roots and a
+    /// factory producing each node's child enumerator.</summary>
+    public static ITreenumerable<TNode> Create<TNode, TChildEnumerator>(
+      Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
+      IEnumerable<TNode> roots)
+      where TChildEnumerator : IChildEnumerator<TNode>
+      => new HierarchicalTreenumerable<TNode, TChildEnumerator>(childEnumeratorFactory, roots);
+
     /// <summary>A treenumerable that traverses any <see cref="ITreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
@@ -181,6 +202,36 @@ namespace Copse
         nodeContext => new TopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));
+
+    /// <summary>A treenumerable decoding a random-access preorder store -- the flat
+    /// family's preorder door: <c>nodes[i]</c> in preorder with subtree sizes beside
+    /// them. Random access affords both traversal orders.</summary>
+    public static ITreenumerable<TNode> FromPreorderStore<TNode, TStore>(TStore store)
+      where TStore : IPreorderStore<TNode>
+      => new PreorderTreenumerable<TNode, TStore>(store);
+
+    /// <summary>A treenumerable decoding a random-access level-order store -- the flat
+    /// family's level-order door: nodes level by level with child spans beside them.
+    /// Random access affords both traversal orders.</summary>
+    public static ITreenumerable<TNode> FromLevelOrderStore<TNode, TStore>(TStore store)
+      where TStore : ILevelOrderStore<TNode>
+      => new LevelOrderTreenumerable<TNode, TStore>(store);
+
+    /// <summary>A depth-first-only treenumerable over a forward-only preorder stream: each
+    /// traversal opens a fresh stream from the factory and disposes it with the
+    /// treenumerator. The breadth-first dimension is not on the returned type --
+    /// <c>Memoize()</c>/<c>Materialize()</c> buy it explicitly.</summary>
+    public static IDepthFirstTreenumerable<TNode> FromPreorderStream<TNode, TStream>(Func<TStream> streamFactory)
+      where TStream : IPreorderStream<TNode>
+      => new PreorderStreamTreenumerable<TNode, TStream>(streamFactory);
+
+    /// <summary>A breadth-first-only treenumerable over a forward-only level-order stream:
+    /// each traversal opens a fresh stream from the factory and disposes it with the
+    /// treenumerator. The depth-first dimension is not on the returned type --
+    /// <c>Memoize()</c>/<c>Materialize()</c> buy it explicitly.</summary>
+    public static IBreadthFirstTreenumerable<TNode> FromLevelOrderStream<TNode, TStream>(Func<TStream> streamFactory)
+      where TStream : ILevelOrderStream<TNode>
+      => new LevelOrderStreamTreenumerable<TNode, TStream>(streamFactory);
 
     private static IEnumerable<HandleAndNode<THandle, TNode>> RootsFrom<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)

@@ -2,6 +2,7 @@ using Copse.ChildEnumerators;
 using Copse.Treenumerables;
 using Copse.Treenumerators;
 using Copse.Core;
+using Copse.Stores;
 using System;
 using System.Collections.Generic;
 
@@ -190,6 +191,26 @@ namespace Copse
       Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
       => new AsyncDelegatingBreadthFirstTreenumerable<TNode>(breadthFirstTreenumeratorFactory);
 
+    /// <summary>A treenumerable over child-shaped data -- the hierarchical family's door:
+    /// the roots, a factory producing each handle's child enumerator, and the map resolving
+    /// a handle to its node. Deferred: nothing is pulled until a traversal runs; each
+    /// traversal re-enumerates the roots.</summary>
+    public static IAsyncTreenumerable<TNode> Create<TNode, THandle, TAsyncChildEnumerator>(
+      Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<THandle, TNode> handleToNodeMap,
+      IAsyncEnumerable<THandle> roots)
+      where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
+      => new AsyncHierarchicalTreenumerable<TNode, THandle, TAsyncChildEnumerator>(
+        childEnumeratorFactory, handleToNodeMap, roots);
+
+    /// <summary>The node-is-its-own-handle form of the hierarchical door: the roots and a
+    /// factory producing each node's child enumerator.</summary>
+    public static IAsyncTreenumerable<TNode> Create<TNode, TAsyncChildEnumerator>(
+      Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
+      IAsyncEnumerable<TNode> roots)
+      where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
+      => new AsyncHierarchicalTreenumerable<TNode, TAsyncChildEnumerator>(childEnumeratorFactory, roots);
+
     /// <summary>A treenumerable that traverses any <see cref="IAsyncTreeTopology{TNode, THandle}"/>
     /// by probing it -- the bridge for third-party structures: implement the four-probe
     /// topology interface over your native tree and this affords both traversal orders.
@@ -200,6 +221,36 @@ namespace Copse
         nodeContext => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));
+
+    /// <summary>A treenumerable decoding a random-access preorder store -- the flat
+    /// family's preorder door: <c>nodes[i]</c> in preorder with subtree sizes beside
+    /// them. Random access affords both traversal orders.</summary>
+    public static IAsyncTreenumerable<TNode> FromPreorderStore<TNode, TStore>(TStore store)
+      where TStore : IAsyncPreorderStore<TNode>
+      => new AsyncPreorderTreenumerable<TNode, TStore>(store);
+
+    /// <summary>A treenumerable decoding a random-access level-order store -- the flat
+    /// family's level-order door: nodes level by level with child spans beside them.
+    /// Random access affords both traversal orders.</summary>
+    public static IAsyncTreenumerable<TNode> FromLevelOrderStore<TNode, TStore>(TStore store)
+      where TStore : IAsyncLevelOrderStore<TNode>
+      => new AsyncLevelOrderTreenumerable<TNode, TStore>(store);
+
+    /// <summary>A depth-first-only treenumerable over a forward-only preorder stream: each
+    /// traversal opens a fresh stream from the factory and disposes it with the
+    /// treenumerator. The breadth-first dimension is not on the returned type --
+    /// <c>Memoize()</c>/<c>Materialize()</c> buy it explicitly.</summary>
+    public static IAsyncDepthFirstTreenumerable<TNode> FromPreorderStream<TNode, TStream>(Func<TStream> streamFactory)
+      where TStream : IAsyncPreorderStream<TNode>
+      => new AsyncPreorderStreamTreenumerable<TNode, TStream>(streamFactory);
+
+    /// <summary>A breadth-first-only treenumerable over a forward-only level-order stream:
+    /// each traversal opens a fresh stream from the factory and disposes it with the
+    /// treenumerator. The depth-first dimension is not on the returned type --
+    /// <c>Memoize()</c>/<c>Materialize()</c> buy it explicitly.</summary>
+    public static IAsyncBreadthFirstTreenumerable<TNode> FromLevelOrderStream<TNode, TStream>(Func<TStream> streamFactory)
+      where TStream : IAsyncLevelOrderStream<TNode>
+      => new AsyncLevelOrderStreamTreenumerable<TNode, TStream>(streamFactory);
 
     private static async IAsyncEnumerable<HandleAndNode<THandle, TNode>> RootsFrom<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)

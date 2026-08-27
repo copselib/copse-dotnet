@@ -16,7 +16,7 @@ namespace Copse.Treenumerables
   /// the breadth-first dimension. Each acquisition invokes the factory for a fresh stream and OWNS it
   /// (disposal closes it); re-enumeration re-reads the source.
   /// </summary>
-  public sealed class PreorderStreamTreenumerable<TNode, TStream> : IDepthFirstTreenumerable<TNode>
+  internal sealed class PreorderStreamTreenumerable<TNode, TStream> : IDepthFirstTreenumerable<TNode>
     where TStream : IPreorderStream<TNode>
   {
     /// <summary>Wraps a forward-only preorder stream factory; each traversal opens a fresh

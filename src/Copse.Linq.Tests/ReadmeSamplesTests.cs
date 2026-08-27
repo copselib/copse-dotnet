@@ -40,14 +40,14 @@ namespace Copse.Linq.Tests
       public void Dispose() => _disposed = true;
     }
 
-    private static ITreenumerable<int> Tree()
-      => new HierarchicalTreenumerable<int, BinaryChildren>(
+    private static ITreenumerable<int> BinaryTree()
+      => Copse.Tree.Create(
         ctx => new BinaryChildren(ctx.Node), new[] { 1 });
 
     [TestMethod]
     public void Traversals_and_streaming_operators()
     {
-      var tree = Tree();
+      var tree = BinaryTree();
 
       CollectionAssert.AreEqual(new[] { 1, 2, 4, 5, 3, 6, 7 }, tree.GetPreorderTraversal().ToArray());
       CollectionAssert.AreEqual(new[] { 4, 5, 6, 7 }, tree.GetLeaves().ToArray());
@@ -66,13 +66,13 @@ namespace Copse.Linq.Tests
     {
       CollectionAssert.AreEqual(
         new[] { 1, 5, 3, 7 },
-        Tree().Where(node => node % 2 != 0).GetPreorderTraversal().ToArray());
+        BinaryTree().Where(node => node % 2 != 0).GetPreorderTraversal().ToArray());
     }
 
     [TestMethod]
     public void LeaffixAggregate_folds_bottom_up()
     {
-      var subtreeSum = Tree()
+      var subtreeSum = BinaryTree()
         .LeaffixAggregate(
           leaf => leaf,
           (accumulate, childAccumulate) => accumulate + childAccumulate,
@@ -86,7 +86,7 @@ namespace Copse.Linq.Tests
     [TestMethod]
     public void Walker_over_a_capture()
     {
-      var capture = Tree().Materialize();
+      var capture = BinaryTree().Materialize();
       var walker = capture.GetTreeWalker().MoveToRoot(0).Value;
 
       Assert.AreEqual(1, walker.GetNode());

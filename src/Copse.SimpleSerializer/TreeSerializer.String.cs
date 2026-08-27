@@ -56,7 +56,7 @@ namespace Copse.SimpleSerializer
     /// are allocated. Deferred: each enumeration parses and maps afresh.</summary>
     public static ITreenumerable<TNode> DeserializeDepthFirstTree<TNode>(string tree, SpanMap<TNode> map)
       => Tree.Defer(() =>
-        new PreorderTreenumerable<TNode, PreorderStringStore<TNode>.Handle>(
+        Tree.FromPreorderStore<TNode, PreorderStringStore<TNode>.Handle>(
           new PreorderStringStore<TNode>.Handle(new PreorderStringStore<TNode>(tree, map))));
 
     /// <summary>Reads a level-order-grammar string (<c>"a;b,c;d,e"</c>) as a tree of its raw
@@ -79,7 +79,7 @@ namespace Copse.SimpleSerializer
     /// are allocated. Deferred: each enumeration parses and maps afresh.</summary>
     public static ITreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(string tree, SpanMap<TNode> map)
       => Tree.Defer(() =>
-        new LevelOrderTreenumerable<TNode, LevelOrderStringStore<TNode>.Handle>(
+        Tree.FromLevelOrderStore<TNode, LevelOrderStringStore<TNode>.Handle>(
           new LevelOrderStringStore<TNode>.Handle(new LevelOrderStringStore<TNode>(tree, map))));
 
     // ----- Serialize (tree -> string) -----

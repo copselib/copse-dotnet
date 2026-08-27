@@ -28,7 +28,7 @@ namespace Copse.SimpleSerializer
     public static IDepthFirstTreenumerable<TNode> DeserializeDepthFirstTree<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map)
-      => new PreorderStreamTreenumerable<TNode, PreorderTextStream<TNode>>(
+      => Tree.FromPreorderStream<TNode, PreorderTextStream<TNode>>(
         () => new PreorderTextStream<TNode>(readerFactory(), map));
 
     /// <summary>Reads preorder-grammar text (<c>"a(b(d,e),c)"</c>) from a forward-only reader
@@ -59,7 +59,7 @@ namespace Copse.SimpleSerializer
     public static IBreadthFirstTreenumerable<TNode> DeserializeBreadthFirstTree<TNode>(
       Func<TextReader> readerFactory,
       Func<string, TNode> map)
-      => new LevelOrderStreamTreenumerable<TNode, LevelOrderTextStream<TNode>>(
+      => Tree.FromLevelOrderStream<TNode, LevelOrderTextStream<TNode>>(
         () => new LevelOrderTextStream<TNode>(readerFactory(), map));
 
     /// <summary>Reads level-order-grammar text (<c>"a;b,c;d,e"</c>) from a forward-only

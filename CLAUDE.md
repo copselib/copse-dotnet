@@ -86,7 +86,8 @@ The library **never performs node equality comparisons**. This is a deliberate d
   collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted `Copse.Disposables`
   algebra. References nothing.
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
-  engine (`HierarchicalTreenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
+  engine (`HierarchicalTreenumerable<,,>` + the DFS/BFS treenumerators, driven via
+  `IChildEnumerator` — internal, entered through the `Tree.Create` doors) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
   treenumerators, over flat preorder/level-order encodings — the store SPIs, read structs,
   completed array stores, and capture factories live in `Copse/Stores`, generated from their

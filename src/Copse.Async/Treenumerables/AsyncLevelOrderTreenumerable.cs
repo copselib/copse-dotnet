@@ -11,7 +11,7 @@ namespace Copse.Treenumerables
   /// <see cref="IAsyncTreenumerable{TNode}"/>: breadth-first traversal is native playback,
   /// depth-first rides the same store cross-order.
   /// </summary>
-  public sealed class AsyncLevelOrderTreenumerable<TNode, TStore> : IAsyncTreenumerable<TNode>
+  internal sealed class AsyncLevelOrderTreenumerable<TNode, TStore> : IAsyncTreenumerable<TNode>
     where TStore : IAsyncLevelOrderStore<TNode>
   {
     /// <summary>Wraps a random-access level-order store; every traversal of either dimension

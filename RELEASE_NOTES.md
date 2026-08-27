@@ -117,6 +117,14 @@
   ids will be deprecated. *Migration: remove any direct references to the three retired
   packages — their types arrive through `Copse.Core`/`Copse`/`Copse.Linq`; `Option` and
   `HandleAndSiblingIndex` move from namespace `Copse` to `Copse.Core`.*
+- **Every concrete treenumerable is internal; every entry is a door** — `Tree.Create` gains
+  the hierarchical family's overloads (`(childEnumeratorFactory, roots)` and the
+  handle form `(childEnumeratorFactory, handleToNodeMap, roots)`), and the flat family
+  gains `Tree.FromPreorderStore` / `FromLevelOrderStore` / `FromPreorderStream` /
+  `FromLevelOrderStream` (`AsyncTree` twins likewise). `HierarchicalTreenumerable` and the
+  four flat wrappers are `internal`. *Migration: replace `new XTreenumerable(...)` with the
+  matching `Tree.*` door; the store/stream SPIs and the sample-tree classes are
+  unchanged.*
 - **The hierarchical family says hierarchical**: the engine class `Treenumerable` →
   `HierarchicalTreenumerable` (both arities; async twin `AsyncHierarchicalTreenumerable`),
   completing the family triple beside `PreorderTreenumerable` and

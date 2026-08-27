@@ -60,7 +60,7 @@ struct BinaryChildren : IChildEnumerator<int>
     public void Dispose() => _disposed = true;
 }
 
-ITreenumerable<int> tree = new HierarchicalTreenumerable<int, BinaryChildren>(
+ITreenumerable<int> tree = Tree.Create(
     ctx => new BinaryChildren(ctx.Node), new[] { 1 });
 //       1
 //      / \
@@ -69,9 +69,10 @@ ITreenumerable<int> tree = new HierarchicalTreenumerable<int, BinaryChildren>(
 //   4  5 6  7
 ```
 
-(The two-parameter `HierarchicalTreenumerable<TNode, TChildEnumerator>` is the node-is-its-own-handle
-convenience; the three-parameter form takes a `handle → node` map for trees whose surfaced
-values can't produce their own children.)
+(This is the node-is-its-own-handle form; `Tree.Create` also has a three-parameter overload
+taking a `handle → node` map for trees whose surfaced values can't produce their own
+children, and `Tree.FromTopology`/`Tree.FromPreorderStore`-style doors cover the other
+families.)
 
 Once you have an `ITreenumerable<T>`, the full operation set is available. Operations compose
 without materialization when possible — the streaming operators stay lazy end-to-end — and when

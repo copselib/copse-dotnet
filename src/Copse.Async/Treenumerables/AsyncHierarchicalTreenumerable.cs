@@ -20,7 +20,7 @@ namespace Copse.Treenumerables
   /// the start (an <see cref="IAsyncEnumerable{THandle}"/> is cold, like its sync
   /// counterpart); a single-pass source should be memoized first.
   /// </summary>
-  public class AsyncHierarchicalTreenumerable<TNode, THandle, TAsyncChildEnumerator>
+  internal class AsyncHierarchicalTreenumerable<TNode, THandle, TAsyncChildEnumerator>
     : IAsyncTreenumerable<TNode>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
@@ -64,7 +64,7 @@ namespace Copse.Treenumerables
 
   /// <summary>The two-parameter form for trees whose node is its own handle: the map is the
   /// identity, so callers don't supply one.</summary>
-  public class AsyncHierarchicalTreenumerable<TNode, TAsyncChildEnumerator>
+  internal class AsyncHierarchicalTreenumerable<TNode, TAsyncChildEnumerator>
     : AsyncHierarchicalTreenumerable<TNode, TNode, TAsyncChildEnumerator>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
   {

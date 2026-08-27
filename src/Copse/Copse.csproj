@@ -20,5 +20,7 @@
     <InternalsVisibleTo Include="Copse.Benchmarks" />
     <InternalsVisibleTo Include="Copse.Linq.Experimental" />
     <InternalsVisibleTo Include="Copse.Linq.Tests" />
+    <InternalsVisibleTo Include="Copse.TestUtils" />
+    <InternalsVisibleTo Include="Copse.Trees" />
   </ItemGroup>
 </Project>
