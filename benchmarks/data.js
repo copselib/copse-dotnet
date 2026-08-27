@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787863562202,
+  "lastUpdate": 1787863562890,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -95282,6 +95282,114 @@ window.BENCHMARK_DATA = {
             "value": 1046436.6619591346,
             "unit": "ns",
             "range": "± 1405.9632664780675"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50dac5a910fc6237278d85e614aca372b142dad5",
+          "message": "Promote the public operator tier to namespace Copse.Linq\n\nThe ruling: public surface lives in Copse.Linq; the machinery namespaces\n(Treenumerables, Treenumerators, Stores, Topologies) hold internals only. One\n'using Copse.Linq;' now surfaces the entire operator tier.\n\nPromoted out of Copse.Linq.Treenumerables: the buffer contracts\n(ITreenumerableBuffer, IMemoizeTreenumerableBuffer, ISelectTreenumerableBuffer)\nand the composition citizenship (ISelectTreenumerable,\nIPruneDescendantsWhereTreenumerable, and the public citizen classes\nSelectTreenumerable / PruneDescendantsWhereTreenumerable -- accessibility\nuntouched, the shipped composition surface). Promoted out of\nCopse.Linq.Treenumerators: MergeNode, the element type every Union/Intersection\nconsumer names. The Copse.Linq.Extensions namespace is retired --\nTreenumeratorExtensions, NodeVisitExtensions, and the async twin fold into\nCopse.Linq, so the treenumerator-level extension methods no longer demand a\nusing nobody would guess.\n\nAsync twins mirror throughout; manifest namespaces updated, twins regenerated.\nThe promoted citizen files import the machinery namespace they ride\n(ISelectWhereTreenumerable, the projection seams stay internal machinery).\nSuite green: 26,542 (463 + 69 + 26,010).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T20:26:28Z",
+          "tree_id": "afa282a0a7f37d2fd590769f18127ab0a0b52bb8",
+          "url": "https://github.com/copselib/copse-dotnet/commit/50dac5a910fc6237278d85e614aca372b142dad5"
+        },
+        "date": 1787863562741,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 2087839.7887620192,
+            "unit": "ns",
+            "range": "± 8317.965217882733"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 1768583.4289899555,
+            "unit": "ns",
+            "range": "± 2639.3674848669602"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 4151563.901785714,
+            "unit": "ns",
+            "range": "± 6899.861534526505"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 3706024.482291667,
+            "unit": "ns",
+            "range": "± 23938.72180932629"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 631870.1076822917,
+            "unit": "ns",
+            "range": "± 1049.2369654914858"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 759192.6115722656,
+            "unit": "ns",
+            "range": "± 1164.2434338247872"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 427800.2843889509,
+            "unit": "ns",
+            "range": "± 2278.2547345525845"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 4315850.9015625,
+            "unit": "ns",
+            "range": "± 22119.189766389514"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 3265271.21015625,
+            "unit": "ns",
+            "range": "± 11689.283625038523"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 13717128.21875,
+            "unit": "ns",
+            "range": "± 142395.2845479775"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 7526484.5234375,
+            "unit": "ns",
+            "range": "± 24940.886179612444"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 1344830.6727864584,
+            "unit": "ns",
+            "range": "± 6405.307925456258"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 1235328.7052283655,
+            "unit": "ns",
+            "range": "± 6740.110947717024"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 1045872.0555989583,
+            "unit": "ns",
+            "range": "± 2104.5241893915722"
           }
         ]
       }
