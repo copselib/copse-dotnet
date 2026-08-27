@@ -204,6 +204,15 @@
   `ITreenumerable` stream. The buffer-receiver overload wins overload resolution for existing
   callers. The positional `Select` overloads still return the lazy stream.
 
+### Added
+
+- **`SelectMany` projection form** — `SelectMany(source, node => forest)` with a
+  `Func<TSource, IDepthFirstTreenumerable<TResult>>` selector (both colors, streaming and
+  composite): every node maps to a forest that replaces it, children re-hanging under the
+  forest's last root (`Return`'s rule — the placement under which the monad laws hold), so
+  `nested.SelectMany(tree => tree)` is the monad's flatten and node→tree projection reads
+  as LINQ. The `Expansion` form remains the door to the other placements.
+
 ### Removed
 
 - **Tree tokenizers** (`To*TreeTokenizer`) left the packages: the sync operators moved to the

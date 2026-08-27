@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan — the fold tier), sibling-complete surveys (RootfixDispatch/LeaffixDispatch — the dispatch tier)
 - Set operations: Union(), Intersection(), Subtract(), SymmetricDifference()
 - Transformation: Invert() (mirror), Memoize()/Materialize(), pretty printing
-- SelectMany(): the tree monad's bind over pointed expansions (`Expansion.Return`/`Promote`/`Drop`/`Leaf` + `Expansion.Of(forest, placement)`); Select, Where, PruneSubtreesWhere, and PruneDescendantsWhere are its theorems — see design-docs/SELECTMANY_DESIGN.md
+- SelectMany(): the tree monad's bind over pointed expansions (`Expansion.Return`/`Promote`/`Drop`/`Leaf` + `Expansion.Of(forest, placement)`); the projection form `SelectMany(node => forest)` fixes the slot at `UnderLastRoot` (the lawful join — `nested.SelectMany(t => t)` is the monad's flatten); Select, Where, PruneSubtreesWhere, and PruneDescendantsWhere are its theorems — see design-docs/SELECTMANY_DESIGN.md
 
 #### Performance Optimizations:
 

@@ -185,6 +185,56 @@ namespace Copse.Linq.Tests
           $"PruneDescendantsWhere [{tree}]");
     }
 
+    // ------------------------------------------------------------ the projection form
+
+    [TestMethod]
+    public void Projection_IsTheExpansionFormAtUnderLastRoot()
+    {
+      Func<string, string> forest = value => value + "(x,y)";
+
+      foreach (var tree in Trees)
+        Assert.AreEqual(
+          Forest(tree).SelectMany(value => UnderLastRoot(forest(value))).SerializeDepthFirstTree(),
+          Forest(tree).SelectMany(value => Forest(forest(value))).SerializeDepthFirstTree(),
+          $"projection [{tree}]");
+    }
+
+    [TestMethod]
+    public void Projection_FlattensNestedTrees()
+    {
+      Func<string, string> forest = value => value + "(x)";
+
+      foreach (var tree in Trees)
+        Assert.AreEqual(
+          Forest(tree).SelectMany(value => Forest(forest(value))).SerializeDepthFirstTree(),
+          Forest(tree).Select(value => Forest(forest(value))).SelectMany(inner => inner).SerializeDepthFirstTree(),
+          $"flatten [{tree}]");
+    }
+
+    [TestMethod]
+    public void Projection_GraftsTheForestAndRehangsChildren()
+    {
+      Assert.AreEqual(
+        "a(b,a(b))",
+        Forest("a(b)").SelectMany(_ => Forest("a(b)")).SerializeDepthFirstTree());
+
+      Assert.AreEqual(
+        "a(x,b(x))",
+        Forest("a(b)").SelectMany(value => Forest(value + "(x)")).SerializeDepthFirstTree());
+    }
+
+    [TestMethod]
+    public void Projection_BreadthFirstDimensionMatchesTheExpansionForm()
+    {
+      Func<string, string> forest = value => value + "(x,y)";
+
+      foreach (var tree in Trees)
+        Assert.AreEqual(
+          Forest(tree).SelectMany(value => UnderLastRoot(forest(value))).SerializeBreadthFirstTree(),
+          Forest(tree).SelectMany(value => Forest(forest(value))).SerializeBreadthFirstTree(),
+          $"projection bft [{tree}]");
+    }
+
     // ------------------------------------------------------------ the streaming contract
 
     [TestMethod]

@@ -422,3 +422,34 @@ Triangle 220 / Chain 240 (was 513: the Gen2 promotions of a million frame object
 capture 348. The allocation floor is reached; the time left over a collapsed operator is the
 general machine's per-event work (pending queue, two stacks), the baseline the composition
 dispatch is measured against.
+
+## ADDENDUM V (2026-08-27) — the projection form: the lawful join gets its LINQ spelling
+
+Jason, reviewing the surface as a consumer: there was no `SelectMany` for
+`ITreenumerable<ITreenumerable<T>>` the way `IEnumerable` has — "we need to have a way to
+project a node to a tree, not just graft copies of identical trees."
+
+**The gap and why it existed.** For sequences the flatten has one possible answer
+(concatenation), so LINQ's identity-lambda idiom needs no policy. For trees the join is
+parameterized by the graft point — the pointed-expansion result (Addendum II). A tree of
+trees carries no slots, so a flatten must choose where each outer node's children re-hang.
+But the choice is not free if the laws are to hold: **`UnderLastRoot` is `Return`'s own
+placement, and it is the one placement under which `Return` is the monad's unit** (the
+Data.Tree order). Flatten-at-`UnderLastRoot` is *the* lawful join; the other placements are
+reshapings, not joins.
+
+**The ruling.** Add the collection-selector overload — both colors, DFT + composite:
+
+    SelectMany(source, Func<TSource, IDepthFirstTreenumerable<TResult>> selector)
+      ≡ SelectMany(source, n => Expansion.Of(selector(n), SlotPlacement.UnderLastRoot))
+
+Delegation-only — no new machinery; the streaming contract, the BFT documented capture, and
+the composition story are inherited from the expansion form. With it,
+`nested.SelectMany(t => t)` is the monad's flatten and node→tree projection reads exactly as
+LINQ; the expansion form remains the door to the other placements and the slotless arms. An
+empty forest promotes the children (the `UnderLastRoot`-on-empty rule, unchanged).
+
+Pinned by `SelectManyOperatorTests` ("the projection form"): equivalence to the expansion
+spelling over the corpus (both dimensions), the flatten ≡ direct-projection identity
+(`Select(f).SelectMany(id)` = `SelectMany(f)`), and the worked example
+`a(b)` × constant `a(b)` → `a(b,a(b))`.
