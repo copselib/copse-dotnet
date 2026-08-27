@@ -286,3 +286,58 @@ Those rows DO need a dashboard marker at 3aef7e0. Full A/B in BENCHMARKING.md.**
 Also removed: `Treenumerables.cs` / `TreeShape.cs`, a dead parallel tree factory carrying the same
 contamination, and `Union`'s private `HalfForest`, which moved into the factory as `MegaHalfForest`.
 Every benchmark now takes its trees from `CanonicalTrees`, so the barrier cannot be bypassed.
+
+
+### 2026-08-27 — BufferProbes warm rows: the ~10→42 ms EPYC step is allocation-placement
+aliasing, not a regression (and not code layout either)
+
+The `Walk_over_Materialized*` rows stepped ~10.5 → ~42 ms at the sentinel-completion arc
+(3d7c52c5/a5f47300) on EPYC CI draws only; Xeon draws moved ~1.4x. Five diagnostic rounds
+(branch `perf/walker-step-shape`, through e56d5758) exonerated everything in turn — the
+library, the arc's own diff, the benchmark code, and finally the generated assembly's code
+layout. The convicted mechanism is **data placement**:
+
+- **Same-silicon CI bracket** (per-leg `cpu.txt` artifacts): EPYC 7763 @766da5ab = 10.2 ms
+  vs 7763 @a5f47300 = 42.3 ms — a real step, invisible on Xeon (why every gate missed it,
+  including the arc's own same-box A/B). The shipping walker itself read 7.9 ms on an EPYC
+  9V74 draw in a diagnostic class while BufferProbes history read 42.3 on the same CPU
+  model — same code, wildly different number.
+- **Two attractors, ~10 ms and ~22 ms, on a local EPYC 7763** (CI's slow mode reads 42 on
+  its runners; same physics, worse penalty). Any change to the run's composite — which
+  rows are compiled in, which classes exist — flips individual rows between the modes
+  deterministically and reproducibly (day-apart runs of the same composite agree within
+  2%). Recursive and iterative sweep drivers with checksum-identical probe sequences BOTH
+  flip; a minimal warm-rows-only class flips; class structure is irrelevant.
+- **The pad experiment (the conviction)**: a `[Params]` dummy allocation made BEFORE the
+  captures in setup flips the mode with everything else held fixed — 0/2/4/6 KB read
+  10.5/22.9/23.0/10.8 ms — and even a zero-length (24-byte) pad array flips it. The null
+  control — the same pad allocated AFTER the build — never flips at any size. Only
+  build-time allocation addresses matter, at cache-line granularity.
+
+Reading: a small object read on every probe (the topology/adjacency-index instance is the
+prime suspect) lands on a cache line that aliases the lockstep-marching multi-MB array
+streams — Zen's L1 way predictor (virtual-address utag, ~4K-stride collisions) degrades
+every such read to L2 latency, a clean ~2.2x on the walk. Intel has no utag predictor,
+hence the mild ~1.4x. The arc never touched any of this code; it changed the process's
+allocation history, which re-rolled the placement dice on EPYC runners, and the roll stuck
+because the composite is stable between commits.
+
+Consequences:
+- The warm rows' EPYC readings are a placement lottery (binary, ~2.2x). The Xeon readings
+  wobble mildly with the same lottery. The library is fast on both vendors.
+- A class split of BufferProbes was tried under the earlier code-layout theory, shown
+  useless (the minimal class flips too), and reverted; the family keeps its shape.
+- No `Benchmark-Epoch:` trailer fits (nothing committed changes what the rows measure); a
+  curated dashboard EPOCHS marker at a5f47300 now labels the step as a placement flip so
+  the plateau stops reading as a regression.
+- One library-side candidate was tried and FALSIFIED: consolidating the completed
+  topology's four index arrays into one allocation with set-staggered sections (making
+  their mutual congruence deterministic) left 8 of 12 pad cells slow — the aliasing
+  partner lives outside the index block (the store's values array, a movable small object,
+  or the thread stack; never pinned down). Later pad rounds also showed the placement is
+  re-rolled by ANY allocation-history change, including post-build ones, so pad-timing
+  experiments cannot localize the victim.
+- PURSUIT STOPPED by ruling (Jason, 2026-08-27): not worth continuing for one benchmark
+  family on one CPU architecture. The diagnostic branch is abandoned; the record above and
+  the dashboard marker are the durable outcome. Resume point, should a real Zen workload
+  ever surface this: the branch's WalkerSweepDrivers pad harness plus this entry.

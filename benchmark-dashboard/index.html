@@ -120,6 +120,7 @@ const state = { q:"", group:"suite", sort:"delta", showArchived:false, collapsed
 // marker exists to flag.
 const EPOCHS = [
   // {sha:"abc1234", label:"why history broke here"},
+  {sha:"a5f47300", label:"BufferProbes warm walks stepped on EPYC draws: allocation-placement aliasing (a placement flip, not a regression) -- CHANGELOG_BENCHMARKS.md 2026-08-27"},
 ];
 const EPOCH_RE = /^Benchmark-Epoch:\s*(.+)$/m;
 function epochLabel(id, msg) {
