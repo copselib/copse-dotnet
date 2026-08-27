@@ -106,7 +106,7 @@ namespace Copse.Linq
 
     private static PreorderArrayStore<TNode> BuildMirror<TNode>(IDepthFirstTreenumerable<TNode> source)
     {
-      // The receiver sniff (the 2026-08-14 experiment's collapse), at the ACQUISITION seam
+      // The receiver sniff (the receiver-smart collapse), at the ACQUISITION seam
       // so every overload funnelling here gets it: ANY capture hands over its skeleton (the
       // concrete buffer's raw store, or the stance walk for every other capture -- no
       // second capture either way, no layout condition since Stage B's stance mirror

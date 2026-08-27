@@ -350,6 +350,10 @@ The operator tier owns zero topology classes.
 
 ## 11. The total door — the sentinel completion, reversed into the design (2026-08-20)
 
+> *Vocabulary note (2026-08-27): the accessors this section pins have since renamed —
+> `GetValue`/`TryGetValue` are now `GetNode`/`TryGetNode`, and the element parameter is
+> `TNode`. The pinned behavior is unchanged.*
+
 Ruling (Jason, reversing the sentinel refusal recorded in CATEGORY_THEORY_SURVEY §11; his
 conditions — "the algebra hangs together and the code comes out clean" — discharged in
 survey §12): **the sentinel is a walker state, the unfocused stance, and the door goes total.**

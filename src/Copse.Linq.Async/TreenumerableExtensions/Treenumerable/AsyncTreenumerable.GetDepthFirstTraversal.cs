@@ -12,8 +12,8 @@ namespace Copse.Linq
   {
     /// <summary>
     /// The full depth-first visit stream (every scheduling/visiting visit), with a per-node
-    /// strategy selector. Value flavor primary; the positional flavor is the arity-split (the
-    /// Select/Where grammar, swept family-wide 2026-08-05).
+    /// strategy selector. Value flavor primary; the positional flavor is the arity split (the
+    /// Select/Where grammar).
     /// </summary>
     public static IAsyncEnumerable<NodeVisit<TNode>> GetDepthFirstTraversal<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,

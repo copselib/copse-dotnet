@@ -51,11 +51,10 @@ namespace Copse.Linq.Async.Treenumerables
 
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _Capture.GetAsyncBreadthFirstTreenumerator();
 
-    // Probe members removed (Stage C, the cut): the contract no longer carries them; the
-    // door binds the topology (the index) directly, and nothing else asks this wrapper
+    // The door binds the topology (the index) directly; nothing else asks this wrapper
     // adjacency questions.
 
-    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
+    // The door: topology-at-birth -- the walker holds the
     // adjacency INDEX directly, so navigation never routes through this wrapper (one
     // dispatch: walker -> index -> arithmetic; the walkable exits the call path).
     public async ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
@@ -88,7 +87,7 @@ namespace Copse.Linq.Async.Treenumerables
       return default;
     }
 
-    // The counted-source door (the presize fast-path, 2026-08-16): the exact node count, when
+    // The counted-source door (the presize fast-path): the exact node count, when
     // a completed store underneath already knows it -- a pure READ, never a build: the
     // undecided case and a lazy store not yet built decline (forcing an O(n) build to answer a
     // count question would be a surprising side effect; the uncounted capture path handles
@@ -141,7 +140,7 @@ namespace Copse.Linq.Async.Treenumerables
       return _Topology;
     }
 
-    // The probes-at-birth reclaim (2026-08-15, the history-bench finding): a birth-bound
+    // The probes-at-birth reclaim (the history-bench finding, CHANGELOG_BENCHMARKS.md): a birth-bound
     // index rides the LAZY store and pays a delegation on every probe forever, where the
     // old settle's index rode the raw array store directly. Once the stream half has run
     // the one-shot build -- the common order: pull first, probe later -- and no probe has

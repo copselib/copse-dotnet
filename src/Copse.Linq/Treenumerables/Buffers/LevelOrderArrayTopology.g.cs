@@ -6,7 +6,7 @@ using Copse.Stores;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The COMPLETED level-order citizen (the 2026-08-16 adjacency split): the layout's native
+  // The COMPLETED level-order citizen (the adjacency split): the layout's native
   // affordances answer children (a bounds probe plus an offset -- contiguous runs) and roots
   // (the leading entries) with no state at all, exactly as the growing engine already does.
   // Only the parent axis needs an index, and on a finished store the incremental

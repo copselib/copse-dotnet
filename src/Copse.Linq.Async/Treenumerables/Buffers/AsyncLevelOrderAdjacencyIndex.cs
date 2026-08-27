@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Copse.Linq.Async.Treenumerables
 {
   // The GROWING level-order citizen (completed stores ride AsyncLevelOrderArrayTopology,
-  // the 2026-08-16 adjacency split): the layout's native affordances need almost no index --
+  // the adjacency split): the layout's native affordances need almost no index --
   // children are a bounds probe plus an offset (contiguous runs), roots are the leading
   // entries -- so only the parent axis carries state: the walker PoC's stackless two-cursor
   // merge (child runs tile the buffer in parent order), restructured as an INCREMENTAL sweep
@@ -26,7 +26,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     private readonly TStore _Store;
 
-    // The reclaim seam (2026-08-15): the store, and whether any probe has advanced the
+    // The reclaim seam: the store, and whether any probe has advanced the
     // index -- re-seating over the built array store is free only while untouched.
     internal TStore Store => _Store;
 

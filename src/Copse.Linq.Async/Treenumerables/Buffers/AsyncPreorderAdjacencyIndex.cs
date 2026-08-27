@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Copse.Linq.Async.Treenumerables
 {
   // The GROWING preorder citizen (completed stores ride AsyncPreorderArrayTopology, the
-  // 2026-08-16 adjacency split): the walker PoC's one-pass index build (open-span stack ->
+  // adjacency split): the walker PoC's one-pass index build (open-span stack ->
   // parents; discovery order -> child links; stack-empty points -> roots), restructured as
   // an INCREMENTAL SCAN for stores still being fed. The scan cursor advances one node at a
   // time, each advance demanding exactly one more buffered node (grow-precedes-read), and
@@ -14,8 +14,7 @@ namespace Copse.Linq.Async.Treenumerables
   //
   // The child axis is three parallel linked arrays (first child / next sibling / last
   // child), all RefAppendOnlyList<int>: one slot per scanned node, zero per-node objects
-  // (the 2026-08-16 rework -- the old List<List<int>> allocated a child list PER SCANNED
-  // NODE). An ordinal probe walks the sibling chain, so a one-slot cursor (parent, ordinal,
+  // (a per-node child list would allocate one List per scanned node). An ordinal probe walks the sibling chain, so a one-slot cursor (parent, ordinal,
   // child) keeps sequential child iteration -- the walker's dominant pattern -- O(1)
   // amortized; chain links are written once and never move, so the cursor never goes stale.
   //
@@ -39,7 +38,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The bulk-fold seam: a completed store hands whole-tree algorithms its raw arithmetic
     // (Count/GetNode/GetSubtreeSize), bypassing per-probe dispatch -- the receiver-smart
-    // fast path's door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan).
+    // fast path's door (the bulk-fold seam, absorbed into LeaffixScan).
     internal TStore Store => _Store;
 
     // The reclaim seam: true iff no probe has advanced the scan -- re-seating is free.

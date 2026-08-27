@@ -13,8 +13,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// The re-traversable capture of the source's shape, DEFERRED (2026-08-10; eager until
-    /// then): nothing is enumerated at the call. Construction is pinned to the first pull and
+    /// The re-traversable capture of the source's shape, DEFERRED: nothing is enumerated at the call. Construction is pinned to the first pull and
     /// runs through the lazy store's grow seam -- the LeaffixScan/Invert cost shape,
     /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
     /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
@@ -54,8 +53,7 @@ namespace Copse.Linq
     /// ignored -- but the O(n) construction is pinned to the first pull. The parameter speaks
     /// STORAGE vocabulary (<see cref="BufferLayout"/>'s naming rule: a strategy is how you
     /// WALK, a layout is how a capture is SHAPED -- and the layout is exactly this operator's
-    /// deliverable; until 2026-08-10 it took a TreeTraversalStrategy and opened by converting
-    /// it, the tell that it spoke the wrong vocabulary). The PIN lands NOW, because now is when
+    /// deliverable). The PIN lands NOW, because now is when
     /// it is free: a plain tree's capture layout is simply recorded; a live memo's capture is
     /// created for the layout's native dimension at this call (acquisition is the pin, zero
     /// nodes pulled), so an intervening consumer of a shared memo cannot pin it the other way.
@@ -109,8 +107,7 @@ namespace Copse.Linq
     }
 
     /// <summary>
-    /// The re-traversable capture of the source's shape, DEFERRED (2026-08-10; eager until
-    /// then): nothing is enumerated at the call. Construction is pinned to the first pull and
+    /// The re-traversable capture of the source's shape, DEFERRED: nothing is enumerated at the call. Construction is pinned to the first pull and
     /// runs through the lazy store's grow seam -- the LeaffixScan/Invert cost shape,
     /// capture(deferred-once) -- and THE FIRST CONSUMER PINS THE LAYOUT: depth-first-first
     /// captures preorder, breadth-first-first level-order (the lazy-Materialize law:
@@ -147,7 +144,7 @@ namespace Copse.Linq
     // re-capture the buffer's own capture from its visit stream) never runs for a
     // Materialize-built buffer. The organic overload cannot pre-attach (its layout is
     // decided by the first pull's dimension), so it keeps the settle.
-    // The presize fast-path's Linq half (2026-08-16): a source that is secretly a completed
+    // The presize fast-path's Linq half: a source that is secretly a completed
     // concrete buffer can promise its exact node count (the buffer's counted-source door), so
     // the capture allocates final arrays exactly and skips the chunked build buffer -- the
     // transpose path's ~2n transient drops to 1n. The door is a pure read; a source whose

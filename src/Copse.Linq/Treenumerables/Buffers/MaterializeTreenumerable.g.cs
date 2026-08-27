@@ -8,7 +8,7 @@ using Copse.Core;
 
 namespace Copse.Linq.Treenumerables
 {
-  // The buffer Materialize returns over a LIVE MEMO source (2026-08-10, the lazy-Materialize
+  // The buffer Materialize returns over a LIVE MEMO source (the lazy-Materialize
   // reshape): the memo's one capture COMPLETED IN BULK at the first pull, presented as the
   // non-disposable capture marker. Nothing is enumerated before that pull -- an unconsumed
   // instance holds exactly what the unconsumed memo already held -- and the feed retires inside
@@ -122,11 +122,10 @@ namespace Copse.Linq.Treenumerables
     // The adjacency half rides the settle: probing IS consumption, so a probe on an unsettled
     // instance completes the memo's capture exactly as the first stream pull would, then
     // delegates to the settled buffer's own probes (the memo's, or the transposed capture's).
-    // The door (walker factory design, Stage A): the settled capture manufactures the walker,
+    // The door: the settled capture manufactures the walker,
     // so the stance rides the settled topology directly.
     public TreeWalker<TNode, int> GetTreeWalker()
       => (Settle()).GetTreeWalker();
 
-    // Probe members removed (Stage C, the cut): the contract no longer carries them.
   }
 }

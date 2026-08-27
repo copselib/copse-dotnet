@@ -23,8 +23,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -61,8 +60,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -137,8 +135,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -169,8 +166,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -235,8 +231,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -259,8 +254,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -284,8 +278,7 @@ namespace Copse.Linq
     /// rather than scrambling it). Subtrees travel whole with their parents: only sibling order,
     /// and therefore sibling indexes, changes. The key selector runs exactly once per node,
     /// during capture. Value flavor primary; the positional flavor receives the node's SOURCE
-    /// position (its pre-ordering coordinates -- the arity-split grammar, swept family-wide
-    /// 2026-08-05).
+    /// position (its pre-ordering coordinates -- the arity split grammar).
     ///
     /// <para>Returns an <see cref="IAsyncTreenumerableBuffer{TNode}"/> for Invert's reason --
     /// ordering is the mirror generalized from "reverse every sibling group" to "sort every
@@ -405,7 +398,7 @@ namespace Copse.Linq
       // permutation must stay readable while the next level's is written, so one buffer cannot
       // serve both sides -- the pair ping-pongs (grown to the widest level seen, doubling), and
       // a chain-shaped tree would otherwise allocate a fresh int[1] per level, a million of
-      // them (found on the dashboard's memory rows, 2026-08-02).
+      // them (found on the dashboard's memory rows).
       var sparePermutation = default(int[]);
 
       // The most recently flushed level: where it landed in the store, its source-to-ordered

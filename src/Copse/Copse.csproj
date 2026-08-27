@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <Description>Depth-first and breadth-first tree traversal engine for Copse.</Description>
+    <Description>The concrete treenumerables for Copse: the depth-first/breadth-first engine over the child-pull protocol, the flat family (preorder/level-order store and stream decoders), the tree-source factories (Tree.Defer/Lazy/Using/Empty), and the wrapper bases.</Description>
   </PropertyGroup>
 
   <ItemGroup>

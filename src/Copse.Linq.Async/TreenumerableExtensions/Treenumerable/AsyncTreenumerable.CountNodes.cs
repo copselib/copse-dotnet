@@ -11,7 +11,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncTreenumerable<TNode> source, CancellationToken cancellationToken = default)
@@ -20,7 +20,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
@@ -41,7 +41,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
@@ -62,7 +62,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
@@ -74,7 +74,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
@@ -83,7 +83,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
@@ -95,7 +95,7 @@ namespace Copse.Linq
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
     /// this counts scheduling visits. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<int> CountNodesAsync<TNode>(

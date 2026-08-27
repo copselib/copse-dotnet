@@ -5,7 +5,7 @@ licenses are reproduced below.
 
 ## System.Reactive (dotnet/reactive)
 
-The disposable types under `src/Copse/Disposables/` (`Disposable`, `AnonymousDisposable`,
+The disposable types under `src/Copse.Primitives/Disposables/` (`Disposable`, `AnonymousDisposable`,
 `RefCountDisposable`, `CompositeDisposable`, `ICancelable`) are lifted from
 [System.Reactive](https://github.com/dotnet/reactive) (namespace
 `System.Reactive.Disposables`) at commit

@@ -10,7 +10,7 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -28,7 +28,7 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -39,7 +39,7 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -50,7 +50,7 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
@@ -61,7 +61,7 @@ namespace Copse.Linq
     /// <summary>
     /// Async <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,

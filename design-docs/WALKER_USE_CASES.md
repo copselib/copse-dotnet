@@ -48,7 +48,7 @@ Layer: sequence · Re-enters: no · Cost: O(depth)
 var stance = walkable.GetTreeWalkerAt(handle).MoveToParent();
 while (stance.HasWalker)
 {
-  breadcrumbs.Add(stance.Walker.GetValue());
+  breadcrumbs.Add(stance.Walker.GetNode());
   stance = stance.Walker.MoveToParent();
 }
 ```
@@ -79,7 +79,7 @@ Layer: sequence · Re-enters: yes · Cost: O(1) (indexed); O(n) scan (keyed)
 `GetChildAt` survives as `TryGetChildAt` on the `ITreeTopology` SPI, provider-side).
 Keyed access
 (`GetChildrenByKey`) is deliberately NOT a library member: value search is consumer code
-(the no-node-equality pledge), spelled as consumer LINQ over `GetHandlesWithValues` —
+(the no-node-equality pledge), spelled as consumer LINQ over `GetHandlesWithNodes` —
 the search law (OPERATOR_SURFACE_MAP.md §0; the brief `FindHandles`/`FindHandle` sugar
 was retired the day it was reviewed). A search's honest miss is the empty sequence —
 and never `FirstOrDefault` over ordinal handles: the miss masquerades as the root.
@@ -205,7 +205,7 @@ var scan = walker.Subtree().RootfixScan(prefixSeed, fold);
 Layer: walk · Re-enters: sometimes · Cost: O(kept)
 
 ```csharp
-walker.Subtree().PruneBefore(context => ...).Where(context => ...)   // anything composes
+walker.Subtree().PruneSubtreesWhere(context => ...).Where(context => ...)   // anything composes
 ```
 
 ## D. DAG closures — the ownership showcase (UC-17 – UC-24) — DAG
@@ -254,7 +254,7 @@ pinned executable as `Extend(extract) ≡ id` (the Walk adapter's conformance ce
 Layer: region → sequence → back · Re-enters: THE POINT · Cost: O(1) per re-entry
 
 ```csharp
-var label = walkable.Subtrees().GetTreeWalkerAt(handle).GetValue();   // analyze the severed view…
+var label = walkable.Subtrees().GetTreeWalkerAt(handle).GetNode();   // analyze the severed view…
 var backHome = walkable.GetTreeWalkerAt(handle);           // …and stand in the source: same handles
 ```
 
@@ -291,7 +291,7 @@ Layer: sequence · Re-enters: continuously · Cost: O(1) per step
 var walker = walkable.TryGetTreeWalkerAtRootIndex().Walker;
 var child = walker.MoveToChild(0);
 if (child.HasWalker)
-  Process(child.Walker.GetValue());   // walker itself is unmoved
+  Process(child.Walker.GetNode());   // walker itself is unmoved
 ```
 
 The strawman imagined a mutable cursor; what shipped is an immutable STANCE — steps
@@ -308,7 +308,7 @@ var walkable = sourceTree
   .Materialize();                                 // the escalation: adjacency lives on the capture
 
 var spanning = walkable.SpanningSubtree(
-  walkable.GetHandlesWithValues()                  // the rowid idiom: rows in, value
+  walkable.GetHandlesWithNodes()                  // the rowid idiom: rows in, value
     .Where(row => interesting.Contains(row.Value.Key))  // predicate, handles out (the
     .Select(row => row.Handle));                   // search law -- searches are consumer LINQ)
 
@@ -317,8 +317,8 @@ if (spanning.HasWalker)
 ```
 
 ```csharp
-TreeWalkerResult<TValue, int> SpanningSubtree<TValue, THandle>(
-  this IWalkableTreenumerable<TValue, THandle> source, IEnumerable<THandle> targets)
+TreeWalkerResult<TNode, int> SpanningSubtree<TNode, THandle>(
+  this IWalkableTreenumerable<TNode, THandle> source, IEnumerable<THandle> targets)
 ```
 
 Result-typed because the operation is partial exactly twice, and each miss is a fact:
@@ -340,7 +340,7 @@ misses, never for faults (the two-channel doctrine).
 //    first act pins the layout; the declared form is an axis-cost ELECTION, never a
 //    requirement); 3. acquisition — the rowid idiom, consumer LINQ per the search law:
 var walkable = relevant.Materialize();
-var targets = walkable.GetHandlesWithValues()
+var targets = walkable.GetHandlesWithNodes()
   .Where(row => interesting.Contains(row.Value))
   .Select(row => row.Handle)
   .ToList();
@@ -365,13 +365,13 @@ foreach (var target in targets)
 var spanning = lca.Subtree();
 
 // 6. The membership clamp — THE HANDLE-DECORATED STREAM: Extend stamps every node with
-//    its own (handle, value) pair, PruneBefore cuts off-path subtrees in HANDLE-space
+//    its own (handle, value) pair, PruneSubtreesWhere cuts off-path subtrees in HANDLE-space
 //    (membership is downward-closed, so prune semantics are exactly right), Select
 //    projects back. The future membership LENS makes this adjacency-side and zero-copy;
 //    the semantics are fixed here:
 var clamped = spanning
-  .Extend((topology, handle) => new HandleAndValue<int, string>(handle, topology.GetValue(handle)))
-  .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
+  .Extend((topology, handle) => new HandleAndNode<int, string>(handle, topology.GetNode(handle)))
+  .PruneSubtreesWhere(pair => !keptHandles.Contains(pair.Handle))
   .Select(pair => pair.Value);
 ```
 

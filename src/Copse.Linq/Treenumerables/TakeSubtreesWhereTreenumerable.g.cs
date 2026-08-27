@@ -9,7 +9,7 @@ using System;
 namespace Copse.Linq.Treenumerables
 {
   // TakeSubtreesWhere's composite result: a streaming-tier citizen CARRYING the dimension
-  // dispatch (the honest-streaming-baseline rule, 2026-08-17). The recipe is (source,
+  // dispatch (the honest-streaming-baseline rule). The recipe is (source,
   // context predicate); each acquisition constructs that dimension's leanest streaming
   // machinery -- depth-first the bespoke O(1) contiguous-segment wrapper, breadth-first the
   // Where machinery in subtree mode (the subtree stage; the scan chain remains the
@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerables
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
       => new TakeSubtreesWhereTreenumerator<TNode>(_Source.GetDepthFirstTreenumerator, _Predicate);
 
-    // THE SUBTREE STAGE (2026-08-17): the BFT arm is the Where machinery itself in subtree
+    // THE SUBTREE STAGE: the BFT arm is the Where machinery itself in subtree
     // mode -- one wrapper, no scan engine, no pair, the kept-region fact read off the skip
     // prefix the machinery already carries. The scan chain (GetBreadthFirstChain) remains the
     // operator's algebraic definition and the product variant's route.

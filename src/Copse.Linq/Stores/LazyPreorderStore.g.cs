@@ -32,7 +32,7 @@ namespace Copse.Linq.Stores
     private Func<PreorderArrayStore<TNode>> _Build;
     private PreorderArrayStore<TNode> _Store;
 
-    // The bulk-fold seam's forcing door (the bulk-fold experiment, 2026-08-14 -- since collapsed into LeaffixScan): hand the built array
+    // The bulk-fold seam's forcing door (the bulk-fold seam, absorbed into LeaffixScan): hand the built array
     // store over -- whole-tree algorithms read raw arithmetic, not per-probe dispatch.
     internal PreorderArrayStore<TNode> EnsureBuiltStore()
     {
@@ -40,7 +40,7 @@ namespace Copse.Linq.Stores
       return _Store;
     }
 
-    // The reclaim seam (2026-08-15): non-forcing build-state facts, so the buffer can
+    // The reclaim seam: non-forcing build-state facts, so the buffer can
     // re-seat a birth-bound index over the built array store once the one-shot build ran.
     internal bool IsBuilt => _Build == null;
 

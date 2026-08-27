@@ -28,7 +28,7 @@ namespace Copse.Linq.Stores
     private Func<LevelOrderArrayStore<TNode>> _Build;
     private LevelOrderArrayStore<TNode> _Store;
 
-    // The reclaim seam (2026-08-15): non-forcing build-state facts, so the buffer can
+    // The reclaim seam: non-forcing build-state facts, so the buffer can
     // re-seat a birth-bound index over the built array store once the one-shot build ran.
     internal bool IsBuilt => _Build == null;
 

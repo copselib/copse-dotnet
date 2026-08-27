@@ -27,7 +27,7 @@ namespace Copse.Linq
     public static IWalkableTreenumerable<TResult, THandle> Extend<TNode, THandle, TResult>(
       this IWalkableTreenumerable<TNode, THandle> source,
       Func<ITreeTopology<TNode, THandle>, THandle, TResult> observer)
-      // Stage C: the walkable no longer exposes its topology, so the relabeling binds "the
+      // The walkable does not expose its topology; navigation goes through the walker, so the relabeling binds "the
       // topology this walkable's door will hand over" -- deferred, knocked once at the
       // first pull or probe. The empty forest needs no special case: the door topology
       // misses honestly everywhere.

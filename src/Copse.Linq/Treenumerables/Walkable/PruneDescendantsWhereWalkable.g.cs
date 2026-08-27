@@ -25,7 +25,7 @@ namespace Copse.Linq.Treenumerables
       IWalkableTreenumerable<TNode, THandle> source,
       Func<TNode, bool> predicate)
     {
-      // Stage C: the walkable no longer exposes its topology; the lens's adjacency half
+      // The walkable does not expose its topology; navigation goes through the walker; the lens's adjacency half
       // reaches it through the deferred door (knocked once, at the first probe).
       _Source = TreeTopology.Lazy(source);
       _Predicate = predicate;
@@ -55,7 +55,7 @@ namespace Copse.Linq.Treenumerables
 
     public Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
-    // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
+    // The door: the lens IS its own topology -- the walker
     // navigates the pruned view.
     public TreeWalker<TNode, THandle> GetTreeWalker()
       => new TreeWalker<TNode, THandle>(this);

@@ -13,41 +13,25 @@ namespace Copse.Linq
     /// Selects the subtrees rooted at the matching nodes: each match re-roots as a root of the
     /// result forest, its subtree intact -- depth compresses by the match's depth, descendants
     /// keep their sibling indices, and the result's roots take the matches' source preorder
-    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS, as a rule (ratified
-    /// 2026-08-06): inside a matched subtree the predicate never fires, so a nested match is
-    /// simply part of its outer match's tree -- a tree cannot share substructure, so nested
-    /// matches must be suppressed, not absorbed. (The dag analog, TakeSubgraphsWhere on
-    /// experimental/dag, needs no such rule -- there the closure union makes outermost
-    /// emergent; this operator is its tree restriction.) Per-match extraction is a single-node
-    /// predicate; there is no upward variant on trees (a subtree-toward-the-root is a branch,
-    /// not a tree).
+    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS: inside a matched subtree
+    /// the predicate never fires, so a nested match is simply part of its outer match's tree
+    /// -- a tree cannot share substructure, so nested matches are suppressed, not absorbed.
+    /// Per-match extraction is a single-node predicate; there is no upward variant on trees
+    /// (a subtree-toward-the-root is a branch, not a tree).
     ///
-    /// <para>THE SCAN SPELLING (2026-08-17, the layering north star's first landing --
-    /// design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this node" is the rootfix
-    /// fold fact <c>kept(parent) || predicate(node)</c>, so the operator IS
-    /// <c>RootfixScan(false, fold).Where(pair =&gt; pair.Accumulate).Select(pair =&gt; pair.Node)</c>
-    /// -- and the outermost rule falls out of the fold (inside a kept region the disjunction
-    /// short-circuits; the predicate result is simply irrelevant there, so suppression needs
-    /// no flag). The former buffer arm is retired -- its "the result's BFT cannot stream"
-    /// rationale was disproven by the general Where machinery, whose breadth-first wrapper
-    /// produces the re-rooted forest's true level order by pulling its inner ahead through
-    /// its queue.</para>
-    ///
-    /// <para>DIMENSION-DISPATCHED BEHIND THE CITIZENSHIP (the honest-streaming-baseline
-    /// rule): the result is a streaming-tier citizen whose recipe is (source, predicate);
-    /// each acquisition constructs that dimension's leanest streaming machinery --
-    /// depth-first the bespoke O(1)-state pass-through wrapper (the scan chain measured
-    /// ~2.3x it for the same work), breadth-first the Where machinery in subtree mode (the
-    /// subtree stage: kept-region membership read off the skip prefix the machinery already
-    /// carries -- no scan engine, no pair). Because the dispatch lives BEHIND the
-    /// citizenship, the operator is not a composition seam: a following Select composes
-    /// (the product variant), a following Where joins the one driver over the citizen.</para>
-    ///
-    /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
-    /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
-    /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
+    /// <para>Streaming: the predicate re-fires per drain (the re-enumeration contract);
+    /// <c>Materialize()</c> is the consumer's pin. The result is a streaming-tier citizen,
+    /// not a composition seam -- a following Select or Where joins one driver over it.</para>
     /// </summary>
+    // The scan spelling (design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this
+    // node" is the rootfix fold fact kept(parent) || predicate(node), so the operator IS
+    // RootfixScan(false, fold).Where(pair => pair.Accumulate).Select(pair => pair.Node) --
+    // the outermost rule falls out of the fold (inside a kept region the disjunction
+    // short-circuits). No buffer arm is needed: the general Where machinery's breadth-first
+    // wrapper produces the re-rooted forest's true level order. Dimension-dispatched behind
+    // the citizenship: depth-first acquires the bespoke O(1)-state pass-through wrapper
+    // (measured ~2.3x the scan chain for the same work), breadth-first the Where machinery
+    // in subtree mode (kept-region membership read off the skip prefix it already carries).
     public static IAsyncTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
@@ -78,51 +62,34 @@ namespace Copse.Linq
     /// Selects the subtrees rooted at the matching nodes: each match re-roots as a root of the
     /// result forest, its subtree intact -- depth compresses by the match's depth, descendants
     /// keep their sibling indices, and the result's roots take the matches' source preorder
-    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS, as a rule (ratified
-    /// 2026-08-06): inside a matched subtree the predicate never fires, so a nested match is
-    /// simply part of its outer match's tree -- a tree cannot share substructure, so nested
-    /// matches must be suppressed, not absorbed. (The dag analog, TakeSubgraphsWhere on
-    /// experimental/dag, needs no such rule -- there the closure union makes outermost
-    /// emergent; this operator is its tree restriction.) Per-match extraction is a single-node
-    /// predicate; there is no upward variant on trees (a subtree-toward-the-root is a branch,
-    /// not a tree).
+    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS: inside a matched subtree
+    /// the predicate never fires, so a nested match is simply part of its outer match's tree
+    /// -- a tree cannot share substructure, so nested matches are suppressed, not absorbed.
+    /// Per-match extraction is a single-node predicate; there is no upward variant on trees
+    /// (a subtree-toward-the-root is a branch, not a tree).
     ///
-    /// <para>THE SCAN SPELLING (2026-08-17, the layering north star's first landing --
-    /// design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this node" is the rootfix
-    /// fold fact <c>kept(parent) || predicate(node)</c>, so the operator IS
-    /// <c>RootfixScan(false, fold).Where(pair =&gt; pair.Accumulate).Select(pair =&gt; pair.Node)</c>
-    /// -- and the outermost rule falls out of the fold (inside a kept region the disjunction
-    /// short-circuits; the predicate result is simply irrelevant there, so suppression needs
-    /// no flag). The former buffer arm is retired -- its "the result's BFT cannot stream"
-    /// rationale was disproven by the general Where machinery, whose breadth-first wrapper
-    /// produces the re-rooted forest's true level order by pulling its inner ahead through
-    /// its queue.</para>
-    ///
-    /// <para>DIMENSION-DISPATCHED BEHIND THE CITIZENSHIP (the honest-streaming-baseline
-    /// rule): the result is a streaming-tier citizen whose recipe is (source, predicate);
-    /// each acquisition constructs that dimension's leanest streaming machinery --
-    /// depth-first the bespoke O(1)-state pass-through wrapper (the scan chain measured
-    /// ~2.3x it for the same work), breadth-first the Where machinery in subtree mode (the
-    /// subtree stage: kept-region membership read off the skip prefix the machinery already
-    /// carries -- no scan engine, no pair). Because the dispatch lives BEHIND the
-    /// citizenship, the operator is not a composition seam: a following Select composes
-    /// (the product variant), a following Where joins the one driver over the citizen.</para>
-    ///
-    /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
-    /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
-    /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
+    /// <para>Streaming: the predicate re-fires per drain (the re-enumeration contract);
+    /// <c>Materialize()</c> is the consumer's pin. The result is a streaming-tier citizen,
+    /// not a composition seam -- a following Select or Where joins one driver over it.</para>
     /// </summary>
+    // The scan spelling (design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this
+    // node" is the rootfix fold fact kept(parent) || predicate(node), so the operator IS
+    // RootfixScan(false, fold).Where(pair => pair.Accumulate).Select(pair => pair.Node) --
+    // the outermost rule falls out of the fold (inside a kept region the disjunction
+    // short-circuits). No buffer arm is needed: the general Where machinery's breadth-first
+    // wrapper produces the re-rooted forest's true level order. Dimension-dispatched behind
+    // the citizenship: depth-first acquires the bespoke O(1)-state pass-through wrapper
+    // (measured ~2.3x the scan chain for the same work), breadth-first the Where machinery
+    // in subtree mode (kept-region membership read off the skip prefix it already carries).
     public static IAsyncDepthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
       => TakeSubtreesWhereCore(source, ToContextPredicate(predicate));
 
     /// <summary>
-    /// The breadth-first-only source overload: the scan chain STREAMS the narrow dimension
-    /// (scan, filter, and projection all carry breadth-first narrow overloads), so the old
-    /// disclosure-rule escalation -- Materialize the source, walk the capture -- is retired
-    /// with the buffer arms. BREAKING (pre-beta): returned a buffer through 2026-08-17.
+    /// The breadth-first-only source overload: the scan chain streams the narrow dimension
+    /// (scan, filter, and projection all carry breadth-first narrow overloads), so no
+    /// capture is required.
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
@@ -141,41 +108,25 @@ namespace Copse.Linq
     /// Selects the subtrees rooted at the matching nodes: each match re-roots as a root of the
     /// result forest, its subtree intact -- depth compresses by the match's depth, descendants
     /// keep their sibling indices, and the result's roots take the matches' source preorder
-    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS, as a rule (ratified
-    /// 2026-08-06): inside a matched subtree the predicate never fires, so a nested match is
-    /// simply part of its outer match's tree -- a tree cannot share substructure, so nested
-    /// matches must be suppressed, not absorbed. (The dag analog, TakeSubgraphsWhere on
-    /// experimental/dag, needs no such rule -- there the closure union makes outermost
-    /// emergent; this operator is its tree restriction.) Per-match extraction is a single-node
-    /// predicate; there is no upward variant on trees (a subtree-toward-the-root is a branch,
-    /// not a tree).
+    /// order (sibling indices 0, 1, 2, ...). OUTERMOST MATCH WINS: inside a matched subtree
+    /// the predicate never fires, so a nested match is simply part of its outer match's tree
+    /// -- a tree cannot share substructure, so nested matches are suppressed, not absorbed.
+    /// Per-match extraction is a single-node predicate; there is no upward variant on trees
+    /// (a subtree-toward-the-root is a branch, not a tree).
     ///
-    /// <para>THE SCAN SPELLING (2026-08-17, the layering north star's first landing --
-    /// design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this node" is the rootfix
-    /// fold fact <c>kept(parent) || predicate(node)</c>, so the operator IS
-    /// <c>RootfixScan(false, fold).Where(pair =&gt; pair.Accumulate).Select(pair =&gt; pair.Node)</c>
-    /// -- and the outermost rule falls out of the fold (inside a kept region the disjunction
-    /// short-circuits; the predicate result is simply irrelevant there, so suppression needs
-    /// no flag). The former buffer arm is retired -- its "the result's BFT cannot stream"
-    /// rationale was disproven by the general Where machinery, whose breadth-first wrapper
-    /// produces the re-rooted forest's true level order by pulling its inner ahead through
-    /// its queue.</para>
-    ///
-    /// <para>DIMENSION-DISPATCHED BEHIND THE CITIZENSHIP (the honest-streaming-baseline
-    /// rule): the result is a streaming-tier citizen whose recipe is (source, predicate);
-    /// each acquisition constructs that dimension's leanest streaming machinery --
-    /// depth-first the bespoke O(1)-state pass-through wrapper (the scan chain measured
-    /// ~2.3x it for the same work), breadth-first the Where machinery in subtree mode (the
-    /// subtree stage: kept-region membership read off the skip prefix the machinery already
-    /// carries -- no scan engine, no pair). Because the dispatch lives BEHIND the
-    /// citizenship, the operator is not a composition seam: a following Select composes
-    /// (the product variant), a following Where joins the one driver over the citizen.</para>
-    ///
-    /// <para>Streaming semantics follow: the predicate re-fires per drain (the re-enumeration
-    /// contract -- Materialize is the consumer's pin). BREAKING (pre-beta): this overload
-    /// returned an <see cref="IAsyncTreenumerableBuffer{TNode}"/> through 2026-08-17 --
-    /// consumers who relied on the capture add <c>.Materialize()</c>.</para>
+    /// <para>Streaming: the predicate re-fires per drain (the re-enumeration contract);
+    /// <c>Materialize()</c> is the consumer's pin. The result is a streaming-tier citizen,
+    /// not a composition seam -- a following Select or Where joins one driver over it.</para>
     /// </summary>
+    // The scan spelling (design-docs/SELECT_INTO_CAPTURES_DESIGN.md section 5): "keep this
+    // node" is the rootfix fold fact kept(parent) || predicate(node), so the operator IS
+    // RootfixScan(false, fold).Where(pair => pair.Accumulate).Select(pair => pair.Node) --
+    // the outermost rule falls out of the fold (inside a kept region the disjunction
+    // short-circuits). No buffer arm is needed: the general Where machinery's breadth-first
+    // wrapper produces the re-rooted forest's true level order. Dimension-dispatched behind
+    // the citizenship: depth-first acquires the bespoke O(1)-state pass-through wrapper
+    // (measured ~2.3x the scan chain for the same work), breadth-first the Where machinery
+    // in subtree mode (kept-region membership read off the skip prefix it already carries).
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeSubtreesWhere<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)

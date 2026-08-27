@@ -90,7 +90,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
   `Copse.Disposables` algebra. References nothing.
 - **Copse.Traversal** - Color-neutral sans-I/O traversal path-state machinery shared by both
   engines (`DepthFirstPathState`, `BreadthFirstPathState`, …) plus the value types it
-  consumes (`NodeContext`, `NodeAndSiblingIndex`). References Vocabulary + Primitives.
+  consumes (`NodeContext`, `HandleAndSiblingIndex`). References Vocabulary + Primitives.
   (`Copse.Linq.Traversal` is its Linq-level analog, referencing it.)
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
   engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and

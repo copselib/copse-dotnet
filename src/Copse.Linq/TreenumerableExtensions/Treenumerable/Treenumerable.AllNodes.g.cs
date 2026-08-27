@@ -9,10 +9,9 @@ namespace Copse.Linq
 {
   public static partial class Treenumerable
   {
-    // All(p) == !Any(!p). (Fixed 2026-07-05: the outer negation was missing, so the operator
-    // returned the complement of its name -- "at least one node fails" -- with no test coverage
-    // to catch it. Regression-pinned in AllNodesTests.) Value flavor primary; positional is
-    // the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    // All(p) == !Any(!p) -- the outer negation is the law (regression-pinned in
+    // AllNodesTests). Value flavor primary; positional is
+    // the arity split (the Select/Where grammar).
     /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AllNodes<TNode>(
       this ITreenumerable<TNode> source,

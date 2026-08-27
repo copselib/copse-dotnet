@@ -4,7 +4,7 @@
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>13</LangVersion>
     <IsPackable>true</IsPackable>
-    <Description>Text-based tree serialization for Copse.</Description>
+    <Description>Header-free text serialization for Copse trees, in both grammars: preorder ("a(b(d,e),c)") and level-order ("a;b,c;d,e"). Deserialize a string into a full tree or stream a file/reader into a forward-only one (both deferred; sync and async); serialize any tree back to text. The one Copse package that spans both the sync and async families.</Description>
   </PropertyGroup>
 
   <!-- netstandard2.1 and net8.0 have Span/ReadOnlySpan in-box; net48 and netstandard2.0 need the

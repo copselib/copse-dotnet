@@ -75,3 +75,13 @@ Markers are global — an epoch re-baselines the whole corpus. On the dashboard:
 vertical rule in every chart (hover for the reason), the 5-run trend median restarts at the
 boundary, and the Δ-since-prev column and "biggest movers" suppress deltas that would cross
 it — a cross-epoch delta is exactly the fake regression the marker exists to flag.
+
+## Archived rows
+
+A row that stops appearing in fresh runs (a rename, a retired benchmark) is not deleted —
+the dashboard detects the stale series and marks it archived. Archived rows are hidden by
+default behind the "show archived" toggle, render as muted dashed sparklines when shown,
+are counted in the "N archived hidden" note, and are excluded from "biggest movers". A
+renamed benchmark therefore starts a fresh series under its new name while the old series'
+history stays reachable — the mechanism behind consult-first row renames (see
+`design-docs/CHANGELOG_BENCHMARKS.md` for each rename's record).

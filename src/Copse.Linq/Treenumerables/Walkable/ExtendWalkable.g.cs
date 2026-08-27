@@ -46,7 +46,7 @@ namespace Copse.Linq.Treenumerables
 
     public Option<HandleAndSiblingIndex<THandle>> TryGetRootAt(int rootIndex) => _Source.TryGetRootAt(rootIndex);
 
-    // The door (walker factory design, Stage A): the relabeled view is its own topology.
+    // The door: the relabeled view is its own topology.
     public TreeWalker<TResult, THandle> GetTreeWalker()
       => new TreeWalker<TResult, THandle>(this);
   }

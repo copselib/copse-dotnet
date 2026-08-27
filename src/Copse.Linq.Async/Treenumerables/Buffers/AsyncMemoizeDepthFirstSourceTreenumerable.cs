@@ -51,9 +51,8 @@ namespace Copse.Linq.Async.Treenumerables
         = new AsyncPreorderAdjacencyIndex<TNode, AsyncMemoizePreorderStore<TNode>.Handle>(
           new AsyncMemoizePreorderStore<TNode>.Handle(_Buffer)));
 
-    // Probe members removed (Stage C, the cut): the contract no longer carries them.
 
-    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
+    // The door: topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
     public ValueTask<AsyncTreeWalker<TNode, int>> GetTreeWalkerAsync()
       => new ValueTask<AsyncTreeWalker<TNode, int>>(new AsyncTreeWalker<TNode, int>(EnsureTopology()));

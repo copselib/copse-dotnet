@@ -10,7 +10,7 @@ using System;
 
 namespace Copse.Linq.Treenumerables
 {
-  // THE THIN SHAPE (the buffer-compose simplification, 2026-08-17 --
+  // THE THIN SHAPE (the buffer-compose simplification --
   // SELECT_INTO_CAPTURES_DESIGN.md): a buffer projection is the source buffer plus a
   // selector, and its deferred build is ONE counted array map off the source's completed
   // store. The source buffer is the sharing substrate -- replayable by contract, so

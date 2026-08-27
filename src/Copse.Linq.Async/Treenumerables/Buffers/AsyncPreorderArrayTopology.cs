@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Copse.Linq.Async.Treenumerables
 {
-  // The COMPLETED preorder citizen (the 2026-08-16 adjacency split): a topology over a
+  // The COMPLETED preorder citizen (the adjacency split): a topology over a
   // finished array store answers every probe from exact arrays built at most once. The
   // first probe of each axis triggers the build -- the parent map (one open-span sweep,
   // the same rule the growing engine applies incrementally) and, for the child and root
@@ -14,7 +14,7 @@ namespace Copse.Linq.Async.Treenumerables
   // objects, no per-probe subtree-size arithmetic.
   //
   // Pure span arithmetic (sibling hops, no arrays at all) was measured first and REJECTED:
-  // the BufferProbes walker sweep read +69% on warm preorder walks (2026-08-16, local A/B)
+  // the BufferProbes walker sweep read +69% on warm preorder walks (local A/B)
   // -- the per-probe size reads and cursor bookkeeping cost more than the O(1) reads they
   // avoided building. The CSR shape is the walker branch's validated design. Contrast
   // AsyncPreorderAdjacencyIndex, the GROWING citizen, which keeps incremental scan state

@@ -13,7 +13,7 @@ namespace Copse.Linq
     /// <summary>
     /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static ITreenumerable<TNode> TakeNodesWhile<TNode>(
       this ITreenumerable<TNode> source,
@@ -31,7 +31,7 @@ namespace Copse.Linq
     /// <summary>
     /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -42,7 +42,7 @@ namespace Copse.Linq
     /// <summary>
     /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IDepthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
@@ -53,7 +53,7 @@ namespace Copse.Linq
     /// <summary>
     /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
@@ -64,7 +64,7 @@ namespace Copse.Linq
     /// <summary>
     /// <c>TakeNodesWhile</c>: forwards nodes while they match the predicate -- TakeNodesUntil
     /// with an inverted predicate. Deferred. Value flavor primary; the positional flavor is the
-    /// arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// arity split (the Select/Where grammar).
     /// </summary>
     public static IBreadthFirstTreenumerable<TNode> TakeNodesWhile<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,

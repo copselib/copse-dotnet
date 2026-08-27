@@ -4,7 +4,7 @@
     <TargetFrameworks>net48;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>13</LangVersion>
     <IsPackable>true</IsPackable>
-    <Description>Async tree traversal for Copse: the awaited-pull engine, flat store and stream decoders, tree-source factories (AsyncTree.Defer/Using/Empty), and the async disposal algebra. The codegen source of truth the synchronous Copse package is generated from.</Description>
+    <Description>Async tree traversal for Copse: the awaited-pull engine, flat store and stream decoders, tree-source factories (AsyncTree.Defer/Lazy/Using/Empty), and the async disposal algebra. The codegen source of truth the synchronous Copse package is generated from.</Description>
   </PropertyGroup>
 
   <ItemGroup>

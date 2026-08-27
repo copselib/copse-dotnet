@@ -13,7 +13,7 @@ namespace Copse.Linq
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
-    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// flavor is the arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -32,7 +32,7 @@ namespace Copse.Linq
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
-    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// flavor is the arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -44,7 +44,7 @@ namespace Copse.Linq
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
-    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// flavor is the arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -56,7 +56,7 @@ namespace Copse.Linq
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
-    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// flavor is the arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
@@ -68,7 +68,7 @@ namespace Copse.Linq
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
     /// scheduling (pruning that node's subtree and later siblings), keeping the matched node itself
     /// iff <paramref name="keepFinalNode"/>. Deferred. Value flavor primary; the positional
-    /// flavor is the arity-split (the Select/Where grammar, swept family-wide 2026-08-05).
+    /// flavor is the arity split (the Select/Where grammar).
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,

@@ -145,6 +145,10 @@ MegaTriangleTree() = new TriangleTree().PruneAfter((n, position) => position.Dep
 MegaBinaryTree()   = new CompleteBinaryTree().PruneBefore((n, position) => position.Depth == 20)
 ```
 
+(Era spellings; today the factories say PruneDescendantsWhere/PruneSubtreesWhere and end in
+`.Hide(HideScope.Treenumerable)` -- see "The fix that shipped" below, which stops the
+scaffolding composing at all.)
+
 `MegaChainTree` (`ToTrivialForest`) and `MegaDeepChainsTree` (`DeepTree`) are prune-free,
 which is exactly why they make good controls.
 

@@ -43,7 +43,7 @@ namespace Copse.Linq.Treenumerators
 
     private readonly TResultSelector _ResultSelector;
 
-    // THE SUBTREE STAGE (TakeSubtreesWhere as a driver-stage fact, 2026-08-17): in subtree
+    // THE SUBTREE STAGE (TakeSubtreesWhere as a driver-stage fact): in subtree
     // mode the reject is an INHERITED fact -- a predicate-failing node whose inner parent was
     // ACCEPTED is inside a kept region and is kept with its whole subtree; only nodes whose
     // every ancestor-or-self failed are dropped (the outermost rule as prefix arithmetic --
@@ -122,8 +122,7 @@ namespace Copse.Linq.Treenumerators
 
       // PruneSiblings now passes straight through to the base engine, which handles it
       // correctly under promotion (including effective-root PruneSiblings ending the root
-      // stream). The wrapper previously stripped and re-emulated it -- that was
-      // over-compensation for the then-broken base engine and produced wrong results.
+      // stream); the base engine handles it natively.
 
       // Manufacture the front's owed return visit (unless this turn consumer-SkipNode's the child,
       // which cancels the owing, or the front is the sentinel). Inlines _Path.Front (no ref local).

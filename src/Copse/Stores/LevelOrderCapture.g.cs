@@ -134,7 +134,7 @@ namespace Copse.Stores
     /// which already speaks the store's positional contract (group 0 the roots, group j+1 node
     /// j's children, items in level order) -- straight into a completed store. No visit stream
     /// is ever synthesized between the encodings (the FlatDecode family prices that round trip;
-    /// this is the one-shot form of the drain the stream-fed store used to do incrementally).
+    /// the one-shot drain).
     /// Takes ownership: the stream (and whatever it owns) is disposed on return.
     /// </summary>
     public static LevelOrderArrayStore<TNode> CaptureFrom<TNode>(

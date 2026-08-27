@@ -21,7 +21,7 @@ namespace Copse.Linq.Treenumerables
   //
   // This SUPERSEDES the dual-buffer design (one capture per dimension, the four-case serving
   // rule, completion races, ref-counted straggler replays -- see MEMOIZE_DESIGN.md's
-  // superseding note, 2026-07-15): that design bought native-layout laziness in both
+  // superseding note): that design bought native-layout laziness in both
   // dimensions at the price of a second source enumeration, which broke at-most-once for
   // side-effecting sources and carried a page of drop/race machinery. The single capture is
   // the same model every capture operator (Invert-F's first-dimension pin, the narrow-source
@@ -119,9 +119,8 @@ namespace Copse.Linq.Treenumerables
       return _Topology;
     }
 
-    // Probe members removed (Stage C, the cut): the contract no longer carries them.
 
-    // The door (walker factory design, Stage A): topology-at-birth -- the walker holds the
+    // The door: topology-at-birth -- the walker holds the
     // pull-through index directly; probes stay demand.
     public TreeWalker<TNode, int> GetTreeWalker()
       => new TreeWalker<TNode, int>(EnsureTopology());

@@ -23,7 +23,7 @@ namespace Copse.Linq.Async.Treenumerables
       IAsyncWalkableTreenumerable<TNode, THandle> source,
       Func<TNode, bool> predicate)
     {
-      // Stage C: the walkable no longer exposes its topology; the lens's adjacency half
+      // The walkable does not expose its topology; navigation goes through the walker; the lens's adjacency half
       // reaches it through the deferred door (knocked once, at the first probe).
       _Source = AsyncTreeTopology.Lazy(source);
       _Predicate = predicate;
@@ -53,7 +53,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     public ValueTask<Option<HandleAndSiblingIndex<THandle>>> TryGetRootAtAsync(int rootIndex) => _Source.TryGetRootAtAsync(rootIndex);
 
-    // The door (walker factory design, Stage A): the lens IS its own topology -- the walker
+    // The door: the lens IS its own topology -- the walker
     // navigates the pruned view.
     public ValueTask<AsyncTreeWalker<TNode, THandle>> GetTreeWalkerAsync()
       => new ValueTask<AsyncTreeWalker<TNode, THandle>>(new AsyncTreeWalker<TNode, THandle>(this));

@@ -13,8 +13,8 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
-    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity split (the Select/Where
+    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncTreenumerable<TNode> source,
@@ -35,8 +35,8 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
-    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity split (the Select/Where
+    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -48,8 +48,8 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
-    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity split (the Select/Where
+    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -61,8 +61,8 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
-    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity split (the Select/Where
+    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
@@ -74,8 +74,8 @@ namespace Copse.Linq
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
     /// Drives with SkipNode where possible so each node is seen exactly once (at scheduling);
     /// the breadth-first dimension traverses all (its schedules front-run the skips).
-    /// Value flavor primary; the positional flavor is the arity-split (the Select/Where
-    /// grammar, swept family-wide 2026-08-05). Awaitable -&gt; carries the <c>Async</c> suffix.
+    /// Value flavor primary; the positional flavor is the arity split (the Select/Where
+    /// grammar). Awaitable -&gt; carries the <c>Async</c> suffix.
     /// </summary>
     public static ValueTask<bool> AnyNodesAsync<TNode>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
