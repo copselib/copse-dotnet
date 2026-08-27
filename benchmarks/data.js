@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787789935415,
+  "lastUpdate": 1787789936098,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -196982,6 +196982,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PostorderTraversal.Binary",
             "value": 3507,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35111,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 628,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 374,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26167,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f73353127808a3b341aaea3598ae8678f2bcb99a",
+          "message": "Node/value audit: tree-domain members say Node; containers keep Value\n\nJason's policy line, applied: when a type is tree-domain -- its\nparameter IS the element -- members name what they hold, so\nSelectWhereResult.Value and PreorderRead.Value become Node (with their\nconstructor parameters), the completed array stores and dispatch views\nstore _Nodes, the stream treenumerators' frames and lookahead carry\nNode, and the leaffix frame tuple follows. Genuine containers keep\ntheir own idiom: Option and the walker step result hold anything, so\ntheir Value/HasValue stand, as do the accessor-word members (GetValue,\nTryGetValueAsync, GetHandlesWithValues). Doc phrases saying \"source\nvalue\" for members named Node reworded. Release-noted; twins\nregenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T23:49:54Z",
+          "tree_id": "b5e387738fe1b654146e30e4fa9a2dc75bc279ef",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f73353127808a3b341aaea3598ae8678f2bcb99a"
+        },
+        "date": 1787789935957,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 839,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 380,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27502188,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231266,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214127,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 588,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 3531,
             "unit": "bytes"
           },
           {
