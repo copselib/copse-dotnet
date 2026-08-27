@@ -196,7 +196,7 @@ namespace Copse
     /// Nodes are read through <c>GetNodeAsync</c> during the walk.</summary>
     public static IAsyncTreenumerable<TNode> FromTopology<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)
-      => new AsyncTreenumerable<TNode, HandleAndNode<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
+      => new AsyncHierarchicalTreenumerable<TNode, HandleAndNode<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
         nodeContext => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));

@@ -7,7 +7,7 @@ namespace Copse.Treenumerables
   // PruneDescendants is an O(1) span hop. It rides the existing DFS/BFS engine via
   // PreorderChildEnumerator -- no bespoke traversal code, dynamic pruning preserved.
   public sealed class PreorderTree<TNode>
-    : Treenumerable<TNode, int, PreorderChildEnumerator>
+    : HierarchicalTreenumerable<TNode, int, PreorderChildEnumerator>
   {
     public PreorderTree(TNode[] values, int[] subtreeSizes)
       : base(

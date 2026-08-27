@@ -41,7 +41,7 @@ namespace Copse.Linq.Tests
     }
 
     private static ITreenumerable<int> Tree()
-      => new Treenumerable<int, BinaryChildren>(
+      => new HierarchicalTreenumerable<int, BinaryChildren>(
         ctx => new BinaryChildren(ctx.Node), new[] { 1 });
 
     [TestMethod]

@@ -86,7 +86,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
   collections (`RefSemiDeque`, `RefAppendOnlyList`) and the lifted `Copse.Disposables`
   algebra. References nothing.
 - **Copse** - The concrete treenumerables, in **two families** (see below): the *hierarchical*
-  engine (`Treenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
+  engine (`HierarchicalTreenumerable<,,>` + the DFS/BFS treenumerators, driven via `IChildEnumerator`) and
   the *flat* family (`PreorderTreenumerable`/`LevelOrderTreenumerable` + their store/stream
   treenumerators, over flat preorder/level-order encodings — the store SPIs, read structs,
   completed array stores, and capture factories live in `Copse/Stores`, generated from their
@@ -152,8 +152,8 @@ design-docs/TRAVERSAL_DIMENSION_SPLIT.md and design-docs/OPERATOR_DIMENSION_AUDI
 
 Classified by the data's shape:
 - **Hierarchical** (the engine): child-shaped data adapted via the `IChildEnumerator` protocol.
-  `DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>` (stack-based) and
-  `BreadthFirstTreenumerator<…>` (queue+stack). This is the family for arbitrary live trees.
+  `HierarchicalDepthFirstTreenumerator<TNode, THandle, TChildEnumerator>` (stack-based) and
+  `HierarchicalBreadthFirstTreenumerator<…>` (queue+stack). This is the family for arbitrary live trees.
 - **Flat** (linear encodings decoded back into visit streams): preorder arrays / level-order
   arrays / serialized text, behind the store SPIs `IPreorderStore`/`ILevelOrderStore`
   (random-access) and `IPreorderStream`/`ILevelOrderStream` (forward-only). Four store

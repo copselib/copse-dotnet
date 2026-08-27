@@ -117,6 +117,13 @@
   ids will be deprecated. *Migration: remove any direct references to the three retired
   packages — their types arrive through `Copse.Core`/`Copse`/`Copse.Linq`; `Option` and
   `HandleAndSiblingIndex` move from namespace `Copse` to `Copse.Core`.*
+- **The hierarchical family says hierarchical**: the engine class `Treenumerable` →
+  `HierarchicalTreenumerable` (both arities; async twin `AsyncHierarchicalTreenumerable`),
+  completing the family triple beside `PreorderTreenumerable` and
+  `LevelOrderTreenumerable` — each concrete treenumerable is named for the shape of the
+  data it decodes, and the bare name no longer collides with the `Copse.Linq.Treenumerable`
+  operator class. *Migration: rename at construction sites; `Tree.Create`/`Tree.Defer`
+  call sites are unchanged.*
 - **The chunked collections move to namespace `Copse.Collections`** — `RefSemiDeque<T>` and
   `RefAppendOnlyList<T>` leave the bare `Copse` namespace (which is now purely tree-domain),
   mirroring `System.Collections.Generic`'s shape; the `Copse.Primitives` package is

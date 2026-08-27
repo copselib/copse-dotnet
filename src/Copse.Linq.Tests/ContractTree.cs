@@ -9,8 +9,8 @@ namespace Copse.Linq.Tests
   // works over ANY implementation honoring the visit-stream contract, and this file doubles as
   // an executable, engine-independent specification of that contract.
   //
-  // The semantics were transcribed from the engine (DepthFirstTreenumerator/DepthFirstPath and
-  // BreadthFirstTreenumerator/BreadthFirstPath) and are locked to it by
+  // The semantics were transcribed from the engine (HierarchicalDepthFirstTreenumerator/DepthFirstPath and
+  // HierarchicalBreadthFirstTreenumerator/BreadthFirstPath) and are locked to it by
   // ContractTreeConformanceTests. The two load-bearing subtleties:
   //  - DFT: a backtracked-to accepted node is owed a between/after-children visit only if
   //    something below it was VISITED since its last visit (the depth-of-last-visited rule);

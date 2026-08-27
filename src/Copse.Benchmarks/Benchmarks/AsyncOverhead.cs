@@ -57,7 +57,7 @@ namespace Copse.Benchmarks
     }
 
     public static IAsyncTreenumerable<int> GetAsyncBinaryTree(int depth)
-      => new AsyncTreenumerable<int, int, AsyncBinaryChildEnumerator>(
+      => new AsyncHierarchicalTreenumerable<int, int, AsyncBinaryChildEnumerator>(
           nodeContext => new AsyncBinaryChildEnumerator(nodeContext.Node),
           node => node,
           RootAsync())

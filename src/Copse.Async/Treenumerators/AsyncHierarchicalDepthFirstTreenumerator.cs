@@ -15,15 +15,15 @@ namespace Copse.Treenumerators
   /// <summary>
   /// The depth-first engine cursor over a hierarchical source: roots from an async stream,
   /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
-  /// constructed by <c>AsyncTreenumerable</c> rather than directly.
+  /// constructed by <c>AsyncHierarchicalTreenumerable</c> rather than directly.
   /// </summary>
-  internal sealed class AsyncDepthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
+  internal sealed class AsyncHierarchicalDepthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
     : IAsyncTreenumerator<TNode>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
     /// <summary>Builds the traversal from the pull topology: the roots, a factory producing
     /// each handle's child enumerator, and the map resolving a handle to its node.</summary>
-    public AsyncDepthFirstTreenumerator(
+    public AsyncHierarchicalDepthFirstTreenumerator(
       IAsyncEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)

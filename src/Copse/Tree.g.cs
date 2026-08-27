@@ -177,7 +177,7 @@ namespace Copse
     /// Nodes are read through <c>GetNode</c> during the walk.</summary>
     public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
-      => new Treenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
+      => new HierarchicalTreenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
         nodeContext => new TopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));

@@ -2,7 +2,7 @@
 
 namespace Copse.Trees
 {
-  public class CompleteBinaryTree : Treenumerable<int, CompleteBinaryTreeNodeChildEnumerator>
+  public class CompleteBinaryTree : HierarchicalTreenumerable<int, CompleteBinaryTreeNodeChildEnumerator>
   {
     public CompleteBinaryTree()
       : base(

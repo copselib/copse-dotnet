@@ -60,7 +60,7 @@ struct BinaryChildren : IChildEnumerator<int>
     public void Dispose() => _disposed = true;
 }
 
-ITreenumerable<int> tree = new Treenumerable<int, BinaryChildren>(
+ITreenumerable<int> tree = new HierarchicalTreenumerable<int, BinaryChildren>(
     ctx => new BinaryChildren(ctx.Node), new[] { 1 });
 //       1
 //      / \
@@ -69,7 +69,7 @@ ITreenumerable<int> tree = new Treenumerable<int, BinaryChildren>(
 //   4  5 6  7
 ```
 
-(The two-parameter `Treenumerable<TNode, TChildEnumerator>` is the node-is-its-own-handle
+(The two-parameter `HierarchicalTreenumerable<TNode, TChildEnumerator>` is the node-is-its-own-handle
 convenience; the three-parameter form takes a `handle → node` map for trees whose surfaced
 values can't produce their own children.)
 

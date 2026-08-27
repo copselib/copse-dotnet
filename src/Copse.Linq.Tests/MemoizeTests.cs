@@ -455,7 +455,7 @@ namespace Copse.Linq.Tests
     // The infinite binary tree: node n has children 2n+1 and 2n+2. Infinite depth, so only
     // bounded (prefix) consumption terminates -- exactly like the direct traversal.
     private static ITreenumerable<int> InfiniteBinaryTree()
-      => new Treenumerable<int, InfiniteBinaryChildEnumerator>(
+      => new HierarchicalTreenumerable<int, InfiniteBinaryChildEnumerator>(
         nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
         new[] { 0 });
 

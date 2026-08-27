@@ -20,14 +20,14 @@ namespace Copse.Treenumerables
   /// the start (an <see cref="IAsyncEnumerable{THandle}"/> is cold, like its sync
   /// counterpart); a single-pass source should be memoized first.
   /// </summary>
-  public class AsyncTreenumerable<TNode, THandle, TAsyncChildEnumerator>
+  public class AsyncHierarchicalTreenumerable<TNode, THandle, TAsyncChildEnumerator>
     : IAsyncTreenumerable<TNode>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
     /// <summary>Builds the treenumerable from the pull topology: the roots, a factory
     /// producing each handle's child enumerator, and the map resolving a handle to its
     /// node.</summary>
-    public AsyncTreenumerable(
+    public AsyncHierarchicalTreenumerable(
       Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
       IAsyncEnumerable<THandle> roots)
@@ -45,7 +45,7 @@ namespace Copse.Treenumerables
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
     {
       return
-        new AsyncBreadthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>(
+        new AsyncHierarchicalBreadthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>(
           _Roots,
           _ChildEnumeratorFactory,
           _HandleToNodeMap);
@@ -55,7 +55,7 @@ namespace Copse.Treenumerables
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
     {
       return
-        new AsyncDepthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>(
+        new AsyncHierarchicalDepthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>(
           _Roots,
           _ChildEnumeratorFactory,
           _HandleToNodeMap);
@@ -64,13 +64,13 @@ namespace Copse.Treenumerables
 
   /// <summary>The two-parameter form for trees whose node is its own handle: the map is the
   /// identity, so callers don't supply one.</summary>
-  public class AsyncTreenumerable<TNode, TAsyncChildEnumerator>
-    : AsyncTreenumerable<TNode, TNode, TAsyncChildEnumerator>
+  public class AsyncHierarchicalTreenumerable<TNode, TAsyncChildEnumerator>
+    : AsyncHierarchicalTreenumerable<TNode, TNode, TAsyncChildEnumerator>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
   {
     /// <summary>Builds the treenumerable from nodes that are their own handles: the roots
     /// and a factory producing each node's child enumerator.</summary>
-    public AsyncTreenumerable(
+    public AsyncHierarchicalTreenumerable(
       Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
       IAsyncEnumerable<TNode> roots)
       : base(childEnumeratorFactory, node => node, roots)

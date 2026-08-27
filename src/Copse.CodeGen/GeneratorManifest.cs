@@ -101,9 +101,9 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerables/AsyncLevelOrderTreenumerable.cs",
         "Copse/Treenumerables/LevelOrderTreenumerable.g.cs",
         "AsyncLevelOrderTreenumerable", "LevelOrderTreenumerable", "Copse.Treenumerables"),
-      new("Copse.Async/Treenumerables/AsyncTreenumerable.cs",
-        "Copse/Treenumerables/Treenumerable.g.cs",
-        "AsyncTreenumerable", "Treenumerable", "Copse.Treenumerables"),
+      new("Copse.Async/Treenumerables/AsyncHierarchicalTreenumerable.cs",
+        "Copse/Treenumerables/HierarchicalTreenumerable.g.cs",
+        "AsyncHierarchicalTreenumerable", "HierarchicalTreenumerable", "Copse.Treenumerables"),
 
       // The tree-source factories: AsyncTree is the source of truth for Tree (the async-acquire
       // Using overloads are async-only marker regions -- their transcription would collapse onto
@@ -118,9 +118,9 @@ namespace Copse.CodeGen
       new("Copse.Async/Treenumerators/AsyncDisposeActionTreenumerator.cs",
         "Copse/Treenumerators/DisposeActionTreenumerator.g.cs",
         "AsyncDisposeActionTreenumerator", "DisposeActionTreenumerator", "Copse.Treenumerators"),
-      new("Copse.Async/Treenumerators/AsyncDepthFirstTreenumerator.cs",
-        "Copse/Treenumerators/DepthFirstTreenumerator.g.cs",
-        "AsyncDepthFirstTreenumerator", "DepthFirstTreenumerator", "Copse.Treenumerators"),
+      new("Copse.Async/Treenumerators/AsyncHierarchicalDepthFirstTreenumerator.cs",
+        "Copse/Treenumerators/HierarchicalDepthFirstTreenumerator.g.cs",
+        "AsyncHierarchicalDepthFirstTreenumerator", "HierarchicalDepthFirstTreenumerator", "Copse.Treenumerators"),
       // The walker core (WALKABLE_CONTRACT_DESIGN.md §8b): the comonad's carrier, its result
       // struct, the Walk adapter, the extend/severed-view machinery, and the extension
       // surface -- authored async, generated into the base Copse project (the walker ships
@@ -241,9 +241,9 @@ namespace Copse.CodeGen
         "Copse/Treenumerators/LevelOrderStoreBreadthFirstTreenumerator.g.cs",
         "AsyncLevelOrderStoreBreadthFirstTreenumerator", "LevelOrderStoreBreadthFirstTreenumerator", "Copse.Treenumerators"),
 
-      new("Copse.Async/Treenumerators/AsyncBreadthFirstTreenumerator.cs",
-        "Copse/Treenumerators/BreadthFirstTreenumerator.g.cs",
-        "AsyncBreadthFirstTreenumerator", "BreadthFirstTreenumerator", "Copse.Treenumerators"),
+      new("Copse.Async/Treenumerators/AsyncHierarchicalBreadthFirstTreenumerator.cs",
+        "Copse/Treenumerators/HierarchicalBreadthFirstTreenumerator.g.cs",
+        "AsyncHierarchicalBreadthFirstTreenumerator", "HierarchicalBreadthFirstTreenumerator", "Copse.Treenumerators"),
 
       // The forward-only STREAM treenumerators: the twin takes over the canonical name (the
       // hand-tuned out-style stream treenumerators are retired; struct-return SPI proven at parity).

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Copse.Benchmarks.Trees
 {
-  public class DeepTree : Treenumerable<int, DeepTreeNodeChildEnumerator>
+  public class DeepTree : HierarchicalTreenumerable<int, DeepTreeNodeChildEnumerator>
   {
     public DeepTree(int width)
       : base(

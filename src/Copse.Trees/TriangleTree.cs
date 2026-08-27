@@ -2,7 +2,7 @@
 
 namespace Copse.Trees
 {
-  public class TriangleTree : Treenumerable<int, TriangleTreeNodeChildEnumerator>
+  public class TriangleTree : HierarchicalTreenumerable<int, TriangleTreeNodeChildEnumerator>
   {
     public TriangleTree()
       : base(
