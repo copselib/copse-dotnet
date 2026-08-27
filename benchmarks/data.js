@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787795455421,
+  "lastUpdate": 1787795456103,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -200715,6 +200715,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
             "value": 35111,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 628,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 374,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 3059,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26167,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ced8bc5b83dfdff213e8202c638a64f8aec9a306",
+          "message": "The node accessors say node: GetValue -> GetNode across topology, walker, and store SPIs\n\nThe accessor tier was the last value-speak in the tree surface -- a fossil of the\nTValue era surviving the TNode ruling by a role-word carve-out drawn to bound the\nsweep, not on merits. The store SPIs settled it: they already speak fluent tree\neverywhere else (EnsureSubtreeClosed, GetSubtreeSize, EnsureRootAvailable,\nGetFirstChildIndex); there is no value-speaking tier in this library.\n\nRenames (async sources + codegen'd sync twins; BREAKING, release-noted):\n- ITreeTopology.GetValue -> GetNode / IAsyncTreeTopology.GetValueAsync -> GetNodeAsync\n- TreeWalker.GetValue/TryGetValue -> GetNode/TryGetNode (async twins likewise;\n  unfocused-throw helper and message follow)\n- IPreorderStore/ILevelOrderStore.GetValue(index) -> GetNode(index) (all\n  implementations: array, lazy, memoize, serializer string stores -- whose\n  _Values fields follow to _Nodes)\n- GetHandlesWithValues -> GetHandlesWithNodes (file + generator manifest renamed;\n  now agrees with its HandleAndNode element type)\n\nKept, per the container line: Option.Value/TryGetValue, TreeWalkerResult.Value/\nHasValue/TryGetValue (it holds a walker), AsyncValueTokenStreamScanner.GetValue\n(returns the token's text). OPERATOR_SURFACE_MAP rows updated in this commit.\nSuite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T01:30:53Z",
+          "tree_id": "5649108018eb23087934d5f3b67d736b7e6517bc",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ced8bc5b83dfdff213e8202c638a64f8aec9a306"
+        },
+        "date": 1787795455954,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 839,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 380,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 27502188,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 231266,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 4214127,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 588,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 5998,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 35134,
             "unit": "bytes"
           },
           {
