@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerables
 {
   /// <summary>
   /// The canonical prune-after treenumerable: a source and a predicate; each matching node
-  /// is kept and its subtree shed (via the consumer protocol's <c>SkipDescendants</c> --
+  /// is kept and its subtree shed (via the consumer protocol's <c>PruneDescendants</c> --
   /// no promotion, no relabeling: survivors keep their coordinates). This is the type the
   /// <c>PruneAfter</c> operator builds, made PUBLIC
   /// (design-docs/PUBLIC_COMPOSITION_SURFACE_DESIGN.md) as the prune citizenship's

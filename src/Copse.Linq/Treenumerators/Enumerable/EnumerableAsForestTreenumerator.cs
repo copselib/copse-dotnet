@@ -29,7 +29,7 @@ namespace Copse.Linq.Treenumerators.Enumerator
 
     private bool OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         return false;
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))

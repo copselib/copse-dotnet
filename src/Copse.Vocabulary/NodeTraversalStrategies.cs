@@ -19,22 +19,22 @@ namespace Copse.Core
     SkipNode                   = 1,                                         // 1
 
     /// <summary>Do not traverse the current node's descendants.</summary>
-    SkipDescendants            = 2,                                         // 2
+    PruneDescendants            = 2,                                         // 2
 
     /// <summary>Skip the current node's remaining visits and its descendants.</summary>
-    SkipNodeAndDescendants     = SkipNode | SkipDescendants,                // 3
+    PruneSubtree     = SkipNode | PruneDescendants,                // 3
 
     /// <summary>Do not schedule the current node's later siblings.</summary>
-    SkipSiblings               = 4,                                         // 4
+    PruneSiblings               = 4,                                         // 4
 
     /// <summary>Skip the current node's remaining visits and its later siblings.</summary>
-    SkipNodeAndSiblings        = SkipNode |                   SkipSiblings, // 5
+    SkipNodeAndPruneSiblings        = SkipNode |                   PruneSiblings, // 5
 
     /// <summary>Skip the current node's descendants and its later siblings.</summary>
-    SkipDescendantsAndSiblings =            SkipDescendants | SkipSiblings, // 6
+    PruneDescendantsAndSiblings =            PruneDescendants | PruneSiblings, // 6
 
     /// <summary>Skip everything reachable from the current node: its remaining visits, its
     /// descendants, and its later siblings.</summary>
-    SkipAll                    = SkipNode | SkipDescendants | SkipSiblings, // 7
+    PruneSubtreeAndSiblings                    = SkipNode | PruneDescendants | PruneSiblings, // 7
   }
 }

@@ -47,6 +47,15 @@
   (constructor parameters likewise) — tree-domain types name the element for what it is;
   generic containers (`Option`, the walker step result) keep their own `Value` idiom. The
   completed array stores' constructors rename their `values` parameter to `nodes`.
+- **`NodeTraversalStrategies` says prune where it prunes** — the enum used "skip" two ways:
+  `SkipNode` literally skips (visits suppressed, descendants traversed), while the other
+  flags remove structure outright. The members now say so (flag values unchanged):
+  `SkipDescendants` → `PruneDescendants`, `SkipNodeAndDescendants` → `PruneSubtree`,
+  `SkipSiblings` → `PruneSiblings`, `SkipNodeAndSiblings` → `SkipNodeAndPruneSiblings`,
+  `SkipDescendantsAndSiblings` → `PruneDescendantsAndSiblings`, `SkipAll` →
+  `PruneSubtreeAndSiblings`. `TraverseAll` and `SkipNode` are unchanged, as are the
+  LINQ-idiom operators (`Where`, `SkipTrees`, `SkipLastTrees`). *Migration: rename the
+  members at call sites; flag arithmetic and semantics are identical.*
 - **The node accessors say node**: `ITreeTopology.GetValue` → `GetNode` (async
   `GetValueAsync` → `GetNodeAsync`), the walker's `GetValue`/`TryGetValue` →
   `GetNode`/`TryGetNode` (async likewise), the store SPIs' `GetValue(index)` →

@@ -17,7 +17,7 @@ namespace Copse.Linq.Async.Treenumerables
       => new SelectWhereResult<TNode>(
         nodeContext.Node,
         _Predicate(nodeContext.Node, nodeContext.Position)
-          ? NodeTraversalStrategies.SkipNodeAndDescendants
+          ? NodeTraversalStrategies.PruneSubtree
           : NodeTraversalStrategies.TraverseAll);
   }
 }

@@ -282,7 +282,7 @@ namespace Copse.Linq.Tests
             {
               NodeTraversalStrategiesSelector = visit =>
                 visit.Position.Depth == 1 && visit.Position.SiblingIndex == 0
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.PruneBefore(n => n == "b"),
               Description = "Prune before level 1 sibling 0, skip level 1 sibling 0 subtree",
@@ -483,7 +483,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => visit.Node == "b" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = visit => visit.Node == "b" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.PruneBefore((n, position) => position.Depth == 1),
               Description = "Prune before level 1, skip level 0, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -505,7 +505,7 @@ namespace Copse.Linq.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.PruneSubtree,
               TreenumerableMap = treenumerable => treenumerable.PruneBefore((n, position) => position.Depth == 1),
               Description = "Prune before level 1, skip all subtrees",
               ExpectedBreadthFirstResults = new[]
@@ -885,7 +885,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.PruneSubtree,
               TreenumerableMap = treenumerable => treenumerable.PruneBefore(_ => true),
               Description = "Prune before all, Skip all subtrees",
               ExpectedBreadthFirstResults = Array.Empty<NodeVisit<string>>(),
@@ -893,7 +893,7 @@ namespace Copse.Linq.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => visit.Position.SiblingIndex == 0 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = visit => visit.Position.SiblingIndex == 0 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.PruneBefore((n, position) => position.SiblingIndex == 1),
               Description = "Prune before sibling 1, skip sibling 0 subtree",
               ExpectedBreadthFirstResults = new[]

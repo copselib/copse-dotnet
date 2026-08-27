@@ -85,9 +85,9 @@ namespace Copse.Linq.Async
         _Queue.RemoveLast();
       }
 
-      // A consumer SkipSiblings caps the just-scheduled node's effective parent (root cap or front cap).
+      // A consumer PruneSiblings caps the just-scheduled node's effective parent (root cap or front cap).
       if (Mode == TreenumeratorMode.SchedulingNode
-        && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+        && nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
       {
         if (_LastScheduledWasRoot)
         {
@@ -114,7 +114,7 @@ namespace Copse.Linq.Async
       {
         UpdateRootsScheduled();
 
-        // 0) Prune a later sibling dropped by a SkipSiblings cap.
+        // 0) Prune a later sibling dropped by a PruneSiblings cap.
         if (await TryPruneCappedChildAsync().ConfigureAwait(false))
           continue;
 
@@ -171,9 +171,9 @@ namespace Copse.Linq.Async
       if (!capped)
         return false;
 
-      if (atLeft && !await _LeftTreenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
+      if (atLeft && !await _LeftTreenumerator.MoveNextAsync(NodeTraversalStrategies.PruneSubtree).ConfigureAwait(false))
         _LeftTreenumeratorFinished = true;
-      if (atRight && !await _RightTreenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
+      if (atRight && !await _RightTreenumerator.MoveNextAsync(NodeTraversalStrategies.PruneSubtree).ConfigureAwait(false))
         _RightTreenumeratorFinished = true;
 
       return true;

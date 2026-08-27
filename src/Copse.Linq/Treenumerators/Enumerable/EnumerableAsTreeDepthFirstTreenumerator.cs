@@ -58,7 +58,7 @@ namespace Copse.Linq.Treenumerators.Enumerator
 
     private bool OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
       {
         DisposeEnumerator();
 

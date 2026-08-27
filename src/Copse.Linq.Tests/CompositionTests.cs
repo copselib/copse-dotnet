@@ -164,7 +164,7 @@ namespace Copse.Linq.Tests
           $"{strategy}: same operators, same tree, order-independent here (neither filters what the other sees)");
     }
 
-    // PruneBefore is a result selector now ((node, SkipNodeAndDescendants)), so it joins the
+    // PruneBefore is a result selector now ((node, PruneSubtree)), so it joins the
     // composed chain; a following value-Where composes onto it.
     [TestMethod]
     public void PruneBefore_JoinsTheComposedChain()
@@ -206,7 +206,7 @@ namespace Copse.Linq.Tests
 
     // The PruneAfter-selector rehearsal: nothing on the surface produces accept-side result
     // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
-    // and must not sit untested until the prune migration. (node, SkipDescendants) = keep
+    // and must not sit untested until the prune migration. (node, PruneDescendants) = keep
     // the node, drop its subtree.
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
@@ -217,7 +217,7 @@ namespace Copse.Linq.Tests
           new SelectWhereResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
-              ? NodeTraversalStrategies.SkipDescendants
+              ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll)));
 
       var nodes = rehearsedPruneAfter
@@ -239,7 +239,7 @@ namespace Copse.Linq.Tests
           new SelectWhereResult<string>(
             nodeContext.Node,
             nodeContext.Node == "b"
-              ? NodeTraversalStrategies.SkipDescendants
+              ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll)));
 
       var nodes = rehearsedPruneAfter
@@ -251,7 +251,7 @@ namespace Copse.Linq.Tests
 
     // The seam's independent oracle: the bespoke PruneAfter operator implements the same
     // semantics (keep the node, drop its subtree) through entirely different machinery, so the
-    // rehearsed (node, SkipDescendants) selector must match it -- both dimensions, under
+    // rehearsed (node, PruneDescendants) selector must match it -- both dimensions, under
     // every consumer-strategy interference aimed at every node.
     [TestMethod]
     public void AcceptStrategies_MatchTheBespokePruneAfterOracle()
@@ -261,12 +261,12 @@ namespace Copse.Linq.Tests
       {
         NodeTraversalStrategies.TraverseAll,
         NodeTraversalStrategies.SkipNode,
-        NodeTraversalStrategies.SkipDescendants,
-        NodeTraversalStrategies.SkipSiblings,
-        NodeTraversalStrategies.SkipNodeAndDescendants,
-        NodeTraversalStrategies.SkipNodeAndSiblings,
-        NodeTraversalStrategies.SkipDescendantsAndSiblings,
-        NodeTraversalStrategies.SkipAll,
+        NodeTraversalStrategies.PruneDescendants,
+        NodeTraversalStrategies.PruneSiblings,
+        NodeTraversalStrategies.PruneSubtree,
+        NodeTraversalStrategies.SkipNodeAndPruneSiblings,
+        NodeTraversalStrategies.PruneDescendantsAndSiblings,
+        NodeTraversalStrategies.PruneSubtreeAndSiblings,
       };
 
       foreach (var treeString in trees)
@@ -289,7 +289,7 @@ namespace Copse.Linq.Tests
               new SelectWhereResult<string>(
                 nodeContext.Node,
                 nodeContext.Node == target
-                  ? NodeTraversalStrategies.SkipDescendants
+                  ? NodeTraversalStrategies.PruneDescendants
                   : NodeTraversalStrategies.TraverseAll)));
 
           var expected = Tree(treeString).PruneAfter(n => n == target)

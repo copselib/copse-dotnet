@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => visit.Position.Depth == 0 ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = visit => visit.Position.Depth == 0 ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.PruneAfter(_ => false),
               Description = "Prune after none, skip level 0 descendants",
               ExpectedBreadthFirstResults = new[]
@@ -186,7 +186,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => visit.Node == "c" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = visit => visit.Node == "c" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.PruneAfter(_ => false),
               Description = "Prune after none, skip c subtree",
               ExpectedBreadthFirstResults = new[]
@@ -416,7 +416,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = visit => NodeTraversalStrategies.PruneSubtree,
               TreenumerableMap = treenumerable => treenumerable.PruneAfter(_ => true),
               Description = "Prune after all, Skip all subtrees",
               ExpectedBreadthFirstResults = new[]

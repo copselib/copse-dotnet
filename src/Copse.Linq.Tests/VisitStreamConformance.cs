@@ -34,12 +34,12 @@ namespace Copse.Linq.Tests
     public static readonly NodeTraversalStrategies[] SchedulingStrategies =
     {
       NodeTraversalStrategies.SkipNode,
-      NodeTraversalStrategies.SkipDescendants,
-      NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipNodeAndDescendants,
-      NodeTraversalStrategies.SkipNodeAndSiblings,
-      NodeTraversalStrategies.SkipDescendants | NodeTraversalStrategies.SkipSiblings,
-      NodeTraversalStrategies.SkipAll,
+      NodeTraversalStrategies.PruneDescendants,
+      NodeTraversalStrategies.PruneSiblings,
+      NodeTraversalStrategies.PruneSubtree,
+      NodeTraversalStrategies.SkipNodeAndPruneSiblings,
+      NodeTraversalStrategies.PruneDescendants | NodeTraversalStrategies.PruneSiblings,
+      NodeTraversalStrategies.PruneSubtreeAndSiblings,
     };
 
     public static readonly StrategyScript TraverseAll = (mode, node, visitCount) => NodeTraversalStrategies.TraverseAll;

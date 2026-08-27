@@ -64,10 +64,10 @@ namespace Copse.Linq.Async
 
     private async ValueTask HandleMoveNextForLeftAndRightTreenumeratorsAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      // SkipSiblings must silence the remaining EFFECTIVE siblings of the just-scheduled node under its
+      // PruneSiblings must silence the remaining EFFECTIVE siblings of the just-scheduled node under its
       // effective parent. The operand the node LACKS is not pulled below, so if it holds/will-yield an
       // effective sibling we propagate the skip to it explicitly (see the sync twin for the full rationale).
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
       {
         var effectiveParent = EffectiveParent();
 
@@ -114,7 +114,7 @@ namespace Copse.Linq.Async
       {
         if (_LeftTreenumerator.Position.Depth > _SiblingSkipParentDepth)
         {
-          if (!await _LeftTreenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants | NodeTraversalStrategies.SkipSiblings).ConfigureAwait(false))
+          if (!await _LeftTreenumerator.MoveNextAsync(NodeTraversalStrategies.PruneSubtree | NodeTraversalStrategies.PruneSiblings).ConfigureAwait(false))
             _LeftTreenumeratorFinished = true;
         }
 
@@ -127,7 +127,7 @@ namespace Copse.Linq.Async
       {
         if (_RightTreenumerator.Position.Depth > _SiblingSkipParentDepth)
         {
-          if (!await _RightTreenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants | NodeTraversalStrategies.SkipSiblings).ConfigureAwait(false))
+          if (!await _RightTreenumerator.MoveNextAsync(NodeTraversalStrategies.PruneSubtree | NodeTraversalStrategies.PruneSiblings).ConfigureAwait(false))
             _RightTreenumeratorFinished = true;
         }
 

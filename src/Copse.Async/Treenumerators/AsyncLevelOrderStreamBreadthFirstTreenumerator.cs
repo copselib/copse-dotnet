@@ -72,7 +72,7 @@ namespace Copse.Async.Treenumerators
     // no window entry: the suppression flag loads when the group opens, the child span
     // accumulates here, and one flush writes it back at the group boundary -- one window touch
     // per GROUP instead of two or three per item. Kept exact mid-group: the one strategy that
-    // can suppress the owner of the group the cursor is inside (SkipSiblings silencing the
+    // can suppress the owner of the group the cursor is inside (PruneSiblings silencing the
     // visit front) updates the mirror too.
     private bool _CurrentGroupSuppressed;
     private int _CurrentGroupFirstChildIndex = -1;
@@ -252,17 +252,17 @@ namespace Copse.Async.Treenumerators
     // as a discard.
     private void ApplyStrategy(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         if (SkipRemainingSiblings())
           _RootsFinished = true;
 
-      // SkipNodeAndDescendants is a superset of SkipNode (HasNodeTraversalStrategies is an
+      // PruneSubtree is a superset of SkipNode (HasNodeTraversalStrategies is an
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
       {
         // Erase the node and its subtree; the slot enqueues nothing, the group gets discarded.
-        // (No suppression-mirror update here or in the SkipDescendants arm: the cursor cannot
+        // (No suppression-mirror update here or in the PruneDescendants arm: the cursor cannot
         // be inside a just-scheduled node's group -- its own group sits positionally AFTER the
         // group it was read from.)
         GetEntry(_ScheduleStack.GetLast().NodeIndex).SuppressChildren = true;
@@ -274,14 +274,14 @@ namespace Copse.Async.Treenumerators
         // Keep the node resident so Advance can promote its children into its slot.
         return;
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
       {
         // Accept the node but give it no children, then fall through to the accept below.
         _ScheduleStack.GetLast().ChildrenDisabled = true;
         GetEntry(_ScheduleStack.GetLast().NodeIndex).SuppressChildren = true;
       }
 
-      // Accept (TraverseAll, or the SkipDescendants fall-through): move the node onto the visit
+      // Accept (TraverseAll, or the PruneDescendants fall-through): move the node onto the visit
       // queue, and record that this child slot enqueued an accepted node.
       var accepted = _ScheduleStack.RemoveLast();
 
@@ -382,7 +382,7 @@ namespace Copse.Async.Treenumerators
       Position = frame.Position;
     }
 
-    // SkipSiblings: silence every frame that could still yield an effective sibling of the
+    // PruneSiblings: silence every frame that could still yield an effective sibling of the
     // just-scheduled node, marking the window entries so their groups' remainders get discarded.
     // Returns true if the node was an effective root, so the driver ends root enumeration (and
     // group 0's remainder is discarded when the parser next touches it).

@@ -16,7 +16,7 @@ namespace Copse.Linq.Treenumerables
   /// cooperation from this library.
   ///
   /// <para>Prune-after is public where filtering is not because its whole rewrite is a
-  /// consumer-protocol primitive: <c>SkipDescendants</c>, forwarded to the walk. The kept
+  /// consumer-protocol primitive: <c>PruneDescendants</c>, forwarded to the walk. The kept
   /// node keeps its position and no sibling of anyone renumbers -- there is no relabeling
   /// for an implementation to get wrong (the boundary law: public composition is what
   /// consumer strategies can express).</para>
@@ -27,7 +27,7 @@ namespace Copse.Linq.Treenumerables
   /// flavor takes the wrapper over citizens.</para>
   ///
   /// <para>Implementation note (the absorption claim): fold the predicate into your own
-  /// walk -- forward <c>SkipDescendants</c> where it matches -- and return the rebuilt
+  /// walk -- forward <c>PruneDescendants</c> where it matches -- and return the rebuilt
   /// citizen, or return the library's prune wrapper over your source. Never implement
   /// this by calling the <c>PruneAfter</c> extension on yourself: the extension defers to
   /// this method, so that spelling is mutual recursion.</para>

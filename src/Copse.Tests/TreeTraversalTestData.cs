@@ -27,7 +27,7 @@ namespace Copse.Tests
           }
         },
 
-        // Regression — latent base-engine bug: SkipSiblings on a node beneath a
+        // Regression — latent base-engine bug: PruneSiblings on a node beneath a
         // SkipNode'd parent must affect only that node's own siblings, never an
         // unrelated root. DFT currently drops the c(d) root here (proving the bug);
         // BFT keeps it.
@@ -74,9 +74,9 @@ namespace Copse.Tests
                 nc => nc.Node == "a"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipAll
+                  ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
-              Description = "SkipNode: a, SkipAll: b",
+              Description = "SkipNode: a, PruneSubtreeAndSiblings: b",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -452,7 +452,7 @@ namespace Copse.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -465,7 +465,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -482,7 +482,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 2 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 2 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -506,7 +506,7 @@ namespace Copse.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -524,7 +524,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Position.Depth == 1
-                  ? NodeTraversalStrategies.SkipDescendants
+                  ? NodeTraversalStrategies.PruneDescendants
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 descendants",
               ExpectedBreadthFirstResults = new[]
@@ -549,7 +549,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Position.Depth == 2
-                  ? NodeTraversalStrategies.SkipDescendants
+                  ? NodeTraversalStrategies.PruneDescendants
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 descendants",
               ExpectedBreadthFirstResults = new[]
@@ -580,7 +580,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position.Depth == 0
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -610,7 +610,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position.Depth == 1
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -640,7 +640,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position.Depth == 2
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -674,7 +674,7 @@ namespace Copse.Tests
                   nc.Position.Depth == 0
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Position.Depth == 1
-                  ? NodeTraversalStrategies.SkipAll
+                  ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 siblings, skip level 1 all",
               ExpectedBreadthFirstResults = new[]
@@ -756,7 +756,7 @@ namespace Copse.Tests
                 nc.Position.Depth == 0
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Position.Depth == 1
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 subtrees, skip level 0 nodes",
               ExpectedBreadthFirstResults = new[]
@@ -780,7 +780,7 @@ namespace Copse.Tests
                 nc.Position.Depth == 0
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Position.Depth == 2
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 subtrees, skip level 0 nodes",
               ExpectedBreadthFirstResults = new[]
@@ -843,7 +843,7 @@ namespace Copse.Tests
                 nc.Position.Depth == 1
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Position.Depth == 2
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 2 subtrees, skip level 1 nodes",
               ExpectedBreadthFirstResults = new[]
@@ -875,7 +875,7 @@ namespace Copse.Tests
                 nc.Position.Depth == 1
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "e" || nc.Node == "f"
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node's e and f subtrees, skip level 1 nodes",
               ExpectedBreadthFirstResults = new[]
@@ -912,9 +912,9 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Position.Depth == 0
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : nc.Position == new NodePosition(0, 1)
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 siblings, skip level 1 sibling 0 node and siblings",
               ExpectedBreadthFirstResults = new[]
@@ -943,7 +943,7 @@ namespace Copse.Tests
                   nc.Node == "b"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "e"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node b, skip node e siblings",
               ExpectedBreadthFirstResults = new[]
@@ -1123,7 +1123,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Position == new NodePosition(0, 1)
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 sibling 0 node and siblings",
               ExpectedBreadthFirstResults = new[]
@@ -1156,7 +1156,7 @@ namespace Copse.Tests
                   nc.Node == "b"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "d"
-                  ? NodeTraversalStrategies.SkipNodeAndDescendants
+                  ? NodeTraversalStrategies.PruneSubtree
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node b, skip node and descendants e",
               ExpectedBreadthFirstResults = new[]
@@ -1290,7 +1290,7 @@ namespace Copse.Tests
             // Regression — BFT lost-visit: when a SkipNode'd parent's subtree ends in a
             // skip-subtree of its LAST promoted child, the grandparent's swallowed visit
             // must still be paid before the grandparent's next child is scheduled. Here b
-            // is promoted (d,e take b's slot); e is SkipNodeAndDescendants, which exhausts
+            // is promoted (d,e take b's slot); e is PruneSubtree, which exhausts
             // b's subtree; a then schedules c. a has two raw children (b,c) -> 3 visits.
             // BFT previously emitted only 2 (dropped a's final visit). DFT was correct.
             new TestScenario
@@ -1299,9 +1299,9 @@ namespace Copse.Tests
                 nc => nc.Node == "b"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "e"
-                  ? NodeTraversalStrategies.SkipNodeAndDescendants
+                  ? NodeTraversalStrategies.PruneSubtree
                   : NodeTraversalStrategies.TraverseAll,
-              Description = "SkipNode: b (promotes d,e), SkipNodeAndDescendants: e (last promoted child)",
+              Description = "SkipNode: b (promotes d,e), PruneSubtree: e (last promoted child)",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -1550,7 +1550,7 @@ namespace Copse.Tests
                   nc.Node == "a"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipAll
+                  ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node a, skip node b all",
               ExpectedBreadthFirstResults = new[]
@@ -1700,7 +1700,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1
-                  ? NodeTraversalStrategies.SkipNodeAndDescendants
+                  ? NodeTraversalStrategies.PruneSubtree
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -1731,7 +1731,7 @@ namespace Copse.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1 ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1 ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 descendant subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -1767,7 +1767,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position == new NodePosition(0, 1)
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 sibling 0 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -1942,7 +1942,7 @@ namespace Copse.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -1973,7 +1973,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector = nc =>
                 nc.Position.Depth == 1 && nc.Position.SiblingIndex == 1
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -2010,7 +2010,7 @@ namespace Copse.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 1 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2046,9 +2046,9 @@ namespace Copse.Tests
                 nc => nc.Node == "a"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "b"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
-              Description = "SkipNode: a; SkipSiblings b",
+              Description = "SkipNode: a; PruneSiblings b",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2068,9 +2068,9 @@ namespace Copse.Tests
                 nc.Node == "a"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "c"
-                ? NodeTraversalStrategies.SkipAll
+                ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                 : NodeTraversalStrategies.TraverseAll,
-              Description = "a:SkipNode, c:SkipAll",
+              Description = "a:SkipNode, c:PruneSubtreeAndSiblings",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2323,7 +2323,7 @@ namespace Copse.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 subtrees",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2336,7 +2336,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2360,7 +2360,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipNodeAndDescendants
+                  ? NodeTraversalStrategies.PruneSubtree
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node b subtree",
               ExpectedBreadthFirstResults = new[]
@@ -2390,7 +2390,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2419,7 +2419,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 2 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2450,7 +2450,7 @@ namespace Copse.Tests
             // Skip descendant subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2465,7 +2465,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2498,7 +2498,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 0 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2531,7 +2531,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2564,7 +2564,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "d" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 2 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2598,7 +2598,7 @@ namespace Copse.Tests
             // Skip siblings
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipSiblings,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneSiblings,
               Description = "Skip all siblings",
               ExpectedBreadthFirstResults = new[]
               {
@@ -2621,7 +2621,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position.Depth == 0
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0 sibling 0 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -2657,7 +2657,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Position.Depth == 1
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -2681,7 +2681,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "b"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 0 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -2705,7 +2705,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "c"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 1 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -2735,7 +2735,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "d"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 1, sibling 2 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -3094,7 +3094,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipNode : NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 0 ? NodeTraversalStrategies.SkipNode : NodeTraversalStrategies.PruneSubtree,
               Description = "Skip level 0 nodes, skip level 1 subtrees",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3245,7 +3245,7 @@ namespace Copse.Tests
                   nc.Node == "a"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "c"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node a, skip node c siblings",
               ExpectedBreadthFirstResults = new[]
@@ -3316,9 +3316,9 @@ namespace Copse.Tests
                 nc => nc.Node == "b"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "d"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
-              Description = "SkipNode b, SkipSiblings d",
+              Description = "SkipNode b, PruneSiblings d",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -3590,7 +3590,7 @@ namespace Copse.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               Description = "Skip node b node and siblings",
               ExpectedBreadthFirstResults = new[]
@@ -3732,7 +3732,7 @@ namespace Copse.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "a" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "a" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 0 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3753,7 +3753,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3774,7 +3774,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 2 subtree",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3795,7 +3795,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneSubtree,
               Description = "Skip level 0 subtrees",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3813,7 +3813,7 @@ namespace Copse.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "a" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "a" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 0 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3836,7 +3836,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 1 descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3859,7 +3859,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "c" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 2  descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3882,7 +3882,7 @@ namespace Copse.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipDescendants,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneDescendants,
               Description = "Skip level 0, descendants",
               ExpectedBreadthFirstResults = new[]
               {
@@ -3908,7 +3908,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "a"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 0 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -3926,7 +3926,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "b"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 1 siblings",
               ExpectedBreadthFirstResults = new[]
@@ -3948,7 +3948,7 @@ namespace Copse.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "c"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               Description = "Skip level 0, sibling 2 ",
               ExpectedBreadthFirstResults = new[]

@@ -16,7 +16,7 @@ namespace Copse.Linq.Tests
   public class WhereDepthFirstExternalSkipTests
   {
     // PruneBefore is implemented as a WhereDepthFirstTreenumerator with
-    // SkipNodeAndDescendants. AnyNodes(DepthFirst) feeds it SkipNode externally.
+    // PruneSubtree. AnyNodes(DepthFirst) feeds it SkipNode externally.
     [TestMethod]
     public void PruneBefore_AnyNodesFalse_DepthFirst_DoesNotThrow()
     {

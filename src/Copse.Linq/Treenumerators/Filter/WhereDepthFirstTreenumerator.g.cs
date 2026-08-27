@@ -16,9 +16,9 @@ namespace Copse.Linq.Treenumerators
   /// chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md) once per scheduled node, against the
   /// SOURCE context: an accepted result's value is published (the path stores projected
   /// values -- opaque cargo; the library never compares nodes) and its strategies apply to the
-  /// node's own traversal (PruneAfter's SkipDescendants); a rejected result's strategies
+  /// node's own traversal (PruneAfter's PruneDescendants); a rejected result's strategies
   /// drive the inner pull (SkipNode -> promotion of the node's children into its parent's
-  /// slot; SkipNodeAndDescendants -> subtree drop). Plain Where/PruneBefore are the
+  /// slot; PruneSubtree -> subtree drop). Plain Where/PruneBefore are the
   /// single-selector instantiations. All structural state lives in the shared, color-agnostic
   /// <see cref="WhereDepthFirstPath{TResult}"/> (the SAME struct the sync driver uses, verbatim).
   /// </summary>

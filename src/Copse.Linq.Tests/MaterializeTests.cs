@@ -62,10 +62,10 @@ namespace Copse.Linq.Tests
     }
 
     // Guards the IChildEnumerator contract that PreorderChildEnumerator must honor: the engine
-    // signals SkipDescendants by Disposing the child enumerator, so a disposed enumerator must
+    // signals PruneDescendants by Disposing the child enumerator, so a disposed enumerator must
     // yield no further children. (A no-op Dispose silently ignores all skip strategies.)
     [TestMethod]
-    public void Materialized_honors_SkipDescendants()
+    public void Materialized_honors_PruneDescendants()
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
@@ -73,12 +73,12 @@ namespace Copse.Linq.Tests
 
         var scheduled =
           tree
-          .GetTraversal(strategy, node => node == "a" ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll)
+          .GetTraversal(strategy, node => node == "a" ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll)
           .Where(visit => visit.Mode == TreenumeratorMode.SchedulingNode)
           .Select(visit => visit.Node)
           .ToList();
 
-        CollectionAssert.AreEqual(new[] { "a" }, scheduled, $"SkipDescendants not honored ({strategy})");
+        CollectionAssert.AreEqual(new[] { "a" }, scheduled, $"PruneDescendants not honored ({strategy})");
       }
     }
 

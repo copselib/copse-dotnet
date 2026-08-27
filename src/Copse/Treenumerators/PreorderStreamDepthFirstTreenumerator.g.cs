@@ -65,7 +65,7 @@ namespace Copse.Treenumerators
       public NodePosition Position;
       public int VisitCount;
       public bool Skipped;           // SkipNode'd: no visits, resident only to promote children.
-      public bool ChildrenDisabled;  // SkipDescendants/SkipSiblings: yield no more children.
+      public bool ChildrenDisabled;  // PruneDescendants/PruneSiblings: yield no more children.
       public int NextSiblingIndex;
     }
 
@@ -119,14 +119,14 @@ namespace Copse.Treenumerators
 
     private bool OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         if (SkipRemainingSiblings())
           _RootsFinished = true;
 
-      // SkipNodeAndDescendants is a superset of SkipNode (HasNodeTraversalStrategies is an
+      // PruneSubtree is a superset of SkipNode (HasNodeTraversalStrategies is an
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
         return Backtrack();
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
@@ -142,10 +142,10 @@ namespace Copse.Treenumerators
         return Backtrack();
       }
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
         _Path.GetLast().ChildrenDisabled = true;
 
-      // Accept (TraverseAll, or the SkipDescendants fall-through): emit the node's first visit.
+      // Accept (TraverseAll, or the PruneDescendants fall-through): emit the node's first visit.
       TakeNextVisit();
 
       return true;
@@ -316,7 +316,7 @@ namespace Copse.Treenumerators
       Position = top.Position;
     }
 
-    // SkipSiblings: silence every level that could still yield an effective sibling of the
+    // PruneSiblings: silence every level that could still yield an effective sibling of the
     // just-scheduled node -- its skipped ancestors up through its nearest accepted one. No
     // accepted ancestor means the node is an effective root: silence everything below and tell
     // the driver to end root enumeration.

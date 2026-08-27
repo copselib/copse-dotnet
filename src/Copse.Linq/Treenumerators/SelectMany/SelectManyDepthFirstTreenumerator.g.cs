@@ -111,7 +111,7 @@ namespace Copse.Linq.Treenumerators
       public int CurrentRootSiblingIndex;                // the output index of the forest root now open
       public int SkipSpliceCandidateRoot;                // a root the consumer skipped the descendants of
       public bool OwnsSlot;                              // UnderLastRoot realized on a nonempty forest: this frame pushed a slot
-      public bool SkipDescendantsOwed;                   // the next source pull skips the node's subtree
+      public bool PruneDescendantsOwed;                   // the next source pull skips the node's subtree
     }
 
     private struct Emission
@@ -168,7 +168,7 @@ namespace Copse.Linq.Treenumerators
       frame.ForestStrategies = strategies;
 
       if (Position.Depth == ForestSlot.Depth
-        && strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+        && strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
         frame.SkipSpliceCandidateRoot = frame.CurrentRootSiblingIndex;
     }
 
@@ -176,8 +176,8 @@ namespace Copse.Linq.Treenumerators
     {
       ref var frame = ref _Frames.GetLast();
 
-      var strategies = frame.SkipDescendantsOwed ? NodeTraversalStrategies.SkipDescendants : NodeTraversalStrategies.TraverseAll;
-      frame.SkipDescendantsOwed = false;
+      var strategies = frame.PruneDescendantsOwed ? NodeTraversalStrategies.PruneDescendants : NodeTraversalStrategies.TraverseAll;
+      frame.PruneDescendantsOwed = false;
 
       return strategies;
     }
@@ -336,7 +336,7 @@ namespace Copse.Linq.Treenumerators
         || (frame.SkipSpliceCandidateRoot >= 0 && frame.SkipSpliceCandidateRoot == frame.CurrentRootSiblingIndex);
 
       frame.Phase = skipSplice ? Phase.SkippingChildren : Phase.Splicing;
-      frame.SkipDescendantsOwed = skipSplice;
+      frame.PruneDescendantsOwed = skipSplice;
     }
 
     private void PullSource(NodeTraversalStrategies strategies)

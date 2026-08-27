@@ -22,7 +22,7 @@ namespace Copse.Linq.Treenumerators
   /// Positions: a match re-roots at depth 0 with sibling index = its match ordinal (result
   /// roots are siblings in source preorder order); descendants keep their sibling indices, depth
   /// shifted by the match's. Visit counts pass through untouched. Consumer strategies answer the
-  /// visits the consumer saw and forward to the inner walk; SkipSiblings on a result ROOT means
+  /// visits the consumer saw and forward to the inner walk; PruneSiblings on a result ROOT means
   /// "no more result roots", so the wrapper stops opening subtrees and ends after the current
   /// one drains.
   /// </summary>
@@ -51,7 +51,7 @@ namespace Copse.Linq.Treenumerators
       // further subtrees open; the strategy still forwards (pruning the inner walk is free).
       if (_MatchDepth >= 0
         && Position.Depth == 0
-        && (nodeTraversalStrategies & NodeTraversalStrategies.SkipSiblings) != 0)
+        && (nodeTraversalStrategies & NodeTraversalStrategies.PruneSiblings) != 0)
         _NoMoreSubtrees = true;
 
       // The consumer's verdict answers the visit the consumer saw; the wrapper's own advances

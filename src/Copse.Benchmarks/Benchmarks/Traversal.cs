@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace Copse.Benchmarks
 {
   // The raw engine drain: every canonical shape, both dimensions, at the Mega tier -- the
-  // baseline every operator benchmark is implicitly measured against. The SkipAll rows drain
+  // baseline every operator benchmark is implicitly measured against. The PruneSubtreeAndSiblings rows drain
   // with NodeTraversalStrategies.SkipNode, the cheapest possible per-node path.
   [MemoryDiagnoser]
   [BenchmarkCategory("Traversal", "Engine")]

@@ -23,7 +23,7 @@ namespace Copse
 
     public Option<HandleAndSiblingIndex<int>> MoveNext()
     {
-      // Dispose() is how the engine signals SkipDescendants/SkipSiblings: once disposed we must
+      // Dispose() is how the engine signals PruneDescendants/PruneSiblings: once disposed we must
       // yield no further children (see TriangleTreeNodeChildEnumerator for the same contract).
       if (_Disposed || _Cursor >= _End)
         return default;

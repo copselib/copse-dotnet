@@ -59,7 +59,7 @@ namespace Copse.Linq.Async
       // GetLevelOrderTraversal) drains the still-empty level buffer.
       if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot)
       {
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
           _NextLevel.RemoveLast();
         else if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
         {
@@ -142,7 +142,7 @@ namespace Copse.Linq.Async
           (_CurrentLevel, _NextLevel) = (_NextLevel, _CurrentLevel);
 
         // Remove items that were skipped by the inner treenumerator
-        // (e.g., due to SkipSiblings affecting earlier siblings)
+        // (e.g., due to PruneSiblings affecting earlier siblings)
         while (_CurrentLevel.Count > 0
           && _CurrentLevel.GetFirst().Position != InnerTreenumerator.Position)
         {

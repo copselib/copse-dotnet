@@ -237,7 +237,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "a"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(_ => true),
               Description = "Where all, skip node a siblings",
@@ -271,7 +271,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "a"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : nc.Node == "b"
                   ? NodeTraversalStrategies.SkipNode
                   : NodeTraversalStrategies.TraverseAll,
@@ -301,7 +301,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "c"),
               Description = "Where not node c, skip node b node and siblings",
@@ -427,7 +427,7 @@ namespace Copse.Linq.Tests
             // Skip descendants
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipDescendants,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneDescendants,
               TreenumerableMap = treenumerable => treenumerable.Where((n, position) => position.Depth == 1),
               Description = "Where level 1, skip descendants",
               ExpectedBreadthFirstResults = new[]
@@ -607,7 +607,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 && nc.Position.SiblingIndex == 0 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.Depth == 1 && nc.Position.SiblingIndex == 0 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where((n, position) => position.Depth != 1 || position.SiblingIndex != 0),
               Description = "Where not level 1 sibling 0, skip level 1 sibling 0 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -1044,7 +1044,7 @@ namespace Copse.Linq.Tests
                 nc.Node == "b"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "d"
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable =>
                 treenumerable.Where(n => n != "e"),
@@ -1258,7 +1258,7 @@ namespace Copse.Linq.Tests
                 (TreenumeratorMode.VisitingNode,   "a", 3, (0, 0)),
               }.ToNodeVisitArray()
             },
-            // No filter, consumer b:SkipNode d:SkipNodeAndDescendants
+            // No filter, consumer b:SkipNode d:PruneSubtree
             // Tree: a(b(d(e)),c), no filtering => output tree a(b(d(e)),c)
             // Bug: c gets sibling index 0 instead of 1 when b is consumer-SkipNode'd
             new TestScenario
@@ -1267,7 +1267,7 @@ namespace Copse.Linq.Tests
                 nc => nc.Node == "b"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "d"
-                    ? NodeTraversalStrategies.SkipNodeAndDescendants
+                    ? NodeTraversalStrategies.PruneSubtree
                     : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable =>
                 treenumerable.Where(n => true),
@@ -1293,22 +1293,22 @@ namespace Copse.Linq.Tests
                 (TreenumeratorMode.VisitingNode,   "a", 2, (0, 0)),
               }.ToNodeVisitArray()
             },
-            // Compose: Where(not b).Where(not d), e:SkipSiblings
+            // Compose: Where(not b).Where(not d), e:PruneSiblings
             // Tree: a(b(d(e)),c), filter b then d => a(e,c)
-            // Bug: SkipSiblings on promoted child e should prevent sibling c from
+            // Bug: PruneSiblings on promoted child e should prevent sibling c from
             // being scheduled. The immediate inner parent (d) is filtered, so inner
-            // SkipSiblings is a no-op — the wrapper must handle outer sibling skipping.
+            // PruneSiblings is a no-op — the wrapper must handle outer sibling skipping.
             new TestScenario
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "e"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable =>
                 treenumerable
                 .Where(n => n != "b")
                 .Where(n => n != "d"),
-              Description = "Where not b then not d (compose), SkipSiblings: e",
+              Description = "Where not b then not d (compose), PruneSiblings: e",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -1571,7 +1571,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Node == "b" ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where((n, position) => position.Depth < 1),
               Description = "Where before level 1, skip level 0, sibling 1 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -1593,7 +1593,7 @@ namespace Copse.Linq.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneSubtree,
               TreenumerableMap = treenumerable => treenumerable.Where((n, position) => position.Depth < 1),
               Description = "Where before level 1, skip all subtrees",
               ExpectedBreadthFirstResults = new[]
@@ -1706,7 +1706,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "a" && n != "c"),
               Description = "Where not a and c, skip node b node and siblings",
@@ -2171,7 +2171,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "a"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "e"),
               Description = "Where not node d and e, skip node a siblings",
@@ -2209,7 +2209,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "e"),
               Description = "Where not node d and e, skip node b siblings",
@@ -2241,7 +2241,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "a"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "e"),
               Description = "Where not node d and e, skip a siblings",
@@ -2281,7 +2281,7 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "b"
-                  ? NodeTraversalStrategies.SkipNodeAndSiblings
+                  ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "e"),
               Description = "Where not node d and e, skip node b node and siblings",
@@ -2720,10 +2720,10 @@ namespace Copse.Linq.Tests
                 nc => nc.Node == "c"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "e"
-                ? NodeTraversalStrategies.SkipNodeAndDescendants
+                ? NodeTraversalStrategies.PruneSubtree
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "g" && n != "h"),
-              Description = "Where not g or h, SkipNode: c, SkipNodeAndDescendants: e",
+              Description = "Where not g or h, SkipNode: c, PruneSubtree: e",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2762,10 +2762,10 @@ namespace Copse.Linq.Tests
                   nc.Node == "a"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "e"
-                  ? NodeTraversalStrategies.SkipAll
+                  ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "c" && n != "h"),
-              Description = "Where not c or h, SkipNode: a, SkipAll: e",
+              Description = "Where not c or h, SkipNode: a, PruneSubtreeAndSiblings: e",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2804,10 +2804,10 @@ namespace Copse.Linq.Tests
                   nc.Node == "a"
                   ? NodeTraversalStrategies.SkipNode
                   : nc.Node == "e"
-                  ? NodeTraversalStrategies.SkipDescendantsAndSiblings
+                  ? NodeTraversalStrategies.PruneDescendantsAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "c" && n != "h"),
-              Description = "Where not c or h, SkipNode: a, SkipDescendantsAndSiblings: e",
+              Description = "Where not c or h, SkipNode: a, PruneDescendantsAndSiblings: e",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2846,12 +2846,12 @@ namespace Copse.Linq.Tests
               NodeTraversalStrategiesSelector =
                 nc =>
                   nc.Node == "a"
-                  ? NodeTraversalStrategies.SkipSiblings
+                  ? NodeTraversalStrategies.PruneSiblings
                   : nc.Node == "f"
-                  ? NodeTraversalStrategies.SkipDescendantsAndSiblings
+                  ? NodeTraversalStrategies.PruneDescendantsAndSiblings
                   : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "h"),
-              Description = "Where not d or h, SkipSiblings: a, SkipDescendantsAndSiblings: f",
+              Description = "Where not d or h, PruneSiblings: a, PruneDescendantsAndSiblings: f",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2873,10 +2873,10 @@ namespace Copse.Linq.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "f"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "a"),
-              Description = "Where not a, SkipSiblings: f",
+              Description = "Where not a, PruneSiblings: f",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "d", 0, (0, 0)),
@@ -2912,10 +2912,10 @@ namespace Copse.Linq.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "e"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "c"),
-              Description = "Where not c, SkipSiblings: e",
+              Description = "Where not c, PruneSiblings: e",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -2963,10 +2963,10 @@ namespace Copse.Linq.Tests
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "g"
-                ? NodeTraversalStrategies.SkipSiblings
+                ? NodeTraversalStrategies.PruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "a" && n != "d"),
-              Description = "Where not a or d, SkipSiblings: g",
+              Description = "Where not a or d, PruneSiblings: g",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "f", 0, (0, 0)),
@@ -2988,10 +2988,10 @@ namespace Copse.Linq.Tests
                 nc => nc.Node == "a"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "f"
-                ? NodeTraversalStrategies.SkipAll
+                ? NodeTraversalStrategies.PruneSubtreeAndSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "d" && n != "h"),
-              Description = "Where not d or h, SkipNode: a, SkipAll: f",
+              Description = "Where not d or h, SkipNode: a, PruneSubtreeAndSiblings: f",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "a", 0, (0, 0)),
@@ -3132,7 +3132,7 @@ namespace Copse.Linq.Tests
             // Skip subtree
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.SkipNodeAndDescendants,
+              NodeTraversalStrategiesSelector = nc => NodeTraversalStrategies.PruneSubtree,
               TreenumerableMap = treenumerable => treenumerable.Where(_ => false),
               Description = "Where none, Skip all subtrees",
               ExpectedBreadthFirstResults = Array.Empty<NodeVisit<string>>(),
@@ -3140,7 +3140,7 @@ namespace Copse.Linq.Tests
             },
             new TestScenario
             {
-              NodeTraversalStrategiesSelector = nc => nc.Position.SiblingIndex == 0 ? NodeTraversalStrategies.SkipNodeAndDescendants : NodeTraversalStrategies.TraverseAll,
+              NodeTraversalStrategiesSelector = nc => nc.Position.SiblingIndex == 0 ? NodeTraversalStrategies.PruneSubtree : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where((n, position) => position.SiblingIndex != 1),
               Description = "Where not sibling 1, skip sibling 0 subtree",
               ExpectedBreadthFirstResults = new[]
@@ -3236,20 +3236,20 @@ namespace Copse.Linq.Tests
           TreeString = "a(b(d,e,f),c)",
           TestScenarios = new List<TestScenario>
           {
-            // Bug 3: SkipSiblings on consumer-SkipNode'd promoted root is cleared
+            // Bug 3: PruneSiblings on consumer-SkipNode'd promoted root is cleared
             // prematurely by deeper children, allowing sibling c to leak through.
-            // Tree a(b(d,e,f),c), filter: not a, consumer: b: SkipNodeAndSiblings
-            // b becomes root (promoted), SkipSiblings should prevent c from appearing.
+            // Tree a(b(d,e,f),c), filter: not a, consumer: b: SkipNodeAndPruneSiblings
+            // b becomes root (promoted), PruneSiblings should prevent c from appearing.
             // b's children d,e,f at effective depth 1 cause _SkipSiblingsQueueFrontPosition
             // to be cleared before c (effective depth 0) is seen.
             new TestScenario
             {
               NodeTraversalStrategiesSelector =
                 nc => nc.Node == "b"
-                ? NodeTraversalStrategies.SkipNodeAndSiblings
+                ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "a"),
-              Description = "Where not a, SkipNodeAndSiblings: b — sibling c should be skipped",
+              Description = "Where not a, SkipNodeAndPruneSiblings: b — sibling c should be skipped",
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "b", 0, (0, 0)),
@@ -3271,9 +3271,9 @@ namespace Copse.Linq.Tests
                 (TreenumeratorMode.VisitingNode,   "f", 1, (2, 1)),
               }.ToNodeVisitArray()
             },
-            // Bug 4: Missing c when consumer SkipNode on b, and SkipNodeAndSiblings
+            // Bug 4: Missing c when consumer SkipNode on b, and SkipNodeAndPruneSiblings
             // on a non-last child (e). After b is consumer-SkipNode'd, e gets
-            // SkipNodeAndSiblings. The inner BFT should still schedule c at depth 0.
+            // SkipNodeAndPruneSiblings. The inner BFT should still schedule c at depth 0.
             // But c is completely missing from the BFT output.
             // Note: DFT also drops c due to a Select+Where interaction (the curated test
             // framework wraps with Select before Where). DFT expected values reflect
@@ -3285,14 +3285,14 @@ namespace Copse.Linq.Tests
                 nc => nc.Node == "b"
                 ? NodeTraversalStrategies.SkipNode
                 : nc.Node == "e"
-                ? NodeTraversalStrategies.SkipNodeAndSiblings
+                ? NodeTraversalStrategies.SkipNodeAndPruneSiblings
                 : NodeTraversalStrategies.TraverseAll,
               TreenumerableMap = treenumerable => treenumerable.Where(n => n != "a"),
-              Description = "Where not a, SkipNode: b, SkipNodeAndSiblings: e — e is an effective root, so SkipSiblings drops sibling c",
+              Description = "Where not a, SkipNode: b, SkipNodeAndPruneSiblings: e — e is an effective root, so PruneSiblings drops sibling c",
               // After b is SkipNode'd, e's only remaining ancestor is the skipped b, so e is an
-              // effective root; SkipNodeAndSiblings on it ends the root stream and drops c.
+              // effective root; SkipNodeAndPruneSiblings on it ends the root stream and drops c.
               // BFT and DFT agree (verified against the exhaustive core scan and CombinatorialWhereTests);
-              // the prior "c survives" expectation was the SkipSiblings over-compensation bug.
+              // the prior "c survives" expectation was the PruneSiblings over-compensation bug.
               ExpectedBreadthFirstResults = new[]
               {
                 (TreenumeratorMode.SchedulingNode, "b", 0, (0, 0)),

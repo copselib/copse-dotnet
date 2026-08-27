@@ -12,7 +12,7 @@ namespace Copse.Linq.Treenumerators
   /// <b>async</b> <c>PruneAfter</c> and the codegen source of truth for its sync twin: strip the
   /// <c>await</c> and it becomes the synchronous driver. Forwards the inner visit stream unchanged
   /// except that a scheduled node matching the predicate keeps its own visit but sheds its subtree
-  /// (<see cref="NodeTraversalStrategies.SkipDescendants"/> is added to the pull). Dimension-agnostic.
+  /// (<see cref="NodeTraversalStrategies.PruneDescendants"/> is added to the pull). Dimension-agnostic.
   /// </summary>
   internal sealed class PruneAfterTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>
@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerators
       // Never test the pre-enumeration sentinel (ForestRoot convention: default node, mode
       // SchedulingNode): user lambdas see real nodes only.
       if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot && _Predicate(this.ToNodeContext()))
-        nodeTraversalStrategies |= NodeTraversalStrategies.SkipDescendants;
+        nodeTraversalStrategies |= NodeTraversalStrategies.PruneDescendants;
 
       var result = InnerTreenumerator.MoveNext(nodeTraversalStrategies);
 

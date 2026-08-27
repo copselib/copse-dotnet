@@ -22,7 +22,7 @@ namespace Copse.Linq.Treenumerables
       => new SelectWhereResult<TNode>(
         nodeContext.Node,
         _Predicate(nodeContext)
-          ? NodeTraversalStrategies.SkipDescendants
+          ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll);
   }
 }

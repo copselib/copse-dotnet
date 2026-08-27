@@ -91,11 +91,11 @@ namespace Copse.Treenumerators
 
     private bool OnScheduling(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         if (_Path.SkipRemainingSiblings())
           _RootsEnumeratorFinished = true;
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
         return Backtrack();
 
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
@@ -110,7 +110,7 @@ namespace Copse.Treenumerators
         return Backtrack();
       }
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
         _Path.DisposeCurrentEnumerator();
 
       Publish(ref _Path.TakeNextVisit());

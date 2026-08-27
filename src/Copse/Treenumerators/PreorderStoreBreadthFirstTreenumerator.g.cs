@@ -50,7 +50,7 @@ namespace Copse.Treenumerators
       public int VisitCount;
       public int LastChildIndex;    // -1 = no child scheduled yet.
       public int NextSiblingIndex;
-      public bool ChildrenDisabled; // SkipDescendants/SkipSiblings: yield no more children.
+      public bool ChildrenDisabled; // PruneDescendants/PruneSiblings: yield no more children.
     }
 
     // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
@@ -137,14 +137,14 @@ namespace Copse.Treenumerators
     // Classify the node just scheduled (the schedule-stack top) by the consumer's strategy.
     private void ApplyStrategy(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         if (SkipRemainingSiblings())
           _RootsFinished = true;
 
-      // SkipNodeAndDescendants is a superset of SkipNode (HasNodeTraversalStrategies is an
+      // PruneSubtree is a superset of SkipNode (HasNodeTraversalStrategies is an
       // all-bits test), so it must be checked first -- otherwise it would route into the SkipNode
       // promotion path and wrongly promote the descendants we are meant to prune.
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
       {
         // Erase the node and its subtree; the slot enqueues nothing.
         _ScheduleStack.RemoveLast();
@@ -155,11 +155,11 @@ namespace Copse.Treenumerators
         // Keep the node resident so Advance can promote its children into its slot.
         return;
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
         // Accept the node but give it no children, then fall through to the accept below.
         _ScheduleStack.GetLast().ChildrenDisabled = true;
 
-      // Accept (TraverseAll, or the SkipDescendants fall-through): move the node onto the visit
+      // Accept (TraverseAll, or the PruneDescendants fall-through): move the node onto the visit
       // queue, and record that this child slot enqueued an accepted node.
       _VisitQueue.AddLast(_ScheduleStack.RemoveLast());
       _SlotCarry = true;
@@ -272,7 +272,7 @@ namespace Copse.Treenumerators
       Position = frame.Position;
     }
 
-    // SkipSiblings: silence every frame that could still yield an effective sibling of the
+    // PruneSiblings: silence every frame that could still yield an effective sibling of the
     // just-scheduled node -- its skipped ancestors (the rest of the schedule stack), plus its
     // nearest accepted ancestor (the queue front). Returns true if the node was an effective
     // root, so the driver ends root enumeration.

@@ -4,7 +4,7 @@ namespace Copse.Treenumerables
 {
   // A tree snapshot stored as flat pre-order arrays: node i's value is values[i], and its whole
   // subtree occupies the contiguous span [i, i + subtreeSizes[i]). DFS is a linear scan and
-  // SkipDescendants is an O(1) span hop. It rides the existing DFS/BFS engine via
+  // PruneDescendants is an O(1) span hop. It rides the existing DFS/BFS engine via
   // PreorderChildEnumerator -- no bespoke traversal code, dynamic pruning preserved.
   public sealed class PreorderTree<TNode>
     : Treenumerable<TNode, int, PreorderChildEnumerator>

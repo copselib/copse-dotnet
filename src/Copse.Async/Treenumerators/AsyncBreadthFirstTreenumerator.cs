@@ -142,11 +142,11 @@ namespace Copse.Async.Treenumerators
 
     private void ApplyStrategy(NodeTraversalStrategies nodeTraversalStrategies)
     {
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         if (_Path.SkipRemainingSiblings())
           _RootsEnumeratorFinished = true;
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
       {
         _Path.PopScheduleStack();
         return;
@@ -155,7 +155,7 @@ namespace Copse.Async.Treenumerators
       if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
         return;
 
-      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+      if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
         _Path.DisposeScheduleTopEnumerator();
 
       _Path.AcceptScheduledNode();

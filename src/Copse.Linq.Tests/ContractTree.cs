@@ -152,11 +152,11 @@ namespace Copse.Linq.Tests
       {
         var top = _Path[_Path.Count - 1];
 
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
           SkipRemainingSiblings();
 
-        // SkipNodeAndDescendants is a superset of SkipNode; check it first.
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+        // PruneSubtree is a superset of SkipNode; check it first.
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
           return Backtrack();
 
         if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
@@ -170,7 +170,7 @@ namespace Copse.Linq.Tests
           return Backtrack();
         }
 
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
           top.ChildCursor = int.MaxValue;
 
         // Accept: emit the node's first visit.
@@ -331,7 +331,7 @@ namespace Copse.Linq.Tests
 
       private void ApplyStrategy(NodeTraversalStrategies nodeTraversalStrategies)
       {
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipSiblings))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSiblings))
         {
           // Silence the skipped ancestors' remaining children...
           for (var i = 0; i < _ScheduleStack.Count - 1; i++)
@@ -345,8 +345,8 @@ namespace Copse.Linq.Tests
             _VisitQueue.Peek().ChildCursor = int.MaxValue;
         }
 
-        // SkipNodeAndDescendants is a superset of SkipNode; check it first.
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+        // PruneSubtree is a superset of SkipNode; check it first.
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
         {
           // Erase the node and its subtree; the slot enqueues nothing.
           _ScheduleStack.RemoveAt(_ScheduleStack.Count - 1);
@@ -357,7 +357,7 @@ namespace Copse.Linq.Tests
           // Keep the node resident so Advance can promote its children into its slot.
           return;
 
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipDescendants))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneDescendants))
           _ScheduleStack[_ScheduleStack.Count - 1].ChildCursor = int.MaxValue;
 
         // Accept: move the node onto the visit queue and record that this slot enqueued.

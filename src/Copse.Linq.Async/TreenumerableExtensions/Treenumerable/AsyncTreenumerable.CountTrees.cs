@@ -23,7 +23,7 @@ namespace Copse.Linq
 
     /// <summary>
     /// The breadth-first twin. The counting pass is nearly free in this dimension: the roots are
-    /// the whole of level 0, so driving with SkipNodeAndDescendants schedules each root once and
+    /// the whole of level 0, so driving with PruneSubtree schedules each root once and
     /// never pulls anything deeper.
     /// </summary>
     public static async ValueTask<int> CountTreesAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, CancellationToken cancellationToken = default)
@@ -33,7 +33,7 @@ namespace Copse.Linq
       var treenumerator = source.GetAsyncBreadthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
       {
-        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNodeAndDescendants).ConfigureAwait(false))
+        while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.PruneSubtree).ConfigureAwait(false))
         {
           cancellationToken.ThrowIfCancellationRequested();
           count++;

@@ -69,14 +69,14 @@ namespace Copse.Linq.Async
       if (_FinalVisitRemaining == true)
       {
         _FinalVisitRemaining = false;
-        nodeTraversalStrategies |= NodeTraversalStrategies.SkipDescendantsAndSiblings;
+        nodeTraversalStrategies |= NodeTraversalStrategies.PruneDescendantsAndSiblings;
       }
       else
       {
-        // Use SkipNodeAndDescendants instead of SkipAll to avoid the SkipSiblings
+        // Use PruneSubtree instead of PruneSubtreeAndSiblings to avoid the PruneSiblings
         // side effect that disposes the queue's first item's child enumerator,
         // which would prevent already-queued nodes from being visited in BFS.
-        nodeTraversalStrategies = NodeTraversalStrategies.SkipNodeAndDescendants;
+        nodeTraversalStrategies = NodeTraversalStrategies.PruneSubtree;
       }
 
       while (true)
@@ -95,7 +95,7 @@ namespace Copse.Linq.Async
           return true;
         }
 
-        nodeTraversalStrategies = NodeTraversalStrategies.SkipNodeAndDescendants;
+        nodeTraversalStrategies = NodeTraversalStrategies.PruneSubtree;
       }
     }
 

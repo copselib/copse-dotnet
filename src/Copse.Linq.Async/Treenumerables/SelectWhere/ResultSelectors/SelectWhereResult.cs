@@ -8,9 +8,9 @@ namespace Copse.Linq.Async.Treenumerables
   // pair; the strategies speak the consumer protocol directly:
   //
   //   (value, TraverseAll)               in the tree; traverse normally
-  //   (value, SkipDescendants)           in the tree; don't descend below it (PruneAfter)
+  //   (value, PruneDescendants)           in the tree; don't descend below it (PruneAfter)
   //   (value, SkipNode)                  filtered; children promote (Where)
-  //   (value, SkipNodeAndDescendants)    pruned with its whole subtree (PruneBefore)
+  //   (value, PruneSubtree)    pruned with its whole subtree (PruneBefore)
   //
   // REJECTION IS SkipNode-MEMBERSHIP: the consumer protocol already defines SkipNode as
   // "remove this node", so the result inherits that meaning rather than tracking a second

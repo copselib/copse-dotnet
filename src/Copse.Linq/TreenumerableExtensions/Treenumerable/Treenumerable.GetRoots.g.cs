@@ -10,7 +10,7 @@ namespace Copse.Linq
   public static partial class Treenumerable
   {
     /// <summary>
-    /// The forest's root nodes, as a lazy async sequence. Drives with SkipNodeAndDescendants so each
+    /// The forest's root nodes, as a lazy async sequence. Drives with PruneSubtree so each
     /// root is scheduled once and its subtree skipped. Deferred sequence -&gt; keeps the sync name (returns
     /// <see cref="IAsyncEnumerable{TNode}"/>, the async analog of the sync <c>IEnumerable</c> result).
     /// </summary>
@@ -19,7 +19,7 @@ namespace Copse.Linq
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
       {
-        while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNodeAndDescendants))
+        while (treenumerator.MoveNext(NodeTraversalStrategies.PruneSubtree))
         {
           yield return treenumerator.Node;
         }

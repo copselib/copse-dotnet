@@ -12,7 +12,7 @@ namespace Copse.Linq.Async
   /// <b>async</b> driver for the light SelectPruneAfter tier and the codegen source of truth for
   /// its sync twin: strip the <c>await</c> and it becomes the synchronous driver. Forwards the
   /// inner visit stream with positions unchanged (the tier never relabels), publishing the
-  /// composed selector's value per visit; a scheduling visit's result strategies (SkipDescendants
+  /// composed selector's value per visit; a scheduling visit's result strategies (PruneDescendants
   /// from prune-after members) are merged into the pull that follows it -- the same protocol
   /// moment the consumer's own strategies for that visit arrive. No promotion machinery, no path
   /// state. Dimension-agnostic.

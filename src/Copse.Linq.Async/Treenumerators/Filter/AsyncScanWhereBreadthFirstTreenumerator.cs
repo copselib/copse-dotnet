@@ -183,9 +183,9 @@ namespace Copse.Linq.Async
 
         // The consumer-skip bridge (the engine's own consumer-SkipNode handling, applied to
         // the tracker): the node's inner visits will never arrive. Plain SkipNode keeps its
-        // descendants (they look the accumulate up on the skipped stack); SkipNodeAndDescendants
+        // descendants (they look the accumulate up on the skipped stack); PruneSubtree
         // drops the whole subtree (nothing will ever look it up).
-        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNodeAndDescendants))
+        if (nodeTraversalStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.PruneSubtree))
           _TrackerNextLevel.RemoveLast();
         else
           TrackerOnRejected();

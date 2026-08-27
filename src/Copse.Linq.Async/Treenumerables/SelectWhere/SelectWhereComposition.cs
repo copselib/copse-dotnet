@@ -39,7 +39,7 @@ namespace Copse.Linq.Async.Treenumerables
         return new SelectWhereResult<TResult>(
           value,
           predicate(new NodeContext<TResult>(value, nodeContext.Position))
-            ? NodeTraversalStrategies.SkipDescendants
+            ? NodeTraversalStrategies.PruneDescendants
             : NodeTraversalStrategies.TraverseAll);
       };
     }
@@ -53,7 +53,7 @@ namespace Copse.Linq.Async.Treenumerables
       return nodeContext =>
       {
         var strategies = predicate(nodeContext)
-          ? NodeTraversalStrategies.SkipDescendants
+          ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll;
 
         return new SelectWhereResult<TOuterResult>(selector(nodeContext), strategies);
@@ -100,7 +100,7 @@ namespace Copse.Linq.Async.Treenumerables
           innerResult.Node,
           innerResult.Strategies
             | (predicate(new NodeContext<TResult>(innerResult.Node, nodeContext.Position))
-              ? NodeTraversalStrategies.SkipDescendants
+              ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll));
       };
     }

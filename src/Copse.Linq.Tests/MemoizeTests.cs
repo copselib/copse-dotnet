@@ -190,9 +190,9 @@ namespace Copse.Linq.Tests
       var strategies = new[]
       {
         NodeTraversalStrategies.SkipNode,
-        NodeTraversalStrategies.SkipDescendants,
-        NodeTraversalStrategies.SkipSiblings,
-        NodeTraversalStrategies.SkipNodeAndDescendants,
+        NodeTraversalStrategies.PruneDescendants,
+        NodeTraversalStrategies.PruneSiblings,
+        NodeTraversalStrategies.PruneSubtree,
       };
       var targets = new[] { "a", "b", "d" }; // root, internal, leaf
 
