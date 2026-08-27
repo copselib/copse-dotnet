@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - Aggregation: RootfixAggregate(), LeaffixAggregate(), cumulative scans (RootfixScan/LeaffixScan — the fold tier), sibling-complete surveys (RootfixDispatch/LeaffixDispatch — the dispatch tier)
 - Set operations: Union(), Intersection(), Subtract(), SymmetricDifference()
 - Transformation: Invert() (mirror), Memoize()/Materialize(), pretty printing
-- SelectMany(): the tree monad's bind over pointed expansions (`Expansion.Return`/`Promote`/`Drop`/`Leaf` + `Expansion.Of(forest, placement)`); Select, Where, PruneBefore, and PruneAfter are its theorems — see design-docs/SELECTMANY_DESIGN.md
+- SelectMany(): the tree monad's bind over pointed expansions (`Expansion.Return`/`Promote`/`Drop`/`Leaf` + `Expansion.Of(forest, placement)`); Select, Where, PruneSubtreesWhere, and PruneDescendantsWhere are its theorems — see design-docs/SELECTMANY_DESIGN.md
 
 #### Performance Optimizations:
 
@@ -119,7 +119,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
 - **IDepthFirstTreenumerable<T> / IBreadthFirstTreenumerable<T>** - The traversal-dimension split
   (see below). Each exposes just one `Get…Treenumerator()`; `ITreenumerable` derives from both.
 - **ITreenumerator<T>** - Stateful traversal engine (analogous to `IEnumerator<T>`), `IDisposable`.
-- **NodeTraversalStrategies** - Flags enum controlling traversal: `SkipNode`, `SkipDescendants`, `SkipSiblings`
+- **NodeTraversalStrategies** - Flags enum controlling traversal: `SkipNode` (a true skip: visits suppressed, descendants kept), `PruneDescendants`, `PruneSiblings`, and their combinations (`PruneSubtree`, ...)
 - **TreenumeratorMode** - `SchedulingNode` (pre-order) vs `VisitingNode` (post-order)
 - **NodePosition** - Tracks (sibling index, depth) in tree. `NodePosition.ForestRoot` is the
   pre-enumeration convention (position `(0, -1)`, VisitCount 0, mode SchedulingNode) that every
@@ -245,7 +245,7 @@ Original tree:     a              Filtered tree (remove b):    a
                d   e
 ```
 
-Node `b` is removed, but its children `d` and `e` become direct children of `a`. This is fundamentally different from `SkipDescendants` (which would remove `d` and `e` too).
+Node `b` is removed, but its children `d` and `e` become direct children of `a`. This is fundamentally different from `PruneDescendants` (which would remove `d` and `e` too).
 
 #### Position Recalculation
 
@@ -410,11 +410,11 @@ private bool _ConsumerSkippedChildAfterLastAccepted;
 
 Both Where treenumerators take the predicate with LINQ polarity — **true means keep**.
 Operators with removal semantics invert at their own call sites, where the inversion is
-self-documenting (PruneBefore's predicate means "prune when true", so it passes
+self-documenting (PruneSubtreesWhere's predicate means "prune when true", so it passes
 `nodeContext => !predicate(nodeContext)` to both treenumerators).
 
 (Historically the BFT treenumerator treated "true" as "skip", so `Where` inverted for BFT
-while `PruneBefore` inverted for DFT — every operator paid one inversion on opposite sides.
+while the subtree prune inverted for DFT — every operator paid one inversion on opposite sides.
 Unified to LINQ polarity 2026-07-06.)
 
 ---
