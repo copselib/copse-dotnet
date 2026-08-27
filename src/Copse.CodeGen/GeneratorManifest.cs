@@ -548,6 +548,14 @@ namespace Copse.CodeGen
         "Copse.Linq/Treenumerables/SelectWhere/ResultSelectors/PositionalPruneSubtreesWhereResultSelector.g.cs",
         "PositionalPruneSubtreesWhereResultSelector", "PositionalPruneSubtreesWhereResultSelector", "Copse.Linq.Treenumerables"),
 
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/ResultSelectors/PruneSiblingsWhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ResultSelectors/PruneSiblingsWhereResultSelector.g.cs",
+        "PruneSiblingsWhereResultSelector", "PruneSiblingsWhereResultSelector", "Copse.Linq.Treenumerables"),
+
+      new("Copse.Linq.Async/Treenumerables/SelectWhere/ResultSelectors/PositionalPruneSiblingsWhereResultSelector.cs",
+        "Copse.Linq/Treenumerables/SelectWhere/ResultSelectors/PositionalPruneSiblingsWhereResultSelector.g.cs",
+        "PositionalPruneSiblingsWhereResultSelector", "PositionalPruneSiblingsWhereResultSelector", "Copse.Linq.Treenumerables"),
+
       new("Copse.Linq.Async/Treenumerables/SelectWhere/ResultSelectors/SelectWhereResult.cs",
         "Copse.Linq/Treenumerables/SelectWhere/ResultSelectors/SelectWhereResult.g.cs",
         "SelectWhereResult", "SelectWhereResult", "Copse.Linq.Treenumerables"),
@@ -711,6 +719,10 @@ namespace Copse.CodeGen
 
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PruneDescendantsWhere.cs",
         "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.PruneDescendantsWhere.g.cs",
+        "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
+
+      new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PruneSiblingsWhere.cs",
+        "Copse.Linq/TreenumerableExtensions/Treenumerable/Treenumerable.PruneSiblingsWhere.g.cs",
         "AsyncTreenumerable", "Treenumerable", "Copse.Linq"),
 
       new("Copse.Linq.Async/TreenumerableExtensions/Treenumerable/AsyncTreenumerable.PruneSubtreesWhere.cs",

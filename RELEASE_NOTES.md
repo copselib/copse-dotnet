@@ -62,7 +62,10 @@
   removes everything below). The Before/After suffixes only existed because the verb's
   object was implicit; each operator is now named for its strategy plus the established
   predicate suffix. The walkable lens `PruneAfter` follows to `PruneDescendantsWhere`.
-  *Migration: rename at call sites; predicates and semantics are identical.*
+  *Migration: rename at call sites; predicates and semantics are identical.* New in the
+  same family: **`PruneSiblingsWhere`** — the matched node stays (visits, descendants, and
+  position untouched) and its later siblings are removed; the strategy family's completion,
+  and the one prune that never moves a surviving label.
 - **The node accessors say node**: `ITreeTopology.GetValue` → `GetNode` (async
   `GetValueAsync` → `GetNodeAsync`), the walker's `GetValue`/`TryGetValue` →
   `GetNode`/`TryGetNode` (async likewise), the store SPIs' `GetValue(index)` →
