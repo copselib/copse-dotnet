@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787812718225,
+  "lastUpdate": 1787812718945,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -271234,6 +271234,190 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.RootfixScan.FromSelect_Bft_Chain",
             "value": 2156,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cf789d3b53a567b79f0d57cb191d9c7a0d7461a",
+          "message": "The no-stone-unturned pass: living docs speak the current surface, comments carry current truth\n\nThe comment distill (async sources; codegen carries the twins): the ~30-copy\ndated arity-split citation, the Stage A/C event names, the dated seam labels\n(adjacency split, presize fast path, reclaim, thin shape, scan spelling), the\ndead 'Probe members removed' lines describing nothing that exists, the AllNodes\nbug story (the law stays, regression-pinned), Materialize's journey narration,\nand TakeSubtreesWhere's docs restructured -- caller contract in ///, machinery\ndemoted to //, the three BREAKING notices stripped (their entries live in\nRELEASE_NOTES.md).\n\nLiving docs catch up: README rewritten against the current surface -- the\nadapter sample speaks Option<HandleAndSiblingIndex> and compiles, operator\nnames are current, all four TFMs and all ten packages listed, nuget-dead\nrelative links made absolute, walker and serializer examples added -- and\nEVERY README sample is now pinned by ReadmeSamplesTests (5 tests: each\nsnippet's exact output asserted). OPERATOR_SURFACE_MAP, WALKER_USE_CASES,\nBENCHMARKING's family table, CLAUDE.md's last stale type, and WALKER_FACTORY\nsection 11 get their vocabulary notes. The dashboard README documents archived\nrows. Package descriptions say what each package holds (the walker tier, the\nflat family, AsyncTree.Lazy, the serializer's actual surface).\n\nAlso: RELEASE_NOTES gains the composition-era arity-split migration entry\n(alpha.2's operators took Func<NodeContext<TNode>,...>), the zero-byte tracked\nRELEASE_NOTES.md.x is gone, THIRD-PARTY-NOTICES points at the directory the\ndisposables actually live in, and the lazy topology's last banned-word comment\nsays unfocused. Suite 26,542 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T06:06:48Z",
+          "tree_id": "8aa5b212813889b7c1181d4599bfee924eb59ba4",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9cf789d3b53a567b79f0d57cb191d9c7a0d7461a"
+        },
+        "date": 1787812718788,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Triangle",
+            "value": 16903506,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Triangle",
+            "value": 54736752,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Triangle",
+            "value": 54736848,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Chain",
+            "value": 50353328,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Triangle",
+            "value": 54912251,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Triangle",
+            "value": 54912347,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixAggregate.Forest",
+            "value": 767,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Dft_Chain",
+            "value": 92324282,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Dft_Chain",
+            "value": 92324146,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixDispatch.Bft_Chain",
+            "value": 62941616,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Bft_Chain",
+            "value": 62941670,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Dft_Chain",
+            "value": 100718235,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Accumulate_Bft_Chain",
+            "value": 71333573,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Dft_Chain",
+            "value": 96522756,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.FromSelect_Bft_Chain",
+            "value": 67138760,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Select_Select_Dft_Chain",
+            "value": 100721765,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.LeaffixScan.Twice_Dft_Chain",
+            "value": 113306040,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Triangle",
+            "value": 92450,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Triangle",
+            "value": 47396938,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Triangle",
+            "value": 125563,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Chain",
+            "value": 33557030,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Triangle",
+            "value": 47569494,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Triangle",
+            "value": 298683,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixAggregate.Forest",
+            "value": 1014,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Dft_Chain",
+            "value": 93375056,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Dft_Chain",
+            "value": 75519793,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixDispatch.Bft_Chain",
+            "value": 63988560,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Bft_Chain",
+            "value": 1828,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Dft_Chain",
+            "value": 75519961,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.Select_Accumulate_Bft_Chain",
+            "value": 2009,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Dft_Chain",
+            "value": 75520121,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.RootfixScan.FromSelect_Bft_Chain",
+            "value": 2169,
             "unit": "bytes"
           }
         ]
