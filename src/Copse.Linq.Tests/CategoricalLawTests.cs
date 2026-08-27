@@ -83,29 +83,29 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Licensing_PruneAfterMerge_StackedPrunes_EqualDisjunction()
+    public void Licensing_PruneDescendantsWhereMerge_StackedPrunes_EqualDisjunction()
     {
       Func<string, bool> p = value => value == "b";
       Func<string, bool> q = value => value == "c";
 
       foreach (var tree in Trees)
         AssertEquivalent(
-          T(tree).PruneAfter(value => p(value) || q(value)),
-          T(tree).PruneAfter(p).Hide().PruneAfter(q),
-          $"PruneAfter merge [{tree}]");
+          T(tree).PruneDescendantsWhere(value => p(value) || q(value)),
+          T(tree).PruneDescendantsWhere(p).Hide().PruneDescendantsWhere(q),
+          $"PruneDescendantsWhere merge [{tree}]");
     }
 
     [TestMethod]
-    public void Licensing_PruneBeforeMerge_StackedPrunes_EqualDisjunction()
+    public void Licensing_PruneSubtreesWhereMerge_StackedPrunes_EqualDisjunction()
     {
       Func<string, bool> p = value => value == "b";
       Func<string, bool> q = value => value == "c";
 
       foreach (var tree in Trees)
         AssertEquivalent(
-          T(tree).PruneBefore(value => p(value) || q(value)),
-          T(tree).PruneBefore(p).Hide().PruneBefore(q),
-          $"PruneBefore merge [{tree}]");
+          T(tree).PruneSubtreesWhere(value => p(value) || q(value)),
+          T(tree).PruneSubtreesWhere(p).Hide().PruneSubtreesWhere(q),
+          $"PruneSubtreesWhere merge [{tree}]");
     }
 
     // -------------------------------------------------------- natural transformation

@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Copse.Linq.Tests
 {
-  // Intersection(left, right) == left.Union(right).PruneBefore(nc => !nc.Node.HasLeftAndRight).
+  // Intersection(left, right) == left.Union(right).PruneSubtreesWhere(nc => !nc.Node.HasLeftAndRight).
   // Union merges POSITIONALLY (never by value); Intersection keeps only nodes present in BOTH
   // trees and, at the first non-shared node, PRUNES THE WHOLE SUBTREE -- the non-shared node's
   // descendants never appear. (A descendant of a non-shared node is itself always non-shared,

@@ -52,14 +52,14 @@ namespace Copse.Benchmarks
       CanonicalTrees.MegaDeepChainsTree().Consume(TreeTraversalStrategy.BreadthFirst);
 
     [Benchmark]
-    public void Dft_Triangle_SkipAll()
+    public void Dft_Triangle_PruneSubtreeAndSiblings()
     {
       using (var treenumerator = CanonicalTrees.MegaTriangleTree().GetDepthFirstTreenumerator())
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode)) ;
     }
 
     [Benchmark]
-    public void Bft_Triangle_SkipAll()
+    public void Bft_Triangle_PruneSubtreeAndSiblings()
     {
       using (var treenumerator = CanonicalTrees.MegaTriangleTree().GetBreadthFirstTreenumerator())
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode)) ;

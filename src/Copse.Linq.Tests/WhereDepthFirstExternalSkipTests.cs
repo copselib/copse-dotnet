@@ -15,30 +15,30 @@ namespace Copse.Linq.Tests
   [TestClass]
   public class WhereDepthFirstExternalSkipTests
   {
-    // PruneBefore is implemented as a WhereDepthFirstTreenumerator with
+    // PruneSubtreesWhere is implemented as a WhereDepthFirstTreenumerator with
     // PruneSubtree. AnyNodes(DepthFirst) feeds it SkipNode externally.
     [TestMethod]
-    public void PruneBefore_AnyNodesFalse_DepthFirst_DoesNotThrow()
+    public void PruneSubtreesWhere_AnyNodesFalse_DepthFirst_DoesNotThrow()
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
-          .PruneBefore((n, position) => position.Depth == 2)
+          .PruneSubtreesWhere((n, position) => position.Depth == 2)
           .AnyNodes(_ => false, TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public void PruneBefore_AnyNodesFalse_DepthFirst_DeepTree_DoesNotThrow()
+    public void PruneSubtreesWhere_AnyNodesFalse_DepthFirst_DeepTree_DoesNotThrow()
     {
       // Single deep chain; prune before depth 2 leaves only a(b).
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c(d(e(f)))))");
 
       var result =
         tree
-          .PruneBefore((n, position) => position.Depth == 2)
+          .PruneSubtreesWhere((n, position) => position.Depth == 2)
           .AnyNodes(_ => false, TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);
@@ -47,13 +47,13 @@ namespace Copse.Linq.Tests
     // After pruning before depth 2, nodes at depth 0 and 1 survive.
     // AnyNodes for a surviving node must return true.
     [TestMethod]
-    public void PruneBefore_AnyNodesMatchesSurvivingNode_DepthFirst_ReturnsTrue()
+    public void PruneSubtreesWhere_AnyNodesMatchesSurvivingNode_DepthFirst_ReturnsTrue()
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
-          .PruneBefore((n, position) => position.Depth == 2)
+          .PruneSubtreesWhere((n, position) => position.Depth == 2)
           .AnyNodes(node => node == "d", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsTrue(result);
@@ -61,13 +61,13 @@ namespace Copse.Linq.Tests
 
     // A node that is pruned away must NOT be found.
     [TestMethod]
-    public void PruneBefore_AnyNodesMatchesPrunedNode_DepthFirst_ReturnsFalse()
+    public void PruneSubtreesWhere_AnyNodesMatchesPrunedNode_DepthFirst_ReturnsFalse()
     {
       var tree = TreeSerializer.DeserializeDepthFirstTree("a(b(c),d(e))");
 
       var result =
         tree
-          .PruneBefore((n, position) => position.Depth == 2)
+          .PruneSubtreesWhere((n, position) => position.Depth == 2)
           .AnyNodes(node => node == "c", TreeTraversalStrategy.DepthFirst);
 
       Assert.IsFalse(result);

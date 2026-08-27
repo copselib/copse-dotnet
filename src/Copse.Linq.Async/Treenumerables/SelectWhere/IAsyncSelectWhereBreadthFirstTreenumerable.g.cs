@@ -43,8 +43,8 @@ namespace Copse.Linq.Async.Treenumerables
     // treenumerable. The outer piece arrives as an inlinable selector struct, so the
     // successor's composed chain nests in the TYPE and the splice costs no delegate hops;
     // a piece that is inherently a closure rides as a FuncResultSelector leaf.
-    // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneBefore do;
-    // PruneAfter and projections do not). Only a member whose relabeling is genuinely
+    // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneSubtreesWhere do;
+    // PruneDescendantsWhere and projections do not). Only a member whose relabeling is genuinely
     // variable consults it -- today that is ScanWhere alone, which can be built either by a
     // rejecting operator or by a rootfix citizen's blind door. The rest answer from their
     // representation: light wrappers never relabel, a driver always does.
@@ -78,6 +78,6 @@ namespace Copse.Linq.Async.Treenumerables
     // ONLY: light wrappers merge the predicate into themselves; every other member STACKS
     // the light prune wrapper over itself, because joining would demote its representation
     // for a layer that costs almost nothing (measured; OPERATOR_COMPOSITION_DESIGN.md).
-    IAsyncBreadthFirstTreenumerable<TNode> ComposePruneAfter(Func<NodeContext<TNode>, bool> predicate);
+    IAsyncBreadthFirstTreenumerable<TNode> ComposePruneDescendantsWhere(Func<NodeContext<TNode>, bool> predicate);
   }
 }

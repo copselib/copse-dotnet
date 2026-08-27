@@ -32,7 +32,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     // A prune-after joins a projection: the predicate judges the projected value.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectThenPruneAfter<TSource, TResult>(
+    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectThenPruneDescendantsWhere<TSource, TResult>(
       Func<NodeContext<TSource>, TResult> innerSelector,
       Func<NodeContext<TResult>, bool> predicate)
     {
@@ -50,7 +50,7 @@ namespace Copse.Linq.Treenumerables
 
     // A projection joins a prune-after: the prune predicate judges the source value (its layer
     // runs first), the selector maps it.
-    public static Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> PruneAfterThenSelect<TNode, TOuterResult>(
+    public static Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> PruneDescendantsWhereThenSelect<TNode, TOuterResult>(
       Func<NodeContext<TNode>, bool> predicate,
       Func<NodeContext<TNode>, TOuterResult> selector)
     {
@@ -67,7 +67,7 @@ namespace Copse.Linq.Treenumerables
     // Prune-after over prune-after merges by predicate union -- prune when either matches.
     // Inner-first short-circuit preserves per-node lambda order; the outer predicate skips
     // nodes the inner already matched, which the purity contract permits (counts unspecified).
-    public static Func<NodeContext<TNode>, bool> PruneAfterThenPruneAfter<TNode>(
+    public static Func<NodeContext<TNode>, bool> PruneDescendantsWhereThenPruneDescendantsWhere<TNode>(
       Func<NodeContext<TNode>, bool> innerPredicate,
       Func<NodeContext<TNode>, bool> outerPredicate)
     {
@@ -76,7 +76,7 @@ namespace Copse.Linq.Treenumerables
 
     // A projection joins a never-rejecting chain: the value maps, the truncation strategies
     // ride (nothing in the chain can reject, so no short-circuit).
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectPruneAfterThenSelect<TSource, TResult, TOuterResult>(
+    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectPruneDescendantsWhereThenSelect<TSource, TResult, TOuterResult>(
       Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
       Func<NodeContext<TResult>, TOuterResult> selector)
     {
@@ -92,7 +92,7 @@ namespace Copse.Linq.Treenumerables
 
     // A prune-after joins a never-rejecting chain: its predicate judges the projected value;
     // truncations union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectPruneAfterThenPruneAfter<TSource, TResult>(
+    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectPruneDescendantsWhereThenPruneDescendantsWhere<TSource, TResult>(
       Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
       Func<NodeContext<TResult>, bool> predicate)
     {

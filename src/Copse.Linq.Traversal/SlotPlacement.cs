@@ -10,7 +10,7 @@ namespace Copse.Linq
   public enum SlotPlacement
   {
     /// <summary>No slot: the expansion's forest stands alone and the node's children are
-    /// dropped, never pulled (the vanish rule; PruneBefore/PruneAfter territory).
+    /// dropped, never pulled (the vanish rule; PruneSubtreesWhere/PruneDescendantsWhere territory).
     /// <c>default</c> -- the least-capable value.</summary>
     None = 0,
 

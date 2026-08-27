@@ -19,7 +19,7 @@ namespace Copse.Linq
       return
         leftTreenumerable
         .Union(rightTreenumerable)
-        .PruneBefore(mergeNode => !mergeNode.HasLeftAndRight);
+        .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
     }
 
     public static IDepthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
@@ -27,13 +27,13 @@ namespace Copse.Linq
       IDepthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .PruneBefore(mergeNode => !mergeNode.HasLeftAndRight);
+        .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
 
     public static IBreadthFirstTreenumerable<MergeNode<TLeft, TRight>> Intersection<TLeft, TRight>(
       this IBreadthFirstTreenumerable<TLeft> leftTreenumerable,
       IBreadthFirstTreenumerable<TRight> rightTreenumerable)
       => leftTreenumerable
         .Union(rightTreenumerable)
-        .PruneBefore(mergeNode => !mergeNode.HasLeftAndRight);
+        .PruneSubtreesWhere(mergeNode => !mergeNode.HasLeftAndRight);
   }
 }

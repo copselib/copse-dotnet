@@ -13,7 +13,7 @@ namespace Copse.Linq
     /// the node's own children -- each replaced the same way -- re-hang at the expansion's
     /// slot (see <see cref="AsyncExpansion{TResult}"/> for the placements and the four
     /// special values: <c>Return</c> is Select's unit, <c>Promote</c> is Where's drop arm,
-    /// <c>Drop</c> is PruneBefore's, <c>Leaf</c> is PruneAfter's). Streams depth-first:
+    /// <c>Drop</c> is PruneSubtreesWhere's, <c>Leaf</c> is PruneDescendantsWhere's). Streams depth-first:
     /// nothing is pulled ahead of its emission, and a dropped subtree is never pulled.
     /// Laws and semantics: design-docs/SELECTMANY_DESIGN.md.
     /// </summary>

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Copse.Async.Tests
 {
   // The async set ops (Union/Intersection/Subtract/SymmetricDifference) are pure fluent compositions
-  // over the async StructuralMerge + PruneBefore/Where/Select -- all already conformance-tested. This
+  // over the async StructuralMerge + PruneSubtreesWhere/Where/Select -- all already conformance-tested. This
   // validates the WIRING: the async composition must produce the same result as the trusted sync set op
   // over the same operand trees (both dimensions). Async operands are a facade over the sync composite
   // deserialize (so both sides read the identical tree).

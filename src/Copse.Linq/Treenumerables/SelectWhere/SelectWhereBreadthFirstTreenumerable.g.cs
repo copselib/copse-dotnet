@@ -34,7 +34,7 @@ namespace Copse.Linq.Treenumerables
     private readonly TResultSelector _ResultSelector;
 
     // THIS DRIVER DOES NOT TRACK RELABELING. A driver exists only because Where or
-    // PruneBefore built it, and both relabel by nature, so the answer is a constant of the
+    // PruneSubtreesWhere built it, and both relabel by nature, so the answer is a constant of the
     // representation -- which is why the position-reading doors below stack unconditionally
     // rather than consulting anything. The doors still ACCEPT a relabels argument, because
     // ScanWhere needs to hear it; this member ignores it.
@@ -88,7 +88,7 @@ namespace Copse.Linq.Treenumerables
     // The context-shaped prune-after door: prune-afters compose in-tier only, so the light
     // prune wrapper STACKS over the driver rather than demoting its representation for a
     // layer that costs almost nothing.
-    public IBreadthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
-      => new PruneAfterBreadthFirstTreenumerable<TResult>(this, predicate);
+    public IBreadthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+      => new PruneDescendantsWhereBreadthFirstTreenumerable<TResult>(this, predicate);
   }
 }

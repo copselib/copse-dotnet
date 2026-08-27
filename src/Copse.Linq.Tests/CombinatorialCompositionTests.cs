@@ -42,10 +42,10 @@ namespace Copse.Linq.Tests
     {
       ('w', (source, targetNode) => source.Where(node => !node.StartsWith(targetNode))),
       ('W', (source, targetNode) => source.Where((node, position) => !node.StartsWith(targetNode))),
-      ('p', (source, targetNode) => source.PruneBefore(node => node.StartsWith(targetNode))),
-      ('P', (source, targetNode) => source.PruneBefore((node, position) => node.StartsWith(targetNode))),
-      ('a', (source, targetNode) => source.PruneAfter(node => node.StartsWith(targetNode))),
-      ('A', (source, targetNode) => source.PruneAfter((node, position) => node.StartsWith(targetNode))),
+      ('p', (source, targetNode) => source.PruneSubtreesWhere(node => node.StartsWith(targetNode))),
+      ('P', (source, targetNode) => source.PruneSubtreesWhere((node, position) => node.StartsWith(targetNode))),
+      ('a', (source, targetNode) => source.PruneDescendantsWhere(node => node.StartsWith(targetNode))),
+      ('A', (source, targetNode) => source.PruneDescendantsWhere((node, position) => node.StartsWith(targetNode))),
       ('s', (source, targetNode) => source.Select(node => node + "*")),
       ('S', (source, targetNode) => source.Select((node, position) => node + "^")),
     };

@@ -69,10 +69,10 @@ namespace Copse.Linq.Async.Treenumerables
 
     // A prune-after joins: promote to the middle tier (light passthrough driver), never the
     // filter driver.
-    IAsyncDepthFirstTreenumerable<TResult> IAsyncSelectWhereDepthFirstTreenumerable<TResult>.ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+    IAsyncDepthFirstTreenumerable<TResult> IAsyncSelectWhereDepthFirstTreenumerable<TResult>.ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
     {
-      return new AsyncSelectPruneAfterDepthFirstTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, predicate));
+      return new AsyncSelectPruneDescendantsWhereDepthFirstTreenumerable<TSource, TResult>(
+        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, predicate));
     }
 
     // A rejecting operator splices over this wrapper: the projection is donated as an

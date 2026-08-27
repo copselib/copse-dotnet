@@ -68,10 +68,10 @@ namespace Copse.Linq.Treenumerables
 
     // A prune-after joins: promote to the middle tier (light passthrough driver), never the
     // filter driver.
-    ITreenumerable<TResult> ISelectWhereTreenumerable<TResult>.ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
+    ITreenumerable<TResult> ISelectWhereTreenumerable<TResult>.ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
     {
-      return new SelectPruneAfterTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, predicate));
+      return new SelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
+        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, predicate));
     }
 
     // A rejecting operator splices over this wrapper: the projection is donated as an

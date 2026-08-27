@@ -19,10 +19,10 @@ namespace Copse.Linq.Treenumerables
         _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeContext => selector(nodeContext.Node)));
     }
 
-    public IPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
+    public IPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
     {
-      return new SelectPruneAfterTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, nodeContext => predicate(nodeContext.Node)));
+      return new SelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
+        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, nodeContext => predicate(nodeContext.Node)));
     }
   }
 }

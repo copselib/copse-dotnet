@@ -40,7 +40,7 @@ namespace Copse.CodeGen
       // The lattice renames, exact-match per identifier token: the core contract narrows and every
       // SelectWhere-lattice type maps to its same-width twin in the entry's dimension. Deliberately
       // a closed list (never a suffix rule): only lattice types participate, and the drivers'
-      // near-miss names (AsyncSelectTreenumerator, AsyncSelectPruneAfterTreenumerator) must pass
+      // near-miss names (AsyncSelectTreenumerator, AsyncSelectPruneDescendantsWhereTreenumerator) must pass
       // through untouched -- both getters already construct the right driver, the kept one is
       // correct as-is. A new wrapper family joining the lattice adds its pair here and its rows to
       // the manifest.
@@ -50,8 +50,8 @@ namespace Copse.CodeGen
         ["IAsyncSelectWhereTreenumerable"] = "IAsyncSelectWhere{0}Treenumerable",
         ["AsyncSelectWhereTreenumerable"] = "AsyncSelectWhere{0}Treenumerable",
         ["AsyncSelectTreenumerable"] = "AsyncSelect{0}Treenumerable",
-        ["AsyncPruneAfterTreenumerable"] = "AsyncPruneAfter{0}Treenumerable",
-        ["AsyncSelectPruneAfterTreenumerable"] = "AsyncSelectPruneAfter{0}Treenumerable",
+        ["AsyncPruneDescendantsWhereTreenumerable"] = "AsyncPruneDescendantsWhere{0}Treenumerable",
+        ["AsyncSelectPruneDescendantsWhereTreenumerable"] = "AsyncSelectPruneDescendantsWhere{0}Treenumerable",
       };
 
       // The public capability bases (PUBLIC_COMPOSITION_SURFACE_DESIGN.md) are
@@ -62,7 +62,7 @@ namespace Copse.CodeGen
       private static readonly HashSet<string> StrippedBases = new()
       {
         "IAsyncSelectTreenumerable",
-        "IAsyncPruneAfterTreenumerable",
+        "IAsyncPruneDescendantsWhereTreenumerable",
       };
 
       private readonly Dictionary<string, string> _renames;

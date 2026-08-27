@@ -82,7 +82,7 @@ namespace Copse.Linq.Treenumerables
     // The context-shaped prune-after door: prune-afters compose in-tier only, so the light
     // prune wrapper STACKS over the driver rather than demoting its representation for a
     // layer that costs almost nothing.
-    public IDepthFirstTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
-      => new PruneAfterDepthFirstTreenumerable<TResult>(this, predicate);
+    public IDepthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+      => new PruneDescendantsWhereDepthFirstTreenumerable<TResult>(this, predicate);
   }
 }

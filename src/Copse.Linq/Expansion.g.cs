@@ -12,8 +12,8 @@ namespace Copse.Linq
   /// A forest with no slot stands alone and the children are dropped. The four special values
   /// are the library's own reshapings: <c>Return</c> (the single node, children under it --
   /// Select's unit), <c>Promote</c> (no node, children promoted -- Where's drop arm),
-  /// <c>Drop</c> (nothing, children gone -- PruneBefore's arm), <c>Leaf</c> (the node kept,
-  /// children gone -- PruneAfter's arm). The general forms take any forest.
+  /// <c>Drop</c> (nothing, children gone -- PruneSubtreesWhere's arm), <c>Leaf</c> (the node kept,
+  /// children gone -- PruneDescendantsWhere's arm). The general forms take any forest.
   /// (design-docs/SELECTMANY_DESIGN.md records the semantics and their laws.)
   ///
   /// <para><c>default</c> is <c>Drop</c>: no forest, no slot.</para>

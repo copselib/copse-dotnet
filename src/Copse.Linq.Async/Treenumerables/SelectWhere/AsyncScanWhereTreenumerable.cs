@@ -110,10 +110,10 @@ namespace Copse.Linq.Async.Treenumerables
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the fold-carrying machine.
-    public IAsyncTreenumerable<TResult> ComposePruneAfter(Func<NodeContext<TResult>, bool> predicate)
-      => new AsyncPruneAfterTreenumerable<TResult>(this, predicate);
+    public IAsyncTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, predicate);
 
-    public IAsyncPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
-      => new AsyncPruneAfterTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
+    public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
+      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

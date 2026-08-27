@@ -148,10 +148,10 @@ namespace Copse.Linq.Tests
     {
       var whereThenPrune = Tree("a(b(d,e),c)")
         .Where(n => n != "z")
-        .PruneBefore(n => n == "b");
+        .PruneSubtreesWhere(n => n == "b");
 
       var pruneThenWhere = Tree("a(b(d,e),c)")
-        .PruneBefore(n => n == "b")
+        .PruneSubtreesWhere(n => n == "b")
         .Where(n => n != "z");
 
       Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), whereThenPrune.GetType().GetGenericTypeDefinition());
@@ -164,20 +164,20 @@ namespace Copse.Linq.Tests
           $"{strategy}: same operators, same tree, order-independent here (neither filters what the other sees)");
     }
 
-    // PruneBefore is a result selector now ((node, PruneSubtree)), so it joins the
+    // PruneSubtreesWhere is a result selector now ((node, PruneSubtree)), so it joins the
     // composed chain; a following value-Where composes onto it.
     [TestMethod]
-    public void PruneBefore_JoinsTheComposedChain()
+    public void PruneSubtreesWhere_JoinsTheComposedChain()
     {
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
         var composed = Tree("a(b(d,e),c)")
-          .PruneBefore(n => n == "b")
+          .PruneSubtreesWhere(n => n == "b")
           .Where(n => n != "z");
 
         Assert.AreEqual(typeof(SelectWhereTreenumerable<,,>), composed.GetType().GetGenericTypeDefinition(), "prune chain must stay composed");
 
-        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneBefore(n => n == "b"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneSubtreesWhere(n => n == "b"))
           .Where(n => n != "z")
           .GetTraversal(strategy).ToArray();
 
@@ -204,14 +204,14 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
-    // The PruneAfter-selector rehearsal: nothing on the surface produces accept-side result
+    // The PruneDescendantsWhere-selector rehearsal: nothing on the surface produces accept-side result
     // strategies yet, but the depth-first driver's pending-merge machinery shipped with phase 2
     // and must not sit untested until the prune migration. (node, PruneDescendants) = keep
     // the node, drop its subtree.
     [TestMethod]
     public void AcceptStrategies_AreHonoredDepthFirst()
     {
-      var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
+      var rehearsedPruneDescendantsWhere = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
           new SelectWhereResult<string>(
@@ -220,7 +220,7 @@ namespace Copse.Linq.Tests
               ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll)));
 
-      var nodes = rehearsedPruneAfter
+      var nodes = rehearsedPruneDescendantsWhere
         .GetTraversal(TreeTraversalStrategy.DepthFirst)
         .Select(visit => visit.Node).Distinct().ToArray();
 
@@ -229,11 +229,11 @@ namespace Copse.Linq.Tests
 
     // The breadth-first half of the seam: accept-side strategies ride the pending/deferred
     // slots so they apply on the pull following the node's SCHEDULING publish, matching the
-    // depth-first result (which matches what a bespoke PruneAfter produces).
+    // depth-first result (which matches what a bespoke PruneDescendantsWhere produces).
     [TestMethod]
     public void AcceptStrategies_AreHonoredBreadthFirst()
     {
-      var rehearsedPruneAfter = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
+      var rehearsedPruneDescendantsWhere = new SelectWhereTreenumerable<string, string, FuncResultSelector<string, string>>(
         Tree("a(b(c,d),e)"),
         new FuncResultSelector<string, string>(nodeContext =>
           new SelectWhereResult<string>(
@@ -242,19 +242,19 @@ namespace Copse.Linq.Tests
               ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll)));
 
-      var nodes = rehearsedPruneAfter
+      var nodes = rehearsedPruneDescendantsWhere
         .GetTraversal(TreeTraversalStrategy.BreadthFirst)
         .Select(visit => visit.Node).Distinct().ToArray();
 
       CollectionAssert.AreEqual(new[] { "a", "b", "e" }, nodes, "b kept, its subtree dropped");
     }
 
-    // The seam's independent oracle: the bespoke PruneAfter operator implements the same
+    // The seam's independent oracle: the bespoke PruneDescendantsWhere operator implements the same
     // semantics (keep the node, drop its subtree) through entirely different machinery, so the
     // rehearsed (node, PruneDescendants) selector must match it -- both dimensions, under
     // every consumer-strategy interference aimed at every node.
     [TestMethod]
-    public void AcceptStrategies_MatchTheBespokePruneAfterOracle()
+    public void AcceptStrategies_MatchTheBespokePruneDescendantsWhereOracle()
     {
       var trees = new[] { "a(b(c,d),e)", "a(b(c(f),d),e)", "a(b(c)),d(e)", "a(b,c(d(e,f),g),h)" };
       var consumerStrategies = new[]
@@ -292,7 +292,7 @@ namespace Copse.Linq.Tests
                   ? NodeTraversalStrategies.PruneDescendants
                   : NodeTraversalStrategies.TraverseAll)));
 
-          var expected = Tree(treeString).PruneAfter(n => n == target)
+          var expected = Tree(treeString).PruneDescendantsWhere(n => n == target)
             .GetTraversal(strategy, Selector)
             .Select(visit => (visit.Mode, visit.Position.Depth, visit.Position.SiblingIndex, visit.VisitCount, visit.Node));
 
@@ -307,19 +307,19 @@ namespace Copse.Linq.Tests
       }
     }
 
-    // PruneAfter is the one filter that does NOT relabel (survivors keep their coordinates:
+    // PruneDescendantsWhere is the one filter that does NOT relabel (survivors keep their coordinates:
     // no promotion, no sibling renumbering -- only whole subtrees below kept nodes vanish),
     // so even POSITIONAL lambdas compose across it. The distinctive property of the operator.
     [TestMethod]
-    public void PruneAfter_IsLabelPreserving_SoPositionalLambdasComposeAcrossIt()
+    public void PruneDescendantsWhere_IsLabelPreserving_SoPositionalLambdasComposeAcrossIt()
     {
       var composed = Tree("a(b(c),d)")
-        .PruneAfter(n => n == "b")
+        .PruneDescendantsWhere(n => n == "b")
         .Select((n, position) => $"{n}@{position.Depth}.{position.SiblingIndex}");
 
       Assert.IsInstanceOfType(
         composed,
-        typeof(SelectPruneAfterTreenumerable<string, string>),
+        typeof(SelectPruneDescendantsWhereTreenumerable<string, string>),
         "positional Select must compose across the label-preserving prune -- and stay on the light tier");
 
       var labeled = composed
@@ -345,18 +345,18 @@ namespace Copse.Linq.Tests
     // The light tier: never-rejecting chains (projections + prune-afters) must not convert
     // to the filter driver -- they ride the light passthrough machinery.
     [TestMethod]
-    public void SelectThenPruneAfter_StaysOnTheLightTier()
+    public void SelectThenPruneDescendantsWhere_StaysOnTheLightTier()
     {
       var composed = Tree("a(b(d,e),c)")
         .Select(n => n + "!")
-        .PruneAfter(n => n == "b!");
+        .PruneDescendantsWhere(n => n == "b!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneDescendantsWhereTreenumerable<string, string>));
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
         var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").Select(n => n + "!"))
-          .PruneAfter(n => n == "b!");
+          .PruneDescendantsWhere(n => n == "b!");
 
         CollectionAssert.AreEqual(
           stacked.GetTraversal(strategy).ToArray(),
@@ -366,17 +366,17 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void PruneAfterThenSelect_StaysOnTheLightTier()
+    public void PruneDescendantsWhereThenSelect_StaysOnTheLightTier()
     {
       var composed = Tree("a(b(d,e),c)")
-        .PruneAfter(n => n == "b")
+        .PruneDescendantsWhere(n => n == "b")
         .Select(n => n + "!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterTreenumerable<string, string>));
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneDescendantsWhereTreenumerable<string, string>));
 
       foreach (var strategy in new[] { TreeTraversalStrategy.DepthFirst, TreeTraversalStrategy.BreadthFirst })
       {
-        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneAfter(n => n == "b"))
+        var stacked = Copse.Tree.Defer(() => Tree("a(b(d,e),c)").PruneDescendantsWhere(n => n == "b"))
           .Select(n => n + "!");
 
         CollectionAssert.AreEqual(
@@ -387,13 +387,13 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void PruneAfterOverPruneAfter_StaysOnTheBespokeDriver()
+    public void PruneDescendantsWhereOverPruneDescendantsWhere_StaysOnTheBespokeDriver()
     {
       var merged = Tree("a(b(d),c(e))")
-        .PruneAfter(n => n == "b")
-        .PruneAfter(n => n == "c");
+        .PruneDescendantsWhere(n => n == "b")
+        .PruneDescendantsWhere(n => n == "c");
 
-      Assert.IsInstanceOfType(merged, typeof(PruneAfterTreenumerable<string>));
+      Assert.IsInstanceOfType(merged, typeof(PruneDescendantsWhereTreenumerable<string>));
     }
 
     // The tier seal (boundary ruling 2026-08-04): a rejecting operator STACKS its
@@ -408,7 +408,7 @@ namespace Copse.Linq.Tests
       // rejecting operator splices OVER it -- ONE driver, any order. CI Mixed series confirms.
       var joined = Tree("a(b(d,e),c)")
         .Select(n => n + "!")
-        .PruneAfter(n => n == "b!")
+        .PruneDescendantsWhere(n => n == "b!")
         .Where(n => n != "c!");
 
       Assert.AreEqual(

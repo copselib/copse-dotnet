@@ -341,3 +341,16 @@ Consequences:
   family on one CPU architecture. The diagnostic branch is abandoned; the record above and
   the dashboard marker are the durable outcome. Resume point, should a real Zen workload
   ever surface this: the branch's WalkerSweepDrivers pad harness plus this entry.
+
+### 2026-08-27 — Row renames riding the structural-reading rename (archived-row, no epoch)
+
+The prune vocabulary ruling (skip → prune where structure is removed; RELEASE_NOTES.md)
+renames benchmark classes and rows that carry the old names. The rows measure the same code
+paths — the archived-row mechanism handles series continuity, no epoch:
+
+- Class `PruneBefore` → `PruneSubtreesWhere`; class `PruneAfter` → `PruneDescendantsWhere`
+  (all rows within keep their method names, so FullNames change by class only).
+- `SelectMany.Dft_Triangle_PruneBefore` → `Dft_Triangle_PruneSubtreesWhere`;
+  `Dft_Triangle_AsPruneBefore` → `Dft_Triangle_AsPruneSubtreesWhere`.
+- `Traversal.Dft_Triangle_SkipAll` / `Bft_Triangle_SkipAll` →
+  `…_PruneSubtreeAndSiblings` (the strategy the rows drive).

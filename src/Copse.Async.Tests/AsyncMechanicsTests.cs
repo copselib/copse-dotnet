@@ -108,16 +108,16 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
-    public async Task AsyncPruneAfter_OverSuspendingInner_MatchesGeneratedSyncTwin()
+    public async Task AsyncPruneDescendantsWhere_OverSuspendingInner_MatchesGeneratedSyncTwin()
     {
       Func<NodeContext<int>, bool> pruneAt3 = nc => nc.Node == 3;
 
-      var sync = Collect(new PruneAfterTreenumerator<int>(
+      var sync = Collect(new PruneDescendantsWhereTreenumerator<int>(
         () => new DepthFirstTreenumerator<int, int, SyncChildEnumerator>(
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         pruneAt3));
 
-      var async = await CollectAsync(new AsyncPruneAfterTreenumerator<int>(
+      var async = await CollectAsync(new AsyncPruneDescendantsWhereTreenumerator<int>(
         () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
           AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         pruneAt3));

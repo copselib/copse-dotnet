@@ -97,35 +97,35 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void NarrowSelectThenPruneAfter_StaysOnTheLightTier()
+    public void NarrowSelectThenPruneDescendantsWhere_StaysOnTheLightTier()
     {
       IDepthFirstTreenumerable<string> composed = StreamDepthFirst("a(b(d,e),c)")
         .Select(n => n + "!")
-        .PruneAfter(n => n == "b!");
+        .PruneDescendantsWhere(n => n == "b!");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterDepthFirstTreenumerable<string, string>));
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneDescendantsWhereDepthFirstTreenumerable<string, string>));
 
       var stacked = Tree.DeferDepthFirst(() => StreamDepthFirst("a(b(d,e),c)").Select(n => n + "!"))
-        .PruneAfter(n => n == "b!")
+        .PruneDescendantsWhere(n => n == "b!")
         .GetPreorderTraversal().ToArray();
 
       CollectionAssert.AreEqual(stacked, composed.GetPreorderTraversal().ToArray());
     }
 
     [TestMethod]
-    public void NarrowPruneAfterOverPruneAfter_StaysOnTheBespokeDriver()
+    public void NarrowPruneDescendantsWhereOverPruneDescendantsWhere_StaysOnTheBespokeDriver()
     {
       IDepthFirstTreenumerable<string> depthFirst = StreamDepthFirst("a(b(d),c(e))")
-        .PruneAfter(n => n == "b")
-        .PruneAfter(n => n == "c");
+        .PruneDescendantsWhere(n => n == "b")
+        .PruneDescendantsWhere(n => n == "c");
 
-      Assert.IsInstanceOfType(depthFirst, typeof(PruneAfterDepthFirstTreenumerable<string>));
+      Assert.IsInstanceOfType(depthFirst, typeof(PruneDescendantsWhereDepthFirstTreenumerable<string>));
 
       IBreadthFirstTreenumerable<string> breadthFirst = StreamBreadthFirst("a(b(d),c(e))")
-        .PruneAfter(n => n == "b")
-        .PruneAfter(n => n == "c");
+        .PruneDescendantsWhere(n => n == "b")
+        .PruneDescendantsWhere(n => n == "c");
 
-      Assert.IsInstanceOfType(breadthFirst, typeof(PruneAfterBreadthFirstTreenumerable<string>));
+      Assert.IsInstanceOfType(breadthFirst, typeof(PruneDescendantsWhereBreadthFirstTreenumerable<string>));
 
       CollectionAssert.AreEqual(
         new[] { "a", "b", "c" },
@@ -142,7 +142,7 @@ namespace Copse.Linq.Tests
       // the interface re-merge out, so narrow light chains splice into one narrow driver.
       IDepthFirstTreenumerable<string> joined = StreamDepthFirst("a(b(d,e),c)")
         .Select(n => n + "!")
-        .PruneAfter(n => n == "b!")
+        .PruneDescendantsWhere(n => n == "b!")
         .Where(n => n != "c!");
 
       Assert.AreEqual(
@@ -165,16 +165,16 @@ namespace Copse.Linq.Tests
       CollectionAssert.AreEqual(new[] { "a@0", "c@1" }, labeled);
     }
 
-    // PruneAfter is label-preserving, so the narrow positional Select composes across it and
+    // PruneDescendantsWhere is label-preserving, so the narrow positional Select composes across it and
     // the chain stays on the light tier.
     [TestMethod]
-    public void NarrowPositionalSelect_ComposesAcrossPruneAfter()
+    public void NarrowPositionalSelect_ComposesAcrossPruneDescendantsWhere()
     {
       IDepthFirstTreenumerable<string> composed = StreamDepthFirst("a(b(c),d)")
-        .PruneAfter(n => n == "b")
+        .PruneDescendantsWhere(n => n == "b")
         .Select((n, position) => $"{n}@{position.Depth}.{position.SiblingIndex}");
 
-      Assert.IsInstanceOfType(composed, typeof(SelectPruneAfterDepthFirstTreenumerable<string, string>));
+      Assert.IsInstanceOfType(composed, typeof(SelectPruneDescendantsWhereDepthFirstTreenumerable<string, string>));
 
       CollectionAssert.AreEqual(
         new[] { "a@0.0", "b@1.0", "d@1.1" },
@@ -210,14 +210,14 @@ namespace Copse.Linq.Tests
         IDepthFirstTreenumerable<string> narrowDepthFirst = StreamDepthFirst(tree)
           .Select(n => n.ToUpperInvariant())
           .Where(n => n != "B")
-          .PruneBefore(n => n == "D")
-          .PruneAfter(n => n == "C");
+          .PruneSubtreesWhere(n => n == "D")
+          .PruneDescendantsWhere(n => n == "C");
 
         ITreenumerable<string> engine = TreeSerializer.DeserializeDepthFirstTree(tree)
           .Select(n => n.ToUpperInvariant())
           .Where(n => n != "B")
-          .PruneBefore(n => n == "D")
-          .PruneAfter(n => n == "C");
+          .PruneSubtreesWhere(n => n == "D")
+          .PruneDescendantsWhere(n => n == "C");
 
         VisitStreamConformance.AssertSameStream(
           engine.GetDepthFirstTreenumerator(),
@@ -228,8 +228,8 @@ namespace Copse.Linq.Tests
         IBreadthFirstTreenumerable<string> narrowBreadthFirst = StreamBreadthFirst(tree)
           .Select(n => n.ToUpperInvariant())
           .Where(n => n != "B")
-          .PruneBefore(n => n == "D")
-          .PruneAfter(n => n == "C");
+          .PruneSubtreesWhere(n => n == "D")
+          .PruneDescendantsWhere(n => n == "C");
 
         VisitStreamConformance.AssertSameStream(
           engine.GetBreadthFirstTreenumerator(),

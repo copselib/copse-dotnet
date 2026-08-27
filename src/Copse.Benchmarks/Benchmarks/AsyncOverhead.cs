@@ -28,7 +28,7 @@ namespace Copse.Benchmarks
   internal static class AsyncOverheadSources
   {
     // The async mirror of CompleteBinaryTree: children of n are 2n+1 / 2n+2, unbounded, cut by
-    // PruneBefore at the requested depth, then HIDDEN like every benchmark tree (the measurement
+    // PruneSubtreesWhere at the requested depth, then HIDDEN like every benchmark tree (the measurement
     // boundary -- see CanonicalTrees). Every pull
     // completes synchronously.
     public readonly struct AsyncBinaryChildEnumerator : IAsyncChildEnumerator<int>
@@ -63,12 +63,12 @@ namespace Copse.Benchmarks
           nodeContext => new AsyncBinaryChildEnumerator(nodeContext.Node),
           node => node,
           RootAsync())
-        .PruneBefore((n, position) => position.Depth == depth)
+        .PruneSubtreesWhere((n, position) => position.Depth == depth)
         .Hide(HideScope.Treenumerable);
 
     public static ITreenumerable<int> GetSyncBinaryTree(int depth)
       => new CompleteBinaryTree()
-        .PruneBefore((n, position) => position.Depth == depth)
+        .PruneSubtreesWhere((n, position) => position.Depth == depth)
         .Hide(HideScope.Treenumerable);
 
     private static async IAsyncEnumerable<int> RootAsync()

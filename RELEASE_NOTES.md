@@ -56,6 +56,13 @@
   `PruneSubtreeAndSiblings`. `TraverseAll` and `SkipNode` are unchanged, as are the
   LINQ-idiom operators (`Where`, `SkipTrees`, `SkipLastTrees`). *Migration: rename the
   members at call sites; flag arithmetic and semantics are identical.*
+- **The prune operators say what they prune**: `PruneBefore` → `PruneSubtreesWhere`
+  (removes each matched node with its whole subtree — the exact dual of
+  `TakeSubtreesWhere`) and `PruneAfter` → `PruneDescendantsWhere` (keeps the matched node,
+  removes everything below). The Before/After suffixes only existed because the verb's
+  object was implicit; each operator is now named for its strategy plus the established
+  predicate suffix. The walkable lens `PruneAfter` follows to `PruneDescendantsWhere`.
+  *Migration: rename at call sites; predicates and semantics are identical.*
 - **The node accessors say node**: `ITreeTopology.GetValue` → `GetNode` (async
   `GetValueAsync` → `GetNodeAsync`), the walker's `GetValue`/`TryGetValue` →
   `GetNode`/`TryGetNode` (async likewise), the store SPIs' `GetValue(index)` →

@@ -12,16 +12,16 @@ namespace Copse.Linq
     public static ITreenumerable<TNode> SkipTrees<TNode>(
       this ITreenumerable<TNode> source,
       int count)
-      => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
+      => source.PruneSubtreesWhere((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
     public static IDepthFirstTreenumerable<TNode> SkipTrees<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       int count)
-      => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
+      => source.PruneSubtreesWhere((node, position) => position.Depth == 0 && position.SiblingIndex < count);
 
     public static IBreadthFirstTreenumerable<TNode> SkipTrees<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       int count)
-      => source.PruneBefore((node, position) => position.Depth == 0 && position.SiblingIndex < count);
+      => source.PruneSubtreesWhere((node, position) => position.Depth == 0 && position.SiblingIndex < count);
   }
 }

@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Copse.Async.Tests
 {
-  // Thin MECHANICS check for the async spanning arc and the async PruneAfter lens (the
+  // Thin MECHANICS check for the async spanning arc and the async PruneDescendantsWhere lens (the
   // semantic surface is pinned once, on the generated sync twins, by
-  // SpanningSubtreeScenarioTests and PruneAfterLensTests): the async spellings must run the
+  // SpanningSubtreeScenarioTests and PruneDescendantsWhereLensTests): the async spellings must run the
   // same arc end to end over a genuinely async walkable -- a narrow-source memo whose probes
   // drive the capture (pull-through).
   [TestClass]
@@ -81,10 +81,10 @@ namespace Copse.Async.Tests
     }
 
     [TestMethod]
-    public async Task PruneAfterLens_IsAPairCitizen()
+    public async Task PruneDescendantsWhereLens_IsAPairCitizen()
     {
       var walkable = W("a(b(d,e),c)");
-      var pruned = walkable.PruneAfter(value => value == "b");
+      var pruned = walkable.PruneDescendantsWhere(value => value == "b");
 
       // The adjacency half: a pruned-after node hands out no children; everything else delegates.
       var handleOfB = (await HandlesWhereAsync(walkable, value => value == "b")).Single();

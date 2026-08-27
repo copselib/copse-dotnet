@@ -15,10 +15,10 @@ namespace Copse.Linq.Async.Treenumerables
         _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeContext => selector(nodeContext.Node)));
     }
 
-    public IAsyncPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
+    public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
     {
-      return new AsyncSelectPruneAfterTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneAfter(_Selector, nodeContext => predicate(nodeContext.Node)));
+      return new AsyncSelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
+        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, nodeContext => predicate(nodeContext.Node)));
     }
   }
 }

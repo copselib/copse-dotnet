@@ -25,7 +25,7 @@ namespace Copse.Linq
     /// so the fold is total; the kept-set falls out of the same climbs), the hoist
     /// (<c>Subtree()</c> -- severed re-root at a node, the whole forest at the unfocused stance), the
     /// HANDLE-DECORATED STREAM for the membership clamp (Extend stamps every node with its
-    /// own (handle, value) pair, PruneBefore cuts off-path subtrees in handle-space --
+    /// own (handle, value) pair, PruneSubtreesWhere cuts off-path subtrees in handle-space --
     /// membership is downward-closed, so prune semantics are exactly right -- and Select
     /// projects back), and one Materialize. A future membership LENS makes the clamp
     /// adjacency-side and this zero-copy; the semantics are fixed here. Target handles are
@@ -71,7 +71,7 @@ namespace Copse.Linq
 
       var clamped = spanningRoot.Subtree()
         .Extend((topology, handle) => PairHandleWithValueAsync(topology, handle))
-        .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
+        .PruneSubtreesWhere(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Node);
 
       var capture = clamped.Materialize(BufferLayout.Preorder);

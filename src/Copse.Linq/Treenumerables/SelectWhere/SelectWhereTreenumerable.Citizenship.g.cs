@@ -18,7 +18,7 @@ namespace Copse.Linq.Treenumerables
       => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
         new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)));
 
-    public IPruneAfterTreenumerable<TResult> ComposePruneAfter(Func<TResult, bool> predicate)
-      => new PruneAfterTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
+    public IPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
+      => new PruneDescendantsWhereTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

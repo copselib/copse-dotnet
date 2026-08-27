@@ -8,7 +8,7 @@ namespace Copse.Benchmarks
   // same-run:
   //  - THE THEOREM ROWS: bind spelled as each derived operator, beside the shipped operator
   //    it reproduces (Return∘g vs Select, Return/Promote vs Where, Return/Drop vs
-  //    PruneBefore). That ratio is the general bind machine's cost over the bespoke
+  //    PruneSubtreesWhere). That ratio is the general bind machine's cost over the bespoke
   //    collapsed machines -- the number the composition question needs (bind as the front
   //    door, the local collapse lattice as its lookup table).
   //  - THE GENERAL ROWS: every node expands to a small forest with the children under its
@@ -44,11 +44,11 @@ namespace Copse.Benchmarks
       CanonicalTrees.MegaTriangleTree().SelectMany(n => n % 2 == 0 ? Expansion.Return(n) : Expansion.Promote<int>()).Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public void Dft_Triangle_PruneBefore() =>
-      CanonicalTrees.MegaTriangleTree().PruneBefore(n => n % 7 == 6).Consume(TreeTraversalStrategy.DepthFirst);
+    public void Dft_Triangle_PruneSubtreesWhere() =>
+      CanonicalTrees.MegaTriangleTree().PruneSubtreesWhere(n => n % 7 == 6).Consume(TreeTraversalStrategy.DepthFirst);
 
     [Benchmark]
-    public void Dft_Triangle_AsPruneBefore() =>
+    public void Dft_Triangle_AsPruneSubtreesWhere() =>
       CanonicalTrees.MegaTriangleTree().SelectMany(n => n % 7 == 6 ? Expansion.Drop<int>() : Expansion.Return(n)).Consume(TreeTraversalStrategy.DepthFirst);
 
     // ------------------------------------------------------------- the general rows

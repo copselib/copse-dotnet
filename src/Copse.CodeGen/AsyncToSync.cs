@@ -175,7 +175,7 @@ namespace Copse.CodeGen
         ["IAsyncSelectWhereDepthFirstTreenumerable"] = "ISelectWhereDepthFirstTreenumerable",
         ["IAsyncSelectWhereBreadthFirstTreenumerable"] = "ISelectWhereBreadthFirstTreenumerable",
         ["IAsyncSelectTreenumerable"] = "ISelectTreenumerable",
-        ["IAsyncPruneAfterTreenumerable"] = "IPruneAfterTreenumerable",
+        ["IAsyncPruneDescendantsWhereTreenumerable"] = "IPruneDescendantsWhereTreenumerable",
         ["IAsyncSelectTreenumerableBuffer"] = "ISelectTreenumerableBuffer",
         ["AsyncProjectedTreenumerableBuffer"] = "ProjectedTreenumerableBuffer",
         ["AsyncScanWhereTreenumerable"] = "ScanWhereTreenumerable",

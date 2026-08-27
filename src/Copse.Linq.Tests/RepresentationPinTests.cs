@@ -39,14 +39,14 @@ namespace Copse.Linq.Tests
         typeof(SelectTreenumerable<,>), "Select.Select");
       AssertMachine(Plain().Select((n, position) => $"{n}@{position.Depth}"),
         typeof(SelectTreenumerable<,>), "positional Select");
-      AssertMachine(Plain().PruneAfter(n => n == "b"),
-        typeof(PruneAfterTreenumerable<>), "PruneAfter");
-      AssertMachine(Plain().PruneAfter(n => n == "b").PruneAfter(n => n == "e"),
-        typeof(PruneAfterTreenumerable<>), "PruneAfter.PruneAfter");
-      AssertMachine(Plain().Select(n => n + "!").PruneAfter(n => n == "b!"),
-        typeof(SelectPruneAfterTreenumerable<,>), "Select.PruneAfter");
-      AssertMachine(Plain().PruneAfter(n => n == "b").Select(n => n + "!"),
-        typeof(SelectPruneAfterTreenumerable<,>), "PruneAfter.Select");
+      AssertMachine(Plain().PruneDescendantsWhere(n => n == "b"),
+        typeof(PruneDescendantsWhereTreenumerable<>), "PruneDescendantsWhere");
+      AssertMachine(Plain().PruneDescendantsWhere(n => n == "b").PruneDescendantsWhere(n => n == "e"),
+        typeof(PruneDescendantsWhereTreenumerable<>), "PruneDescendantsWhere.PruneDescendantsWhere");
+      AssertMachine(Plain().Select(n => n + "!").PruneDescendantsWhere(n => n == "b!"),
+        typeof(SelectPruneDescendantsWhereTreenumerable<,>), "Select.PruneDescendantsWhere");
+      AssertMachine(Plain().PruneDescendantsWhere(n => n == "b").Select(n => n + "!"),
+        typeof(SelectPruneDescendantsWhereTreenumerable<,>), "PruneDescendantsWhere.Select");
     }
 
     // ---- The general driver: rejecting operators produce ONE SelectWhere machine ----
@@ -56,14 +56,14 @@ namespace Copse.Linq.Tests
     {
       AssertMachine(Plain().Where(n => n != "b"),
         typeof(SelectWhereTreenumerable<,,>), "Where");
-      AssertMachine(Plain().PruneBefore(n => n == "b"),
-        typeof(SelectWhereTreenumerable<,,>), "PruneBefore");
+      AssertMachine(Plain().PruneSubtreesWhere(n => n == "b"),
+        typeof(SelectWhereTreenumerable<,,>), "PruneSubtreesWhere");
       AssertMachine(
         Plain()
           .Select(n => n + "!")
-          .PruneAfter(n => n == "d!")
+          .PruneDescendantsWhere(n => n == "d!")
           .Where(n => n != "b!")
-          .PruneBefore(n => n == "e!")
+          .PruneSubtreesWhere(n => n == "e!")
           .Select(n => n.Length),
         typeof(SelectWhereTreenumerable<,,>), "five-operator mix");
     }
@@ -115,8 +115,8 @@ namespace Copse.Linq.Tests
         typeof(TakeSubtreesWhereProductTreenumerable<,>), "TakeSubtreesWhere.Select.Select");
       AssertMachine(Plain().TakeSubtreesWhere(n => n == "b").Where(n => n != "c"),
         typeof(SelectWhereTreenumerable<,,>), "TakeSubtreesWhere.Where");
-      AssertMachine(Plain().TakeSubtreesWhere(n => n == "b").PruneAfter(n => n == "c"),
-        typeof(PruneAfterTreenumerable<>), "TakeSubtreesWhere.PruneAfter");
+      AssertMachine(Plain().TakeSubtreesWhere(n => n == "b").PruneDescendantsWhere(n => n == "c"),
+        typeof(PruneDescendantsWhereTreenumerable<>), "TakeSubtreesWhere.PruneDescendantsWhere");
     }
 
     // ---- The buffer tier: citizenship minted at the Select seam (the thin shape) ----
@@ -153,7 +153,7 @@ namespace Copse.Linq.Tests
       var hidden = Plain().Select(n => n + "!").Hide();
 
       Assert.IsFalse(hidden is ISelectTreenumerable<string>, "Hide must strip the Select citizenship");
-      Assert.IsFalse(hidden is IPruneAfterTreenumerable<string>, "Hide must strip the PruneAfter citizenship");
+      Assert.IsFalse(hidden is IPruneDescendantsWhereTreenumerable<string>, "Hide must strip the PruneDescendantsWhere citizenship");
       Assert.IsFalse(hidden is ISelectWhereTreenumerable<string>, "Hide must strip the general surface");
 
       AssertMachine(hidden.Select(n => n.Length),
@@ -173,7 +173,7 @@ namespace Copse.Linq.Tests
         var hidden = Plain().Select(n => n + "!").Hide(scope);
 
         Assert.IsFalse(hidden is ISelectTreenumerable<string>, $"{scope}: must strip the Select citizenship");
-        Assert.IsFalse(hidden is IPruneAfterTreenumerable<string>, $"{scope}: must strip the PruneAfter citizenship");
+        Assert.IsFalse(hidden is IPruneDescendantsWhereTreenumerable<string>, $"{scope}: must strip the PruneDescendantsWhere citizenship");
         Assert.IsFalse(hidden is ISelectWhereTreenumerable<string>, $"{scope}: must strip the general surface");
 
         AssertMachine(hidden.Select(n => n.Length),

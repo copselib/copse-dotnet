@@ -13,7 +13,7 @@ namespace Copse.Linq.Tests
   // breadth-first one, positions and visit counts included, lockstepped against the flat
   // family's treenumerators over the expected tree (themselves conformance-pinned to the
   // engine). Then the derived operators: the four special values must reproduce the real
-  // Select, Where, PruneBefore, and PruneAfter byte for byte. Then the streaming contract:
+  // Select, Where, PruneSubtreesWhere, and PruneDescendantsWhere byte for byte. Then the streaming contract:
   // a dropped subtree is never pulled, and nothing is pulled ahead of its emission.
   [TestClass]
   public class SelectManyOperatorTests
@@ -162,27 +162,27 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Derived_ReturnOrDrop_IsPruneBefore()
+    public void Derived_ReturnOrDrop_IsPruneSubtreesWhere()
     {
       Func<string, bool> prune = value => value == "b" || value == "e";
 
       foreach (var tree in Trees)
         Assert.AreEqual(
-          Forest(tree).PruneBefore(prune).SerializeDepthFirstTree(),
+          Forest(tree).PruneSubtreesWhere(prune).SerializeDepthFirstTree(),
           Forest(tree).SelectMany(value => prune(value) ? Expansion.Drop<string>() : Expansion.Return(value)).SerializeDepthFirstTree(),
-          $"PruneBefore [{tree}]");
+          $"PruneSubtreesWhere [{tree}]");
     }
 
     [TestMethod]
-    public void Derived_ReturnOrLeaf_IsPruneAfter()
+    public void Derived_ReturnOrLeaf_IsPruneDescendantsWhere()
     {
       Func<string, bool> prune = value => value == "b" || value == "c";
 
       foreach (var tree in Trees)
         Assert.AreEqual(
-          Forest(tree).PruneAfter(prune).SerializeDepthFirstTree(),
+          Forest(tree).PruneDescendantsWhere(prune).SerializeDepthFirstTree(),
           Forest(tree).SelectMany(value => prune(value) ? Expansion.Leaf(value) : Expansion.Return(value)).SerializeDepthFirstTree(),
-          $"PruneAfter [{tree}]");
+          $"PruneDescendantsWhere [{tree}]");
     }
 
     // ------------------------------------------------------------ the streaming contract

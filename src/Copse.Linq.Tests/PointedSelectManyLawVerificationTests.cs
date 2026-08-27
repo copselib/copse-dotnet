@@ -17,7 +17,7 @@ namespace Copse.Linq.Tests
   //
   // Spellings: Return(v) = v(slot); Empty = the slot alone (promotion falls out); k >= 2 =
   // the caller says where, including between roots; a SLOTLESS forest drops the children
-  // (the vanish rule -- PruneBefore as slotless-empty, PruneAfter as slotless-leaf). Bind's
+  // (the vanish rule -- PruneSubtreesWhere as slotless-empty, PruneDescendantsWhere as slotless-leaf). Bind's
   // OUTPUT is a plain forest: the point is consumed at attachment.
   //
   // Same reference-model method as SelectManyLawVerificationTests (whose model this
@@ -68,30 +68,30 @@ namespace Copse.Linq.Tests
     }
 
     [TestMethod]
-    public void Grounding_SlotlessEmpty_ReproducesTheRealPruneBefore()
+    public void Grounding_SlotlessEmpty_ReproducesTheRealPruneSubtreesWhere()
     {
       Func<string, bool> prune = value => value == "b" || value == "e";
 
       foreach (var tree in Trees)
       {
         var model = Print(BindForest(ParseForest(tree), value => prune(value) ? SlotlessEmpty() : ReturnPointed(value)));
-        var real = TreeSerializer.DeserializeDepthFirstTree(tree).PruneBefore(prune).SerializeDepthFirstTree();
+        var real = TreeSerializer.DeserializeDepthFirstTree(tree).PruneSubtreesWhere(prune).SerializeDepthFirstTree();
 
-        Assert.AreEqual(real, model, $"PruneBefore grounding [{tree}]");
+        Assert.AreEqual(real, model, $"PruneSubtreesWhere grounding [{tree}]");
       }
     }
 
     [TestMethod]
-    public void Grounding_SlotlessLeaf_ReproducesTheRealPruneAfter()
+    public void Grounding_SlotlessLeaf_ReproducesTheRealPruneDescendantsWhere()
     {
       Func<string, bool> prune = value => value == "b" || value == "c";
 
       foreach (var tree in Trees)
       {
         var model = Print(BindForest(ParseForest(tree), value => prune(value) ? SlotlessLeaf(value) : ReturnPointed(value)));
-        var real = TreeSerializer.DeserializeDepthFirstTree(tree).PruneAfter(prune).SerializeDepthFirstTree();
+        var real = TreeSerializer.DeserializeDepthFirstTree(tree).PruneDescendantsWhere(prune).SerializeDepthFirstTree();
 
-        Assert.AreEqual(real, model, $"PruneAfter grounding [{tree}]");
+        Assert.AreEqual(real, model, $"PruneDescendantsWhere grounding [{tree}]");
       }
     }
 
@@ -201,7 +201,7 @@ namespace Copse.Linq.Tests
 
     // --------------------------------------------------- the slot-OPTIONAL system
     // Expansions may carry NO slot: the node's rewritten children are DROPPED -- the
-    // vanish rule. Arity {0, 1} associative ⇒ {Where, PruneBefore, PruneAfter} are all
+    // vanish rule. Arity {0, 1} associative ⇒ {Where, PruneSubtreesWhere, PruneDescendantsWhere} are all
     // bind-derivable ("maximize derivable reshapings," fulfilled).
 
     [TestMethod]

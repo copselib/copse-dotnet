@@ -83,10 +83,10 @@ namespace Copse.Linq.Treenumerables
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the scan.
-    public ITreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneAfter(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, bool> predicate)
-      => new PruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, predicate);
+    public ITreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneDescendantsWhere(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, bool> predicate)
+      => new PruneDescendantsWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, predicate);
 
-    public IPruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneAfter(Func<NodeAccumulation<TNode, TAccumulate>, bool> predicate)
-      => new PruneAfterTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, nodeContext => predicate(nodeContext.Node));
+    public IPruneDescendantsWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>> ComposePruneDescendantsWhere(Func<NodeAccumulation<TNode, TAccumulate>, bool> predicate)
+      => new PruneDescendantsWhereTreenumerable<NodeAccumulation<TNode, TAccumulate>>(this, nodeContext => predicate(nodeContext.Node));
   }
 }

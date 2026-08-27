@@ -76,7 +76,7 @@ namespace Copse.Linq.Treenumerators
     // child's own visiting turn that follows it.
     private NodeTraversalStrategies? _DeferredStrategy = null;
 
-    // Accept-side result strategies (PruneAfter's PruneDescendants) from the last published
+    // Accept-side result strategies (PruneDescendantsWhere's PruneDescendants) from the last published
     // SCHEDULING visit, merged into the consumer's strategies on the pull that follows it --
     // the same protocol moment the consumer's own strategies for that visit arrive. The
     // deferred slot carries them while a consumer-skip transition holds the schedule publish

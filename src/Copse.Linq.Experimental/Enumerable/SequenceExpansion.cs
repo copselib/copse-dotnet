@@ -75,11 +75,11 @@ namespace Copse.Linq.Experimental
     public static SequenceExpansion<T> Promote<T>()
       => new SequenceExpansion<T>(new[] { SlotItem<T>() });
 
-    /// <summary>[]: emit nothing, STOP -- TakeWhile's cut; the tree's PruneBefore.</summary>
+    /// <summary>[]: emit nothing, STOP -- TakeWhile's cut; the tree's PruneSubtreesWhere.</summary>
     public static SequenceExpansion<T> Drop<T>()
       => default;
 
-    /// <summary>[value]: emit the value, STOP -- take-until inclusive; the tree's PruneAfter.</summary>
+    /// <summary>[value]: emit the value, STOP -- take-until inclusive; the tree's PruneDescendantsWhere.</summary>
     public static SequenceExpansion<T> Leaf<T>(T value)
       => new SequenceExpansion<T>(new[] { ValueItem(value) });
 

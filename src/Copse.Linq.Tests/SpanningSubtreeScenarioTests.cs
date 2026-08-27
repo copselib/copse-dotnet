@@ -139,7 +139,7 @@ namespace Copse.Linq.Tests
 
       var clamped = spanning
         .Extend((topology, handle) => new HandleAndNode<int, string>(handle, topology.GetNode(handle)))
-        .PruneBefore(pair => !keptHandles.Contains(pair.Handle))
+        .PruneSubtreesWhere(pair => !keptHandles.Contains(pair.Handle))
         .Select(pair => pair.Node);
 
       CollectionAssert.AreEqual(
