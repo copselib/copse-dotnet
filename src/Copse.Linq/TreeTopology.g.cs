@@ -2,10 +2,10 @@
 //   Generated from AsyncTreeTopology.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Topologies;
 using Copse.Core;
+using Copse.Linq.Treenumerables;
 
-namespace Copse
+namespace Copse.Linq
 {
   /// <summary>Factories for <see cref="ITreeTopology{TNode, THandle}"/> instances, the
   /// topology counterpart of the <c>Tree</c> factories.</summary>

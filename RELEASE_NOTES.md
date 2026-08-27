@@ -141,6 +141,11 @@
   `Copse` namespace: they are core contracts, and their namespace now agrees with the
   package that ships them. *Migration: add `using Copse.Core;` where these types are
   named.*
+- **`TreeTopology` moves to the `Copse.Linq` package, namespace `Copse.Linq`** — the
+  `TreeTopology.Lazy`/`AsyncTreeTopology.Lazy` factories (and their internal `LazyTopology`
+  engines) leave the engine package for the operator package, where their only consumers —
+  the walkable view operators — live; the `Copse.Topologies` namespace is retired.
+  *Migration: add `using Copse.Linq;` where `TreeTopology` is named.*
 - **The async namespaces drop their `Async` segment** — async types now live in the same
   namespaces as their sync twins, exactly as `IAsyncEnumerable<T>` sits in
   `System.Collections.Generic` and `AsyncEnumerable` in `System.Linq`: `Copse.Core.Async` →

@@ -330,9 +330,12 @@ ADDED 2026-08-14/15, the walker workstream)
 ├─ (Async)LevelOrderArrayTopology          the COMPLETED level-order citizen: children/
 │    roots are store arithmetic, parents one exact two-cursor merge on first probe
 ├─ (Async)LazyTopology (né DoorTopology, then WalkableTopology — settled 2026-08-15 on the
-│    MECHANISM name once nothing else was left to distinguish it from; internal sealed in
-│    Copse/Topologies, PUBLIC via TreeTopology.Lazy — the topology tier's creation surface
-│    beside Tree's, since it has zero Linq dependencies: the maroon pattern's third strike)
+│    MECHANISM name once nothing else was left to distinguish it from; internal sealed
+│    beside the lens family in Copse.Linq/Treenumerables/Walkable, PUBLIC via
+│    TreeTopology.Lazy, ns Copse.Linq — MOVED from the engine assembly 2026-08-27: its only
+│    consumers are the lens views and its own doc speaks view-composition, so it files by
+│    citizen; the engine assembly holds zero topology machinery, and Copse.Topologies — a
+│    one-class namespace implying a catalog that never materialized — retired with the move)
 │    Stage C's deferral seam: "the topology this walkable's door WILL bind," knocked once
 │    at first probe (Tree.Lazy semantics — the contract promises neither cheap nor
 │    idempotent doors, so the cache is what keeps a view honest); the total door always

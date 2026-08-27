@@ -124,7 +124,8 @@ namespace Copse.CodeGen
       // The walker core (WALKABLE_CONTRACT_DESIGN.md §8b): the comonad's carrier, its result
       // struct, the Walk adapter, the extend/severed-view machinery, and the extension
       // surface -- authored async, generated into the base Copse project (the walker ships
-      // with the engine and factories, not the operators; only the lens family stays Linq).
+      // with the engine and factories, not the operators; the lens family and the topology
+      // factory it composes with stay Linq).
       new("Copse.Core.Async/AsyncTreeWalker.cs",
         "Copse.Core/TreeWalker.g.cs",
         "AsyncTreeWalker", "TreeWalker", "Copse.Core"),
@@ -134,12 +135,12 @@ namespace Copse.CodeGen
       new("Copse.Linq.Async/Treenumerables/Walkable/AsyncExtendWalkable.cs",
         "Copse.Linq/Treenumerables/Walkable/ExtendWalkable.g.cs",
         "AsyncExtendWalkable", "ExtendWalkable", "Copse.Linq.Treenumerables"),
-      new("Copse.Async/Topologies/AsyncLazyTopology.cs",
-        "Copse/Topologies/LazyTopology.g.cs",
-        "AsyncLazyTopology", "LazyTopology", "Copse.Topologies"),
-      new("Copse.Async/AsyncTreeTopology.cs",
-        "Copse/TreeTopology.g.cs",
-        "AsyncTreeTopology", "TreeTopology", "Copse"),
+      new("Copse.Linq.Async/Treenumerables/Walkable/AsyncLazyTopology.cs",
+        "Copse.Linq/Treenumerables/Walkable/LazyTopology.g.cs",
+        "AsyncLazyTopology", "LazyTopology", "Copse.Linq.Treenumerables"),
+      new("Copse.Linq.Async/AsyncTreeTopology.cs",
+        "Copse.Linq/TreeTopology.g.cs",
+        "AsyncTreeTopology", "TreeTopology", "Copse.Linq"),
       new("Copse.Linq.Async/Treenumerables/Walkable/AsyncSubtreeWalkable.cs",
         "Copse.Linq/Treenumerables/Walkable/SubtreeWalkable.g.cs",
         "AsyncSubtreeWalkable", "SubtreeWalkable", "Copse.Linq.Treenumerables"),

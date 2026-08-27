@@ -1,6 +1,5 @@
 using Copse.Core;
 using Copse;
-using Copse.Topologies;
 using Copse.Linq.Treenumerables;
 using System;
 using System.Threading.Tasks;
