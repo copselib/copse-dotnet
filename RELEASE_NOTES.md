@@ -141,6 +141,10 @@
   `Copse` namespace: they are core contracts, and their namespace now agrees with the
   package that ships them. *Migration: add `using Copse.Core;` where these types are
   named.*
+- **`NodeVisit<TNode>` moves to the `Copse.Linq` package, namespace `Copse.Linq`** — no
+  core contract names it; it is the traversal-projection row the operator tier deals in
+  (`GetTraversal`/`Do` and the scan machinery), so it lives beside that algebra.
+  *Migration: add `using Copse.Linq;` where `NodeVisit` is named.*
 - **`TreeTopology` moves to the `Copse.Linq` package, namespace `Copse.Linq`** — the
   `TreeTopology.Lazy`/`AsyncTreeTopology.Lazy` factories (and their internal `LazyTopology`
   engines) leave the engine package for the operator package, where their only consumers —

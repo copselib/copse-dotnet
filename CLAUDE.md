@@ -78,7 +78,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
 
 - **Copse.Core** - The dependency root: the sync traversal contracts (`ITreenumerable<T>`
   and its two single-dimension parents, `ITreenumerator<T>`), the walker tier, and the
-  vocabulary both families speak (`NodePosition`, `NodeVisit`, `TreenumeratorMode`,
+  vocabulary both families speak (`NodePosition`, `TreenumeratorMode`,
   `NodeTraversalStrategies`, `TreeTraversalStrategy`, `Option`, `HandleAndSiblingIndex`).
   References nothing. (`Copse.Core.Async` is its async twin and references it; the async
   stack mirrors the sync one from there — see design-docs/ASYNC_CODEGEN.md.)
@@ -99,9 +99,9 @@ The library **never performs node equality comparisons**. This is a deliberate d
   `HandleAndNode`.
 - **Copse.Linq** - LINQ-style tree operators (extensions over the abstract contract; the
   memoize machinery rides the flat family, not a private engine), plus the operator-tier
-  value types and shared filter path-state (`Copse.Linq/Traversal`: `BufferLayout`,
-  `HideScope`, the dispatch views, the Where paths — the paths internal, IVT'd to
-  `Copse.Linq.Async`).
+  value types and shared filter path-state (`Copse.Linq/Traversal`: `NodeVisit`,
+  `BufferLayout`, `HideScope`, the dispatch views, the Where paths — the paths internal,
+  IVT'd to `Copse.Linq.Async`).
 - **Copse.Linq.Experimental** - Unpackaged, untested parking lot for half-baked ideas and
   possible future surface (`ExpandNodes`, `Graft`, the tree tokenizers — demoted 2026-07-15,
   sync-only, so the token shape isn't locked in by shipping).

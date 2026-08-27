@@ -1,4 +1,6 @@
-﻿namespace Copse.Core
+﻿using Copse.Core;
+
+namespace Copse.Linq
 {
   /// <summary>
   /// One event of a traversal's visit stream: which node, how many visits it has received so

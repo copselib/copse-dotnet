@@ -1,4 +1,5 @@
 ﻿using Copse.Core;
+using Copse.Linq;
 using System;
 
 namespace Copse.TestUtils
