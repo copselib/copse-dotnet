@@ -14,7 +14,7 @@ namespace Copse.Linq.Treenumerators
   /// <c>await</c>s and it becomes the synchronous driver. Forwards the inner visit stream until a
   /// scheduled node matches the predicate; from there scheduling stops (the matched node's subtree
   /// and later siblings are pruned), optionally keeping the matched node itself
-  /// (<paramref name="keepFinalNode"/>). Dimension-agnostic.
+  /// (<c>keepFinalNode</c>). Dimension-agnostic.
   /// </summary>
   internal sealed class TakeNodesUntilTreenumerator<TNode>
     : TreenumeratorWrapper<TNode>

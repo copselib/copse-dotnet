@@ -247,9 +247,9 @@ namespace Copse.Linq
     /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
     /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
     /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
-    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
-    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
-    /// overloads.</para>
+    /// appears only in the RESULT. At the roots the accumulate is
+    /// <paramref name="rootNodeSelector"/> applied to the root -- per-root seeding; the seed
+    /// overloads share one accumulate across a forest's roots.</para>
     /// </summary>
     public static IAsyncDepthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
@@ -275,9 +275,9 @@ namespace Copse.Linq
     /// IS the caller's chosen summary of the root-to-node path -- a rule that wants the parent
     /// entity (or grandparent, or any ancestry) threads it through the state; a rule that is
     /// ABOUT the parent with its children in hand is a survey (RootfixDispatch). The pairing
-    /// appears only in the RESULT. At the roots the accumulate is the <paramref name="seed"/>,
-    /// SHARED by every root of a forest; for per-root seeding use the rootNodeSelector
-    /// overloads.</para>
+    /// appears only in the RESULT. At the roots the accumulate is
+    /// <paramref name="rootNodeSelector"/> applied to the root -- per-root seeding; the seed
+    /// overloads share one accumulate across a forest's roots.</para>
     /// </summary>
     public static IAsyncBreadthFirstTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScan<TNode, TAccumulate>(
       this IAsyncBreadthFirstTreenumerable<TNode> source,
