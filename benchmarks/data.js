@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787812717507,
+  "lastUpdate": 1787812718225,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -257106,6 +257106,200 @@ window.BENCHMARK_DATA = {
           {
             "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
             "value": 151019685,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cf789d3b53a567b79f0d57cb191d9c7a0d7461a",
+          "message": "The no-stone-unturned pass: living docs speak the current surface, comments carry current truth\n\nThe comment distill (async sources; codegen carries the twins): the ~30-copy\ndated arity-split citation, the Stage A/C event names, the dated seam labels\n(adjacency split, presize fast path, reclaim, thin shape, scan spelling), the\ndead 'Probe members removed' lines describing nothing that exists, the AllNodes\nbug story (the law stays, regression-pinned), Materialize's journey narration,\nand TakeSubtreesWhere's docs restructured -- caller contract in ///, machinery\ndemoted to //, the three BREAKING notices stripped (their entries live in\nRELEASE_NOTES.md).\n\nLiving docs catch up: README rewritten against the current surface -- the\nadapter sample speaks Option<HandleAndSiblingIndex> and compiles, operator\nnames are current, all four TFMs and all ten packages listed, nuget-dead\nrelative links made absolute, walker and serializer examples added -- and\nEVERY README sample is now pinned by ReadmeSamplesTests (5 tests: each\nsnippet's exact output asserted). OPERATOR_SURFACE_MAP, WALKER_USE_CASES,\nBENCHMARKING's family table, CLAUDE.md's last stale type, and WALKER_FACTORY\nsection 11 get their vocabulary notes. The dashboard README documents archived\nrows. Package descriptions say what each package holds (the walker tier, the\nflat family, AsyncTree.Lazy, the serializer's actual surface).\n\nAlso: RELEASE_NOTES gains the composition-era arity-split migration entry\n(alpha.2's operators took Func<NodeContext<TNode>,...>), the zero-byte tracked\nRELEASE_NOTES.md.x is gone, THIRD-PARTY-NOTICES points at the directory the\ndisposables actually live in, and the lazy topology's last banned-word comment\nsays unfocused. Suite 26,542 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T06:06:48Z",
+          "tree_id": "8aa5b212813889b7c1181d4599bfee924eb59ba4",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9cf789d3b53a567b79f0d57cb191d9c7a0d7461a"
+        },
+        "date": 1787812718068,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedPreorder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MaterializedLevelOrder",
+            "value": 12,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedPreorder",
+            "value": 50413403,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.Walk_over_MemoizedLevelOrder",
+            "value": 50405251,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.BufferProbes.LeaffixScan_over_MaterializedPreorder",
+            "value": 29475794,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Triangle",
+            "value": 33739787,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Triangle",
+            "value": 38139683,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Dft_Chain",
+            "value": 71355815,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Invert.Bft_Chain",
+            "value": 25171278,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Triangle",
+            "value": 25262276,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Triangle",
+            "value": 38007548,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_Chain",
+            "value": 33579864,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_Chain",
+            "value": 25170576,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.Preorder_from_LevelOrder",
+            "value": 8474042,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Materialize.LevelOrder_from_Preorder",
+            "value": 12838849,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_Preorder",
+            "value": 58183,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_Preorder",
+            "value": 230789,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Bft_over_LevelOrder",
+            "value": 197977,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MaterializeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Dft_Triangle",
+            "value": 16905999,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.FirstPass_Bft_Triangle",
+            "value": 25597914,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.Memoize.Partial_Bft_512K_of_UnboundedTriangle",
+            "value": 3364073,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_Preorder",
+            "value": 58221,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_Preorder",
+            "value": 230810,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Bft_over_LevelOrder",
+            "value": 197977,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.MemoizeReplay.Dft_over_LevelOrder",
+            "value": 49991,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Triangle",
+            "value": 80461946,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Triangle",
+            "value": 51624428,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Triangle",
+            "value": 80636858,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Triangle",
+            "value": 51476299,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Dft_Chain",
+            "value": 79742492,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Bft_Chain",
+            "value": 125835058,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenBy.Bft_Chain",
+            "value": 50357977,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.OrderChildrenByBreadthFirstEntry.Dft_Chain",
+            "value": 151019406,
             "unit": "bytes"
           }
         ]
