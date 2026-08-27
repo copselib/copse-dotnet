@@ -4,7 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 
-namespace Copse
+namespace Copse.Core
 {
   /// <summary>
   /// The provider-side interface a tree structure implements so walkers can navigate it: four

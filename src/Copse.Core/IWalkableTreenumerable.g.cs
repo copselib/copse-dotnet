@@ -4,7 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 
-namespace Copse
+namespace Copse.Core
 {
   /// <summary>
   /// A treenumerable that also affords navigation: from any node's handle, single steps to its

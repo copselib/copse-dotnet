@@ -1,6 +1,5 @@
 using Copse.Core;
 using Copse.Stores;
-using Copse;
 using System;
 using System.IO;
 using System.Threading;

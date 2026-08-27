@@ -6,7 +6,7 @@ using Copse.Core;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Copse
+namespace Copse.Core
 {
   /// <summary>
   /// A movable stance on a tree: one node together with the ability to navigate away from it --

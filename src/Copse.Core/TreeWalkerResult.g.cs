@@ -4,7 +4,7 @@
 // </auto-generated>
 using Copse.Core;
 
-namespace Copse
+namespace Copse.Core
 {
   // Deliberately flat rather than an Option over a walker: the nested aggregate falls off the
   // JIT's struct promotion and every step in a walk pays memory traffic (measured 2x on the

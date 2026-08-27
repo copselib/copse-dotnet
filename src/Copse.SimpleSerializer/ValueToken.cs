@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Copse.SimpleSerializer
 {
   // The value-token layer both payload grammars share: how a node value is rendered into (and

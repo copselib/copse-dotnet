@@ -117,6 +117,11 @@
   ids will be deprecated. *Migration: remove any direct references to the three retired
   packages — their types arrive through `Copse.Core`/`Copse`/`Copse.Linq`; `Option` and
   `HandleAndSiblingIndex` move from namespace `Copse` to `Copse.Core`.*
+- **The walker tier moves to namespace `Copse.Core`** — `TreeWalker`, `TreeWalkerResult`,
+  `ITreeTopology`, `IWalkableTreenumerable` (and their `Async` twins) leave the bare
+  `Copse` namespace: they are core contracts, and their namespace now agrees with the
+  package that ships them. *Migration: add `using Copse.Core;` where these types are
+  named.*
 - **The async namespaces drop their `Async` segment** — async types now live in the same
   namespaces as their sync twins, exactly as `IAsyncEnumerable<T>` sits in
   `System.Collections.Generic` and `AsyncEnumerable` in `System.Linq`: `Copse.Core.Async` →

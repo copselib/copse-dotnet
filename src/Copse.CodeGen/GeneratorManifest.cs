@@ -127,10 +127,10 @@ namespace Copse.CodeGen
       // with the engine and factories, not the operators; only the lens family stays Linq).
       new("Copse.Core.Async/AsyncTreeWalker.cs",
         "Copse.Core/TreeWalker.g.cs",
-        "AsyncTreeWalker", "TreeWalker", "Copse"),
+        "AsyncTreeWalker", "TreeWalker", "Copse.Core"),
       new("Copse.Core.Async/AsyncTreeWalkerResult.cs",
         "Copse.Core/TreeWalkerResult.g.cs",
-        "AsyncTreeWalkerResult", "TreeWalkerResult", "Copse"),
+        "AsyncTreeWalkerResult", "TreeWalkerResult", "Copse.Core"),
       new("Copse.Linq.Async/Treenumerables/Walkable/AsyncExtendWalkable.cs",
         "Copse.Linq/Treenumerables/Walkable/ExtendWalkable.g.cs",
         "AsyncExtendWalkable", "ExtendWalkable", "Copse.Linq.Treenumerables"),
@@ -196,7 +196,7 @@ namespace Copse.CodeGen
       // tier's sync PoC files demote to twins.
       new("Copse.Core.Async/IAsyncWalkableTreenumerable.cs",
         "Copse.Core/IWalkableTreenumerable.g.cs",
-        "IAsyncWalkableTreenumerable", "IWalkableTreenumerable", "Copse"),
+        "IAsyncWalkableTreenumerable", "IWalkableTreenumerable", "Copse.Core"),
 
       // The store SPIs, reads, and completed array stores: each color owns its own (decided
       // 2026-07-14 -- the de-share; Primitives/FlatStores retired). Async is the source.
@@ -421,7 +421,7 @@ namespace Copse.CodeGen
       // stores via span arithmetic plus a one-shot parent map.
       new("Copse.Core.Async/IAsyncTreeTopology.cs",
         "Copse.Core/ITreeTopology.g.cs",
-        "IAsyncTreeTopology", "ITreeTopology", "Copse"),
+        "IAsyncTreeTopology", "ITreeTopology", "Copse.Core"),
       new("Copse.Linq.Async/Treenumerables/Buffers/AsyncPreorderAdjacencyIndex.cs",
         "Copse.Linq/Treenumerables/Buffers/PreorderAdjacencyIndex.g.cs",
         "AsyncPreorderAdjacencyIndex", "PreorderAdjacencyIndex", "Copse.Linq.Treenumerables"),
