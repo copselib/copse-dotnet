@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787812709879,
+  "lastUpdate": 1787812710537,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -159210,6 +159210,102 @@ window.BENCHMARK_DATA = {
             "value": 57735780.46825396,
             "unit": "ns",
             "range": "± 671429.0096245095"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cf789d3b53a567b79f0d57cb191d9c7a0d7461a",
+          "message": "The no-stone-unturned pass: living docs speak the current surface, comments carry current truth\n\nThe comment distill (async sources; codegen carries the twins): the ~30-copy\ndated arity-split citation, the Stage A/C event names, the dated seam labels\n(adjacency split, presize fast path, reclaim, thin shape, scan spelling), the\ndead 'Probe members removed' lines describing nothing that exists, the AllNodes\nbug story (the law stays, regression-pinned), Materialize's journey narration,\nand TakeSubtreesWhere's docs restructured -- caller contract in ///, machinery\ndemoted to //, the three BREAKING notices stripped (their entries live in\nRELEASE_NOTES.md).\n\nLiving docs catch up: README rewritten against the current surface -- the\nadapter sample speaks Option<HandleAndSiblingIndex> and compiles, operator\nnames are current, all four TFMs and all ten packages listed, nuget-dead\nrelative links made absolute, walker and serializer examples added -- and\nEVERY README sample is now pinned by ReadmeSamplesTests (5 tests: each\nsnippet's exact output asserted). OPERATOR_SURFACE_MAP, WALKER_USE_CASES,\nBENCHMARKING's family table, CLAUDE.md's last stale type, and WALKER_FACTORY\nsection 11 get their vocabulary notes. The dashboard README documents archived\nrows. Package descriptions say what each package holds (the walker tier, the\nflat family, AsyncTree.Lazy, the serializer's actual surface).\n\nAlso: RELEASE_NOTES gains the composition-era arity-split migration entry\n(alpha.2's operators took Func<NodeContext<TNode>,...>), the zero-byte tracked\nRELEASE_NOTES.md.x is gone, THIRD-PARTY-NOTICES points at the directory the\ndisposables actually live in, and the lazy topology's last banned-word comment\nsays unfocused. Suite 26,542 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T06:06:48Z",
+          "tree_id": "8aa5b212813889b7c1181d4599bfee924eb59ba4",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9cf789d3b53a567b79f0d57cb191d9c7a0d7461a"
+        },
+        "date": 1787812710384,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 103414009.72,
+            "unit": "ns",
+            "range": "± 1115775.91792251"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 93066991.78333335,
+            "unit": "ns",
+            "range": "± 556503.6297290078"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 228733607.49999997,
+            "unit": "ns",
+            "range": "± 2274577.016354896"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 272293750.2916667,
+            "unit": "ns",
+            "range": "± 287085.98108259693"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 155187707.19230768,
+            "unit": "ns",
+            "range": "± 989230.8015925764"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 250481769.77777776,
+            "unit": "ns",
+            "range": "± 4160704.7104761647"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 91528292.82142857,
+            "unit": "ns",
+            "range": "± 972368.136447384"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 89002955.32539682,
+            "unit": "ns",
+            "range": "± 2095895.4192774494"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 421129571.7692308,
+            "unit": "ns",
+            "range": "± 1978666.3678152913"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 493695521.26666665,
+            "unit": "ns",
+            "range": "± 1067077.593408375"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 83319843.03571428,
+            "unit": "ns",
+            "range": "± 142552.39407210462"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 79927854.48412699,
+            "unit": "ns",
+            "range": "± 1606411.882004473"
           }
         ]
       }
