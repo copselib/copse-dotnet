@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787789929354,
+  "lastUpdate": 1787789930043,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -125438,6 +125438,150 @@ window.BENCHMARK_DATA = {
             "value": 42698970.19047619,
             "unit": "ns",
             "range": "± 106181.90853370189"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f73353127808a3b341aaea3598ae8678f2bcb99a",
+          "message": "Node/value audit: tree-domain members say Node; containers keep Value\n\nJason's policy line, applied: when a type is tree-domain -- its\nparameter IS the element -- members name what they hold, so\nSelectWhereResult.Value and PreorderRead.Value become Node (with their\nconstructor parameters), the completed array stores and dispatch views\nstore _Nodes, the stream treenumerators' frames and lookahead carry\nNode, and the leaffix frame tuple follows. Genuine containers keep\ntheir own idiom: Option and the walker step result hold anything, so\ntheir Value/HasValue stand, as do the accessor-word members (GetValue,\nTryGetValueAsync, GetHandlesWithValues). Doc phrases saying \"source\nvalue\" for members named Node reworded. Release-noted; twins\nregenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T23:49:54Z",
+          "tree_id": "b5e387738fe1b654146e30e4fa9a2dc75bc279ef",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f73353127808a3b341aaea3598ae8678f2bcb99a"
+        },
+        "date": 1787789929892,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Chain",
+            "value": 12965219.455208333,
+            "unit": "ns",
+            "range": "± 35669.1494799039"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Chain",
+            "value": 23071729.295833334,
+            "unit": "ns",
+            "range": "± 137183.9614856206"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Forest",
+            "value": 4061602.9266826925,
+            "unit": "ns",
+            "range": "± 4343.230382586787"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Forest",
+            "value": 4804662.852163462,
+            "unit": "ns",
+            "range": "± 3818.9801801379954"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Binary",
+            "value": 93244562.36904761,
+            "unit": "ns",
+            "range": "± 143926.3356071282"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Binary",
+            "value": 158293930.5390625,
+            "unit": "ns",
+            "range": "± 4856189.644796344"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Dft_Triangle",
+            "value": 33618565.51428571,
+            "unit": "ns",
+            "range": "± 35484.280872700445"
+          },
+          {
+            "name": "Copse.Benchmarks.AllNodes.Bft_Triangle",
+            "value": 54435024.65934066,
+            "unit": "ns",
+            "range": "± 44894.79239763671"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Chain",
+            "value": 12172632.931490384,
+            "unit": "ns",
+            "range": "± 23173.57224627884"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Chain",
+            "value": 11753131.79017857,
+            "unit": "ns",
+            "range": "± 31847.018186482448"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Forest",
+            "value": 3235778.4055989585,
+            "unit": "ns",
+            "range": "± 1562.8467435203172"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Forest",
+            "value": 3238382.1583533655,
+            "unit": "ns",
+            "range": "± 2391.5135528908936"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Binary",
+            "value": 90392301.60256411,
+            "unit": "ns",
+            "range": "± 104095.70639615267"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Binary",
+            "value": 82532074.52777778,
+            "unit": "ns",
+            "range": "± 79879.42761478003"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Dft_Triangle",
+            "value": 32430431.54464286,
+            "unit": "ns",
+            "range": "± 53382.37194682462"
+          },
+          {
+            "name": "Copse.Benchmarks.CountNodes.Bft_Triangle",
+            "value": 20891439.495535713,
+            "unit": "ns",
+            "range": "± 27869.70415109622"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_Binary",
+            "value": 94939058.26923077,
+            "unit": "ns",
+            "range": "± 156347.61793842964"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_Binary",
+            "value": 155577472.53846154,
+            "unit": "ns",
+            "range": "± 411035.5835015591"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Dft_DeepChains",
+            "value": 19434095.891666666,
+            "unit": "ns",
+            "range": "± 42696.71447508973"
+          },
+          {
+            "name": "Copse.Benchmarks.GetLeaves.Bft_DeepChains",
+            "value": 43404605.63888889,
+            "unit": "ns",
+            "range": "± 244759.50037459136"
           }
         ]
       }
