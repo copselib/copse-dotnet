@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787812720364,
+  "lastUpdate": 1787812721073,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -104489,6 +104489,100 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/copselib/copse-dotnet/commit/ced8bc5b83dfdff213e8202c638a64f8aec9a306"
         },
         "date": 1787795461250,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Sync",
+            "value": 642132,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Sync",
+            "value": 2441,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Sync",
+            "value": 1294,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Sync",
+            "value": 1693242,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Sync",
+            "value": 70577,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Sync",
+            "value": 4161,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Sync",
+            "value": 250832,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadBreadthFirstEngine.Async",
+            "value": 1789082,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadDepthFirstEngine.Async",
+            "value": 1051139,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadFlatDecode.Async",
+            "value": 1300,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadInvertStream.Async",
+            "value": 2840184,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadMaterializeReplay.Async",
+            "value": 332841,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadOperatorStack.Async",
+            "value": 266129,
+            "unit": "bytes"
+          },
+          {
+            "name": "Copse.Benchmarks.AsyncOverheadSerializerRoundTrip.Async",
+            "value": 251209,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cf789d3b53a567b79f0d57cb191d9c7a0d7461a",
+          "message": "The no-stone-unturned pass: living docs speak the current surface, comments carry current truth\n\nThe comment distill (async sources; codegen carries the twins): the ~30-copy\ndated arity-split citation, the Stage A/C event names, the dated seam labels\n(adjacency split, presize fast path, reclaim, thin shape, scan spelling), the\ndead 'Probe members removed' lines describing nothing that exists, the AllNodes\nbug story (the law stays, regression-pinned), Materialize's journey narration,\nand TakeSubtreesWhere's docs restructured -- caller contract in ///, machinery\ndemoted to //, the three BREAKING notices stripped (their entries live in\nRELEASE_NOTES.md).\n\nLiving docs catch up: README rewritten against the current surface -- the\nadapter sample speaks Option<HandleAndSiblingIndex> and compiles, operator\nnames are current, all four TFMs and all ten packages listed, nuget-dead\nrelative links made absolute, walker and serializer examples added -- and\nEVERY README sample is now pinned by ReadmeSamplesTests (5 tests: each\nsnippet's exact output asserted). OPERATOR_SURFACE_MAP, WALKER_USE_CASES,\nBENCHMARKING's family table, CLAUDE.md's last stale type, and WALKER_FACTORY\nsection 11 get their vocabulary notes. The dashboard README documents archived\nrows. Package descriptions say what each package holds (the walker tier, the\nflat family, AsyncTree.Lazy, the serializer's actual surface).\n\nAlso: RELEASE_NOTES gains the composition-era arity-split migration entry\n(alpha.2's operators took Func<NodeContext<TNode>,...>), the zero-byte tracked\nRELEASE_NOTES.md.x is gone, THIRD-PARTY-NOTICES points at the directory the\ndisposables actually live in, and the lazy topology's last banned-word comment\nsays unfocused. Suite 26,542 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T06:06:48Z",
+          "tree_id": "8aa5b212813889b7c1181d4599bfee924eb59ba4",
+          "url": "https://github.com/copselib/copse-dotnet/commit/9cf789d3b53a567b79f0d57cb191d9c7a0d7461a"
+        },
+        "date": 1787812720919,
         "tool": "customSmallerIsBetter",
         "benches": [
           {
