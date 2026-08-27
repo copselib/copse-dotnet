@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787789928679,
+  "lastUpdate": 1787789929354,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -111390,6 +111390,102 @@ window.BENCHMARK_DATA = {
             "value": 26868814.64285714,
             "unit": "ns",
             "range": "± 51091.524652612716"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f73353127808a3b341aaea3598ae8678f2bcb99a",
+          "message": "Node/value audit: tree-domain members say Node; containers keep Value\n\nJason's policy line, applied: when a type is tree-domain -- its\nparameter IS the element -- members name what they hold, so\nSelectWhereResult.Value and PreorderRead.Value become Node (with their\nconstructor parameters), the completed array stores and dispatch views\nstore _Nodes, the stream treenumerators' frames and lookahead carry\nNode, and the leaffix frame tuple follows. Genuine containers keep\ntheir own idiom: Option and the walker step result hold anything, so\ntheir Value/HasValue stand, as do the accessor-word members (GetValue,\nTryGetValueAsync, GetHandlesWithValues). Doc phrases saying \"source\nvalue\" for members named Node reworded. Release-noted; twins\nregenerated; suite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-26T23:49:54Z",
+          "tree_id": "b5e387738fe1b654146e30e4fa9a2dc75bc279ef",
+          "url": "https://github.com/copselib/copse-dotnet/commit/f73353127808a3b341aaea3598ae8678f2bcb99a"
+        },
+        "date": 1787789929208,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Chain",
+            "value": 26371036.832589287,
+            "unit": "ns",
+            "range": "± 82334.61734808033"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Forest",
+            "value": 11644258.183333334,
+            "unit": "ns",
+            "range": "± 171240.49598255102"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Binary",
+            "value": 146354966.19230768,
+            "unit": "ns",
+            "range": "± 430126.10849388735"
+          },
+          {
+            "name": "Copse.Benchmarks.LevelOrderTraversal.Triangle",
+            "value": 56872130.76068376,
+            "unit": "ns",
+            "range": "± 74692.95734208034"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Chain",
+            "value": 21831374.46875,
+            "unit": "ns",
+            "range": "± 46386.6306152877"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Forest",
+            "value": 11979747.678125,
+            "unit": "ns",
+            "range": "± 49197.89627368289"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Binary",
+            "value": 103228248.08333333,
+            "unit": "ns",
+            "range": "± 132633.81667247612"
+          },
+          {
+            "name": "Copse.Benchmarks.PostorderTraversal.Triangle",
+            "value": 29816531.122916665,
+            "unit": "ns",
+            "range": "± 99395.47127799065"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Chain",
+            "value": 11453129.035714285,
+            "unit": "ns",
+            "range": "± 11945.440244976853"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Forest",
+            "value": 5949768.4375,
+            "unit": "ns",
+            "range": "± 27879.61119809941"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Binary",
+            "value": 93428464.64285712,
+            "unit": "ns",
+            "range": "± 415085.74975646235"
+          },
+          {
+            "name": "Copse.Benchmarks.PreorderTraversal.Triangle",
+            "value": 26780986.47098214,
+            "unit": "ns",
+            "range": "± 83279.7251505648"
           }
         ]
       }
