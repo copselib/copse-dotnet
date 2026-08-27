@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787795450782,
+  "lastUpdate": 1787795451411,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -157874,6 +157874,102 @@ window.BENCHMARK_DATA = {
             "value": 80249794.26530612,
             "unit": "ns",
             "range": "± 1908115.6289171118"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ced8bc5b83dfdff213e8202c638a64f8aec9a306",
+          "message": "The node accessors say node: GetValue -> GetNode across topology, walker, and store SPIs\n\nThe accessor tier was the last value-speak in the tree surface -- a fossil of the\nTValue era surviving the TNode ruling by a role-word carve-out drawn to bound the\nsweep, not on merits. The store SPIs settled it: they already speak fluent tree\neverywhere else (EnsureSubtreeClosed, GetSubtreeSize, EnsureRootAvailable,\nGetFirstChildIndex); there is no value-speaking tier in this library.\n\nRenames (async sources + codegen'd sync twins; BREAKING, release-noted):\n- ITreeTopology.GetValue -> GetNode / IAsyncTreeTopology.GetValueAsync -> GetNodeAsync\n- TreeWalker.GetValue/TryGetValue -> GetNode/TryGetNode (async twins likewise;\n  unfocused-throw helper and message follow)\n- IPreorderStore/ILevelOrderStore.GetValue(index) -> GetNode(index) (all\n  implementations: array, lazy, memoize, serializer string stores -- whose\n  _Values fields follow to _Nodes)\n- GetHandlesWithValues -> GetHandlesWithNodes (file + generator manifest renamed;\n  now agrees with its HandleAndNode element type)\n\nKept, per the container line: Option.Value/TryGetValue, TreeWalkerResult.Value/\nHasValue/TryGetValue (it holds a walker), AsyncValueTokenStreamScanner.GetValue\n(returns the token's text). OPERATOR_SURFACE_MAP rows updated in this commit.\nSuite 24,653 green.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T01:30:53Z",
+          "tree_id": "5649108018eb23087934d5f3b67d736b7e6517bc",
+          "url": "https://github.com/copselib/copse-dotnet/commit/ced8bc5b83dfdff213e8202c638a64f8aec9a306"
+        },
+        "date": 1787795451265,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 66129893.78658537,
+            "unit": "ns",
+            "range": "± 994813.0294600514"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 64015814.18367348,
+            "unit": "ns",
+            "range": "± 521358.1250104216"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 141156930.85,
+            "unit": "ns",
+            "range": "± 1982826.5741929584"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 194834864.43,
+            "unit": "ns",
+            "range": "± 13184702.57108808"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 110287071.26153848,
+            "unit": "ns",
+            "range": "± 1177391.03743692"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 128774456.09615384,
+            "unit": "ns",
+            "range": "± 2058083.7942918087"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 59801068.6,
+            "unit": "ns",
+            "range": "± 168949.45970869172"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 61868812.67460318,
+            "unit": "ns",
+            "range": "± 963549.8297143314"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 294771266.1785714,
+            "unit": "ns",
+            "range": "± 7469986.353417145"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 364050685.9230769,
+            "unit": "ns",
+            "range": "± 648437.8612746253"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 56058945.31623932,
+            "unit": "ns",
+            "range": "± 639187.937476774"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 57735780.46825396,
+            "unit": "ns",
+            "range": "± 671429.0096245095"
           }
         ]
       }
