@@ -15,7 +15,7 @@ namespace Copse.Treenumerators
   /// </summary>
   // The codegen source of truth for its sync twin: strip the await on the store's grow
   // calls and it becomes the synchronous driver.
-  public sealed class LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>
+  internal sealed class LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>
     : TreenumeratorBase<TNode>
     where TStore : ILevelOrderStore<TNode>
   {

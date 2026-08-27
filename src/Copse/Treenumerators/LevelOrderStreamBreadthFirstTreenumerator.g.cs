@@ -36,7 +36,7 @@ namespace Copse.Treenumerators
   // TryScheduleNextChildOf parameter became a bool discriminator (a ref param cannot be in
   // an async method) and phase 3's visit-front ref is scoped before the await (a ref local
   // cannot cross it).
-  public sealed class LevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>
+  internal sealed class LevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>
     : ITreenumerator<TNode>
     where TStream : ILevelOrderStream<TNode>
   {

@@ -90,34 +90,34 @@ namespace Copse.SimpleSerializer
 
     /// <summary>Writes the tree as a preorder-grammar string (<c>"a(b(d,e),c)"</c>), taking
     /// each node's string as its serialized value.</summary>
-    public static string SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> treenumerable)
-      => treenumerable.SerializeDepthFirstTree(node => node);
+    public static string SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> source)
+      => source.SerializeDepthFirstTree(node => node);
 
     /// <summary>Writes the tree as a preorder-grammar string (<c>"a(b(d,e),c)"</c>), mapping
     /// each node through <paramref name="map"/> to its serialized value.</summary>
-    public static string SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, Func<TNode, string> map)
+    public static string SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> source, Func<TNode, string> map)
     {
       var builder = new StringBuilder();
 
       using (var writer = new StringWriter(builder))
-        PreorderTextWriter.WritePayload(treenumerable, writer, map);
+        PreorderTextWriter.WritePayload(source, writer, map);
 
       return builder.ToString();
     }
 
     /// <summary>Writes the tree as a level-order-grammar string (<c>"a;b,c;d,e"</c>), taking
     /// each node's string as its serialized value.</summary>
-    public static string SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> treenumerable)
-      => treenumerable.SerializeBreadthFirstTree(node => node);
+    public static string SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> source)
+      => source.SerializeBreadthFirstTree(node => node);
 
     /// <summary>Writes the tree as a level-order-grammar string (<c>"a;b,c;d,e"</c>), mapping
     /// each node through <paramref name="map"/> to its serialized value.</summary>
-    public static string SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> treenumerable, Func<TNode, string> map)
+    public static string SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> source, Func<TNode, string> map)
     {
       var builder = new StringBuilder();
 
       using (var writer = new StringWriter(builder))
-        LevelOrderTextWriter.WritePayload(treenumerable, writer, map);
+        LevelOrderTextWriter.WritePayload(source, writer, map);
 
       return builder.ToString();
     }

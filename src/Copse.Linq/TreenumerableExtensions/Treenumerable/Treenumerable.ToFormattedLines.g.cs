@@ -32,7 +32,7 @@ namespace Copse.Linq
     /// <summary>The tree rendered as box-drawing lines with a custom node formatter and branch padding.</summary>
     public static IReadOnlyList<string> ToFormattedLines<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<TNode, string> stringFormatter,
+      Func<TNode, string> selector,
       int paddingSize)
     {
       // The one walk of the source: a (text, depth) record per node, formatter evaluated here so
@@ -49,7 +49,7 @@ namespace Copse.Linq
           if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 
-          lines.Add((stringFormatter(treenumerator.Node), treenumerator.Position.Depth));
+          lines.Add((selector(treenumerator.Node), treenumerator.Position.Depth));
         }
       }
 

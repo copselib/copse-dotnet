@@ -18,25 +18,25 @@ namespace Copse.SimpleSerializer
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), mapping each node through <paramref name="map"/> to its
     /// serialized value.</summary>
-    public static void SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
-      => PreorderTextWriter.WritePayload(treenumerable, writer, map);
+    public static void SerializeDepthFirstTree<TNode>(this IDepthFirstTreenumerable<TNode> source, TextWriter writer, Func<TNode, string> map)
+      => PreorderTextWriter.WritePayload(source, writer, map);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), taking each node's string as its serialized value.
     ///</summary>
-    public static void SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> treenumerable, TextWriter writer)
-      => treenumerable.SerializeDepthFirstTree(writer, node => node);
+    public static void SerializeDepthFirstTree(this IDepthFirstTreenumerable<string> source, TextWriter writer)
+      => source.SerializeDepthFirstTree(writer, node => node);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), mapping each node through <paramref name="map"/> to its
     /// serialized value.</summary>
-    public static void SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map)
-      => LevelOrderTextWriter.WritePayload(treenumerable, writer, map);
+    public static void SerializeBreadthFirstTree<TNode>(this IBreadthFirstTreenumerable<TNode> source, TextWriter writer, Func<TNode, string> map)
+      => LevelOrderTextWriter.WritePayload(source, writer, map);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), taking each node's string as its serialized value.
     ///</summary>
-    public static void SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> treenumerable, TextWriter writer)
-      => treenumerable.SerializeBreadthFirstTree(writer, node => node);
+    public static void SerializeBreadthFirstTree(this IBreadthFirstTreenumerable<string> source, TextWriter writer)
+      => source.SerializeBreadthFirstTree(writer, node => node);
   }
 }

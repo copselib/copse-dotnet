@@ -38,6 +38,14 @@
   flipped to `(accumulator, rootNodeSelector)` to match the `(accumulator, seed)` anchor.
   *Migration: swap the two arguments at fold call sites that used the selector overloads.*
 
+- **Parameter names align to the LINQ register**: the serializer's extension receivers
+  rename `treenumerable` → `source`, and `ToFormattedLines`/`ToFormattedString` rename
+  `stringFormatter` → `selector`. Affects named-argument call sites only.
+- **Operator machinery is no longer public surface**: the concrete engine, store, and stream
+  treenumerators and the delegating treenumerables are `internal` — traversals are acquired
+  through the treenumerable doors, which are unchanged. The store SPIs, the flat wrappers,
+  and the array stores stay public (the provider extension points).
+
 ### Renamed types and members
 
 - **Memo buffer family** (`9f4e80e` era):

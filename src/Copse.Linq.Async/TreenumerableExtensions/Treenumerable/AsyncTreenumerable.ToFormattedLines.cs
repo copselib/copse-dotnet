@@ -32,7 +32,7 @@ namespace Copse.Linq
     /// <summary>The tree rendered as box-drawing lines with a custom node formatter and branch padding.</summary>
     public static async ValueTask<IReadOnlyList<string>> ToFormattedLinesAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<TNode, string> stringFormatter,
+      Func<TNode, string> selector,
       int paddingSize,
       CancellationToken cancellationToken = default)
     {
@@ -51,7 +51,7 @@ namespace Copse.Linq
           if (treenumerator.Mode != TreenumeratorMode.SchedulingNode)
             continue;
 
-          lines.Add((stringFormatter(treenumerator.Node), treenumerator.Position.Depth));
+          lines.Add((selector(treenumerator.Node), treenumerator.Position.Depth));
         }
       }
 

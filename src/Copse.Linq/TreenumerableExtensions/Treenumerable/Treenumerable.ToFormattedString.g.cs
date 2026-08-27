@@ -27,10 +27,10 @@ namespace Copse.Linq
     /// <summary>The tree rendered as a single box-drawing string with a custom node formatter and branch padding.</summary>
     public static string ToFormattedString<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
-      Func<TNode, string> stringFormatter,
+      Func<TNode, string> selector,
       int paddingSize)
     {
-      var lines = source.ToFormattedLines(stringFormatter, paddingSize);
+      var lines = source.ToFormattedLines(selector, paddingSize);
 
       return string.Join(Environment.NewLine, lines);
     }

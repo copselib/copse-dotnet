@@ -22,7 +22,7 @@ namespace Copse.Async.Treenumerators
   /// children pulled per node through <typeparamref name="TAsyncChildEnumerator"/>. Normally
   /// constructed by <c>AsyncTreenumerable</c> rather than directly.
   /// </summary>
-  public sealed class AsyncBreadthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
+  internal sealed class AsyncBreadthFirstTreenumerator<TNode, THandle, TAsyncChildEnumerator>
     : IAsyncTreenumerator<TNode>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {

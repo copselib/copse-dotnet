@@ -15,5 +15,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Copse.Tests" />
+    <InternalsVisibleTo Include="Copse.Linq" />
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
+    <InternalsVisibleTo Include="Copse.Benchmarks" />
+    <InternalsVisibleTo Include="Copse.Linq.Experimental" />
+    <InternalsVisibleTo Include="Copse.Linq.Tests" />
   </ItemGroup>
 </Project>

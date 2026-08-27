@@ -20,7 +20,7 @@ namespace Copse.Treenumerators
   /// children pulled per node through <typeparamref name="TChildEnumerator"/>. Normally
   /// constructed by <c>Treenumerable</c> rather than directly.
   /// </summary>
-  public sealed class DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>
+  internal sealed class DepthFirstTreenumerator<TNode, THandle, TChildEnumerator>
     : ITreenumerator<TNode>
     where TChildEnumerator : IChildEnumerator<THandle>
   {

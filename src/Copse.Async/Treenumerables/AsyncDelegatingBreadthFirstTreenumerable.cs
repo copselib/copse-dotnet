@@ -9,7 +9,7 @@ namespace Copse.Async.Treenumerables
   // the codegen source of truth for the sync twin.
   /// <summary>The breadth-first-narrow form of <c>AsyncDelegatingTreenumerable</c>: one
   /// injected treenumerator factory.</summary>
-  public sealed class AsyncDelegatingBreadthFirstTreenumerable<TNode> : IAsyncBreadthFirstTreenumerable<TNode>
+  internal sealed class AsyncDelegatingBreadthFirstTreenumerable<TNode> : IAsyncBreadthFirstTreenumerable<TNode>
   {
     /// <summary>Builds each traversal from the factory; nothing runs until a treenumerator
     /// is acquired.</summary>

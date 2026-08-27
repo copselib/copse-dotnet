@@ -27,11 +27,11 @@ namespace Copse.Linq
     /// <summary>The tree rendered as a single box-drawing string with a custom node formatter and branch padding.</summary>
     public static async ValueTask<string> ToFormattedStringAsync<TNode>(
       this IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<TNode, string> stringFormatter,
+      Func<TNode, string> selector,
       int paddingSize,
       CancellationToken cancellationToken = default)
     {
-      var lines = await source.ToFormattedLinesAsync(stringFormatter, paddingSize, cancellationToken).ConfigureAwait(false);
+      var lines = await source.ToFormattedLinesAsync(selector, paddingSize, cancellationToken).ConfigureAwait(false);
 
       return string.Join(Environment.NewLine, lines);
     }

@@ -18,7 +18,7 @@ namespace Copse.Async.Treenumerators
   // Copse.Treenumerators.PreorderStreamDepthFirstTreenumerator (the checked-in .g.cs twin);
   // the struct-return read seam is what makes the async form legal (out params cannot cross
   // an await) at proven perf parity with the retired out-style stream.
-  public sealed class AsyncPreorderStreamDepthFirstTreenumerator<TNode, TStream>
+  internal sealed class AsyncPreorderStreamDepthFirstTreenumerator<TNode, TStream>
     : IAsyncTreenumerator<TNode>
     where TStream : IAsyncPreorderStream<TNode>
   {

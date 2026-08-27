@@ -13,7 +13,7 @@ namespace Copse.Treenumerables
   // the codegen source of truth for the sync twin.
   /// <summary>The breadth-first-narrow form of <c>DelegatingTreenumerable</c>: one
   /// injected treenumerator factory.</summary>
-  public sealed class DelegatingBreadthFirstTreenumerable<TNode> : IBreadthFirstTreenumerable<TNode>
+  internal sealed class DelegatingBreadthFirstTreenumerable<TNode> : IBreadthFirstTreenumerable<TNode>
   {
     /// <summary>Builds each traversal from the factory; nothing runs until a treenumerator
     /// is acquired.</summary>

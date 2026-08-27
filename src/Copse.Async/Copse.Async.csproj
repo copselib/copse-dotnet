@@ -21,4 +21,10 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Copse.Linq.Async" />
+    <InternalsVisibleTo Include="Copse.Async.Tests" />
+    <InternalsVisibleTo Include="Copse.Benchmarks" />
+  </ItemGroup>
+
 </Project>

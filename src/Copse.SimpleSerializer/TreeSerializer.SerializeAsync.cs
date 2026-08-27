@@ -16,25 +16,25 @@ namespace Copse.SimpleSerializer
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), mapping each node through <paramref name="map"/> to its
     /// serialized value. Cancellation is observed once per emitted visit.</summary>
-    public static ValueTask SerializeDepthFirstTreeAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map, CancellationToken cancellationToken = default)
-      => AsyncPreorderTextWriter.WritePayloadAsync(treenumerable, writer, map, cancellationToken);
+    public static ValueTask SerializeDepthFirstTreeAsync<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, TextWriter writer, Func<TNode, string> map, CancellationToken cancellationToken = default)
+      => AsyncPreorderTextWriter.WritePayloadAsync(source, writer, map, cancellationToken);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the preorder grammar
     /// (<c>"a(b(d,e),c)"</c>), taking each node's string as its serialized value.
     /// Cancellation is observed once per emitted visit.</summary>
-    public static ValueTask SerializeDepthFirstTreeAsync(this IAsyncDepthFirstTreenumerable<string> treenumerable, TextWriter writer, CancellationToken cancellationToken = default)
-      => treenumerable.SerializeDepthFirstTreeAsync(writer, node => node, cancellationToken);
+    public static ValueTask SerializeDepthFirstTreeAsync(this IAsyncDepthFirstTreenumerable<string> source, TextWriter writer, CancellationToken cancellationToken = default)
+      => source.SerializeDepthFirstTreeAsync(writer, node => node, cancellationToken);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), mapping each node through <paramref name="map"/> to its
     /// serialized value. Cancellation is observed once per emitted visit.</summary>
-    public static ValueTask SerializeBreadthFirstTreeAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> treenumerable, TextWriter writer, Func<TNode, string> map, CancellationToken cancellationToken = default)
-      => AsyncLevelOrderTextWriter.WritePayloadAsync(treenumerable, writer, map, cancellationToken);
+    public static ValueTask SerializeBreadthFirstTreeAsync<TNode>(this IAsyncBreadthFirstTreenumerable<TNode> source, TextWriter writer, Func<TNode, string> map, CancellationToken cancellationToken = default)
+      => AsyncLevelOrderTextWriter.WritePayloadAsync(source, writer, map, cancellationToken);
 
     /// <summary>Writes the tree to <paramref name="writer"/> in the level-order grammar
     /// (<c>"a;b,c;d,e"</c>), taking each node's string as its serialized value.
     /// Cancellation is observed once per emitted visit.</summary>
-    public static ValueTask SerializeBreadthFirstTreeAsync(this IAsyncBreadthFirstTreenumerable<string> treenumerable, TextWriter writer, CancellationToken cancellationToken = default)
-      => treenumerable.SerializeBreadthFirstTreeAsync(writer, node => node, cancellationToken);
+    public static ValueTask SerializeBreadthFirstTreeAsync(this IAsyncBreadthFirstTreenumerable<string> source, TextWriter writer, CancellationToken cancellationToken = default)
+      => source.SerializeBreadthFirstTreeAsync(writer, node => node, cancellationToken);
   }
 }

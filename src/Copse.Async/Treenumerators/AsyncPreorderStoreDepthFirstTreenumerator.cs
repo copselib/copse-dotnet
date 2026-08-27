@@ -16,7 +16,7 @@ namespace Copse.Async.Treenumerators
   /// </summary>
   // The codegen source of truth for its sync twin: strip the await on the store's grow
   // calls and it becomes the synchronous driver.
-  public sealed class AsyncPreorderStoreDepthFirstTreenumerator<TNode, TStore>
+  internal sealed class AsyncPreorderStoreDepthFirstTreenumerator<TNode, TStore>
     : AsyncTreenumeratorBase<TNode>
     where TStore : IAsyncPreorderStore<TNode>
   {

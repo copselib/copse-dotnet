@@ -12,7 +12,7 @@ namespace Copse.Treenumerables
   // factory indirection is where "fresh tree per acquisition" lives.
   /// <summary>A treenumerable that delegates each acquisition to an injected treenumerator
   /// factory pair -- what <c>Tree.Create</c> and the deferral factories return.</summary>
-  public sealed class DelegatingTreenumerable<TNode> : ITreenumerable<TNode>
+  internal sealed class DelegatingTreenumerable<TNode> : ITreenumerable<TNode>
   {
     /// <summary>Builds each traversal from its factory; nothing runs until a treenumerator
     /// is acquired.</summary>

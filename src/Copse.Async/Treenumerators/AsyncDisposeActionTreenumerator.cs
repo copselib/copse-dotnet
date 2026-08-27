@@ -15,7 +15,7 @@ namespace Copse.Async.Treenumerators
   /// <summary>A treenumerator that forwards every member to an inner cursor and runs one extra
   /// action when disposed -- how <c>Tree.Using</c> ties a resource's release to its traversal's
   /// end.</summary>
-  public sealed class AsyncDisposeActionTreenumerator<TNode> : IAsyncTreenumerator<TNode>
+  internal sealed class AsyncDisposeActionTreenumerator<TNode> : IAsyncTreenumerator<TNode>
   {
     /// <summary>Forwards every member to <paramref name="inner"/> and runs
     /// <paramref name="onDispose"/> after disposing it.</summary>
