@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787794392534,
+  "lastUpdate": 1787794393035,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -156538,6 +156538,102 @@ window.BENCHMARK_DATA = {
             "value": 82280265.73214287,
             "unit": "ns",
             "range": "± 1597615.5580622887"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "42eff61eff902301ad988e07b27826fe48b010ae",
+          "message": "TValue residue sweep: walker-law tests, Experimental walker axes, CodeGen comment say TNode\n\nThe ratified rule (TNode = element everywhere; TValue only as Option's own type\nparameter and role words) had not reached the walker law tests, the Experimental\nwalker-axis extensions, or a stale HandleAndNode comment in the codegen. Also a\nstray 'Value axes' comment -> 'handle axes' (the axes yield handles). The\nremaining TValue sites are Option<TValue> itself and doc crefs to it -- correct\nby the container line.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T01:12:43Z",
+          "tree_id": "31279283a3eb0171c59de21f5833e068f545e672",
+          "url": "https://github.com/copselib/copse-dotnet/commit/42eff61eff902301ad988e07b27826fe48b010ae"
+        },
+        "date": 1787794392930,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 101949390.70769231,
+            "unit": "ns",
+            "range": "± 667436.285895697"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 91660250.81333332,
+            "unit": "ns",
+            "range": "± 830590.9089515381"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 229456552.55555555,
+            "unit": "ns",
+            "range": "± 2539678.375651796"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 280117308.85714287,
+            "unit": "ns",
+            "range": "± 348506.15510354325"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 165235856.4222222,
+            "unit": "ns",
+            "range": "± 2271208.747527514"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 226474813.7948718,
+            "unit": "ns",
+            "range": "± 660974.9529832518"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 90473223.47777778,
+            "unit": "ns",
+            "range": "± 1200054.0942205165"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 87105619.05555555,
+            "unit": "ns",
+            "range": "± 1500677.957486837"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 411237790.26666665,
+            "unit": "ns",
+            "range": "± 1446767.475582991"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 493451950.8333333,
+            "unit": "ns",
+            "range": "± 945156.9856527282"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 83543470.90476193,
+            "unit": "ns",
+            "range": "± 766299.7581565967"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 80249794.26530612,
+            "unit": "ns",
+            "range": "± 1908115.6289171118"
           }
         ]
       }
