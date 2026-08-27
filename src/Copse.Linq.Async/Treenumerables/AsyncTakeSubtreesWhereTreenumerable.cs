@@ -1,9 +1,9 @@
+using Copse.Linq.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
+using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // TakeSubtreesWhere's composite result: a streaming-tier citizen CARRYING the dimension
   // dispatch (the honest-streaming-baseline rule). The recipe is (source,
@@ -40,9 +40,9 @@ namespace Copse.Linq.Async.Treenumerables
     {
       var predicate = _Predicate;
 
-      return new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, FuncResultSelector<TNode, TNode>>(
+      return new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, AsyncFuncResultSelector<TNode, TNode>>(
         _Source.GetAsyncBreadthFirstTreenumerator,
-        new FuncResultSelector<TNode, TNode>(nodeContext => new SelectWhereResult<TNode>(
+        new AsyncFuncResultSelector<TNode, TNode>(nodeContext => new AsyncSelectWhereResult<TNode>(
           nodeContext.Node,
           predicate(nodeContext) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
         takeSubtrees: true);

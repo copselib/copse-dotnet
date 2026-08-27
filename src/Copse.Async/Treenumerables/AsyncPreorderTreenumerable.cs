@@ -1,8 +1,8 @@
-using Copse.Async.Stores;
-using Copse.Async.Treenumerators;
-using Copse.Core.Async;
+using Copse.Stores;
+using Copse.Treenumerators;
+using Copse.Core;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Treenumerables
 {
   // Codegen source of truth for the sync twin (Copse.Treenumerables.PreorderTreenumerable).
   /// <summary>

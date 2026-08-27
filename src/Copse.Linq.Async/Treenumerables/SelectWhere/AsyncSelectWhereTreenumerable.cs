@@ -1,18 +1,19 @@
-using Copse.Core.Async;
-using Copse.Linq.Async;
+using Copse.Linq.Treenumerators;
+using Copse.Core;
+using Copse.Linq;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The reified operator chain (design-docs/OPERATOR_COMPOSITION_DESIGN.md, "the result
   // monad"): one wrapper holding the Kleisli-composed result of every composed operator, so
   // chains of any length and order collapse to ONE layer over the source. Plain operators
   // instantiate with their bespoke selector STRUCT (inlined by the JIT -- zero seam cost);
-  // composed chains nest those structs in the TYPE via ComposedResultSelector (a user
-  // delegate enters only as a FuncResultSelector leaf). Splicing is total: every legality
+  // composed chains nest those structs in the TYPE via AsyncComposedResultSelector (a user
+  // delegate enters only as a AsyncFuncResultSelector leaf). Splicing is total: every legality
   // decision was made outer-side.
   internal sealed partial class AsyncSelectWhereTreenumerable<TSource, TResult, TResultSelector> : IAsyncSelectWhereTreenumerable<TResult>
-    where TResultSelector : struct, IResultSelector<TSource, TResult>
+    where TResultSelector : struct, IAsyncResultSelector<TSource, TResult>
   {
     public AsyncSelectWhereTreenumerable(
       IAsyncTreenumerable<TSource> source,
@@ -45,25 +46,25 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<TResult, TOuterResult>
       => Splice<TOuterResult, TOuterSelector>(outerSelector);
 
     // The context-shaped projection door: the projection rides an inlinable struct leg
     // (the caller has already applied the join rule for positional legs).
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
-      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
-        new SelectResultSelector<TResult, TOuterResult>(selector));
+      => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
+        new AsyncSelectResultSelector<TResult, TOuterResult>(selector));
 
     // THE ONE CONSTRUCTION of a composed successor: every door that splices a leg lands
     // here, so the nested-selector spelling has a single home. It returns the concrete type
     // because an interface implementation cannot -- which is what lets the public
     // projection door (the citizenship part) reuse it rather than respell it.
-    private AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>> Splice<TOuterResult, TOuterSelector>(
+    private AsyncSelectWhereTreenumerable<TSource, TOuterResult, AsyncComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>> Splice<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
-      => new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
+      where TOuterSelector : struct, IAsyncResultSelector<TResult, TOuterResult>
+      => new AsyncSelectWhereTreenumerable<TSource, TOuterResult, AsyncComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>>(
         _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector));
+        new AsyncComposedResultSelector<TSource, TResult, TOuterResult, TResultSelector, TOuterSelector>(_ResultSelector, outerSelector));
 
     // ---- The position-reading doors: this driver STACKS ----
     //
@@ -78,7 +79,7 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<TResult, TOuterResult>
       => new AsyncSelectWhereTreenumerable<TResult, TOuterResult, TOuterSelector>(this, outerSelector);
 
     // The context-shaped prune-after door: prune-afters compose in-tier only, so the light

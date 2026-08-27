@@ -1,7 +1,8 @@
-using Copse.Async;
-using Copse.Core.Async;
-using Copse.Linq.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Treenumerators;
+using Copse;
+using Copse.Core;
+using Copse.Linq;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq

@@ -1,10 +1,10 @@
-using Copse.Async;
-using Copse.Core.Async;
-using Copse.Async.Topologies;
+using Copse;
+using Copse.Core;
+using Copse.Topologies;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The restriction LENS's first citizen: PruneDescendantsWhere over a walkable, as a PAIR -- the ORDER
   // half is the shipped streaming operator, delegated wholesale (the composition lattice inside

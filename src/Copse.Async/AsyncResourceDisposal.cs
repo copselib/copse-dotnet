@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   // The async release of a Using resource. The constraint is IDisposable (readers -- the
   // flagship Using resource -- never grew IAsyncDisposable), but a resource that ALSO implements

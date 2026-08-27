@@ -1,8 +1,8 @@
-using Copse.Async;
-using Copse.Async.Stores;
+using Copse;
+using Copse.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The COMPLETED preorder citizen (the adjacency split): a topology over a
   // finished array store answers every probe from exact arrays built at most once. The

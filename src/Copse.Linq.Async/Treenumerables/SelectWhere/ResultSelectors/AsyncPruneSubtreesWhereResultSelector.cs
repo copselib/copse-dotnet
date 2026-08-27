@@ -1,20 +1,20 @@
 using Copse.Core;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // PruneSubtreesWhere's result (prune polarity: true = prune): the whole subtree goes.
-  internal readonly struct PruneSubtreesWhereResultSelector<TNode> : IResultSelector<TNode, TNode>
+  internal readonly struct AsyncPruneSubtreesWhereResultSelector<TNode> : IAsyncResultSelector<TNode, TNode>
   {
-    public PruneSubtreesWhereResultSelector(Func<TNode, bool> predicate)
+    public AsyncPruneSubtreesWhereResultSelector(Func<TNode, bool> predicate)
     {
       _Predicate = predicate;
     }
 
     private readonly Func<TNode, bool> _Predicate;
 
-    public SelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
-      => new SelectWhereResult<TNode>(
+    public AsyncSelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
+      => new AsyncSelectWhereResult<TNode>(
         nodeContext.Node,
         _Predicate(nodeContext.Node)
           ? NodeTraversalStrategies.PruneSubtree

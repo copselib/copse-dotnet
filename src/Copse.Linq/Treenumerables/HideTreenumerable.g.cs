@@ -2,8 +2,9 @@
 //   Generated from AsyncHideTreenumerable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Core;
+using Copse.Linq;
 
 namespace Copse.Linq
 {

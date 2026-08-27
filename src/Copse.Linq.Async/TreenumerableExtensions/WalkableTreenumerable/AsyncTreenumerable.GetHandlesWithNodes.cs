@@ -1,4 +1,4 @@
-using Copse.Async;
+using Copse;
 using System.Collections.Generic;
 using System.Threading;
 

@@ -1,5 +1,5 @@
-using Copse.Async.Stores;
-using Copse.Async;
+using Copse.Stores;
+using Copse;
 using System;
 using System.IO;
 using System.Threading;
@@ -29,16 +29,16 @@ namespace Copse.SimpleSerializer
     private int _Depth;
     private bool _Exhausted;
 
-    public ValueTask<Option<PreorderRead<TNode>>> TryReadNextAsync() => TryScanAsync(int.MaxValue);
+    public ValueTask<Option<AsyncPreorderRead<TNode>>> TryReadNextAsync() => TryScanAsync(int.MaxValue);
 
-    public ValueTask<Option<PreorderRead<TNode>>> TrySkipToDepthAsync(int maxDepth) => TryScanAsync(maxDepth);
+    public ValueTask<Option<AsyncPreorderRead<TNode>>> TrySkipToDepthAsync(int maxDepth) => TryScanAsync(maxDepth);
 
     // Scan to the next value committing at depth <= maxDepth; deeper values are structural
     // noise for the caller and their characters are discarded unaccumulated. NOT async: every
     // scan is PROBED (the fast-path probe idiom -- see AsyncToSync), and each scanned event
     // lands through the same commit helper whether the scan answered inline or through the
     // pending continuation.
-    private ValueTask<Option<PreorderRead<TNode>>> TryScanAsync(int maxDepth)
+    private ValueTask<Option<AsyncPreorderRead<TNode>>> TryScanAsync(int maxDepth)
     {
       if (_Exhausted)
         return default;
@@ -53,13 +53,13 @@ namespace Copse.SimpleSerializer
           return AwaitThenFinishScanAsync(scanned, maxDepth, accumulate);
 
         if (TryCommitEvent(scanned.Result, accumulate, out var read))
-          return new ValueTask<Option<PreorderRead<TNode>>>(read);
+          return new ValueTask<Option<AsyncPreorderRead<TNode>>>(read);
       }
     }
 
     // Land one scanned event: commit a value (true, with the read), end the stream (true,
     // default read), or note the depth movement and keep scanning (false).
-    private bool TryCommitEvent(ScanEvent ev, bool accumulate, out Option<PreorderRead<TNode>> read)
+    private bool TryCommitEvent(ScanEvent ev, bool accumulate, out Option<AsyncPreorderRead<TNode>> read)
     {
       if (!ev.Ok)
       {
@@ -76,7 +76,7 @@ namespace Copse.SimpleSerializer
             var value = _Map(_Scanner.GetValue());
             var depth = _Depth;
             _Depth++;
-            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(value, depth));
+            read = new Option<AsyncPreorderRead<TNode>>(new AsyncPreorderRead<TNode>(value, depth));
             return true;
           }
 
@@ -86,7 +86,7 @@ namespace Copse.SimpleSerializer
         case ',':
           if (ev.HasValue && accumulate)
           {
-            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
+            read = new Option<AsyncPreorderRead<TNode>>(new AsyncPreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
             return true;
           }
 
@@ -98,7 +98,7 @@ namespace Copse.SimpleSerializer
             var value = _Map(_Scanner.GetValue());
             var depth = _Depth;
             _Depth--;
-            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(value, depth));
+            read = new Option<AsyncPreorderRead<TNode>>(new AsyncPreorderRead<TNode>(value, depth));
             return true;
           }
 
@@ -116,7 +116,7 @@ namespace Copse.SimpleSerializer
 
           if (ev.HasValue && accumulate)
           {
-            read = new Option<PreorderRead<TNode>>(new PreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
+            read = new Option<AsyncPreorderRead<TNode>>(new AsyncPreorderRead<TNode>(_Map(_Scanner.GetValue()), _Depth));
             return true;
           }
 
@@ -134,7 +134,7 @@ namespace Copse.SimpleSerializer
     // through the same commit helper as the fast path, then re-enters the probing loop (nothing
     // to carry -- accumulate is passed along because the commit decision must match the value
     // the scan was issued with).
-    private async ValueTask<Option<PreorderRead<TNode>>> AwaitThenFinishScanAsync(ValueTask<ScanEvent> pendingScan, int maxDepth, bool accumulate)
+    private async ValueTask<Option<AsyncPreorderRead<TNode>>> AwaitThenFinishScanAsync(ValueTask<ScanEvent> pendingScan, int maxDepth, bool accumulate)
     {
       if (TryCommitEvent(await pendingScan.ConfigureAwait(false), accumulate, out var read))
         return read;

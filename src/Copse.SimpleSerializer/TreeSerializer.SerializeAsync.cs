@@ -1,4 +1,4 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 using System.IO;
 using System.Threading;

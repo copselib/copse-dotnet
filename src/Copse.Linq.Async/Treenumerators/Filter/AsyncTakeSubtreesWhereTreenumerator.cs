@@ -1,11 +1,10 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// <b>async</b> <c>TakeSubtreesWhere</c>'s depth-first streamer and the codegen source of truth for

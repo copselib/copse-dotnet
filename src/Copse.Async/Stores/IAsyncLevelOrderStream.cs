@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // Codegen source of the sync twin, Copse.Stores.ILevelOrderStream.
   /// <summary>

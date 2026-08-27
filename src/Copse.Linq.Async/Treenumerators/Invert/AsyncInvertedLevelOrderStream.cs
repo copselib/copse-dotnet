@@ -1,11 +1,10 @@
-using Copse.Async.Stores;
-using Copse.Async;
+using Copse.Stores;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerators
+namespace Copse.Linq.Treenumerators
 {
   // The mirror as a stream transform: an ILevelOrderStream whose groups are the source's
   // level-order child groups with each LEVEL's families reversed and each family's ITEMS

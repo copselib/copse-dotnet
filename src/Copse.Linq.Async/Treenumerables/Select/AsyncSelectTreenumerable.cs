@@ -1,9 +1,9 @@
+using Copse.Linq.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async;
+using Copse.Linq;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   /// <summary>
   /// The canonical projection treenumerable: a source and a value selector, applied per
@@ -60,7 +60,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TResult>.Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
     {
       return new AsyncSelectTreenumerable<TSource, TOuterResult>(
-        _Source, SelectWhereComposition.SelectThenSelect(_Selector, selector));
+        _Source, AsyncSelectWhereComposition.SelectThenSelect(_Selector, selector));
     }
 
     // A prune-after joins: promote to the middle tier (light passthrough driver), never the
@@ -68,7 +68,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncTreenumerable<TResult> IAsyncSelectWhereTreenumerable<TResult>.ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
     {
       return new AsyncSelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, predicate));
+        _Source, AsyncSelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, predicate));
     }
 
     // A rejecting operator splices over this wrapper: the projection is donated as an
@@ -80,10 +80,10 @@ namespace Copse.Linq.Async.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
     {
-      return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>>(
+      return new AsyncSelectWhereTreenumerable<TSource, TOuterResult, AsyncComposedResultSelector<TSource, TResult, TOuterResult, AsyncSelectResultSelector<TSource, TResult>, TOuterSelector>>(
         _Source,
-        new ComposedResultSelector<TSource, TResult, TOuterResult, SelectResultSelector<TSource, TResult>, TOuterSelector>(
-          new SelectResultSelector<TSource, TResult>(_Selector), outerSelector));
+        new AsyncComposedResultSelector<TSource, TResult, TOuterResult, AsyncSelectResultSelector<TSource, TResult>, TOuterSelector>(
+          new AsyncSelectResultSelector<TSource, TResult>(_Selector), outerSelector));
     }
 
     /// <inheritdoc/>

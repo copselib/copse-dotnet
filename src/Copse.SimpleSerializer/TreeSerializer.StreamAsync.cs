@@ -1,6 +1,6 @@
-using Copse.Async;
-using Copse.Async.Treenumerables;
-using Copse.Core.Async;
+using Copse;
+using Copse.Treenumerables;
+using Copse.Core;
 using System;
 using System.IO;
 using System.Threading;

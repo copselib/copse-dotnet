@@ -1,8 +1,9 @@
-using Copse.Core.Async;
-using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
+using Copse.Linq.Treenumerators;
+using Copse.Core;
+using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The streaming tier's FIRST CITIZEN (SELECT_INTO_CAPTURES_DESIGN.md): RootfixScan's
   // composite result, holding the scan's recipe so a composed Select re-plants the
@@ -58,7 +59,7 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
       => new AsyncScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, TOuterSelector>(
         _InnerDepthFirstFactory, _InnerBreadthFirstFactory, _Accumulator, _Seed, outerSelector, relabels);
 
@@ -71,11 +72,11 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TOuterResult> selector)
-      => Compose<TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
-        new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(selector), relabels: false);
+      => Compose<TOuterResult, AsyncSelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>>(
+        new AsyncSelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TOuterResult>(selector), relabels: false);
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the scan.

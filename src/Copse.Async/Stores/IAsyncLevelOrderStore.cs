@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // Codegen source of the sync twin, Copse.Stores.ILevelOrderStore.
   /// <summary>

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // A COMPLETED preorder store over plain arrays: values[i] in preorder, node i's subtree
   // spanning [i, i + subtreeSizes[i]). The trivial implementation of the store protocol --

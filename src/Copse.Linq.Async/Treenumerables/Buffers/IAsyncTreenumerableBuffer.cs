@@ -1,6 +1,6 @@
-using Copse.Async;
+using Copse;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // An owned, in-memory, re-traversable capture of a tree: a full treenumerable (both
   // dimensions available, random access) whose backing storage it owns. This is the

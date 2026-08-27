@@ -1,6 +1,5 @@
 using BenchmarkDotNet.Attributes;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq;
 using System.Threading.Tasks;
 

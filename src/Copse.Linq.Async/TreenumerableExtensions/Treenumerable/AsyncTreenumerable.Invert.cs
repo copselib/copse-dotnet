@@ -1,12 +1,11 @@
-using Copse.Async;
-using Copse.Async.Stores;
-using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
+using Copse;
+using Copse.Stores;
+using Copse.Treenumerables;
+using Copse.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
-using Copse.Linq.Async.Stores;
-using Copse.Linq.Async.Treenumerators;
+using Copse.Linq.Treenumerables;
+using Copse.Linq.Stores;
+using Copse.Linq.Treenumerators;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

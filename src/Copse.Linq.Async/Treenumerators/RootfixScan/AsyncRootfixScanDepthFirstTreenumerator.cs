@@ -1,12 +1,11 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> <c>RootfixScan</c> and the codegen source of truth for its sync twin:

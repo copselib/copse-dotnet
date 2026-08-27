@@ -1,4 +1,4 @@
-namespace Copse.Core.Async
+namespace Copse.Core
 {
   /// <summary>Async analog of <c>IDepthFirstTreenumerable</c>: a source that affords a depth-first async traversal.</summary>
   public interface IAsyncDepthFirstTreenumerable<TNode>

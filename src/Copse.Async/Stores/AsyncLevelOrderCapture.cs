@@ -1,10 +1,9 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // The level-order dual of AsyncPreorderCapture: one awaited breadth-first walk of any source,
   // captured into a completed level-order store. The parse state is the memo buffer's single

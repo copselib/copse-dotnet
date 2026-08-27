@@ -1,8 +1,8 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   // Hand-written twin of Copse.TreenumeratorWrapper (see TreenumeratorBase for the pair rationale).
   /// <summary>

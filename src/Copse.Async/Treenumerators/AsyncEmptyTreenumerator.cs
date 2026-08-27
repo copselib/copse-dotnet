@@ -1,8 +1,7 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   // Async analog of Copse.Treenumerators.EmptyTreenumerator: a cursor that yields nothing. A shared
   // singleton -- it is immutable and holds no per-traversal state, so every empty tree can share it.

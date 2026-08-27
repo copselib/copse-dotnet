@@ -245,6 +245,7 @@ namespace Copse.CodeGen
         ["TAsyncChildEnumerator"] = "TChildEnumerator",
         ["GetAsyncEnumerator"] = "GetEnumerator",
         ["IAsyncTreenumerableBuffer"] = "ITreenumerableBuffer",
+        ["IAsyncResultSelector"] = "IResultSelector",
         ["IAsyncMemoizeTreenumerableBuffer"] = "IMemoizeTreenumerableBuffer",
         ["IAsyncWalkableTreenumerable"] = "IWalkableTreenumerable",
         ["IAsyncTreeTopology"] = "ITreeTopology",

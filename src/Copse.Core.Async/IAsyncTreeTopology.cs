@@ -1,7 +1,7 @@
 using Copse.Core;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   /// <summary>
   /// The provider-side interface a tree structure implements so walkers can navigate it: four

@@ -1,13 +1,12 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> filter driver and the codegen source of truth for its sync twin:
@@ -23,7 +22,7 @@ namespace Copse.Linq.Async
   /// </summary>
   internal sealed class AsyncWhereDepthFirstTreenumerator<TSource, TResult, TResultSelector>
     : AsyncTreenumeratorWrapper<TSource, TResult>
-    where TResultSelector : struct, IResultSelector<TSource, TResult>
+    where TResultSelector : struct, IAsyncResultSelector<TSource, TResult>
   {
     public AsyncWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,

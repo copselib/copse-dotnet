@@ -3,6 +3,7 @@
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
 using Copse.Stores;
+using Copse;
 using Copse.Core;
 using System.Collections.Generic;
 

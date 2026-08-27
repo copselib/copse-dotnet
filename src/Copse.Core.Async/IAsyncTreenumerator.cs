@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Core.Async
+namespace Copse.Core
 {
   /// <summary>
   /// A stateful async traversal cursor over a tree, advanced with <see cref="MoveNextAsync"/>.

@@ -1,12 +1,11 @@
-using Copse.Async.ChildEnumerators;
-using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
+using Copse.ChildEnumerators;
+using Copse.Treenumerables;
+using Copse.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 
-namespace Copse.Async
+namespace Copse
 {
   // This is the codegen source of truth for the sync Tree (the checked-in .g.cs twin).
   /// <summary>

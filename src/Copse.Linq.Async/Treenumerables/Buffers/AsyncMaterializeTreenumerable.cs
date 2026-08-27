@@ -1,11 +1,10 @@
-using Copse.Async;
-using Copse.Async.Stores;
-using Copse.Async.Treenumerables;
+using Copse;
+using Copse.Stores;
+using Copse.Treenumerables;
 using Copse.Core;
-using Copse.Core.Async;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The buffer Materialize returns over a LIVE MEMO source (the lazy-Materialize
   // reshape): the memo's one capture COMPLETED IN BULK at the first pull, presented as the

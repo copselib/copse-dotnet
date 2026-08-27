@@ -1,14 +1,10 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse;
-using Copse.Async;
-using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
-using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq;
-using Copse.Linq.Async;
-using Copse.Linq.Treenumerators;
+using Copse.Treenumerables;
 using Copse.Treenumerators;
+using Copse.Core;
+using Copse.Linq;
+using Copse.Linq.Treenumerators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -46,8 +42,8 @@ namespace Copse.Async.Tests
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
-    private static readonly Func<NodeContext<int>, Copse.Linq.Async.Treenumerables.SelectWhereResult<int>> AsyncKeepNot3Result =
-      nc => new Copse.Linq.Async.Treenumerables.SelectWhereResult<int>(
+    private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.AsyncSelectWhereResult<int>> AsyncKeepNot3Result =
+      nc => new Copse.Linq.Treenumerables.AsyncSelectWhereResult<int>(
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
@@ -83,10 +79,10 @@ namespace Copse.Async.Tests
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         new Copse.Linq.Treenumerables.FuncResultSelector<int, int>(KeepNot3Result)));
 
-      var async = await CollectAsync(new AsyncWhereDepthFirstTreenumerator<int, int, Copse.Linq.Async.Treenumerables.FuncResultSelector<int, int>>(
+      var async = await CollectAsync(new AsyncWhereDepthFirstTreenumerator<int, int, Copse.Linq.Treenumerables.AsyncFuncResultSelector<int, int>>(
         () => new AsyncDepthFirstTreenumerator<int, int, AsyncChildEnumerator>(
           AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        new Copse.Linq.Async.Treenumerables.FuncResultSelector<int, int>(AsyncKeepNot3Result)));
+        new Copse.Linq.Treenumerables.AsyncFuncResultSelector<int, int>(AsyncKeepNot3Result)));
 
       CollectionAssert.AreEqual(sync, async);
     }
@@ -99,10 +95,10 @@ namespace Copse.Async.Tests
           Roots, nc => new SyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
         new Copse.Linq.Treenumerables.FuncResultSelector<int, int>(KeepNot3Result)));
 
-      var async = await CollectAsync(new AsyncWhereBreadthFirstTreenumerator<int, int, Copse.Linq.Async.Treenumerables.FuncResultSelector<int, int>>(
+      var async = await CollectAsync(new AsyncWhereBreadthFirstTreenumerator<int, int, Copse.Linq.Treenumerables.AsyncFuncResultSelector<int, int>>(
         () => new AsyncBreadthFirstTreenumerator<int, int, AsyncChildEnumerator>(
           AsyncRoots(), nc => new AsyncChildEnumerator(ChildrenOf(nc.Node)), n => n),
-        new Copse.Linq.Async.Treenumerables.FuncResultSelector<int, int>(AsyncKeepNot3Result)));
+        new Copse.Linq.Treenumerables.AsyncFuncResultSelector<int, int>(AsyncKeepNot3Result)));
 
       CollectionAssert.AreEqual(sync, async);
     }
@@ -505,21 +501,21 @@ namespace Copse.Async.Tests
       private int _i;
       public SuspendingPreorderStream((int Value, int Depth)[] nodes) { _nodes = nodes; }
 
-      public async ValueTask<Option<PreorderRead<int>>> TryReadNextAsync()
+      public async ValueTask<Option<AsyncPreorderRead<int>>> TryReadNextAsync()
       {
         await Task.Yield(); // force real asynchrony on the read seam
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new Option<PreorderRead<int>>(new PreorderRead<int>(v, d));
+        return new Option<AsyncPreorderRead<int>>(new AsyncPreorderRead<int>(v, d));
       }
 
-      public async ValueTask<Option<PreorderRead<int>>> TrySkipToDepthAsync(int maxDepth)
+      public async ValueTask<Option<AsyncPreorderRead<int>>> TrySkipToDepthAsync(int maxDepth)
       {
         await Task.Yield();
         while (_i < _nodes.Length && _nodes[_i].Depth > maxDepth) _i++;
         if (_i >= _nodes.Length) return default;
         var (v, d) = _nodes[_i++];
-        return new Option<PreorderRead<int>>(new PreorderRead<int>(v, d));
+        return new Option<AsyncPreorderRead<int>>(new AsyncPreorderRead<int>(v, d));
       }
 
       public ValueTask DisposeAsync() => default;

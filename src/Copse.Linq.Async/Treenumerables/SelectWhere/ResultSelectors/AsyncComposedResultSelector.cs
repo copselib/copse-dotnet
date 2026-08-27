@@ -1,6 +1,6 @@
 using Copse.Core;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // THE STRUCT-COMPOSED ARROW: the general composition law as a TYPE, and the law's one home
   // (design-docs/OPERATOR_COMPOSITION_DESIGN.md). Both legs arrive as struct type parameters,
@@ -13,12 +13,12 @@ namespace Copse.Linq.Async.Treenumerables
   // The law is the algebra's one law, verbatim: the fold stops at the first
   // SkipNode-carrying result (that node left the logical tree, so the outer leg never sees
   // it and owes no value); while accepting, the value maps and strategies union.
-  internal readonly struct ComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>
-    : IResultSelector<TSource, TResult>
-    where TInnerSelector : struct, IResultSelector<TSource, TMid>
-    where TOuterSelector : struct, IResultSelector<TMid, TResult>
+  internal readonly struct AsyncComposedResultSelector<TSource, TMid, TResult, TInnerSelector, TOuterSelector>
+    : IAsyncResultSelector<TSource, TResult>
+    where TInnerSelector : struct, IAsyncResultSelector<TSource, TMid>
+    where TOuterSelector : struct, IAsyncResultSelector<TMid, TResult>
   {
-    public ComposedResultSelector(TInnerSelector innerSelector, TOuterSelector outerSelector)
+    public AsyncComposedResultSelector(TInnerSelector innerSelector, TOuterSelector outerSelector)
     {
       _InnerSelector = innerSelector;
       _OuterSelector = outerSelector;
@@ -27,16 +27,16 @@ namespace Copse.Linq.Async.Treenumerables
     private readonly TInnerSelector _InnerSelector;
     private readonly TOuterSelector _OuterSelector;
 
-    public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
+    public AsyncSelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
     {
       var innerResult = _InnerSelector.GetResult(nodeContext);
 
       if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
-        return new SelectWhereResult<TResult>(default, innerResult.Strategies);
+        return new AsyncSelectWhereResult<TResult>(default, innerResult.Strategies);
 
       var outerResult = _OuterSelector.GetResult(new NodeContext<TMid>(innerResult.Node, nodeContext.Position));
 
-      return new SelectWhereResult<TResult>(outerResult.Node, outerResult.Strategies | innerResult.Strategies);
+      return new AsyncSelectWhereResult<TResult>(outerResult.Node, outerResult.Strategies | innerResult.Strategies);
     }
   }
 }

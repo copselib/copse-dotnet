@@ -1,6 +1,5 @@
-using Copse.Linq.Async.Stores;
+using Copse.Linq.Stores;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;

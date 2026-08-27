@@ -1,11 +1,10 @@
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Traversal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   // Direct style over the shared color-agnostic DepthFirstPathState, with the two I/O seams
   // (child pull, root pull) PROBED so a pull that completes inline costs no state machine at

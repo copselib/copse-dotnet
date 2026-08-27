@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // A COMPLETED level-order store over plain arrays: nodes in level order, each node's child
   // span described by firstChildIndices[i] + childCounts[i], the roots the leading rootCount

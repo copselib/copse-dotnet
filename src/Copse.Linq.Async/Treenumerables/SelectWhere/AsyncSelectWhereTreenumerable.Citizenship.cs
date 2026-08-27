@@ -1,6 +1,6 @@
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The public doors (PUBLIC_COMPOSITION_SURFACE_DESIGN.md), in their own partial part
   // because the CompositeToNarrow fan-out is file-granular and the narrow twins must not
@@ -11,8 +11,8 @@ namespace Copse.Linq.Async.Treenumerables
   partial class AsyncSelectWhereTreenumerable<TSource, TResult, TResultSelector>
   {
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
-      => Splice<TOuterResult, SelectResultSelector<TResult, TOuterResult>>(
-        new SelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)));
+      => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
+        new AsyncSelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)));
 
     public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
       => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));

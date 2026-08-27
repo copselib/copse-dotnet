@@ -1,9 +1,9 @@
-using Copse.Async.Stores;
-using Copse.Async.Treenumerators;
-using Copse.Core.Async;
+using Copse.Stores;
+using Copse.Treenumerators;
+using Copse.Core;
 using System;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Treenumerables
 {
   /// <summary>
   /// An async tree streaming from a forward-only preorder source: the async analog of

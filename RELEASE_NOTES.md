@@ -109,12 +109,22 @@
 
 ### Moved types
 
+- **The async namespaces drop their `Async` segment** — async types now live in the same
+  namespaces as their sync twins, exactly as `IAsyncEnumerable<T>` sits in
+  `System.Collections.Generic` and `AsyncEnumerable` in `System.Linq`: `Copse.Core.Async` →
+  `Copse.Core`, `Copse.Async` → `Copse`, `Copse.Async.Stores` → `Copse.Stores` (and so on
+  for `Treenumerables`/`Treenumerators`); `Copse.Linq.Async` → `Copse.Linq`. Assemblies and
+  packages are unchanged — only namespaces merge; every async type name carries its `Async`
+  prefix, so nothing collides. The async read struct renames `PreorderRead` →
+  `AsyncPreorderRead` (it was the one unprefixed async type). *Migration: delete the
+  `.Async` namespace segment from `using` directives; the sync using set now serves both
+  colors.*
 - **Store SPIs and completed array stores moved per-color** (`7328c77`): sync store types moved
   from `Copse.Primitives` to the `Copse` package under namespace `Copse.Stores`; async store
-  SPIs moved from namespace `Copse.Async` to `Copse.Async.Stores`. `Copse.Primitives` is now
+  SPIs now share that namespace (see the entry above). `Copse.Primitives` is now
   collections + disposables only.
-  *Migration: update `using Copse` → `using Copse.Stores` (sync) / `using Copse.Async` →
-  `using Copse.Async.Stores` (async) at store-SPI call sites.*
+  *Migration: update `using Copse` → `using Copse.Stores` at store-SPI call sites, both
+  colors.*
 
 ### Changed behavior
 

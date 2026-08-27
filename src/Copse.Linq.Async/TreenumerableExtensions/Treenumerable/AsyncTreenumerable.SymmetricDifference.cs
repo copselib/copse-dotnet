@@ -1,4 +1,4 @@
-using Copse.Core.Async;
+using Copse.Core;
 using Copse.Linq.Treenumerators;
 
 namespace Copse.Linq

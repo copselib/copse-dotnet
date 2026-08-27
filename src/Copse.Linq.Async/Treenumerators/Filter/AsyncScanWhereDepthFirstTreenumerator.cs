@@ -1,14 +1,13 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Extensions;
 using Copse.Linq.Treenumerators; // WhereDepthFirstPath (internal, via InternalsVisibleTo)
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// The FOURTH CELL's depth-first machine (the ancestor composer, SCAN_TIER_DESIGN.md) and
@@ -32,7 +31,7 @@ namespace Copse.Linq.Async
   /// </summary>
   internal sealed class AsyncScanWhereDepthFirstTreenumerator<TSource, TAccumulate, TResult, TResultSelector>
     : AsyncTreenumeratorWrapper<TSource, TResult>
-    where TResultSelector : struct, IResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>
+    where TResultSelector : struct, IAsyncResultSelector<NodeAccumulation<TSource, TAccumulate>, TResult>
   {
     public AsyncScanWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,

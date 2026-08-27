@@ -1,13 +1,11 @@
 using Copse;
-using Copse.Async;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// The COMPOSED-PROJECTION twin of <see cref="AsyncRootfixScanBreadthFirstTreenumerator{TNode, TAccumulate}"/>

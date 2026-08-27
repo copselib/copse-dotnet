@@ -1,12 +1,11 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Treenumerables;
 using Copse.Linq.Extensions;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// <b>async</b> driver for the light SelectPruneDescendantsWhere tier and the codegen source of truth for
@@ -22,13 +21,13 @@ namespace Copse.Linq.Async
   {
     public AsyncSelectPruneDescendantsWhereTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TSource>, SelectWhereResult<TNode>> resultSelector)
+      Func<NodeContext<TSource>, AsyncSelectWhereResult<TNode>> resultSelector)
       : base(innerTreenumeratorFactory)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TNode>> _ResultSelector;
+    private readonly Func<NodeContext<TSource>, AsyncSelectWhereResult<TNode>> _ResultSelector;
 
     private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 

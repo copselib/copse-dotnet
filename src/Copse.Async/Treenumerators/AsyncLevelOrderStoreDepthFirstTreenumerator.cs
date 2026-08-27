@@ -1,9 +1,9 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse.Core;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   /// <summary>
   /// Depth-first treenumerator over a level-order store. The CROSS-ORDER member of the flat family's DFT pair -- children come from

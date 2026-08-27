@@ -1,5 +1,5 @@
-using Copse.Async.Stores;
-using Copse.Async;
+using Copse.Stores;
+using Copse;
 using System;
 using System.IO;
 using System.Threading;

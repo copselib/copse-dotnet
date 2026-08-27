@@ -1,8 +1,8 @@
-using Copse.Async;
-using Copse.Async.Stores;
+using Copse;
+using Copse.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The GROWING preorder citizen (completed stores ride AsyncPreorderArrayTopology, the
   // adjacency split): the walker PoC's one-pass index build (open-span stack ->

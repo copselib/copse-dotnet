@@ -68,8 +68,9 @@ Mechanical, syntax-level, no semantic analysis:
   (`IAsyncTreenumerable` → `ITreenumerable`, `GetAsyncTreenumerator` → `GetTreenumerator`,
   `AsyncDisposable` → `Disposable`, …) and `Async` prefix/suffix strips;
 - using-directive surgery: async-only namespaces dropped (`System.Threading.Tasks`,
-  `Copse.Async`, `System.Threading`), async namespaces mapped to their sync twins
-  (`Copse.Linq.Async.Treenumerators` → `Copse.Linq.Treenumerators`, …);
+  `System.Threading`). Since the namespace merge, async sources declare the SAME namespaces
+  as their twins (the Async segment left every namespace; type names carry the prefix), so
+  the old async-to-sync namespace mapping table survives only as an inert safety net;
 - **cancellation elision** — see below;
 - output normalized to CRLF (an `.editorconfig` cannot govern programmatic writes).
 

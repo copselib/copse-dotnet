@@ -1,5 +1,4 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System.Runtime.CompilerServices;
 
 namespace Copse.Linq.Extensions

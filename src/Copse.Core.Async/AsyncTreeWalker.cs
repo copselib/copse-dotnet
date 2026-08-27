@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   /// <summary>
   /// A movable stance on a tree: one node together with the ability to navigate away from it --

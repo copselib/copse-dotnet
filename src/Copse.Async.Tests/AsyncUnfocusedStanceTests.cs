@@ -1,5 +1,5 @@
-using Copse.Async;
-using Copse.Core.Async;
+using Copse;
+using Copse.Core;
 using Copse.Linq;
 using Copse.SimpleSerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

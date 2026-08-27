@@ -1,12 +1,12 @@
-using Copse.Async;
-using Copse.Async.Stores;
-using Copse.Async.Treenumerables;
-using Copse.Core.Async;
-using Copse.Linq.Async.Stores;
+using Copse;
+using Copse.Stores;
+using Copse.Treenumerables;
+using Copse.Core;
+using Copse.Linq.Stores;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // THE THIN SHAPE (the buffer-compose simplification --
   // SELECT_INTO_CAPTURES_DESIGN.md): a buffer projection is the source buffer plus a

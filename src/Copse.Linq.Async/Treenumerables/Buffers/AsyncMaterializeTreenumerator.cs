@@ -1,8 +1,7 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The settle seam of AsyncMaterializeTreenumerable: a replay treenumerator acquired before the
   // buffer settled. Acquisition already did its organic work (acquiring the inner memo replay is

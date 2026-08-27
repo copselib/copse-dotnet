@@ -1,11 +1,9 @@
-using Copse.Async.Stores;
 using Copse.Stores;
 using BenchmarkDotNet.Attributes;
-using Copse.Async;
-using Copse.Async.Treenumerables;
-using Copse.Async.Treenumerators;
+using Copse;
+using Copse.Treenumerables;
+using Copse.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq;
 using Copse.SimpleSerializer;
 using Copse.Trees;

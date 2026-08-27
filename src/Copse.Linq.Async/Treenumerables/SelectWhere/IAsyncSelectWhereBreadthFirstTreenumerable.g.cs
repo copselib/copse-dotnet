@@ -2,10 +2,10 @@
 //   Generated from IAsyncSelectWhereTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The composition recipe surface (design-docs/OPERATOR_COMPOSITION_DESIGN.md): appending an
   // operator is ONE call -- the wrapper unwraps its own mapping, composes the result selector
@@ -42,7 +42,7 @@ namespace Copse.Linq.Async.Treenumerables
     // Compose a result selector onto the accumulated mapping and return the successor
     // treenumerable. The outer piece arrives as an inlinable selector struct, so the
     // successor's composed chain nests in the TYPE and the splice costs no delegate hops;
-    // a piece that is inherently a closure rides as a FuncResultSelector leaf.
+    // a piece that is inherently a closure rides as a AsyncFuncResultSelector leaf.
     // relabels: whether THIS operator moves surviving nodes' labels (Where and PruneSubtreesWhere do;
     // PruneDescendantsWhere and projections do not). Only a member whose relabeling is genuinely
     // variable consults it -- today that is ScanWhere alone, which can be built either by a
@@ -51,7 +51,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
+      where TOuterSelector : struct, IAsyncResultSelector<TNode, TOuterResult>;
 
     // The context-shaped projection door, POSITION-BLIND BY CONTRACT: the leg reads values
     // only, so splicing is unconditionally safe -- a coordinate the leg never observes
@@ -72,7 +72,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncBreadthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TNode, TOuterResult>;
+      where TOuterSelector : struct, IAsyncResultSelector<TNode, TOuterResult>;
 
     // The context-shaped prune-after door (same absorption). Prune-afters compose IN-TIER
     // ONLY: light wrappers merge the predicate into themselves; every other member STACKS

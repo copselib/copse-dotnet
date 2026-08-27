@@ -1,8 +1,8 @@
-using Copse.Async;
-using Copse.Async.Stores;
+using Copse;
+using Copse.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The COMPLETED level-order citizen (the adjacency split): the layout's native
   // affordances answer children (a bounds probe plus an offset -- contiguous runs) and roots

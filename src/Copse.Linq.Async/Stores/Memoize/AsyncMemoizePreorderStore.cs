@@ -1,11 +1,10 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Stores
+namespace Copse.Linq.Stores
 {
   // The DFT dimension buffer of a memo: a lazily created, incrementally built preorder capture of the source --
   // values[i] plus subtreeSizes[i], node i's subtree spanning [i, i + subtreeSizes[i]) -- fed by

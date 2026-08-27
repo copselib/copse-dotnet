@@ -1,6 +1,5 @@
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async.Treenumerables;
+using Copse.Linq.Treenumerables;
 using System;
 
 namespace Copse.Linq
@@ -21,11 +20,11 @@ namespace Copse.Linq
       // A value predicate observes no coordinates, so it composes unconditionally. The selector
       // is the plain path's struct: the operator's semantics, stated once.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose<TNode, PruneSubtreesWhereResultSelector<TNode>>(
-          new PruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.Compose<TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereTreenumerable<TNode, TNode, PruneSubtreesWhereResultSelector<TNode>>(
-        source, new PruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereTreenumerable<TNode, TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -41,11 +40,11 @@ namespace Copse.Linq
 
       // The join rule: a positional predicate composes only over a label-preserving chain.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePositional<TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-          new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.ComposePositional<TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereTreenumerable<TNode, TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-        source, new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereTreenumerable<TNode, TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -63,15 +62,15 @@ namespace Copse.Linq
       // through a narrow-typed receiver composes on its own representation -- the successor
       // keeps both dimensions; a narrow chain composes to a narrow successor.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose<TNode, PruneSubtreesWhereResultSelector<TNode>>(
-          new PruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.Compose<TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose<TNode, PruneSubtreesWhereResultSelector<TNode>>(
-          new PruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return depthFirstSelectWhereSource.Compose<TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, PruneSubtreesWhereResultSelector<TNode>>(
-        source, new PruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -88,15 +87,15 @@ namespace Copse.Linq
       // The join rule, as in the composite positional overload: splice only while the chain
       // is label-preserving.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePositional<TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-          new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.ComposePositional<TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.ComposePositional<TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-          new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return depthFirstSelectWhereSource.ComposePositional<TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-        source, new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereDepthFirstTreenumerable<TNode, TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -111,15 +110,15 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.Compose<TNode, PruneSubtreesWhereResultSelector<TNode>>(
-          new PruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.Compose<TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose<TNode, PruneSubtreesWhereResultSelector<TNode>>(
-          new PruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return breadthFirstSelectWhereSource.Compose<TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, PruneSubtreesWhereResultSelector<TNode>>(
-        source, new PruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, AsyncPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
 
     /// <summary>
@@ -134,15 +133,15 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePositional<TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-          new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return selectWhereSource.ComposePositional<TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.ComposePositional<TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-          new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
+        return breadthFirstSelectWhereSource.ComposePositional<TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+          new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate), relabels: true);
 
-      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, PositionalPruneSubtreesWhereResultSelector<TNode>>(
-        source, new PositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
+      return new AsyncSelectWhereBreadthFirstTreenumerable<TNode, TNode, AsyncPositionalPruneSubtreesWhereResultSelector<TNode>>(
+        source, new AsyncPositionalPruneSubtreesWhereResultSelector<TNode>(predicate));
     }
   }
 }

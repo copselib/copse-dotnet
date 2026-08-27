@@ -1,10 +1,9 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse.Core;
-using Copse.Core.Async;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   /// <summary>
   /// Breadth-first <b>async</b> treenumerator over a forward-only level-order stream, in the

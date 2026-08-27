@@ -2,8 +2,10 @@
 //   Generated from AsyncTakeSubtreesWhereProductTreenumerable.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Linq.Treenumerators;
+using Copse;
 using Copse.Core;
-using Copse.Linq.Treenumerators; // the sync transform needs the mapped using to resolve the treenumerator
+using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
 namespace Copse.Linq.Treenumerables

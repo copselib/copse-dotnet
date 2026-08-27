@@ -1,6 +1,6 @@
 using Copse.Core;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The composed pipeline's carrier: one evaluation of the composed selector chain against a source
   // node answers the driver's whole per-node question -- is the node in the output tree, and
@@ -16,9 +16,9 @@ namespace Copse.Linq.Async.Treenumerables
   // "remove this node", so the result inherits that meaning rather than tracking a second
   // flag or a case split -- any pair is coherent because the strategies alone say what
   // happens to the node.
-  internal readonly struct SelectWhereResult<TNode>
+  internal readonly struct AsyncSelectWhereResult<TNode>
   {
-    public SelectWhereResult(TNode node, NodeTraversalStrategies strategies)
+    public AsyncSelectWhereResult(TNode node, NodeTraversalStrategies strategies)
     {
       Node = node;
       Strategies = strategies;

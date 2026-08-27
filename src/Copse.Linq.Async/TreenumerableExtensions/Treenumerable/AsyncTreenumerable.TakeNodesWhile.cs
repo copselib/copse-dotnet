@@ -1,6 +1,5 @@
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async;
+using Copse.Linq;
 using System;
 
 namespace Copse.Linq

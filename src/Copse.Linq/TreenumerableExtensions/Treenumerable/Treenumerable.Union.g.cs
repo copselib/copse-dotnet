@@ -2,8 +2,10 @@
 //   Generated from AsyncTreenumerable.Union.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse;
 using Copse.Treenumerables;
 using Copse.Core;
+using Copse.Linq;
 using Copse.Linq.Treenumerators;
 
 namespace Copse.Linq

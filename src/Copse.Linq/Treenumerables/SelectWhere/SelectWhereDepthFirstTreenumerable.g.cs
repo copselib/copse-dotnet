@@ -6,8 +6,9 @@
 //   Generated from SelectWhereTreenumerable.cs by Copse.CodeGen (composite->narrow transcription).
 //   Do not edit; edit the composite-width source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
-using Copse.Core;
 using Copse.Linq.Treenumerators;
+using Copse.Core;
+using Copse.Linq;
 using System;
 
 namespace Copse.Linq.Treenumerables

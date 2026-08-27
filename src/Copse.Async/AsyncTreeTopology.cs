@@ -1,7 +1,7 @@
-using Copse.Async.Topologies;
-using Copse.Core.Async;
+using Copse.Topologies;
+using Copse.Core;
 
-namespace Copse.Async
+namespace Copse
 {
   /// <summary>Factories for <see cref="IAsyncTreeTopology{TNode, THandle}"/> instances, the
   /// topology counterpart of the <c>Tree</c> factories.</summary>

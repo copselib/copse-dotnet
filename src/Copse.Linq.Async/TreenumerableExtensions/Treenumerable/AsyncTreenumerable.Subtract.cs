@@ -1,4 +1,4 @@
-using Copse.Core.Async;
+using Copse.Core;
 
 namespace Copse.Linq
 {

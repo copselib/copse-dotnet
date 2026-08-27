@@ -1,7 +1,7 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   /// <summary>
   /// A treenumerable that also affords navigation: from any node's handle, single steps to its

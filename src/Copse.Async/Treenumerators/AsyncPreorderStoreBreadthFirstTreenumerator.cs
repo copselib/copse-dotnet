@@ -1,9 +1,9 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse.Core;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   /// <summary>
   /// Breadth-first treenumerator over a preorder store. The CROSS-ORDER member of the flat family's BFT pair -- a completed

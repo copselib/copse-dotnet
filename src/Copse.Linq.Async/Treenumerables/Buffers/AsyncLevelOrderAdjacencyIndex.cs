@@ -1,8 +1,8 @@
-using Copse.Async;
-using Copse.Async.Stores;
+using Copse;
+using Copse.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The GROWING level-order citizen (completed stores ride AsyncLevelOrderArrayTopology,
   // the adjacency split): the layout's native affordances need almost no index --

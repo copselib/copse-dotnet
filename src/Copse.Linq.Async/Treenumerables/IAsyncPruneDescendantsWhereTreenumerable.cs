@@ -1,7 +1,7 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   /// <summary>
   /// The PUBLIC prune-after citizenship

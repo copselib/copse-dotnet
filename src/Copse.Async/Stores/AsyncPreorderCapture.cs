@@ -1,10 +1,9 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // The flat family's ENCODE direction, written once: one awaited depth-first walk of any
   // source, captured into a completed preorder store. (The store treenumerators are the DECODE

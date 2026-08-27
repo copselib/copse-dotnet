@@ -1,5 +1,4 @@
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Extensions;
 using System.Collections.Generic;
 using System.Linq;

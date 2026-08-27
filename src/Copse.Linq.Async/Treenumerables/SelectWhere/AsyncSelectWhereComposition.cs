@@ -1,7 +1,7 @@
 using Copse.Core;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The LIGHT tier's composition arrows, written once (design-docs/OPERATOR_COMPOSITION_DESIGN.md,
   // "the result monad"): every way two adjacent light arrows compose into one, named
@@ -9,15 +9,15 @@ namespace Copse.Linq.Async.Treenumerables
   // composition produces the light wrappers, and their pieces are user lambdas.
   //
   // The GENERAL law -- inner-first, SkipNode short-circuits, strategies union -- is not here:
-  // it lives in ComposedResultSelector, the struct-composed arrow, which is its one home.
+  // it lives in AsyncComposedResultSelector, the struct-composed arrow, which is its one home.
   // Every splice that crosses into the driver routes through that, a closure piece riding as
-  // a FuncResultSelector leaf.
+  // a AsyncFuncResultSelector leaf.
   //
   // The arrows are dimension-blind -- they never touch a treenumerator -- so the
   // composite-width wrappers and both narrow-width (single-dimension) wrappers compose
   // through these same methods; the wrappers own only representation choice (which successor
   // type to build) and acquisition (which driver to hand the composed arrow).
-  internal static class SelectWhereComposition
+  internal static class AsyncSelectWhereComposition
   {
     // A projection composed onto a projection is still a projection.
     public static Func<NodeContext<TSource>, TOuterResult> SelectThenSelect<TSource, TResult, TOuterResult>(
@@ -28,7 +28,7 @@ namespace Copse.Linq.Async.Treenumerables
     }
 
     // A prune-after joins a projection: the predicate judges the projected value.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectThenPruneDescendantsWhere<TSource, TResult>(
+    public static Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> SelectThenPruneDescendantsWhere<TSource, TResult>(
       Func<NodeContext<TSource>, TResult> innerSelector,
       Func<NodeContext<TResult>, bool> predicate)
     {
@@ -36,7 +36,7 @@ namespace Copse.Linq.Async.Treenumerables
       {
         var value = innerSelector(nodeContext);
 
-        return new SelectWhereResult<TResult>(
+        return new AsyncSelectWhereResult<TResult>(
           value,
           predicate(new NodeContext<TResult>(value, nodeContext.Position))
             ? NodeTraversalStrategies.PruneDescendants
@@ -46,7 +46,7 @@ namespace Copse.Linq.Async.Treenumerables
 
     // A projection joins a prune-after: the prune predicate judges the source value (its layer
     // runs first), the selector maps it.
-    public static Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> PruneDescendantsWhereThenSelect<TNode, TOuterResult>(
+    public static Func<NodeContext<TNode>, AsyncSelectWhereResult<TOuterResult>> PruneDescendantsWhereThenSelect<TNode, TOuterResult>(
       Func<NodeContext<TNode>, bool> predicate,
       Func<NodeContext<TNode>, TOuterResult> selector)
     {
@@ -56,7 +56,7 @@ namespace Copse.Linq.Async.Treenumerables
           ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll;
 
-        return new SelectWhereResult<TOuterResult>(selector(nodeContext), strategies);
+        return new AsyncSelectWhereResult<TOuterResult>(selector(nodeContext), strategies);
       };
     }
 
@@ -72,15 +72,15 @@ namespace Copse.Linq.Async.Treenumerables
 
     // A projection joins a never-rejecting chain: the value maps, the truncation strategies
     // ride (nothing in the chain can reject, so no short-circuit).
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectPruneDescendantsWhereThenSelect<TSource, TResult, TOuterResult>(
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
+    public static Func<NodeContext<TSource>, AsyncSelectWhereResult<TOuterResult>> SelectPruneDescendantsWhereThenSelect<TSource, TResult, TOuterResult>(
+      Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> innerResultSelector,
       Func<NodeContext<TResult>, TOuterResult> selector)
     {
       return nodeContext =>
       {
         var innerResult = innerResultSelector(nodeContext);
 
-        return new SelectWhereResult<TOuterResult>(
+        return new AsyncSelectWhereResult<TOuterResult>(
           selector(new NodeContext<TResult>(innerResult.Node, nodeContext.Position)),
           innerResult.Strategies);
       };
@@ -88,15 +88,15 @@ namespace Copse.Linq.Async.Treenumerables
 
     // A prune-after joins a never-rejecting chain: its predicate judges the projected value;
     // truncations union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectPruneDescendantsWhereThenPruneDescendantsWhere<TSource, TResult>(
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
+    public static Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> SelectPruneDescendantsWhereThenPruneDescendantsWhere<TSource, TResult>(
+      Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> innerResultSelector,
       Func<NodeContext<TResult>, bool> predicate)
     {
       return nodeContext =>
       {
         var innerResult = innerResultSelector(nodeContext);
 
-        return new SelectWhereResult<TResult>(
+        return new AsyncSelectWhereResult<TResult>(
           innerResult.Node,
           innerResult.Strategies
             | (predicate(new NodeContext<TResult>(innerResult.Node, nodeContext.Position))
@@ -107,6 +107,6 @@ namespace Copse.Linq.Async.Treenumerables
 
     // (Cross-tier splices carry no arrow here: a rejecting operator splices over a light
     // wrapper through the struct Compose door, so the chain rides as struct legs in
-    // ComposedResultSelector.)
+    // AsyncComposedResultSelector.)
   }
 }

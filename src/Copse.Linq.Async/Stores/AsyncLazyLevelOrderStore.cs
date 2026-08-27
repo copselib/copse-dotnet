@@ -1,9 +1,9 @@
-using Copse.Async.Stores;
-using Copse.Async;
+using Copse.Stores;
+using Copse;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Stores
+namespace Copse.Linq.Stores
 {
   // An IAsyncLevelOrderStore over a level-order capture that does not exist yet: the first grow
   // call awaits the one-shot build and every call after that answers from the completed

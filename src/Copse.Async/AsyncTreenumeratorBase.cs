@@ -1,8 +1,7 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   // Hand-written twin of Copse.TreenumeratorBase (see its comment for why the base is a maintained
   // pair rather than codegen'd). Async disposal, no finalizer -- structurally parallel to the sync

@@ -1,12 +1,11 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq.Treenumerators; // MergeNode
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> <c>StructuralMerge</c>: the direct-style async port of

@@ -1,10 +1,10 @@
-using Copse.Async;
-using Copse.Async.Treenumerators;
-using Copse.Core.Async;
-using Copse.Linq.Async.Stores;
+using Copse;
+using Copse.Treenumerators;
+using Copse.Core;
+using Copse.Linq.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The memo behind Memoize() for a source that only affords the DEPTH-FIRST dimension: the
   // typed upgrade op (see TRAVERSAL_DIMENSION_SPLIT.md). One preorder capture, fed by the

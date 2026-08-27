@@ -1,10 +1,10 @@
-using Copse.Async;
-using Copse.Async.Stores;
-using Copse.Linq.Async.Stores;
-using Copse.Core.Async;
+using Copse;
+using Copse.Stores;
+using Copse.Linq.Stores;
+using Copse.Core;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // A completed, owned, in-memory capture presented as the non-disposable ITreenumerableBuffer
   // marker: a thin wrapper that delegates both dimensions to an inner in-memory treenumerable

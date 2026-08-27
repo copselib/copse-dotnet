@@ -1,9 +1,9 @@
+using Copse.Linq.Treenumerators;
 using Copse.Core;
-using Copse.Core.Async;
-using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
+using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   /// <summary>
   /// The canonical prune-after treenumerable: a source and a predicate; each matching node
@@ -61,10 +61,10 @@ namespace Copse.Linq.Async.Treenumerables
       TOuterSelector outerSelector,
       bool relabels)
     {
-      return new AsyncSelectWhereTreenumerable<TNode, TOuterResult, ComposedResultSelector<TNode, TNode, TOuterResult, PruneDescendantsWhereResultSelector<TNode>, TOuterSelector>>(
+      return new AsyncSelectWhereTreenumerable<TNode, TOuterResult, AsyncComposedResultSelector<TNode, TNode, TOuterResult, AsyncPruneDescendantsWhereResultSelector<TNode>, TOuterSelector>>(
         _Source,
-        new ComposedResultSelector<TNode, TNode, TOuterResult, PruneDescendantsWhereResultSelector<TNode>, TOuterSelector>(
-          new PruneDescendantsWhereResultSelector<TNode>(_Predicate), outerSelector));
+        new AsyncComposedResultSelector<TNode, TNode, TOuterResult, AsyncPruneDescendantsWhereResultSelector<TNode>, TOuterSelector>(
+          new AsyncPruneDescendantsWhereResultSelector<TNode>(_Predicate), outerSelector));
     }
 
     // PruneDescendantsWhere over PruneDescendantsWhere stays on the bespoke driver: the pair merges into ONE
@@ -72,7 +72,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncTreenumerable<TNode> IAsyncSelectWhereTreenumerable<TNode>.ComposePruneDescendantsWhere(Func<NodeContext<TNode>, bool> outerPredicate)
     {
       return new AsyncPruneDescendantsWhereTreenumerable<TNode>(
-        _Source, SelectWhereComposition.PruneDescendantsWhereThenPruneDescendantsWhere(_Predicate, outerPredicate));
+        _Source, AsyncSelectWhereComposition.PruneDescendantsWhereThenPruneDescendantsWhere(_Predicate, outerPredicate));
     }
 
     // A projection joins: promote to the middle tier (light passthrough driver), never the
@@ -80,7 +80,7 @@ namespace Copse.Linq.Async.Treenumerables
     IAsyncTreenumerable<TOuterResult> IAsyncSelectWhereTreenumerable<TNode>.Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
     {
       return new AsyncSelectPruneDescendantsWhereTreenumerable<TNode, TOuterResult>(
-        _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, selector));
+        _Source, AsyncSelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, selector));
     }
 
     /// <inheritdoc/>

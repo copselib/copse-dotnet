@@ -1,5 +1,4 @@
 using Copse.Core;
-using Copse.Core.Async;
 using Copse.Linq;
 using Copse.Linq.Treenumerators; // MergeNode
 using Copse.SimpleSerializer;

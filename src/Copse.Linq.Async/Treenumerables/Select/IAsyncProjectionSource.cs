@@ -1,7 +1,7 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // COMPOSE-LEFT's door (SELECT_INTO_CAPTURES_DESIGN.md section 3): Compose's INVERSE verb,
   // living on the same wrapper. Compose is same-kind succession -- "here is more mapping,

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async
+namespace Copse
 {
   /// <summary>
   /// Async analog of <c>Copse.IChildEnumerator&lt;THandle&gt;</c>: the pull yields the next

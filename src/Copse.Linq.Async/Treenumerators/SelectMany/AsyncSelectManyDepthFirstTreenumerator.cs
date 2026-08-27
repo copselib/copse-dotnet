@@ -1,11 +1,10 @@
-using Copse.Async;
+using Copse;
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   // The pointed bind, depth-first and streaming: every source node is replaced in place by
   // its expansion's forest, and the node's own children -- each replaced the same way --

@@ -1,7 +1,7 @@
-using Copse.Core.Async;
+using Copse.Core;
 using System;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Treenumerables
 {
   // Async analog of Copse.Treenumerables.DelegatingBreadthFirstTreenumerable: the single-dimension
   // sibling the narrow async operator overloads return, so a chain over an

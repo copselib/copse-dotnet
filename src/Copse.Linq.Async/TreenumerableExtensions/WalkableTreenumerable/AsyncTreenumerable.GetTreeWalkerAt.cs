@@ -1,4 +1,4 @@
-using Copse.Async;
+using Copse;
 using System.Threading.Tasks;
 
 namespace Copse.Linq

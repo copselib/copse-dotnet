@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Stores
+namespace Copse.Stores
 {
   // Codegen source of the sync twin, Copse.Stores.IPreorderStream.
   /// <summary>
@@ -12,11 +12,11 @@ namespace Copse.Async.Stores
   {
     /// <summary>Reads the next preorder node, or absent when the stream is
     /// exhausted.</summary>
-    ValueTask<Option<PreorderRead<TNode>>> TryReadNextAsync();
+    ValueTask<Option<AsyncPreorderRead<TNode>>> TryReadNextAsync();
 
     /// <summary>Discards nodes -- without materializing their values -- until one arrives at
     /// depth at most <paramref name="maxDepth"/>, and returns it; absent when the stream
     /// exhausts first.</summary>
-    ValueTask<Option<PreorderRead<TNode>>> TrySkipToDepthAsync(int maxDepth);
+    ValueTask<Option<AsyncPreorderRead<TNode>>> TrySkipToDepthAsync(int maxDepth);
   }
 }

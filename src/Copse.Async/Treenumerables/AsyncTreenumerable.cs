@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Copse.Async.Treenumerators;
-using Copse.Core.Async;
+using Copse.Treenumerators;
+using Copse.Core;
 
-namespace Copse.Async.Treenumerables
+namespace Copse.Treenumerables
 {
   // Codegen source of truth for the sync engine base Copse.Treenumerables.Treenumerable<,,>.
   //

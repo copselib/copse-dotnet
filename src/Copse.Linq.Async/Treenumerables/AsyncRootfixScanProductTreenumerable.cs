@@ -1,8 +1,9 @@
-using Copse.Core.Async;
-using Copse.Linq.Async; // the sync transform needs the mapped using to resolve the treenumerator
+using Copse.Linq.Treenumerators;
+using Copse.Core;
+using Copse.Linq; // the sync transform needs the mapped using to resolve the treenumerator
 using System;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // A composed-projection variant of a rootfix scan (the streaming projection citizenship):
   // the same bare recipe as the plain citizen, with the product selector planted inside the
@@ -53,22 +54,22 @@ namespace Copse.Linq.Async.Treenumerables
     }
 
     // The fourth-cell door (see the plain citizen): the composed product rides as a
-    // SelectResultSelector inner leg, the splicing operator's leg composes over it, and the
+    // AsyncSelectResultSelector inner leg, the splicing operator's leg composes over it, and the
     // whole chain -- fold, projection, rejection -- is ONE machine.
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TProduct, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<TProduct, TOuterResult>
     {
       var currentProductSelector = _ProductSelector;
 
-      return new AsyncScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, ComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>>(
+      return new AsyncScanWhereTreenumerable<TNode, TAccumulate, TOuterResult, AsyncComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, AsyncSelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>>(
         _InnerDepthFirstFactory,
         _InnerBreadthFirstFactory,
         _Accumulator,
         _Seed,
-        new ComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>(
-          new SelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>(currentProductSelector),
+        new AsyncComposedResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct, TOuterResult, AsyncSelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>, TOuterSelector>(
+          new AsyncSelectResultSelector<NodeAccumulation<TNode, TAccumulate>, TProduct>(currentProductSelector),
           outerSelector),
         relabels);
     }
@@ -82,11 +83,11 @@ namespace Copse.Linq.Async.Treenumerables
     public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
       bool relabels)
-      where TOuterSelector : struct, IResultSelector<TProduct, TOuterResult>
+      where TOuterSelector : struct, IAsyncResultSelector<TProduct, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
     public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
-      => Compose<TOuterResult, SelectResultSelector<TProduct, TOuterResult>>(
-        new SelectResultSelector<TProduct, TOuterResult>(selector), relabels: false);
+      => Compose<TOuterResult, AsyncSelectResultSelector<TProduct, TOuterResult>>(
+        new AsyncSelectResultSelector<TProduct, TOuterResult>(selector), relabels: false);
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the product citizen.

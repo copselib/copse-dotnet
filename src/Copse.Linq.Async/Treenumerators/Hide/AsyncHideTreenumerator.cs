@@ -1,9 +1,8 @@
 using Copse.Core;
-using Copse.Core.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async
+namespace Copse.Linq.Treenumerators
 {
   /// <summary>
   /// <b>async</b> <c>Hide</c> and the codegen source of truth for its sync twin: forwards the inner

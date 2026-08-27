@@ -1,10 +1,10 @@
-using Copse.Async;
-using Copse.Async.Treenumerators;
-using Copse.Core.Async;
-using Copse.Linq.Async.Stores;
+using Copse;
+using Copse.Treenumerators;
+using Copse.Core;
+using Copse.Linq.Stores;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The memo behind Memoize(): a re-traversable, shared, lazily-growing capture of the source's
   // current shape. ONE capture: the first acquisition (or consume) pins the layout to its

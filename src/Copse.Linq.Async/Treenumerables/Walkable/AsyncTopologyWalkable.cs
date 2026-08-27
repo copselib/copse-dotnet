@@ -1,8 +1,8 @@
-using Copse.Async;
-using Copse.Core.Async;
+using Copse;
+using Copse.Core;
 using System.Threading.Tasks;
 
-namespace Copse.Linq.Async.Treenumerables
+namespace Copse.Linq.Treenumerables
 {
   // The identity view: a topology worn as a walkable, nothing rewritten. This is what the
   // unfocused stance's Subtree() denotes -- the source forest itself (there is there is nothing above it

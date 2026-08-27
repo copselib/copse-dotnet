@@ -1,4 +1,4 @@
-namespace Copse.Core.Async
+namespace Copse.Core
 {
   /// <summary>
   /// An async tree that offers both traversal orders: the composite of

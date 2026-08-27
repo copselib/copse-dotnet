@@ -1,10 +1,9 @@
-using Copse.Async.Stores;
+using Copse.Stores;
 using Copse.Core;
-using Copse.Core.Async;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Copse.Async.Treenumerators
+namespace Copse.Treenumerators
 {
   /// <summary>
   /// Depth-first <b>async</b> treenumerator over a forward-only preorder stream, in the <b>direct
@@ -282,7 +281,7 @@ namespace Copse.Async.Treenumerators
     }
 
     // Land a lookahead read in the fields; false (and exhaustion) when the stream ended.
-    private bool ConsumeRead(Option<PreorderRead<TNode>> read)
+    private bool ConsumeRead(Option<AsyncPreorderRead<TNode>> read)
     {
       if (!read.HasValue)
       {
@@ -297,7 +296,7 @@ namespace Copse.Async.Treenumerators
       return true;
     }
 
-    private bool ConsumeSkip(Option<PreorderRead<TNode>> read)
+    private bool ConsumeSkip(Option<AsyncPreorderRead<TNode>> read)
     {
       if (!read.HasValue)
       {
@@ -407,7 +406,7 @@ namespace Copse.Async.Treenumerators
       return await TryPushNextChildAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TNode>>> pendingRead, int maxDepth)
+    private async ValueTask<bool> AwaitReadThenEnsureLookaheadAsync(ValueTask<Option<AsyncPreorderRead<TNode>>> pendingRead, int maxDepth)
     {
       if (!ConsumeRead(await pendingRead.ConfigureAwait(false)))
         return false;
@@ -415,7 +414,7 @@ namespace Copse.Async.Treenumerators
       return await TryEnsureLookaheadAtOrAboveAsync(maxDepth).ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<Option<PreorderRead<TNode>>> pendingSkip, int maxDepth)
+    private async ValueTask<bool> AwaitSkipThenEnsureLookaheadAsync(ValueTask<Option<AsyncPreorderRead<TNode>>> pendingSkip, int maxDepth)
     {
       if (!ConsumeSkip(await pendingSkip.ConfigureAwait(false)))
         return false;
