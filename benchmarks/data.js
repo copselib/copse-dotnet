@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787870524161,
+  "lastUpdate": 1787870524893,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -37162,6 +37162,54 @@ window.BENCHMARK_DATA = {
             "value": 15308546.056966146,
             "unit": "ns",
             "range": "± 603782.1512711595"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98a3f1ffd6344e1295a4517b8af1228e49a7d382",
+          "message": "Add the SelectMany projection form (the lawful join's LINQ spelling)\n\nJason, using the surface as a consumer: there was no SelectMany for\nITreenumerable<ITreenumerable<T>> the way IEnumerable has -- 'we need to have a\nway to project a node to a tree, not just graft copies of identical trees.'\n\nFor sequences the flatten has one possible answer, so LINQ's identity-lambda\nidiom needs no policy. For trees the join is parameterized by the graft point\n(the pointed-expansion result) -- but the choice is not free if the laws are to\nhold: UnderLastRoot is Return's own placement, the one under which Return is\nthe monad's unit. Flatten there is THE lawful join (the Data.Tree order).\n\nNew overloads, both colors, DFT + composite:\n\n  SelectMany(source, Func<TSource, IDepthFirstTreenumerable<TResult>> selector)\n    == SelectMany(source, n => Expansion.Of(selector(n), UnderLastRoot))\n\nDelegation-only -- no new machinery; streaming, the BFT documented capture, and\ncomposition inherited from the expansion form. nested.SelectMany(t => t) is now\nthe monad's flatten and node->tree projection reads as LINQ; the expansion form\nstays the door to the other placements and the slotless arms.\n\nPinned by 4 new SelectManyOperatorTests (corpus equivalence both dimensions,\nthe flatten identity, the worked a(b) example). Record: SELECTMANY_DESIGN.md\nAddendum V. Suite green: 26,546 (463 + 69 + 26,014).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T22:14:45Z",
+          "tree_id": "f01dfb76a6c9cd7f40da4a71c658e82a782d5282",
+          "url": "https://github.com/copselib/copse-dotnet/commit/98a3f1ffd6344e1295a4517b8af1228e49a7d382"
+        },
+        "date": 1787870524738,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_8M",
+            "value": 14503069.811458332,
+            "unit": "ns",
+            "range": "± 216095.56524519259"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveFirst_8M",
+            "value": 26879056.745535713,
+            "unit": "ns",
+            "range": "± 154584.49445251763"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.RemoveLast_8M",
+            "value": 26339893.8,
+            "unit": "ns",
+            "range": "± 350911.43242632493"
+          },
+          {
+            "name": "Copse.Benchmarks.RefSemiDeque.Add_Block64_1M",
+            "value": 14563163.73549107,
+            "unit": "ns",
+            "range": "± 529446.3422520957"
           }
         ]
       }
