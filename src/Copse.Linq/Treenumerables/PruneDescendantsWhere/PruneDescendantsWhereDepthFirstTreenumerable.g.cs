@@ -36,26 +36,26 @@ namespace Copse.Linq.Treenumerables
         throw new ArgumentNullException(nameof(predicate));
 
       _Source = source;
-      _Predicate = nodeContext => predicate(nodeContext.Node);
+      _Predicate = nodeAndPosition => predicate(nodeAndPosition.Node);
     }
 
     // The context-shaped recipe seat (internal: the operators' positional flavors ride it).
     internal PruneDescendantsWhereDepthFirstTreenumerable(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
     }
 
     private readonly IDepthFirstTreenumerable<TNode> _Source;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
     // ---- The internal algebra, explicitly implemented: the public surface of this class is
     // its constructor and its public doors; the driver recipe stays internal ----
 
     // A prune-after never moves a label, so the position-reading doors ARE the blind doors.
-    IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePositional<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+    IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePositional<TOuterResult>(Func<NodeAndPosition<TNode>, TOuterResult> selector)
       => ((ISelectWhereDepthFirstTreenumerable<TNode>)this).Compose(selector);
 
     IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePositional<TOuterResult, TOuterSelector>(
@@ -77,7 +77,7 @@ namespace Copse.Linq.Treenumerables
 
     // PruneDescendantsWhere over PruneDescendantsWhere stays on the bespoke driver: the pair merges into ONE
     // wrapper by predicate union.
-    IDepthFirstTreenumerable<TNode> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePruneDescendantsWhere(Func<NodeContext<TNode>, bool> outerPredicate)
+    IDepthFirstTreenumerable<TNode> ISelectWhereDepthFirstTreenumerable<TNode>.ComposePruneDescendantsWhere(Func<NodeAndPosition<TNode>, bool> outerPredicate)
     {
       return new PruneDescendantsWhereDepthFirstTreenumerable<TNode>(
         _Source, SelectWhereComposition.PruneDescendantsWhereThenPruneDescendantsWhere(_Predicate, outerPredicate));
@@ -85,7 +85,7 @@ namespace Copse.Linq.Treenumerables
 
     // A projection joins: promote to the middle tier (light passthrough driver), never the
     // filter driver.
-    IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector)
+    IDepthFirstTreenumerable<TOuterResult> ISelectWhereDepthFirstTreenumerable<TNode>.Compose<TOuterResult>(Func<NodeAndPosition<TNode>, TOuterResult> selector)
     {
       return new SelectPruneDescendantsWhereDepthFirstTreenumerable<TNode, TOuterResult>(
         _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, selector));

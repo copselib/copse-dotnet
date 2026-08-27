@@ -24,7 +24,7 @@ namespace Copse.Linq.Treenumerables
     public AsyncScanWhereTreenumerable(
       Func<IAsyncTreenumerator<TSource>> innerDepthFirstFactory,
       Func<IAsyncTreenumerator<TSource>> innerBreadthFirstFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector,
       bool relabels)
@@ -39,7 +39,7 @@ namespace Copse.Linq.Treenumerables
 
     private readonly Func<IAsyncTreenumerator<TSource>> _InnerDepthFirstFactory;
     private readonly Func<IAsyncTreenumerator<TSource>> _InnerBreadthFirstFactory;
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> _Accumulator;
     private readonly TAccumulate _Seed;
     private readonly TResultSelector _ResultSelector;
 
@@ -67,7 +67,7 @@ namespace Copse.Linq.Treenumerables
     // The context-shaped projection door: the projection nests as a struct leg onto the
     // selector chain, over the pair (this machine is not in the narrow fan-out, so all
     // four doors live in this file).
-    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
         new AsyncSelectResultSelector<TResult, TOuterResult>(selector), relabels: false);
 
@@ -90,7 +90,7 @@ namespace Copse.Linq.Treenumerables
     // The position-reading doors: this machine inherits relabeling from whatever joined it,
     // so it answers from its own flag -- splice while nothing here moves a label, otherwise
     // stack so the leg reads published labels.
-    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => _Relabels
         ? new AsyncSelectTreenumerable<TResult, TOuterResult>(this, selector)
         : Compose(selector);
@@ -107,14 +107,14 @@ namespace Copse.Linq.Treenumerables
     // fold-carrying machine (which is itself a citizen through the general surface).
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
       => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
-        new AsyncSelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)), relabels: false);
+        new AsyncSelectResultSelector<TResult, TOuterResult>(nodeAndPosition => selector(nodeAndPosition.Node)), relabels: false);
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the fold-carrying machine.
-    public IAsyncTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+    public IAsyncTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeAndPosition<TResult>, bool> predicate)
       => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, predicate);
 
     public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
-      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
+      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeAndPosition => predicate(nodeAndPosition.Node));
   }
 }

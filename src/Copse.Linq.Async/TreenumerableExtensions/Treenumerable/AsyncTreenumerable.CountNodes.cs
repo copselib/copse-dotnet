@@ -27,7 +27,7 @@ namespace Copse.Linq
       Func<TNode, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node), treeTraversalStrategy, cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node), treeTraversalStrategy, cancellationToken);
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
     public static ValueTask<int> CountNodesAsync<TNode>(
@@ -35,7 +35,7 @@ namespace Copse.Linq
       Func<TNode, NodePosition, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy, cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), treeTraversalStrategy, cancellationToken);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -56,7 +56,7 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node), cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node), cancellationToken);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -68,7 +68,7 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), cancellationToken);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -89,7 +89,7 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node), cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node), cancellationToken);
 
     /// <summary>
     /// Terminal: the number of nodes in the (filtered) tree. Each node is scheduled exactly once, so
@@ -101,11 +101,11 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       CancellationToken cancellationToken = default)
-      => CountNodesCoreAsync(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), cancellationToken);
+      => CountNodesCoreAsync(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), cancellationToken);
 
     private static async ValueTask<int> CountNodesCoreAsync<TNode>(
       IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy,
       CancellationToken cancellationToken)
     {
@@ -119,7 +119,7 @@ namespace Copse.Linq
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
         {
           cancellationToken.ThrowIfCancellationRequested();
-          if (predicate(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)))
+          if (predicate(new NodeAndPosition<TNode>(treenumerator.Node, treenumerator.Position)))
             result++;
         }
 
@@ -128,7 +128,7 @@ namespace Copse.Linq
 
     private static async ValueTask<int> CountNodesCoreAsync<TNode>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       CancellationToken cancellationToken)
     {
       if (source == null)
@@ -141,7 +141,7 @@ namespace Copse.Linq
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
         {
           cancellationToken.ThrowIfCancellationRequested();
-          if (predicate(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)))
+          if (predicate(new NodeAndPosition<TNode>(treenumerator.Node, treenumerator.Position)))
             result++;
         }
 
@@ -150,7 +150,7 @@ namespace Copse.Linq
 
     private static async ValueTask<int> CountNodesCoreAsync<TNode>(
       IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       CancellationToken cancellationToken)
     {
       if (source == null)
@@ -163,7 +163,7 @@ namespace Copse.Linq
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.SkipNode).ConfigureAwait(false))
         {
           cancellationToken.ThrowIfCancellationRequested();
-          if (predicate(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)))
+          if (predicate(new NodeAndPosition<TNode>(treenumerator.Node, treenumerator.Position)))
             result++;
         }
 

@@ -10,6 +10,6 @@ namespace Copse.Linq.Treenumerables
   // silently operate on a defensive copy.
   internal interface IAsyncResultSelector<TSource, TResult>
   {
-    AsyncSelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext);
+    AsyncSelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition);
   }
 }

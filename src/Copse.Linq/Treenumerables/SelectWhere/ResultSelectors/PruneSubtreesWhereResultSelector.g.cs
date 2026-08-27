@@ -17,10 +17,10 @@ namespace Copse.Linq.Treenumerables
 
     private readonly Func<TNode, bool> _Predicate;
 
-    public SelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
+    public SelectWhereResult<TNode> GetResult(NodeAndPosition<TNode> nodeAndPosition)
       => new SelectWhereResult<TNode>(
-        nodeContext.Node,
-        _Predicate(nodeContext.Node)
+        nodeAndPosition.Node,
+        _Predicate(nodeAndPosition.Node)
           ? NodeTraversalStrategies.PruneSubtree
           : NodeTraversalStrategies.TraverseAll);
   }

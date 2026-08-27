@@ -29,7 +29,7 @@ namespace Copse.Treenumerators
     /// each handle's child enumerator, and the map resolving a handle to its node.</summary>
     public AsyncHierarchicalBreadthFirstTreenumerator(
       IAsyncEnumerable<THandle> roots,
-      Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = roots.GetAsyncEnumerator();

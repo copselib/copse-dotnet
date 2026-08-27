@@ -5,7 +5,7 @@ namespace Copse.Linq
   // returns NodeArrival instead -- one field, one meaning, per tier. Deliberately carries NO
   // position: positions are stream facts, not value properties -- Where renumbers siblings
   // and promotion compresses depths, so an in-band position would go stale under
-  // composition. Callback-context types (DispatchTarget, DispatchSource) carry NodeContext
+  // composition. Callback-context types (DispatchTarget, DispatchSource) carry NodeAndPosition
   // instead: immediate, consumed in place, never stale.
   /// <summary>
   /// A source node paired with the accumulation a pass computed for it -- what the scans,

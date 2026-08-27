@@ -384,18 +384,18 @@ namespace Copse.Linq
 
       public ITreenumerableBuffer<NodeAccumulation<TProjected, TAccumulate>> Consume<TInner>(
         ITreenumerable<TInner> innerSource,
-        Func<NodeContext<TInner>, TProjected> projector)
+        Func<NodeAndPosition<TInner>, TProjected> projector)
         => PairBuffer(new LazyPreorderStore<NodeAccumulation<TProjected, TAccumulate>>(
           () => BuildStreamLeaffixFromProjection(innerSource, projector, _LeafNodeSelector, _EdgeAccumulator, _NodeAccumulator)));
     }
 
     // The composed pass behind the door: one RAW capture of the inner (no wrapper on any
     // pull), the child-index build the dispatch pass already runs, ONE linear map through
-    // the projector (positions in hand, so the wrapper's full NodeContext selector is
+    // the projector (positions in hand, so the wrapper's full NodeAndPosition selector is
     // honored), then the standard reverse fold over projected values.
     private static PreorderArrayStore<NodeAccumulation<TProjected, TAccumulate>> BuildStreamLeaffixFromProjection<TInner, TProjected, TAccumulate>(
       ITreenumerable<TInner> innerSource,
-      Func<NodeContext<TInner>, TProjected> projector,
+      Func<NodeAndPosition<TInner>, TProjected> projector,
       Func<TProjected, TAccumulate> leafNodeSelector,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TProjected, TAccumulate> nodeAccumulator)
@@ -406,7 +406,7 @@ namespace Copse.Linq
 
       var values = new TProjected[innerValues.Length];
       for (var nodeIndex = 0; nodeIndex < values.Length; nodeIndex++)
-        values[nodeIndex] = projector(new NodeContext<TInner>(innerValues[nodeIndex], positions[nodeIndex]));
+        values[nodeIndex] = projector(new NodeAndPosition<TInner>(innerValues[nodeIndex], positions[nodeIndex]));
 
       var survey = LeafBoundedSurvey(
         (TProjected leafValue, NodePosition _) => leafNodeSelector(leafValue),

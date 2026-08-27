@@ -7,14 +7,14 @@ namespace Copse.Linq.Treenumerables
   // lambda is the leaf call; the struct is the inlinable plumbing around it.
   internal readonly struct AsyncSelectResultSelector<TSource, TResult> : IAsyncResultSelector<TSource, TResult>
   {
-    public AsyncSelectResultSelector(Func<NodeContext<TSource>, TResult> selector)
+    public AsyncSelectResultSelector(Func<NodeAndPosition<TSource>, TResult> selector)
     {
       _Selector = selector;
     }
 
-    private readonly Func<NodeContext<TSource>, TResult> _Selector;
+    private readonly Func<NodeAndPosition<TSource>, TResult> _Selector;
 
-    public AsyncSelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
-      => new AsyncSelectWhereResult<TResult>(_Selector(nodeContext), NodeTraversalStrategies.TraverseAll);
+    public AsyncSelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition)
+      => new AsyncSelectWhereResult<TResult>(_Selector(nodeAndPosition), NodeTraversalStrategies.TraverseAll);
   }
 }

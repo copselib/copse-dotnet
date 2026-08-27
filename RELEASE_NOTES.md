@@ -71,6 +71,12 @@
 - **`HandleAndValue<THandle, TValue>` → `HandleAndNode<THandle, TNode>`**, its field `Value` →
   `Node`. *Migration: rename the type and read `.Node`; `GetHandlesWithValues` keeps its
   name.*
+- **`NodeContext<TNode>` → `NodeAndPosition<TNode>`** — the struct is exactly a node paired
+  with its position (its own doc sentence), and every other pair in the vocabulary already
+  says what it holds (`HandleAndNode`, `HandleAndSiblingIndex`); "context" was the one
+  name describing a role instead of a shape. The treenumerator extension
+  `ToNodeContext` follows as `ToNodeAndPosition`. Members unchanged (`Node`, `Position`).
+  *Migration: rename the type at child-enumerator factories and positional callbacks.*
 - **`NodeVisit<TNode>.Mode` is now derived** from `VisitCount` (scheduling at 0, visiting
   from 1), and the constructor drops its mode parameter. *Migration: remove the first
   argument at construction sites; reads of `.Mode` are unchanged.*

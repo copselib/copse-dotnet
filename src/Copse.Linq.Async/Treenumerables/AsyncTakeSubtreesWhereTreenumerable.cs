@@ -20,14 +20,14 @@ namespace Copse.Linq.Treenumerables
   {
     public AsyncTakeSubtreesWhereTreenumerable(
       IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
     }
 
     private readonly IAsyncTreenumerable<TNode> _Source;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
       => new AsyncTakeSubtreesWhereTreenumerator<TNode>(_Source.GetAsyncDepthFirstTreenumerator, _Predicate);
@@ -42,9 +42,9 @@ namespace Copse.Linq.Treenumerables
 
       return new AsyncWhereBreadthFirstTreenumerator<TNode, TNode, AsyncFuncResultSelector<TNode, TNode>>(
         _Source.GetAsyncBreadthFirstTreenumerator,
-        new AsyncFuncResultSelector<TNode, TNode>(nodeContext => new AsyncSelectWhereResult<TNode>(
-          nodeContext.Node,
-          predicate(nodeContext) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
+        new AsyncFuncResultSelector<TNode, TNode>(nodeAndPosition => new AsyncSelectWhereResult<TNode>(
+          nodeAndPosition.Node,
+          predicate(nodeAndPosition) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
         takeSubtrees: true);
     }
 
@@ -57,11 +57,11 @@ namespace Copse.Linq.Treenumerables
     // driver over the scan engine.
     internal static IAsyncTreenumerable<TNode> GetBreadthFirstChain(
       IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
       => new AsyncRootfixScanTreenumerable<TNode, bool>(
           source.GetAsyncDepthFirstTreenumerator,
           source.GetAsyncBreadthFirstTreenumerator,
-          (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext),
+          (parentContext, nodeAndPosition) => parentContext.Node || predicate(nodeAndPosition),
           false)
         .Where(pair => pair.Accumulate)
         .Select(pair => pair.Node);

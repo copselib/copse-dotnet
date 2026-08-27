@@ -17,14 +17,14 @@ namespace Copse.Linq.Treenumerables
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
     {
       return new SelectTreenumerable<TSource, TOuterResult>(
-        _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeContext => selector(nodeContext.Node)));
+        _Source, SelectWhereComposition.SelectThenSelect(_Selector, nodeAndPosition => selector(nodeAndPosition.Node)));
     }
 
     /// <inheritdoc/>
     public IPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
-        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, nodeContext => predicate(nodeContext.Node)));
+        _Source, SelectWhereComposition.SelectThenPruneDescendantsWhere(_Selector, nodeAndPosition => predicate(nodeAndPosition.Node)));
     }
   }
 }

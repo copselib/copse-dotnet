@@ -20,17 +20,17 @@ namespace Copse.Linq.Treenumerables
   {
     public AsyncSelectPruneDescendantsWhereDepthFirstTreenumerable(
       IAsyncDepthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
+      Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
     {
       _Source = source;
       _ResultSelector = resultSelector;
     }
 
     private readonly IAsyncDepthFirstTreenumerable<TSource> _Source;
-    private readonly Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
 
     // This tier never moves a label, so the position-reading doors ARE the blind doors.
-    public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => Compose(selector);
 
     public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
@@ -38,7 +38,7 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IAsyncResultSelector<TResult, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
-    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
     {
       return new AsyncSelectPruneDescendantsWhereDepthFirstTreenumerable<TSource, TOuterResult>(
         _Source, AsyncSelectWhereComposition.SelectPruneDescendantsWhereThenSelect(_ResultSelector, selector));
@@ -58,7 +58,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     // A prune-after composes in-tier.
-    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeAndPosition<TResult>, bool> predicate)
     {
       return new AsyncSelectPruneDescendantsWhereDepthFirstTreenumerable<TSource, TResult>(
         _Source, AsyncSelectWhereComposition.SelectPruneDescendantsWhereThenPruneDescendantsWhere(_ResultSelector, predicate));

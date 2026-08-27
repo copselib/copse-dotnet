@@ -377,7 +377,7 @@ Two canonical loops are re-implemented across the codebase:
 |---|---|---|---|---|
 | 1 | `Treenumerable.Invert.g.cs` `BuildMirror` | ~~A~~ **factory** + span-hop emit | `PreorderArrayStore` | *(2026-07-13)* phase 1 now rides `PreorderCapture.CaptureFrom`; the zero-key LIFO emit stays specialized (CI benchmark rows) |
 | 2 | ~~`Treenumerable.OrderChildrenBy.g.cs` `BuildOrderedChildren`~~ | ~~A + span-hop emit~~ | `PreorderArrayStore` | *(RESOLVED on the branch, 2026-07-15)* the shape-A half rides `PreorderCapture.CaptureFrom(source, keySelector)` — the keyed side-channel overload built for this consumer; the operator keeps only the sibling-group-sort emission |
-| 3 | `Treenumerable.LeaffixScan.g.cs` `BuildLeaffixScan` | A | `PreorderArrayStore` | richer close: pending-node stack carries NodeContext, close computes the accumulation |
+| 3 | `Treenumerable.LeaffixScan.g.cs` `BuildLeaffixScan` | A | `PreorderArrayStore` | richer close: pending-node stack carries NodeAndPosition, close computes the accumulation |
 | 4 | `Treenumerable.LeaffixAggregate.g.cs` | A | **no store** | same loop, per-root reused buffers, lazy yield — bounds what a store factory can absorb |
 | 5 | `Memoize{Preorder,LevelOrder}Store.g.cs` | A / B, resumable | memo buffers | `PullOne` = one loop iteration suspended; `Consume` = the loop with guards hoisted; selector `VisitCount==1` instead of `SchedulingNode` (equivalent in DFT — documented there) |
 | 6 | ~~`StreamFedLevelOrderStore.g.cs`~~ | B (append wiring) | — | *(2026-07-13)* deleted; its drain lives on as the stream-shaped `LevelOrderCapture.CaptureFrom(ILevelOrderStream)` |

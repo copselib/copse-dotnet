@@ -58,7 +58,7 @@ namespace Copse.Benchmarks
 
     public static IAsyncTreenumerable<int> GetAsyncBinaryTree(int depth)
       => new AsyncHierarchicalTreenumerable<int, int, AsyncBinaryChildEnumerator>(
-          nodeContext => new AsyncBinaryChildEnumerator(nodeContext.Node),
+          nodeAndPosition => new AsyncBinaryChildEnumerator(nodeAndPosition.Node),
           node => node,
           RootAsync())
         .PruneSubtreesWhere((n, position) => position.Depth == depth)

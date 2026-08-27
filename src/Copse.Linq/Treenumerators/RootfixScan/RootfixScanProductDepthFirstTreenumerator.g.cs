@@ -27,9 +27,9 @@ namespace Copse.Linq.Treenumerators
   {
     public RootfixScanProductDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> accumulator,
       TAccumulate seed,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector) : base(innerTreenumeratorFactory)
+      Func<NodeAndPosition<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
       _ProductSelector = productSelector;
@@ -43,11 +43,11 @@ namespace Copse.Linq.Treenumerators
       _Stack.Push(seedVisit);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> _Accumulator;
     // Context-shaped (the rootfix door): the door's surrendered projectors are
-    // NodeContext-shaped (positional Selects included), and the engine has the inner
+    // NodeAndPosition-shaped (positional Selects included), and the engine has the inner
     // position in hand at every emission -- the pair context is minted transiently.
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
+    private readonly Func<NodeAndPosition<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
 
     private readonly Stack<NodeVisit<TAccumulate>> _Stack = new Stack<NodeVisit<TAccumulate>>();
     private readonly Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
@@ -98,7 +98,7 @@ namespace Copse.Linq.Treenumerators
 
       var accumulate =
         InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
-        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), InnerTreenumerator.ToNodeContext())
+        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeAndPosition(), InnerTreenumerator.ToNodeAndPosition())
         : _Stack.Pop().Node;
 
       var newVisit =
@@ -117,7 +117,7 @@ namespace Copse.Linq.Treenumerators
     private void UpdateStateFromNodeVisit(NodeVisit<TAccumulate> nodeVisit)
     {
       Mode = nodeVisit.Mode;
-      Node = _ProductSelector(new NodeContext<NodeAccumulation<TNode, TAccumulate>>(
+      Node = _ProductSelector(new NodeAndPosition<NodeAccumulation<TNode, TAccumulate>>(
         new NodeAccumulation<TNode, TAccumulate>(InnerTreenumerator.Node, nodeVisit.Node), nodeVisit.Position));
       VisitCount = nodeVisit.VisitCount;
       Position = nodeVisit.Position;

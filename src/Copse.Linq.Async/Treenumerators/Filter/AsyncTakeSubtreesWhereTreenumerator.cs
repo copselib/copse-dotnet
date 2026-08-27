@@ -29,13 +29,13 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncTakeSubtreesWhereTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
       : base(innerTreenumeratorFactory)
     {
       _Predicate = predicate;
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
     private int _MatchDepth = -1;
     private int _EmittedRootCount;
     private bool _NoMoreSubtrees;
@@ -89,7 +89,7 @@ namespace Copse.Linq.Treenumerators
         if (InnerTreenumerator.Mode != TreenumeratorMode.SchedulingNode)
           continue;
 
-        if (!_Predicate(InnerTreenumerator.ToNodeContext()))
+        if (!_Predicate(InnerTreenumerator.ToNodeAndPosition()))
           continue;
 
         _MatchDepth = InnerTreenumerator.Position.Depth;

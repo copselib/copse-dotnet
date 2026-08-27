@@ -14,26 +14,26 @@ namespace Copse.Linq.Experimental
 
     public static ITreenumerable<TNode> ExpandNode<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       ITreenumerable<TNode> nodeExpander)
       => ExpandNode(source, predicate, _ => nodeExpander);
 
     public static ITreenumerable<TNode> ExpandNode<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, ITreenumerable<TNode>> nodeExpander)
+      Func<NodeAndPosition<TNode>, ITreenumerable<TNode>> nodeExpander)
       => ExpandNode(source, _ => true, nodeExpander);
 
     public static ITreenumerable<TNode> ExpandNode<TNode>(
       this ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
-      Func<NodeContext<TNode>, ITreenumerable<TNode>> nodeExpander)
-      => ExpandNode(source, predicate, nodeExpander, (sourceNodeContext, expandedNodeContext) => expandedNodeContext.Node);
+      Func<NodeAndPosition<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, ITreenumerable<TNode>> nodeExpander)
+      => ExpandNode(source, predicate, nodeExpander, (sourceNodeAndPosition, expandedNodeAndPosition) => expandedNodeAndPosition.Node);
 
     public static ITreenumerable<TResult> ExpandNode<TSource, TExpandedNode, TResult>(
       this ITreenumerable<TSource> source,
-      Func<NodeContext<TSource>, bool> predicate,
-      Func<NodeContext<TSource>, ITreenumerable<TExpandedNode>> nodeExpander,
-      Func<NodeContext<TSource>, NodeContext<TExpandedNode>, TResult> selector)
+      Func<NodeAndPosition<TSource>, bool> predicate,
+      Func<NodeAndPosition<TSource>, ITreenumerable<TExpandedNode>> nodeExpander,
+      Func<NodeAndPosition<TSource>, NodeAndPosition<TExpandedNode>, TResult> selector)
       => Tree.Create(
         () => throw new NotImplementedException(),
         () => new ExpandNodesDepthFirstTreenumerator<TSource, TExpandedNode, TResult>(() => source.GetDepthFirstTreenumerator(), predicate, nodeExpander, selector));

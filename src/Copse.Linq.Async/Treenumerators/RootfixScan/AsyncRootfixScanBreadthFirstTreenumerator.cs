@@ -25,7 +25,7 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncRootfixScanBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> accumulator,
       TAccumulate seed) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
@@ -39,7 +39,7 @@ namespace Copse.Linq.Treenumerators
       _CurrentLevel.AddLast(seedVisit);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> _Accumulator;
 
     private RefSemiDeque<NodeVisit<TAccumulate>> _CurrentLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
     private RefSemiDeque<NodeVisit<TAccumulate>> _NextLevel = new RefSemiDeque<NodeVisit<TAccumulate>>();
@@ -115,7 +115,7 @@ namespace Copse.Linq.Treenumerators
       else
         accumulateNodeVisit = _CurrentLevel.GetFirst();
 
-      var accumulate = _Accumulator(accumulateNodeVisit.ToNodeContext(), InnerTreenumerator.ToNodeContext());
+      var accumulate = _Accumulator(accumulateNodeVisit.ToNodeAndPosition(), InnerTreenumerator.ToNodeAndPosition());
 
       var visit =
         new NodeVisit<TAccumulate>(

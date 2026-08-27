@@ -17,7 +17,7 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy,
       Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node));
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node));
     }
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
@@ -26,7 +26,7 @@ namespace Copse.Linq
       TreeTraversalStrategy treeTraversalStrategy,
       Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position));
+      return EnumerateTraversal(() => source.GetTreenumerator(treeTraversalStrategy), nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     /// <summary>The full visit stream in the given dimension (TraverseAll).</summary>
@@ -42,7 +42,7 @@ namespace Copse.Linq
     // the strategy at each scheduling visit, TraverseAll between.
     private static IEnumerable<NodeVisit<TNode>> EnumerateTraversal<TNode>(
       Func<ITreenumerator<TNode>> treenumeratorFactory,
-      Func<NodeContext<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
+      Func<NodeAndPosition<TNode>, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
       var treenumerator = treenumeratorFactory();
       using (treenumerator)
@@ -52,14 +52,14 @@ namespace Copse.Linq
 
         yield return treenumerator.ToNodeVisit();
 
-        var nodeTraversalStrategies = nodeTraversalStrategiesSelector(treenumerator.ToNodeContext());
+        var nodeTraversalStrategies = nodeTraversalStrategiesSelector(treenumerator.ToNodeAndPosition());
 
         while (treenumerator.MoveNext(nodeTraversalStrategies))
         {
           yield return treenumerator.ToNodeVisit();
 
           if (treenumerator.Mode == TreenumeratorMode.SchedulingNode)
-            nodeTraversalStrategies = nodeTraversalStrategiesSelector(treenumerator.ToNodeContext());
+            nodeTraversalStrategies = nodeTraversalStrategiesSelector(treenumerator.ToNodeAndPosition());
           else
             nodeTraversalStrategies = NodeTraversalStrategies.TraverseAll;
         }

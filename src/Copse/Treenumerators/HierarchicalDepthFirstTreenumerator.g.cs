@@ -28,7 +28,7 @@ namespace Copse.Treenumerators
     /// each handle's child enumerator, and the map resolving a handle to its node.</summary>
     public HierarchicalDepthFirstTreenumerator(
       IEnumerable<THandle> roots,
-      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
       _RootsEnumerator = roots.GetEnumerator();

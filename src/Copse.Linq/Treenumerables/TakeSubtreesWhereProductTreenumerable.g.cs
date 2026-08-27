@@ -21,7 +21,7 @@ namespace Copse.Linq.Treenumerables
   {
     public TakeSubtreesWhereProductTreenumerable(
       ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       Func<TNode, TProduct> productSelector)
     {
       _Source = source;
@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     private readonly ITreenumerable<TNode> _Source;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
     private readonly Func<TNode, TProduct> _ProductSelector;
 
     public ITreenumerator<TProduct> GetDepthFirstTreenumerator()

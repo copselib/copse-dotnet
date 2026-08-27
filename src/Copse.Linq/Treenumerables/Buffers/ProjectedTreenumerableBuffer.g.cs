@@ -96,7 +96,7 @@ namespace Copse.Linq.Treenumerables
       }
 
       return PreorderCapture
-        .CaptureFrom(new SelectTreenumerable<TSource, TResult>(source, nodeContext => selector(nodeContext.Node)));
+        .CaptureFrom(new SelectTreenumerable<TSource, TResult>(source, nodeAndPosition => selector(nodeAndPosition.Node)));
     }
   }
 }

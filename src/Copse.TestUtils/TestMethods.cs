@@ -14,7 +14,7 @@ namespace Copse.TestUtils
       string serializedTree,
       string testDescription,
       Func<ITreenumerable<string>, ITreenumerable<string>> operation,
-      Func<NodeContext<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
+      Func<NodeAndPosition<string>, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       NodeVisit<string>[] expectedTraversal,
       TreeTraversalStrategy treeTraversalStrategy)
     {
@@ -38,11 +38,11 @@ namespace Copse.TestUtils
       if (operation != null)
         treenumerable = operation(treenumerable);
 
-      // The scenario corpus speaks NodeContext (internal-state camp); adapt at the operator's
+      // The scenario corpus speaks NodeAndPosition (internal-state camp); adapt at the operator's
       // positional flavor here so hundreds of scenario definitions stay untouched.
       var traversal = treenumerable.GetTraversal(
         treeTraversalStrategy,
-        (node, position) => nodeTraversalStrategiesSelector(new NodeContext<string>(node, position)));
+        (node, position) => nodeTraversalStrategiesSelector(new NodeAndPosition<string>(node, position)));
 
       // Act
       Debug.WriteLine($"{Environment.NewLine}----- Actual Values -----");

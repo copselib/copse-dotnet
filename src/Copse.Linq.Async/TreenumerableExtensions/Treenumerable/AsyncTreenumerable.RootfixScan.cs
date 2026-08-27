@@ -182,7 +182,7 @@ namespace Copse.Linq
     // rejecting operators into the fourth cell).
     private static IAsyncTreenumerable<NodeAccumulation<TNode, TAccumulate>> RootfixScanCitizen<TNode, TAccumulate>(
       IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> contextAccumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> contextAccumulator,
       TAccumulate seed)
     {
       if (source is IAsyncProjectionSource<TNode> projectionSource)
@@ -204,19 +204,19 @@ namespace Copse.Linq
       : IAsyncProjectionConsumer<TProjected, IAsyncTreenumerable<NodeAccumulation<TProjected, TAccumulate>>>
     {
       public AsyncRootfixFromProjectionConsumer(
-        Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> contextAccumulator,
+        Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TProjected>, TAccumulate> contextAccumulator,
         TAccumulate seed)
       {
         _ContextAccumulator = contextAccumulator;
         _Seed = seed;
       }
 
-      private readonly Func<NodeContext<TAccumulate>, NodeContext<TProjected>, TAccumulate> _ContextAccumulator;
+      private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TProjected>, TAccumulate> _ContextAccumulator;
       private readonly TAccumulate _Seed;
 
       public IAsyncTreenumerable<NodeAccumulation<TProjected, TAccumulate>> Consume<TInner>(
         IAsyncTreenumerable<TInner> innerSource,
-        Func<NodeContext<TInner>, TProjected> projector)
+        Func<NodeAndPosition<TInner>, TProjected> projector)
       {
         var contextAccumulator = _ContextAccumulator;
 
@@ -225,10 +225,10 @@ namespace Copse.Linq
           innerSource.GetAsyncBreadthFirstTreenumerator,
           (parentContext, innerContext) => contextAccumulator(
             parentContext,
-            new NodeContext<TProjected>(projector(innerContext), innerContext.Position)),
+            new NodeAndPosition<TProjected>(projector(innerContext), innerContext.Position)),
           _Seed,
           pairingContext => new NodeAccumulation<TProjected, TAccumulate>(
-            projector(new NodeContext<TInner>(pairingContext.Node.Node, pairingContext.Position)),
+            projector(new NodeAndPosition<TInner>(pairingContext.Node.Node, pairingContext.Position)),
             pairingContext.Node.Accumulate));
       }
     }
@@ -293,9 +293,9 @@ namespace Copse.Linq
     // EMISSION MINT: the pairing is constructed per emission from the inner's
     // node-in-hand, never stored) -- while the user accumulator speaks the minimal
     // (accumulate, node) basis; this lifts it to the engine's context shape.
-    private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulator<TNode, TAccumulate>(
+    private static Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> ContextAccumulator<TNode, TAccumulate>(
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => (parentContext, nodeContext) => accumulator(parentContext.Node, nodeContext.Node);
+      => (parentContext, nodeAndPosition) => accumulator(parentContext.Node, nodeAndPosition.Node);
 
     // The root boundary, written once so consumers never hand-roll the forest-root check: a
     // root (parent context parked at the virtual forest root) takes the selector's return AS
@@ -306,12 +306,12 @@ namespace Copse.Linq
     // fold(selector(root), root), buys the lesser intra-tier equivalence at the cost of the
     // cross-tier one. The unused sentinel seed is default -- the selector branch is the only
     // reader of roots.
-    private static Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> ContextAccumulatorWithRootSelector<TNode, TAccumulate>(
+    private static Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> ContextAccumulatorWithRootSelector<TNode, TAccumulate>(
       Func<TNode, NodePosition, TAccumulate> rootNodeSelector,
       Func<TAccumulate, TNode, TAccumulate> accumulator)
-      => (parentContext, nodeContext) =>
+      => (parentContext, nodeAndPosition) =>
         parentContext.Position.IsForestRoot
-        ? rootNodeSelector(nodeContext.Node, nodeContext.Position)
-        : accumulator(parentContext.Node, nodeContext.Node);
+        ? rootNodeSelector(nodeAndPosition.Node, nodeAndPosition.Position)
+        : accumulator(parentContext.Node, nodeAndPosition.Node);
   }
 }

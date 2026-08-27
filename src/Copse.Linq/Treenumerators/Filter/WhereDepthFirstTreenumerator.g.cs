@@ -106,7 +106,7 @@ namespace Copse.Linq.Treenumerators
 
       // ONE evaluation of the composed selector chain, against the SOURCE context; every user
       // lambda inside sees exactly what the stacked pipeline would have shown it.
-      var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
+      var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeAndPosition());
 
       if (result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
       {

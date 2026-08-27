@@ -196,7 +196,7 @@ namespace Copse
     /// a handle to its node. Deferred: nothing is pulled until a traversal runs; each
     /// traversal re-enumerates the roots.</summary>
     public static IAsyncTreenumerable<TNode> Create<TNode, THandle, TAsyncChildEnumerator>(
-      Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
       IAsyncEnumerable<THandle> roots)
       where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
@@ -206,7 +206,7 @@ namespace Copse
     /// <summary>The node-is-its-own-handle form of the hierarchical door: the roots and a
     /// factory producing each node's child enumerator.</summary>
     public static IAsyncTreenumerable<TNode> Create<TNode, TAsyncChildEnumerator>(
-      Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
       IAsyncEnumerable<TNode> roots)
       where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
       => new AsyncHierarchicalTreenumerable<TNode, TAsyncChildEnumerator>(childEnumeratorFactory, roots);
@@ -218,7 +218,7 @@ namespace Copse
     public static IAsyncTreenumerable<TNode> FromTopology<TNode, THandle>(
       IAsyncTreeTopology<TNode, THandle> topology)
       => new AsyncHierarchicalTreenumerable<TNode, HandleAndNode<THandle, TNode>, AsyncTopologyChildEnumerator<TNode, THandle>>(
-        nodeContext => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
+        nodeAndPosition => new AsyncTopologyChildEnumerator<TNode, THandle>(topology, nodeAndPosition.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));
 

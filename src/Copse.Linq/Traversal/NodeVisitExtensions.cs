@@ -18,12 +18,12 @@ namespace Copse.Linq.Extensions
           visit.Position);
     }
 
-    /// <summary>The visit's node and position as a <see cref="NodeContext{TNode}"/>, dropping
+    /// <summary>The visit's node and position as a <see cref="NodeAndPosition{TNode}"/>, dropping
     /// the mode and visit count.</summary>
-    public static NodeContext<TNode> ToNodeContext<TNode>(this NodeVisit<TNode> visit)
+    public static NodeAndPosition<TNode> ToNodeAndPosition<TNode>(this NodeVisit<TNode> visit)
     {
       return
-        new NodeContext<TNode>(
+        new NodeAndPosition<TNode>(
           visit.Node,
           visit.Position);
     }

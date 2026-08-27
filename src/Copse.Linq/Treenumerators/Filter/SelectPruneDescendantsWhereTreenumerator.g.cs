@@ -24,13 +24,13 @@ namespace Copse.Linq.Treenumerators
   {
     public SelectPruneDescendantsWhereTreenumerator(
       Func<ITreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TSource>, SelectWhereResult<TNode>> resultSelector)
+      Func<NodeAndPosition<TSource>, SelectWhereResult<TNode>> resultSelector)
       : base(innerTreenumeratorFactory)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TNode>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, SelectWhereResult<TNode>> _ResultSelector;
 
     private NodeTraversalStrategies _PendingResultStrategies = NodeTraversalStrategies.TraverseAll;
 
@@ -50,7 +50,7 @@ namespace Copse.Linq.Treenumerators
       // so the composed selector sees real nodes only. Evaluated per published visit, like the
       // plain Select wrapper (invocation counts are unspecified; only the scheduling visit's
       // strategies count -- subtrees are shed at scheduling, the PruneDescendantsWhere contract).
-      var result = _ResultSelector(InnerTreenumerator.ToNodeContext());
+      var result = _ResultSelector(InnerTreenumerator.ToNodeAndPosition());
 
       Node = result.Node;
 

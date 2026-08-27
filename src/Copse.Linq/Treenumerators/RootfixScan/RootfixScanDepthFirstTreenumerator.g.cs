@@ -30,7 +30,7 @@ namespace Copse.Linq.Treenumerators
   {
     public RootfixScanDepthFirstTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> accumulator,
       TAccumulate seed) : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
@@ -44,7 +44,7 @@ namespace Copse.Linq.Treenumerators
       _Stack.Push(seedVisit);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> _Accumulator;
 
     private readonly Stack<NodeVisit<TAccumulate>> _Stack = new Stack<NodeVisit<TAccumulate>>();
     private readonly Stack<NodeVisit<TAccumulate>> _SkippedStack = new Stack<NodeVisit<TAccumulate>>();
@@ -95,7 +95,7 @@ namespace Copse.Linq.Treenumerators
 
       var accumulate =
         InnerTreenumerator.Mode == TreenumeratorMode.SchedulingNode
-        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeContext(), InnerTreenumerator.ToNodeContext())
+        ? _Accumulator(GetStackWithDeepestNodeVisit().Peek().ToNodeAndPosition(), InnerTreenumerator.ToNodeAndPosition())
         : _Stack.Pop().Node;
 
       var newVisit =

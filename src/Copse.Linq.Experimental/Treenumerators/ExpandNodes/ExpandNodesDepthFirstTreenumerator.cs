@@ -8,9 +8,9 @@ namespace Copse.Linq.Experimental.Treenumerators.ExpandNodes
   {
     public ExpandNodesDepthFirstTreenumerator(
       Func<ITreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TSource>, bool> predicate,
-      Func<NodeContext<TSource>, ITreenumerable<TExpandedNode>> nodeExpander,
-      Func<NodeContext<TSource>, NodeContext<TExpandedNode>, TResult> selector)
+      Func<NodeAndPosition<TSource>, bool> predicate,
+      Func<NodeAndPosition<TSource>, ITreenumerable<TExpandedNode>> nodeExpander,
+      Func<NodeAndPosition<TSource>, NodeAndPosition<TExpandedNode>, TResult> selector)
     {
       _InnerTreenumerator = innerTreenumeratorFactory();
       _Predicate = predicate;
@@ -19,9 +19,9 @@ namespace Copse.Linq.Experimental.Treenumerators.ExpandNodes
     }
 
     private readonly ITreenumerator<TSource> _InnerTreenumerator;
-    private readonly Func<NodeContext<TSource>, bool> _Predicate;
-    private readonly Func<NodeContext<TSource>, ITreenumerable<TExpandedNode>> _NodeExpander;
-    private readonly Func<NodeContext<TSource>, NodeContext<TExpandedNode>, TResult> _Selector;
+    private readonly Func<NodeAndPosition<TSource>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TSource>, ITreenumerable<TExpandedNode>> _NodeExpander;
+    private readonly Func<NodeAndPosition<TSource>, NodeAndPosition<TExpandedNode>, TResult> _Selector;
 
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {

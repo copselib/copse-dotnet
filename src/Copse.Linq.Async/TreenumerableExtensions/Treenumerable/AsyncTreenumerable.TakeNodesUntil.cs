@@ -19,14 +19,14 @@ namespace Copse.Linq
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node), keepFinalNode);
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
     public static IAsyncTreenumerable<TNode> TakeNodesUntil<TNode>(
       this IAsyncTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), keepFinalNode);
 
     /// <summary>
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
@@ -38,7 +38,7 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node), keepFinalNode);
 
     /// <summary>
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
@@ -50,7 +50,7 @@ namespace Copse.Linq
       this IAsyncDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), keepFinalNode);
 
     /// <summary>
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
@@ -62,7 +62,7 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node), keepFinalNode);
 
     /// <summary>
     /// Async <c>TakeNodesUntil</c>: forwards nodes until one matches the predicate, then stops
@@ -74,11 +74,11 @@ namespace Copse.Linq
       this IAsyncBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       bool keepFinalNode)
-      => TakeNodesUntilCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), keepFinalNode);
+      => TakeNodesUntilCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), keepFinalNode);
 
     private static IAsyncTreenumerable<TNode> TakeNodesUntilCore<TNode>(
       IAsyncTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       bool keepFinalNode)
       => AsyncTree.Create(
         () => new AsyncTakeNodesUntilTreenumerator<TNode>(
@@ -92,7 +92,7 @@ namespace Copse.Linq
 
     private static IAsyncDepthFirstTreenumerable<TNode> TakeNodesUntilCore<TNode>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       bool keepFinalNode)
       => AsyncTree.CreateDepthFirst(
         () => new AsyncTakeNodesUntilTreenumerator<TNode>(
@@ -102,7 +102,7 @@ namespace Copse.Linq
 
     private static IAsyncBreadthFirstTreenumerable<TNode> TakeNodesUntilCore<TNode>(
       IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       bool keepFinalNode)
       => AsyncTree.CreateBreadthFirst(
         () => new AsyncTakeNodesUntilTreenumerator<TNode>(

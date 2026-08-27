@@ -7,13 +7,13 @@ namespace Copse.Linq
   // by the sync LeaffixScan/LeaffixDispatch/LeaffixAggregate and their async analogs.
   internal readonly struct PendingNode<TNode>
   {
-    public PendingNode(int index, NodeContext<TNode> context)
+    public PendingNode(int index, NodeAndPosition<TNode> context)
     {
       Index = index;
       Context = context;
     }
 
     public int Index { get; }
-    public NodeContext<TNode> Context { get; }
+    public NodeAndPosition<TNode> Context { get; }
   }
 }

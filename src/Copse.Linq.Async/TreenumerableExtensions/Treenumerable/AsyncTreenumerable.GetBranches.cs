@@ -12,7 +12,7 @@ namespace Copse.Linq
     /// <summary>The tree's root-to-leaf paths (each as a node array), as a lazy async sequence.</summary>
     public static async IAsyncEnumerable<TNode[]> GetBranches<TNode>(this IAsyncDepthFirstTreenumerable<TNode> source, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      var branch = new List<NodeContext<TNode>>();
+      var branch = new List<NodeAndPosition<TNode>>();
 
       var treenumerator = source.GetAsyncDepthFirstTreenumerator();
       await using (treenumerator.ConfigureAwait(false))
@@ -20,7 +20,7 @@ namespace Copse.Linq
         if (!await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
           yield break;
 
-        branch.Add(treenumerator.ToNodeContext());
+        branch.Add(treenumerator.ToNodeAndPosition());
 
         while (await treenumerator.MoveNextAsync(NodeTraversalStrategies.TraverseAll).ConfigureAwait(false))
         {
@@ -32,19 +32,19 @@ namespace Copse.Linq
 
           if (depth > branch.Count - 1)
           {
-            branch.Add(treenumerator.ToNodeContext());
+            branch.Add(treenumerator.ToNodeAndPosition());
           }
           else
           {
-            yield return branch.Select(nodeContext => nodeContext.Node).ToArray();
+            yield return branch.Select(nodeAndPosition => nodeAndPosition.Node).ToArray();
 
             branch.RemoveRange(depth, branch.Count - depth);
-            branch.Add(treenumerator.ToNodeContext());
+            branch.Add(treenumerator.ToNodeAndPosition());
           }
         }
 
         if (branch.Count > 0)
-          yield return branch.Select(nodeContext => nodeContext.Node).ToArray();
+          yield return branch.Select(nodeAndPosition => nodeAndPosition.Node).ToArray();
       }
     }
   }

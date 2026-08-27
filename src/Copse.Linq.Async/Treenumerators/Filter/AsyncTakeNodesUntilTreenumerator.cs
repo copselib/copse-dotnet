@@ -18,7 +18,7 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncTakeNodesUntilTreenumerator(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       bool keepFinalNode)
       : base(innerTreenumeratorFactory)
     {
@@ -26,7 +26,7 @@ namespace Copse.Linq.Treenumerators
       _KeepFinalNode = keepFinalNode;
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
     private bool _KeepFinalNode;
     private bool _StopSchedulingNodes;
     private bool _FinalVisitRemaining = false;
@@ -48,7 +48,7 @@ namespace Copse.Linq.Treenumerators
         return true;
       }
 
-      if (_Predicate(InnerTreenumerator.ToNodeContext()))
+      if (_Predicate(InnerTreenumerator.ToNodeAndPosition()))
       {
         _StopSchedulingNodes = true;
 

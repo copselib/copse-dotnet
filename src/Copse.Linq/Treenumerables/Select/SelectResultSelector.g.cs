@@ -11,14 +11,14 @@ namespace Copse.Linq.Treenumerables
   // lambda is the leaf call; the struct is the inlinable plumbing around it.
   internal readonly struct SelectResultSelector<TSource, TResult> : IResultSelector<TSource, TResult>
   {
-    public SelectResultSelector(Func<NodeContext<TSource>, TResult> selector)
+    public SelectResultSelector(Func<NodeAndPosition<TSource>, TResult> selector)
     {
       _Selector = selector;
     }
 
-    private readonly Func<NodeContext<TSource>, TResult> _Selector;
+    private readonly Func<NodeAndPosition<TSource>, TResult> _Selector;
 
-    public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
-      => new SelectWhereResult<TResult>(_Selector(nodeContext), NodeTraversalStrategies.TraverseAll);
+    public SelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition)
+      => new SelectWhereResult<TResult>(_Selector(nodeAndPosition), NodeTraversalStrategies.TraverseAll);
   }
 }

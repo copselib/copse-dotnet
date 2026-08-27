@@ -14,14 +14,14 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncSelectTreenumerator(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory,
-      Func<NodeContext<TInner>, TNode> selector)
+      Func<NodeAndPosition<TInner>, TNode> selector)
     {
       _InnerTreenumerator = innerTreenumeratorFactory();
       _Selector = selector;
     }
 
     private readonly IAsyncTreenumerator<TInner> _InnerTreenumerator;
-    private readonly Func<NodeContext<TInner>, TNode> _Selector;
+    private readonly Func<NodeAndPosition<TInner>, TNode> _Selector;
 
     public TNode Node { get; private set; } = default;
     public int VisitCount => _InnerTreenumerator.VisitCount;
@@ -33,9 +33,9 @@ namespace Copse.Linq.Treenumerators
       if (!await _InnerTreenumerator.MoveNextAsync(nodeTraversalStrategies).ConfigureAwait(false))
         return false;
 
-      var nodeContext = _InnerTreenumerator.ToNodeContext();
+      var nodeAndPosition = _InnerTreenumerator.ToNodeAndPosition();
 
-      Node = _Selector(nodeContext);
+      Node = _Selector(nodeAndPosition);
 
       return true;
     }

@@ -75,7 +75,7 @@ namespace Copse.Linq.Tests
       var sut =
         leftTreenumerable
         .SymmetricDifference(rightTreenumerable)
-        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
+        .Select(mergeNodeAndPosition => $"{mergeNodeAndPosition.Left}{mergeNodeAndPosition.Right}");
 
       Func<string, NodeTraversalStrategies> traverseAll =
         _ => NodeTraversalStrategies.TraverseAll;
@@ -139,12 +139,12 @@ namespace Copse.Linq.Tests
       IDepthFirstTreenumerable<string> narrow =
         StreamDepthFirst(left)
         .SymmetricDifference(StreamDepthFirst(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
+        .Select(mergeNodeAndPosition => $"{mergeNodeAndPosition.Left}{mergeNodeAndPosition.Right}");
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .SymmetricDifference(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
+        .Select(mergeNodeAndPosition => $"{mergeNodeAndPosition.Left}{mergeNodeAndPosition.Right}");
 
       VisitStreamConformance.AssertSameStream(
         full.GetDepthFirstTreenumerator(),
@@ -162,12 +162,12 @@ namespace Copse.Linq.Tests
       IBreadthFirstTreenumerable<string> narrow =
         StreamBreadthFirst(left)
         .SymmetricDifference(StreamBreadthFirst(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
+        .Select(mergeNodeAndPosition => $"{mergeNodeAndPosition.Left}{mergeNodeAndPosition.Right}");
 
       ITreenumerable<string> full =
         TreeSerializer.DeserializeDepthFirstTree(left)
         .SymmetricDifference(TreeSerializer.DeserializeDepthFirstTree(right))
-        .Select(mergeNodeContext => $"{mergeNodeContext.Left}{mergeNodeContext.Right}");
+        .Select(mergeNodeAndPosition => $"{mergeNodeAndPosition.Left}{mergeNodeAndPosition.Right}");
 
       VisitStreamConformance.AssertSameStream(
         full.GetBreadthFirstTreenumerator(),

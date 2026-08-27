@@ -20,7 +20,7 @@ namespace Copse.Traversal
     where TEnumerator : IDisposable
   {
     public BreadthFirstPathState(
-      Func<NodeContext<THandle>, TEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
       _ChildEnumeratorFactory = childEnumeratorFactory;
@@ -31,7 +31,7 @@ namespace Copse.Traversal
       _CurrentSlotEnqueuedNode = false;
     }
 
-    private readonly Func<NodeContext<THandle>, TEnumerator> _ChildEnumeratorFactory;
+    private readonly Func<NodeAndPosition<THandle>, TEnumerator> _ChildEnumeratorFactory;
     private readonly Func<THandle, TNode> _HandleToNodeMap;
 
     private readonly RefSemiDeque<BreadthFirstFrame<TNode, TEnumerator>> _VisitQueue;
@@ -68,7 +68,7 @@ namespace Copse.Traversal
     {
       _ScheduleStack.AddLast(
         new BreadthFirstFrame<TNode, TEnumerator>(
-          _HandleToNodeMap(handle), position, _ChildEnumeratorFactory(new NodeContext<THandle>(handle, position))));
+          _HandleToNodeMap(handle), position, _ChildEnumeratorFactory(new NodeAndPosition<THandle>(handle, position))));
       return ref _ScheduleStack.GetLast();
     }
 

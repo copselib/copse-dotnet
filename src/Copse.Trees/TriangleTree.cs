@@ -11,7 +11,7 @@ namespace Copse.Trees
     // ENGINE -- benchmark rows and conformance suites measure it through them.
     private readonly ITreenumerable<int> _Tree =
       new HierarchicalTreenumerable<int, TriangleTreeNodeChildEnumerator>(
-        nodeContext => new TriangleTreeNodeChildEnumerator(nodeContext.Node == 0 ? nodeContext.Position.Depth + 2 : 0),
+        nodeAndPosition => new TriangleTreeNodeChildEnumerator(nodeAndPosition.Node == 0 ? nodeAndPosition.Position.Depth + 2 : 0),
         new[] { 0 });
 
     /// <inheritdoc/>

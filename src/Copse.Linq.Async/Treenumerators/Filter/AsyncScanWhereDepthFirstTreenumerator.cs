@@ -35,25 +35,25 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncScanWhereDepthFirstTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
     {
       _Accumulator = accumulator;
-      _SeedContext = new NodeContext<TAccumulate>(seed, NodePosition.ForestRoot);
+      _SeedContext = new NodeAndPosition<TAccumulate>(seed, NodePosition.ForestRoot);
       _ResultSelector = resultSelector;
 
       _Path = new WhereDepthFirstPath<TResult>(default, NodePosition.ForestRoot);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
-    private readonly NodeContext<TAccumulate> _SeedContext;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> _Accumulator;
+    private readonly NodeAndPosition<TAccumulate> _SeedContext;
     private readonly TResultSelector _ResultSelector;
 
     // The accumulate trail (see the class doc). The seed context stands in for depth -1 (the
     // virtual forest root), so roots fold from it -- the scan engines' exact boundary.
-    private readonly List<NodeContext<TAccumulate>> _AccumulateTrail = new List<NodeContext<TAccumulate>>();
+    private readonly List<NodeAndPosition<TAccumulate>> _AccumulateTrail = new List<NodeAndPosition<TAccumulate>>();
 
     private WhereDepthFirstPath<TResult> _Path;
     private bool _HasCachedChild = false;
@@ -117,9 +117,9 @@ namespace Copse.Linq.Treenumerators
       // two-machine spelling.
       var innerDepth = InnerTreenumerator.Position.Depth;
       var parentContext = innerDepth == 0 ? _SeedContext : _AccumulateTrail[innerDepth - 1];
-      var accumulate = _Accumulator(parentContext, InnerTreenumerator.ToNodeContext());
+      var accumulate = _Accumulator(parentContext, InnerTreenumerator.ToNodeAndPosition());
 
-      var accumulateContext = new NodeContext<TAccumulate>(accumulate, InnerTreenumerator.Position);
+      var accumulateContext = new NodeAndPosition<TAccumulate>(accumulate, InnerTreenumerator.Position);
       if (innerDepth < _AccumulateTrail.Count)
         _AccumulateTrail[innerDepth] = accumulateContext;
       else
@@ -128,7 +128,7 @@ namespace Copse.Linq.Treenumerators
       // ONE evaluation of the composed selector chain, against the PAIR context: the pair
       // is minted here, on the stack, and never stored.
       var result = _ResultSelector.GetResult(
-        new NodeContext<NodeAccumulation<TSource, TAccumulate>>(
+        new NodeAndPosition<NodeAccumulation<TSource, TAccumulate>>(
           new NodeAccumulation<TSource, TAccumulate>(InnerTreenumerator.Node, accumulate),
           InnerTreenumerator.Position));
 

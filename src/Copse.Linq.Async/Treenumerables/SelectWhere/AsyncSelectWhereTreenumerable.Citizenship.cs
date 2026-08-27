@@ -12,9 +12,9 @@ namespace Copse.Linq.Treenumerables
   {
     public IAsyncSelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TResult, TOuterResult> selector)
       => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
-        new AsyncSelectResultSelector<TResult, TOuterResult>(nodeContext => selector(nodeContext.Node)));
+        new AsyncSelectResultSelector<TResult, TOuterResult>(nodeAndPosition => selector(nodeAndPosition.Node)));
 
     public IAsyncPruneDescendantsWhereTreenumerable<TResult> ComposePruneDescendantsWhere(Func<TResult, bool> predicate)
-      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeContext => predicate(nodeContext.Node));
+      => new AsyncPruneDescendantsWhereTreenumerable<TResult>(this, nodeAndPosition => predicate(nodeAndPosition.Node));
   }
 }

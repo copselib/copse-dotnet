@@ -45,7 +45,7 @@ namespace Copse.Linq.Tests
 
       var (store, sideChannel) = PreorderCapture.CaptureFrom(
         source,
-        nodeContext => $"{nodeContext.Node}@{nodeContext.Position.Depth}");
+        nodeAndPosition => $"{nodeAndPosition.Node}@{nodeAndPosition.Position.Depth}");
 
       CollectionAssert.AreEqual(new[] { "a@0", "b@1", "d@2", "c@1" }, sideChannel);
       CollectionAssert.AreEqual(
@@ -62,8 +62,8 @@ namespace Copse.Linq.Tests
       {
         var source = () => TreeSerializer.DeserializeDepthFirstTree(tree);
 
-        var (store, storeSide) = PreorderCapture.CaptureFrom(source(), nodeContext => nodeContext.Position);
-        var (values, subtreeSizes, rawSide) = PreorderCapture.CaptureRaw(source(), nodeContext => nodeContext.Position);
+        var (store, storeSide) = PreorderCapture.CaptureFrom(source(), nodeAndPosition => nodeAndPosition.Position);
+        var (values, subtreeSizes, rawSide) = PreorderCapture.CaptureRaw(source(), nodeAndPosition => nodeAndPosition.Position);
 
         CollectionAssert.AreEqual(
           Enumerable.Range(0, store.Count).Select(store.GetNode).ToArray(), values, $"values mismatch for '{tree}'");

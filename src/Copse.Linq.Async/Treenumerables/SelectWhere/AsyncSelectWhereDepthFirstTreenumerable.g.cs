@@ -45,7 +45,7 @@ namespace Copse.Linq.Treenumerables
 
     // The context-shaped projection door: the projection rides an inlinable struct leg
     // (the caller has already applied the join rule for positional legs).
-    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncDepthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => Splice<TOuterResult, AsyncSelectResultSelector<TResult, TOuterResult>>(
         new AsyncSelectResultSelector<TResult, TOuterResult>(selector));
 
@@ -67,7 +67,7 @@ namespace Copse.Linq.Treenumerables
     // wrapper over this driver, where it reads published labels by construction. Nothing is
     // consulted: a driver exists because something rejected, and rejection is what moves
     // labels.
-    public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => new AsyncSelectDepthFirstTreenumerable<TResult, TOuterResult>(this, selector);
 
     public IAsyncDepthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
@@ -79,7 +79,7 @@ namespace Copse.Linq.Treenumerables
     // The context-shaped prune-after door: prune-afters compose in-tier only, so the light
     // prune wrapper STACKS over the driver rather than demoting its representation for a
     // layer that costs almost nothing.
-    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+    public IAsyncDepthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeAndPosition<TResult>, bool> predicate)
       => new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TResult>(this, predicate);
   }
 }

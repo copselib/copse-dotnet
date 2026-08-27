@@ -20,17 +20,17 @@ namespace Copse.Linq.Treenumerables
   {
     public AsyncSelectPruneDescendantsWhereBreadthFirstTreenumerable(
       IAsyncBreadthFirstTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
+      Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
     {
       _Source = source;
       _ResultSelector = resultSelector;
     }
 
     private readonly IAsyncBreadthFirstTreenumerable<TSource> _Source;
-    private readonly Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
 
     // This tier never moves a label, so the position-reading doors ARE the blind doors.
-    public IAsyncBreadthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncBreadthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => Compose(selector);
 
     public IAsyncBreadthFirstTreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
@@ -38,7 +38,7 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IAsyncResultSelector<TResult, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
-    public IAsyncBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public IAsyncBreadthFirstTreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
     {
       return new AsyncSelectPruneDescendantsWhereBreadthFirstTreenumerable<TSource, TOuterResult>(
         _Source, AsyncSelectWhereComposition.SelectPruneDescendantsWhereThenSelect(_ResultSelector, selector));
@@ -58,7 +58,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     // A prune-after composes in-tier.
-    public IAsyncBreadthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+    public IAsyncBreadthFirstTreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeAndPosition<TResult>, bool> predicate)
     {
       return new AsyncSelectPruneDescendantsWhereBreadthFirstTreenumerable<TSource, TResult>(
         _Source, AsyncSelectWhereComposition.SelectPruneDescendantsWhereThenPruneDescendantsWhere(_ResultSelector, predicate));

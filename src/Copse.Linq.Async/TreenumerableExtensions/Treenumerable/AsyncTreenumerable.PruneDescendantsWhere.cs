@@ -27,7 +27,7 @@ namespace Copse.Linq
       if (source is IAsyncPruneDescendantsWhereTreenumerable<TNode> pruneComposableSource)
         return pruneComposableSource.ComposePruneDescendantsWhere(predicate);
 
-      return new AsyncPruneDescendantsWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneDescendantsWhereTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -47,9 +47,9 @@ namespace Copse.Linq
       // everyone else stacks. Stacking preserves the join rule by construction: the
       // stacked predicate reads its input tree's emitted labels.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
-      return new AsyncPruneDescendantsWhereTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneDescendantsWhereTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     /// <summary>
@@ -69,12 +69,12 @@ namespace Copse.Linq
       // receiver composes on its own representation -- the successor keeps both dimensions;
       // a narrow chain composes to a narrow successor.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node));
+        return selectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node));
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node));
+        return depthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node));
 
-      return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -91,12 +91,12 @@ namespace Copse.Linq
       // The light tier never relabels, so the positional flavor always qualifies for the
       // join rule; stacked members preserve it by construction.
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TNode> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+        return depthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
-      return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneDescendantsWhereDepthFirstTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     /// <summary>
@@ -112,12 +112,12 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node));
+        return selectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node));
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node));
+        return breadthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node));
 
-      return new AsyncPruneDescendantsWhereBreadthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node));
+      return new AsyncPruneDescendantsWhereBreadthFirstTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -132,12 +132,12 @@ namespace Copse.Linq
         return source;
 
       if (source is IAsyncSelectWhereTreenumerable<TNode> selectWhereSource)
-        return selectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TNode> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+        return breadthFirstSelectWhereSource.ComposePruneDescendantsWhere(nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
-      return new AsyncPruneDescendantsWhereBreadthFirstTreenumerable<TNode>(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      return new AsyncPruneDescendantsWhereBreadthFirstTreenumerable<TNode>(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
     }
   }
 }

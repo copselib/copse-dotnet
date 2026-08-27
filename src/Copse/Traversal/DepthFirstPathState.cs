@@ -24,7 +24,7 @@ namespace Copse.Traversal
     where TEnumerator : IDisposable
   {
     public DepthFirstPathState(
-      Func<NodeContext<THandle>, TEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap)
     {
       _ChildEnumeratorFactory = childEnumeratorFactory;
@@ -35,7 +35,7 @@ namespace Copse.Traversal
       _DepthOfLastVisitedNode = -1;
     }
 
-    private readonly Func<NodeContext<THandle>, TEnumerator> _ChildEnumeratorFactory;
+    private readonly Func<NodeAndPosition<THandle>, TEnumerator> _ChildEnumeratorFactory;
     private readonly Func<THandle, TNode> _HandleToNodeMap;
     private readonly RefSemiDeque<DepthFirstNodeState<TNode>> _AcceptedNodes;
     private readonly RefSemiDeque<TEnumerator> _Enumerators;
@@ -62,7 +62,7 @@ namespace Copse.Traversal
     private ref DepthFirstNodeState<TNode> PushLevel(THandle handle, NodePosition position)
     {
       _AcceptedNodes.AddLast(new DepthFirstNodeState<TNode>(_HandleToNodeMap(handle), position));
-      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeContext<THandle>(handle, position)));
+      _Enumerators.AddLast(_ChildEnumeratorFactory(new NodeAndPosition<THandle>(handle, position)));
       return ref _AcceptedNodes.GetLast();
     }
 

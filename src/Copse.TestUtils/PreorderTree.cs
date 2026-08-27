@@ -18,7 +18,7 @@ namespace Copse.Treenumerables
       // if a door ever rerouted to different machinery, an oracle built through it would
       // silently stop pinning the engine.
       _Tree = new HierarchicalTreenumerable<TNode, int, PreorderChildEnumerator>(
-        nodeContext => new PreorderChildEnumerator(subtreeSizes, nodeContext.Node),
+        nodeAndPosition => new PreorderChildEnumerator(subtreeSizes, nodeAndPosition.Node),
         index => values[index],
         RootIndices(subtreeSizes));
     }

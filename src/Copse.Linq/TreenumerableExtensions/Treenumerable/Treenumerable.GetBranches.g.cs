@@ -14,7 +14,7 @@ namespace Copse.Linq
     /// <summary>The tree's root-to-leaf paths (each as a node array), as a lazy sequence.</summary>
     public static IEnumerable<TNode[]> GetBranches<TNode>(this IDepthFirstTreenumerable<TNode> source)
     {
-      var branch = new List<NodeContext<TNode>>();
+      var branch = new List<NodeAndPosition<TNode>>();
 
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
@@ -22,7 +22,7 @@ namespace Copse.Linq
         if (!treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
           yield break;
 
-        branch.Add(treenumerator.ToNodeContext());
+        branch.Add(treenumerator.ToNodeAndPosition());
 
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
@@ -33,19 +33,19 @@ namespace Copse.Linq
 
           if (depth > branch.Count - 1)
           {
-            branch.Add(treenumerator.ToNodeContext());
+            branch.Add(treenumerator.ToNodeAndPosition());
           }
           else
           {
-            yield return branch.Select(nodeContext => nodeContext.Node).ToArray();
+            yield return branch.Select(nodeAndPosition => nodeAndPosition.Node).ToArray();
 
             branch.RemoveRange(depth, branch.Count - depth);
-            branch.Add(treenumerator.ToNodeContext());
+            branch.Add(treenumerator.ToNodeAndPosition());
           }
         }
 
         if (branch.Count > 0)
-          yield return branch.Select(nodeContext => nodeContext.Node).ToArray();
+          yield return branch.Select(nodeAndPosition => nodeAndPosition.Node).ToArray();
       }
     }
   }

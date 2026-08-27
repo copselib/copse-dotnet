@@ -7,17 +7,17 @@ namespace Copse.Linq.Treenumerables
   // never SkipNode, so it stays a light-tier fact even spliced into the general driver.
   internal readonly struct AsyncPruneDescendantsWhereResultSelector<TNode> : IAsyncResultSelector<TNode, TNode>
   {
-    public AsyncPruneDescendantsWhereResultSelector(Func<NodeContext<TNode>, bool> predicate)
+    public AsyncPruneDescendantsWhereResultSelector(Func<NodeAndPosition<TNode>, bool> predicate)
     {
       _Predicate = predicate;
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
-    public AsyncSelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
+    public AsyncSelectWhereResult<TNode> GetResult(NodeAndPosition<TNode> nodeAndPosition)
       => new AsyncSelectWhereResult<TNode>(
-        nodeContext.Node,
-        _Predicate(nodeContext)
+        nodeAndPosition.Node,
+        _Predicate(nodeAndPosition)
           ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll);
   }

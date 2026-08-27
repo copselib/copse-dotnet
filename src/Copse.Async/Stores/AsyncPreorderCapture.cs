@@ -94,7 +94,7 @@ namespace Copse.Stores
     /// </summary>
     public static async ValueTask<(AsyncPreorderArrayStore<TNode> Store, TSide[] SideChannel)> CaptureFromAsync<TNode, TSide>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector)
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
@@ -112,7 +112,7 @@ namespace Copse.Stores
     /// </summary>
     public static async ValueTask<(TNode[] Values, int[] SubtreeSizes, TSide[] SideChannel)> CaptureRawAsync<TNode, TSide>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector)
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = await CaptureCoreAsync(source, sideChannelSelector, sideChannel).ConfigureAwait(false);
@@ -131,7 +131,7 @@ namespace Copse.Stores
 
     private static async ValueTask<(TNode[] Values, int[] SubtreeSizes)> CaptureCoreAsync<TNode, TSide>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector,
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
     {
       var values = new RefAppendOnlyList<TNode>();
@@ -155,7 +155,7 @@ namespace Copse.Stores
           openNodes.Push(values.Count);
           values.AddLast(treenumerator.Node);
           subtreeSizes.AddLast(0);
-          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)));
+          sideChannel?.AddLast(sideChannelSelector(new NodeAndPosition<TNode>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

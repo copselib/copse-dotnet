@@ -13,13 +13,13 @@ namespace Copse.Linq.Treenumerables
   // don't pay it.
   internal readonly struct FuncResultSelector<TSource, TResult> : IResultSelector<TSource, TResult>
   {
-    public FuncResultSelector(Func<NodeContext<TSource>, SelectWhereResult<TResult>> resultSelector)
+    public FuncResultSelector(Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> resultSelector)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
-    public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext) => _ResultSelector(nodeContext);
+    public SelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition) => _ResultSelector(nodeAndPosition);
   }
 }

@@ -17,12 +17,12 @@ namespace Copse.Linq.Extensions
           treenumerator.Position);
     }
 
-    /// <summary>The current node with its position, as a <see cref="NodeContext{TNode}"/>.</summary>
+    /// <summary>The current node with its position, as a <see cref="NodeAndPosition{TNode}"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static NodeContext<TNode> ToNodeContext<TNode>(this ITreenumerator<TNode> treenumerator)
+    public static NodeAndPosition<TNode> ToNodeAndPosition<TNode>(this ITreenumerator<TNode> treenumerator)
     {
       return
-        new NodeContext<TNode>(
+        new NodeAndPosition<TNode>(
           treenumerator.Node,
           treenumerator.Position);
     }

@@ -5,7 +5,7 @@ namespace Copse.Linq.Extensions
 {
   // Async twin of TreenumeratorExtensions (a hand-written support pair, like the base/wrapper):
   // it exists so async operator sources can mirror the sync ones by calling
-  // InnerTreenumerator.ToNodeContext()/.ToNodeVisit(). The codegen renames
+  // InnerTreenumerator.ToNodeAndPosition()/.ToNodeVisit(). The codegen renames
   // IAsyncTreenumerator -> ITreenumerator, so the generated twin's call resolves to the SYNC
   // TreenumeratorExtensions (same namespace) -- there is no generated copy of this class.
   /// <summary>Reads of a treenumerator's current visit as the record types.</summary>
@@ -22,12 +22,12 @@ namespace Copse.Linq.Extensions
           treenumerator.Position);
     }
 
-    /// <summary>The current node with its position, as a <see cref="NodeContext{TNode}"/>.</summary>
+    /// <summary>The current node with its position, as a <see cref="NodeAndPosition{TNode}"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static NodeContext<TNode> ToNodeContext<TNode>(this IAsyncTreenumerator<TNode> treenumerator)
+    public static NodeAndPosition<TNode> ToNodeAndPosition<TNode>(this IAsyncTreenumerator<TNode> treenumerator)
     {
       return
-        new NodeContext<TNode>(
+        new NodeAndPosition<TNode>(
           treenumerator.Node,
           treenumerator.Position);
     }

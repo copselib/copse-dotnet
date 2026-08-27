@@ -456,7 +456,7 @@ namespace Copse.Linq.Tests
     // bounded (prefix) consumption terminates -- exactly like the direct traversal.
     private static ITreenumerable<int> InfiniteBinaryTree()
       => new HierarchicalTreenumerable<int, InfiniteBinaryChildEnumerator>(
-        nodeContext => new InfiniteBinaryChildEnumerator(nodeContext.Node),
+        nodeAndPosition => new InfiniteBinaryChildEnumerator(nodeAndPosition.Node),
         new[] { 0 });
 
     private struct InfiniteBinaryChildEnumerator : IChildEnumerator<int>

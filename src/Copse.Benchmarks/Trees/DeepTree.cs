@@ -13,7 +13,7 @@ namespace Copse.Benchmarks.Trees
       // Constructed directly (not through the Tree.Create door): the corpus trees pin the
       // ENGINE -- the Traversal rows measure it through them.
       _Tree = new HierarchicalTreenumerable<int, DeepTreeNodeChildEnumerator>(
-        nodeContext => new DeepTreeNodeChildEnumerator(nodeContext.Node - 1),
+        nodeAndPosition => new DeepTreeNodeChildEnumerator(nodeAndPosition.Node - 1),
         EnumerableExtensions.Geometric(1, 2).Take(width));
     }
 

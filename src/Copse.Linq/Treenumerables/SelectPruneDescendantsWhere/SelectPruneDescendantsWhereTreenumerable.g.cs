@@ -20,17 +20,17 @@ namespace Copse.Linq.Treenumerables
   {
     public SelectPruneDescendantsWhereTreenumerable(
       ITreenumerable<TSource> source,
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> resultSelector)
+      Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> resultSelector)
     {
       _Source = source;
       _ResultSelector = resultSelector;
     }
 
     private readonly ITreenumerable<TSource> _Source;
-    private readonly Func<NodeContext<TSource>, SelectWhereResult<TResult>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> _ResultSelector;
 
     // This tier never moves a label, so the position-reading doors ARE the blind doors.
-    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
       => Compose(selector);
 
     public ITreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
@@ -38,7 +38,7 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TResult, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
-    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TResult>, TOuterResult> selector)
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TResult>, TOuterResult> selector)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TSource, TOuterResult>(
         _Source, SelectWhereComposition.SelectPruneDescendantsWhereThenSelect(_ResultSelector, selector));
@@ -58,7 +58,7 @@ namespace Copse.Linq.Treenumerables
     }
 
     // A prune-after composes in-tier.
-    public ITreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeContext<TResult>, bool> predicate)
+    public ITreenumerable<TResult> ComposePruneDescendantsWhere(Func<NodeAndPosition<TResult>, bool> predicate)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TSource, TResult>(
         _Source, SelectWhereComposition.SelectPruneDescendantsWhereThenPruneDescendantsWhere(_ResultSelector, predicate));

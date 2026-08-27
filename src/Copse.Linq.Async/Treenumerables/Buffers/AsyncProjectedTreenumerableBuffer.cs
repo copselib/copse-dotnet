@@ -93,7 +93,7 @@ namespace Copse.Linq.Treenumerables
       }
 
       return await AsyncPreorderCapture
-        .CaptureFromAsync(new AsyncSelectTreenumerable<TSource, TResult>(source, nodeContext => selector(nodeContext.Node)))
+        .CaptureFromAsync(new AsyncSelectTreenumerable<TSource, TResult>(source, nodeAndPosition => selector(nodeAndPosition.Node)))
         .ConfigureAwait(false);
     }
   }

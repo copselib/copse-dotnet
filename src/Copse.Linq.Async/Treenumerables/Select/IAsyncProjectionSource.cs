@@ -30,6 +30,6 @@ namespace Copse.Linq.Treenumerables
   /// that can do its work over any inner type, given the projector into its own domain.</summary>
   internal interface IAsyncProjectionConsumer<TProjected, TResult>
   {
-    TResult Consume<TInner>(IAsyncTreenumerable<TInner> innerSource, Func<NodeContext<TInner>, TProjected> projector);
+    TResult Consume<TInner>(IAsyncTreenumerable<TInner> innerSource, Func<NodeAndPosition<TInner>, TProjected> projector);
   }
 }

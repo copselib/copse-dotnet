@@ -21,14 +21,14 @@ namespace Copse.Linq
       this ITreenumerable<TNode> source,
       Func<TNode, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node), treeTraversalStrategy);
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node), treeTraversalStrategy);
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
     public static bool AnyNodes<TNode>(
       this ITreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy = default)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position), treeTraversalStrategy);
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position), treeTraversalStrategy);
 
     /// <summary>
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
@@ -40,7 +40,7 @@ namespace Copse.Linq
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node));
 
     /// <summary>
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
@@ -52,7 +52,7 @@ namespace Copse.Linq
     public static bool AnyNodes<TNode>(
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
     /// <summary>
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
@@ -64,7 +64,7 @@ namespace Copse.Linq
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, bool> predicate)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node));
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node));
 
     /// <summary>
     /// Terminal: whether any node satisfies the predicate. Short-circuits on the first match.
@@ -76,11 +76,11 @@ namespace Copse.Linq
     public static bool AnyNodes<TNode>(
       this IBreadthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, bool> predicate)
-      => AnyNodesCore(source, nodeContext => predicate(nodeContext.Node, nodeContext.Position));
+      => AnyNodesCore(source, nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position));
 
     private static bool AnyNodesCore<TNode>(
       ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, bool> predicate,
       TreeTraversalStrategy treeTraversalStrategy)
     {
       var nodeTraversalStrategies =
@@ -92,7 +92,7 @@ namespace Copse.Linq
       using (treenumerator)
         while (treenumerator.MoveNext(nodeTraversalStrategies))
         {
-          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeAndPosition()))
             return true;
         }
 
@@ -101,13 +101,13 @@ namespace Copse.Linq
 
     private static bool AnyNodesCore<TNode>(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
     {
       var treenumerator = source.GetDepthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.SkipNode))
         {
-          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeAndPosition()))
             return true;
         }
 
@@ -116,13 +116,13 @@ namespace Copse.Linq
 
     private static bool AnyNodesCore<TNode>(
       IBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
     {
       var treenumerator = source.GetBreadthFirstTreenumerator();
       using (treenumerator)
         while (treenumerator.MoveNext(NodeTraversalStrategies.TraverseAll))
         {
-          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeContext()))
+          if (treenumerator.Mode == TreenumeratorMode.SchedulingNode && predicate(treenumerator.ToNodeAndPosition()))
             return true;
         }
 

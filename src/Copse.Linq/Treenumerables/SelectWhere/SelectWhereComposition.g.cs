@@ -24,25 +24,25 @@ namespace Copse.Linq.Treenumerables
   internal static class SelectWhereComposition
   {
     // A projection composed onto a projection is still a projection.
-    public static Func<NodeContext<TSource>, TOuterResult> SelectThenSelect<TSource, TResult, TOuterResult>(
-      Func<NodeContext<TSource>, TResult> innerSelector,
-      Func<NodeContext<TResult>, TOuterResult> selector)
+    public static Func<NodeAndPosition<TSource>, TOuterResult> SelectThenSelect<TSource, TResult, TOuterResult>(
+      Func<NodeAndPosition<TSource>, TResult> innerSelector,
+      Func<NodeAndPosition<TResult>, TOuterResult> selector)
     {
-      return nodeContext => selector(new NodeContext<TResult>(innerSelector(nodeContext), nodeContext.Position));
+      return nodeAndPosition => selector(new NodeAndPosition<TResult>(innerSelector(nodeAndPosition), nodeAndPosition.Position));
     }
 
     // A prune-after joins a projection: the predicate judges the projected value.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectThenPruneDescendantsWhere<TSource, TResult>(
-      Func<NodeContext<TSource>, TResult> innerSelector,
-      Func<NodeContext<TResult>, bool> predicate)
+    public static Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> SelectThenPruneDescendantsWhere<TSource, TResult>(
+      Func<NodeAndPosition<TSource>, TResult> innerSelector,
+      Func<NodeAndPosition<TResult>, bool> predicate)
     {
-      return nodeContext =>
+      return nodeAndPosition =>
       {
-        var value = innerSelector(nodeContext);
+        var value = innerSelector(nodeAndPosition);
 
         return new SelectWhereResult<TResult>(
           value,
-          predicate(new NodeContext<TResult>(value, nodeContext.Position))
+          predicate(new NodeAndPosition<TResult>(value, nodeAndPosition.Position))
             ? NodeTraversalStrategies.PruneDescendants
             : NodeTraversalStrategies.TraverseAll);
       };
@@ -50,60 +50,60 @@ namespace Copse.Linq.Treenumerables
 
     // A projection joins a prune-after: the prune predicate judges the source value (its layer
     // runs first), the selector maps it.
-    public static Func<NodeContext<TNode>, SelectWhereResult<TOuterResult>> PruneDescendantsWhereThenSelect<TNode, TOuterResult>(
-      Func<NodeContext<TNode>, bool> predicate,
-      Func<NodeContext<TNode>, TOuterResult> selector)
+    public static Func<NodeAndPosition<TNode>, SelectWhereResult<TOuterResult>> PruneDescendantsWhereThenSelect<TNode, TOuterResult>(
+      Func<NodeAndPosition<TNode>, bool> predicate,
+      Func<NodeAndPosition<TNode>, TOuterResult> selector)
     {
-      return nodeContext =>
+      return nodeAndPosition =>
       {
-        var strategies = predicate(nodeContext)
+        var strategies = predicate(nodeAndPosition)
           ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll;
 
-        return new SelectWhereResult<TOuterResult>(selector(nodeContext), strategies);
+        return new SelectWhereResult<TOuterResult>(selector(nodeAndPosition), strategies);
       };
     }
 
     // Prune-after over prune-after merges by predicate union -- prune when either matches.
     // Inner-first short-circuit preserves per-node lambda order; the outer predicate skips
     // nodes the inner already matched, which the purity contract permits (counts unspecified).
-    public static Func<NodeContext<TNode>, bool> PruneDescendantsWhereThenPruneDescendantsWhere<TNode>(
-      Func<NodeContext<TNode>, bool> innerPredicate,
-      Func<NodeContext<TNode>, bool> outerPredicate)
+    public static Func<NodeAndPosition<TNode>, bool> PruneDescendantsWhereThenPruneDescendantsWhere<TNode>(
+      Func<NodeAndPosition<TNode>, bool> innerPredicate,
+      Func<NodeAndPosition<TNode>, bool> outerPredicate)
     {
-      return nodeContext => innerPredicate(nodeContext) || outerPredicate(nodeContext);
+      return nodeAndPosition => innerPredicate(nodeAndPosition) || outerPredicate(nodeAndPosition);
     }
 
     // A projection joins a never-rejecting chain: the value maps, the truncation strategies
     // ride (nothing in the chain can reject, so no short-circuit).
-    public static Func<NodeContext<TSource>, SelectWhereResult<TOuterResult>> SelectPruneDescendantsWhereThenSelect<TSource, TResult, TOuterResult>(
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
-      Func<NodeContext<TResult>, TOuterResult> selector)
+    public static Func<NodeAndPosition<TSource>, SelectWhereResult<TOuterResult>> SelectPruneDescendantsWhereThenSelect<TSource, TResult, TOuterResult>(
+      Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> innerResultSelector,
+      Func<NodeAndPosition<TResult>, TOuterResult> selector)
     {
-      return nodeContext =>
+      return nodeAndPosition =>
       {
-        var innerResult = innerResultSelector(nodeContext);
+        var innerResult = innerResultSelector(nodeAndPosition);
 
         return new SelectWhereResult<TOuterResult>(
-          selector(new NodeContext<TResult>(innerResult.Node, nodeContext.Position)),
+          selector(new NodeAndPosition<TResult>(innerResult.Node, nodeAndPosition.Position)),
           innerResult.Strategies);
       };
     }
 
     // A prune-after joins a never-rejecting chain: its predicate judges the projected value;
     // truncations union.
-    public static Func<NodeContext<TSource>, SelectWhereResult<TResult>> SelectPruneDescendantsWhereThenPruneDescendantsWhere<TSource, TResult>(
-      Func<NodeContext<TSource>, SelectWhereResult<TResult>> innerResultSelector,
-      Func<NodeContext<TResult>, bool> predicate)
+    public static Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> SelectPruneDescendantsWhereThenPruneDescendantsWhere<TSource, TResult>(
+      Func<NodeAndPosition<TSource>, SelectWhereResult<TResult>> innerResultSelector,
+      Func<NodeAndPosition<TResult>, bool> predicate)
     {
-      return nodeContext =>
+      return nodeAndPosition =>
       {
-        var innerResult = innerResultSelector(nodeContext);
+        var innerResult = innerResultSelector(nodeAndPosition);
 
         return new SelectWhereResult<TResult>(
           innerResult.Node,
           innerResult.Strategies
-            | (predicate(new NodeContext<TResult>(innerResult.Node, nodeContext.Position))
+            | (predicate(new NodeAndPosition<TResult>(innerResult.Node, nodeAndPosition.Position))
               ? NodeTraversalStrategies.PruneDescendants
               : NodeTraversalStrategies.TraverseAll));
       };

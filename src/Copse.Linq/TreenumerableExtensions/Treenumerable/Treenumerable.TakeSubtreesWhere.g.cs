@@ -141,31 +141,31 @@ namespace Copse.Linq
       return Tree.CreateBreadthFirst(
           () => new RootfixScanBreadthFirstTreenumerator<TNode, bool>(
             source.GetBreadthFirstTreenumerator,
-            (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext.Node, nodeContext.Position),
+            (parentContext, nodeAndPosition) => parentContext.Node || predicate(nodeAndPosition.Node, nodeAndPosition.Position),
             false))
         .Where(pair => pair.Accumulate)
         .Select(pair => pair.Node);
     }
 
-    private static Func<NodeContext<TNode>, bool> ToContextPredicate<TNode>(Func<TNode, bool> predicate)
+    private static Func<NodeAndPosition<TNode>, bool> ToContextPredicate<TNode>(Func<TNode, bool> predicate)
     {
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      return nodeContext => predicate(nodeContext.Node);
+      return nodeAndPosition => predicate(nodeAndPosition.Node);
     }
 
-    private static Func<NodeContext<TNode>, bool> ToContextPredicate<TNode>(Func<TNode, NodePosition, bool> predicate)
+    private static Func<NodeAndPosition<TNode>, bool> ToContextPredicate<TNode>(Func<TNode, NodePosition, bool> predicate)
     {
       if (predicate == null)
         throw new ArgumentNullException(nameof(predicate));
 
-      return nodeContext => predicate(nodeContext.Node, nodeContext.Position);
+      return nodeAndPosition => predicate(nodeAndPosition.Node, nodeAndPosition.Position);
     }
 
     private static IDepthFirstTreenumerable<TNode> TakeSubtreesWhereCore<TNode>(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
       => Tree.CreateDepthFirst(
         () => new TakeSubtreesWhereTreenumerator<TNode>(
           source.GetDepthFirstTreenumerator,

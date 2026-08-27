@@ -24,14 +24,14 @@ namespace Copse.Linq.Treenumerables
   {
     public TakeSubtreesWhereTreenumerable(
       ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
     {
       _Source = source;
       _Predicate = predicate;
     }
 
     private readonly ITreenumerable<TNode> _Source;
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
       => new TakeSubtreesWhereTreenumerator<TNode>(_Source.GetDepthFirstTreenumerator, _Predicate);
@@ -46,9 +46,9 @@ namespace Copse.Linq.Treenumerables
 
       return new WhereBreadthFirstTreenumerator<TNode, TNode, FuncResultSelector<TNode, TNode>>(
         _Source.GetBreadthFirstTreenumerator,
-        new FuncResultSelector<TNode, TNode>(nodeContext => new SelectWhereResult<TNode>(
-          nodeContext.Node,
-          predicate(nodeContext) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
+        new FuncResultSelector<TNode, TNode>(nodeAndPosition => new SelectWhereResult<TNode>(
+          nodeAndPosition.Node,
+          predicate(nodeAndPosition) ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode)),
         takeSubtrees: true);
     }
 
@@ -61,11 +61,11 @@ namespace Copse.Linq.Treenumerables
     // driver over the scan engine.
     internal static ITreenumerable<TNode> GetBreadthFirstChain(
       ITreenumerable<TNode> source,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
       => new RootfixScanTreenumerable<TNode, bool>(
           source.GetDepthFirstTreenumerator,
           source.GetBreadthFirstTreenumerator,
-          (parentContext, nodeContext) => parentContext.Node || predicate(nodeContext),
+          (parentContext, nodeAndPosition) => parentContext.Node || predicate(nodeAndPosition),
           false)
         .Where(pair => pair.Accumulate)
         .Select(pair => pair.Node);

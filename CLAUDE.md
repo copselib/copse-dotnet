@@ -95,7 +95,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
   (`Tree.Defer`/`Lazy`/`Using`/`Empty` — Defer builds fresh per acquisition, Lazy pins the first
   construction), the wrapper bases (`TreenumeratorBase`/`Wrapper`), the sans-I/O path-state
   machinery both engines drive (`Copse/Traversal`: `DepthFirstPathState`,
-  `BreadthFirstPathState`, … — internal, IVT'd to the async engine), `NodeContext`, and
+  `BreadthFirstPathState`, … — internal, IVT'd to the async engine), `NodeAndPosition`, and
   `HandleAndNode`.
 - **Copse.Linq** - LINQ-style tree operators (extensions over the abstract contract; the
   memoize machinery rides the flat family, not a private engine), plus the operator-tier
@@ -124,7 +124,7 @@ The library **never performs node equality comparisons**. This is a deliberate d
 - **NodePosition** - Tracks (sibling index, depth) in tree. `NodePosition.ForestRoot` is the
   pre-enumeration convention (position `(0, -1)`, VisitCount 0, mode SchedulingNode) that every
   fresh treenumerator sits at before its first `MoveNext` — load-bearing; conformance-checked.
-- **NodeContext<T>** - Bundles node value with its position
+- **NodeAndPosition<T>** - Bundles node value with its position
 - **NodeVisit<T>** - Complete visit information including mode and visit count
 - **ITreenumerableBuffer<T>** - An owned, in-memory, re-traversable capture of a tree; the typed
   "upgrade" from a narrow source back to the composite. Deliberately **not** `IDisposable` — a
@@ -411,7 +411,7 @@ private bool _ConsumerSkippedChildAfterLastAccepted;
 Both Where treenumerators take the predicate with LINQ polarity — **true means keep**.
 Operators with removal semantics invert at their own call sites, where the inversion is
 self-documenting (PruneSubtreesWhere's predicate means "prune when true", so it passes
-`nodeContext => !predicate(nodeContext)` to both treenumerators).
+`nodeAndPosition => !predicate(nodeAndPosition)` to both treenumerators).
 
 (Historically the BFT treenumerator treated "true" as "skip", so `Where` inverted for BFT
 while the subtree prune inverted for DFT — every operator paid one inversion on opposite sides.

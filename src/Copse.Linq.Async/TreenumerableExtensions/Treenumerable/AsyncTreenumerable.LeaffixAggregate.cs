@@ -34,7 +34,7 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregateCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
+      => LeaffixAggregateCore(source, nodeAndPosition => leafNodeSelector(nodeAndPosition.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>The positional selector flavor (the Select/Where arity-split grammar): the leaf's value and its position.</summary>
     public static IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
@@ -43,7 +43,7 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregateCore(source, nodeContext => leafNodeSelector(nodeContext.Node, nodeContext.Position), edgeAccumulator, nodeAccumulator, cancellationToken);
+      => LeaffixAggregateCore(source, nodeAndPosition => leafNodeSelector(nodeAndPosition.Node, nodeAndPosition.Position), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>
     /// The breadth-first-only entry -- a DOCUMENTED capture, the disclosure rule's amended
@@ -63,7 +63,7 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
+      => LeaffixAggregateBreadthFirstCore(source, nodeAndPosition => leafNodeSelector(nodeAndPosition.Node), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>
     /// The leaf-to-root accumulations (LeaffixScan collapsed to its roots), as a lazy async
@@ -89,7 +89,7 @@ namespace Copse.Linq
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       CancellationToken cancellationToken = default)
-      => LeaffixAggregateBreadthFirstCore(source, nodeContext => leafNodeSelector(nodeContext.Node, nodeContext.Position), edgeAccumulator, nodeAccumulator, cancellationToken);
+      => LeaffixAggregateBreadthFirstCore(source, nodeAndPosition => leafNodeSelector(nodeAndPosition.Node, nodeAndPosition.Position), edgeAccumulator, nodeAccumulator, cancellationToken);
 
     /// <summary>Disambiguation overloads for full trees; keep the depth-first consumption -- the per-root-lazy entry.</summary>
     public static IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregate<TNode, TAccumulate>(
@@ -132,7 +132,7 @@ namespace Copse.Linq
     // sentinel value is stolen from TAccumulate's range).
     private static async IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregateCore<TNode, TAccumulate>(
       IAsyncDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> leafValue,
+      Func<NodeAndPosition<TNode>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -189,12 +189,12 @@ namespace Copse.Linq
             accumulations.Clear();
           }
 
-          var nodeContext = treenumerator.ToNodeContext();
+          var nodeAndPosition = treenumerator.ToNodeAndPosition();
 
           if (depth == 0)
-            currentRoot = nodeContext.Node;
+            currentRoot = nodeAndPosition.Node;
 
-          path.Push(new PendingNode<TNode>(accumulations.Count, nodeContext));
+          path.Push(new PendingNode<TNode>(accumulations.Count, nodeAndPosition));
           accumulations.Add(default);
         }
       }
@@ -214,7 +214,7 @@ namespace Copse.Linq
     // from the spans (depth from the walk stack, sibling index from the span offset).
     private static async IAsyncEnumerable<NodeAccumulation<TNode, TAccumulate>> LeaffixAggregateBreadthFirstCore<TNode, TAccumulate>(
       IAsyncBreadthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TAccumulate> leafValue,
+      Func<NodeAndPosition<TNode>, TAccumulate> leafValue,
       Func<TAccumulate, TAccumulate, TAccumulate> edgeAccumulator,
       Func<TAccumulate, TNode, TAccumulate> nodeAccumulator,
       [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -267,10 +267,10 @@ namespace Copse.Linq
             while (path.Count > frame.Depth)
               Close();
 
-            var nodeContext = new NodeContext<TNode>(
+            var nodeAndPosition = new NodeAndPosition<TNode>(
               capture.GetNode(frame.Index), new NodePosition(frame.SiblingIndex, frame.Depth));
 
-            path.Push(new PendingNode<TNode>(accumulations.Count, nodeContext));
+            path.Push(new PendingNode<TNode>(accumulations.Count, nodeAndPosition));
             accumulations.Add(default);
 
             var firstChildIndex = capture.GetFirstChildIndex(frame.Index);

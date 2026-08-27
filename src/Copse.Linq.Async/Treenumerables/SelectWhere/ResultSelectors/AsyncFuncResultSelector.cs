@@ -9,13 +9,13 @@ namespace Copse.Linq.Treenumerables
   // don't pay it.
   internal readonly struct AsyncFuncResultSelector<TSource, TResult> : IAsyncResultSelector<TSource, TResult>
   {
-    public AsyncFuncResultSelector(Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
+    public AsyncFuncResultSelector(Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> resultSelector)
     {
       _ResultSelector = resultSelector;
     }
 
-    private readonly Func<NodeContext<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
+    private readonly Func<NodeAndPosition<TSource>, AsyncSelectWhereResult<TResult>> _ResultSelector;
 
-    public AsyncSelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext) => _ResultSelector(nodeContext);
+    public AsyncSelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition) => _ResultSelector(nodeAndPosition);
   }
 }

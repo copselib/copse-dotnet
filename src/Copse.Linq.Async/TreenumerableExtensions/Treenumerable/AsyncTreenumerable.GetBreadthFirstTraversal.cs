@@ -15,7 +15,7 @@ namespace Copse.Linq
       Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       CancellationToken cancellationToken = default)
     {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node), cancellationToken);
+      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node), cancellationToken);
     }
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
@@ -24,7 +24,7 @@ namespace Copse.Linq
       Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector,
       CancellationToken cancellationToken = default)
     {
-      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position), cancellationToken);
+      return EnumerateTraversalAsync(source.GetAsyncBreadthFirstTreenumerator, nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node, nodeAndPosition.Position), cancellationToken);
     }
 
     /// <summary>The full breadth-first visit stream (TraverseAll).</summary>

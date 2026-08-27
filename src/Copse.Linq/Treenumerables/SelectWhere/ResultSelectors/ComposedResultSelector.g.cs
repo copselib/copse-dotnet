@@ -31,14 +31,14 @@ namespace Copse.Linq.Treenumerables
     private readonly TInnerSelector _InnerSelector;
     private readonly TOuterSelector _OuterSelector;
 
-    public SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext)
+    public SelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition)
     {
-      var innerResult = _InnerSelector.GetResult(nodeContext);
+      var innerResult = _InnerSelector.GetResult(nodeAndPosition);
 
       if (innerResult.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode))
         return new SelectWhereResult<TResult>(default, innerResult.Strategies);
 
-      var outerResult = _OuterSelector.GetResult(new NodeContext<TMid>(innerResult.Node, nodeContext.Position));
+      var outerResult = _OuterSelector.GetResult(new NodeAndPosition<TMid>(innerResult.Node, nodeAndPosition.Position));
 
       return new SelectWhereResult<TResult>(outerResult.Node, outerResult.Strategies | innerResult.Strategies);
     }

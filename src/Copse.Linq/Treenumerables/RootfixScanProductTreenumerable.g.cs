@@ -21,9 +21,9 @@ namespace Copse.Linq.Treenumerables
     public RootfixScanProductTreenumerable(
       Func<ITreenumerator<TNode>> innerDepthFirstFactory,
       Func<ITreenumerator<TNode>> innerBreadthFirstFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> accumulator,
       TAccumulate seed,
-      Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector)
+      Func<NodeAndPosition<NodeAccumulation<TNode, TAccumulate>>, TProduct> productSelector)
     {
       _InnerDepthFirstFactory = innerDepthFirstFactory;
       _InnerBreadthFirstFactory = innerBreadthFirstFactory;
@@ -34,11 +34,11 @@ namespace Copse.Linq.Treenumerables
 
     private readonly Func<ITreenumerator<TNode>> _InnerDepthFirstFactory;
     private readonly Func<ITreenumerator<TNode>> _InnerBreadthFirstFactory;
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TNode>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TNode>, TAccumulate> _Accumulator;
     private readonly TAccumulate _Seed;
     // Context-shaped by the rootfix door: the door surrenders
-    // NodeContext-shaped projectors; value-shaped composition wraps at the seams below.
-    private readonly Func<NodeContext<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
+    // NodeAndPosition-shaped projectors; value-shaped composition wraps at the seams below.
+    private readonly Func<NodeAndPosition<NodeAccumulation<TNode, TAccumulate>>, TProduct> _ProductSelector;
 
     public ITreenumerator<TProduct> GetDepthFirstTreenumerator()
       => new RootfixScanProductDepthFirstTreenumerator<TNode, TAccumulate, TProduct>(
@@ -81,7 +81,7 @@ namespace Copse.Linq.Treenumerables
     // The context-shaped projection door (a positional leg, join-rule-cleared by the
     // caller): the leg lands in the fold-carrying driver, as every splicing leg does here.
     // Never moves a label, so the position-reading doors ARE the blind doors.
-    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
+    public ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TProduct>, TOuterResult> selector)
       => Compose(selector);
 
     public ITreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
@@ -89,16 +89,16 @@ namespace Copse.Linq.Treenumerables
       bool relabels)
       where TOuterSelector : struct, IResultSelector<TProduct, TOuterResult>
       => Compose<TOuterResult, TOuterSelector>(outerSelector, relabels);
-    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TProduct>, TOuterResult> selector)
+    public ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TProduct>, TOuterResult> selector)
       => Compose<TOuterResult, SelectResultSelector<TProduct, TOuterResult>>(
         new SelectResultSelector<TProduct, TOuterResult>(selector), relabels: false);
 
     // The prune-after doors: the in-tier-only boundary ruling -- the light prune wrapper
     // stacks over the product citizen.
-    public ITreenumerable<TProduct> ComposePruneDescendantsWhere(Func<NodeContext<TProduct>, bool> predicate)
+    public ITreenumerable<TProduct> ComposePruneDescendantsWhere(Func<NodeAndPosition<TProduct>, bool> predicate)
       => new PruneDescendantsWhereTreenumerable<TProduct>(this, predicate);
 
     public IPruneDescendantsWhereTreenumerable<TProduct> ComposePruneDescendantsWhere(Func<TProduct, bool> predicate)
-      => new PruneDescendantsWhereTreenumerable<TProduct>(this, nodeContext => predicate(nodeContext.Node));
+      => new PruneDescendantsWhereTreenumerable<TProduct>(this, nodeAndPosition => predicate(nodeAndPosition.Node));
   }
 }

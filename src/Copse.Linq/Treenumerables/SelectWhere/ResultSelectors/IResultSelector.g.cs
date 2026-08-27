@@ -14,6 +14,6 @@ namespace Copse.Linq.Treenumerables
   // silently operate on a defensive copy.
   internal interface IResultSelector<TSource, TResult>
   {
-    SelectWhereResult<TResult> GetResult(NodeContext<TSource> nodeContext);
+    SelectWhereResult<TResult> GetResult(NodeAndPosition<TSource> nodeAndPosition);
   }
 }

@@ -16,14 +16,14 @@ namespace Copse.Linq.Treenumerables
     public ISelectTreenumerable<TOuterResult> ComposeSelect<TOuterResult>(Func<TNode, TOuterResult> selector)
     {
       return new SelectPruneDescendantsWhereTreenumerable<TNode, TOuterResult>(
-        _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, nodeContext => selector(nodeContext.Node)));
+        _Source, SelectWhereComposition.PruneDescendantsWhereThenSelect(_Predicate, nodeAndPosition => selector(nodeAndPosition.Node)));
     }
 
     /// <inheritdoc/>
     public IPruneDescendantsWhereTreenumerable<TNode> ComposePruneDescendantsWhere(Func<TNode, bool> predicate)
     {
       return new PruneDescendantsWhereTreenumerable<TNode>(
-        _Source, SelectWhereComposition.PruneDescendantsWhereThenPruneDescendantsWhere(_Predicate, nodeContext => predicate(nodeContext.Node)));
+        _Source, SelectWhereComposition.PruneDescendantsWhereThenPruneDescendantsWhere(_Predicate, nodeAndPosition => predicate(nodeAndPosition.Node)));
     }
   }
 }

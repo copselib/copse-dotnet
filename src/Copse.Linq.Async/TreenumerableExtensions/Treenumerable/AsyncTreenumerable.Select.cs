@@ -38,7 +38,7 @@ namespace Copse.Linq
       if (source is IAsyncSelectTreenumerable<TSource> composableSource)
         return composableSource.ComposeSelect(selector);
 
-      return SelectCore(source, nodeContext => selector(nodeContext.Node));
+      return SelectCore(source, nodeAndPosition => selector(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ namespace Copse.Linq
     public static IAsyncTreenumerableBuffer<TResult> Select<TSource, TResult>(
       this IAsyncTreenumerableBuffer<TSource> source,
       Func<TSource, NodePosition, TResult> selector)
-      => SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position)).Materialize(BufferLayout.Preorder);
+      => SelectCore(source, nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position)).Materialize(BufferLayout.Preorder);
 
     /// <summary>
     /// Async <c>Select</c> over (node, position) -- the positional analog of LINQ's indexed
@@ -94,14 +94,14 @@ namespace Copse.Linq
       // light, the driver nests a struct leg, a scan citizen's leg lands in the
       // fold-carrying driver).
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePositional(nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
 
-      return SelectCore(source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+      return SelectCore(source, nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     private static IAsyncTreenumerable<TResult> SelectCore<TSource, TResult>(
       IAsyncTreenumerable<TSource> source,
-      Func<NodeContext<TSource>, TResult> selector)
+      Func<NodeAndPosition<TSource>, TResult> selector)
     {
       return new AsyncSelectTreenumerable<TSource, TResult>(source, selector);
     }
@@ -135,13 +135,13 @@ namespace Copse.Linq
       // keeps both dimensions; a narrow chain composes to a narrow successor. The
       // context-shaped door dispatches per member (the door-optimality law).
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
+        return selectWhereSource.Compose(nodeAndPosition => selector(nodeAndPosition.Node));
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
+        return depthFirstSelectWhereSource.Compose(nodeAndPosition => selector(nodeAndPosition.Node));
 
       return new AsyncSelectDepthFirstTreenumerable<TSource, TResult>(
-        source, nodeContext => selector(nodeContext.Node));
+        source, nodeAndPosition => selector(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -171,13 +171,13 @@ namespace Copse.Linq
       // The join rule (see the composite positional overload): splice only over a
       // label-preserving chain. The context-shaped door dispatches per member.
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePositional(nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
 
       if (source is IAsyncSelectWhereDepthFirstTreenumerable<TSource> depthFirstSelectWhereSource)
-        return depthFirstSelectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return depthFirstSelectWhereSource.ComposePositional(nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
 
       return new AsyncSelectDepthFirstTreenumerable<TSource, TResult>(
-        source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        source, nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     /// <summary>
@@ -207,13 +207,13 @@ namespace Copse.Linq
       // The context-shaped door dispatches per member (the door-optimality law); see the
       // depth-first overload.
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
+        return selectWhereSource.Compose(nodeAndPosition => selector(nodeAndPosition.Node));
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.Compose(nodeContext => selector(nodeContext.Node));
+        return breadthFirstSelectWhereSource.Compose(nodeAndPosition => selector(nodeAndPosition.Node));
 
       return new AsyncSelectBreadthFirstTreenumerable<TSource, TResult>(
-        source, nodeContext => selector(nodeContext.Node));
+        source, nodeAndPosition => selector(nodeAndPosition.Node));
     }
 
     /// <summary>
@@ -243,13 +243,13 @@ namespace Copse.Linq
       // The join rule; the context-shaped door dispatches per member. See the depth-first
       // overload.
       if (source is IAsyncSelectWhereTreenumerable<TSource> selectWhereSource)
-        return selectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return selectWhereSource.ComposePositional(nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
 
       if (source is IAsyncSelectWhereBreadthFirstTreenumerable<TSource> breadthFirstSelectWhereSource)
-        return breadthFirstSelectWhereSource.ComposePositional(nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        return breadthFirstSelectWhereSource.ComposePositional(nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
 
       return new AsyncSelectBreadthFirstTreenumerable<TSource, TResult>(
-        source, nodeContext => selector(nodeContext.Node, nodeContext.Position));
+        source, nodeAndPosition => selector(nodeAndPosition.Node, nodeAndPosition.Position));
     }
   }
 }

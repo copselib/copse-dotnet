@@ -14,7 +14,7 @@ namespace Copse.Linq
   /// </summary>
   public readonly struct DispatchTarget<TNode, TDispatch>
   {
-    internal DispatchTarget(NodeContext<TNode> context, TDispatch[] arrivals, bool[] written, int index)
+    internal DispatchTarget(NodeAndPosition<TNode> context, TDispatch[] arrivals, bool[] written, int index)
     {
       Context = context;
       _Arrivals = arrivals;
@@ -28,7 +28,7 @@ namespace Copse.Linq
     private readonly int _Index;
 
     /// <summary>The child's node and position.</summary>
-    public readonly NodeContext<TNode> Context;
+    public readonly NodeAndPosition<TNode> Context;
 
     /// <summary>The child's node (shorthand for <c>Context.Node</c>).</summary>
     public TNode Node => Context.Node;

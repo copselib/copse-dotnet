@@ -11,14 +11,14 @@ namespace Copse.Linq
   /// </summary>
   public readonly struct DispatchSource<TNode, TAccumulate>
   {
-    internal DispatchSource(NodeContext<TNode> context, TAccumulate accumulate)
+    internal DispatchSource(NodeAndPosition<TNode> context, TAccumulate accumulate)
     {
       Context = context;
       Accumulate = accumulate;
     }
 
     /// <summary>The child's node and position.</summary>
-    public readonly NodeContext<TNode> Context;
+    public readonly NodeAndPosition<TNode> Context;
 
     /// <summary>The child's completed accumulation.</summary>
     public readonly TAccumulate Accumulate;
@@ -83,7 +83,7 @@ namespace Copse.Linq
         // channel) -- the reverse fold cannot derive them statelessly the way the rootfix
         // pass does, and a close-stack walk measured out (O(n) entries on chains).
         return new DispatchSource<TNode, TAccumulate>(
-          new NodeContext<TNode>(_Nodes[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
+          new NodeAndPosition<TNode>(_Nodes[childIndex], _Positions[childIndex]), _Accumulations[childIndex]);
       }
     }
 

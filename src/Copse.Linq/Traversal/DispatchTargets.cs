@@ -65,7 +65,7 @@ namespace Copse.Linq
         // sibling order by construction), and its depth is the pass's walk depth plus one --
         // so the build allocates no positions array.
         return new DispatchTarget<TNode, TDispatch>(
-          new NodeContext<TNode>(_Nodes[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
+          new NodeAndPosition<TNode>(_Nodes[childIndex], new NodePosition(index, _ChildDepth)), _Arrivals, _Written, childIndex);
       }
     }
 

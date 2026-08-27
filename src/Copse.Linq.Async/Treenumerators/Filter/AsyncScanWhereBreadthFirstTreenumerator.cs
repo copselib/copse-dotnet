@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerators
   {
     public AsyncScanWhereBreadthFirstTreenumerator(
       Func<IAsyncTreenumerator<TSource>> innerTreenumeratorFactory,
-      Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> accumulator,
+      Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> accumulator,
       TAccumulate seed,
       TResultSelector resultSelector)
       : base(innerTreenumeratorFactory)
@@ -43,24 +43,24 @@ namespace Copse.Linq.Treenumerators
       _Accumulator = accumulator;
       _ResultSelector = resultSelector;
 
-      _TrackerCurrentLevel = new RefSemiDeque<NodeContext<TAccumulate>>();
-      _TrackerNextLevel = new RefSemiDeque<NodeContext<TAccumulate>>();
-      _TrackerSkippedStack = new Stack<NodeContext<TAccumulate>>();
+      _TrackerCurrentLevel = new RefSemiDeque<NodeAndPosition<TAccumulate>>();
+      _TrackerNextLevel = new RefSemiDeque<NodeAndPosition<TAccumulate>>();
+      _TrackerSkippedStack = new Stack<NodeAndPosition<TAccumulate>>();
 
       // The tracker's sentinel: the virtual forest root carrying the seed (the scan
       // engines' exact boundary).
-      _TrackerCurrentLevel.AddLast(new NodeContext<TAccumulate>(seed, NodePosition.ForestRoot));
+      _TrackerCurrentLevel.AddLast(new NodeAndPosition<TAccumulate>(seed, NodePosition.ForestRoot));
 
       _Path = new WhereBreadthFirstPath<TResult>(default, InnerTreenumerator.Position);
     }
 
-    private readonly Func<NodeContext<TAccumulate>, NodeContext<TSource>, TAccumulate> _Accumulator;
+    private readonly Func<NodeAndPosition<TAccumulate>, NodeAndPosition<TSource>, TAccumulate> _Accumulator;
     private readonly TResultSelector _ResultSelector;
 
     // ---- The accumulate tracker: the rootfix BFT engine's state, bare accumulates ----
-    private RefSemiDeque<NodeContext<TAccumulate>> _TrackerCurrentLevel;
-    private RefSemiDeque<NodeContext<TAccumulate>> _TrackerNextLevel;
-    private readonly Stack<NodeContext<TAccumulate>> _TrackerSkippedStack;
+    private RefSemiDeque<NodeAndPosition<TAccumulate>> _TrackerCurrentLevel;
+    private RefSemiDeque<NodeAndPosition<TAccumulate>> _TrackerNextLevel;
+    private readonly Stack<NodeAndPosition<TAccumulate>> _TrackerSkippedStack;
     private bool _TrackerScheduledChildrenSinceSkip = false;
 
     // Fold the just-scheduled inner node from its parent's accumulate (the engine's four-way
@@ -83,7 +83,7 @@ namespace Copse.Linq.Treenumerators
         _TrackerScheduledChildrenSinceSkip = false;
       }
 
-      NodeContext<TAccumulate> parentContext;
+      NodeAndPosition<TAccumulate> parentContext;
       if (_TrackerCurrentLevel.GetFirst().Position.Depth == parentDepth)
         parentContext = _TrackerCurrentLevel.GetFirst();
       else if (_TrackerSkippedStack.Count > 0)
@@ -93,9 +93,9 @@ namespace Copse.Linq.Treenumerators
       else
         parentContext = _TrackerCurrentLevel.GetFirst();
 
-      var accumulate = _Accumulator(parentContext, InnerTreenumerator.ToNodeContext());
+      var accumulate = _Accumulator(parentContext, InnerTreenumerator.ToNodeAndPosition());
 
-      _TrackerNextLevel.AddLast(new NodeContext<TAccumulate>(accumulate, InnerTreenumerator.Position));
+      _TrackerNextLevel.AddLast(new NodeAndPosition<TAccumulate>(accumulate, InnerTreenumerator.Position));
 
       _TrackerScheduledChildrenSinceSkip = true;
 
@@ -226,7 +226,7 @@ namespace Copse.Linq.Treenumerators
 
           // ONE evaluation of the composed selector chain, against the PAIR context.
           var result = _ResultSelector.GetResult(
-            new NodeContext<NodeAccumulation<TSource, TAccumulate>>(
+            new NodeAndPosition<NodeAccumulation<TSource, TAccumulate>>(
               new NodeAccumulation<TSource, TAccumulate>(InnerTreenumerator.Node, accumulate),
               InnerTreenumerator.Position));
           var skipped = result.Strategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);

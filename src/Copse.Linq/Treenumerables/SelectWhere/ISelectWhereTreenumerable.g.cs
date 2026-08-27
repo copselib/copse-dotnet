@@ -61,7 +61,7 @@ namespace Copse.Linq.Treenumerables
     // cannot be the wrong one. Always the cheapest route. Per the door-optimality law:
     // light wrappers compose in-tier and stay light; the driver splices a struct leg; the
     // scan citizens splice into the fold-carrying driver.
-    ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+    ITreenumerable<TOuterResult> Compose<TOuterResult>(Func<NodeAndPosition<TNode>, TOuterResult> selector);
 
     // ---- The POSITION-READING doors: same shapes, stronger contract ----
     //
@@ -70,7 +70,7 @@ namespace Copse.Linq.Treenumerables
     // a member that relabels stacks over itself, so the leg reads published labels by
     // construction. The caller checks nothing.
 
-    ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeContext<TNode>, TOuterResult> selector);
+    ITreenumerable<TOuterResult> ComposePositional<TOuterResult>(Func<NodeAndPosition<TNode>, TOuterResult> selector);
 
     ITreenumerable<TOuterResult> ComposePositional<TOuterResult, TOuterSelector>(
       TOuterSelector outerSelector,
@@ -81,6 +81,6 @@ namespace Copse.Linq.Treenumerables
     // ONLY: light wrappers merge the predicate into themselves; every other member STACKS
     // the light prune wrapper over itself, because joining would demote its representation
     // for a layer that costs almost nothing (measured; OPERATOR_COMPOSITION_DESIGN.md).
-    ITreenumerable<TNode> ComposePruneDescendantsWhere(Func<NodeContext<TNode>, bool> predicate);
+    ITreenumerable<TNode> ComposePruneDescendantsWhere(Func<NodeAndPosition<TNode>, bool> predicate);
   }
 }

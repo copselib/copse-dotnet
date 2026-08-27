@@ -11,17 +11,17 @@ namespace Copse.Linq.Treenumerables
   // never SkipNode, so it stays a light-tier fact even spliced into the general driver.
   internal readonly struct PruneDescendantsWhereResultSelector<TNode> : IResultSelector<TNode, TNode>
   {
-    public PruneDescendantsWhereResultSelector(Func<NodeContext<TNode>, bool> predicate)
+    public PruneDescendantsWhereResultSelector(Func<NodeAndPosition<TNode>, bool> predicate)
     {
       _Predicate = predicate;
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
-    public SelectWhereResult<TNode> GetResult(NodeContext<TNode> nodeContext)
+    public SelectWhereResult<TNode> GetResult(NodeAndPosition<TNode> nodeAndPosition)
       => new SelectWhereResult<TNode>(
-        nodeContext.Node,
-        _Predicate(nodeContext)
+        nodeAndPosition.Node,
+        _Predicate(nodeAndPosition)
           ? NodeTraversalStrategies.PruneDescendants
           : NodeTraversalStrategies.TraverseAll);
   }

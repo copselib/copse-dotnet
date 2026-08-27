@@ -171,7 +171,7 @@ namespace Copse.Linq.Treenumerators
           // lambda inside sees exactly what the stacked pipeline would have shown it. Accept-side
           // strategies ride the pending/deferred slots so they apply on the pull following the
           // node's scheduling publish.
-          var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeContext());
+          var result = _ResultSelector.GetResult(InnerTreenumerator.ToNodeAndPosition());
           var resultStrategies = result.Strategies;
           var skipped = resultStrategies.HasNodeTraversalStrategies(NodeTraversalStrategies.SkipNode);
 

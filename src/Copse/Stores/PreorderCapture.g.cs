@@ -97,7 +97,7 @@ namespace Copse.Stores
     /// </summary>
     public static (PreorderArrayStore<TNode> Store, TSide[] SideChannel) CaptureFrom<TNode, TSide>(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector)
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
@@ -115,7 +115,7 @@ namespace Copse.Stores
     /// </summary>
     public static (TNode[] Values, int[] SubtreeSizes, TSide[] SideChannel) CaptureRaw<TNode, TSide>(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector)
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector)
     {
       var sideChannel = new RefAppendOnlyList<TSide>();
       var (values, subtreeSizes) = CaptureCore(source, sideChannelSelector, sideChannel);
@@ -134,7 +134,7 @@ namespace Copse.Stores
 
     private static (TNode[] Values, int[] SubtreeSizes) CaptureCore<TNode, TSide>(
       IDepthFirstTreenumerable<TNode> source,
-      Func<NodeContext<TNode>, TSide> sideChannelSelector,
+      Func<NodeAndPosition<TNode>, TSide> sideChannelSelector,
       RefAppendOnlyList<TSide> sideChannel)
     {
       var values = new RefAppendOnlyList<TNode>();
@@ -158,7 +158,7 @@ namespace Copse.Stores
           openNodes.Push(values.Count);
           values.AddLast(treenumerator.Node);
           subtreeSizes.AddLast(0);
-          sideChannel?.AddLast(sideChannelSelector(new NodeContext<TNode>(treenumerator.Node, treenumerator.Position)));
+          sideChannel?.AddLast(sideChannelSelector(new NodeAndPosition<TNode>(treenumerator.Node, treenumerator.Position)));
         }
       }
 

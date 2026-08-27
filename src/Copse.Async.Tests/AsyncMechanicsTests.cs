@@ -37,12 +37,12 @@ namespace Copse.Async.Tests
 
     private static readonly Func<int, bool> KeepNot3Value = n => n != 3;
 
-    private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.SelectWhereResult<int>> KeepNot3Result =
+    private static readonly Func<NodeAndPosition<int>, Copse.Linq.Treenumerables.SelectWhereResult<int>> KeepNot3Result =
       nc => new Copse.Linq.Treenumerables.SelectWhereResult<int>(
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
 
-    private static readonly Func<NodeContext<int>, Copse.Linq.Treenumerables.AsyncSelectWhereResult<int>> AsyncKeepNot3Result =
+    private static readonly Func<NodeAndPosition<int>, Copse.Linq.Treenumerables.AsyncSelectWhereResult<int>> AsyncKeepNot3Result =
       nc => new Copse.Linq.Treenumerables.AsyncSelectWhereResult<int>(
         nc.Node,
         nc.Node != 3 ? NodeTraversalStrategies.TraverseAll : NodeTraversalStrategies.SkipNode);
@@ -106,7 +106,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncPruneDescendantsWhere_OverSuspendingInner_MatchesGeneratedSyncTwin()
     {
-      Func<NodeContext<int>, bool> pruneAt3 = nc => nc.Node == 3;
+      Func<NodeAndPosition<int>, bool> pruneAt3 = nc => nc.Node == 3;
 
       var sync = Collect(new PruneDescendantsWhereTreenumerator<int>(
         () => new HierarchicalDepthFirstTreenumerator<int, int, SyncChildEnumerator>(
@@ -124,7 +124,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncTakeNodesUntil_OverSuspendingInner_MatchesGeneratedSyncTwin()
     {
-      Func<NodeContext<int>, bool> stopAt3 = nc => nc.Node == 3;
+      Func<NodeAndPosition<int>, bool> stopAt3 = nc => nc.Node == 3;
 
       foreach (var keepFinalNode in new[] { true, false })
       {
@@ -145,7 +145,7 @@ namespace Copse.Async.Tests
     [TestMethod]
     public async Task AsyncRootfixScan_OverSuspendingInner_MatchesGeneratedSyncTwins()
     {
-      Func<NodeContext<int>, NodeContext<int>, int> sum = (acc, node) => acc.Node + node.Node;
+      Func<NodeAndPosition<int>, NodeAndPosition<int>, int> sum = (acc, node) => acc.Node + node.Node;
 
       // Depth-first
       var syncDft = Collect(new RootfixScanDepthFirstTreenumerator<int, int>(

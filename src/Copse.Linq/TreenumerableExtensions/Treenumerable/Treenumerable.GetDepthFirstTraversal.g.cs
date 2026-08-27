@@ -20,7 +20,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node));
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node));
     }
 
     /// <summary>The positional flavor: the node's value and its position.</summary>
@@ -28,7 +28,7 @@ namespace Copse.Linq
       this IDepthFirstTreenumerable<TNode> source,
       Func<TNode, NodePosition, NodeTraversalStrategies> nodeTraversalStrategiesSelector)
     {
-      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeContext => nodeTraversalStrategiesSelector(nodeContext.Node, nodeContext.Position));
+      return EnumerateTraversal(source.GetDepthFirstTreenumerator, nodeAndPosition => nodeTraversalStrategiesSelector(nodeAndPosition.Node, nodeAndPosition.Position));
     }
 
     /// <summary>The full depth-first visit stream (TraverseAll).</summary>

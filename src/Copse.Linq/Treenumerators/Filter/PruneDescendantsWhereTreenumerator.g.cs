@@ -20,13 +20,13 @@ namespace Copse.Linq.Treenumerators
   {
     public PruneDescendantsWhereTreenumerator(
       Func<ITreenumerator<TNode>> innerTreenumeratorFactory,
-      Func<NodeContext<TNode>, bool> predicate)
+      Func<NodeAndPosition<TNode>, bool> predicate)
       : base(innerTreenumeratorFactory)
     {
       _Predicate = predicate;
     }
 
-    private readonly Func<NodeContext<TNode>, bool> _Predicate;
+    private readonly Func<NodeAndPosition<TNode>, bool> _Predicate;
 
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
@@ -35,7 +35,7 @@ namespace Copse.Linq.Treenumerators
 
       // Never test the pre-enumeration sentinel (ForestRoot convention: default node, mode
       // SchedulingNode): user lambdas see real nodes only.
-      if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot && _Predicate(this.ToNodeContext()))
+      if (Mode == TreenumeratorMode.SchedulingNode && !Position.IsForestRoot && _Predicate(this.ToNodeAndPosition()))
         nodeTraversalStrategies |= NodeTraversalStrategies.PruneDescendants;
 
       var result = InnerTreenumerator.MoveNext(nodeTraversalStrategies);

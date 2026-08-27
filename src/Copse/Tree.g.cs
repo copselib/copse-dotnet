@@ -177,7 +177,7 @@ namespace Copse
     /// a handle to its node. Deferred: nothing is pulled until a traversal runs; each
     /// traversal re-enumerates the roots.</summary>
     public static ITreenumerable<TNode> Create<TNode, THandle, TChildEnumerator>(
-      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
       IEnumerable<THandle> roots)
       where TChildEnumerator : IChildEnumerator<THandle>
@@ -187,7 +187,7 @@ namespace Copse
     /// <summary>The node-is-its-own-handle form of the hierarchical door: the roots and a
     /// factory producing each node's child enumerator.</summary>
     public static ITreenumerable<TNode> Create<TNode, TChildEnumerator>(
-      Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<TNode>, TChildEnumerator> childEnumeratorFactory,
       IEnumerable<TNode> roots)
       where TChildEnumerator : IChildEnumerator<TNode>
       => new HierarchicalTreenumerable<TNode, TChildEnumerator>(childEnumeratorFactory, roots);
@@ -199,7 +199,7 @@ namespace Copse
     public static ITreenumerable<TNode> FromTopology<TNode, THandle>(
       ITreeTopology<TNode, THandle> topology)
       => new HierarchicalTreenumerable<TNode, HandleAndNode<THandle, TNode>, TopologyChildEnumerator<TNode, THandle>>(
-        nodeContext => new TopologyChildEnumerator<TNode, THandle>(topology, nodeContext.Node.Handle),
+        nodeAndPosition => new TopologyChildEnumerator<TNode, THandle>(topology, nodeAndPosition.Node.Handle),
         labeledNode => labeledNode.Node,
         RootsFrom(topology));
 

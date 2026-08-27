@@ -32,7 +32,7 @@ namespace Copse.Treenumerables
     /// producing each handle's child enumerator, and the map resolving a handle to its
     /// node.</summary>
     public HierarchicalTreenumerable(
-      Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
       IEnumerable<THandle> roots)
     {
@@ -42,7 +42,7 @@ namespace Copse.Treenumerables
     }
 
     private readonly IEnumerable<THandle> _Roots;
-    private readonly Func<NodeContext<THandle>, TChildEnumerator> _ChildEnumeratorFactory;
+    private readonly Func<NodeAndPosition<THandle>, TChildEnumerator> _ChildEnumeratorFactory;
     private readonly Func<THandle, TNode> _HandleToNodeMap;
 
     /// <inheritdoc/>
@@ -75,7 +75,7 @@ namespace Copse.Treenumerables
     /// <summary>Builds the treenumerable from nodes that are their own handles: the roots
     /// and a factory producing each node's child enumerator.</summary>
     public HierarchicalTreenumerable(
-      Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
+      Func<NodeAndPosition<TNode>, TChildEnumerator> childEnumeratorFactory,
       IEnumerable<TNode> roots)
       : base(childEnumeratorFactory, node => node, roots)
     {
