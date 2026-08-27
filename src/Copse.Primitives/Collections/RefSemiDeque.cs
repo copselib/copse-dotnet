@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Copse
+namespace Copse.Collections
 {
   // ACCESS-COST CONTRACT: head/tail operations (AddLast/RemoveLast/RemoveFirst/GetFirst/GetLast)
   // and near-end indexing are O(1); GetFromBack/GetFromFront at an ARBITRARY index resolve their

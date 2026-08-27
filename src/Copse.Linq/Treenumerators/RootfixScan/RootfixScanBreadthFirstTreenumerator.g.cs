@@ -2,6 +2,7 @@
 //   Generated from AsyncRootfixScanBreadthFirstTreenumerator.cs by Copse.CodeGen (async->sync transcription).
 //   Do not edit; edit the async source and regenerate: dotnet run --project Copse.CodeGen
 // </auto-generated>
+using Copse.Collections;
 using Copse;
 using Copse.Core;
 using Copse.Linq.Extensions;

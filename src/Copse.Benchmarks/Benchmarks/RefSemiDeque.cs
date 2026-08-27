@@ -9,7 +9,7 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Add_8M()
     {
-      var deque = new RefSemiDeque<int>();
+      var deque = new Copse.Collections.RefSemiDeque<int>();
 
       for (int i = 0; i < 8_000_000; i++)
         deque.AddLast(i);
@@ -18,7 +18,7 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void RemoveFirst_8M()
     {
-      var deque = new RefSemiDeque<int>();
+      var deque = new Copse.Collections.RefSemiDeque<int>();
 
       for (int i = 0; i < 8_000_000; i++)
         deque.AddLast(i);
@@ -30,7 +30,7 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void RemoveLast_8M()
     {
-      var deque = new RefSemiDeque<int>();
+      var deque = new Copse.Collections.RefSemiDeque<int>();
 
       for (int i = 0; i < 8_000_000; i++)
         deque.AddLast(i);
@@ -45,7 +45,7 @@ namespace Copse.Benchmarks
     [Benchmark]
     public void Add_Block64_1M()
     {
-      var deque = new RefSemiDeque<Block64>();
+      var deque = new Copse.Collections.RefSemiDeque<Block64>();
 
       for (int i = 0; i < 1_000_000; i++)
         deque.AddLast(default);

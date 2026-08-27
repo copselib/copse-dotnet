@@ -117,6 +117,10 @@
   ids will be deprecated. *Migration: remove any direct references to the three retired
   packages — their types arrive through `Copse.Core`/`Copse`/`Copse.Linq`; `Option` and
   `HandleAndSiblingIndex` move from namespace `Copse` to `Copse.Core`.*
+- **The chunked collections move to namespace `Copse.Collections`** — `RefSemiDeque<T>` and
+  `RefAppendOnlyList<T>` leave the bare `Copse` namespace (which is now purely tree-domain),
+  mirroring `System.Collections.Generic`'s shape; the `Copse.Primitives` package is
+  unchanged. *Migration: `using Copse.Collections;` where the collections are named.*
 - **The walker tier moves to namespace `Copse.Core`** — `TreeWalker`, `TreeWalkerResult`,
   `ITreeTopology`, `IWalkableTreenumerable` (and their `Async` twins) leave the bare
   `Copse` namespace: they are core contracts, and their namespace now agrees with the

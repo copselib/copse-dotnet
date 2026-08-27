@@ -1,3 +1,4 @@
+using Copse.Collections;
 using Copse.Stores;
 using System;
 using System.Runtime.CompilerServices;

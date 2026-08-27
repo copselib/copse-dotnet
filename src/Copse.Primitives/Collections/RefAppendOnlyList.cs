@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Numerics;
 #endif
 
-namespace Copse
+namespace Copse.Collections
 {
   // A chunked, append-only list with ref-returning indexed access. "Append-only" is structural,
   // not semantic: slots never move (partitions are fixed-length arrays that are never resized,

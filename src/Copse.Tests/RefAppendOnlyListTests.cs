@@ -1,3 +1,4 @@
+using Copse.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
