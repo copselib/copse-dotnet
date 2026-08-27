@@ -15,6 +15,8 @@ namespace Copse.Async.Treenumerables
   public sealed class AsyncLevelOrderStreamTreenumerable<TNode, TStream> : IAsyncBreadthFirstTreenumerable<TNode>
     where TStream : IAsyncLevelOrderStream<TNode>
   {
+    /// <summary>Wraps a forward-only level-order stream factory; each traversal opens a
+    /// fresh stream and disposes it with the treenumerator.</summary>
     public AsyncLevelOrderStreamTreenumerable(Func<TStream> streamFactory)
     {
       _StreamFactory = streamFactory;
@@ -22,6 +24,7 @@ namespace Copse.Async.Treenumerables
 
     private readonly Func<TStream> _StreamFactory;
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
       => new AsyncLevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>(_StreamFactory());
   }

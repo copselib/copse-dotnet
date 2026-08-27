@@ -28,6 +28,9 @@ namespace Copse.Treenumerables
     : ITreenumerable<TNode>
     where TChildEnumerator : IChildEnumerator<THandle>
   {
+    /// <summary>Builds the treenumerable from the pull topology: the roots, a factory
+    /// producing each handle's child enumerator, and the map resolving a handle to its
+    /// node.</summary>
     public Treenumerable(
       Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
@@ -42,6 +45,7 @@ namespace Copse.Treenumerables
     private readonly Func<NodeContext<THandle>, TChildEnumerator> _ChildEnumeratorFactory;
     private readonly Func<THandle, TNode> _HandleToNodeMap;
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
     {
       return
@@ -51,6 +55,7 @@ namespace Copse.Treenumerables
           _HandleToNodeMap);
     }
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
     {
       return
@@ -67,6 +72,8 @@ namespace Copse.Treenumerables
     : Treenumerable<TNode, TNode, TChildEnumerator>
     where TChildEnumerator : IChildEnumerator<TNode>
   {
+    /// <summary>Builds the treenumerable from nodes that are their own handles: the roots
+    /// and a factory producing each node's child enumerator.</summary>
     public Treenumerable(
       Func<NodeContext<TNode>, TChildEnumerator> childEnumeratorFactory,
       IEnumerable<TNode> roots)

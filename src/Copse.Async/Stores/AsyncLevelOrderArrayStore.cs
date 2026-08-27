@@ -15,6 +15,9 @@ namespace Copse.Async.Stores
   /// operations answer immediately and the reads are array access.</summary>
   public readonly struct AsyncLevelOrderArrayStore<TNode> : IAsyncLevelOrderStore<TNode>
   {
+    /// <summary>Wraps the completed arrays: nodes level by level, each node's first-child
+    /// index and child count beside it, the roots the leading <paramref name="rootCount"/>
+    /// entries. The arrays are taken by reference, not copied.</summary>
     public AsyncLevelOrderArrayStore(TNode[] nodes, int[] firstChildIndices, int[] childCounts, int rootCount)
     {
       _Nodes = nodes;
@@ -28,17 +31,22 @@ namespace Copse.Async.Stores
     private readonly int[] _ChildCounts;
     private readonly int _RootCount;
 
+    /// <inheritdoc/>
     public int Count => _Nodes.Length;
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask<bool> EnsureRootAvailableAsync(int k) => new ValueTask<bool>(k < _RootCount);
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask<bool> EnsureChildAvailableAsync(int parentIndex, int k) => new ValueTask<bool>(k < _ChildCounts[parentIndex]);
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TNode GetNode(int index) => _Nodes[index];
   }

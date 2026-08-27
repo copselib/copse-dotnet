@@ -23,6 +23,8 @@ namespace Copse.Async.Treenumerators
     : IAsyncTreenumerator<TNode>
     where TStream : IAsyncPreorderStream<TNode>
   {
+    /// <summary>Decodes the traversal from the forward-only stream; the treenumerator owns
+    /// the stream and disposes it.</summary>
     public AsyncPreorderStreamDepthFirstTreenumerator(TStream stream)
     {
       _Stream = stream;
@@ -52,9 +54,13 @@ namespace Copse.Async.Treenumerators
 
     private bool _Finished;
 
+    /// <inheritdoc/>
     public TNode Node { get; private set; } = default;
+    /// <inheritdoc/>
     public int VisitCount { get; private set; } = 0;
+    /// <inheritdoc/>
     public TreenumeratorMode Mode { get; private set; } = default;
+    /// <inheritdoc/>
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
     private struct Level
@@ -70,6 +76,7 @@ namespace Copse.Async.Treenumerators
     // NOT async, and neither are the pull helpers below: every stream seam is PROBED, and a
     // pull the stream answers inline is ordinary method calls with no state machine -- the
     // fast-path probe idiom (see AsyncToSync).
+    /// <inheritdoc/>
     public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -418,6 +425,7 @@ namespace Copse.Async.Treenumerators
     }
     // codegen: end async-only
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
       await _Stream.DisposeAsync().ConfigureAwait(false);

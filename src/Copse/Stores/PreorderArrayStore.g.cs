@@ -19,6 +19,8 @@ namespace Copse.Stores
   /// grow operations answer immediately and the reads are array access.</summary>
   public readonly struct PreorderArrayStore<TNode> : IPreorderStore<TNode>
   {
+    /// <summary>Wraps the completed arrays: <c>nodes[i]</c> in preorder with node <c>i</c>'s
+    /// subtree size beside it. The arrays are taken by reference, not copied.</summary>
     public PreorderArrayStore(TNode[] nodes, int[] subtreeSizes)
     {
       _Nodes = nodes;
@@ -28,17 +30,22 @@ namespace Copse.Stores
     private readonly TNode[] _Nodes;
     private readonly int[] _SubtreeSizes;
 
+    /// <inheritdoc/>
     public int Count => _Nodes.Length;
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureBuffered(int index) => index < _Nodes.Length;
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int EnsureSubtreeClosed(int index) => _SubtreeSizes[index];
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetSubtreeSize(int index) => _SubtreeSizes[index];
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TNode GetNode(int index) => _Nodes[index];
   }

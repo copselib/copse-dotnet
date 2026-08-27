@@ -15,6 +15,8 @@ namespace Copse.Treenumerables
   /// injected treenumerator factory.</summary>
   public sealed class DelegatingBreadthFirstTreenumerable<TNode> : IBreadthFirstTreenumerable<TNode>
   {
+    /// <summary>Builds each traversal from the factory; nothing runs until a treenumerator
+    /// is acquired.</summary>
     public DelegatingBreadthFirstTreenumerable(Func<ITreenumerator<TNode>> breadthFirstTreenumeratorFactory)
     {
       _BreadthFirstTreenumeratorFactory = breadthFirstTreenumeratorFactory;
@@ -22,6 +24,7 @@ namespace Copse.Treenumerables
 
     private readonly Func<ITreenumerator<TNode>> _BreadthFirstTreenumeratorFactory;
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator() => _BreadthFirstTreenumeratorFactory();
   }
 }

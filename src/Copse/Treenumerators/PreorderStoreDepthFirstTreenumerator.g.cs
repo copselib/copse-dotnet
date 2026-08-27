@@ -23,6 +23,8 @@ namespace Copse.Treenumerators
     : TreenumeratorBase<TNode>
     where TStore : IPreorderStore<TNode>
   {
+    /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
+    /// the traversal'''s frontier reaches.</summary>
     public PreorderStoreDepthFirstTreenumerator(TStore store)
     {
       _Store = store;
@@ -60,6 +62,7 @@ namespace Copse.Treenumerators
     // stays ordinary method calls whenever the store answers inline (a completed capture always
     // does; a growing one does whenever the answer is already buffered). Only a genuinely
     // pending grow enters an async continuation -- see the fast-path idiom note in AsyncToSync.
+    /// <inheritdoc/>
     protected override bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // Nothing descended yet: schedule the next root (the first move, or the gap between roots).

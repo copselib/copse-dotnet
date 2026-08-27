@@ -28,6 +28,8 @@ namespace Copse.Treenumerators
     : ITreenumerator<TNode>
     where TChildEnumerator : IChildEnumerator<THandle>
   {
+    /// <summary>Builds the traversal from the pull topology: the roots, a factory producing
+    /// each handle's child enumerator, and the map resolving a handle to its node.</summary>
     public BreadthFirstTreenumerator(
       IEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
@@ -46,9 +48,13 @@ namespace Copse.Treenumerators
     private bool _RootsEnumeratorFinished = false;
     private bool _RootsScheduled = false;
 
+    /// <inheritdoc/>
     public TNode Node { get; private set; } = default;
+    /// <inheritdoc/>
     public int VisitCount { get; private set; } = 0;
+    /// <inheritdoc/>
     public TreenumeratorMode Mode { get; private set; } = default;
+    /// <inheritdoc/>
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
     // NOT async, and neither are the helpers below: every pull is PROBED, and a pull that
@@ -57,6 +63,7 @@ namespace Copse.Treenumerators
     // continuation that CONSUMES the pulled result; Advance's loop state lives entirely in
     // fields, so the schedule continuations then perform the loop's between-iteration mutation
     // and re-enter Advance -- exactly its `continue`.
+    /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -212,6 +219,7 @@ namespace Copse.Treenumerators
       Position = frame.Position;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
       _Path.Dispose();

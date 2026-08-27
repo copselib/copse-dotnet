@@ -19,6 +19,8 @@ namespace Copse.Treenumerators
   /// end.</summary>
   public sealed class DisposeActionTreenumerator<TNode> : ITreenumerator<TNode>
   {
+    /// <summary>Forwards every member to <paramref name="inner"/> and runs
+    /// <paramref name="onDispose"/> after disposing it.</summary>
     public DisposeActionTreenumerator(ITreenumerator<TNode> inner, Action onDispose)
     {
       _Inner = inner;
@@ -29,14 +31,20 @@ namespace Copse.Treenumerators
     private readonly Action _OnDispose;
     private bool _Disposed;
 
+    /// <inheritdoc/>
     public TNode Node => _Inner.Node;
+    /// <inheritdoc/>
     public int VisitCount => _Inner.VisitCount;
+    /// <inheritdoc/>
     public TreenumeratorMode Mode => _Inner.Mode;
+    /// <inheritdoc/>
     public NodePosition Position => _Inner.Position;
 
+    /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
       => _Inner.MoveNext(nodeTraversalStrategies);
 
+    /// <inheritdoc/>
     public void Dispose()
     {
       if (_Disposed)

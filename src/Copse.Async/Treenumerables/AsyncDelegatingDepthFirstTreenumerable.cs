@@ -11,6 +11,8 @@ namespace Copse.Async.Treenumerables
   /// treenumerator factory.</summary>
   public sealed class AsyncDelegatingDepthFirstTreenumerable<TNode> : IAsyncDepthFirstTreenumerable<TNode>
   {
+    /// <summary>Builds each traversal from the factory; nothing runs until a treenumerator
+    /// is acquired.</summary>
     public AsyncDelegatingDepthFirstTreenumerable(Func<IAsyncTreenumerator<TNode>> depthFirstTreenumeratorFactory)
     {
       _DepthFirstTreenumeratorFactory = depthFirstTreenumeratorFactory;
@@ -18,6 +20,7 @@ namespace Copse.Async.Treenumerables
 
     private readonly Func<IAsyncTreenumerator<TNode>> _DepthFirstTreenumeratorFactory;
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator() => _DepthFirstTreenumeratorFactory();
   }
 }

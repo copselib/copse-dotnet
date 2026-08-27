@@ -14,6 +14,8 @@ namespace Copse.Async.Treenumerables
   public sealed class AsyncPreorderTreenumerable<TNode, TStore> : IAsyncTreenumerable<TNode>
     where TStore : IAsyncPreorderStore<TNode>
   {
+    /// <summary>Wraps a random-access preorder store; every traversal of either dimension
+    /// decodes the same store.</summary>
     public AsyncPreorderTreenumerable(TStore store)
     {
       _Store = store;
@@ -21,9 +23,11 @@ namespace Copse.Async.Treenumerables
 
     private readonly TStore _Store;
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
       => new AsyncPreorderStoreDepthFirstTreenumerator<TNode, TStore>(_Store);
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
       => new AsyncPreorderStoreBreadthFirstTreenumerator<TNode, TStore>(_Store);
   }

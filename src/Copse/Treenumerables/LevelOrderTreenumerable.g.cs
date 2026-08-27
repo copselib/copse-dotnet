@@ -18,6 +18,8 @@ namespace Copse.Treenumerables
   public sealed class LevelOrderTreenumerable<TNode, TStore> : ITreenumerable<TNode>
     where TStore : ILevelOrderStore<TNode>
   {
+    /// <summary>Wraps a random-access level-order store; every traversal of either dimension
+    /// decodes the same store.</summary>
     public LevelOrderTreenumerable(TStore store)
     {
       _Store = store;
@@ -25,9 +27,11 @@ namespace Copse.Treenumerables
 
     private readonly TStore _Store;
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
       => new LevelOrderStoreDepthFirstTreenumerator<TNode, TStore>(_Store);
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
       => new LevelOrderStoreBreadthFirstTreenumerator<TNode, TStore>(_Store);
   }

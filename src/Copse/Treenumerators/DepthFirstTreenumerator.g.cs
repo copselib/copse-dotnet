@@ -24,6 +24,8 @@ namespace Copse.Treenumerators
     : ITreenumerator<TNode>
     where TChildEnumerator : IChildEnumerator<THandle>
   {
+    /// <summary>Builds the traversal from the pull topology: the roots, a factory producing
+    /// each handle's child enumerator, and the map resolving a handle to its node.</summary>
     public DepthFirstTreenumerator(
       IEnumerable<THandle> roots,
       Func<NodeContext<THandle>, TChildEnumerator> childEnumeratorFactory,
@@ -41,9 +43,13 @@ namespace Copse.Treenumerators
     private bool _Finished;
     private bool _RootsEnumeratorFinished;
 
+    /// <inheritdoc/>
     public TNode Node { get; private set; } = default;
+    /// <inheritdoc/>
     public int VisitCount { get; private set; } = 0;
+    /// <inheritdoc/>
     public TreenumeratorMode Mode { get; private set; } = default;
+    /// <inheritdoc/>
     public NodePosition Position { get; private set; } = NodePosition.ForestRoot;
 
     // NOT async, and neither are the helpers below: both pulls are PROBED, and a pull that
@@ -51,6 +57,7 @@ namespace Copse.Treenumerators
     // idiom (see AsyncToSync). Unlike a store grow ("grow until", idempotent), a pull ADVANCES
     // its cursor, so a pending pull resumes through a continuation that CONSUMES the pulled
     // result and runs its caller's tail -- never by re-entering the probing method.
+    /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategies)
     {
       if (_Finished)
@@ -179,6 +186,7 @@ namespace Copse.Treenumerators
       Position = nodeState.Position;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
       _Path.Dispose();

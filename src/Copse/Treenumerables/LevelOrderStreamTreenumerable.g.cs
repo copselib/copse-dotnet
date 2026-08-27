@@ -19,6 +19,8 @@ namespace Copse.Treenumerables
   public sealed class LevelOrderStreamTreenumerable<TNode, TStream> : IBreadthFirstTreenumerable<TNode>
     where TStream : ILevelOrderStream<TNode>
   {
+    /// <summary>Wraps a forward-only level-order stream factory; each traversal opens a
+    /// fresh stream and disposes it with the treenumerator.</summary>
     public LevelOrderStreamTreenumerable(Func<TStream> streamFactory)
     {
       _StreamFactory = streamFactory;
@@ -26,6 +28,7 @@ namespace Copse.Treenumerables
 
     private readonly Func<TStream> _StreamFactory;
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetBreadthFirstTreenumerator()
       => new LevelOrderStreamBreadthFirstTreenumerator<TNode, TStream>(_StreamFactory());
   }

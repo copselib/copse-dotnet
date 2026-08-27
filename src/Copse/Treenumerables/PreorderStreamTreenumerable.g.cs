@@ -19,6 +19,8 @@ namespace Copse.Treenumerables
   public sealed class PreorderStreamTreenumerable<TNode, TStream> : IDepthFirstTreenumerable<TNode>
     where TStream : IPreorderStream<TNode>
   {
+    /// <summary>Wraps a forward-only preorder stream factory; each traversal opens a fresh
+    /// stream and disposes it with the treenumerator.</summary>
     public PreorderStreamTreenumerable(Func<TStream> streamFactory)
     {
       _StreamFactory = streamFactory;
@@ -26,6 +28,7 @@ namespace Copse.Treenumerables
 
     private readonly Func<TStream> _StreamFactory;
 
+    /// <inheritdoc/>
     public ITreenumerator<TNode> GetDepthFirstTreenumerator()
       => new PreorderStreamDepthFirstTreenumerator<TNode, TStream>(_StreamFactory());
   }

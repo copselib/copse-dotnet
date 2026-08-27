@@ -11,6 +11,8 @@ namespace Copse.Async.Treenumerables
   /// injected treenumerator factory.</summary>
   public sealed class AsyncDelegatingBreadthFirstTreenumerable<TNode> : IAsyncBreadthFirstTreenumerable<TNode>
   {
+    /// <summary>Builds each traversal from the factory; nothing runs until a treenumerator
+    /// is acquired.</summary>
     public AsyncDelegatingBreadthFirstTreenumerable(Func<IAsyncTreenumerator<TNode>> breadthFirstTreenumeratorFactory)
     {
       _BreadthFirstTreenumeratorFactory = breadthFirstTreenumeratorFactory;
@@ -18,6 +20,7 @@ namespace Copse.Async.Treenumerables
 
     private readonly Func<IAsyncTreenumerator<TNode>> _BreadthFirstTreenumeratorFactory;
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator() => _BreadthFirstTreenumeratorFactory();
   }
 }

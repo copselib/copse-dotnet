@@ -17,6 +17,8 @@ namespace Copse.Async.Treenumerators
   /// end.</summary>
   public sealed class AsyncDisposeActionTreenumerator<TNode> : IAsyncTreenumerator<TNode>
   {
+    /// <summary>Forwards every member to <paramref name="inner"/> and runs
+    /// <paramref name="onDispose"/> after disposing it.</summary>
     public AsyncDisposeActionTreenumerator(IAsyncTreenumerator<TNode> inner, Func<ValueTask> onDispose)
     {
       _Inner = inner;
@@ -27,14 +29,20 @@ namespace Copse.Async.Treenumerators
     private readonly Func<ValueTask> _OnDispose;
     private bool _Disposed;
 
+    /// <inheritdoc/>
     public TNode Node => _Inner.Node;
+    /// <inheritdoc/>
     public int VisitCount => _Inner.VisitCount;
+    /// <inheritdoc/>
     public TreenumeratorMode Mode => _Inner.Mode;
+    /// <inheritdoc/>
     public NodePosition Position => _Inner.Position;
 
+    /// <inheritdoc/>
     public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
       => _Inner.MoveNextAsync(nodeTraversalStrategies);
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
       if (_Disposed)

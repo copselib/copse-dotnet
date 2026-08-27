@@ -16,14 +16,20 @@ namespace Copse.Async
   /// </summary>
   public abstract class AsyncTreenumeratorBase<TNode> : IAsyncTreenumerator<TNode>
   {
+    /// <inheritdoc/>
     public TNode Node { get; protected set; } = default;
 
+    /// <inheritdoc/>
     public int VisitCount { get; protected set; } = 0;
 
+    /// <inheritdoc/>
     public NodePosition Position { get; protected set; } = NodePosition.ForestRoot;
 
+    /// <inheritdoc/>
     public TreenumeratorMode Mode { get; protected set; } = default;
 
+    /// <summary>True once a pull has answered false; every later pull answers false without
+    /// calling <see cref="OnMoveNextAsync"/> again.</summary>
     protected bool EnumerationFinished { get; private set; }
 
 
@@ -31,6 +37,7 @@ namespace Copse.Async
     // tree -- the overwhelmingly common case) the whole move is ordinary method calls, no state
     // machine; the continuation below is entered only when the pull genuinely suspends. This one
     // fast path removes a per-pull state machine from EVERY derived treenumerator at once.
+    /// <inheritdoc/>
     public ValueTask<bool> MoveNextAsync(NodeTraversalStrategies nodeTraversalStrategy)
     {
       if (Disposed || EnumerationFinished)
@@ -59,12 +66,18 @@ namespace Copse.Async
       return false;
     }
 
+    /// <summary>Advances the traversal one visit and sets <see cref="Node"/>,
+    /// <see cref="VisitCount"/>, <see cref="Position"/>, and <see cref="Mode"/>; answers
+    /// false when the traversal is exhausted. The base never calls this after exhaustion
+    /// or disposal.</summary>
     protected abstract ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategy);
 
     #region IAsyncDisposable
 
+    /// <summary>True once <see cref="DisposeAsync"/> has run; pulls answer false from then on.</summary>
     protected bool Disposed { get; private set; } = false;
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
       if (Disposed)
@@ -74,6 +87,7 @@ namespace Copse.Async
       Disposed = true;
     }
 
+    /// <summary>Teardown hook, run exactly once, before <see cref="Disposed"/> is set.</summary>
     protected virtual ValueTask OnDisposingAsync() => default;
 
     #endregion IAsyncDisposable

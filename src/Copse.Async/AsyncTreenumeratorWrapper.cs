@@ -12,14 +12,18 @@ namespace Copse.Async
   public abstract class AsyncTreenumeratorWrapper<TInner, TNode>
     : AsyncTreenumeratorBase<TNode>
   {
+    /// <summary>Acquires the inner cursor from the factory immediately; the wrapper owns and
+    /// disposes it.</summary>
     public AsyncTreenumeratorWrapper(
       Func<IAsyncTreenumerator<TInner>> innerTreenumeratorFactory)
     {
       InnerTreenumerator = innerTreenumeratorFactory();
     }
 
+    /// <summary>The wrapped traversal this treenumerator transforms.</summary>
     protected IAsyncTreenumerator<TInner> InnerTreenumerator { get; }
 
+    /// <inheritdoc/>
     protected override async ValueTask OnDisposingAsync()
     {
       await base.OnDisposingAsync().ConfigureAwait(false);
@@ -34,6 +38,8 @@ namespace Copse.Async
   /// type.</summary>
   public abstract class AsyncTreenumeratorWrapper<TNode> : AsyncTreenumeratorWrapper<TNode, TNode>
   {
+    /// <summary>Acquires the inner cursor from the factory immediately; the wrapper owns and
+    /// disposes it.</summary>
     protected AsyncTreenumeratorWrapper(
       Func<IAsyncTreenumerator<TNode>> innerTreenumeratorFactory)
       : base(innerTreenumeratorFactory)

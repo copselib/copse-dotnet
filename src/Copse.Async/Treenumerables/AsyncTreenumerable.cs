@@ -24,6 +24,9 @@ namespace Copse.Async.Treenumerables
     : IAsyncTreenumerable<TNode>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<THandle>
   {
+    /// <summary>Builds the treenumerable from the pull topology: the roots, a factory
+    /// producing each handle's child enumerator, and the map resolving a handle to its
+    /// node.</summary>
     public AsyncTreenumerable(
       Func<NodeContext<THandle>, TAsyncChildEnumerator> childEnumeratorFactory,
       Func<THandle, TNode> handleToNodeMap,
@@ -38,6 +41,7 @@ namespace Copse.Async.Treenumerables
     private readonly Func<NodeContext<THandle>, TAsyncChildEnumerator> _ChildEnumeratorFactory;
     private readonly Func<THandle, TNode> _HandleToNodeMap;
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncBreadthFirstTreenumerator()
     {
       return
@@ -47,6 +51,7 @@ namespace Copse.Async.Treenumerables
           _HandleToNodeMap);
     }
 
+    /// <inheritdoc/>
     public IAsyncTreenumerator<TNode> GetAsyncDepthFirstTreenumerator()
     {
       return
@@ -63,6 +68,8 @@ namespace Copse.Async.Treenumerables
     : AsyncTreenumerable<TNode, TNode, TAsyncChildEnumerator>
     where TAsyncChildEnumerator : IAsyncChildEnumerator<TNode>
   {
+    /// <summary>Builds the treenumerable from nodes that are their own handles: the roots
+    /// and a factory producing each node's child enumerator.</summary>
     public AsyncTreenumerable(
       Func<NodeContext<TNode>, TAsyncChildEnumerator> childEnumeratorFactory,
       IAsyncEnumerable<TNode> roots)

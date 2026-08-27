@@ -17,6 +17,8 @@ namespace Copse.Async.Treenumerators
     : AsyncTreenumeratorBase<TNode>
     where TStore : IAsyncPreorderStore<TNode>
   {
+    /// <summary>Decodes the traversal from the store; growth is demanded exactly as far as
+    /// the traversal'''s frontier reaches.</summary>
     public AsyncPreorderStoreBreadthFirstTreenumerator(TStore store)
     {
       _Store = store;
@@ -53,6 +55,7 @@ namespace Copse.Async.Treenumerators
     // NOT async, and neither are the helpers below: every store grow is PROBED, and the pull
     // stays ordinary method calls whenever the store answers inline. Only a genuinely pending
     // grow enters an async continuation -- see the fast-path probe idiom note in AsyncToSync.
+    /// <inheritdoc/>
     protected override ValueTask<bool> OnMoveNextAsync(NodeTraversalStrategies nodeTraversalStrategies)
     {
       // A strategy only applies to the node just scheduled (an empty stack means we have not

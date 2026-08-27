@@ -19,17 +19,24 @@ namespace Copse
   /// </summary>
   public abstract class TreenumeratorBase<TNode> : ITreenumerator<TNode>
   {
+    /// <inheritdoc/>
     public TNode Node { get; protected set; } = default;
 
+    /// <inheritdoc/>
     public int VisitCount { get; protected set; } = 0;
 
+    /// <inheritdoc/>
     public NodePosition Position { get; protected set; } = NodePosition.ForestRoot;
 
+    /// <inheritdoc/>
     public TreenumeratorMode Mode { get; protected set; } = default;
 
+    /// <summary>True once a pull has answered false; every later pull answers false without
+    /// calling <see cref="OnMoveNext"/> again.</summary>
     protected bool EnumerationFinished { get; private set; }
 
 
+    /// <inheritdoc/>
     public bool MoveNext(NodeTraversalStrategies nodeTraversalStrategy)
     {
       if (Disposed || EnumerationFinished)
@@ -43,10 +50,15 @@ namespace Copse
       return false;
     }
 
+    /// <summary>Advances the traversal one visit and sets <see cref="Node"/>,
+    /// <see cref="VisitCount"/>, <see cref="Position"/>, and <see cref="Mode"/>; answers
+    /// false when the traversal is exhausted. The base never calls this after exhaustion
+    /// or disposal.</summary>
     protected abstract bool OnMoveNext(NodeTraversalStrategies nodeTraversalStrategy);
 
     #region IDisposable
 
+    /// <summary>True once <see cref="Dispose"/> has run; pulls answer false from then on.</summary>
     protected bool Disposed { get; private set; } = false;
 
     // No finalizer: treenumerators hold only managed state (inner treenumerators, child
@@ -54,6 +66,7 @@ namespace Copse
     // Dispose(bool)/GC.SuppressFinalize/~Finalizer boilerplate would release nothing here (the
     // finalize path skips OnDisposing anyway). Disposal is just: run OnDisposing once. This also
     // keeps the base structurally parallel to AsyncTreenumeratorBase (DisposeAsync/OnDisposingAsync).
+    /// <inheritdoc/>
     public void Dispose()
     {
       if (Disposed)
@@ -63,6 +76,7 @@ namespace Copse
       Disposed = true;
     }
 
+    /// <summary>Teardown hook, run exactly once, before <see cref="Disposed"/> is set.</summary>
     protected virtual void OnDisposing()
     {
     }

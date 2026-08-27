@@ -18,6 +18,9 @@ namespace Copse.Stores
   /// operations answer immediately and the reads are array access.</summary>
   public readonly struct LevelOrderArrayStore<TNode> : ILevelOrderStore<TNode>
   {
+    /// <summary>Wraps the completed arrays: nodes level by level, each node's first-child
+    /// index and child count beside it, the roots the leading <paramref name="rootCount"/>
+    /// entries. The arrays are taken by reference, not copied.</summary>
     public LevelOrderArrayStore(TNode[] nodes, int[] firstChildIndices, int[] childCounts, int rootCount)
     {
       _Nodes = nodes;
@@ -31,17 +34,22 @@ namespace Copse.Stores
     private readonly int[] _ChildCounts;
     private readonly int _RootCount;
 
+    /// <inheritdoc/>
     public int Count => _Nodes.Length;
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureRootAvailable(int k) => k < _RootCount;
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool EnsureChildAvailable(int parentIndex, int k) => k < _ChildCounts[parentIndex];
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetFirstChildIndex(int parentIndex) => _FirstChildIndices[parentIndex];
 
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TNode GetNode(int index) => _Nodes[index];
   }
