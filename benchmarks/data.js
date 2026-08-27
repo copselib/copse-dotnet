@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787870521245,
+  "lastUpdate": 1787870521992,
   "repoUrl": "https://github.com/copselib/copse-dotnet",
   "entries": {
     "Traversal Benchmarks": [
@@ -161882,6 +161882,102 @@ window.BENCHMARK_DATA = {
             "value": 81188434.62857142,
             "unit": "ns",
             "range": "± 883733.7171554244"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jason.boyd.ce@gmail.com",
+            "name": "Jason Boyd",
+            "username": "jasonmcboyd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98a3f1ffd6344e1295a4517b8af1228e49a7d382",
+          "message": "Add the SelectMany projection form (the lawful join's LINQ spelling)\n\nJason, using the surface as a consumer: there was no SelectMany for\nITreenumerable<ITreenumerable<T>> the way IEnumerable has -- 'we need to have a\nway to project a node to a tree, not just graft copies of identical trees.'\n\nFor sequences the flatten has one possible answer, so LINQ's identity-lambda\nidiom needs no policy. For trees the join is parameterized by the graft point\n(the pointed-expansion result) -- but the choice is not free if the laws are to\nhold: UnderLastRoot is Return's own placement, the one under which Return is\nthe monad's unit. Flatten there is THE lawful join (the Data.Tree order).\n\nNew overloads, both colors, DFT + composite:\n\n  SelectMany(source, Func<TSource, IDepthFirstTreenumerable<TResult>> selector)\n    == SelectMany(source, n => Expansion.Of(selector(n), UnderLastRoot))\n\nDelegation-only -- no new machinery; streaming, the BFT documented capture, and\ncomposition inherited from the expansion form. nested.SelectMany(t => t) is now\nthe monad's flatten and node->tree projection reads as LINQ; the expansion form\nstays the door to the other placements and the slotless arms.\n\nPinned by 4 new SelectManyOperatorTests (corpus equivalence both dimensions,\nthe flatten identity, the worked a(b) example). Record: SELECTMANY_DESIGN.md\nAddendum V. Suite green: 26,546 (463 + 69 + 26,014).\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+          "timestamp": "2026-08-27T22:14:45Z",
+          "tree_id": "f01dfb76a6c9cd7f40da4a71c658e82a782d5282",
+          "url": "https://github.com/copselib/copse-dotnet/commit/98a3f1ffd6344e1295a4517b8af1228e49a7d382"
+        },
+        "date": 1787870521827,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Dft_IdenticalTriangles",
+            "value": 102938490.16666667,
+            "unit": "ns",
+            "range": "± 219798.22168768226"
+          },
+          {
+            "name": "Copse.Benchmarks.SymmetricDifference.Bft_IdenticalTriangles",
+            "value": 94751141.5,
+            "unit": "ns",
+            "range": "± 245740.53396586035"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_IdenticalTriangles",
+            "value": 257129652.08333334,
+            "unit": "ns",
+            "range": "± 325081.00823667663"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_IdenticalTriangles",
+            "value": 272717490.6666667,
+            "unit": "ns",
+            "range": "± 3603128.243510346"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Chains",
+            "value": 159137272.16666666,
+            "unit": "ns",
+            "range": "± 2744127.4645017902"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Chains",
+            "value": 221946487.7948718,
+            "unit": "ns",
+            "range": "± 1315250.6667675772"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_Forests",
+            "value": 91248287.3974359,
+            "unit": "ns",
+            "range": "± 197575.2461207232"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_Forests",
+            "value": 87202880.64583334,
+            "unit": "ns",
+            "range": "± 2200232.5234377002"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_BinaryVsChain",
+            "value": 435338374.6666667,
+            "unit": "ns",
+            "range": "± 2973677.6156640947"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_BinaryVsChain",
+            "value": 505977848.5,
+            "unit": "ns",
+            "range": "± 583636.9970079203"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Dft_ForestVsHalfForest",
+            "value": 83050474.36263736,
+            "unit": "ns",
+            "range": "± 197947.26875839208"
+          },
+          {
+            "name": "Copse.Benchmarks.Union.Bft_ForestVsHalfForest",
+            "value": 81181629.70588237,
+            "unit": "ns",
+            "range": "± 1641675.6446049009"
           }
         ]
       }
